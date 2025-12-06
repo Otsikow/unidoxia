@@ -583,6 +583,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
       }
 
+      if (data?.user?.user_metadata?.role === 'partner') {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('partner_email_verified')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (profileError) {
+          console.error('Failed to fetch partner profile for verification check:', profileError);
+        }
+
+        let partnerEmailVerified = Boolean(profileData?.partner_email_verified);
+
+        if (!partnerEmailVerified && data.user.email_confirmed_at) {
+          const { data: updatedProfile, error: updateError } = await supabase
+            .from('profiles')
+            .update({ partner_email_verified: true, onboarded: true })
+            .eq('id', data.user.id)
+            .select('partner_email_verified')
+            .single();
+
+          if (updateError) {
+            console.error('Failed to persist partner email verification status during sign-in:', updateError);
+          } else {
+            partnerEmailVerified = Boolean(updatedProfile?.partner_email_verified);
+          }
+        }
+
+        if (!partnerEmailVerified) {
+          console.warn('Sign-in blocked: partner email address is not verified yet.');
+          await supabase.auth.signOut();
+
+          return {
+            error: new Error('Verify your email to proceed.'),
+            requiresEmailVerification: true,
+            email: data.user.email,
+          };
+        }
+      }
+
       console.log('Sign-in successful:', data);
       return { error: null };
     } catch (err) {
