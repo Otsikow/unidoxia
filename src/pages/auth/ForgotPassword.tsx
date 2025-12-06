@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import unidoxiaLogo from '@/assets/unidoxia-logo.png';
 import BackButton from '@/components/BackButton';
-import { getSiteUrl } from '@/lib/supabaseClientConfig';
+import { buildEmailRedirectUrl } from '@/lib/supabaseClientConfig';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -21,7 +21,7 @@ const ForgotPassword = () => {
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${getSiteUrl()}/auth/reset-password`,
+      redirectTo: buildEmailRedirectUrl('/auth/reset-password'),
     });
 
     if (error) {

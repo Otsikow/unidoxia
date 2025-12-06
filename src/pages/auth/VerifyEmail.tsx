@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { getSiteUrl } from '@/lib/supabaseClientConfig';
+import { buildEmailRedirectUrl } from '@/lib/supabaseClientConfig';
 
 const VerifyEmail = () => {
   const { user } = useAuth();
@@ -38,12 +38,12 @@ const VerifyEmail = () => {
     setResending(true);
 
     try {
+      const emailRedirectTo = buildEmailRedirectUrl('/auth/callback');
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
-        options: {
-          emailRedirectTo: `${getSiteUrl()}/auth/callback`,
-        },
+        options: emailRedirectTo ? { emailRedirectTo } : undefined,
       });
 
       if (error) {
