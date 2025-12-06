@@ -243,6 +243,8 @@ const UniversityProfilePage = () => {
   const formValues = form.watch();
 
   // Compute live checklist based on current form state
+  // NOTE: This logic must stay in sync with COMPLETION_FIELDS in universityProfile.ts
+  // to ensure consistent profile completeness calculations across the app
   const liveChecklist: UniversityProfileChecklistItem[] = useMemo(() => {
     const hasLogo = Boolean(logoPreview || logoFile);
     const hasHero = Boolean(heroPreview || heroFile);
@@ -252,55 +254,65 @@ const UniversityProfilePage = () => {
         key: "name",
         label: "University name",
         description: "Let partners know exactly who you are.",
-        isComplete: Boolean(formValues.name?.trim() && formValues.name.length >= 3),
+        // Matches: Boolean(university?.name?.trim())
+        isComplete: Boolean(formValues.name?.trim()),
       },
       {
         key: "location",
         label: "City and country",
         description: "Pinpoint your campus location for discovery tools.",
-        isComplete: Boolean(formValues.country && formValues.city?.trim()),
+        // Matches: Boolean(university?.country && university?.city)
+        isComplete: Boolean(formValues.country && formValues.city),
       },
       {
         key: "website",
         label: "Website",
         description: "Share the official site so students can learn more.",
-        isComplete: Boolean(formValues.website?.trim()),
+        // Matches: Boolean(university?.website)
+        isComplete: Boolean(formValues.website),
       },
       {
         key: "description",
         label: "About section",
         description: "Tell your story in a concise overview (30+ characters).",
-        isComplete: Boolean(formValues.description && formValues.description.length >= 30),
+        // Matches: Boolean(university?.description && university.description.length > 30)
+        isComplete: Boolean(formValues.description && formValues.description.length > 30),
       },
       {
         key: "logo",
         label: "Logo",
         description: "Upload a clear logo for instant recognition.",
+        // Matches: Boolean(university?.logo_url) - uses preview/file for live updates
         isComplete: hasLogo,
       },
       {
         key: "heroImage",
         label: "Hero image",
         description: "Add a hero banner to showcase your campus atmosphere.",
+        // Matches: Boolean(details.media.heroImageUrl) - uses preview/file for live updates
         isComplete: hasHero,
       },
       {
         key: "contact",
         label: "Primary contact",
         description: "Provide a name and email for partnership outreach.",
-        isComplete: Boolean(formValues.contactEmail?.trim() && formValues.contactName?.trim() && formValues.contactName.length >= 3),
+        // Matches: Boolean(details.contacts.primary?.email && details.contacts.primary?.name)
+        isComplete: Boolean(formValues.contactEmail && formValues.contactName),
       },
       {
         key: "highlights",
         label: "Highlights",
         description: "List at least two standout achievements or facts.",
-        isComplete: Array.isArray(formValues.highlights) && formValues.highlights.filter(h => h && h.trim().length >= 3).length >= 2,
+        // Matches: details.highlights.length >= 2
+        // Filter out empty strings to count only non-empty highlights
+        isComplete: Array.isArray(formValues.highlights) && formValues.highlights.filter(h => h && h.trim()).length >= 2,
       },
       {
         key: "tagline",
         label: "Tagline",
         description: "Capture your promise in a single inspiring line.",
-        isComplete: Boolean(formValues.tagline?.trim()),
+        // Matches: Boolean(details.tagline)
+        isComplete: Boolean(formValues.tagline),
       },
     ];
     return items;

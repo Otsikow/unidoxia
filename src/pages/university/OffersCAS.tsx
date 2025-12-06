@@ -211,7 +211,7 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
 
   // ISOLATION: Filter by university_id at the database level for performance and security
   const fetchCasLetters = async (): Promise<CasRow[]> => {
-    let casQuery = (supabase as any)
+    const casQuery = (supabase as any)
       .from("cas_letters")
       .select(casSelect)
       .eq("university_id", universityId)
