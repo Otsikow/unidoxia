@@ -179,6 +179,8 @@ const buildNavigatorSteps = (
 export default function StudentOnboarding() {
   const { user, profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const fullWelcomeText = 'Welcome to UniDoxia';
+  const [typedText, setTypedText] = useState('');
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Tables<'students'> | null>(null);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -481,6 +483,26 @@ export default function StudentOnboarding() {
     };
   }, [student?.id, fetchStudentData]);
 
+  useEffect(() => {
+    let currentIndex = 0;
+    const typingInterval = window.setInterval(() => {
+      currentIndex += 1;
+      setTypedText(fullWelcomeText.slice(0, currentIndex));
+
+      if (currentIndex >= fullWelcomeText.length) {
+        window.clearInterval(typingInterval);
+      }
+    }, 90);
+
+    return () => {
+      window.clearInterval(typingInterval);
+    };
+  }, [fullWelcomeText]);
+
+  const highlightStart = fullWelcomeText.indexOf('UniDoxia');
+  const typedPrefix = typedText.slice(0, highlightStart);
+  const typedHighlight = typedText.slice(highlightStart);
+
   if (loading) {
     return (
       <div className="container mx-auto py-8">
@@ -504,7 +526,12 @@ export default function StudentOnboarding() {
 
         <div className="space-y-2 animate-fade-in">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-            Welcome to UniDoxia
+            <span className="sr-only">{fullWelcomeText}</span>
+            <span aria-hidden className="inline-flex items-center gap-1">
+              <span>{typedPrefix}</span>
+              <span className="text-primary">{typedHighlight}</span>
+              <span className="typing-cursor" />
+            </span>
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             Complete your profile to start applying to universities worldwide
