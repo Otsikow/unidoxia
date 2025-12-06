@@ -99,6 +99,105 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } as Profile;
   };
 
+  const ensurePartnerTenantIsolation = async (
+    profileData: Profile,
+    currentUser: User | null,
+  ): Promise<Profile> => {
+    if (profileData.role !== 'partner' || !profileData.tenant_id) {
+      return profileData;
+    }
+
+    const { data: tenant, error: tenantLookupError } = await supabase
+      .from('tenants')
+      .select('id, slug, name')
+      .eq('id', profileData.tenant_id)
+      .maybeSingle();
+
+    if (tenantLookupError) {
+      console.error('Error verifying partner tenant isolation:', tenantLookupError);
+      return profileData;
+    }
+
+    const isSharedTenant = tenant?.slug === DEFAULT_TENANT_SLUG;
+
+    if (!isSharedTenant) {
+      return profileData;
+    }
+
+    console.warn(
+      'Partner profile is linked to a shared tenant. Creating an isolated tenant to prevent data leakage.',
+      { profileId: profileData.id, tenantId: profileData.tenant_id, tenantSlug: tenant?.slug },
+    );
+
+    const newTenantSlug = `university-${crypto.randomUUID().slice(0, 8)}`;
+    const { data: newTenant, error: tenantCreationError } = await supabase
+      .from('tenants')
+      .insert({
+        name:
+          (typeof currentUser?.user_metadata?.university_name === 'string'
+            ? currentUser.user_metadata.university_name
+            : tenant?.name) ?? 'University Partner',
+        slug: newTenantSlug,
+        email_from: currentUser?.email || 'noreply@example.com',
+        active: true,
+      })
+      .select('id, slug, name')
+      .single();
+
+    if (tenantCreationError || !newTenant?.id) {
+      console.error('Failed to create isolated tenant for partner profile:', tenantCreationError);
+      return profileData;
+    }
+
+    const universityName =
+      typeof currentUser?.user_metadata?.university_name === 'string'
+        ? currentUser.user_metadata.university_name
+        : `${profileData.full_name}'s University`;
+
+    const { error: universityCreationError } = await supabase
+      .from('universities')
+      .insert({
+        name: universityName,
+        country: currentUser?.user_metadata?.country || 'Unknown',
+        city: null,
+        website: currentUser?.user_metadata?.website || null,
+        logo_url: null,
+        description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
+        tenant_id: newTenant.id,
+        active: true,
+      })
+      .select('id')
+      .single();
+
+    if (universityCreationError) {
+      console.error('Failed to create isolated university for partner profile:', universityCreationError);
+      // Continue with tenant update to prevent cross-tenant data leakage even if university creation fails
+    }
+
+    const { data: updatedProfile, error: profileUpdateError } = await supabase
+      .from('profiles')
+      .update({ tenant_id: newTenant.id })
+      .eq('id', profileData.id)
+      .select('*')
+      .single();
+
+    if (profileUpdateError || !updatedProfile) {
+      console.error('Failed to migrate partner profile to isolated tenant:', profileUpdateError);
+      return profileData;
+    }
+
+    console.log('Partner profile migrated to isolated tenant:', {
+      profileId: profileData.id,
+      newTenantId: newTenant.id,
+      newTenantSlug: newTenant.slug,
+    });
+
+    return {
+      ...updatedProfile,
+      tenant_id: newTenant.id,
+    } as Profile;
+  };
+
   const fetchProfile = async (userId: string, currentUser: User | null = user) => {
     try {
       const { data, error } = await supabase
@@ -140,7 +239,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           currentUser,
         );
 
-        setProfile(profileWithVerification);
+        const profileWithIsolation = await ensurePartnerTenantIsolation(
+          profileWithVerification,
+          currentUser,
+        );
+
+        setProfile(profileWithIsolation);
       }
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
