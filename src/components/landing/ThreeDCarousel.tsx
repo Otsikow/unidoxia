@@ -89,7 +89,7 @@ export const ThreeDCarousel = ({
 
   const offset = isMobile ? 120 : 240;
   const sideScale = isMobile ? 0.88 : 0.84;
-  const overlayOpacity = isMobile ? 0.38 : 0.46;
+  const overlayOpacity = isMobile ? 0.12 : 0.16;
 
   const transition = useMemo(
     () => ({
@@ -103,7 +103,7 @@ export const ThreeDCarousel = ({
     <div
       className={cn(
         "relative w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#0B0A1A]/80 via-[#0F0E2A]/70 to-[#0C0B1E]/90",
-        "shadow-[0_30px_120px_rgba(80,41,146,0.35)] ring-1 ring-white/5 backdrop-blur-xl",
+        "ring-1 ring-white/5 backdrop-blur-xl",
         className
       )}
     >
@@ -118,7 +118,7 @@ export const ThreeDCarousel = ({
             </h3>
           </div>
           <div className="inline-flex items-center gap-2 rounded-full bg-white/5 px-4 py-2 text-sm text-white/80 ring-1 ring-white/10 backdrop-blur-lg">
-            <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-amber-300 shadow-[0_0_0_6px_rgba(251,191,36,0.15)]" />
+            <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-amber-300" />
             Live momentum carousel
           </div>
         </div>
@@ -168,7 +168,7 @@ export const ThreeDCarousel = ({
                   <motion.div
                     key={card.title}
                     layout
-                    className="absolute w-full max-w-3xl drop-shadow-2xl"
+                    className="absolute w-full max-w-3xl"
                     style={{ transformStyle: "preserve-3d" }}
                     initial={{
                       opacity: opacities[position],
@@ -189,7 +189,7 @@ export const ThreeDCarousel = ({
                   >
                     <div
                       className={cn(
-                        "relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br text-white shadow-[0_25px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl",
+                        "relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br text-white backdrop-blur-xl",
                         card.gradient ?? "from-[#201537] via-[#1A0E2B] to-[#0E0A1A]"
                       )}
                     >
@@ -211,7 +211,7 @@ export const ThreeDCarousel = ({
                       <div className="relative grid gap-6 px-6 py-8 sm:grid-cols-[1.3fr_1fr] sm:gap-8 sm:px-10 sm:py-12">
                         <div className="space-y-4">
                           {card.metricValue && (
-                            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-amber-100 shadow-inner shadow-white/5 ring-1 ring-white/15">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-amber-100 ring-1 ring-white/15">
                               <span className="text-lg text-white">{card.metricValue}</span>
                               <span className="text-xs text-white/80">{card.metricLabel}</span>
                             </div>
@@ -221,7 +221,7 @@ export const ThreeDCarousel = ({
                           {card.actionLabel && card.actionHref && (
                             <a
                               href={card.actionHref}
-                              className="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-900/30 ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-white/20"
+                            className="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white ring-1 ring-white/20 transition hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-white/20"
                             >
                               {card.actionLabel}
                               <span className="text-lg">→</span>
@@ -231,7 +231,7 @@ export const ThreeDCarousel = ({
                         <div className="relative">
                           <div className="absolute -left-6 top-6 h-28 w-28 rounded-full bg-gradient-to-br from-amber-300/40 via-fuchsia-200/40 to-purple-400/30 blur-2xl" />
                           <div className="absolute -right-4 -top-6 h-20 w-20 rounded-full bg-gradient-to-br from-cyan-200/50 via-purple-300/40 to-transparent blur-2xl" />
-                          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-purple-900/25 ring-1 ring-white/10 backdrop-blur-lg">
+                          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 ring-1 ring-white/10 backdrop-blur-lg">
                             <img
                               src={card.image}
                               alt={card.title}
@@ -256,7 +256,7 @@ export const ThreeDCarousel = ({
           <button
             type="button"
             onClick={prev}
-            className="group absolute left-2 top-1/2 -translate-y-1/2 rounded-2xl bg-white/10 p-3 text-white ring-1 ring-white/15 backdrop-blur-xl transition hover:-translate-x-1 hover:scale-105 hover:bg-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+            className="group absolute left-2 top-1/2 -translate-y-1/2 rounded-2xl bg-white/10 p-3 text-white ring-1 ring-white/15 backdrop-blur-xl transition hover:-translate-x-1 hover:scale-105 hover:bg-white/20"
             aria-label="Previous"
           >
             <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -274,7 +274,7 @@ export const ThreeDCarousel = ({
           <button
             type="button"
             onClick={next}
-            className="group absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl bg-white/10 p-3 text-white ring-1 ring-white/15 backdrop-blur-xl transition hover:translate-x-1 hover:scale-105 hover:bg-white/20 shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+            className="group absolute right-2 top-1/2 -translate-y-1/2 rounded-2xl bg-white/10 p-3 text-white ring-1 ring-white/15 backdrop-blur-xl transition hover:translate-x-1 hover:scale-105 hover:bg-white/20"
             aria-label="Next"
           >
             <motion.span whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -307,7 +307,7 @@ export const ThreeDCarousel = ({
                     className={cn(
                       "absolute inset-0 rounded-full transition",
                       isActive
-                        ? "scale-125 bg-gradient-to-r from-[#8F6BFF] via-[#A06CFF] to-[#FFD166] shadow-[0_0_0_6px_rgba(128,90,213,0.25)]"
+                        ? "scale-125 bg-gradient-to-r from-[#8F6BFF] via-[#A06CFF] to-[#FFD166]"
                         : "scale-75 bg-white/30 group-hover:bg-white/50"
                     )}
                   />
