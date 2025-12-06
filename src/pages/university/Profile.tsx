@@ -521,26 +521,49 @@ const UniversityProfilePage = () => {
         );
       }
 
-      // Use onConflict with tenant_id to ensure proper tenant isolation
-      // This guarantees that each tenant can only have one university profile
-      // and updates are always scoped to the correct tenant
-      const upsertPayload = {
-        ...payload,
-        tenant_id: tenantId,
-        updated_at: new Date().toISOString(),
-        // Only include id if we're updating an existing university
-        // that belongs to this tenant (verified above)
-        ...(queryData?.university?.id ? { id: queryData.university.id } : 
-            existingUniForTenant?.id ? { id: existingUniForTenant.id } : {}),
-      };
+      // Determine if we're updating an existing university or creating a new one
+      // We use separate insert/update logic to avoid relying on the tenant_id unique constraint
+      // which may not exist in all database instances
+      const existingUniversityId = queryData?.university?.id ?? existingUniForTenant?.id ?? null;
 
-      const {
-        data: upsertedUniversity,
-        error: universityError
-      } = await supabase.from("universities").upsert(
-        upsertPayload,
-        { onConflict: 'tenant_id' }
-      ).select().single();
+      let upsertedUniversity;
+      let universityError;
+
+      if (existingUniversityId) {
+        // UPDATE existing university - use id-based update with tenant isolation
+        const updatePayload = {
+          ...payload,
+          updated_at: new Date().toISOString(),
+        };
+
+        const result = await supabase
+          .from("universities")
+          .update(updatePayload)
+          .eq("id", existingUniversityId)
+          .eq("tenant_id", tenantId) // Ensure tenant isolation
+          .select()
+          .single();
+
+        upsertedUniversity = result.data;
+        universityError = result.error;
+      } else {
+        // INSERT new university for this tenant
+        const insertPayload = {
+          ...payload,
+          tenant_id: tenantId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        const result = await supabase
+          .from("universities")
+          .insert(insertPayload)
+          .select()
+          .single();
+
+        upsertedUniversity = result.data;
+        universityError = result.error;
+      }
       if (universityError) {
         throw universityError;
       }
