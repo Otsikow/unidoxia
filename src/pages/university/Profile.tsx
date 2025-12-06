@@ -63,7 +63,14 @@ const profileSchema = z.object({
   contactTitle: optionalText,
   contactEmail: z.string().email("Enter a valid email"),
   contactPhone: optionalText,
-  highlights: z.array(z.string().trim().min(3, "Highlight cannot be empty").max(160, "Keep highlights short and impactful")).min(1, "Add at least one highlight"),
+  highlights: z.array(
+    z.string().trim()
+      .refine(val => val === "" || val.length >= 3, "Highlight must be at least 3 characters")
+      .refine(val => val === "" || val.length <= 160, "Keep highlights short and impactful")
+  ).refine(
+    arr => arr.filter(h => h.length > 0).length >= 1,
+    "Add at least one highlight"
+  ),
   social: z.object({
     facebook: optionalUrlSchema,
     instagram: optionalUrlSchema,
@@ -854,6 +861,11 @@ const UniversityProfilePage = () => {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>)}
+                    {form.formState.errors.highlights?.root?.message && (
+                      <p className="text-sm font-medium text-destructive">
+                        {form.formState.errors.highlights.root.message}
+                      </p>
+                    )}
                     {highlightsFieldArray.fields.length < 5 ? <Button type="button" variant="secondary" size="sm" className="gap-2" onClick={() => highlightsFieldArray.append("")}>
                         <Plus className="h-4 w-4" /> Add highlight
                       </Button> : null}
