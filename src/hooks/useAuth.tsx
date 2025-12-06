@@ -53,7 +53,13 @@ interface AuthContextType {
   signIn: (
     email: string,
     password: string,
-  ) => Promise<{ error: unknown; requiresEmailVerification?: boolean; email?: string }>;
+  ) => Promise<{
+    error: unknown;
+    requiresEmailVerification?: boolean;
+    email?: string;
+    verificationEmailSent?: boolean;
+    verificationError?: string;
+  }>;
   signUp: (params: SignUpParams) => Promise<{ error: unknown }>;
   signOut: (options?: { redirectTo?: string }) => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -766,6 +772,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (data?.user && !data.user.email_confirmed_at) {
         console.warn('Sign-in blocked: email address is not verified yet.');
+        const emailRedirectTo =
+          buildEmailRedirectUrl('/auth/callback') ?? `${getSiteUrl()}/auth/callback`;
+
+        const { error: resendError } = await supabase.auth.resend({
+          type: 'signup',
+          email: data.user.email ?? email,
+          options: emailRedirectTo ? { emailRedirectTo } : undefined,
+        });
+
+        if (resendError) {
+          console.error('Failed to resend verification email during sign-in:', resendError);
+        } else {
+          console.log('Verification email re-sent during sign-in flow.');
+        }
+
         await supabase.auth.signOut();
 
         const role = data.user.user_metadata?.role;
@@ -777,6 +798,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error: new Error(verifyMessage),
           requiresEmailVerification: true,
           email: data.user.email,
+          verificationEmailSent: !resendError,
+          verificationError: resendError?.message,
         };
       }
 

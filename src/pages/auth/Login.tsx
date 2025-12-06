@@ -43,19 +43,28 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error, requiresEmailVerification } = await signIn(email, password);
+    const {
+      error,
+      requiresEmailVerification,
+      email: blockedEmail,
+      verificationEmailSent,
+    } = await signIn(email, password);
 
     if (requiresEmailVerification) {
+      const targetEmail = blockedEmail ?? email;
       toast({
-        title: 'Check your inbox',
-        description: 'Please verify your email before signing in.',
+        title: verificationEmailSent ? 'Verification email sent' : 'Check your inbox',
+        description: verificationEmailSent
+          ? `We just sent a verification link to ${targetEmail}. Please confirm your email to finish signing in.`
+          : 'Please verify your email before signing in.',
       });
       navigate('/verify-email', {
         replace: true,
         state: {
-          email,
-          message:
-            'We sent you a verification link. Please confirm your email to finish signing in.',
+          email: targetEmail,
+          message: verificationEmailSent
+            ? `We just sent a verification link to ${targetEmail}. Please confirm your email to finish signing in.`
+            : 'We sent you a verification link. Please confirm your email to finish signing in.',
         },
       });
       setLoading(false);
