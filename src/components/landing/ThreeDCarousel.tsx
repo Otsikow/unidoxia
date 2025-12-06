@@ -87,9 +87,15 @@ export const ThreeDCarousel = ({
     return "hidden";
   };
 
-  const offset = isMobile ? 120 : 240;
+  const peekOffset = isMobile ? 56 : 82;
   const sideScale = isMobile ? 0.88 : 0.84;
   const overlayOpacity = isMobile ? 0.38 : 0.46;
+  const depthPositions: Record<Position, number> = {
+    center: 120,
+    left: -80,
+    right: -80,
+    hidden: -300
+  };
 
   const transition = useMemo(
     () => ({
@@ -141,8 +147,8 @@ export const ThreeDCarousel = ({
                 const isCenter = position === "center";
                 const xPositions: Record<Position, number> = {
                   center: 0,
-                  left: -offset,
-                  right: offset,
+                  left: -peekOffset,
+                  right: peekOffset,
                   hidden: 0
                 };
                 const rotateY: Record<Position, number> = {
@@ -174,17 +180,24 @@ export const ThreeDCarousel = ({
                       opacity: opacities[position],
                       x: xPositions[position],
                       scale: scales[position],
-                      rotateY: rotateY[position]
+                      rotateY: rotateY[position],
+                      z: depthPositions[position]
                     }}
                     animate={{
                       opacity: opacities[position],
                       x: xPositions[position],
                       scale: scales[position],
                       rotateY: rotateY[position],
+                      z: depthPositions[position],
                       zIndex: position === "center" ? 30 : position === "hidden" ? 0 : 15,
                       filter: isCenter ? "brightness(1)" : "brightness(0.85)"
                     }}
-                    exit={{ opacity: 0, scale: 0.8, rotateY: rotateY[position] }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.8,
+                      rotateY: rotateY[position],
+                      z: depthPositions[position]
+                    }}
                     transition={transition}
                   >
                     <div
