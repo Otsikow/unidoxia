@@ -37,7 +37,7 @@ export const ThreeDCarousel = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<number | null>(null);
 
   const cardCount = cards.length;
 
@@ -61,9 +61,10 @@ export const ThreeDCarousel = ({
 
     if (!autoPlay || isHovering || cardCount <= 1) return undefined;
 
-    timerRef.current = window.setInterval(() => {
+    const id = window.setInterval(() => {
       setActiveIndex((prev) => clampIndex(prev + 1, cardCount));
     }, duration);
+    timerRef.current = id;
 
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
@@ -132,7 +133,7 @@ export const ThreeDCarousel = ({
           <div className="pointer-events-none absolute -inset-8 hidden rounded-[32px] bg-gradient-to-r from-[#6E3DFF]/15 via-transparent to-[#FFD166]/10 blur-3xl sm:block" />
           <div
             className="relative flex items-center justify-center"
-            style={{ perspective: 1800, transformStyle: "preserve-3d" }}
+            style={{ perspective: 1800, transformStyle: "preserve-3d", minHeight: "420px" }}
           >
             <AnimatePresence initial={false}>
               {cards.map((card, index) => {
