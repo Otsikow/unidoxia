@@ -6,7 +6,7 @@ import { logFailedAuthentication } from '@/lib/securityLogger';
 import { formatReferralUsername } from '@/lib/referrals';
 import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
 
-type SignupRole = 'student' | 'agent' | 'partner' | 'admin' | 'staff';
+type SignupRole = 'student' | 'agent' | 'university' | 'admin' | 'staff';
 
 interface Profile {
   id: string;
@@ -14,6 +14,7 @@ interface Profile {
   role:
     | 'student'
     | 'agent'
+    | 'university'
     | 'partner'
     | 'staff'
     | 'admin'
