@@ -429,6 +429,25 @@ const UniversityProfilePage = () => {
     }
     return publicUrlData.publicUrl;
   };
+  const fetchLatestUniversity = async () => {
+    const { data, error } = await supabase
+      .from("universities")
+      .select("*")
+      .eq("tenant_id", tenantId!)
+      .order("updated_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error("We could not load the saved university profile. Please try again.");
+    }
+
+    return data;
+  };
   const removeAsset = async (url: string | null | undefined) => {
     const target = extractStorageObject(url ?? undefined);
     if (!target) return;
@@ -545,7 +564,6 @@ const UniversityProfilePage = () => {
       // which may not exist in all database instances
       const existingUniversityId = queryData?.university?.id ?? existingUniForTenant?.id ?? null;
 
-      let upsertedUniversity;
       let universityError;
 
       if (existingUniversityId) {
@@ -555,7 +573,7 @@ const UniversityProfilePage = () => {
           updated_at: new Date().toISOString(),
         };
 
-        const result = await supabase
+        const { error } = await supabase
           .from("universities")
           .update(updatePayload)
           .eq("id", existingUniversityId)
@@ -563,8 +581,7 @@ const UniversityProfilePage = () => {
           .select()
           .single();
 
-        upsertedUniversity = result.data;
-        universityError = result.error;
+        universityError = error;
       } else {
         // INSERT new university for this tenant
         const insertPayload = {
@@ -574,14 +591,13 @@ const UniversityProfilePage = () => {
           updated_at: new Date().toISOString(),
         };
 
-        const result = await supabase
+        const { error } = await supabase
           .from("universities")
           .insert(insertPayload)
           .select()
           .single();
 
-        upsertedUniversity = result.data;
-        universityError = result.error;
+        universityError = error;
       }
       if (universityError) {
         throw universityError;
@@ -596,12 +612,13 @@ const UniversityProfilePage = () => {
       if (profileError) {
         throw profileError;
       }
-      if (upsertedUniversity) {
-        queryClient.setQueryData<UniversityProfileQueryResult>(["university-profile", tenantId], {
-          university: upsertedUniversity,
-          details: updatedDetails
-        });
-      }
+      const savedUniversity = await fetchLatestUniversity();
+      const savedDetails = parseUniversityProfileDetails(savedUniversity.submission_config_json);
+
+      queryClient.setQueryData<UniversityProfileQueryResult>(["university-profile", tenantId], {
+        university: savedUniversity,
+        details: savedDetails
+      });
       // Invalidate related queries, but NOT the university-profile query since we've already
       // updated it with setQueryData. Invalidating it would trigger a refetch that could
       // overwrite our optimistic update with stale data from the database.
@@ -617,25 +634,26 @@ const UniversityProfilePage = () => {
       });
       form.reset({
         name: payload.name,
-        tagline: updatedDetails.tagline ?? "",
-        country: payload.country ?? "",
-        city: payload.city ?? "",
-        website: payload.website ?? "",
-        description: payload.description ?? "",
-        contactName: updatedDetails.contacts.primary?.name ?? "",
-        contactTitle: updatedDetails.contacts.primary?.title ?? "",
-        contactEmail: updatedDetails.contacts.primary?.email ?? "",
-        contactPhone: updatedDetails.contacts.primary?.phone ?? "",
-        highlights: updatedDetails.highlights.length > 0 ? updatedDetails.highlights : [""],
+        tagline: savedDetails.tagline ?? "",
+        country: savedUniversity.country ?? "",
+        city: savedUniversity.city ?? "",
+        website: savedUniversity.website ?? "",
+        description: savedUniversity.description ?? "",
+        contactName: savedDetails.contacts.primary?.name ?? "",
+        contactTitle: savedDetails.contacts.primary?.title ?? "",
+        contactEmail: savedDetails.contacts.primary?.email ?? "",
+        contactPhone: savedDetails.contacts.primary?.phone ?? "",
+        highlights: savedDetails.highlights.length > 0 ? savedDetails.highlights : [""],
         social: {
-          facebook: updatedDetails.social.facebook ?? "",
-          instagram: updatedDetails.social.instagram ?? "",
-          linkedin: updatedDetails.social.linkedin ?? "",
-          youtube: updatedDetails.social.youtube ?? ""
+          facebook: savedDetails.social.facebook ?? "",
+          instagram: savedDetails.social.instagram ?? "",
+          linkedin: savedDetails.social.linkedin ?? "",
+          youtube: savedDetails.social.youtube ?? ""
         }
       });
-      setLogoPreview(logoUrl);
-      setHeroPreview(heroUrl);
+      setLogoPreview(savedUniversity.logo_url ?? null);
+      const heroFromDetails = savedDetails.media.heroImageUrl ?? savedUniversity.featured_image_url ?? null;
+      setHeroPreview(heroFromDetails);
       toast({
         title: "Profile saved",
         description: "Your university profile has been saved successfully and is live across the platform."
