@@ -930,16 +930,37 @@ export const UniversityDashboardLayout = ({
     [data, error, isFetching, isLoading, queryRefetch],
   );
 
+  // Compute profile completion with fallback for contact info from authenticated user's profile
+  // This ensures consistency with the Profile page which also uses profile data as fallback
   const profileCompletion = useMemo(
-    () =>
-      data?.university
-        ? computeUniversityProfileCompletion(
-            // @ts-expect-error - UniversityRecord type mismatch
-            data.university,
-            data.profileDetails ?? emptyUniversityProfileDetails,
-          )
-        : { percentage: 0, missingFields: [] as string[] },
-    [data],
+    () => {
+      if (!data?.university) {
+        return { percentage: 0, missingFields: [] as string[] };
+      }
+
+      // Merge profile data into profileDetails for contact fallback
+      // The Profile page form also uses profile?.full_name and profile?.email as fallbacks
+      const detailsWithContactFallback = mergeUniversityProfileDetails(
+        data.profileDetails ?? emptyUniversityProfileDetails,
+        {
+          contacts: {
+            primary: {
+              name: data.profileDetails?.contacts?.primary?.name ?? profile?.full_name ?? null,
+              email: data.profileDetails?.contacts?.primary?.email ?? profile?.email ?? null,
+              phone: data.profileDetails?.contacts?.primary?.phone ?? profile?.phone ?? null,
+              title: data.profileDetails?.contacts?.primary?.title ?? null,
+            },
+          },
+        },
+      );
+
+      return computeUniversityProfileCompletion(
+        // @ts-expect-error - UniversityRecord type mismatch
+        data.university,
+        detailsWithContactFallback,
+      );
+    },
+    [data, profile],
   );
 
   const showProfileReminder = Boolean(data?.university) && profileCompletion.percentage < 100;
