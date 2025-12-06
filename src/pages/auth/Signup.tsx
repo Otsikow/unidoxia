@@ -47,9 +47,9 @@ import BackButton from "@/components/BackButton";
 import { passwordSchema } from "@/lib/validation";
 import { SEO } from "@/components/SEO";
 
-type UserRole = "student" | "agent" | "partner";
+type UserRole = "student" | "agent" | "university";
 
-const ROLE_OPTIONS: UserRole[] = ["student", "agent", "partner"];
+const ROLE_OPTIONS: UserRole[] = ["student", "agent", "university"];
 
 const isUsernameCheckUnsupported = (error: PostgrestError | null) => {
   if (!error) return false;
