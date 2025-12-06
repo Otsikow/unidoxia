@@ -250,15 +250,25 @@ export default function StudentProfile() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto py-6 md:py-8 px-4 space-y-6">
-        <BackButton
-          variant="ghost"
-          size="sm"
-          fallback="/dashboard"
-          onClick={(event) => {
-            event.preventDefault();
-            handleBackToHome();
-          }}
-        />
+        <div className="flex items-center justify-between">
+          <BackButton
+            variant="ghost"
+            size="sm"
+            fallback="/dashboard"
+            onClick={(event) => {
+              event.preventDefault();
+              handleBackToHome();
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSignOut}
+            className="sm:hidden text-destructive hover:bg-destructive/10"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-fade-in">
           <div className="space-y-2">
@@ -270,7 +280,7 @@ export default function StudentProfile() {
           <Button
             variant="outline"
             onClick={handleSignOut}
-            className="w-full sm:w-auto text-destructive border-destructive hover:bg-destructive/10"
+            className="hidden sm:flex text-destructive border-destructive hover:bg-destructive/10"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign Out
