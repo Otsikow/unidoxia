@@ -602,12 +602,13 @@ const UniversityProfilePage = () => {
           details: updatedDetails
         });
       }
+      // Invalidate related queries, but NOT the university-profile query since we've already
+      // updated it with setQueryData. Invalidating it would trigger a refetch that could
+      // overwrite our optimistic update with stale data from the database.
       await Promise.all([queryClient.invalidateQueries({
         queryKey: ["university-dashboard", tenantId]
       }), queryClient.invalidateQueries({
         queryKey: ["university-partner-profile", profile.id, tenantId]
-      }), queryClient.invalidateQueries({
-        queryKey: ["university-profile", tenantId]
       }), queryClient.invalidateQueries({
         queryKey: ["partner-dashboard-overview", tenantId]
       })]);
@@ -639,7 +640,10 @@ const UniversityProfilePage = () => {
         title: "Profile saved",
         description: "Your university profile has been saved successfully and is live across the platform."
       });
-      await profileQuery.refetch();
+      // Note: We intentionally do NOT call profileQuery.refetch() here.
+      // The setQueryData above already updated the cache with the saved data.
+      // Calling refetch() could overwrite our update with stale data from the database
+      // (e.g., due to replication lag) and trigger the useEffect to reset the form.
     } catch (error) {
       console.error(error);
       toast({
