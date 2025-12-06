@@ -148,6 +148,9 @@ const UniversityProfilePage = () => {
           }
         };
       }
+
+      console.log("Fetching university profile for tenant:", tenantId);
+
       const {
         data,
         error
@@ -155,9 +158,25 @@ const UniversityProfilePage = () => {
         ascending: false,
         nullsFirst: false
       }).limit(1).maybeSingle();
+
       if (error) {
+        console.error("Error fetching university profile:", error);
         throw error;
       }
+
+      // SECURITY CHECK: Verify the returned data matches the expected tenant
+      if (data && data.tenant_id !== tenantId) {
+        console.error("SECURITY: University tenant mismatch!", {
+          expected: tenantId,
+          actual: data.tenant_id,
+          universityId: data.id,
+          universityName: data.name,
+        });
+        throw new Error("Data isolation error: University does not belong to your organization");
+      }
+
+      console.log("University profile loaded:", data?.name ?? "No university found");
+
       const details = parseUniversityProfileDetails(data?.submission_config_json ?? null);
       return {
         university: data ?? null,
@@ -478,6 +497,30 @@ const UniversityProfilePage = () => {
         }
       }
 
+      // CRITICAL: Check if there's already a university for this tenant that we might overwrite
+      // This prevents accidentally modifying another partner's data if tenant isolation failed earlier
+      const { data: existingUniForTenant, error: existingCheckError } = await supabase
+        .from("universities")
+        .select("id, name, tenant_id")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+
+      if (existingCheckError) {
+        console.error("Error checking existing university:", existingCheckError);
+      }
+
+      // If there's an existing university for this tenant and it's NOT the one we loaded,
+      // that means there's a data isolation issue - do not proceed
+      if (
+        existingUniForTenant &&
+        queryData?.university?.id &&
+        existingUniForTenant.id !== queryData.university.id
+      ) {
+        throw new Error(
+          "Data isolation error: Multiple universities detected for your tenant. Please contact support."
+        );
+      }
+
       // Use onConflict with tenant_id to ensure proper tenant isolation
       // This guarantees that each tenant can only have one university profile
       // and updates are always scoped to the correct tenant
@@ -487,7 +530,8 @@ const UniversityProfilePage = () => {
         updated_at: new Date().toISOString(),
         // Only include id if we're updating an existing university
         // that belongs to this tenant (verified above)
-        ...(queryData?.university?.id ? { id: queryData.university.id } : {}),
+        ...(queryData?.university?.id ? { id: queryData.university.id } : 
+            existingUniForTenant?.id ? { id: existingUniForTenant.id } : {}),
       };
 
       const {

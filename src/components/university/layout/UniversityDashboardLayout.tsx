@@ -991,20 +991,39 @@ export const UniversityDashboardLayout = ({
     console.log("No university data available", { data, tenantId });
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <StatePlaceholder
-          icon={<Building2 className="h-12 w-12 text-primary" />}
-          title="No university profile found"
-          description={`No active university is linked to your account (Tenant ID: ${tenantId?.slice(0, 8)}...). Please contact UniDoxia Support to set up your university profile.`}
-          action={
+        <div className="flex flex-col items-center gap-6 max-w-md text-center">
+          <div className="rounded-full bg-primary/10 p-4">
+            <Building2 className="h-12 w-12 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-foreground">
+              Welcome to UniDoxia!
+            </h1>
+            <p className="text-muted-foreground">
+              Let's set up your university profile to start receiving applications from students and agents worldwide.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 w-full sm:flex-row sm:justify-center">
             <Button
+              onClick={() => navigate("/university/profile")}
+              className="gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              Create University Profile
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => void queryRefetch()}
               className="gap-2"
             >
               <RefreshCw className="h-4 w-4" />
-              Retry
+              Refresh
             </Button>
-          }
-        />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Your tenant ID: {tenantId?.slice(0, 8)}...
+          </p>
+        </div>
       </div>
     );
   }
