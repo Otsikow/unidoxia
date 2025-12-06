@@ -115,38 +115,120 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (tenantLookupError) {
       console.error('Error verifying partner tenant isolation:', tenantLookupError);
-      return profileData;
+      // Do NOT return profileData here - we need to fix the isolation issue
     }
 
     const isSharedTenant = tenant?.slug === DEFAULT_TENANT_SLUG;
 
-    if (!isSharedTenant) {
+    // CRITICAL: Check if this tenant already has a university that was created by someone else
+    // This can happen if multiple partners share the same tenant_id
+    const { data: existingUniversity, error: existingUniError } = await supabase
+      .from('universities')
+      .select('id, name, tenant_id')
+      .eq('tenant_id', profileData.tenant_id)
+      .maybeSingle();
+
+    // If there's an existing university in this tenant, check if it was created by this partner
+    // by comparing against the partner's email/name. If it doesn't match, we need to isolate.
+    const needsIsolation = isSharedTenant || (
+      existingUniversity && 
+      existingUniversity.name !== `${profileData.full_name}'s University` &&
+      !existingUniversity.name?.toLowerCase().includes(profileData.full_name?.toLowerCase().split(' ')[0] || '')
+    );
+
+    if (!needsIsolation) {
+      // Verify partner has their own university, create one if missing
+      if (!existingUniversity) {
+        console.warn('Partner has isolated tenant but no university - creating one now');
+        const universityName =
+          typeof currentUser?.user_metadata?.university_name === 'string'
+            ? currentUser.user_metadata.university_name
+            : `${profileData.full_name}'s University`;
+
+        const { error: createUniError } = await supabase
+          .from('universities')
+          .insert({
+            name: universityName,
+            country: currentUser?.user_metadata?.country || 'Unknown',
+            city: null,
+            website: currentUser?.user_metadata?.website || null,
+            logo_url: null,
+            description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
+            tenant_id: profileData.tenant_id,
+            active: true,
+          })
+          .select('id')
+          .single();
+
+        if (createUniError) {
+          console.error('Failed to create university for existing tenant:', createUniError);
+        } else {
+          console.log('Created missing university for partner tenant:', profileData.tenant_id);
+        }
+      }
       return profileData;
     }
 
     console.warn(
-      'Partner profile is linked to a shared tenant. Creating an isolated tenant to prevent data leakage.',
-      { profileId: profileData.id, tenantId: profileData.tenant_id, tenantSlug: tenant?.slug },
+      'Partner profile requires isolation. Creating an isolated tenant to prevent data leakage.',
+      { 
+        profileId: profileData.id, 
+        tenantId: profileData.tenant_id, 
+        tenantSlug: tenant?.slug,
+        isSharedTenant,
+        existingUniversity: existingUniversity?.name,
+      },
     );
 
-    const newTenantSlug = `university-${crypto.randomUUID().slice(0, 8)}`;
+    // Generate a unique tenant slug with UUID to prevent collisions
+    const newTenantSlug = `university-${crypto.randomUUID()}`;
+    const tenantName =
+      (typeof currentUser?.user_metadata?.university_name === 'string'
+        ? currentUser.user_metadata.university_name
+        : profileData.full_name) ?? 'University Partner';
+
     const { data: newTenant, error: tenantCreationError } = await supabase
       .from('tenants')
       .insert({
-        name:
-          (typeof currentUser?.user_metadata?.university_name === 'string'
-            ? currentUser.user_metadata.university_name
-            : tenant?.name) ?? 'University Partner',
+        name: tenantName,
         slug: newTenantSlug,
-        email_from: currentUser?.email || 'noreply@example.com',
+        email_from: currentUser?.email || profileData.email || 'noreply@example.com',
         active: true,
       })
       .select('id, slug, name')
       .single();
 
     if (tenantCreationError || !newTenant?.id) {
-      console.error('Failed to create isolated tenant for partner profile:', tenantCreationError);
-      return profileData;
+      console.error('CRITICAL: Failed to create isolated tenant for partner profile:', tenantCreationError);
+      // Instead of returning the old profile (which would keep shared data), 
+      // we need to retry with a different approach or fail explicitly
+      
+      // Try one more time with a fully unique slug
+      const retrySlug = `uni-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+      const { data: retryTenant, error: retryError } = await supabase
+        .from('tenants')
+        .insert({
+          name: tenantName,
+          slug: retrySlug,
+          email_from: currentUser?.email || profileData.email || 'noreply@example.com',
+          active: true,
+        })
+        .select('id, slug, name')
+        .single();
+
+      if (retryError || !retryTenant?.id) {
+        console.error('CRITICAL: Retry tenant creation also failed:', retryError);
+        // As a last resort, return profile but flag it for attention
+        // The UI should detect this and show an error
+        return {
+          ...profileData,
+          // Mark that isolation failed so UI can handle it
+          _isolationFailed: true,
+        } as Profile;
+      }
+
+      // Use the retry tenant
+      Object.assign(newTenant || {}, retryTenant);
     }
 
     const universityName =
@@ -154,7 +236,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ? currentUser.user_metadata.university_name
         : `${profileData.full_name}'s University`;
 
-    const { error: universityCreationError } = await supabase
+    // Create a fresh university for this new isolated tenant
+    const { data: newUniversity, error: universityCreationError } = await supabase
       .from('universities')
       .insert({
         name: universityName,
@@ -163,38 +246,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         website: currentUser?.user_metadata?.website || null,
         logo_url: null,
         description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
-        tenant_id: newTenant.id,
+        tenant_id: newTenant!.id,
         active: true,
       })
-      .select('id')
+      .select('id, name')
       .single();
 
     if (universityCreationError) {
       console.error('Failed to create isolated university for partner profile:', universityCreationError);
-      // Continue with tenant update to prevent cross-tenant data leakage even if university creation fails
+      // Don't continue without a university - the partner won't have data to manage
+      // But still update tenant to prevent shared data access
+    } else {
+      console.log(`Created new isolated university "${newUniversity?.name}" for partner`);
     }
 
+    // Update the profile to use the new isolated tenant
     const { data: updatedProfile, error: profileUpdateError } = await supabase
       .from('profiles')
-      .update({ tenant_id: newTenant.id })
+      .update({ tenant_id: newTenant!.id })
       .eq('id', profileData.id)
       .select('*')
       .single();
 
     if (profileUpdateError || !updatedProfile) {
-      console.error('Failed to migrate partner profile to isolated tenant:', profileUpdateError);
-      return profileData;
+      console.error('CRITICAL: Failed to migrate partner profile to isolated tenant:', profileUpdateError);
+      // This is a critical failure - the partner might still see shared data
+      // Return profile but flag it
+      return {
+        ...profileData,
+        _isolationFailed: true,
+      } as Profile;
     }
 
-    console.log('Partner profile migrated to isolated tenant:', {
+    console.log('Partner profile successfully migrated to isolated tenant:', {
       profileId: profileData.id,
-      newTenantId: newTenant.id,
-      newTenantSlug: newTenant.slug,
+      newTenantId: newTenant!.id,
+      newTenantSlug: newTenant!.slug,
+      universityCreated: !universityCreationError,
     });
 
     return {
       ...updatedProfile,
-      tenant_id: newTenant.id,
+      tenant_id: newTenant!.id,
     } as Profile;
   };
 
