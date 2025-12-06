@@ -39,9 +39,15 @@ import { AIDocumentCheckerSection } from "@/components/landing/AIDocumentChecker
 import { AIFeeCalculator } from "@/components/landing/AIFeeCalculator";
 import { ZoeExperienceSection } from "@/components/landing/ZoeExperienceSection";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import {
+  ThreeDCarousel,
+  type ThreeDCarouselCard
+} from "@/components/landing/ThreeDCarousel";
 
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { SEO } from "@/components/SEO";
+import studentJourney from "@/assets/student-journey.png";
+import globalDestinations from "@/assets/global-destinations.png";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -87,6 +93,60 @@ const Index = () => {
   );
 
   const heroDescription = t("pages.index.hero.description");
+
+  const carouselCards = useMemo<ThreeDCarouselCard[]>(
+    () => [
+      {
+        title: "Build your roadmap",
+        description:
+          "Task checklists and smart reminders keep thousands of students organized from transcripts to statements.",
+        metricValue: "5000+",
+        metricLabel: "personalized plans created",
+        actionLabel: "Meet your agent",
+        actionHref: "/auth/signup?role=student",
+        image: studentJourney,
+        gradient: "from-[#3B1F5E] via-[#1A0F30] to-[#0A081D]",
+        accent: "bg-gradient-to-r from-[#C4A1FF]/20 via-[#7AE8FF]/20 to-[#FFD166]/25"
+      },
+      {
+        title: "Collaborate with advisors",
+        description:
+          "Verified advisors co-edit documents, answer questions, and align timelines in real time across devices.",
+        metricValue: "24h",
+        metricLabel: "average agent response",
+        actionLabel: "Collaborate now",
+        actionHref: "/auth/signup?role=agent",
+        image: agentStudentConsulting,
+        gradient: "from-[#251943] via-[#1B1236] to-[#0C0A1C]",
+        accent: "bg-gradient-to-r from-[#8B5CF6]/25 via-[#6EE7FF]/20 to-[#FDE68A]/20"
+      },
+      {
+        title: "Streamline applications",
+        description:
+          "Centralized submissions with proactive nudges keep applications on track and mistake-free.",
+        metricValue: "95%",
+        metricLabel: "success rate",
+        actionLabel: "See smart automations",
+        actionHref: "/course-discovery",
+        image: visaEligibilityImage,
+        gradient: "from-[#1F2343] via-[#17192F] to-[#0C0B1B]",
+        accent: "bg-gradient-to-r from-[#6EE7FF]/25 via-[#A78BFA]/20 to-[#FBBF24]/25"
+      },
+      {
+        title: "Launch your journey",
+        description:
+          "Visa-ready checklists and pre-departure prep carry students from campus access to arrival with confidence.",
+        metricValue: "50+",
+        metricLabel: "countries represented",
+        actionLabel: "Explore destinations",
+        actionHref: "/university-directory",
+        image: globalDestinations,
+        gradient: "from-[#1E0F2F] via-[#120C24] to-[#090816]",
+        accent: "bg-gradient-to-r from-[#9F7AEA]/25 via-[#7EE0FF]/20 to-[#FCD34D]/20"
+      }
+    ],
+    []
+  );
 
   // FEATURES
   const features = useMemo(
@@ -268,6 +328,26 @@ const Index = () => {
           </div>
 
           <JourneyRibbon />
+        </div>
+      </section>
+
+      {/* NEO-STYLE 3D CAROUSEL */}
+      <section className="relative py-16 sm:py-24">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto mb-12 max-w-3xl space-y-4 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-primary/70">
+              UniDoxia Neo Carousel
+            </p>
+            <h2 className="text-4xl font-bold leading-tight sm:text-5xl">
+              AI-native momentum with cinematic depth
+            </h2>
+            <p className="text-base text-muted-foreground sm:text-lg">
+              Glide through premium study-abroad wins with UniDoxia’s signature purple gradients, glass overlays,
+              and soft golden glow—optimized for both desktop 3D tilt and mobile peeks.
+            </p>
+          </div>
+
+          <ThreeDCarousel cards={carouselCards} autoPlay duration={5200} showDots />
         </div>
       </section>
 
