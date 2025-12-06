@@ -54,7 +54,12 @@ export const ThreeDCarousel = ({
   }, []);
 
   useEffect(() => {
-    if (!autoPlay || isHovering || cardCount <= 1) return;
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    if (!autoPlay || isHovering || cardCount <= 1) return undefined;
 
     timerRef.current = window.setInterval(() => {
       setActiveIndex((prev) => clampIndex(prev + 1, cardCount));
@@ -65,6 +70,9 @@ export const ThreeDCarousel = ({
       timerRef.current = null;
     };
   }, [autoPlay, duration, isHovering, cardCount]);
+
+  const handlePointerEnter = () => setIsHovering(true);
+  const handlePointerLeave = () => setIsHovering(false);
 
   const moveTo = (index: number) => setActiveIndex(() => clampIndex(index, cardCount));
   const next = () => moveTo(activeIndex + 1);
@@ -116,8 +124,10 @@ export const ThreeDCarousel = ({
 
         <div
           className="relative mt-10"
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+          onFocusCapture={handlePointerEnter}
+          onBlurCapture={handlePointerLeave}
         >
           <div className="pointer-events-none absolute -inset-8 hidden rounded-[32px] bg-gradient-to-r from-[#6E3DFF]/15 via-transparent to-[#FFD166]/10 blur-3xl sm:block" />
           <div
