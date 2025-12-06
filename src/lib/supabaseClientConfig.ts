@@ -229,6 +229,29 @@ export const getSiteUrl = (): string => {
   return DEFAULT_SITE_URL;
 };
 
+export const buildEmailRedirectUrl = (path: string): string | undefined => {
+  const baseSiteUrl = safeString(import.meta.env?.VITE_PUBLIC_SITE_URL);
+
+  if (!baseSiteUrl) {
+    console.warn(
+      '[supabase] VITE_PUBLIC_SITE_URL is not configured. Falling back to Supabase project redirect URL for auth emails.',
+    );
+    return undefined;
+  }
+
+  try {
+    const origin = toOrigin(baseSiteUrl);
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${origin}${normalizedPath}`;
+  } catch (error) {
+    console.warn(
+      `[supabase] VITE_PUBLIC_SITE_URL "${baseSiteUrl}" is invalid. Falling back to Supabase project redirect URL for auth emails.`,
+      error,
+    );
+    return undefined;
+  }
+};
+
 export const getSupabaseBrowserConfig = (): SupabaseBrowserConfig => {
   if (cachedBrowserConfig) {
     return cachedBrowserConfig;

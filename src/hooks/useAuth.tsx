@@ -4,7 +4,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { logFailedAuthentication } from '@/lib/securityLogger';
 import { formatReferralUsername } from '@/lib/referrals';
-import { getSiteUrl } from '@/lib/supabaseClientConfig';
+import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
 
 type SignupRole = 'student' | 'agent' | 'partner' | 'admin' | 'staff';
 
@@ -844,7 +844,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     referrerUsername,
   }: SignUpParams) => {
     try {
-      const redirectUrl = `${getSiteUrl()}/auth/callback`;
+      const redirectUrl = buildEmailRedirectUrl('/auth/callback');
 
       const sanitizedUsername = formatReferralUsername(username);
 
@@ -864,13 +864,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         metadata.referrer_id = referrerId;
       }
 
+      const authOptions = {
+        data: metadata,
+        ...(redirectUrl ? { emailRedirectTo: redirectUrl } : {}),
+      } satisfies Parameters<typeof supabase.auth.signUp>[0]['options'];
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: metadata,
-        },
+        options: authOptions,
       });
 
       if (error) {

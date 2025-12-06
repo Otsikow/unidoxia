@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import unidoxiaLogo from '@/assets/unidoxia-logo.png';
 import BackButton from '@/components/BackButton';
-import { getSiteUrl } from '@/lib/supabaseClientConfig';
+import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
 import { SEO } from "@/components/SEO";
 
 const Login = () => {
@@ -26,7 +26,7 @@ const Login = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${getSiteUrl()}/dashboard`,
+        redirectTo: buildEmailRedirectUrl('/dashboard') ?? `${getSiteUrl()}/dashboard`,
       },
     });
 
