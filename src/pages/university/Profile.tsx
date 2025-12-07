@@ -651,13 +651,16 @@ const UniversityProfilePage = () => {
       if (universityError) {
         throw universityError;
       }
+      // Update the user's profile with contact info
+      // Note: RLS policy "Users can update their own profile" only requires id = auth.uid()
+      // so we don't need to filter by tenant_id here
       const {
         error: profileError
       } = await supabase.from("profiles").update({
         full_name: values.contactName.trim(),
         phone: normalizeEmptyToNull(values.contactPhone),
         email: values.contactEmail.trim()
-      }).eq("id", profile.id).eq("tenant_id", tenantId);
+      }).eq("id", profile.id);
       if (profileError) {
         throw profileError;
       }

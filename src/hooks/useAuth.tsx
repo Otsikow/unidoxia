@@ -125,23 +125,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Do NOT return profileData here - we need to fix the isolation issue
     }
 
-    const isSharedTenant = tenant?.slug === DEFAULT_TENANT_SLUG;
+    // Only consider "unidoxia" and "default" as shared tenants
+    // All other tenants are considered isolated (even if university name changed)
+    const isSharedTenant = tenant?.slug === DEFAULT_TENANT_SLUG || tenant?.slug === 'default';
 
-    // CRITICAL: Check if this tenant already has a university that was created by someone else
-    // This can happen if multiple partners share the same tenant_id
+    // Check if this tenant has a university
     const { data: existingUniversity, error: existingUniError } = await supabase
       .from('universities')
       .select('id, name, tenant_id')
       .eq('tenant_id', profileData.tenant_id)
       .maybeSingle();
 
-    // If there's an existing university in this tenant, check if it was created by this partner
-    // by comparing against the partner's email/name. If it doesn't match, we need to isolate.
-    const needsIsolation = isSharedTenant || (
-      existingUniversity && 
-      existingUniversity.name !== `${profileData.full_name}'s University` &&
-      !existingUniversity.name?.toLowerCase().includes(profileData.full_name?.toLowerCase().split(' ')[0] || '')
-    );
+    // IMPORTANT: Only trigger isolation if on a truly shared tenant (unidoxia/default).
+    // Do NOT check university name - partners can change their university name
+    // without needing a new tenant. The tenant isolation is based on tenant slug, not university name.
+    const needsIsolation = isSharedTenant;
 
     if (!needsIsolation) {
       // Verify partner has their own university, create one if missing
