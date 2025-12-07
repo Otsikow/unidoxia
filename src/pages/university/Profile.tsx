@@ -145,7 +145,8 @@ const UniversityProfilePage = () => {
   const profileQuery = useQuery<UniversityProfileQueryResult>({
     queryKey: ["university-profile", tenantId],
     enabled: Boolean(tenantId),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2, // 2 minutes - match dashboard for consistency
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       if (!tenantId) {
         return {
@@ -704,20 +705,39 @@ const UniversityProfilePage = () => {
       const savedUniversity = await fetchLatestUniversity();
       const savedDetails = parseUniversityProfileDetails(savedUniversity.submission_config_json);
 
+      // Update local cache with saved data
       queryClient.setQueryData<UniversityProfileQueryResult>(["university-profile", tenantId], {
         university: savedUniversity,
         details: savedDetails
       });
-      // Invalidate related queries, but NOT the university-profile query since we've already
-      // updated it with setQueryData. Invalidating it would trigger a refetch that could
-      // overwrite our optimistic update with stale data from the database.
-      await Promise.all([queryClient.invalidateQueries({
-        queryKey: ["university-dashboard", tenantId]
-      }), queryClient.invalidateQueries({
-        queryKey: ["university-partner-profile", profile.id, tenantId]
-      }), queryClient.invalidateQueries({
-        queryKey: ["partner-dashboard-overview", tenantId]
-      })]);
+      
+      // Invalidate ALL related queries to ensure profile completion is consistent across the app.
+      // This includes all queries that fetch or display university profile data.
+      // Note: We use setQueryData above for immediate local update, but also invalidate
+      // to ensure other mounted components and future navigations see fresh data.
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["university-profile-completion", tenantId]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["university-dashboard", tenantId]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["university-partner-profile", profile.id, tenantId]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["partner-dashboard-overview", tenantId]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["university-dashboard-overview", tenantId]
+        }),
+        // Also invalidate the university-profile query for other components
+        // (this page already has fresh data via setQueryData, but this ensures
+        // any other mounted components using this query will refetch)
+        queryClient.invalidateQueries({
+          queryKey: ["university-profile", tenantId]
+        }),
+      ]);
       await refreshProfile().catch(error => {
         console.warn("Unable to refresh profile after update", error);
       });

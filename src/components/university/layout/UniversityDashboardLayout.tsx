@@ -882,6 +882,15 @@ export const UniversityDashboardLayout = ({
         },
         handleRealtimeChange
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "universities",
+        },
+        handleRealtimeChange
+      )
       .subscribe((status) => {
         if (status === "SUBSCRIBED") {
           console.log("University dashboard real-time subscriptions active");
