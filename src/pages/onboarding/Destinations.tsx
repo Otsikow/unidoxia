@@ -194,7 +194,7 @@ export default function OnboardingDestinations() {
       <div className={`relative z-10 min-h-screen flex flex-col px-4 py-6 sm:py-8 transition-all duration-500 ${showContent ? "opacity-100" : "opacity-0"}`}>
         {/* Back button */}
         <div className="container mx-auto max-w-4xl">
-          <BackButton fallback="/onboarding/welcome" />
+          <BackButton fallback="/onboarding/success-stories" />
         </div>
 
         {/* Content */}
@@ -256,6 +256,7 @@ export default function OnboardingDestinations() {
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
           <div className="flex justify-center gap-2">
             <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
+            <Link to="/onboarding/success-stories" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
             <div className="w-2 h-2 rounded-full bg-primary" />
           </div>
         </div>

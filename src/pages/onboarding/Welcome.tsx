@@ -199,7 +199,7 @@ export default function OnboardingWelcome() {
             size="lg" 
             className="w-full sm:flex-1 gap-2 text-base"
           >
-            <Link to="/onboarding/destinations">
+            <Link to="/onboarding/success-stories">
               <Sparkles className="w-4 h-4" />
               Get Started
             </Link>
