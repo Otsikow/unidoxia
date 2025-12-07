@@ -81,21 +81,42 @@ const StatItem = ({
   label,
   value,
   subValue,
+  href,
 }: {
   icon: LucideIcon;
   label: string;
   value: string;
   subValue?: string;
-}) => (
-  <div className="rounded-lg border bg-muted/30 p-3">
-    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-      <Icon className="h-3.5 w-3.5" />
-      {label}
+  href?: string;
+}) => {
+  const content = (
+    <>
+      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </div>
+      <p className="mt-2 text-sm font-semibold text-foreground">{value}</p>
+      {subValue ? <p className="text-xs text-muted-foreground">{subValue}</p> : null}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        to={href}
+        className="rounded-lg border bg-muted/30 p-3 transition-colors hover:bg-muted/50 hover:border-primary/30 cursor-pointer block"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3">
+      {content}
     </div>
-    <p className="mt-2 text-sm font-semibold text-foreground">{value}</p>
-    {subValue ? <p className="text-xs text-muted-foreground">{subValue}</p> : null}
-  </div>
-);
+  );
+};
 
 export default function UniversityDirectory() {
   const [universities, setUniversities] = useState<UniversityFromDB[]>([]);
@@ -297,6 +318,7 @@ export default function UniversityDirectory() {
             icon={GraduationCap}
             label="Programmes"
             value={formatNumber(university.programCount)}
+            href={`/universities/${university.id}?tab=programs`}
           />
           <StatItem
             icon={MapPin}
