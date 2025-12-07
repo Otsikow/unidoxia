@@ -144,8 +144,14 @@ const CountryBubble = ({
 const BackgroundDecoration = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <div className="absolute top-10 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse-subtle" />
-    <div className="absolute bottom-20 right-10 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse-subtle" style={{ animationDelay: "1s" }} />
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-pulse-subtle" style={{ animationDelay: "2s" }} />
+    <div
+      className="absolute bottom-20 right-10 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse-subtle"
+      style={{ animationDelay: "1s" }}
+    />
+    <div
+      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/3 rounded-full blur-3xl animate-pulse-subtle"
+      style={{ animationDelay: "2s" }}
+    />
     <div className="absolute inset-0 bg-[linear-gradient(rgba(var(--primary-rgb),0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(var(--primary-rgb),0.03)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
   </div>
 );
@@ -169,21 +175,27 @@ export default function OnboardingDestinations() {
   };
 
   const handleNext = () => {
+    // Store selected destinations for next steps
     if (selectedCountries.length > 0) {
       localStorage.setItem(
         "onboarding_destinations",
         JSON.stringify(selectedCountries)
       );
     }
-    navigate("/onboarding/program-matching");
+
+    // NEW FLOW → Go to visa support
+    navigate("/onboarding/visa-support");
   };
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
       <BackgroundDecoration />
 
-      <div className={`relative z-10 min-h-screen flex flex-col px-4 py-6 sm:py-8 transition-all duration-500 ${showContent ? "opacity-100" : "opacity-0"}`}>
-
+      <div
+        className={`relative z-10 min-h-screen flex flex-col px-4 py-6 sm:py-8 transition-all duration-500 ${
+          showContent ? "opacity-100" : "opacity-0"
+        }`}
+      >
         <div className="container mx-auto max-w-4xl">
           <BackButton fallback="/onboarding/welcome" />
         </div>
@@ -193,7 +205,10 @@ export default function OnboardingDestinations() {
             Choose Where Your Future <span className="text-primary">Begins</span>
           </h1>
 
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground text-center mb-6 sm:mb-8 animate-fade-in-up max-w-xl" style={{ animationDelay: "0.1s" }}>
+          <p
+            className="text-sm sm:text-base md:text-lg text-muted-foreground text-center mb-6 sm:mb-8 animate-fade-in-up max-w-xl"
+            style={{ animationDelay: "0.1s" }}
+          >
             Study across the world with verified institutions. Select your dream destinations.
           </p>
 
@@ -211,19 +226,24 @@ export default function OnboardingDestinations() {
 
           {selectedCountries.length > 0 && (
             <p className="text-sm text-muted-foreground mb-4 animate-fade-in">
-              {selectedCountries.length} destination{selectedCountries.length > 1 ? "s" : ""} selected
+              {selectedCountries.length} destination
+              {selectedCountries.length > 1 ? "s" : ""} selected
             </p>
           )}
 
-          <div className="w-full max-w-xs animate-fade-in-up" style={{ animationDelay: "0.7s" }}>
+          <div
+            className="w-full max-w-xs animate-fade-in-up"
+            style={{ animationDelay: "0.7s" }}
+          >
             <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base">
               Next
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
 
+          {/* Skip should also follow the NEW FLOW */}
           <Link
-            to="/onboarding/program-matching"
+            to="/onboarding/visa-support"
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
             style={{ animationDelay: "0.8s" }}
           >
@@ -231,6 +251,7 @@ export default function OnboardingDestinations() {
           </Link>
         </div>
 
+        {/* Progress dots */}
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
           <div className="flex justify-center gap-2">
             <Link
@@ -238,8 +259,10 @@ export default function OnboardingDestinations() {
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
             <div className="w-2 h-2 rounded-full bg-primary" />
+
+            {/* NEW FLOW → third dot points to visa-support */}
             <Link
-              to="/onboarding/program-matching"
+              to="/onboarding/visa-support"
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
           </div>
