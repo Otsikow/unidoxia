@@ -34,7 +34,7 @@ const resolveSectionTitle = (pathname: string) => {
   if (!base || base === "university") return "Overview";
   const parts = base.split("/");
   const lastSegment = parts[parts.length - 1];
-  if (lastSegment === "offers-cas") return "Offers & CAS";
+  if (lastSegment === "offers") return "Offers & CAS";
   return lastSegment
     .split("-")
     .map((part) => 
