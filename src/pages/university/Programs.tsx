@@ -135,7 +135,7 @@ export default function ProgramsPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = {
+      const basePayload = {
         name: values.name.trim(),
         level: values.level.trim(),
         discipline: values.discipline.trim(),
@@ -154,17 +154,36 @@ export default function ProgramsPage() {
               .filter(Boolean)
           : [],
         description: values.description?.trim() || null,
-        image_url: values.imageUrl,
         active: values.active,
         tenant_id: tenantId,
         university_id: universityId,
       };
 
+      // Try with image_url first, fallback without if column doesn't exist
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
+
       const { error } = await supabase
         .from("programs")
-        .insert(payload);
+        .insert(payloadWithImage);
 
-      if (error) throw error;
+      if (error) {
+        const errorCode = (error as { code?: string }).code ?? "";
+        const errorMessage = error.message?.toLowerCase() ?? "";
+        const missingImageColumn =
+          errorCode === "42703" || errorMessage.includes("image_url");
+
+        if (missingImageColumn) {
+          // Retry without image_url column
+          console.warn("programs.image_url column missing – inserting without image_url");
+          const { error: fallbackError } = await supabase
+            .from("programs")
+            .insert(basePayload);
+
+          if (fallbackError) throw fallbackError;
+        } else {
+          throw error;
+        }
+      }
 
       toast({ title: "Programme created" });
       setCreateOpen(false);
@@ -195,7 +214,7 @@ export default function ProgramsPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = {
+      const basePayload = {
         name: values.name.trim(),
         level: values.level.trim(),
         discipline: values.discipline.trim(),
@@ -214,18 +233,40 @@ export default function ProgramsPage() {
               .filter(Boolean)
           : [],
         description: values.description?.trim() || null,
-        image_url: values.imageUrl,
         active: values.active,
       };
 
+      // Try with image_url first, fallback without if column doesn't exist
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
+
       const { error } = await supabase
         .from("programs")
-        .update(payload)
+        .update(payloadWithImage)
         .eq("id", editProgram.id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
 
-      if (error) throw error;
+      if (error) {
+        const errorCode = (error as { code?: string }).code ?? "";
+        const errorMessage = error.message?.toLowerCase() ?? "";
+        const missingImageColumn =
+          errorCode === "42703" || errorMessage.includes("image_url");
+
+        if (missingImageColumn) {
+          // Retry without image_url column
+          console.warn("programs.image_url column missing – updating without image_url");
+          const { error: fallbackError } = await supabase
+            .from("programs")
+            .update(basePayload)
+            .eq("id", editProgram.id)
+            .eq("university_id", universityId)
+            .eq("tenant_id", tenantId);
+
+          if (fallbackError) throw fallbackError;
+        } else {
+          throw error;
+        }
+      }
 
       toast({ title: "Programme updated" });
       setEditProgram(null);
