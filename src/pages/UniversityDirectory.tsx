@@ -164,7 +164,18 @@ export default function UniversityDirectory() {
           profileDetails: parseUniversityProfileDetails(uni.submission_config_json),
         }));
 
-        setUniversities(enrichedUniversities);
+        // Deduplicate universities by name (case-insensitive) to prevent duplicates
+        const seenNames = new Set<string>();
+        const deduplicatedUniversities = enrichedUniversities.filter((uni) => {
+          const normalizedName = uni.name.toLowerCase().trim();
+          if (seenNames.has(normalizedName)) {
+            return false;
+          }
+          seenNames.add(normalizedName);
+          return true;
+        });
+
+        setUniversities(deduplicatedUniversities);
       } catch (error) {
         console.error("Error loading universities:", error);
       } finally {
