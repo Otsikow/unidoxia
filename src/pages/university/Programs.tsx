@@ -122,6 +122,15 @@ export default function ProgramsPage() {
     };
   }, [editProgram, suggestedCurrency]);
 
+  // Helper to check if error is related to missing column (e.g., image_url doesn't exist)
+  const isMissingColumnError = (error: unknown): boolean => {
+    if (!error || typeof error !== 'object') return false;
+    const code = (error as { code?: string }).code ?? "";
+    const message = ((error as { message?: string }).message ?? "").toLowerCase();
+    // PostgreSQL error code 42703 = undefined column
+    return code === "42703" || message.includes("image_url");
+  };
+
   const handleCreate = async (values: ProgramFormValues) => {
     if (!tenantId || !universityId) {
       toast({
@@ -135,7 +144,7 @@ export default function ProgramsPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = {
+      const basePayload = {
         name: values.name.trim(),
         level: values.level.trim(),
         discipline: values.discipline.trim(),
@@ -154,17 +163,27 @@ export default function ProgramsPage() {
               .filter(Boolean)
           : [],
         description: values.description?.trim() || null,
-        image_url: values.imageUrl,
         active: values.active,
         tenant_id: tenantId,
         university_id: universityId,
       };
 
+      // Try with image_url first
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
       const { error } = await supabase
         .from("programs")
-        .insert(payload);
+        .insert(payloadWithImage);
 
-      if (error) throw error;
+      // If the error is about missing image_url column, retry without it
+      if (error && isMissingColumnError(error)) {
+        console.warn("programs.image_url column not available, retrying without it");
+        const { error: retryError } = await supabase
+          .from("programs")
+          .insert(basePayload);
+        if (retryError) throw retryError;
+      } else if (error) {
+        throw error;
+      }
 
       toast({ title: "Programme created" });
       setCreateOpen(false);
@@ -195,7 +214,7 @@ export default function ProgramsPage() {
     setIsSubmitting(true);
 
     try {
-      const payload = {
+      const basePayload = {
         name: values.name.trim(),
         level: values.level.trim(),
         discipline: values.discipline.trim(),
@@ -214,18 +233,31 @@ export default function ProgramsPage() {
               .filter(Boolean)
           : [],
         description: values.description?.trim() || null,
-        image_url: values.imageUrl,
         active: values.active,
       };
 
+      // Try with image_url first
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
       const { error } = await supabase
         .from("programs")
-        .update(payload)
+        .update(payloadWithImage)
         .eq("id", editProgram.id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
 
-      if (error) throw error;
+      // If the error is about missing image_url column, retry without it
+      if (error && isMissingColumnError(error)) {
+        console.warn("programs.image_url column not available, retrying without it");
+        const { error: retryError } = await supabase
+          .from("programs")
+          .update(basePayload)
+          .eq("id", editProgram.id)
+          .eq("university_id", universityId)
+          .eq("tenant_id", tenantId);
+        if (retryError) throw retryError;
+      } else if (error) {
+        throw error;
+      }
 
       toast({ title: "Programme updated" });
       setEditProgram(null);
