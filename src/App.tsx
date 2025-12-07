@@ -139,6 +139,7 @@ const queryClient = new QueryClient({
 const Index = lazyWithErrorHandling(() => import("./pages/Index"));
 const OnboardingWelcome = lazyWithErrorHandling(() => import("./pages/onboarding/Welcome"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
+const OnboardingFastApplications = lazyWithErrorHandling(() => import("./pages/onboarding/FastApplications"));
 const Contact = lazyWithErrorHandling(() => import("./pages/Contact"));
 const FAQ = lazyWithErrorHandling(() => import("./pages/FAQ"));
 const HelpCenter = lazyWithErrorHandling(() => import("./pages/HelpCenter"));
@@ -297,6 +298,7 @@ const App = () => {
                         <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
                         <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                         <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
+                        <Route path="/onboarding/fast-applications" element={<OnboardingFastApplications />} />
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
                         <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
                         <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />
