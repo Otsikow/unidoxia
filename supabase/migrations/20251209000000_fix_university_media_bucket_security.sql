@@ -47,6 +47,7 @@ CREATE OR REPLACE FUNCTION public.storage_path_belongs_to_tenant(
 RETURNS BOOLEAN
 LANGUAGE SQL
 IMMUTABLE
+SET search_path = public, storage
 AS $$
   SELECT 
     user_tenant IS NOT NULL 
@@ -61,6 +62,9 @@ $$;
 
 COMMENT ON FUNCTION public.storage_path_belongs_to_tenant(TEXT, UUID) IS 
   'Checks if a storage path belongs to the specified tenant. Supports both direct tenant folders and subfolder structures.';
+
+-- Grant execute permission to authenticated users for use in RLS policies
+GRANT EXECUTE ON FUNCTION public.storage_path_belongs_to_tenant(TEXT, UUID) TO authenticated;
 
 -- ============================================================================
 -- STEP 4: Recreate secure policies with proper role and tenant checks
