@@ -179,11 +179,11 @@ export default function OnboardingDestinations() {
   };
 
   const handleNext = () => {
-    // Store selected countries for later use and navigate to signup
+    // Store selected countries for later use and navigate to visa support
     if (selectedCountries.length > 0) {
       localStorage.setItem("onboarding_destinations", JSON.stringify(selectedCountries));
     }
-    navigate("/auth/signup?role=student");
+    navigate("/onboarding/visa-support");
   };
 
   return (
@@ -257,6 +257,7 @@ export default function OnboardingDestinations() {
           <div className="flex justify-center gap-2">
             <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
             <div className="w-2 h-2 rounded-full bg-primary" />
+            <Link to="/onboarding/visa-support" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
           </div>
         </div>
       </div>
