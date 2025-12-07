@@ -114,35 +114,26 @@ const CountryBubble = ({
       }}
       aria-label={`Select ${country.name}`}
     >
-      {/* Selection indicator */}
       {isSelected && (
         <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg animate-scale-in">
           <Check className="w-4 h-4 text-primary-foreground" />
         </div>
       )}
-
-      {/* Flag */}
       <span className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
         {country.flag}
       </span>
-
-      {/* Country name */}
       <span className="font-semibold text-sm sm:text-base text-foreground">
         {country.shortName}
       </span>
-
-      {/* Landmark */}
       <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 text-center">
         {country.landmark}
       </span>
-
-      {/* University count */}
       <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-primary font-medium opacity-0 group-hover:opacity-100 group-hover:-bottom-6 transition-all duration-300 whitespace-nowrap">
         {country.universities}
       </span>
-
-      {/* Hover glow */}
-      <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${country.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+      <div
+        className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${country.color} opacity-0 group-hover:opacity-10 transition-opacity`}
+      />
     </button>
   );
 };
@@ -200,12 +191,10 @@ export default function OnboardingDestinations() {
           showContent ? "opacity-100" : "opacity-0"
         }`}
       >
-        {/* Back */}
         <div className="container mx-auto max-w-4xl">
           <BackButton fallback="/onboarding/welcome" />
         </div>
 
-        {/* Main */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-3 animate-fade-in-up">
             Choose Where Your Future <span className="text-primary">Begins</span>
@@ -237,14 +226,16 @@ export default function OnboardingDestinations() {
             </p>
           )}
 
-          <div className="w-full max-w-xs animate-fade-in-up" style={{ animationDelay: "0.7s" }}>
+          <div
+            className="w-full max-w-xs animate-fade-in-up"
+            style={{ animationDelay: "0.7s" }}
+          >
             <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base">
               Next
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Skip */}
           <Link
             to="/onboarding/program-matching"
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
@@ -254,7 +245,6 @@ export default function OnboardingDestinations() {
           </Link>
         </div>
 
-        {/* Progress */}
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
           <div className="flex justify-center gap-2">
             <Link
@@ -270,7 +260,6 @@ export default function OnboardingDestinations() {
         </div>
       </div>
 
-      {/* Animations */}
       <style>{`
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(20px); }
