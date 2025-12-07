@@ -95,6 +95,7 @@ const CountryBubble = ({
   onSelect: () => void;
 }) => {
   const animationDelay = index * 0.1;
+
   return (
     <button
       onClick={onSelect}
@@ -108,8 +109,8 @@ const CountryBubble = ({
       `}
       style={{
         animationDelay: `${animationDelay}s`,
-        animationFillMode: "forwards",
         animation: `fadeInUp 0.5s ease-out ${animationDelay}s forwards, bounce-gentle 3s ease-in-out ${animationDelay}s infinite`,
+        animationFillMode: "forwards",
       }}
       aria-label={`Select ${country.name}`}
     >
@@ -135,7 +136,9 @@ const CountryBubble = ({
         {country.universities}
       </span>
 
-      <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${country.color} opacity-0 group-hover:opacity-10 transition-opacity`} />
+      <div
+        className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${country.color} opacity-0 group-hover:opacity-10 transition-opacity`}
+      />
     </button>
   );
 };
@@ -175,15 +178,9 @@ export default function OnboardingDestinations() {
   };
 
   const handleNext = () => {
-    // Store selected destinations for next steps
     if (selectedCountries.length > 0) {
-      localStorage.setItem(
-        "onboarding_destinations",
-        JSON.stringify(selectedCountries)
-      );
+      localStorage.setItem("onboarding_destinations", JSON.stringify(selectedCountries));
     }
-
-    // NEW FLOW → Go to visa support
     navigate("/onboarding/visa-support");
   };
 
@@ -197,7 +194,7 @@ export default function OnboardingDestinations() {
         }`}
       >
         <div className="container mx-auto max-w-4xl">
-          <BackButton fallback="/onboarding/welcome" />
+          <BackButton fallback="/onboarding/success-stories" />
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
@@ -226,22 +223,16 @@ export default function OnboardingDestinations() {
 
           {selectedCountries.length > 0 && (
             <p className="text-sm text-muted-foreground mb-4 animate-fade-in">
-              {selectedCountries.length} destination
-              {selectedCountries.length > 1 ? "s" : ""} selected
+              {selectedCountries.length} destination{selectedCountries.length > 1 ? "s" : ""} selected
             </p>
           )}
 
-          <div
-            className="w-full max-w-xs animate-fade-in-up"
-            style={{ animationDelay: "0.7s" }}
-          >
+          <div className="w-full max-w-xs animate-fade-in-up" style={{ animationDelay: "0.7s" }}>
             <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base">
-              Next
-              <ArrowRight className="w-4 h-4" />
+              Next <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Skip should also follow the NEW FLOW */}
           <Link
             to="/onboarding/visa-support"
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
@@ -254,17 +245,24 @@ export default function OnboardingDestinations() {
         {/* Progress dots */}
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
           <div className="flex justify-center gap-2">
+
             <Link
               to="/onboarding/welcome"
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
+
+            <Link
+              to="/onboarding/success-stories"
+              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
+            />
+
             <div className="w-2 h-2 rounded-full bg-primary" />
 
-            {/* NEW FLOW → third dot points to visa-support */}
             <Link
               to="/onboarding/visa-support"
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
+
           </div>
         </div>
       </div>
