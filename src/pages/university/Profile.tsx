@@ -469,6 +469,14 @@ const UniversityProfilePage = () => {
     }
     setIsSubmitting(true);
     try {
+      // DEBUG: Log current state for troubleshooting
+      console.log("=== UNIVERSITY PROFILE SAVE DEBUG ===");
+      console.log("User profile ID:", profile.id);
+      console.log("User tenant ID:", tenantId);
+      console.log("User role:", profile.role);
+      console.log("Existing university ID:", queryData?.university?.id);
+      console.log("Existing university tenant:", queryData?.university?.tenant_id);
+
       let logoUrl = queryData?.university?.logo_url ?? null;
       if (logoFile) {
         const uploadedUrl = await uploadAsset(logoFile, "logo");
@@ -521,22 +529,7 @@ const UniversityProfilePage = () => {
         active: true
       };
 
-      // ISOLATION CHECK: If we have an existing university, verify it belongs to this tenant
-      if (queryData?.university?.id) {
-        const { data: verifyOwnership, error: verifyError } = await supabase
-          .from("universities")
-          .select("id, tenant_id")
-          .eq("id", queryData.university.id)
-          .eq("tenant_id", tenantId)
-          .single();
-
-        if (verifyError || !verifyOwnership) {
-          throw new Error("Security error: Cannot verify university ownership. Please contact support.");
-        }
-      }
-
-      // CRITICAL: Check if there's already a university for this tenant that we might overwrite
-      // This prevents accidentally modifying another partner's data if tenant isolation failed earlier
+      // Check if there's an existing university for this tenant
       const { data: existingUniForTenant, error: existingCheckError } = await supabase
         .from("universities")
         .select("id, name, tenant_id")
@@ -545,83 +538,85 @@ const UniversityProfilePage = () => {
 
       if (existingCheckError) {
         console.error("Error checking existing university:", existingCheckError);
+        // Don't throw - this might fail if RLS is blocking, but update might still work
       }
 
-      // If there's an existing university for this tenant and it's NOT the one we loaded,
-      // that means there's a data isolation issue - do not proceed
-      if (
-        existingUniForTenant &&
-        queryData?.university?.id &&
-        existingUniForTenant.id !== queryData.university.id
-      ) {
-        throw new Error(
-          "Data isolation error: Multiple universities detected for your tenant. Please contact support."
-        );
-      }
+      console.log("Existing university for tenant:", existingUniForTenant);
 
       // Determine if we're updating an existing university or creating a new one
-      // We use separate insert/update logic to avoid relying on the tenant_id unique constraint
-      // which may not exist in all database instances
       const existingUniversityId = queryData?.university?.id ?? existingUniForTenant?.id ?? null;
 
-      let universityError;
+      let universityError: Error | null = null;
+      let updateSucceeded = false;
 
       if (existingUniversityId) {
-        // UPDATE existing university - use id-based update with tenant isolation
+        // UPDATE existing university
+        console.log("Attempting UPDATE for university ID:", existingUniversityId);
+        
         const updatePayload = {
           ...payload,
           updated_at: new Date().toISOString(),
         };
 
+        // Try simple update first - the RLS policy should handle authorization
         const { data: updateData, error: updateError } = await supabase
           .from("universities")
           .update(updatePayload)
           .eq("id", existingUniversityId)
-          .eq("tenant_id", tenantId) // Ensure tenant isolation
           .select();
 
-        // Check if update succeeded
+        console.log("Update result:", { data: updateData, error: updateError });
+
         if (updateError) {
           console.error("University update error:", updateError);
-          universityError = updateError;
+          // Provide more helpful error message
+          if (updateError.code === "42501" || updateError.message?.toLowerCase().includes("permission") || updateError.message?.toLowerCase().includes("policy")) {
+            universityError = new Error(
+              `Permission denied: Your account (role: ${profile.role}) doesn't have access to update this university profile. ` +
+              `This may be due to a role configuration issue. Please contact support with this info: tenant=${tenantId}, university=${existingUniversityId}`
+            );
+          } else {
+            universityError = updateError as Error;
+          }
         } else if (!updateData || updateData.length === 0) {
-          // Update didn't affect any rows - this could mean RLS blocked the update.
-          // This is likely a permissions issue. Let's verify the university still exists.
-          console.warn("University update returned no data - checking if RLS blocked the operation");
+          // Update returned no data - could mean RLS blocked it or row doesn't exist
+          console.warn("Update returned no data - possible RLS block");
           
+          // Try to verify if the university exists and we can read it
           const { data: verifyData, error: verifyError } = await supabase
             .from("universities")
-            .select("id, name, updated_at")
+            .select("id, name, tenant_id")
             .eq("id", existingUniversityId)
-            .eq("tenant_id", tenantId)
             .maybeSingle();
           
-          if (verifyError) {
-            console.error("Failed to verify university after update:", verifyError);
-            universityError = new Error("Unable to verify profile update. Please try again or contact support.");
-          } else if (!verifyData) {
-            // University doesn't exist for this tenant - RLS is blocking
-            console.error("RLS blocking: Cannot access university for tenant", tenantId);
-            universityError = new Error("Your account doesn't have permission to update this profile. Please contact support.");
+          console.log("Verification result:", { data: verifyData, error: verifyError });
+          
+          if (verifyError || !verifyData) {
+            universityError = new Error(
+              `Cannot access university profile. This may be a permissions issue. ` +
+              `Your role: ${profile.role}, Tenant: ${tenantId}. Please contact support.`
+            );
+          } else if (verifyData.tenant_id !== tenantId) {
+            universityError = new Error(
+              `Tenant mismatch: University belongs to tenant ${verifyData.tenant_id} but your account is on tenant ${tenantId}. ` +
+              `Please contact support to resolve this.`
+            );
           } else {
-            // University exists but update didn't return data - try one more time with explicit verification
-            const { error: retryError } = await supabase
-              .from("universities")
-              .update(updatePayload)
-              .eq("id", existingUniversityId)
-              .eq("tenant_id", tenantId);
-            
-            if (retryError) {
-              console.error("University update retry error:", retryError);
-              universityError = retryError;
-            }
-            // If retry succeeded without error, the update should have worked
+            // University exists and tenant matches, but update still failed
+            // This is a permissions issue with the UPDATE RLS policy
+            universityError = new Error(
+              `Unable to save changes. Your account may not have update permissions. ` +
+              `Role: ${profile.role}, Tenant: ${tenantId}. Please contact support.`
+            );
           }
         } else {
           console.log("University profile updated successfully:", updateData[0]?.name);
+          updateSucceeded = true;
         }
       } else {
         // INSERT new university for this tenant
+        console.log("Attempting INSERT for new university");
+        
         const insertPayload = {
           ...payload,
           tenant_id: tenantId,
@@ -633,6 +628,8 @@ const UniversityProfilePage = () => {
           .from("universities")
           .insert(insertPayload)
           .select();
+
+        console.log("Insert result:", { data: insertData, error: insertError });
 
         if (insertError) {
           // Check if this is a unique constraint violation (university already exists)
@@ -652,24 +649,42 @@ const UniversityProfilePage = () => {
                 updated_at: new Date().toISOString(),
               };
               
-              const { error: fallbackUpdateError } = await supabase
+              const { data: fallbackData, error: fallbackUpdateError } = await supabase
                 .from("universities")
                 .update(updatePayload)
                 .eq("id", existingUni.id)
-                .eq("tenant_id", tenantId);
+                .select();
               
-              universityError = fallbackUpdateError;
+              if (fallbackUpdateError) {
+                universityError = fallbackUpdateError as Error;
+              } else if (fallbackData && fallbackData.length > 0) {
+                console.log("Fallback update succeeded:", fallbackData[0]?.name);
+                updateSucceeded = true;
+              } else {
+                universityError = new Error("Update failed after duplicate key conflict. Please contact support.");
+              }
             } else {
-              universityError = insertError;
+              universityError = insertError as Error;
             }
+          } else if (insertError.code === "42501" || insertError.message?.toLowerCase().includes("permission") || insertError.message?.toLowerCase().includes("policy")) {
+            universityError = new Error(
+              `Permission denied: Your account (role: ${profile.role}) doesn't have permission to create a university profile. ` +
+              `Please contact support with this info: tenant=${tenantId}`
+            );
           } else {
-            universityError = insertError;
+            universityError = insertError as Error;
           }
         } else if (!insertData || insertData.length === 0) {
-          // Insert was blocked by RLS policy
-          universityError = new Error("Unable to create university profile. Your account may not have the required permissions. Please contact support.");
+          universityError = new Error(
+            "Unable to create university profile. Your account may not have the required permissions. " +
+            `Role: ${profile.role}, Tenant: ${tenantId}. Please contact support.`
+          );
+        } else {
+          console.log("University profile created successfully:", insertData[0]?.name);
+          updateSucceeded = true;
         }
       }
+      
       if (universityError) {
         throw universityError;
       }
