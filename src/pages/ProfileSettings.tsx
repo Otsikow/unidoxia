@@ -3,7 +3,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { User, FileText, Bell, Lock, Settings, Award, Briefcase } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, FileText, Bell, Lock, Settings, Award, Briefcase, Building2, ArrowUpRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { LoadingState } from '@/components/LoadingState';
@@ -15,8 +16,9 @@ import PasswordSecurityTab from '@/components/settings/PasswordSecurityTab';
 import AccountTab from '@/components/settings/AccountTab';
 import { calculateProfileCompletion } from '@/lib/profileCompletion';
 import { generateReferralLink } from '@/lib/referrals';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
+import { useUniversityProfileCompletion } from '@/hooks/useUniversityProfileCompletion';
 
 const SETTINGS_TAB_VALUES = ['profile', 'documents', 'notifications', 'security', 'account'] as const;
 type SettingsTab = (typeof SETTINGS_TAB_VALUES)[number];
@@ -24,6 +26,7 @@ const SETTINGS_TAB_SET = new Set<string>(SETTINGS_TAB_VALUES);
 
 export default function ProfileSettings() {
   const { profile, user } = useAuth();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<SettingsTab>(() => {
     const initialTab = searchParams.get('tab');
@@ -35,6 +38,14 @@ export default function ProfileSettings() {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const referralLink = profile ? generateReferralLink(profile.username) : '';
   const fallbackRoute = profile ? '/dashboard' : '/';
+  
+  // Fetch university profile completion for partner users
+  const isPartner = profile?.role === 'partner';
+  const {
+    completion: universityCompletion,
+    isLoading: universityCompletionLoading,
+    university,
+  } = useUniversityProfileCompletion();
 
   // Fetch additional profile data based on role
   const { data: roleData, isLoading: roleDataLoading } = useQuery({
@@ -264,6 +275,77 @@ export default function ProfileSettings() {
             )}
           </CardContent>
         </Card>
+
+        {/* University Profile Completion for Partners */}
+        {isPartner && (
+          <Card className="mb-6 border-primary/20 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                University Profile
+              </CardTitle>
+              <CardDescription>
+                {university?.name
+                  ? `Complete your university profile to unlock full visibility`
+                  : `Set up your university profile to get started`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {universityCompletionLoading ? (
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted animate-pulse rounded" />
+                  <div className="h-2 bg-muted animate-pulse rounded" />
+                </div>
+              ) : university ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {universityCompletion.percentage}% Complete
+                      </span>
+                      {universityCompletion.percentage < 100 && (
+                        <span className="text-xs text-muted-foreground">
+                          Missing: {universityCompletion.missingFields.slice(0, 2).join(', ')}
+                          {universityCompletion.missingFields.length > 2 && '...'}
+                        </span>
+                      )}
+                    </div>
+                    <Progress value={universityCompletion.percentage} className="h-2" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">
+                      {university.name}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => navigate('/university/profile')}
+                    >
+                      Edit Profile
+                      <ArrowUpRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    No university profile found
+                  </span>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => navigate('/university/profile')}
+                  >
+                    Create Profile
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Settings Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">

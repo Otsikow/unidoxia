@@ -605,7 +605,8 @@ const PartnerOverviewPage = () => {
     queryKey: ["partner-dashboard-overview", tenantId],
     queryFn: () => fetchOverviewData(tenantId as string),
     enabled: Boolean(tenantId),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2, // 2 minutes - match dashboard layout for consistency
+    refetchOnWindowFocus: true,
     retry: 1,
   });
 
