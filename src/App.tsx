@@ -390,4 +390,99 @@ const App = () => {
 
                         <Route path="/dashboard/partners" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPartners /></ProtectedRoute>} />
 
-                        <Route path="/dashboard/setting
+                        <Route path="/dashboard/settings/*" element={<ProtectedRoute><StaffSettingsRouter /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/ai-insights" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffAIInsightsPage /></ProtectedRoute>} />
+
+                        {/* ---------------- STUDENT ROUTES ---------------- */}
+
+                        <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>
+                          <Route index element={<Navigate to="/student/dashboard" replace />} />
+                          <Route path="dashboard" element={<StudentProfile />} />
+                          <Route path="onboarding" element={<StudentOnboarding />} />
+                          <Route path="profile" element={<StudentProfile />} />
+                          <Route path="documents" element={<Documents />} />
+                          <Route path="applications" element={<Applications />} />
+                          <Route path="applications/new" element={<NewApplication />} />
+                          <Route path="applications/track/:id" element={<ApplicationTracking />} />
+                          <Route path="applications/:id" element={<ApplicationDetails />} />
+                          <Route path="messages" element={<StudentMessages />} />
+                          <Route path="visa" element={<VisaEligibility />} />
+                          <Route path="sop" element={<SopGenerator />} />
+                          <Route path="notifications" element={<Notifications />} />
+                          <Route path="payments" element={<StudentPaymentsPage />} />
+                          <Route path="settings" element={<ProfileSettings />} />
+                        </Route>
+
+                        {/* ---------------- ADMIN ROUTES ---------------- */}
+
+                        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin","staff"]}><AdminLayout /></ProtectedRoute>}>
+                          <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                          <Route path="dashboard" element={<AdminDashboardPage />} />
+                          <Route path="overview" element={<AdminOverview />} />
+                          <Route path="users" element={<AdminUsers />} />
+                          <Route path="admissions" element={<AdminAdmissions />} />
+                          <Route path="agents" element={<AdminAgentsPage />} />
+                          <Route path="payments" element={<AdminPaymentsPage />} />
+                          <Route path="partners" element={<AdminPartnersPage />} />
+                          <Route path="resources" element={<AdminResourcesPage />} />
+                          <Route path="programs" element={<AdminProgramsPage />} />
+                          <Route path="tools" element={<AdminToolsPage />} />
+                          <Route path="broadcast" element={<AdminBroadcastCenterPage />} />
+                          <Route path="chat" element={<AdminChatConsolePage />} />
+                          <Route path="reports" element={<AdminPerformanceReportsPage />} />
+                          <Route path="insights" element={<AdminInsightsPage />} />
+                          <Route path="zoe" element={<ZoeIntelligencePage />} />
+                          <Route path="settings" element={<AdminSettingsPage />} />
+                          <Route path="notifications" element={<AdminNotificationsPage />} />
+                          <Route path="logs" element={<AdminLogsPage />} />
+                          <Route path="user-management" element={<UserManagement />} />
+                          <Route path="analytics" element={<Analytics />} />
+                          <Route path="blog" element={<BlogAdminPage />} />
+                          <Route path="usage" element={<AdminUsageMonitoringPage />} />
+                          <Route path="previews" element={<BuildPreviews />} />
+                          <Route path="featured-universities" element={<FeaturedUniversitiesAdmin />} />
+                          <Route path="universities" element={<AdminUniversitiesPage />} />
+                        </Route>
+
+                        {/* ---------------- UNIVERSITY PARTNER ROUTES ---------------- */}
+
+                        <Route path="/university" element={<ProtectedRoute allowedRoles={["partner","admin"]}><UniversityDashboardShell /></ProtectedRoute>}>
+                          <Route index element={<Navigate to="/university/overview" replace />} />
+                          <Route path="overview" element={<UniversityOverview />} />
+                          <Route path="applications" element={<UniversityApplications />} />
+                          <Route path="documents" element={<UniversityDocuments />} />
+                          <Route path="messages" element={<UniversityMessages />} />
+                          <Route path="offers" element={<UniversityOffersCAS />} />
+                          <Route path="analytics" element={<UniversityAnalytics />} />
+                          <Route path="programs" element={<UniversityPrograms />} />
+                          <Route path="featured" element={<UniversityFeaturedShowcase />} />
+                          <Route path="profile" element={<UniversityProfileSettings />} />
+                        </Route>
+
+                        {/* ---------------- AGENT STUDENT DETAILS ---------------- */}
+
+                        <Route path="/agent/students/:studentId" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StudentDetailsPage /></ProtectedRoute>} />
+
+                        {/* ---------------- PAYMENTS ---------------- */}
+
+                        <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
+
+                        {/* ---------------- CATCH-ALL ---------------- */}
+
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </div>
+                    {shouldRenderChatbot && <ZoeChatbot />}
+                  </div>
+                </Suspense>
+              </NavigationHistoryProvider>
+            </AuthProvider>
+          </ErrorBoundary>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
+export default App;
