@@ -82,7 +82,6 @@ const countries = [
   },
 ];
 
-// Animated country bubble
 const CountryBubble = ({
   country,
   index,
@@ -143,7 +142,6 @@ const CountryBubble = ({
   );
 };
 
-// Background decoration
 const BackgroundDecoration = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <div className="absolute top-10 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse-subtle" />
@@ -181,7 +179,7 @@ export default function OnboardingDestinations() {
     if (selectedCountries.length > 0) {
       localStorage.setItem("onboarding_destinations", JSON.stringify(selectedCountries));
     }
-    navigate("/onboarding/visa-support");
+    navigate("/onboarding/transparency");
   };
 
   return (
@@ -234,7 +232,7 @@ export default function OnboardingDestinations() {
           </div>
 
           <Link
-            to="/onboarding/visa-support"
+            to="/onboarding/transparency"
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
             style={{ animationDelay: "0.8s" }}
           >
@@ -246,20 +244,24 @@ export default function OnboardingDestinations() {
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
           <div className="flex justify-center gap-2">
 
+            {/* Dot 1 — Welcome */}
             <Link
               to="/onboarding/welcome"
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
 
+            {/* Dot 2 — Success Stories */}
             <Link
               to="/onboarding/success-stories"
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
 
+            {/* Dot 3 — Destinations (current) */}
             <div className="w-2 h-2 rounded-full bg-primary" />
 
+            {/* Dot 4 — Transparency */}
             <Link
-              to="/onboarding/visa-support"
+              to="/onboarding/transparency"
               className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
             />
 

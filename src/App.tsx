@@ -145,6 +145,7 @@ const Index = lazyWithErrorHandling(() => import("./pages/Index"));
 const OnboardingWelcome = lazyWithErrorHandling(() => import("./pages/onboarding/Welcome"));
 const OnboardingStudentSuccess = lazyWithErrorHandling(() => import("./pages/onboarding/StudentSuccess"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
+const OnboardingTransparency = lazyWithErrorHandling(() => import("./pages/onboarding/Transparency"));
 const OnboardingVisaSupport = lazyWithErrorHandling(() => import("./pages/onboarding/VisaSupport"));
 
 const Contact = lazyWithErrorHandling(() => import("./pages/Contact"));
@@ -316,6 +317,7 @@ const App = () => {
                         <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                         <Route path="/onboarding/success-stories" element={<OnboardingStudentSuccess />} />
                         <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
+                        <Route path="/onboarding/transparency" element={<OnboardingTransparency />} />
                         <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />
 
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
@@ -388,116 +390,4 @@ const App = () => {
 
                         <Route path="/dashboard/partners" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPartners /></ProtectedRoute>} />
 
-                        <Route path="/dashboard/settings" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StaffSettingsRouter /></ProtectedRoute>} />
-
-                        <Route path="/dashboard/ai-insights" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffAIInsightsPage /></ProtectedRoute>} />
-
-                        <Route path="/dashboard/programs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProgramsPage /></ProtectedRoute>} />
-
-                        <Route path="/profile/settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
-
-                        <Route path="/settings" element={<Navigate to="/profile/settings" replace />} />
-
-                        <Route path="/agent/student/:studentId" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StudentDetailsPage /></ProtectedRoute>} />
-
-                        {/* ---------------- STUDENT ROUTES ---------------- */}
-
-                        <Route
-                          path="/student"
-                          element={<ProtectedRoute allowedRoles={["student"]}><StudentLayout /></ProtectedRoute>}
-                        >
-                          <Route index element={<Navigate to="/dashboard" replace />} />
-                          <Route path="onboarding" element={<StudentOnboarding />} />
-                          <Route path="profile" element={<StudentProfile />} />
-                          <Route path="documents" element={<Documents />} />
-                          <Route path="messages" element={<StudentMessages />} />
-                          <Route path="applications" element={<Applications />} />
-                          <Route path="applications/new" element={<NewApplication />} />
-                          <Route path="applications/:id" element={<ApplicationDetails />} />
-                          <Route path="application-tracking" element={<ApplicationTracking />} />
-                          <Route path="visa-eligibility" element={<VisaEligibility />} />
-                          <Route path="sop-generator" element={<SopGenerator />} />
-                          <Route path="notifications" element={<Notifications />} />
-                          <Route path="payments" element={<StudentPaymentsPage />} />
-                          <Route path="*" element={<Navigate to="applications" replace />} />
-                        </Route>
-
-                        {/* ---------------- PARTNER ROUTES ---------------- */}
-
-                        <Route path="/partner/messages" element={<ProtectedRoute allowedRoles={["partner"]}><PartnerMessages /></ProtectedRoute>} />
-                        <Route path="/partner/offers-cas" element={<ProtectedRoute allowedRoles={["partner","admin"]}><PartnerOffersCAS /></ProtectedRoute>} />
-
-                        {/* ---------------- UNIVERSITY ROUTES ---------------- */}
-
-                        <Route
-                          path="/university"
-                          element={<ProtectedRoute allowedRoles={["partner","admin"]}><UniversityDashboardShell /></ProtectedRoute>}
-                        >
-                          <Route index element={<UniversityOverview />} />
-                          <Route path="applications" element={<UniversityApplications />} />
-                          <Route path="documents" element={<UniversityDocuments />} />
-                          <Route path="messages" element={<UniversityMessages />} />
-                          <Route path="offers-cas" element={<UniversityOffersCAS />} />
-                          <Route path="analytics" element={<UniversityAnalytics />} />
-                          <Route path="programs" element={<UniversityPrograms />} />
-                          <Route path="profile" element={<UniversityProfileSettings />} />
-                          <Route path="featured-showcase" element={<UniversityFeaturedShowcase />} />
-                        </Route>
-
-                        {/* ---------------- ADMIN ROUTES ---------------- */}
-
-                        <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
-                          <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                          <Route path="dashboard" element={<AdminDashboardPage />} />
-                          <Route path="overview" element={<AdminOverview />} />
-                          <Route path="users" element={<AdminUsers />} />
-                          <Route path="universities" element={<AdminUniversitiesPage />} />
-                          <Route path="admissions" element={<AdminAdmissions />} />
-                          <Route path="agents" element={<AdminAgentsPage />} />
-                          <Route path="programmes" element={<Navigate to="/admin/programs" replace />} />
-                          <Route path="programs" element={<AdminProgramsPage />} />
-                          <Route path="payments" element={<AdminPaymentsPage />} />
-                          <Route path="partners" element={<AdminPartnersPage />} />
-                          <Route path="resources" element={<AdminResourcesPage />} />
-                          <Route path="tools" element={<AdminToolsPage />} />
-                          <Route path="tools/broadcast-center" element={<AdminBroadcastCenterPage />} />
-                          <Route path="tools/chat-console" element={<AdminChatConsolePage />} />
-                          <Route path="tools/performance-reports" element={<AdminPerformanceReportsPage />} />
-                          <Route path="insights" element={<AdminInsightsPage />} />
-                          <Route path="intelligence" element={<ZoeIntelligencePage />} />
-                          <Route path="settings" element={<AdminSettingsPage />} />
-                          <Route path="notifications" element={<AdminNotificationsPage />} />
-                          <Route path="logs" element={<AdminLogsPage />} />
-                          <Route path="usage-monitoring" element={<AdminUsageMonitoringPage />} />
-                          <Route path="analytics" element={<Analytics />} />
-                          <Route path="user-management" element={<UserManagement />} />
-                          <Route path="featured-universities" element={<FeaturedUniversitiesAdmin />} />
-                          <Route path="blog" element={<BlogAdminPage />} />
-                          <Route path="build-previews" element={<BuildPreviews />} />
-                        </Route>
-
-                        {/* ---------------- 404 ---------------- */}
-
-                        <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
-
-                      </Routes>
-                    </div>
-
-                    {shouldRenderChatbot && (
-                      <Suspense fallback={null}>
-                        <ZoeChatbot />
-                      </Suspense>
-                    )}
-
-                  </div>
-                </Suspense>
-              </NavigationHistoryProvider>
-            </AuthProvider>
-          </ErrorBoundary>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
-
-export default App;
+                        <Route path="/dashboard/setting
