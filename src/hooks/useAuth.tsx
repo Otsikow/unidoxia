@@ -114,7 +114,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profileData: Profile,
     currentUser: User | null,
   ): Promise<Profile> => {
-    if (profileData.role !== 'partner') return profileData;
+    // Handle both 'partner' and legacy 'university' roles
+    const isPartnerRole = profileData.role === 'partner' || profileData.role === 'university';
+    if (!isPartnerRole) return profileData;
 
     const isVerified = Boolean(profileData.partner_email_verified);
     if (isVerified) return profileData;
@@ -143,7 +145,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     profileData: Profile,
     currentUser: User | null,
   ): Promise<Profile> => {
-    if (profileData.role !== 'partner' || !profileData.tenant_id) {
+    // Handle both 'partner' and legacy 'university' roles
+    const isPartnerRole = profileData.role === 'partner' || profileData.role === 'university';
+    if (!isPartnerRole || !profileData.tenant_id) {
       return profileData;
     }
 
@@ -849,7 +853,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await supabase.auth.signOut();
 
         const role = data.user.user_metadata?.role;
-        const verifyMessage = role === 'partner'
+        const isPartnerSignup = role === 'partner' || role === 'university';
+        const verifyMessage = isPartnerSignup
           ? 'Verify your email to proceed.'
           : 'Please verify your email before signing in.';
 
@@ -862,7 +867,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
       }
 
-      if (data?.user?.user_metadata?.role === 'partner') {
+      // Handle both 'partner' and legacy 'university' roles
+      const isPartnerRole = data?.user?.user_metadata?.role === 'partner' || 
+                            data?.user?.user_metadata?.role === 'university';
+      if (isPartnerRole) {
         // Partner email verification - rely on Supabase auth email_confirmed_at
         const partnerEmailVerified = Boolean(data.user.email_confirmed_at);
 

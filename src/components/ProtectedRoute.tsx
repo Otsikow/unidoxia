@@ -30,8 +30,12 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/verify-email" replace state={{ from: location.pathname }} />;
   }
 
+  // Map 'university' role to 'partner' for backward compatibility
   const isPartner =
-    profile?.role === 'partner' || user.user_metadata?.role === 'partner';
+    profile?.role === 'partner' || 
+    profile?.role === 'university' || 
+    user.user_metadata?.role === 'partner' ||
+    user.user_metadata?.role === 'university';
 
   if (isPartner && profile && !profile.partner_email_verified) {
     return (
