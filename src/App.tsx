@@ -17,9 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 
-/* -------------------------------------------------------------------------- */
-/* ✅ Chunk Error Handling & Recovery Logic                                   */
-/* -------------------------------------------------------------------------- */
+/* ==========================================================================
+   Chunk Error Handling
+   ========================================================================== */
+
 const CHUNK_ERROR_PATTERNS = [
   "Failed to fetch dynamically imported module",
   "ChunkLoadError",
@@ -39,6 +40,7 @@ const triggerHardReload = async () => {
 
   const now = Date.now();
   const lastReloadTs = Number(window.sessionStorage.getItem(CHUNK_RELOAD_SESSION_KEY) ?? "0");
+
   if (now - lastReloadTs < 5000) return;
 
   window.sessionStorage.setItem(CHUNK_RELOAD_SESSION_KEY, String(now));
@@ -73,11 +75,11 @@ const LazyLoadErrorFallback = ({
         <CardContent className="pt-6 space-y-4">
           <div className="flex items-center gap-3 text-destructive">
             <AlertCircle className="h-6 w-6" />
-            <h3 className="font-semibold text-lg">
-              {t("app.errors.failedToLoadPageTitle")}
-            </h3>
+            <h3 className="font-semibold text-lg">{t("app.errors.failedToLoadPageTitle")}</h3>
           </div>
+
           <p className="text-sm text-muted-foreground">{message}</p>
+
           <div className="flex gap-2">
             <Button onClick={() => window.location.reload()} className="gap-2">
               <RefreshCw className="h-4 w-4" />
@@ -102,7 +104,9 @@ const lazyWithErrorHandling = <T extends ComponentType<any>>(
     } catch (error) {
       const chunkError = isChunkLoadError(error);
       console.error("Error loading component:", error);
+
       if (chunkError) void triggerHardReload();
+
       return {
         default: (() => (
           <LazyLoadErrorFallback error={error} chunkError={chunkError} />
@@ -111,18 +115,19 @@ const lazyWithErrorHandling = <T extends ComponentType<any>>(
     }
   });
 
-/* -------------------------------------------------------------------------- */
-/* ✅ React Query Client Setup                                                */
-/* -------------------------------------------------------------------------- */
+/* ==========================================================================
+   React Query Setup
+   ========================================================================== */
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (failureCount, error) => {
+      retry: (attempt, error) => {
         if (error && typeof error === "object" && "status" in error) {
           const status = (error as any).status;
           if (status >= 400 && status < 500) return false;
         }
-        return failureCount < 3;
+        return attempt < 3;
       },
       retryDelay: (i) => Math.min(1000 * 2 ** i, 30000),
       staleTime: 5 * 60 * 1000,
@@ -132,14 +137,15 @@ const queryClient = new QueryClient({
   },
 });
 
-/* -------------------------------------------------------------------------- */
-/* ✅ Lazy Imports                                                            */
-/* -------------------------------------------------------------------------- */
-// Public
+/* ==========================================================================
+   Lazy Imports — Public
+   ========================================================================== */
+
 const Index = lazyWithErrorHandling(() => import("./pages/Index"));
 const OnboardingWelcome = lazyWithErrorHandling(() => import("./pages/onboarding/Welcome"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
 const OnboardingVisaSupport = lazyWithErrorHandling(() => import("./pages/onboarding/VisaSupport"));
+
 const Contact = lazyWithErrorHandling(() => import("./pages/Contact"));
 const FAQ = lazyWithErrorHandling(() => import("./pages/FAQ"));
 const HelpCenter = lazyWithErrorHandling(() => import("./pages/HelpCenter"));
@@ -165,7 +171,10 @@ const Blog = lazyWithErrorHandling(() => import("./pages/Blog"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
 
-// Student
+/* ==========================================================================
+   Lazy Imports — Student
+   ========================================================================== */
+
 const StudentLayout = lazyWithErrorHandling(() => import("./components/layout/StudentLayout"));
 const StudentOnboarding = lazyWithErrorHandling(() => import("./pages/student/StudentOnboarding"));
 const StudentProfile = lazyWithErrorHandling(() => import("./pages/student/StudentProfile"));
@@ -181,7 +190,10 @@ const Notifications = lazyWithErrorHandling(() => import("./pages/student/Notifi
 const StudentPaymentsPage = lazyWithErrorHandling(() => import("./pages/student/StudentPayments"));
 const Payments = lazyWithErrorHandling(() => import("./pages/Payments"));
 
-// Admin
+/* ==========================================================================
+   Lazy Imports — Admin
+   ========================================================================== */
+
 const AdminLayout = lazyWithErrorHandling(() => import("./components/layout/AdminLayout"));
 const AdminDashboardPage = lazyWithErrorHandling(() => import("./pages/dashboards/AdminDashboard"));
 const AdminOverview = lazyWithErrorHandling(() => import("./pages/admin/AdminOverview"));
@@ -206,12 +218,13 @@ const Analytics = lazyWithErrorHandling(() => import("./pages/admin/Analytics"))
 const BlogAdminPage = lazyWithErrorHandling(() => import("./pages/admin/BlogAdmin"));
 const AdminUsageMonitoringPage = lazyWithErrorHandling(() => import("./pages/admin/UsageMonitoring"));
 const BuildPreviews = lazyWithErrorHandling(() => import("./pages/admin/BuildPreviews"));
-const FeaturedUniversitiesAdmin = lazyWithErrorHandling(
-  () => import("./pages/admin/FeaturedUniversitiesAdmin"),
-);
+const FeaturedUniversitiesAdmin = lazyWithErrorHandling(() => import("./pages/admin/FeaturedUniversitiesAdmin"));
 const AdminUniversitiesPage = lazyWithErrorHandling(() => import("./pages/admin/AdminUniversities"));
 
-// Staff & Agents
+/* ==========================================================================
+   Lazy Imports — Staff & Agents
+   ========================================================================== */
+
 const StaffStudents = lazyWithErrorHandling(() => import("./pages/dashboard/StaffStudents"));
 const StaffTasks = lazyWithErrorHandling(() => import("./pages/dashboard/StaffTasks"));
 const StaffMessages = lazyWithErrorHandling(() => import("./pages/dashboard/StaffMessages"));
@@ -230,11 +243,13 @@ const StaffBlogManagement = lazyWithErrorHandling(() => import("./pages/dashboar
 const PartnerDocumentRequests = lazyWithErrorHandling(() => import("./pages/dashboard/DocumentRequests"));
 const OffersManagement = lazyWithErrorHandling(() => import("./pages/dashboard/OffersManagement"));
 const ProfileSettings = lazyWithErrorHandling(() => import("./pages/ProfileSettings"));
+const StudentDetailsPage = lazyWithErrorHandling(() => import("./pages/agent/StudentDetailsPage"));
 
-// University
-const UniversityDashboardShell = lazyWithErrorHandling(
-  () => import("./pages/university/UniversityDashboard")
-);
+/* ==========================================================================
+   Lazy Imports — University
+   ========================================================================== */
+
+const UniversityDashboardShell = lazyWithErrorHandling(() => import("./pages/university/UniversityDashboard"));
 const UniversityOverview = lazyWithErrorHandling(() => import("./pages/university/Overview"));
 const UniversityApplications = lazyWithErrorHandling(() => import("./pages/university/Applications"));
 const UniversityDocuments = lazyWithErrorHandling(() => import("./pages/university/Documents"));
@@ -242,35 +257,34 @@ const UniversityMessages = lazyWithErrorHandling(() => import("./pages/universit
 const UniversityOffersCAS = lazyWithErrorHandling(() => import("./pages/university/OffersCAS"));
 const UniversityAnalytics = lazyWithErrorHandling(() => import("./pages/university/Analytics"));
 const UniversityPrograms = lazyWithErrorHandling(() => import("./pages/university/Programs"));
-const UniversityFeaturedShowcase = lazyWithErrorHandling(
-  () => import("./pages/university/FeaturedShowcase"),
-);
-const UniversityProfileSettings = lazyWithErrorHandling(
-  () => import("./pages/university/Profile"),
-);
+const UniversityFeaturedShowcase = lazyWithErrorHandling(() => import("./pages/university/FeaturedShowcase"));
+const UniversityProfileSettings = lazyWithErrorHandling(() => import("./pages/university/Profile"));
+
+/* ==========================================================================
+   AI Chatbot
+   ========================================================================== */
 
 const ZoeChatbot = lazyWithErrorHandling(() => import("./components/ai/AIChatbot"));
 
-// Partner
-const PartnerMessages = lazyWithErrorHandling(() => import("./pages/partner/Messages"));
-const PartnerOffersCAS = lazyWithErrorHandling(() => import("./pages/partner/OffersCAS"));
-const StudentDetailsPage = lazyWithErrorHandling(() => import("./pages/agent/StudentDetailsPage"));
+/* ==========================================================================
+   Redirect Helper
+   ========================================================================== */
 
-/* -------------------------------------------------------------------------- */
-/* ✅ Main App Component                                                      */
-/* -------------------------------------------------------------------------- */
 const LegacySignupRedirect = () => {
   const location = useLocation();
   const destination = `/auth/signup${location.search}${location.hash}`;
   return <Navigate to={destination} replace />;
 };
 
+/* ==========================================================================
+   Main App Component
+   ========================================================================== */
+
 const App = () => {
   const { t } = useTranslation();
   const [shouldRenderChatbot, setShouldRenderChatbot] = useState(false);
 
   useEffect(() => {
-    // Defer chatbot hydration to keep the initial bundle lean
     const frame = requestAnimationFrame(() => setShouldRenderChatbot(true));
     return () => cancelAnimationFrame(frame);
   }, []);
@@ -294,71 +308,98 @@ const App = () => {
                   <div className="min-h-screen flex flex-col">
                     <div className="flex-1">
                       <Routes>
-                        {/* ✅ Public Routes */}
+
+                        {/* ---------------- PUBLIC ROUTES ---------------- */}
+
                         <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
                         <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                         <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
                         <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />
+
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
                         <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
                         <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
+
                         <Route path="/auth/login" element={<PublicLayout><Login /></PublicLayout>} />
                         <Route path="/auth/signup" element={<PublicLayout><Signup /></PublicLayout>} />
                         <Route path="/signup" element={<LegacySignupRedirect />} />
+
                         <Route path="/verify-email" element={<PublicLayout><VerifyEmail /></PublicLayout>} />
                         <Route path="/auth/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
                         <Route path="/auth/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
+
                         <Route path="/search" element={<Navigate to="/courses?view=programs" replace />} />
                         <Route path="/courses" element={<PublicLayout><CourseDiscovery /></PublicLayout>} />
+
                         <Route path="/scholarships" element={<PublicLayout><Scholarships /></PublicLayout>} />
                         <Route path="/scholarships/share" element={<PublicLayout><ScholarshipShareLanding /></PublicLayout>} />
+
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
+
                         <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
                         <Route path="/blog/:slug" element={<PublicLayout><BlogPost /></PublicLayout>} />
+
                         <Route path="/universities" element={<PublicLayout><UniversityDirectory /></PublicLayout>} />
                         <Route path="/universities/:id" element={<PublicLayout><UniversityProfile /></PublicLayout>} />
+
                         <Route path="/partnership" element={<PublicLayout><UniversityPartnership /></PublicLayout>} />
                         <Route path="/visa-calculator" element={<PublicLayout><VisaCalculator /></PublicLayout>} />
                         <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />
 
-                        {/* ✅ Protected Routes */}
-                        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                        <Route
-                          path="/dashboard/offers"
-                          element={<ProtectedRoute allowedRoles={["staff","partner","admin"]}><OffersManagement /></ProtectedRoute>}
-                        />
-                        <Route
-                          path="/dashboard/requests"
-                          element={<ProtectedRoute allowedRoles={["partner","admin","staff"]}><PartnerDocumentRequests /></ProtectedRoute>}
-                        />
-                        <Route path="/dashboard/leads" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentLeads /></ProtectedRoute>} />
-                        <Route path="/dashboard/tasks" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffTasks /></ProtectedRoute>} />
-                        <Route path="/dashboard/students" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffStudents /></ProtectedRoute>} />
-                        <Route
-                          path="/dashboard/agents"
-                          element={<ProtectedRoute allowedRoles={["staff", "admin"]}><AdminAgentsPage /></ProtectedRoute>}
-                        />
-                        <Route path="/dashboard/reports" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffReports /></ProtectedRoute>} />
-                        <Route path="/dashboard/blog" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffBlogManagement /></ProtectedRoute>} />
-                        <Route path="/dashboard/applications" element={<ProtectedRoute allowedRoles={["staff","partner","admin","agent"]}><ApplicationsRouter /></ProtectedRoute>} />
-                        <Route path="/dashboard/applications/new" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><NewApplication /></ProtectedRoute>} />
-                        <Route path="/dashboard/messages" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffMessages /></ProtectedRoute>} />
-                        <Route path="/dashboard/ranking" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentRanking /></ProtectedRoute>} />
-                        <Route path="/dashboard/payments" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPayments /></ProtectedRoute>} />
-                        <Route path="/dashboard/commissions" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentCommissions /></ProtectedRoute>} />
-                        <Route path="/dashboard/import" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentImport /></ProtectedRoute>} />
-                        <Route path="/dashboard/resources" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentResources /></ProtectedRoute>} />
-                        <Route path="/dashboard/partners" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPartners /></ProtectedRoute>} />
-                        <Route path="/dashboard/settings" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StaffSettingsRouter /></ProtectedRoute>} />
-                        <Route path="/dashboard/ai-insights" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffAIInsightsPage /></ProtectedRoute>} />
-                        <Route path="/dashboard/programs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProgramsPage /></ProtectedRoute>} />
-                        <Route path="/profile/settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
-                        <Route path="/settings" element={<Navigate to="/profile/settings" replace />} />
-                        <Route path="/agent/student/:studentId" element={<ProtectedRoute allowedRoles={["agent", "admin", "staff"]}><StudentDetailsPage /></ProtectedRoute>} />
+                        {/* ---------------- PROTECTED ROUTES ---------------- */}
 
-                        {/* ✅ Student Routes */}
+                        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/offers" element={<ProtectedRoute allowedRoles={["staff","partner","admin"]}><OffersManagement /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/requests" element={<ProtectedRoute allowedRoles={["partner","admin","staff"]}><PartnerDocumentRequests /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/leads" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentLeads /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/tasks" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffTasks /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/students" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffStudents /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/agents" element={<ProtectedRoute allowedRoles={["staff","admin"]}><AdminAgentsPage /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/reports" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffReports /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/blog" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffBlogManagement /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/applications" element={<ProtectedRoute allowedRoles={["staff","partner","admin","agent"]}><ApplicationsRouter /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/applications/new" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><NewApplication /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/messages" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffMessages /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/ranking" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentRanking /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/payments" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPayments /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/commissions" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentCommissions /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/import" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentImport /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/resources" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentResources /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/partners" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPartners /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/settings" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StaffSettingsRouter /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/ai-insights" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffAIInsightsPage /></ProtectedRoute>} />
+
+                        <Route path="/dashboard/programs" element={<ProtectedRoute allowedRoles={["admin"]}><AdminProgramsPage /></ProtectedRoute>} />
+
+                        <Route path="/profile/settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+
+                        <Route path="/settings" element={<Navigate to="/profile/settings" replace />} />
+
+                        <Route path="/agent/student/:studentId" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StudentDetailsPage /></ProtectedRoute>} />
+
+                        {/* ---------------- STUDENT ROUTES ---------------- */}
+
                         <Route
                           path="/student"
                           element={<ProtectedRoute allowedRoles={["student"]}><StudentLayout /></ProtectedRoute>}
@@ -379,11 +420,13 @@ const App = () => {
                           <Route path="*" element={<Navigate to="applications" replace />} />
                         </Route>
 
-                        {/* ✅ Partner Routes */}
+                        {/* ---------------- PARTNER ROUTES ---------------- */}
+
                         <Route path="/partner/messages" element={<ProtectedRoute allowedRoles={["partner"]}><PartnerMessages /></ProtectedRoute>} />
                         <Route path="/partner/offers-cas" element={<ProtectedRoute allowedRoles={["partner","admin"]}><PartnerOffersCAS /></ProtectedRoute>} />
 
-                        {/* ✅ University Dashboard */}
+                        {/* ---------------- UNIVERSITY ROUTES ---------------- */}
+
                         <Route
                           path="/university"
                           element={<ProtectedRoute allowedRoles={["partner","admin"]}><UniversityDashboardShell /></ProtectedRoute>}
@@ -399,7 +442,8 @@ const App = () => {
                           <Route path="featured-showcase" element={<UniversityFeaturedShowcase />} />
                         </Route>
 
-                        {/* ✅ Admin Dashboard */}
+                        {/* ---------------- ADMIN ROUTES ---------------- */}
+
                         <Route path="/admin" element={<ProtectedRoute allowedRoles={["admin"]}><AdminLayout /></ProtectedRoute>}>
                           <Route index element={<Navigate to="/admin/dashboard" replace />} />
                           <Route path="dashboard" element={<AdminDashboardPage />} />
@@ -425,23 +469,24 @@ const App = () => {
                           <Route path="usage-monitoring" element={<AdminUsageMonitoringPage />} />
                           <Route path="analytics" element={<Analytics />} />
                           <Route path="user-management" element={<UserManagement />} />
-                          <Route
-                            path="featured-universities"
-                            element={<FeaturedUniversitiesAdmin />}
-                          />
+                          <Route path="featured-universities" element={<FeaturedUniversitiesAdmin />} />
                           <Route path="blog" element={<BlogAdminPage />} />
                           <Route path="build-previews" element={<BuildPreviews />} />
                         </Route>
 
-                        {/* ✅ 404 Fallback */}
-                    <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+                        {/* ---------------- 404 ---------------- */}
+
+                        <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+
                       </Routes>
                     </div>
+
                     {shouldRenderChatbot && (
                       <Suspense fallback={null}>
                         <ZoeChatbot />
                       </Suspense>
                     )}
+
                   </div>
                 </Suspense>
               </NavigationHistoryProvider>
