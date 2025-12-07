@@ -406,6 +406,32 @@ export default function UniversityDashboard() {
 
     try {
       setCreatingUniversity(true);
+      
+      // Generate initial profile details with contact info from user profile
+      const initialProfileDetails = {
+        tagline: null,
+        highlights: [],
+        contacts: {
+          primary: {
+            name: profile.full_name || null,
+            email: profile.email || null,
+            phone: profile.phone || null,
+            title: null,
+          },
+        },
+        social: {
+          website: universityForm.website.trim() || null,
+          facebook: null,
+          instagram: null,
+          linkedin: null,
+          youtube: null,
+        },
+        media: {
+          heroImageUrl: null,
+          gallery: [],
+        },
+      };
+      
       const { data, error } = await supabase
         .from('universities')
         .insert({
@@ -417,6 +443,7 @@ export default function UniversityDashboard() {
           description: universityForm.description.trim() || null,
           tenant_id: profile.tenant_id,
           active: true,
+          submission_config_json: initialProfileDetails,
         })
         .select('*')
         .single();

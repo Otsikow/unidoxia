@@ -8,6 +8,39 @@ import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
 
 type SignupRole = 'student' | 'agent' | 'partner' | 'admin' | 'staff';
 
+// Helper to generate initial university profile details from user metadata
+// This ensures signup info (name, email, phone) is pre-populated in the university profile
+const generateInitialUniversityProfileDetails = (
+  fullName: string | undefined,
+  email: string | undefined,
+  phone: string | undefined,
+  country: string | undefined,
+) => {
+  return {
+    tagline: null,
+    highlights: [],
+    contacts: {
+      primary: {
+        name: fullName || null,
+        email: email || null,
+        phone: phone || null,
+        title: null,
+      },
+    },
+    social: {
+      website: null,
+      facebook: null,
+      instagram: null,
+      linkedin: null,
+      youtube: null,
+    },
+    media: {
+      heroImageUrl: null,
+      gallery: [],
+    },
+  };
+};
+
 interface Profile {
   id: string;
   tenant_id: string;
@@ -152,6 +185,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ? currentUser.user_metadata.university_name
             : `${profileData.full_name}'s University`;
 
+        // Generate initial profile details with contact info from profile
+        const initialProfileDetails = generateInitialUniversityProfileDetails(
+          profileData.full_name,
+          profileData.email || currentUser?.email,
+          profileData.phone || currentUser?.user_metadata?.phone,
+          profileData.country || currentUser?.user_metadata?.country,
+        );
+
         const { error: createUniError } = await supabase
           .from('universities')
           .insert({
@@ -163,6 +204,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
             tenant_id: profileData.tenant_id,
             active: true,
+            submission_config_json: initialProfileDetails,
           })
           .select('id')
           .single();
@@ -243,6 +285,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ? currentUser.user_metadata.university_name
         : `${profileData.full_name}'s University`;
 
+    // Generate initial profile details with contact info from signup/profile
+    const initialProfileDetails = generateInitialUniversityProfileDetails(
+      profileData.full_name,
+      profileData.email || currentUser?.email,
+      profileData.phone || currentUser?.user_metadata?.phone,
+      profileData.country || currentUser?.user_metadata?.country,
+    );
+
     // Create a fresh university for this new isolated tenant
     const { data: newUniversity, error: universityCreationError } = await supabase
       .from('universities')
@@ -255,6 +305,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
         tenant_id: newTenant!.id,
         active: true,
+        submission_config_json: initialProfileDetails,
       })
       .select('id, name')
       .single();
@@ -611,6 +662,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           console.log(`Creating new university "${universityName}" for tenant ${tenant.id}`);
 
+          // Generate initial profile details with contact info from signup
+          const initialProfileDetails = generateInitialUniversityProfileDetails(
+            user.user_metadata?.full_name,
+            user.email,
+            user.user_metadata?.phone,
+            user.user_metadata?.country,
+          );
+
           const { data: newUniversity, error: universityError } = await supabase
             .from('universities')
             .insert({
@@ -622,6 +681,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
               tenant_id: tenant.id,
               active: true,
+              submission_config_json: initialProfileDetails,
             })
             .select('id, name')
             .single();
