@@ -80,11 +80,15 @@ export const UniversityHeader = ({
       let avatarUrl = profileRow?.avatar_url ?? profile?.avatar_url ?? null;
 
       if (profileRow?.tenant_id) {
+        // Query university by tenant_id only - don't filter by active status
+        // since partners should see their own university regardless of active status
+        // (RLS policy already handles proper access control)
         const { data: universityRow, error: universityError } = await supabase
           .from("universities")
           .select("name, logo_url")
           .eq("tenant_id", profileRow.tenant_id)
-          .eq("active", true)
+          .order("updated_at", { ascending: false, nullsFirst: false })
+          .limit(1)
           .maybeSingle();
 
         if (!universityError && universityRow) {

@@ -56,7 +56,6 @@ export default function ProgramsPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const programs = data?.programs ?? [];
@@ -122,6 +121,15 @@ export default function ProgramsPage() {
     };
   }, [editProgram, suggestedCurrency]);
 
+  /** Check if PostgreSQL error indicates a missing column */
+  const isMissingColumnError = (error: unknown): boolean => {
+    if (!error || typeof error !== "object") return false;
+    const code = (error as any).code ?? "";
+    const message = ((error as any).message ?? "").toLowerCase();
+    return code === "42703" || message.includes("image_url");
+  };
+
+  /** CREATE PROGRAM */
   const handleCreate = async (values: ProgramFormValues) => {
     if (!tenantId || !universityId) {
       toast({
@@ -159,27 +167,16 @@ export default function ProgramsPage() {
         university_id: universityId,
       };
 
-      // Try with image_url first, fallback without if column doesn't exist
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
 
-      const { error } = await supabase
-        .from("programs")
-        .insert(payloadWithImage);
+      const { error } = await supabase.from("programs").insert(payloadWithImage);
 
       if (error) {
-        const errorCode = (error as { code?: string }).code ?? "";
-        const errorMessage = error.message?.toLowerCase() ?? "";
-        const missingImageColumn =
-          errorCode === "42703" || errorMessage.includes("image_url");
-
-        if (missingImageColumn) {
-          // Retry without image_url column
-          console.warn("programs.image_url column missing – inserting without image_url");
-          const { error: fallbackError } = await supabase
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
             .from("programs")
             .insert(basePayload);
-
-          if (fallbackError) throw fallbackError;
+          if (retryError) throw retryError;
         } else {
           throw error;
         }
@@ -199,6 +196,7 @@ export default function ProgramsPage() {
     }
   };
 
+  /** UPDATE PROGRAM */
   const handleUpdate = async (values: ProgramFormValues) => {
     if (!editProgram) return;
 
@@ -236,7 +234,6 @@ export default function ProgramsPage() {
         active: values.active,
       };
 
-      // Try with image_url first, fallback without if column doesn't exist
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
 
       const { error } = await supabase
@@ -247,22 +244,15 @@ export default function ProgramsPage() {
         .eq("tenant_id", tenantId);
 
       if (error) {
-        const errorCode = (error as { code?: string }).code ?? "";
-        const errorMessage = error.message?.toLowerCase() ?? "";
-        const missingImageColumn =
-          errorCode === "42703" || errorMessage.includes("image_url");
-
-        if (missingImageColumn) {
-          // Retry without image_url column
-          console.warn("programs.image_url column missing – updating without image_url");
-          const { error: fallbackError } = await supabase
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
             .from("programs")
             .update(basePayload)
             .eq("id", editProgram.id)
             .eq("university_id", universityId)
             .eq("tenant_id", tenantId);
 
-          if (fallbackError) throw fallbackError;
+          if (retryError) throw retryError;
         } else {
           throw error;
         }
@@ -282,6 +272,7 @@ export default function ProgramsPage() {
     }
   };
 
+  /** TOGGLE ACTIVE/INACTIVE */
   const handleToggleActive = async (id: string, active: boolean) => {
     if (!tenantId || !universityId) {
       toast({
@@ -321,9 +312,9 @@ export default function ProgramsPage() {
     }
   };
 
+  /** DELETE PROGRAM */
   const handleDelete = async () => {
     if (!deleteId) return;
-
     if (!tenantId || !universityId) {
       toast({
         title: "Missing account information",
@@ -366,7 +357,6 @@ export default function ProgramsPage() {
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="text-2xl font-semibold">Programmes</h1>
         <p className="text-sm text-muted-foreground">
@@ -374,7 +364,6 @@ export default function ProgramsPage() {
         </p>
       </div>
 
-      {/* CARD WRAPPER */}
       <Card className="rounded-2xl">
         <CardHeader className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
@@ -423,7 +412,6 @@ export default function ProgramsPage() {
         </CardContent>
       </Card>
 
-      {/* CREATE DIALOG */}
       {createOpen && (
         <ProgramForm
           initialValues={createInitialValues}
@@ -439,7 +427,6 @@ export default function ProgramsPage() {
         />
       )}
 
-      {/* EDIT DIALOG */}
       {editProgram && editInitialValues && (
         <ProgramForm
           initialValues={editInitialValues}
@@ -455,14 +442,12 @@ export default function ProgramsPage() {
         />
       )}
 
-      {/* VIEW DIALOG */}
       <ProgramViewDialog
         program={viewProgram}
         open={Boolean(viewProgram)}
         onClose={() => setViewProgram(null)}
       />
 
-      {/* DELETE DIALOG */}
       <ProgramDeleteDialog
         open={Boolean(deleteId)}
         onClose={() => setDeleteId(null)}
