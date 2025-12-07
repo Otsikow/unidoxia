@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Building2, GraduationCap, Mail, ShieldCheck, Users } from "lucide-react";
+import { Building2, Eye, EyeOff, GraduationCap, Mail, ShieldCheck, Trash2, Users } from "lucide-react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -279,20 +290,19 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
   const handleUniversityStatus = async (universityId: string, currentStatus: string) => {
     const normalizedStatus = currentStatus.toLowerCase();
     const nextStatus = normalizedStatus === "approved" ? "suspended" : "approved";
-    const nextIsActive = nextStatus === "approved";
     const previous = universities;
 
     setUniversities((prev) =>
       prev.map((university) =>
         university.id === universityId
-          ? { ...university, partnership_status: nextStatus, active: nextIsActive }
+          ? { ...university, partnership_status: nextStatus }
           : university
       )
     );
 
     const { error } = await supabase
       .from("universities")
-      .update({ partnership_status: nextStatus, active: nextIsActive })
+      .update({ partnership_status: nextStatus })
       .eq("id", universityId);
 
     if (error) {
@@ -309,6 +319,69 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
     toast({
       title: nextStatus === "approved" ? "Partnership approved" : "Partnership suspended",
       description: "The partnership status has been updated successfully.",
+    });
+  };
+
+  const handleUniversityVisibility = async (universityId: string, currentlyVisible: boolean) => {
+    const nextState = !currentlyVisible;
+    const previous = universities;
+
+    setUniversities((prev) =>
+      prev.map((university) =>
+        university.id === universityId ? { ...university, active: nextState } : university
+      )
+    );
+
+    const { error } = await supabase
+      .from("universities")
+      .update({ active: nextState })
+      .eq("id", universityId);
+
+    if (error) {
+      console.error("Failed to update university visibility", error);
+      setUniversities(previous);
+      toast({
+        title: "Update failed",
+        description: "We couldn't update the university visibility. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: nextState ? "University visible" : "University hidden",
+      description: nextState
+        ? "The university is now visible to students and agents."
+        : "The university is now hidden from public listings.",
+    });
+  };
+
+  const handleDeleteUniversity = async (universityId: string, universityName: string) => {
+    const previous = universities;
+    
+    setUniversities((prev) => prev.filter((university) => university.id !== universityId));
+
+    const { error } = await supabase
+      .from("universities")
+      .delete()
+      .eq("id", universityId);
+
+    if (error) {
+      console.error("Failed to delete university", error);
+      setUniversities(previous);
+      toast({
+        title: "Delete failed",
+        description: error.message.includes("violates foreign key")
+          ? "Cannot delete this university because it has associated programs or applications."
+          : "We couldn't delete the university. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "University deleted",
+      description: `${universityName} has been permanently deleted.`,
     });
   };
 
@@ -468,7 +541,7 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
                     const shouldSuspend = normalizedStatus === "approved";
 
                     return (
-                      <Card key={university.id} className="border-muted">
+                      <Card key={university.id} className={`border-muted ${!university.isActive ? "opacity-60" : ""}`}>
                         <CardHeader className="space-y-2 p-3 sm:p-4">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
@@ -478,9 +551,11 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
                                 {university.country}
                               </CardDescription>
                             </div>
-                            <Badge variant={university.isActive ? "outline" : "destructive"} className="text-xs shrink-0">
-                              {university.isActive ? "Active" : "Suspended"}
-                            </Badge>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <Badge variant={university.isActive ? "outline" : "secondary"} className="text-xs">
+                                {university.isActive ? "Visible" : "Hidden"}
+                              </Badge>
+                            </div>
                           </div>
                           {university.city && (
                             <p className="text-xs text-muted-foreground mt-0.5">{university.city}</p>
@@ -492,15 +567,69 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-3 sm:space-y-4 text-sm p-3 sm:p-4 pt-0">
-                          <span className="capitalize text-muted-foreground text-xs sm:text-sm">Status: {university.partnershipStatus}</span>
-                          <Button
-                            variant={shouldSuspend ? "destructive" : "default"}
-                            size="sm"
-                            className="w-full"
-                            onClick={() => handleUniversityStatus(university.id, university.partnershipStatus)}
-                          >
-                            {shouldSuspend ? "Suspend" : "Approve Partnership"}
-                          </Button>
+                          <div className="flex items-center justify-between">
+                            <span className="capitalize text-muted-foreground text-xs sm:text-sm">
+                              Partnership: {university.partnershipStatus}
+                            </span>
+                            <Button
+                              variant={shouldSuspend ? "outline" : "default"}
+                              size="sm"
+                              onClick={() => handleUniversityStatus(university.id, university.partnershipStatus)}
+                            >
+                              {shouldSuspend ? "Suspend" : "Approve"}
+                            </Button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 gap-2"
+                              onClick={() => handleUniversityVisibility(university.id, university.isActive)}
+                            >
+                              {university.isActive ? (
+                                <>
+                                  <EyeOff className="h-4 w-4" />
+                                  Hide
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="h-4 w-4" />
+                                  Show
+                                </>
+                              )}
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete university?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will permanently delete <strong>{university.name}</strong> and cannot be undone.
+                                    {university.programsOffered > 0 && (
+                                      <span className="block mt-2 text-destructive">
+                                        Warning: This university has {university.programsOffered} associated program(s).
+                                        Deleting it may fail if there are linked applications.
+                                      </span>
+                                    )}
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    onClick={() => handleDeleteUniversity(university.id, university.name)}
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         </CardContent>
                       </Card>
                     );
