@@ -83,23 +83,22 @@ export default function BackButton({
       }
 
       try {
+        // If we have a previous entry in our custom navigation history, use it
         if (immediatePrevious) {
           navigateTo(immediatePrevious);
           return;
         }
 
-        if (typeof window !== "undefined" && window.history.length > 1) {
-          navigate(-1);
-          return;
-        }
-
+        // Otherwise, always use the fallback route
+        // Note: We don't rely on window.history.length because it may include
+        // external pages or pages from before the user entered our app
         handleFallbackNavigation();
       } catch (error) {
         console.error("Back navigation failed, using fallback", error);
         handleFallbackNavigation();
       }
     },
-    [disabled, handleFallbackNavigation, immediatePrevious, navigate, navigateTo, onClick],
+    [disabled, handleFallbackNavigation, immediatePrevious, navigateTo, onClick],
   );
 
   const handleClearHistory = React.useCallback(
