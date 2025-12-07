@@ -393,6 +393,8 @@ export default function ProgramsPage() {
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
+          title="Create New Programme"
+          description="Add a new academic programme to your catalogue."
         />
       )}
 
@@ -407,6 +409,8 @@ export default function ProgramsPage() {
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
+          title="Edit Programme"
+          description="Update the details for this programme."
         />
       )}
 
