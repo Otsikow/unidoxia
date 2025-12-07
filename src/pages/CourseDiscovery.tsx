@@ -81,6 +81,7 @@ const FALLBACK_COURSES: Course[] = [
     university_logo_url: null,
     next_intake_month: 9,
     next_intake_year: getNextIntakeYear(9),
+    instant_submission: true, // Example UniDoxia-onboarded course
   },
   {
     id: "fallback-harvard-mba",
@@ -115,6 +116,7 @@ const FALLBACK_COURSES: Course[] = [
     university_logo_url: null,
     next_intake_month: 1,
     next_intake_year: getNextIntakeYear(1),
+    is_unidoxia_partner: true, // Example UniDoxia partner university
   },
   {
     id: "fallback-melbourne-meng",
@@ -540,12 +542,14 @@ export default function CourseDiscovery() {
           tuition_currency,
           tuition_amount,
           intake_months,
+          instant_submission,
           universities (
             id,
             name,
             country,
             city,
-            logo_url
+            logo_url,
+            is_unidoxia_partner
           )
         `,
         )
@@ -594,6 +598,8 @@ export default function CourseDiscovery() {
           university_logo_url: item.universities?.logo_url || null,
           next_intake_month: nextIntakeMonth,
           next_intake_year: nextIntakeYear,
+          instant_submission: item.instant_submission ?? false,
+          is_unidoxia_partner: item.universities?.is_unidoxia_partner ?? false,
         } satisfies Course;
       });
 
