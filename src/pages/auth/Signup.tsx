@@ -47,9 +47,9 @@ import BackButton from "@/components/BackButton";
 import { passwordSchema } from "@/lib/validation";
 import { SEO } from "@/components/SEO";
 
-type UserRole = "student" | "agent" | "university";
+type UserRole = "student" | "agent" | "partner";
 
-const ROLE_OPTIONS: UserRole[] = ["student", "agent", "university"];
+const ROLE_OPTIONS: UserRole[] = ["student", "agent", "partner"];
 
 const isUsernameCheckUnsupported = (error: PostgrestError | null) => {
   if (!error) return false;
@@ -331,6 +331,9 @@ const Signup = () => {
   const getRoleIcon = (r: UserRole) =>
     r === "student" ? "🎓" : r === "agent" ? "💼" : "🏛️";
 
+  const getRoleLabel = (r: UserRole) =>
+    r === "student" ? "Student" : r === "agent" ? "Agent" : "University/Partner";
+
   const getRoleDescription = (r: UserRole) =>
     r === "student"
       ? "Apply to universities and track applications"
@@ -418,7 +421,7 @@ const Signup = () => {
                         <span className="text-3xl sm:text-4xl">{getRoleIcon(r)}</span>
                         <div className="flex-1 space-y-2">
                           <div className="flex items-start justify-between gap-3">
-                            <h3 className="font-semibold text-lg sm:text-xl capitalize">{r}</h3>
+                            <h3 className="font-semibold text-lg sm:text-xl">{getRoleLabel(r)}</h3>
                             {role === r && <Check className="h-5 w-5 text-primary" />}
                           </div>
                           <p className="text-sm text-muted-foreground">{getRoleDescription(r)}</p>
