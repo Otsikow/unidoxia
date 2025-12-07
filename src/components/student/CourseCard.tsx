@@ -20,6 +20,10 @@ export interface Course {
   university_logo_url?: string;
   next_intake_month?: number;
   next_intake_year?: number;
+  /** Indicates if the program is fully onboarded in UniDoxia for instant submission */
+  instant_submission?: boolean;
+  /** Indicates if the university is an official UniDoxia partner */
+  is_unidoxia_partner?: boolean;
 }
 
 interface CourseCardProps {
@@ -35,6 +39,11 @@ export function CourseCard({ course }: CourseCardProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const studentIdFromUrl = searchParams.get('studentId') || searchParams.get('student');
+
+  // Determine if the Instant Submission badge should be shown
+  const showInstantSubmission =
+    course.instant_submission === true ||
+    course.is_unidoxia_partner === true;
 
   const handleCardClick = () => {
     const params = new URLSearchParams({ program: course.id });
@@ -74,7 +83,13 @@ export function CourseCard({ course }: CourseCardProps) {
       }}
       aria-label={`View details for ${course.name}`}
     >
-      <Card className="group hover:shadow-lg transition-all duration-300 h-full flex flex-col animate-fade-in-up hover:scale-[1.01]">
+      <Card className="group hover:shadow-lg transition-all duration-300 h-full flex flex-col animate-fade-in-up hover:scale-[1.01] relative overflow-visible">
+        {/* Instant Submission Badge */}
+        {showInstantSubmission && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-4 py-1 rounded-full text-white text-xs font-semibold shadow-md bg-gradient-to-r from-green-600 to-blue-600 whitespace-nowrap">
+            Instant Submission
+          </div>
+        )}
         <CardContent className="pt-6 pb-4 flex-1">
           {/* University Header */}
           <div className="flex items-start gap-3 mb-4">

@@ -1673,6 +1673,7 @@ export type Database = {
           entry_requirements: Json | null
           id: string
           ielts_overall: number | null
+          instant_submission: boolean | null
           intake_months: number[] | null
           level: string
           name: string
@@ -1696,6 +1697,7 @@ export type Database = {
           entry_requirements?: Json | null
           id?: string
           ielts_overall?: number | null
+          instant_submission?: boolean | null
           intake_months?: number[] | null
           level: string
           name: string
@@ -1719,6 +1721,7 @@ export type Database = {
           entry_requirements?: Json | null
           id?: string
           ielts_overall?: number | null
+          instant_submission?: boolean | null
           intake_months?: number[] | null
           level?: string
           name?: string
@@ -2613,6 +2616,7 @@ export type Database = {
           featured_priority: number | null
           featured_summary: string | null
           id: string
+          is_unidoxia_partner: boolean | null
           logo_url: string | null
           name: string
           partnership_status: string | null
@@ -2640,6 +2644,7 @@ export type Database = {
           featured_priority?: number | null
           featured_summary?: string | null
           id?: string
+          is_unidoxia_partner?: boolean | null
           logo_url?: string | null
           name: string
           partnership_status?: string | null
@@ -2667,6 +2672,7 @@ export type Database = {
           featured_priority?: number | null
           featured_summary?: string | null
           id?: string
+          is_unidoxia_partner?: boolean | null
           logo_url?: string | null
           name?: string
           partnership_status?: string | null
