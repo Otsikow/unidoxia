@@ -17,7 +17,7 @@ const getUniversityRouteForPartnerView = (viewParam: string | null) => {
     case 'documents':
       return '/university/documents';
     case 'offers':
-      return '/university/offers-cas';
+      return '/university/offers';
     case 'messages':
       return '/university/messages';
     case 'analytics':

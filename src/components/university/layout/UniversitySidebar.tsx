@@ -39,7 +39,7 @@ const navItems = [
   },
   {
     label: "Offers & CAS",
-    to: "/university/offers-cas",
+    to: "/university/offers",
     icon: Stamp,
   },
   {
