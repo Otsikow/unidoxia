@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,7 @@ const getMonthName = (month: number): string => {
 
 export default function UniversityProfile() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [university, setUniversity] = useState<University | null>(null);
   const [profileDetails, setProfileDetails] = useState<UniversityProfileDetails>(
@@ -121,7 +122,13 @@ export default function UniversityProfile() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<string>("about");
+  
+  // Read initial tab from URL params (supports: about, programs, requirements, scholarships)
+  const initialTab = searchParams.get("tab") || "about";
+  const validTabs = ["about", "programs", "requirements", "scholarships"];
+  const [activeTab, setActiveTab] = useState<string>(
+    validTabs.includes(initialTab) ? initialTab : "about"
+  );
 
   useEffect(() => {
     if (id) {
