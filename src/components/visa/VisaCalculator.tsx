@@ -140,6 +140,18 @@ const VISA_REQUIREMENTS: Record<string, VisaRequirements> = {
     age_limit: 35,
     processing_time_days: 45,
     success_rate: 88
+  },
+  ireland: {
+    country: 'Ireland',
+    ielts_min: 6.5,
+    toefl_min: 90,
+    gpa_min: 3.0,
+    bank_balance_min: 10000,
+    currency: 'EUR',
+    work_experience_min: 1,
+    age_limit: 35,
+    processing_time_days: 60,
+    success_rate: 85
   }
 };
 

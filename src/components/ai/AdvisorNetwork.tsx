@@ -73,7 +73,7 @@ export default function AdvisorNetwork() {
   const [bookingSlot, setBookingSlot] = useState<BookingSlot | null>(null);
   const [bookingNotes, setBookingNotes] = useState('');
 
-  const countries = ['all', 'Canada', 'United States', 'United Kingdom', 'Australia', 'Germany', 'Netherlands', 'Sweden'];
+  const countries = ['all', 'Canada', 'United States', 'United Kingdom', 'Australia', 'Germany', 'Ireland', 'Netherlands', 'Sweden'];
   const languages = ['all', 'English', 'French', 'Spanish', 'Arabic', 'Swahili', 'Portuguese', 'German'];
   const specializations = ['all', 'Visa Process', 'University Selection', 'Scholarship Applications', 'Academic Planning', 'Career Guidance', 'Cultural Adaptation'];
 

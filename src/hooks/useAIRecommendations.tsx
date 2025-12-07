@@ -305,6 +305,12 @@ export const useAIRecommendations = () => {
           factors.push('Meets Australian language requirements');
         }
         break;
+      case 'ireland':
+        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.5) {
+          eligibility = 'High';
+          factors.push('Meets Irish language requirements');
+        }
+        break;
     }
 
     return {
