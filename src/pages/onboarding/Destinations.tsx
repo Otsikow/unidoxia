@@ -14,6 +14,7 @@ const countries = [
     shortName: "UK",
     flag: "🇬🇧",
     landmark: "Big Ben",
+    landmarkImage: "https://images.unsplash.com/photo-1529655683826-aba9b3e77383?w=400&h=300&fit=crop",
     color: "from-blue-600 to-red-600",
     bgColor: "bg-blue-500/10",
     borderColor: "border-blue-500/30",
@@ -26,6 +27,7 @@ const countries = [
     shortName: "USA",
     flag: "🇺🇸",
     landmark: "Statue of Liberty",
+    landmarkImage: "https://images.unsplash.com/photo-1503174971373-b1f69850bded?w=400&h=300&fit=crop",
     color: "from-blue-700 to-red-700",
     bgColor: "bg-red-500/10",
     borderColor: "border-red-500/30",
@@ -38,6 +40,7 @@ const countries = [
     shortName: "Canada",
     flag: "🇨🇦",
     landmark: "CN Tower",
+    landmarkImage: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f?w=400&h=300&fit=crop",
     color: "from-red-600 to-red-700",
     bgColor: "bg-red-500/10",
     borderColor: "border-red-500/30",
@@ -50,6 +53,7 @@ const countries = [
     shortName: "Australia",
     flag: "🇦🇺",
     landmark: "Sydney Opera House",
+    landmarkImage: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=300&fit=crop",
     color: "from-blue-600 to-yellow-500",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
@@ -62,6 +66,7 @@ const countries = [
     shortName: "Germany",
     flag: "🇩🇪",
     landmark: "Brandenburg Gate",
+    landmarkImage: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=300&fit=crop",
     color: "from-black to-yellow-500",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
@@ -74,6 +79,7 @@ const countries = [
     shortName: "Ireland",
     flag: "🇮🇪",
     landmark: "Cliffs of Moher",
+    landmarkImage: "https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=400&h=300&fit=crop",
     color: "from-green-600 to-orange-500",
     bgColor: "bg-green-500/10",
     borderColor: "border-green-500/30",
@@ -99,45 +105,57 @@ const CountryBubble = ({
     <button
       onClick={onSelect}
       className={`
-        relative group flex flex-col items-center justify-center p-4 sm:p-6 
+        relative group flex flex-col items-center justify-end overflow-hidden
         rounded-2xl sm:rounded-3xl border-2 transition-all duration-300
-        ${country.bgColor} ${country.borderColor} ${country.hoverColor}
+        ${country.borderColor} ${country.hoverColor}
         ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105" : ""}
         animate-fade-in-up opacity-0 cursor-pointer
         hover:scale-105 hover:shadow-lg
+        h-40 sm:h-48 md:h-52
       `}
       style={{
         animationDelay: `${animationDelay}s`,
-        animation: `fadeInUp 0.5s ease-out ${animationDelay}s forwards, bounce-gentle 3s ease-in-out ${animationDelay}s infinite`,
+        animation: `fadeInUp 0.5s ease-out ${animationDelay}s forwards`,
         animationFillMode: "forwards",
       }}
       aria-label={`Select ${country.name}`}
     >
+      {/* Landmark Image */}
+      <div className="absolute inset-0">
+        <img
+          src={country.landmarkImage}
+          alt={country.landmark}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        {/* Gradient overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+      </div>
+
       {isSelected && (
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg animate-scale-in">
+        <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg animate-scale-in z-20">
           <Check className="w-4 h-4 text-primary-foreground" />
         </div>
       )}
 
-      <span className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+      {/* Flag in top-left corner */}
+      <span className="absolute top-2 left-2 text-2xl sm:text-3xl z-10 drop-shadow-lg">
         {country.flag}
       </span>
 
-      <span className="font-semibold text-sm sm:text-base text-foreground">
-        {country.shortName}
-      </span>
+      {/* Content at bottom */}
+      <div className="relative z-10 p-3 sm:p-4 w-full text-left">
+        <span className="font-semibold text-sm sm:text-base text-white block">
+          {country.shortName}
+        </span>
 
-      <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 text-center">
-        {country.landmark}
-      </span>
+        <span className="text-[10px] sm:text-xs text-white/80">
+          {country.landmark}
+        </span>
+      </div>
 
-      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-primary font-medium opacity-0 group-hover:opacity-100 group-hover:-bottom-6 transition-all duration-300 whitespace-nowrap">
+      <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-primary font-medium opacity-0 group-hover:opacity-100 group-hover:-bottom-6 transition-all duration-300 whitespace-nowrap z-20">
         {country.universities}
       </span>
-
-      <div
-        className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${country.color} opacity-0 group-hover:opacity-10 transition-opacity`}
-      />
     </button>
   );
 };
