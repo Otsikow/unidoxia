@@ -1673,6 +1673,7 @@ export type Database = {
           entry_requirements: Json | null
           id: string
           ielts_overall: number | null
+          image_url: string | null
           intake_months: number[] | null
           level: string
           name: string
@@ -1696,6 +1697,7 @@ export type Database = {
           entry_requirements?: Json | null
           id?: string
           ielts_overall?: number | null
+          image_url?: string | null
           intake_months?: number[] | null
           level: string
           name: string
@@ -1719,6 +1721,7 @@ export type Database = {
           entry_requirements?: Json | null
           id?: string
           ielts_overall?: number | null
+          image_url?: string | null
           intake_months?: number[] | null
           level?: string
           name?: string
