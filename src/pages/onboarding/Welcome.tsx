@@ -227,6 +227,13 @@ export default function OnboardingWelcome() {
             <span>50+ Countries</span>
           </div>
         </div>
+
+        {/* Progress indicator */}
+        <div className="mt-8 flex justify-center gap-2 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
+          <Link to="/onboarding/fast-applications" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
+        </div>
       </div>
 
       {/* Custom keyframes for float animation */}
