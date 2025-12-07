@@ -197,13 +197,24 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
       if (searchTerm) uniQuery = uniQuery.ilike("name", `%${searchTerm}%`);
       if (selectedCountry !== "all") uniQuery = uniQuery.eq("country", selectedCountry);
 
-      const { data: universities, error: uniError } = await uniQuery;
+      const { data: universitiesData, error: uniError } = await uniQuery;
       if (uniError) throw uniError;
-      if (!universities?.length) {
+      if (!universitiesData?.length) {
         setResults([]);
         setLoading(false);
         return;
       }
+
+      // Deduplicate universities by name (case-insensitive) to prevent duplicates
+      const seenNames = new Set<string>();
+      const universities = universitiesData.filter((uni) => {
+        const normalizedName = uni.name.toLowerCase().trim();
+        if (seenNames.has(normalizedName)) {
+          return false;
+        }
+        seenNames.add(normalizedName);
+        return true;
+      });
 
       const ids = universities.map((u) => u.id);
       let progQuery = supabase.from("programs").select("*").in("university_id", ids).eq("active", true);
