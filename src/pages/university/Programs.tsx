@@ -56,7 +56,6 @@ export default function ProgramsPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const programs = data?.programs ?? [];
@@ -122,15 +121,15 @@ export default function ProgramsPage() {
     };
   }, [editProgram, suggestedCurrency]);
 
-  // Helper to check if error is related to missing column (e.g., image_url doesn't exist)
+  /** Check if PostgreSQL error indicates a missing column */
   const isMissingColumnError = (error: unknown): boolean => {
-    if (!error || typeof error !== 'object') return false;
-    const code = (error as { code?: string }).code ?? "";
-    const message = ((error as { message?: string }).message ?? "").toLowerCase();
-    // PostgreSQL error code 42703 = undefined column
+    if (!error || typeof error !== "object") return false;
+    const code = (error as any).code ?? "";
+    const message = ((error as any).message ?? "").toLowerCase();
     return code === "42703" || message.includes("image_url");
   };
 
+  /** CREATE PROGRAM */
   const handleCreate = async (values: ProgramFormValues) => {
     if (!tenantId || !universityId) {
       toast({
@@ -168,21 +167,19 @@ export default function ProgramsPage() {
         university_id: universityId,
       };
 
-      // Try with image_url first
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
-      const { error } = await supabase
-        .from("programs")
-        .insert(payloadWithImage);
 
-      // If the error is about missing image_url column, retry without it
-      if (error && isMissingColumnError(error)) {
-        console.warn("programs.image_url column not available, retrying without it");
-        const { error: retryError } = await supabase
-          .from("programs")
-          .insert(basePayload);
-        if (retryError) throw retryError;
-      } else if (error) {
-        throw error;
+      const { error } = await supabase.from("programs").insert(payloadWithImage);
+
+      if (error) {
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
+            .from("programs")
+            .insert(basePayload);
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
       }
 
       toast({ title: "Programme created" });
@@ -199,6 +196,7 @@ export default function ProgramsPage() {
     }
   };
 
+  /** UPDATE PROGRAM */
   const handleUpdate = async (values: ProgramFormValues) => {
     if (!editProgram) return;
 
@@ -236,8 +234,8 @@ export default function ProgramsPage() {
         active: values.active,
       };
 
-      // Try with image_url first
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
+
       const { error } = await supabase
         .from("programs")
         .update(payloadWithImage)
@@ -245,18 +243,19 @@ export default function ProgramsPage() {
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
 
-      // If the error is about missing image_url column, retry without it
-      if (error && isMissingColumnError(error)) {
-        console.warn("programs.image_url column not available, retrying without it");
-        const { error: retryError } = await supabase
-          .from("programs")
-          .update(basePayload)
-          .eq("id", editProgram.id)
-          .eq("university_id", universityId)
-          .eq("tenant_id", tenantId);
-        if (retryError) throw retryError;
-      } else if (error) {
-        throw error;
+      if (error) {
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
+            .from("programs")
+            .update(basePayload)
+            .eq("id", editProgram.id)
+            .eq("university_id", universityId)
+            .eq("tenant_id", tenantId);
+
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
       }
 
       toast({ title: "Programme updated" });
@@ -273,6 +272,7 @@ export default function ProgramsPage() {
     }
   };
 
+  /** TOGGLE ACTIVE/INACTIVE */
   const handleToggleActive = async (id: string, active: boolean) => {
     if (!tenantId || !universityId) {
       toast({
@@ -312,9 +312,9 @@ export default function ProgramsPage() {
     }
   };
 
+  /** DELETE PROGRAM */
   const handleDelete = async () => {
     if (!deleteId) return;
-
     if (!tenantId || !universityId) {
       toast({
         title: "Missing account information",
@@ -357,7 +357,6 @@ export default function ProgramsPage() {
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
       <div>
         <h1 className="text-2xl font-semibold">Programmes</h1>
         <p className="text-sm text-muted-foreground">
@@ -365,7 +364,6 @@ export default function ProgramsPage() {
         </p>
       </div>
 
-      {/* CARD WRAPPER */}
       <Card className="rounded-2xl">
         <CardHeader className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
@@ -414,7 +412,6 @@ export default function ProgramsPage() {
         </CardContent>
       </Card>
 
-      {/* CREATE DIALOG */}
       {createOpen && (
         <ProgramForm
           initialValues={createInitialValues}
@@ -430,7 +427,6 @@ export default function ProgramsPage() {
         />
       )}
 
-      {/* EDIT DIALOG */}
       {editProgram && editInitialValues && (
         <ProgramForm
           initialValues={editInitialValues}
@@ -446,14 +442,12 @@ export default function ProgramsPage() {
         />
       )}
 
-      {/* VIEW DIALOG */}
       <ProgramViewDialog
         program={viewProgram}
         open={Boolean(viewProgram)}
         onClose={() => setViewProgram(null)}
       />
 
-      {/* DELETE DIALOG */}
       <ProgramDeleteDialog
         open={Boolean(deleteId)}
         onClose={() => setDeleteId(null)}
