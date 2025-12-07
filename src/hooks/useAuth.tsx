@@ -180,41 +180,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (!needsIsolation) {
       // Verify partner has their own university, create one if missing
+      // Using the safe get_or_create_university function to prevent duplicates
       if (!existingUniversity) {
-        console.warn('Partner has isolated tenant but no university - creating one now');
+        console.warn('Partner has isolated tenant but no university - creating one now via RPC');
         const universityName =
           typeof currentUser?.user_metadata?.university_name === 'string'
             ? currentUser.user_metadata.university_name
             : `${profileData.full_name}'s University`;
 
-        // Generate initial profile details with contact info from profile
-        const initialProfileDetails = generateInitialUniversityProfileDetails(
-          profileData.full_name,
-          profileData.email || currentUser?.email,
-          profileData.phone || currentUser?.user_metadata?.phone,
-          profileData.country || currentUser?.user_metadata?.country,
-        );
-
-        const { error: createUniError } = await supabase
-          .from('universities')
-          .insert({
-            name: universityName,
-            country: currentUser?.user_metadata?.country || 'Unknown',
-            city: null,
-            website: currentUser?.user_metadata?.website || null,
-            logo_url: null,
-            description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
-            tenant_id: profileData.tenant_id,
-            active: true,
-            submission_config_json: initialProfileDetails,
-          })
-          .select('id')
-          .single();
+        // Use the database function that handles race conditions safely
+        const { error: createUniError } = await supabase.rpc('get_or_create_university', {
+          p_tenant_id: profileData.tenant_id,
+          p_name: universityName,
+          p_country: currentUser?.user_metadata?.country || 'Unknown',
+          p_contact_name: profileData.full_name,
+          p_contact_email: profileData.email || currentUser?.email,
+        });
 
         if (createUniError) {
           console.error('Failed to create university for existing tenant:', createUniError);
         } else {
-          console.log('Created missing university for partner tenant:', profileData.tenant_id);
+          console.log('Created/verified university for partner tenant:', profileData.tenant_id);
         }
       }
       return profileData;
@@ -287,37 +273,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ? currentUser.user_metadata.university_name
         : `${profileData.full_name}'s University`;
 
-    // Generate initial profile details with contact info from signup/profile
-    const initialProfileDetails = generateInitialUniversityProfileDetails(
-      profileData.full_name,
-      profileData.email || currentUser?.email,
-      profileData.phone || currentUser?.user_metadata?.phone,
-      profileData.country || currentUser?.user_metadata?.country,
-    );
-
-    // Create a fresh university for this new isolated tenant
-    const { data: newUniversity, error: universityCreationError } = await supabase
-      .from('universities')
-      .insert({
-        name: universityName,
-        country: currentUser?.user_metadata?.country || 'Unknown',
-        city: null,
-        website: currentUser?.user_metadata?.website || null,
-        logo_url: null,
-        description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
-        tenant_id: newTenant!.id,
-        active: true,
-        submission_config_json: initialProfileDetails,
-      })
-      .select('id, name')
-      .single();
+    // Create a fresh university for this new isolated tenant using the safe RPC function
+    const { data: newUniversityId, error: universityCreationError } = await supabase.rpc('get_or_create_university', {
+      p_tenant_id: newTenant!.id,
+      p_name: universityName,
+      p_country: currentUser?.user_metadata?.country || 'Unknown',
+      p_contact_name: profileData.full_name,
+      p_contact_email: profileData.email || currentUser?.email,
+    });
 
     if (universityCreationError) {
       console.error('Failed to create isolated university for partner profile:', universityCreationError);
       // Don't continue without a university - the partner won't have data to manage
       // But still update tenant to prevent shared data access
     } else {
-      console.log(`Created new isolated university "${newUniversity?.name}" for partner`);
+      console.log(`Created new isolated university (ID: ${newUniversityId}) for partner`);
     }
 
     // Update the profile to use the new isolated tenant

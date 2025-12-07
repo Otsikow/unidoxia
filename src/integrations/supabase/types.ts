@@ -2681,7 +2681,7 @@ export type Database = {
           {
             foreignKeyName: "universities_tenant_id_fkey"
             columns: ["tenant_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -2935,6 +2935,16 @@ export type Database = {
           p_other_user_id: string
           p_tenant_id: string
           p_user_id: string
+        }
+        Returns: string
+      }
+      get_or_create_university: {
+        Args: {
+          p_contact_email?: string
+          p_contact_name?: string
+          p_country?: string
+          p_name?: string
+          p_tenant_id: string
         }
         Returns: string
       }
