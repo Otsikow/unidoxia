@@ -199,7 +199,7 @@ export default function OnboardingWelcome() {
             size="lg" 
             className="w-full sm:flex-1 gap-2 text-base"
           >
-            <Link to="/onboarding/destinations">
+            <Link to="/onboarding/success-stories">
               <Sparkles className="w-4 h-4" />
               Get Started
             </Link>
@@ -226,6 +226,13 @@ export default function OnboardingWelcome() {
             <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: "0.5s" }} />
             <span>50+ Countries</span>
           </div>
+        </div>
+
+        {/* Progress indicator */}
+        <div className="mt-8 flex justify-center gap-2 animate-fade-in" style={{ animationDelay: "1.2s" }}>
+          <div className="w-2 h-2 rounded-full bg-primary" />
+          <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
+          <Link to="/onboarding/fast-applications" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
         </div>
       </div>
 
