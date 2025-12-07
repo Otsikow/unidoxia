@@ -159,7 +159,7 @@ export default function ApplicationDetails() {
       if (appErr) throw appErr;
       if (!appData) {
         toast({ title: 'Not found', description: 'Application not found', variant: 'destructive' });
-        navigate(-1);
+        navigate('/student/applications', { replace: true });
         return;
       }
       const applicationId = (appData as { id: string }).id;
