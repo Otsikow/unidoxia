@@ -42,6 +42,13 @@ export const useUserRoles = (): UseUserRolesResult => {
       }
 
       const normalized = value.trim().toLowerCase();
+      
+      // Map legacy 'university' role to 'partner' for backward compatibility
+      // Some older accounts may have 'university' as their role instead of 'partner'
+      if (normalized === "university") {
+        return "partner";
+      }
+      
       return ROLE_PRIORITY.includes(normalized as AppRole) ? (normalized as AppRole) : null;
     },
     []

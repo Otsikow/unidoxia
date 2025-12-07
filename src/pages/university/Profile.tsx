@@ -582,21 +582,43 @@ const UniversityProfilePage = () => {
 
         // Check if update succeeded
         if (updateError) {
+          console.error("University update error:", updateError);
           universityError = updateError;
         } else if (!updateData || updateData.length === 0) {
-          // Update didn't affect any rows - this could mean RLS blocked the update
-          // or the university ID/tenant don't match. Try a direct update without select.
-          const { error: retryError } = await supabase
-            .from("universities")
-            .update(updatePayload)
-            .eq("id", existingUniversityId)
-            .eq("tenant_id", tenantId);
+          // Update didn't affect any rows - this could mean RLS blocked the update.
+          // This is likely a permissions issue. Let's verify the university still exists.
+          console.warn("University update returned no data - checking if RLS blocked the operation");
           
-          if (retryError) {
-            universityError = retryError;
+          const { data: verifyData, error: verifyError } = await supabase
+            .from("universities")
+            .select("id, name, updated_at")
+            .eq("id", existingUniversityId)
+            .eq("tenant_id", tenantId)
+            .maybeSingle();
+          
+          if (verifyError) {
+            console.error("Failed to verify university after update:", verifyError);
+            universityError = new Error("Unable to verify profile update. Please try again or contact support.");
+          } else if (!verifyData) {
+            // University doesn't exist for this tenant - RLS is blocking
+            console.error("RLS blocking: Cannot access university for tenant", tenantId);
+            universityError = new Error("Your account doesn't have permission to update this profile. Please contact support.");
+          } else {
+            // University exists but update didn't return data - try one more time with explicit verification
+            const { error: retryError } = await supabase
+              .from("universities")
+              .update(updatePayload)
+              .eq("id", existingUniversityId)
+              .eq("tenant_id", tenantId);
+            
+            if (retryError) {
+              console.error("University update retry error:", retryError);
+              universityError = retryError;
+            }
+            // If retry succeeded without error, the update should have worked
           }
-          // If no error but also no data, the update was blocked by RLS - this is a permissions issue
-          // We'll verify the save later with fetchLatestUniversity()
+        } else {
+          console.log("University profile updated successfully:", updateData[0]?.name);
         }
       } else {
         // INSERT new university for this tenant

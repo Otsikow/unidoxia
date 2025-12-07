@@ -62,7 +62,9 @@ const AppNavbar = () => {
       .toUpperCase()
       .slice(0, 2);
 
-  const dashboardPath = profile?.role === "partner" ? "/university" : "/dashboard";
+  // Map 'university' role to 'partner' for backward compatibility
+  const isPartnerRole = profile?.role === "partner" || profile?.role === "university";
+  const dashboardPath = isPartnerRole ? "/university" : "/dashboard";
 
   return (
     <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-slide-in-down">
