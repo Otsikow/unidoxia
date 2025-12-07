@@ -179,11 +179,11 @@ export default function OnboardingDestinations() {
   };
 
   const handleNext = () => {
-    // Store selected countries for later use and navigate to signup
+    // Store selected countries for later use and navigate to program matching
     if (selectedCountries.length > 0) {
       localStorage.setItem("onboarding_destinations", JSON.stringify(selectedCountries));
     }
-    navigate("/auth/signup?role=student");
+    navigate("/onboarding/program-matching");
   };
 
   return (
@@ -244,7 +244,7 @@ export default function OnboardingDestinations() {
 
           {/* Skip option */}
           <Link 
-            to="/auth/signup?role=student" 
+            to="/onboarding/program-matching" 
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
             style={{ animationDelay: "0.8s" }}
           >
@@ -257,6 +257,7 @@ export default function OnboardingDestinations() {
           <div className="flex justify-center gap-2">
             <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
             <div className="w-2 h-2 rounded-full bg-primary" />
+            <Link to="/onboarding/program-matching" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
           </div>
         </div>
       </div>
