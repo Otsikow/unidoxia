@@ -197,7 +197,7 @@ export default function OnboardingDestinations() {
     if (selectedCountries.length > 0) {
       localStorage.setItem("onboarding_destinations", JSON.stringify(selectedCountries));
     }
-    navigate("/onboarding/transparency");
+    navigate("/auth/signup?role=student");
   };
 
   return (
@@ -250,7 +250,7 @@ export default function OnboardingDestinations() {
           </div>
 
           <Link
-            to="/onboarding/transparency"
+            to="/auth/signup?role=student"
             className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
             style={{ animationDelay: "0.8s" }}
           >
@@ -276,12 +276,6 @@ export default function OnboardingDestinations() {
 
             {/* Dot 3 — Destinations (current) */}
             <div className="w-2 h-2 rounded-full bg-primary" />
-
-            {/* Dot 4 — Transparency */}
-            <Link
-              to="/onboarding/transparency"
-              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-            />
 
           </div>
         </div>

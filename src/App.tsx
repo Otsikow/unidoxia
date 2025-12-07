@@ -145,7 +145,6 @@ const Index = lazyWithErrorHandling(() => import("./pages/Index"));
 const OnboardingWelcome = lazyWithErrorHandling(() => import("./pages/onboarding/Welcome"));
 const OnboardingStudentSuccess = lazyWithErrorHandling(() => import("./pages/onboarding/StudentSuccess"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
-const OnboardingTransparency = lazyWithErrorHandling(() => import("./pages/onboarding/Transparency"));
 const OnboardingVisaSupport = lazyWithErrorHandling(() => import("./pages/onboarding/VisaSupport"));
 
 const Contact = lazyWithErrorHandling(() => import("./pages/Contact"));
@@ -317,7 +316,6 @@ const App = () => {
                         <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
                         <Route path="/onboarding/success-stories" element={<OnboardingStudentSuccess />} />
                         <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
-                        <Route path="/onboarding/transparency" element={<OnboardingTransparency />} />
                         <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />
 
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
