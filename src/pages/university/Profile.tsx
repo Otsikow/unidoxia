@@ -573,15 +573,31 @@ const UniversityProfilePage = () => {
           updated_at: new Date().toISOString(),
         };
 
-        const { error } = await supabase
+        const { data: updateData, error: updateError } = await supabase
           .from("universities")
           .update(updatePayload)
           .eq("id", existingUniversityId)
           .eq("tenant_id", tenantId) // Ensure tenant isolation
-          .select()
-          .single();
+          .select();
 
-        universityError = error;
+        // Check if update succeeded
+        if (updateError) {
+          universityError = updateError;
+        } else if (!updateData || updateData.length === 0) {
+          // Update didn't affect any rows - this could mean RLS blocked the update
+          // or the university ID/tenant don't match. Try a direct update without select.
+          const { error: retryError } = await supabase
+            .from("universities")
+            .update(updatePayload)
+            .eq("id", existingUniversityId)
+            .eq("tenant_id", tenantId);
+          
+          if (retryError) {
+            universityError = retryError;
+          }
+          // If no error but also no data, the update was blocked by RLS - this is a permissions issue
+          // We'll verify the save later with fetchLatestUniversity()
+        }
       } else {
         // INSERT new university for this tenant
         const insertPayload = {
@@ -591,13 +607,46 @@ const UniversityProfilePage = () => {
           updated_at: new Date().toISOString(),
         };
 
-        const { error } = await supabase
+        const { data: insertData, error: insertError } = await supabase
           .from("universities")
           .insert(insertPayload)
-          .select()
-          .single();
+          .select();
 
-        universityError = error;
+        if (insertError) {
+          // Check if this is a unique constraint violation (university already exists)
+          if (insertError.code === "23505" || insertError.message?.includes("duplicate") || insertError.message?.includes("unique")) {
+            // University already exists for this tenant - try to update instead
+            console.log("University already exists for tenant, attempting update instead");
+            
+            const { data: existingUni } = await supabase
+              .from("universities")
+              .select("id")
+              .eq("tenant_id", tenantId)
+              .maybeSingle();
+            
+            if (existingUni?.id) {
+              const updatePayload = {
+                ...payload,
+                updated_at: new Date().toISOString(),
+              };
+              
+              const { error: fallbackUpdateError } = await supabase
+                .from("universities")
+                .update(updatePayload)
+                .eq("id", existingUni.id)
+                .eq("tenant_id", tenantId);
+              
+              universityError = fallbackUpdateError;
+            } else {
+              universityError = insertError;
+            }
+          } else {
+            universityError = insertError;
+          }
+        } else if (!insertData || insertData.length === 0) {
+          // Insert was blocked by RLS policy
+          universityError = new Error("Unable to create university profile. Your account may not have the required permissions. Please contact support.");
+        }
       }
       if (universityError) {
         throw universityError;
