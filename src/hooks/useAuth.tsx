@@ -1044,7 +1044,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // This ensures the next user won't see cached data from the previous user
     queryClient.clear();
     
-    // Sign out from Supabase
+    // CRITICAL: Clear all cached profile/tenant data from storage
+    // This prevents stale data from persisting across user sessions
+    try {
+      // Clear any app-specific cached data (not auth tokens - Supabase handles those)
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('profile') || key.includes('tenant') || key.includes('university'))) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      
+      // Clear sessionStorage completely for fresh session on next login
+      sessionStorage.clear();
+    } catch (err) {
+      console.warn('Error clearing cached data on logout:', err);
+    }
+    
+    // Sign out from Supabase (this clears auth tokens)
     await supabase.auth.signOut();
     
     // Navigate to login
