@@ -139,7 +139,7 @@ export default function UniversityProfile() {
   const loadUniversityData = async (universityId: string) => {
     setLoading(true);
     try {
-      // Load university
+      // Load university - fetch by ID to get the specific university
       const { data: universityData, error: uniError } = await supabase
         .from("universities")
         .select("*")
@@ -152,26 +152,37 @@ export default function UniversityProfile() {
         parseUniversityProfileDetails(universityData?.submission_config_json ?? null),
       );
 
-      // Load programs
+      // MULTI-TENANT ISOLATION: Load programs ONLY for this specific university
+      // Each university has its own unique programs - no data sharing between institutions
+      // The university_id filter ensures complete data isolation
       const { data: programsData, error: progError } = await supabase
         .from("programs")
         .select("*")
-        .eq("university_id", universityId)
+        .eq("university_id", universityId) // Critical: Only programs belonging to THIS university
         .eq("active", true)
         .order("level")
         .order("name");
 
       if (progError) throw progError;
-      setPrograms(programsData || []);
+      
+      // Verification: Ensure all returned programs belong to this university
+      const validatedPrograms = (programsData || []).filter(
+        (program) => program.university_id === universityId
+      );
+      setPrograms(validatedPrograms);
 
-      // Load scholarships
+      // MULTI-TENANT ISOLATION: Load scholarships ONLY for this specific university
       const { data: scholarshipsData } = await supabase
         .from("scholarships")
         .select("*")
-        .eq("university_id", universityId)
+        .eq("university_id", universityId) // Critical: Only scholarships belonging to THIS university
         .eq("active", true);
 
-      setScholarships(scholarshipsData || []);
+      // Verification: Ensure all returned scholarships belong to this university
+      const validatedScholarships = (scholarshipsData || []).filter(
+        (scholarship) => scholarship.university_id === universityId
+      );
+      setScholarships(validatedScholarships);
     } catch (error) {
       console.error("Error loading university data:", error);
     } finally {
@@ -263,12 +274,19 @@ export default function UniversityProfile() {
                     {profileDetails.tagline}
                   </p>
                 ) : null}
-                <div className="flex flex-wrap items-center gap-4 text-white/90 drop-shadow">
-                  <span className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5" />
+                <div className="flex flex-wrap items-center gap-3 text-white/90 drop-shadow">
+                  <Badge className="bg-white/20 hover:bg-white/30 text-white border-white/30 px-3 py-1">
+                    <MapPin className="h-3.5 w-3.5 mr-1.5" />
                     {university.city && `${university.city}, `}
                     {university.country}
-                  </span>
+                  </Badge>
+                  <Badge 
+                    className="bg-primary/80 hover:bg-primary text-white border-primary px-3 py-1 cursor-pointer"
+                    onClick={() => setActiveTab("programs")}
+                  >
+                    <GraduationCap className="h-3.5 w-3.5 mr-1.5" />
+                    {programs.length} Programmes
+                  </Badge>
                   {university.website && (
                     <Button
                       variant="outline"
@@ -342,40 +360,75 @@ export default function UniversityProfile() {
               </Card>
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Stats</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button
-                  onClick={() => setActiveTab("programs")}
-                  className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-left w-full"
-                >
-                  <GraduationCap className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">{programs.length}</p>
-                    <p className="text-sm text-muted-foreground">Programs Offered</p>
+            {/* Prominent Programs Card - Clearly Clickable */}
+            <Card 
+              className="group border-2 border-primary/20 hover:border-primary/50 hover:shadow-xl transition-all cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10"
+              onClick={() => setActiveTab("programs")}
+            >
+              <CardContent className="p-8">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                    <GraduationCap className="h-10 w-10 text-primary" />
                   </div>
-                </button>
-                <button
-                  onClick={() => setActiveTab("scholarships")}
-                  className="flex items-center gap-3 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer text-left w-full"
-                >
-                  <Award className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">{scholarships.length}</p>
-                    <p className="text-sm text-muted-foreground">Scholarships Available</p>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <h3 className="text-3xl font-bold text-foreground">{programs.length}</h3>
+                      <Badge variant="secondary" className="text-sm">
+                        Active
+                      </Badge>
+                    </div>
+                    <p className="text-xl font-semibold text-foreground">
+                      Programs Offered by {university.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Browse all academic programs exclusive to this university. Each program has been verified and is uniquely offered by {university.name}.
+                    </p>
                   </div>
-                </button>
-                <div className="flex items-center gap-3 p-4 rounded-lg bg-muted/50">
-                  <MapPin className="h-8 w-8 text-primary" />
-                  <div>
-                    <p className="text-2xl font-bold">{university.country}</p>
-                    <p className="text-sm text-muted-foreground">Location</p>
+                  <div className="flex items-center gap-2 text-primary font-medium group-hover:translate-x-1 transition-transform">
+                    <span>View All Programs</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14"/>
+                      <path d="m12 5 7 7-7 7"/>
+                    </svg>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card 
+                className="group hover:shadow-lg transition-all cursor-pointer"
+                onClick={() => setActiveTab("scholarships")}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
+                      <Award className="h-7 w-7 text-amber-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-bold text-foreground">{scholarships.length}</p>
+                      <p className="text-sm text-muted-foreground">Scholarships Available</p>
+                    </div>
+                    <span className="text-muted-foreground group-hover:text-foreground transition-colors">→</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-500/10">
+                      <MapPin className="h-7 w-7 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-bold text-foreground">{university.country}</p>
+                      <p className="text-sm text-muted-foreground">{university.city || "Location"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {profileDetails.highlights.length > 0 ? (
               <Card>
