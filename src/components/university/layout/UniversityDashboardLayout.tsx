@@ -388,8 +388,8 @@ export const fetchUniversityDashboardData = async (
   const fetchProgramsWithFallback = async (): Promise<UniversityProgram[]> => {
     const response = await selectPrograms(programColumns);
 
-    if (!response.error) {
-      return (response.data ?? []) as UniversityProgram[];
+    if (!response.error && response.data) {
+      return response.data as unknown as UniversityProgram[];
     }
 
     const err = response.error;
