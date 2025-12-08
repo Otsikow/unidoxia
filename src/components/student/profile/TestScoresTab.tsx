@@ -8,9 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, Award, Pencil, Trash2, Loader2, Eye } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { validateFileUpload } from '@/lib/fileUpload';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TestScoresTabProps {
   studentId: string;
@@ -25,6 +28,8 @@ const ALLOWED_CERTIFICATE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'appl
 
 export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [testScores, setTestScores] = useState<Tables<'test_scores'>[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -213,7 +218,13 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
       setCertificateFile(null);
       setExistingCertificatePath(null);
       resetForm();
-      fetchTestScores();
+      await fetchTestScores();
+      
+      // Invalidate student record query to update completeness calculation
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
+      
       onUpdate?.();
     } catch (error: unknown) {
       if (uploadedCertificatePath) {
@@ -256,7 +267,13 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
         }
       }
       toast({ title: 'Success', description: 'Test score deleted' });
-      fetchTestScores();
+      await fetchTestScores();
+      
+      // Invalidate student record query to update completeness calculation
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
+      
       onUpdate?.();
     } catch (error: unknown) {
       const errorMessage = formatTestScoreError(error, 'delete');

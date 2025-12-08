@@ -187,10 +187,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .eq('tenant_id', profileData.tenant_id)
       .maybeSingle();
 
-    // IMPORTANT: Only trigger isolation if on a truly shared tenant (unidoxia/default).
-    // Do NOT check university name - partners can change their university name
-    // without needing a new tenant. The tenant isolation is based on tenant slug, not university name.
-    const needsIsolation = isSharedTenant;
+    // CRITICAL FIX: Also check if OTHER partners are using this same tenant
+    // This prevents the mirroring issue where multiple universities share data
+    const { data: otherPartners, error: otherPartnersError } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .eq('tenant_id', profileData.tenant_id)
+      .in('role', ['partner', 'university'])
+      .neq('id', profileData.id)
+      .limit(1);
+
+    if (otherPartnersError) {
+      console.error('Error checking for other partners on tenant:', otherPartnersError);
+    }
+
+    // Need isolation if:
+    // 1. On a shared tenant (unidoxia/default), OR
+    // 2. Another partner user is already using this tenant (data would be mirrored)
+    const hasOtherPartners = otherPartners && otherPartners.length > 0;
+    const needsIsolation = isSharedTenant || hasOtherPartners;
+
+    if (hasOtherPartners && !isSharedTenant) {
+      console.warn('CRITICAL: Multiple partners sharing tenant detected!', {
+        currentUser: profileData.email,
+        otherPartner: otherPartners[0]?.email,
+        tenantId: profileData.tenant_id,
+        tenantSlug: tenant?.slug,
+        universityName: existingUniversity?.name,
+      });
+    }
 
     if (!needsIsolation) {
       // Verify partner has their own university, create one if missing
@@ -223,11 +248,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.warn(
       'Partner profile requires isolation. Creating an isolated tenant to prevent data leakage.',
       { 
-        profileId: profileData.id, 
+        profileId: profileData.id,
+        profileEmail: profileData.email,
         tenantId: profileData.tenant_id, 
         tenantSlug: tenant?.slug,
         isSharedTenant,
+        hasOtherPartners,
+        otherPartnerEmail: otherPartners?.[0]?.email,
         existingUniversity: existingUniversity?.name,
+        reason: isSharedTenant ? 'shared_tenant' : 'multiple_partners_on_tenant',
       },
     );
 
