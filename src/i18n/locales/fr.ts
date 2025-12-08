@@ -1,3 +1,5 @@
+import en from "./en";
+
 const fr = {
   common: {
     languageNames: {
@@ -331,7 +333,9 @@ const fr = {
     },
   },
     pages: {
+      ...en.pages,
       index: {
+        ...en.pages.index,
         aiDocumentChecker: {
           badge: "AI Document Checker",
           heading: "Let AI review every document in seconds",
@@ -453,6 +457,8 @@ const fr = {
             previewLabel: "Exemple",
             highlightsHeading: "Ce que l'IA prépare pour vous",
           },
+          zoeAlt: "Portrait de Zoe, le guide d'intelligence de Bridge",
+          zoeCaption: "Découvrez Zoe – le visage amical qui vous accompagne à chaque insight et recommandation.",
           focusAreas: [
             {
               key: "stem",

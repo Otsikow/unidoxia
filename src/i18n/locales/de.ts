@@ -380,6 +380,8 @@ const de = {
           previewLabel: "Vorschau",
           highlightsHeading: "Was die KI für Sie vorbereitet",
         },
+        zoeAlt: "Porträt von Zoe, der Begleiterin für Intelligenz-Einblicke",
+        zoeCaption: "Lernen Sie Zoe kennen – das freundliche Gesicht, das Sie durch jeden Einblick und jede Empfehlung führt.",
         focusAreas: [
           {
             key: "stem",
