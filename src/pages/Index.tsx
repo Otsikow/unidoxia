@@ -1,31 +1,43 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ContactForm } from "@/components/ContactForm";
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator } from "lucide-react";
+import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator, Loader2 } from "lucide-react";
+import { LandingHeader } from "@/components/landing/LandingHeader";
+import { JourneyRibbon } from "@/components/JourneyRibbon";
+import { SEO } from "@/components/SEO";
+
+// Static assets - these are URL references, not heavy JS
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import studentsStudyingGroup from "@/assets/students-studying-group.png";
 import agentStudentConsulting from "@/assets/agent-student-consulting.png";
 import universityBuildings from "@/assets/university-buildings.png";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
-import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
-import { StoryboardSection } from "@/components/landing/StoryboardSection";
-import { AIDocumentCheckerSection } from "@/components/landing/AIDocumentCheckerSection";
-import { AIFeeCalculator } from "@/components/landing/AIFeeCalculator";
-import { ZoeExperienceSection } from "@/components/landing/ZoeExperienceSection";
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { ThreeDCarousel, type ThreeDCarouselCard } from "@/components/landing/ThreeDCarousel";
-import { JourneyRibbon } from "@/components/JourneyRibbon";
-import { SEO } from "@/components/SEO";
-import studentJourney from "@/assets/student-journey.png";
-import globalDestinations from "@/assets/global-destinations.png";
+
+// ==========================================
+// LAZY LOAD BELOW-THE-FOLD COMPONENTS
+// These are loaded after initial paint for faster First Contentful Paint
+// ==========================================
+
+const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
+const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
+const AIDocumentCheckerSection = lazy(() => import("@/components/landing/AIDocumentCheckerSection"));
+const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"));
+const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
+const ContactForm = lazy(() => import("@/components/ContactForm").then(m => ({ default: m.ContactForm })));
+
+// Lightweight loading placeholder for lazy sections
+const SectionLoader = () => (
+  <div className="flex items-center justify-center py-20">
+    <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+  </div>
+);
 const Index = () => {
   const {
     t
@@ -60,47 +72,6 @@ const Index = () => {
     suffix?: string;
   }, [t]);
   const heroDescription = t("pages.index.hero.description");
-  const carouselCards = useMemo<ThreeDCarouselCard[]>(() => [{
-    title: "Build your roadmap",
-    description: "Task checklists and smart reminders keep thousands of students organized from transcripts to statements.",
-    metricValue: "5000+",
-    metricLabel: "personalized plans created",
-    actionLabel: "Meet your agent",
-    actionHref: "/auth/signup?role=student",
-    image: studentJourney,
-    gradient: "from-[#3B1F5E] via-[#1A0F30] to-[#0A081D]",
-    accent: "bg-gradient-to-r from-[#C4A1FF]/20 via-[#7AE8FF]/20 to-[#FFD166]/25"
-  }, {
-    title: "Collaborate with advisors",
-    description: "Verified advisors co-edit documents, answer questions, and align timelines in real time across devices.",
-    metricValue: "24h",
-    metricLabel: "average agent response",
-    actionLabel: "Collaborate now",
-    actionHref: "/auth/signup?role=agent",
-    image: agentStudentConsulting,
-    gradient: "from-[#251943] via-[#1B1236] to-[#0C0A1C]",
-    accent: "bg-gradient-to-r from-[#8B5CF6]/25 via-[#6EE7FF]/20 to-[#FDE68A]/20"
-  }, {
-    title: "Streamline applications",
-    description: "Centralized submissions with proactive nudges keep applications on track and mistake-free.",
-    metricValue: "95%",
-    metricLabel: "success rate",
-    actionLabel: "See smart automations",
-    actionHref: "/course-discovery",
-    image: visaEligibilityImage,
-    gradient: "from-[#1F2343] via-[#17192F] to-[#0C0B1B]",
-    accent: "bg-gradient-to-r from-[#6EE7FF]/25 via-[#A78BFA]/20 to-[#FBBF24]/25"
-  }, {
-    title: "Launch your journey",
-    description: "Visa-ready checklists and pre-departure prep carry students from campus access to arrival with confidence.",
-    metricValue: "50+",
-    metricLabel: "countries represented",
-    actionLabel: "Explore destinations",
-    actionHref: "/university-directory",
-    image: globalDestinations,
-    gradient: "from-[#1E0F2F] via-[#120C24] to-[#090816]",
-    accent: "bg-gradient-to-r from-[#9F7AEA]/25 via-[#7EE0FF]/20 to-[#FCD34D]/20"
-  }], []);
 
   // FEATURES
   const features = useMemo(() => [{
@@ -235,9 +206,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* NEO-STYLE 3D CAROUSEL */}
-      
-
       {/* FEATURES */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-4xl font-bold text-center mb-12">
@@ -258,8 +226,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* AI Sections */}
-      <AIDocumentCheckerSection />
+      {/* AI Sections - Lazy loaded */}
+      <Suspense fallback={<SectionLoader />}>
+        <AIDocumentCheckerSection />
+      </Suspense>
 
       {/* VISA CALCULATOR */}
       <section className="relative py-24">
@@ -290,11 +260,19 @@ const Index = () => {
         </div>
       </section>
 
-      <AIFeeCalculator />
+      <Suspense fallback={<SectionLoader />}>
+        <AIFeeCalculator />
+      </Suspense>
 
-      <ZoeExperienceSection />
-      <FeaturedUniversitiesSection />
-      <StoryboardSection />
+      <Suspense fallback={<SectionLoader />}>
+        <ZoeExperienceSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <FeaturedUniversitiesSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <StoryboardSection />
+      </Suspense>
 
       {/* TESTIMONIALS */}
       <section className="container mx-auto px-4 py-20 text-center">
@@ -374,7 +352,9 @@ const Index = () => {
 
         <Card className="max-w-2xl mx-auto border-2">
           <CardContent className="p-8">
-            <ContactForm />
+            <Suspense fallback={<SectionLoader />}>
+              <ContactForm />
+            </Suspense>
           </CardContent>
         </Card>
       </section>
