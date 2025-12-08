@@ -91,11 +91,10 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
       const document = documents?.find((d) => d.id === documentId);
       if (!document) throw new Error('Document not found');
 
-      // Delete from storage
-      const fileName = document.storage_path.split('/').slice(-2).join('/');
+      // Delete from storage using the full storage path
       const { error: storageError } = await supabase.storage
         .from('student-documents')
-        .remove([fileName]);
+        .remove([document.storage_path]);
 
       if (storageError) throw storageError;
 
@@ -161,9 +160,9 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
 
       if (studentError) throw studentError;
 
-      // Upload to storage
+      // Upload to storage using student ID (required by RLS policy)
       const fileExt = sanitizedFileName.split('.').pop();
-      const fileName = `${profile.id}/${Date.now()}-${documentType}.${fileExt}`;
+      const fileName = `${studentData.id}/${Date.now()}-${documentType}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('student-documents')
