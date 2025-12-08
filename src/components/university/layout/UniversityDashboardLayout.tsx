@@ -890,6 +890,21 @@ export const UniversityDashboardLayout = ({
       });
     }
   }, [error, toast]);
+
+  // -----------------------------------------------------
+  // CONTEXT VALUE (must be defined before early returns)
+  // -----------------------------------------------------
+  const contextValue: UniversityDashboardContextValue = useMemo(
+    () => ({
+      data: data ?? buildEmptyDashboardData(),
+      isLoading,
+      isRefetching: isFetching,
+      error: error ? (error as Error).message : null,
+      refetch: async () => void queryRefetch(),
+    }),
+    [data, isLoading, isFetching, error, queryRefetch],
+  );
+
   // -----------------------------------------------------
   // PROFILE COMPLETION CALCULATION
   // -----------------------------------------------------
@@ -982,6 +997,26 @@ export const UniversityDashboardLayout = ({
   // NEW UNIVERSITY WELCOME STATE
   // -----------------------------------------------------
   if (!data || !data.university) {
+    const handleSetUpProfile = () => {
+      navigate("/university/profile");
+    };
+
+    const handleRefresh = async () => {
+      try {
+        await queryRefetch();
+        toast({
+          title: "Dashboard refreshed",
+          description: "Checking for updates...",
+        });
+      } catch (err) {
+        toast({
+          title: "Refresh failed",
+          description: "Please try again.",
+          variant: "destructive",
+        });
+      }
+    };
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-lg text-center flex flex-col items-center gap-6">
@@ -997,18 +1032,23 @@ export const UniversityDashboardLayout = ({
           </p>
 
           <div className="flex gap-4 mt-2">
-            <Button onClick={() => navigate("/university/profile")}>
+            <Button
+              type="button"
+              onClick={handleSetUpProfile}
+            >
               <Sparkles className="h-4 w-4 mr-2" />
               Set Up Profile
             </Button>
 
             <Button
+              type="button"
               variant="outline"
-              onClick={() => void queryRefetch()}
+              onClick={handleRefresh}
+              disabled={isFetching}
               className="gap-2"
             >
-              Refresh
-              <RefreshCw className="h-4 w-4" />
+              {isFetching ? "Refreshing..." : "Refresh"}
+              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
           </div>
 
@@ -1019,16 +1059,6 @@ export const UniversityDashboardLayout = ({
       </div>
     );
   }
-  const contextValue: UniversityDashboardContextValue = useMemo(
-    () => ({
-      data: data ?? buildEmptyDashboardData(),
-      isLoading,
-      isRefetching: isFetching,
-      error: error ? (error as Error).message : null,
-      refetch: async () => void queryRefetch(),
-    }),
-    [data, isLoading, isFetching, error, queryRefetch],
-  );
 
   return (
     <UniversityDashboardContext.Provider value={contextValue}>
