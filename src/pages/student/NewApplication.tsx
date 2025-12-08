@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { getErrorMessage, logError, formatErrorForToast } from '@/lib/errorUtils';
+import { toValidUuidOrNull } from '@/lib/validation';
 import BackButton from '@/components/BackButton';
 import { 
   Dialog, 
@@ -30,7 +31,7 @@ import ReviewSubmitStep from '@/components/application/ReviewSubmitStep';
 const STEPS = [
   { id: 1, title: 'Personal Information', description: 'Your basic details' },
   { id: 2, title: 'Education History', description: 'Academic background' },
-  { id: 3, title: 'Desired Course', description: 'Select your program' },
+  { id: 3, title: 'Desired Programme', description: 'Select your programme' },
   { id: 4, title: 'Documents', description: 'Upload required files' },
   { id: 5, title: 'Review & Submit', description: 'Final review' },
 ];
@@ -402,10 +403,13 @@ export default function NewApplication() {
   const upsertDraftMutationFn = useCallback(async (
     payload: DraftMutationPayload,
   ): Promise<ApplicationDraftRow> => {
+    // Validate program_id is a valid UUID before saving (fallback courses have non-UUID IDs)
+    const validProgramId = toValidUuidOrNull(payload.programId);
+    
     const draftRecord = {
       student_id: payload.studentId,
       tenant_id: payload.tenantId,
-      program_id: payload.programId,
+      program_id: validProgramId,
       last_step: payload.lastStep,
       form_data: sanitizeFormDataForDraft(payload.formData) as unknown as Json,
     };

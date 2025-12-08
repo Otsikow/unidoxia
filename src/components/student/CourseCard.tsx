@@ -124,7 +124,7 @@ export function CourseCard({ course }: CourseCardProps) {
             </div>
           </div>
 
-          {/* Course Title */}
+          {/* Programme Title */}
           <h2 className="text-lg font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors duration-300">
             {course.name}
           </h2>
@@ -139,7 +139,7 @@ export function CourseCard({ course }: CourseCardProps) {
             </Badge>
           </div>
 
-          {/* Course Details */}
+          {/* Programme Details */}
           <div className="space-y-2.5 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <DollarSign className="h-4 w-4 flex-shrink-0" />

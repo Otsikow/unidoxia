@@ -487,7 +487,7 @@ export default function StudentDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            { to: '/courses', icon: Search, label: 'Discover Courses' },
+            { to: '/courses', icon: Search, label: 'Discover Programmes' },
             { to: '/student/applications', icon: FileText, label: 'Track Applications' },
             { to: '/scholarships', icon: Award, label: 'Find Scholarships' },
             { to: '/student/documents', icon: Upload, label: 'Upload Documents' },
@@ -535,7 +535,7 @@ export default function StudentDashboard() {
                     <p className="text-muted-foreground mb-4">Start by applying to programs</p>
                     <Button asChild>
                       <Link to="/courses?view=programs">
-                        <Search className="mr-2 h-4 w-4" /> Search Programs
+                        <Search className="mr-2 h-4 w-4" /> Search Programmes
                       </Link>
                     </Button>
                   </div>
@@ -544,7 +544,7 @@ export default function StudentDashboard() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Course</TableHead>
+                          <TableHead>Programme</TableHead>
                           <TableHead>University</TableHead>
                           <TableHead className="text-right">Tuition</TableHead>
                           <TableHead>Status</TableHead>

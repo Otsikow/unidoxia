@@ -37,7 +37,7 @@ const en = {
     navigation: {
       home: "Home",
       search: "Search",
-      courses: "Courses",
+      programmes: "Programmes",
       blog: "Blog",
       contact: "Contact",
       dashboard: "Dashboard",
@@ -71,7 +71,7 @@ const en = {
         home: "Home",
         search: "Search",
         scholarships: "Scholarships",
-        courses: "Courses",
+        programmes: "Programmes",
         blog: "Blog",
         contact: "Contact",
       },
@@ -431,7 +431,7 @@ const en = {
           badge: "AI-Powered University & Scholarship Search",
           heading: "Find the right program with real-time intelligence",
           description:
-            "Ask anything about universities, courses, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
+            "Ask anything about universities, programmes, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
           subheading:
             "Sign up to unlock tailored AI recommendations across admissions, scholarships, and visas.",
           ctaLabel: "Get Started",
