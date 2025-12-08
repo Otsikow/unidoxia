@@ -462,6 +462,10 @@ const App = () => {
 
                         <Route path="/agent/students/:studentId" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StudentDetailsPage /></ProtectedRoute>} />
 
+                        {/* ---------------- PROFILE SETTINGS (All authenticated users) ---------------- */}
+
+                        <Route path="/profile/settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+
                         {/* ---------------- PAYMENTS ---------------- */}
 
                         <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
