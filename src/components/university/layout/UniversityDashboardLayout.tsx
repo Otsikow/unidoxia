@@ -266,6 +266,13 @@ const fetchUniversityDashboardData = async (
     return buildEmptyDashboardData();
   }
 
+  // SECURITY CHECK: Verify this tenant ID is a valid UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(tenantId)) {
+    console.error("Invalid tenant ID format - possible injection attempt:", tenantId);
+    throw new Error("Invalid tenant ID format");
+  }
+
   const { data: uniRows, error: uniError } = await supabase
     .from("universities")
     .select("*")
@@ -291,9 +298,21 @@ const fetchUniversityDashboardData = async (
 
   // ISOLATION CHECK: Verify the returned university belongs to the correct tenant
   if (uniData.tenant_id !== tenantId) {
-    console.error("SECURITY: University tenant mismatch - data isolation violation!");
+    console.error("SECURITY: University tenant mismatch - data isolation violation!", {
+      expectedTenant: tenantId,
+      actualTenant: uniData.tenant_id,
+      universityId: uniData.id,
+      universityName: uniData.name,
+    });
     throw new Error("Data isolation error: University does not belong to your organization");
   }
+
+  // Log the university being loaded for debugging
+  console.log("Loading university data:", {
+    id: uniData.id,
+    name: uniData.name,
+    tenantId: uniData.tenant_id,
+  });
 
   const parsedDetails = parseUniversityProfileDetails(
     uniData.submission_config_json ?? null,
