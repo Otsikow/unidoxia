@@ -27,6 +27,8 @@ import {
   Upload,
   GraduationCap,
   Handshake,
+  Building2,
+  Search,
 } from "lucide-react";
 
 import BackButton from "@/components/BackButton";

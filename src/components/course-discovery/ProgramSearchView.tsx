@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -121,6 +122,7 @@ export interface ProgramSearchViewProps {
 
 export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
@@ -134,6 +136,17 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   const [disciplines, setDisciplines] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("search");
   const { t } = useTranslation();
+  
+  // Check if user is an agent/staff/admin to determine the correct apply URL
+  const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
+  
+  // Get the correct apply URL based on user role
+  const getApplyUrl = (programId: string) => {
+    if (isAgentOrStaff) {
+      return `/dashboard/applications/new?program=${programId}`;
+    }
+    return `/student/applications/new?program=${programId}`;
+  };
 
   const showSEO = variant === "page";
   const showBackButton = variant === "page";
@@ -474,9 +487,11 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
                                     </span>
                                   </div>
                                   <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                                      <a href={`/student/applications/new?program=${p.id}`}>
-                                        {t("pages.universitySearch.results.programs.apply")}
-                                      </a>
+                                      <Link to={getApplyUrl(p.id)}>
+                                        {isAgentOrStaff 
+                                          ? t("pages.universitySearch.results.programs.submitApplication", { defaultValue: "Submit Application" }) 
+                                          : t("pages.universitySearch.results.programs.apply")}
+                                      </Link>
                                   </Button>
                                 </div>
                               ))}

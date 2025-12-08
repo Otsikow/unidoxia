@@ -44,6 +44,7 @@ import {
   Check,
   ExternalLink,
   Clock,
+  Building2,
 } from "lucide-react";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { getErrorMessage, logError } from "@/lib/errorUtils";
@@ -421,6 +422,14 @@ export default function AgentDashboardOverview() {
             </Button>
             <Button
               variant="outline"
+              onClick={() => navigate("/universities")}
+              className="gap-2"
+            >
+              <Building2 className="h-4 w-4" />
+              Browse Universities
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => navigate("/courses?view=programs")}
               className="gap-2"
             >
@@ -520,16 +529,26 @@ export default function AgentDashboardOverview() {
             <div className="py-8 text-center">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
               <p className="mt-3 text-sm text-muted-foreground">
-                No applications yet. Start by selecting a student and browsing programs.
+                No applications yet. Start by browsing universities and programs, then submit applications on behalf of your students.
               </p>
-              <Button
-                onClick={() => navigate("/dashboard/students")}
-                className="mt-4 gap-2"
-                variant="outline"
-              >
-                <Users className="h-4 w-4" />
-                View Students
-              </Button>
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                <Button
+                  onClick={() => navigate("/universities")}
+                  className="gap-2"
+                  variant="outline"
+                >
+                  <Building2 className="h-4 w-4" />
+                  Browse Universities
+                </Button>
+                <Button
+                  onClick={() => navigate("/courses?view=programs")}
+                  className="gap-2"
+                  variant="outline"
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  Browse Programs
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto">
