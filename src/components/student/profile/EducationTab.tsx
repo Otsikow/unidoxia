@@ -7,8 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plus, GraduationCap, Pencil, Trash2, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { useAuth } from '@/hooks/useAuth';
 
 interface EducationTabProps {
   studentId: string;
@@ -17,6 +20,8 @@ interface EducationTabProps {
 
 export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [educationRecords, setEducationRecords] = useState<Tables<'education_records'>[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -84,7 +89,13 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
       setIsDialogOpen(false);
       setEditingRecord(null);
       resetForm();
-      fetchEducationRecords();
+      await fetchEducationRecords();
+      
+      // Invalidate student record query to update completeness calculation
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
+      
       onUpdate?.();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
@@ -109,7 +120,13 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
 
       if (error) throw error;
       toast({ title: 'Success', description: 'Education record deleted' });
-      fetchEducationRecords();
+      await fetchEducationRecords();
+      
+      // Invalidate student record query to update completeness calculation
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
+      
       onUpdate?.();
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

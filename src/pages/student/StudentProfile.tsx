@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -15,13 +16,14 @@ import type { Tables } from '@/integrations/supabase/types';
 import { Loader2, LogOut } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
-import { useStudentRecord } from '@/hooks/useStudentRecord';
+import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function StudentProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const queryClient = useQueryClient();
   const {
     hasError,
     error,
@@ -35,91 +37,82 @@ export default function StudentProfile() {
     isLoading: studentRecordLoading,
     error: studentRecordError,
     refetch: refetchStudentRecord,
+    isFetching,
   } = useStudentRecord();
 
-  const [loading, setLoading] = useState(true);
-  const [student, setStudent] = useState<Tables<'students'> | null>(null);
   const [activeTab, setActiveTab] = useState('personal');
   const [completeness, setCompleteness] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(0);
+  const [isCalculatingCompleteness, setIsCalculatingCompleteness] = useState(false);
   const hasRedirectedRef = useRef(false);
+  const hasInitializedRef = useRef(false);
 
-  const recalcCompleteness = useCallback(async (studentRecord: Tables<'students'>) => {
-    const personalDone = !!(
-      studentRecord.legal_name &&
-      studentRecord.contact_email &&
-      studentRecord.passport_number
-    );
-    const financesDone =
-      !!studentRecord.finances_json &&
-      Object.keys(studentRecord.finances_json as Record<string, unknown>).length > 0;
+  const recalcCompleteness = useCallback(async (record: Tables<'students'>) => {
+    setIsCalculatingCompleteness(true);
+    try {
+      const personalDone = !!(
+        record.legal_name &&
+        record.contact_email &&
+        record.passport_number
+      );
+      const financesDone =
+        !!record.finances_json &&
+        Object.keys(record.finances_json as Record<string, unknown>).length > 0;
 
-    const [{ count: educationCount }, { count: testScoresCount }, { count: documentsCount }] =
-      await Promise.all([
-        supabase.from('education_records').select('*', { count: 'exact', head: true }).eq('student_id', studentRecord.id),
-        supabase.from('test_scores').select('*', { count: 'exact', head: true }).eq('student_id', studentRecord.id),
-        supabase.from('student_documents').select('*', { count: 'exact', head: true }).eq('student_id', studentRecord.id),
-      ]);
+      const [{ count: educationCount }, { count: testScoresCount }, { count: documentsCount }] =
+        await Promise.all([
+          supabase.from('education_records').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
+          supabase.from('test_scores').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
+          supabase.from('student_documents').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
+        ]);
 
-    const educationDone = (educationCount || 0) > 0;
-    const testsDone = (testScoresCount || 0) > 0;
-    const documentsDone = (documentsCount || 0) >= 2;
+      const educationDone = (educationCount || 0) > 0;
+      const testsDone = (testScoresCount || 0) > 0;
+      const documentsDone = (documentsCount || 0) >= 2;
 
-    const items = [personalDone, educationDone, testsDone, financesDone, documentsDone];
-    const done = items.filter(Boolean).length;
-    const percent = Math.round((done / items.length) * 100);
+      const items = [personalDone, educationDone, testsDone, financesDone, documentsDone];
+      const done = items.filter(Boolean).length;
+      const percent = Math.round((done / items.length) * 100);
 
-    setCompletedSteps(done);
-    setCompleteness(percent);
+      setCompletedSteps(done);
+      setCompleteness(percent);
 
-    if (studentRecord.profile_completeness !== percent) {
-      await supabase
-        .from('students')
-        .update({ profile_completeness: percent })
-        .eq('id', studentRecord.id);
+      if (record.profile_completeness !== percent) {
+        await supabase
+          .from('students')
+          .update({ profile_completeness: percent })
+          .eq('id', record.id);
+      }
+    } finally {
+      setIsCalculatingCompleteness(false);
     }
   }, []);
 
-  const syncStudentState = useCallback(
-    async (record: Tables<'students'>) => {
-      setStudent(record);
-      await recalcCompleteness(record);
-    },
-    [recalcCompleteness]
-  );
-
+  // Refresh data by invalidating the query and refetching
   const refreshStudentData = useCallback(async () => {
     try {
       clearError();
-      setLoading(true);
-
+      
+      // Invalidate the query to ensure fresh data
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
+      
+      // The refetch will happen automatically due to invalidation
+      // But we can also explicitly refetch to ensure immediate update
       const { data, error } = await refetchStudentRecord();
+      
       if (error) throw error;
 
-      const record = (data ?? studentRecord) as Tables<'students'> | null;
-
-      if (!record) {
-        if (!hasRedirectedRef.current) {
-          toast({
-            title: 'Profile Setup Required',
-            description: 'Please complete your student profile to continue',
-          });
-          navigate('/student/onboarding');
-          hasRedirectedRef.current = true;
-        }
-        setStudent(null);
-        return;
+      if (data) {
+        await recalcCompleteness(data);
       }
-
-      await syncStudentState(record);
     } catch (error) {
       logError(error, 'StudentProfile.refreshStudentData');
-      handleError(error, 'Failed to load profile data');
-      toast(formatErrorForToast(error, 'Failed to load profile data'));
-    } finally {
-      setLoading(false);
+      handleError(error, 'Failed to refresh profile data');
+      toast(formatErrorForToast(error, 'Failed to refresh profile data'));
     }
-  }, [clearError, refetchStudentRecord, studentRecord, syncStudentState, toast, navigate, handleError]);
+  }, [clearError, queryClient, user?.id, refetchStudentRecord, recalcCompleteness, handleError, toast]);
 
   const handleBackToHome = useCallback(() => {
     navigate('/dashboard');
@@ -129,6 +122,7 @@ export default function StudentProfile() {
     void signOut({ redirectTo: '/' });
   }, [signOut]);
 
+  // Handle URL hash for tab selection
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
     if (hash && ['personal', 'education', 'tests', 'finances'].includes(hash)) {
@@ -136,6 +130,7 @@ export default function StudentProfile() {
     }
   }, []);
 
+  // Handle student record loading and initialization
   useEffect(() => {
     if (studentRecordLoading) return;
 
@@ -145,13 +140,10 @@ export default function StudentProfile() {
       logError(studentRecordError, 'StudentProfile.load');
       handleError(studentRecordError, 'Failed to load profile data');
       toast(formatErrorForToast(studentRecordError, 'Failed to load profile data'));
-      setLoading(false);
       return;
     }
 
     if (!studentRecord) {
-      setStudent(null);
-      setLoading(false);
       if (!hasRedirectedRef.current) {
         toast({
           title: 'Profile Setup Required',
@@ -163,29 +155,26 @@ export default function StudentProfile() {
       return;
     }
 
-    const run = async () => {
-      try {
-        setLoading(true);
-        await syncStudentState(studentRecord);
-      } catch (error) {
-        logError(error, 'StudentProfile.syncStudentState');
-        handleError(error, 'Failed to load profile data');
-        toast(formatErrorForToast(error, 'Failed to load profile data'));
-      } finally {
-        setLoading(false);
-      }
-    };
+    // Calculate completeness when student record changes
+    if (!hasInitializedRef.current || studentRecord) {
+      hasInitializedRef.current = true;
+      recalcCompleteness(studentRecord).catch((error) => {
+        logError(error, 'StudentProfile.recalcCompleteness');
+      });
+    }
+  }, [studentRecord, studentRecordLoading, studentRecordError, handleError, toast, clearError, navigate, recalcCompleteness]);
 
-    run();
-  }, [studentRecord, studentRecordLoading, studentRecordError, syncStudentState, handleError, toast, clearError, navigate]);
-
+  // Update URL hash when tab changes
   useEffect(() => {
     if (['personal', 'education', 'tests', 'finances'].includes(activeTab)) {
       window.location.hash = activeTab;
     }
   }, [activeTab]);
 
-  if (loading) {
+  // Derived loading state - only show loading on initial load, not on refetch
+  const isLoading = studentRecordLoading && !studentRecord;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4 animate-fade-in">
@@ -219,7 +208,7 @@ export default function StudentProfile() {
     );
   }
 
-  if (!student) {
+  if (!studentRecord) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">
@@ -331,19 +320,19 @@ export default function StudentProfile() {
             </TabsList>
 
             <TabsContent value="personal" className="space-y-4 animate-fade-in">
-                <PersonalInfoTab student={student} onUpdate={refreshStudentData} />
+                <PersonalInfoTab student={studentRecord} onUpdate={refreshStudentData} />
             </TabsContent>
 
             <TabsContent value="education" className="space-y-4 animate-fade-in">
-                <EducationTab studentId={student.id} onUpdate={refreshStudentData} />
+                <EducationTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
             </TabsContent>
 
             <TabsContent value="tests" className="space-y-4 animate-fade-in">
-                <TestScoresTab studentId={student.id} onUpdate={refreshStudentData} />
+                <TestScoresTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
             </TabsContent>
 
             <TabsContent value="finances" className="space-y-4 animate-fade-in">
-                <FinancesTab student={student} onUpdate={refreshStudentData} />
+                <FinancesTab student={studentRecord} onUpdate={refreshStudentData} />
             </TabsContent>
           </Tabs>
       </div>

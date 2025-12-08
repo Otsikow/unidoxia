@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,20 +7,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, DollarSign } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { useAuth } from '@/hooks/useAuth';
 
-interface Student {
-  id: string;
-  finances_json?: {
-    sponsor_type?: string;
-    annual_budget?: string;
-    currency?: string;
-    sponsor_name?: string;
-    sponsor_relationship?: string;
-    sponsor_occupation?: string;
-    additional_notes?: string;
-  };
+interface FinancesData {
+  sponsor_type?: string;
+  annual_budget?: string;
+  currency?: string;
+  sponsor_name?: string;
+  sponsor_relationship?: string;
+  sponsor_occupation?: string;
+  additional_notes?: string;
 }
 
 interface FinancesTabProps {
@@ -28,13 +28,9 @@ interface FinancesTabProps {
   onUpdate: () => void;
 }
 
-export function FinancesTab({ student, onUpdate }: FinancesTabProps) {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  
-  const financesData = student.finances_json as Student['finances_json'];
-  
-  const [formData, setFormData] = useState({
+const extractFinancesFormData = (student: Tables<'students'>) => {
+  const financesData = student.finances_json as FinancesData | undefined;
+  return {
     sponsor_type: financesData?.sponsor_type || '',
     annual_budget: financesData?.annual_budget || '',
     currency: financesData?.currency || 'USD',
@@ -42,7 +38,21 @@ export function FinancesTab({ student, onUpdate }: FinancesTabProps) {
     sponsor_relationship: financesData?.sponsor_relationship || '',
     sponsor_occupation: financesData?.sponsor_occupation || '',
     additional_notes: financesData?.additional_notes || ''
-  });
+  };
+};
+
+export function FinancesTab({ student, onUpdate }: FinancesTabProps) {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState(() => extractFinancesFormData(student));
+
+  // Sync form data when student prop changes (e.g., after refetch)
+  useEffect(() => {
+    setFormData(extractFinancesFormData(student));
+  }, [student]);
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -56,19 +66,32 @@ export function FinancesTab({ student, onUpdate }: FinancesTabProps) {
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('students')
         .update({
           finances_json: formData
         })
-        .eq('id', student.id);
+        .eq('id', student.id)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Immediately update the form with the saved data
+      if (data) {
+        setFormData(extractFinancesFormData(data));
+      }
+
+      // Invalidate and refetch the student record query to update all consumers
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
 
       toast({
         title: 'Success',
         description: 'Financial information updated successfully'
       });
+      
       onUpdate();
     } catch (error) {
       console.error('Error updating finances:', error);
