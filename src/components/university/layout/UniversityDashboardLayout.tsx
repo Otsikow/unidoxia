@@ -16,7 +16,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import { UniversitySidebar } from "./UniversitySidebar";
 import { UniversityHeader } from "./UniversityHeader";
@@ -792,6 +792,7 @@ export const UniversityDashboardLayout = ({
   const { profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -995,10 +996,11 @@ export const UniversityDashboardLayout = ({
 
   // -----------------------------------------------------
   // NEW UNIVERSITY WELCOME STATE
+  // Skip this screen if user is on the profile page (so they can set up their profile)
   // -----------------------------------------------------
-  if (!data || !data.university) {
+  const isOnProfilePage = location.pathname === "/university/profile";
+  if ((!data || !data.university) && !isOnProfilePage) {
     const handleSetUpProfile = () => {
-      console.log("Navigating to profile...");
       navigate("/university/profile");
     };
 
