@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,8 @@ const getMonthName = (month: number): string => {
 export default function UniversityProfile() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [university, setUniversity] = useState<University | null>(null);
   const [profileDetails, setProfileDetails] = useState<UniversityProfileDetails>(
@@ -122,6 +125,18 @@ export default function UniversityProfile() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
+  
+  // Check if user is an agent/staff/admin to determine the correct apply URL
+  const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
+  
+  // Get the correct apply URL based on user role
+  const getApplyUrl = (programId: string) => {
+    if (isAgentOrStaff) {
+      // Agents need to select a student first, so redirect to dashboard applications
+      return `/dashboard/applications/new?program=${programId}`;
+    }
+    return `/student/applications/new?program=${programId}`;
+  };
   
   // Read initial tab from URL params (supports: about, programs, requirements, scholarships)
   const initialTab = searchParams.get("tab") || "about";
@@ -539,8 +554,8 @@ export default function UniversityProfile() {
                           </CardDescription>
                         </div>
                         <Button asChild>
-                          <Link to={`/student/applications/new?program=${program.id}`}>
-                            Apply Now
+                          <Link to={getApplyUrl(program.id)}>
+                            {isAgentOrStaff ? "Submit Application" : "Apply Now"}
                           </Link>
                         </Button>
                       </div>

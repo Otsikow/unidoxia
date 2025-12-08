@@ -61,6 +61,8 @@ const menuItems = {
     { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "My Leads", url: "/dashboard/leads", icon: Users },
     { title: "Students", url: "/dashboard/students", icon: GraduationCap },
+    { title: "Universities", url: "/universities", icon: Building2 },
+    { title: "Discover Courses", url: "/courses", icon: Search },
     { title: "Applications", url: "/dashboard/applications", icon: FileText },
     { title: "Tasks", url: "/dashboard/tasks", icon: CheckSquare },
     { title: "Ranking", url: "/dashboard/ranking", icon: TrendingUp },

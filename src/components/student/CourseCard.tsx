@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, DollarSign, Clock, GraduationCap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface Course {
   id: string;
@@ -38,7 +39,11 @@ const MONTH_NAMES = [
 export function CourseCard({ course }: CourseCardProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { profile } = useAuth();
   const studentIdFromUrl = searchParams.get('studentId') || searchParams.get('student');
+
+  // Check if user is an agent/staff/admin to determine the correct apply URL
+  const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
 
   // Determine if the Instant Submission badge should be shown
   const showInstantSubmission =
@@ -59,7 +64,9 @@ export function CourseCard({ course }: CourseCardProps) {
     if (studentIdFromUrl) {
       params.set('studentId', studentIdFromUrl);
     }
-    navigate(`/student/applications/new?${params.toString()}`);
+    // Use the appropriate application route based on user role
+    const baseUrl = isAgentOrStaff ? '/dashboard/applications/new' : '/student/applications/new';
+    navigate(`${baseUrl}?${params.toString()}`);
   };
 
   const getNextIntakeDisplay = () => {
@@ -172,9 +179,9 @@ export function CourseCard({ course }: CourseCardProps) {
             onClick={handleApplyNow}
             className="w-full group-hover:shadow-md transition-shadow pointer-events-auto"
             size="lg"
-            aria-label={`Apply now for ${course.name}`}
+            aria-label={`${isAgentOrStaff ? 'Submit application' : 'Apply now'} for ${course.name}`}
           >
-            Apply Now
+            {isAgentOrStaff ? 'Submit Application' : 'Apply Now'}
           </Button>
         </CardFooter>
       </Card>
