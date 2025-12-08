@@ -193,7 +193,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .from('profiles')
       .select('id, full_name, email')
       .eq('tenant_id', profileData.tenant_id)
-      .in('role', ['partner', 'university'])
+      .eq('role', 'partner')
       .neq('id', profileData.id)
       .limit(1);
 
