@@ -1120,8 +1120,9 @@ export const UniversityDashboardLayout = ({
                     </div>
 
                     <Button
+                      type="button"
                       variant="outline"
-                      className="gap-2"
+                      className="gap-2 shrink-0 self-start sm:self-center"
                       onClick={() => navigate("/university/profile")}
                     >
                       Update Profile
