@@ -101,7 +101,7 @@ export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
     overview:
       "Supports future leaders who aim to take on responsibility for sustainable development in their home countries.",
     applicationSteps: [
-      "Select eligible course and contact host university",
+      "Select eligible programme and contact host university",
       "Prepare DAAD scholarship application form",
       "Submit application with supporting documents to the university",
       "Attend interviews where applicable and receive DAAD decision",

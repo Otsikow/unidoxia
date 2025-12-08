@@ -610,7 +610,7 @@ const Applications = () => {
                     <Input
                       value={searchTerm}
                       onChange={handleSearchChange}
-                      placeholder="Search student, university, or course..."
+                      placeholder="Search student, university, or programme..."
                       className="pl-9"
                     />
                   </div>
@@ -653,7 +653,7 @@ const Applications = () => {
                     <TableRow>
                       <TableHead>Student Name</TableHead>
                       <TableHead>University</TableHead>
-                      <TableHead>Course</TableHead>
+                      <TableHead>Programme</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Submitted Date</TableHead>
                       <TableHead>Last Updated</TableHead>

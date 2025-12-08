@@ -1029,7 +1029,7 @@ const ApplicationsPage = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by student, agent, or course"
+                placeholder="Search by student, agent, or programme"
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="pl-9 text-sm"
@@ -1103,7 +1103,7 @@ const ApplicationsPage = () => {
                   <TableRow>
                     <TableHead>Student name</TableHead>
                     <TableHead>Agent</TableHead>
-                    <TableHead>Course</TableHead>
+                    <TableHead>Programme</TableHead>
                     <TableHead>Source</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
@@ -1288,7 +1288,7 @@ const ApplicationsPage = () => {
                   <div className={withUniversitySurfaceTint("rounded-2xl p-4")}>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
                       <GraduationCap className="h-4 w-4" />
-                      Course
+                      Programme
                     </div>
                     <div className="mt-3 space-y-1.5 text-sm">
                       <p className="text-base font-semibold text-foreground">

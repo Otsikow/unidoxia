@@ -37,7 +37,7 @@ const fr = {
     navigation: {
       home: "Accueil",
       search: "Recherche",
-      courses: "Formations",
+      programmes: "Programmes",
       blog: "Blog",
       contact: "Contact",
       dashboard: "Tableau de bord",
@@ -71,7 +71,7 @@ const fr = {
         home: "Accueil",
         search: "Recherche",
         scholarships: "Bourses",
-        courses: "Formations",
+        programmes: "Programmes",
         blog: "Blog",
         contact: "Contact",
       },
