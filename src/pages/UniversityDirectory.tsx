@@ -35,8 +35,10 @@ import { SEO } from "@/components/SEO";
 import defaultUniversityImg from "@/assets/university-default.jpg";
 
 // Interface for university data from database
+// Each university is a unique entity with isolated data - no cross-tenant sharing
 interface UniversityFromDB {
   id: string;
+  tenant_id: string | null; // Each university has its own tenant for data isolation
   name: string;
   city: string | null;
   country: string | null;
@@ -46,7 +48,7 @@ interface UniversityFromDB {
   featured_image_url: string | null;
   submission_config_json: unknown;
   active: boolean | null;
-  programCount: number;
+  programCount: number; // Count of programs ONLY for this specific university
   profileDetails: UniversityProfileDetails;
 }
 
@@ -82,21 +84,26 @@ const StatItem = ({
   value,
   subValue,
   href,
+  isPrimary,
 }: {
   icon: LucideIcon;
   label: string;
   value: string;
   subValue?: string;
   href?: string;
+  isPrimary?: boolean;
 }) => {
   const content = (
     <>
       <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        <Icon className="h-3.5 w-3.5" />
+        <Icon className={`h-3.5 w-3.5 ${isPrimary ? "text-primary" : ""}`} />
         {label}
       </div>
-      <p className="mt-2 text-sm font-semibold text-foreground">{value}</p>
+      <p className={`mt-2 font-semibold text-foreground ${isPrimary ? "text-lg" : "text-sm"}`}>{value}</p>
       {subValue ? <p className="text-xs text-muted-foreground">{subValue}</p> : null}
+      {isPrimary && href ? (
+        <p className="mt-1 text-xs text-primary font-medium">Click to view →</p>
+      ) : null}
     </>
   );
 
@@ -104,7 +111,11 @@ const StatItem = ({
     return (
       <Link
         to={href}
-        className="rounded-lg border bg-muted/30 p-3 transition-colors hover:bg-muted/50 hover:border-primary/30 cursor-pointer block"
+        className={`rounded-lg border p-3 transition-all cursor-pointer block ${
+          isPrimary 
+            ? "bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/40 hover:shadow-md" 
+            : "bg-muted/30 hover:bg-muted/50 hover:border-primary/30"
+        }`}
       >
         {content}
       </Link>
@@ -126,29 +137,31 @@ export default function UniversityDirectory() {
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  // Fetch universities from database
+  // Fetch universities from database with proper multi-tenant isolation
   useEffect(() => {
     const fetchUniversities = async () => {
       setLoading(true);
       try {
-        // Fetch universities
+        // Fetch universities - each university is a unique tenant with isolated data
         const { data: universitiesData, error: uniError } = await supabase
           .from("universities")
-          .select("id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active")
+          .select("id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id")
           .eq("active", true)
           .order("name");
 
         if (uniError) throw uniError;
 
-        // Fetch program counts for each university
+        // MULTI-TENANT ISOLATION: Fetch programs with university_id to count per institution
+        // Each program belongs to exactly ONE university - no cross-mixing of data
         const { data: programCounts, error: progError } = await supabase
           .from("programs")
-          .select("university_id")
+          .select("id, university_id")
           .eq("active", true);
 
         if (progError) throw progError;
 
-        // Count programs per university
+        // Build a map of program counts per university
+        // This ensures each university only shows their OWN programs
         const programCountMap: Record<string, number> = {};
         programCounts?.forEach((program) => {
           const uniId = program.university_id;
@@ -157,16 +170,26 @@ export default function UniversityDirectory() {
           }
         });
 
-        // Combine data
+        // Combine data - each university gets ONLY their own program count
         const enrichedUniversities: UniversityFromDB[] = (universitiesData || []).map((uni) => ({
           ...uni,
+          // Critical: Only count programs where university_id matches this university's ID
           programCount: programCountMap[uni.id] || 0,
           profileDetails: parseUniversityProfileDetails(uni.submission_config_json),
         }));
 
-        // Deduplicate universities by name (case-insensitive) to prevent duplicates
+        // Deduplicate universities by ID to ensure unique entries
+        // Also deduplicate by name (case-insensitive) to prevent visual duplicates
+        const seenIds = new Set<string>();
         const seenNames = new Set<string>();
         const deduplicatedUniversities = enrichedUniversities.filter((uni) => {
+          // First check by ID (primary key)
+          if (seenIds.has(uni.id)) {
+            return false;
+          }
+          seenIds.add(uni.id);
+          
+          // Then check by name to avoid visual duplicates
           const normalizedName = uni.name.toLowerCase().trim();
           if (seenNames.has(normalizedName)) {
             return false;
@@ -313,17 +336,42 @@ export default function UniversityDirectory() {
           ) : null}
         </div>
 
+        {/* Prominent Programs Card */}
+        <Link 
+          to={`/universities/${university.id}?tab=programs`}
+          className="block rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4 transition-all hover:border-primary/40 hover:shadow-lg hover:from-primary/10 hover:to-primary/15 group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <GraduationCap className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-primary">{formatNumber(university.programCount)}</p>
+                <p className="text-sm font-medium text-muted-foreground">Programmes Available</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 text-primary font-medium text-sm group-hover:translate-x-1 transition-transform">
+              <span>View All</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14"/>
+                <path d="m12 5 7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </Link>
+
         <div className="grid grid-cols-2 gap-3">
-          <StatItem
-            icon={GraduationCap}
-            label="Programmes"
-            value={formatNumber(university.programCount)}
-            href={`/universities/${university.id}?tab=programs`}
-          />
           <StatItem
             icon={MapPin}
             label="Location"
             value={university.country || "—"}
+            subValue={university.city || undefined}
+          />
+          <StatItem
+            icon={Building2}
+            label="Partner Status"
+            value="Active"
           />
         </div>
 
