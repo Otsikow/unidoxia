@@ -167,7 +167,7 @@ export default function AgentStudentsManager() {
     if (!student.onboarded) {
       toast({
         title: "Student not ready",
-        description: "This student needs to complete their onboarding before you can browse programs for them.",
+        description: "This student needs to complete their onboarding before you can browse courses for them.",
         variant: "destructive",
       });
       return;
@@ -566,7 +566,7 @@ export default function AgentStudentsManager() {
                                   disabled={!student.onboarded}
                                 >
                                   <GraduationCap className="mr-2 h-4 w-4" />
-                                  Browse Programs
+                                  Browse Courses
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleStartApplication(student)}

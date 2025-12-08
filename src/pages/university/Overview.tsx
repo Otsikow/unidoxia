@@ -138,7 +138,7 @@ const OverviewPage = () => {
                       variant="outline"
                       className="border-primary/30 text-primary hover:bg-primary/10"
                     >
-                      {programs.length} Programmes
+                      {programs.length} Courses
                     </Badge>
                   </Link>
                   <Link
@@ -402,7 +402,7 @@ const OverviewPage = () => {
                     <tr>
                       <th className="py-2">Application</th>
                       <th className="py-2">Student</th>
-                      <th className="py-2">Programme</th>
+                      <th className="py-2">Course</th>
                       <th className="py-2">Status</th>
                       <th className="py-2 text-right">Submitted</th>
                     </tr>

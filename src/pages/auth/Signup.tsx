@@ -339,7 +339,7 @@ const Signup = () => {
       ? "Apply to universities and track applications"
       : r === "agent"
       ? "Help students and earn commissions"
-      : "Showcase programmes and scholarships";
+      : "Showcase courses and scholarships";
 
   if (authLoading || redirecting)
     return (

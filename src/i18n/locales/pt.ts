@@ -912,11 +912,11 @@ const pt = {
           scholarshipBadge_one: "{{count}} bolsa",
           scholarshipBadge_other: "{{count}} bolsas",
           programs: {
-            heading_one: "Programas ({{count}})",
-            heading_other: "Programas ({{count}})",
+            heading_one: "Cursos ({{count}})",
+            heading_other: "Cursos ({{count}})",
             apply: "Inscreva-se",
-            more_one: "+{{count}} programa adicional",
-            more_other: "+{{count}} programas adicionais",
+            more_one: "+{{count}} curso adicional",
+            more_other: "+{{count}} cursos adicionais",
           },
           scholarships: {
             heading: "Bolsas",

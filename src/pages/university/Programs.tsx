@@ -182,12 +182,12 @@ export default function ProgramsPage() {
         }
       }
 
-      toast({ title: "Programme created" });
+      toast({ title: "Course created" });
       setCreateOpen(false);
       await refetch();
     } catch (err) {
       toast({
-        title: "Unable to create programme",
+        title: "Unable to create course",
         description: (err as Error).message,
         variant: "destructive",
       });
@@ -258,12 +258,12 @@ export default function ProgramsPage() {
         }
       }
 
-      toast({ title: "Programme updated" });
+      toast({ title: "Course updated" });
       setEditProgram(null);
       await refetch();
     } catch (err) {
       toast({
-        title: "Unable to update programme",
+        title: "Unable to update course",
         description: (err as Error).message,
         variant: "destructive",
       });
@@ -296,14 +296,14 @@ export default function ProgramsPage() {
       if (error) throw error;
 
       toast({
-        title: "Programme updated",
-        description: `Programme is now ${active ? "active" : "inactive"}.`,
+        title: "Course updated",
+        description: `Course is now ${active ? "active" : "inactive"}.`,
       });
 
       await refetch();
     } catch (err) {
       toast({
-        title: "Unable to update programme",
+        title: "Unable to update course",
         description: (err as Error).message,
         variant: "destructive",
       });
@@ -336,13 +336,13 @@ export default function ProgramsPage() {
 
       if (error) throw error;
 
-      toast({ title: "Programme deleted" });
+      toast({ title: "Course deleted" });
 
       setDeleteId(null);
       await refetch();
     } catch (err) {
       toast({
-        title: "Unable to delete programme",
+        title: "Unable to delete course",
         description: (err as Error).message,
         variant: "destructive",
       });
@@ -352,24 +352,24 @@ export default function ProgramsPage() {
   };
 
   if (isLoading && !data) {
-    return <LoadingState message="Loading programmes..." />;
+    return <LoadingState message="Loading courses..." />;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Programmes</h1>
+        <h1 className="text-2xl font-semibold">Courses</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your university programmes in UniDoxia.
+          Manage your university courses in UniDoxia.
         </p>
       </div>
 
       <Card className="rounded-2xl">
         <CardHeader className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div>
-            <CardTitle className="text-base font-semibold">Programme catalogue</CardTitle>
+            <CardTitle className="text-base font-semibold">Course catalogue</CardTitle>
             <CardDescription className="text-xs">
-              {programs.length} programme{programs.length === 1 ? "" : "s"} connected to your university.
+              {programs.length} course{programs.length === 1 ? "" : "s"} connected to your university.
             </CardDescription>
           </div>
 
@@ -377,7 +377,7 @@ export default function ProgramsPage() {
             className="w-full sm:w-auto gap-2 bg-blue-500 text-white"
             onClick={() => setCreateOpen(true)}
           >
-            <Plus className="h-4 w-4" /> Add programme
+            <Plus className="h-4 w-4" /> Add course
           </Button>
         </CardHeader>
 
@@ -388,11 +388,11 @@ export default function ProgramsPage() {
           */}
           {programs.length === 0 ? (
             <StatePlaceholder
-              title="Your programme catalogue is empty"
-              description="You're starting fresh! Add your academic programmes to attract students and make them visible to agents worldwide."
+              title="Your course catalogue is empty"
+              description="You're starting fresh! Add your academic courses to attract students and make them visible to agents worldwide."
               action={
                 <Button variant="outline" onClick={() => setCreateOpen(true)}>
-                  Add your first programme
+                  Add your first course
                 </Button>
               }
             />
@@ -422,12 +422,12 @@ export default function ProgramsPage() {
           onSubmit={handleCreate}
           onCancel={() => setCreateOpen(false)}
           isSubmitting={isSubmitting}
-          submitLabel="Create programme"
+          submitLabel="Create course"
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
-          title="Create New Programme"
-          description="Add a new academic programme to your catalogue."
+          title="Create New Course"
+          description="Add a new academic course to your catalogue."
         />
       )}
 
@@ -441,8 +441,8 @@ export default function ProgramsPage() {
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
-          title="Edit Programme"
-          description="Update the details for this programme."
+          title="Edit Course"
+          description="Update the details for this course."
         />
       )}
 

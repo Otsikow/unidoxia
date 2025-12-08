@@ -104,7 +104,7 @@ const buildNavigatorSteps = (
       completed: Boolean(transcriptDoc),
       status: transcriptDoc ? 'complete' : 'pending',
       aiHint: transcriptDoc
-        ? 'AI matched your grades to partner programme requirements.'
+        ? 'AI matched your grades to partner course requirements.'
         : 'AI can recommend better-fit schools once a transcript is uploaded.',
       actionLabel: transcriptDoc ? 'View transcript' : 'Upload transcript',
       actionHref: '/student/documents',
@@ -128,7 +128,7 @@ const buildNavigatorSteps = (
     {
       id: 'universities',
       title: 'Select universities',
-      description: 'Choose programmes so AI can unlock personalised nudges.',
+      description: 'Choose courses so AI can unlock personalised nudges.',
       completed: hasApplications,
       status: hasApplications ? 'complete' : 'pending',
       aiHint: hasApplications
@@ -562,7 +562,7 @@ export default function StudentOnboarding() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 mt-3">
                   <Button asChild className="hover-scale flex-1">
-                    <Link to="/courses?view=programs">Browse Programmes</Link>
+                    <Link to="/courses?view=programs">Browse Courses</Link>
                   </Button>
                   <Button asChild variant="outline" className="flex-1">
                     <Link to="/student/applications/new">Create Application</Link>

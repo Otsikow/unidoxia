@@ -137,7 +137,7 @@ export function StaffZoeInsightsTab() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <CalendarClock className="h-5 w-5 text-blue-500" /> Applications Near Deadlines
             </CardTitle>
-            <CardDescription>Programmes approaching due dates within 7 days.</CardDescription>
+            <CardDescription>Courses approaching due dates within 7 days.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {data.deadlineApplications.length === 0 && (

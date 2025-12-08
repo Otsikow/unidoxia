@@ -349,7 +349,7 @@ export default function Applications() {
               <Button asChild>
                 <Link to="/courses?view=programs">
                   <Plus className="mr-2 h-4 w-4" />
-                  Browse Programmes
+                  Browse Courses
                 </Link>
               </Button>
             </div>

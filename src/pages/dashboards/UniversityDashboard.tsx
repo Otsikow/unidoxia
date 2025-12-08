@@ -285,7 +285,7 @@ export default function UniversityDashboard() {
     if (!durationValue || Number.isNaN(durationValue)) {
       toast({
         title: 'Duration required',
-        description: 'Please enter the programme duration in months.',
+        description: 'Please enter the course duration in months.',
         variant: 'destructive',
       });
       return;

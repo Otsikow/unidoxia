@@ -780,11 +780,11 @@ export default function CourseDiscovery() {
     ? "Find Programs & Universities - UniDoxia"
     : "Discover Courses - UniDoxia";
   const seoDescription = isProgramView
-    ? "Find and compare universities from around the world. Filter by country, program, and more to discover the perfect institution for your study abroad journey."
-    : "Explore thousands of courses from top universities worldwide. Filter by discipline, level, tuition, and more to find the right program for your international education.";
+    ? "Find and compare universities from around the world. Filter by country, course, and more to discover the perfect institution for your study abroad journey."
+    : "Explore thousands of courses from top universities worldwide. Filter by discipline, level, tuition, and more to find the right course for your international education.";
   const seoKeywords = isProgramView
-    ? "university search, find universities, study abroad programs, international colleges, student recruitment, find a university"
-    : "course discovery, find courses, study abroad programs, university courses, international student courses, find a degree";
+    ? "university search, find universities, study abroad courses, international colleges, student recruitment, find a university"
+    : "course discovery, find courses, study abroad courses, university courses, international student courses, find a degree";
 
   return (
     <div className="min-h-screen bg-background">
@@ -808,8 +808,8 @@ export default function CourseDiscovery() {
                 </h1>
                 <p className="text-muted-foreground mt-1">
                   {isProgramView
-                    ? "Search universities, compare programs, and explore AI-powered guidance."
-                    : "Explore programs from top universities worldwide"}
+                    ? "Search universities, compare courses, and explore AI-powered guidance."
+                    : "Explore courses from top universities worldwide"}
                 </p>
               </div>
 

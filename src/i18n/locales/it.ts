@@ -317,11 +317,11 @@ const it = {
         scholarshipBadge_one: "{{count}} borsa di studio",
         scholarshipBadge_other: "{{count}} borse di studio",
         programs: {
-          heading_one: "Programmi ({{count}})",
-          heading_other: "Programmi ({{count}})",
+          heading_one: "Corsi ({{count}})",
+          heading_other: "Corsi ({{count}})",
           apply: "Candidati ora",
-          more_one: "+{{count}} programma aggiuntivo",
-          more_other: "+{{count}} programmi aggiuntivi",
+          more_one: "+{{count}} corso aggiuntivo",
+          more_other: "+{{count}} corsi aggiuntivi",
         },
         scholarships: {
           heading: "Borse di studio",

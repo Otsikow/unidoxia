@@ -251,7 +251,7 @@ export default function CommissionManagement() {
                         <p className="font-semibold">{commission.studentName}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">Programme</p>
+                        <p className="text-sm font-medium text-muted-foreground">Course</p>
                         <p className="font-semibold">{commission.program}</p>
                       </div>
                       <div>

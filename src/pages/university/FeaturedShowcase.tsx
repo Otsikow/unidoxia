@@ -28,7 +28,7 @@ const FEATURED_PLANS = [
   {
     id: "spotlight_30" as const,
     label: "30-Day Spotlight",
-    description: "Perfect for new campaigns or rapid programme launches.",
+    description: "Perfect for new campaigns or rapid course launches.",
     amountCents: 120_000,
     currency: "USD",
     durationDays: 30,
@@ -56,7 +56,7 @@ const FEATURED_PLANS = [
   {
     id: "spotlight_180" as const,
     label: "180-Day Spotlight",
-    description: "Lock-in premium visibility for strategic flagship programmes.",
+    description: "Lock-in premium visibility for strategic flagship courses.",
     amountCents: 540_000,
     currency: "USD",
     durationDays: 180,
@@ -551,7 +551,7 @@ const FeaturedShowcase = () => {
               </p>
               <p className="text-sm text-muted-foreground">
                 {university.featured_highlight ||
-                  "Use highlights to communicate scholarships, turnaround times, or signature programmes."}
+                  "Use highlights to communicate scholarships, turnaround times, or signature courses."}
               </p>
               {university.featured_image_url ? (
                 <div className="overflow-hidden rounded-lg border border-border">

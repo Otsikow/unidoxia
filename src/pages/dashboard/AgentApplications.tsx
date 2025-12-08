@@ -712,7 +712,7 @@ const AgentApplications = () => {
                       <TableRow>
                         <TableHead>Student</TableHead>
                         <TableHead>University</TableHead>
-                        <TableHead>Programme</TableHead>
+                        <TableHead>Course</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Submitted</TableHead>
                         <TableHead>Last Updated</TableHead>
@@ -847,11 +847,11 @@ const AgentApplications = () => {
 
                 <div className="space-y-6">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    {/* Programme Info */}
+                    {/* Course Info */}
                     <div className="rounded-xl border p-4 space-y-3">
                       <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase">
                         <GraduationCap className="h-4 w-4" />
-                        Programme
+                        Course
                       </div>
                       <div className="space-y-1">
                         <p className="text-base font-medium">{getProgramName(selectedApplication)}</p>

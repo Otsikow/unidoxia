@@ -436,7 +436,7 @@ const fr = {
         },
         aiSearch: {
           badge: "Recherche universitaire et bourses propulsée par l'IA",
-          heading: "Trouvez le bon programme avec une intelligence en temps réel",
+          heading: "Trouvez le bon cours avec une intelligence en temps réel",
           description:
             "Posez toutes vos questions sur les universités, les formations ou les financements dans le monde entier. Notre IA analyse les informations d'admission, les bourses et les parcours de visa adaptés à vos objectifs.",
           subheading:
@@ -444,7 +444,7 @@ const fr = {
           ctaLabel: "Commencer",
           stats: [
             { value: "12k+", label: "Analyses IA générées pour des candidats internationaux" },
-            { value: "84%", label: "Étudiants assortis à au moins trois programmes idéaux" },
+            { value: "84%", label: "Étudiants assortis à au moins trois cours idéaux" },
             { value: "50+", label: "Pays couverts avec des données d'admission vérifiées" },
           ],
           panel: {
@@ -459,10 +459,10 @@ const fr = {
               label: "STEM",
               headline: "Parcours sur mesure pour innovateurs techniques",
               description:
-                "Mettez en lumière des programmes avec laboratoires de recherche, stages et financements dédiés aux sciences et à l'ingénierie.",
+                "Mettez en lumière des cours avec laboratoires de recherche, stages et financements dédiés aux sciences et à l'ingénierie.",
               highlights: [
                 "Bourses privilégiant les filières STEM et la production de recherche",
-                "Programmes alignés sur l'industrie avec stages et alternances",
+                "Cours alignés sur l'industrie avec stages et alternances",
                 "Conseils visa pour les métiers technologiques et d'ingénierie les plus demandés",
               ],
             },
@@ -504,12 +504,12 @@ const fr = {
             {
               key: "postgraduate",
               label: "Deuxième cycle",
-              headline: "Programmes de master et doctorat alignés sur vos objectifs",
+              headline: "Cours de master et doctorat alignés sur vos objectifs",
               description: "Comparez encadrants de recherche, tailles de cohorte et modèles de financement.",
               highlights: [
                 "Mises en avant de professeurs et thématiques de recherche actuelles",
                 "Disponibilité d'assistanats et de bourses avec indemnités",
-                "Préparation aux entretiens et exigences de portfolio selon le programme",
+                "Préparation aux entretiens et exigences de portfolio selon le cours",
               ],
             },
             {
@@ -517,7 +517,7 @@ const fr = {
               label: "Stages & alternances",
               headline: "Apprentissage intégré au travail avec des employeurs internationaux",
               description:
-                "Repérez des programmes qui associent études et expérience professionnelle concrète.",
+                "Repérez des cours qui associent études et expérience professionnelle concrète.",
               highlights: [
                 "Taux de placement et partenariats entreprises par région",
                 "Points de vigilance visa pour stages rémunérés et périodes en entreprise",
@@ -577,12 +577,12 @@ const fr = {
           stepLabel: "Étape {{number}}",
           steps: {
             discover: {
-              title: "Découvrez vos programmes idéaux",
+              title: "Découvrez vos cours idéaux",
               description:
-                "Partagez vos objectifs et vos résultats : UniDoxia sélectionne instantanément des universités, programmes et bourses adaptés.",
+                "Partagez vos objectifs et vos résultats : UniDoxia sélectionne instantanément des universités, cours et bourses adaptés.",
               support:
                 "Des filtres intelligents et des recommandations IA éliminent les tâtonnements pour constituer une short-list en quelques minutes.",
-              imageAlt: "Étudiante examinant des programmes universitaires lors d'une visite de campus",
+              imageAlt: "Étudiante examinant des cours universitaires lors d'une visite de campus",
             },
             plan: {
               title: "Construisez un plan de candidature personnalisé",
@@ -703,7 +703,7 @@ const fr = {
     universitySearch: {
       hero: {
         title: "Trouvez votre université idéale",
-        subtitle: "Recherchez parmi les universités, programmes et bourses du monde entier.",
+        subtitle: "Recherchez parmi les universités, cours et bourses du monde entier.",
       },
       tabs: {
         search: "Recherche",
@@ -725,7 +725,7 @@ const fr = {
             all: "Tous les pays",
           },
           programLevel: {
-            label: "Niveau du programme",
+            label: "Niveau du cours",
             placeholder: "Sélectionner un niveau",
             all: "Tous les niveaux",
           },
@@ -754,11 +754,11 @@ const fr = {
         scholarshipBadge_one: "{{count}} bourse",
         scholarshipBadge_other: "{{count}} bourses",
         programs: {
-          heading_one: "Programmes ({{count}})",
-          heading_other: "Programmes ({{count}})",
+          heading_one: "Cours ({{count}})",
+          heading_other: "Cours ({{count}})",
           apply: "Postuler maintenant",
-          more_one: "+{{count}} programme supplémentaire",
-          more_other: "+{{count}} programmes supplémentaires",
+          more_one: "+{{count}} cours supplémentaire",
+          more_other: "+{{count}} cours supplémentaires",
         },
         scholarships: {
           heading: "Bourses",
@@ -841,7 +841,7 @@ const fr = {
             {
               question: "Quel soutien les agents reçoivent-ils sur UniDoxia ?",
               answer:
-                "Les agents disposent d'un CRM dédié, de supports marketing et de formations à la demande pour aider les étudiants à trouver rapidement les bons programmes.",
+                "Les agents disposent d'un CRM dédié, de supports marketing et de formations à la demande pour aider les étudiants à trouver rapidement les bons cours.",
             },
             {
               question: "Comment sont gérées les commissions des agents ?",

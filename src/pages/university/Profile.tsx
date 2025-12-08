@@ -1109,7 +1109,7 @@ const UniversityProfilePage = () => {
                     </h2>
                     <p className="text-sm text-muted-foreground">
                       We use these details when agents reach out or request
-                      clarification on programmes.
+                      clarification on courses.
                     </p>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">
@@ -1281,7 +1281,7 @@ const UniversityProfilePage = () => {
                 <div className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm text-muted-foreground">
                     Changes go live immediately across your dashboards, public
-                    directory and programme catalogue.
+                    directory and course catalogue.
                   </div>
                   <Button type="submit" className="gap-2" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}

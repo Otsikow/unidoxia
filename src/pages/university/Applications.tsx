@@ -1092,7 +1092,7 @@ const ApplicationsPage = () => {
               description={
                 hasFiltersApplied
                   ? "Update the status filter or search criteria to broaden your results."
-                  : "You're starting fresh! Once you add programmes and students apply, their applications will appear here for review."
+                  : "You're starting fresh! Once you add courses and students apply, their applications will appear here for review."
               }
               className="bg-transparent"
             />

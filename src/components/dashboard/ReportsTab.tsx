@@ -403,7 +403,7 @@ export default function ReportsTab() {
 
       toast({
         title: 'Success',
-        description: 'Programmes report exported successfully',
+        description: 'Courses report exported successfully',
       });
     } catch (error) {
       console.error('Error exporting programs:', error);
@@ -448,7 +448,7 @@ export default function ReportsTab() {
     { value: 'payments', label: 'Payments Report', icon: DollarSign, description: 'Export all payment transactions' },
     { value: 'commissions', label: 'Commissions Report', icon: DollarSign, description: 'Export all commission records' },
     { value: 'universities', label: 'Universities Report', icon: Building2, description: 'Export all partner universities' },
-    { value: 'programs', label: 'Programmes Report', icon: FileSpreadsheet, description: 'Export all academic programmes' },
+    { value: 'programs', label: 'Courses Report', icon: FileSpreadsheet, description: 'Export all academic courses' },
   ];
 
   return (

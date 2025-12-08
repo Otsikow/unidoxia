@@ -119,8 +119,8 @@ export default function ProgramForm({
   levelOptions,
   tenantId,
   userId,
-  title = "Programme Details",
-  description = "Enter the details for this programme.",
+  title = "Course Details",
+  description = "Enter the details for this course.",
 }: ProgramFormProps) {
   const { toast } = useToast();
   const form = useForm<ProgramFormValues>({
@@ -239,7 +239,7 @@ export default function ProgramForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Programme Name</FormLabel>
+                    <FormLabel>Course Name</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. MSc Data Science" {...field} />
                     </FormControl>
@@ -505,7 +505,7 @@ export default function ProgramForm({
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder="Programme overview…" {...field} />
+                      <Textarea rows={4} placeholder="Course overview…" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -518,7 +518,7 @@ export default function ProgramForm({
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Programme Image (optional)</FormLabel>
+                    <FormLabel>Course Image (optional)</FormLabel>
                     <FormDescription>
                       Upload an image or paste a public URL. Max 5 MB.
                     </FormDescription>
@@ -588,7 +588,7 @@ export default function ProgramForm({
                 render={({ field }) => (
                   <FormItem className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="font-medium">Publish Programme</FormLabel>
+                      <FormLabel className="font-medium">Publish Course</FormLabel>
                       <FormDescription>
                         Visible to agents and students in course search.
                       </FormDescription>

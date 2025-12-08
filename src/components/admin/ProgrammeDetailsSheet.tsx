@@ -147,7 +147,7 @@ const ProgrammeDetailsSheet = ({
 
     setLoading(true);
     try {
-      // Fetch programme details
+      // Fetch course details
       const { data: programData, error: programError } = await supabase
         .from("programs")
         .select(`
@@ -227,10 +227,10 @@ const ProgrammeDetailsSheet = ({
         active: details.active,
       });
     } catch (error) {
-      console.error("Error fetching programme:", error);
+      console.error("Error fetching course:", error);
       toast({
         title: "Error",
-        description: "Failed to load programme details.",
+        description: "Failed to load course details.",
         variant: "destructive",
       });
     } finally {
@@ -272,18 +272,18 @@ const ProgrammeDetailsSheet = ({
       if (error) throw error;
 
       toast({
-        title: "Programme Updated",
-        description: "The programme has been successfully updated.",
+        title: "Course Updated",
+        description: "The course has been successfully updated.",
       });
 
       setIsEditing(false);
       fetchProgramme();
       onUpdate();
     } catch (error) {
-      console.error("Error updating programme:", error);
+      console.error("Error updating course:", error);
       toast({
         title: "Error",
-        description: "Failed to update programme. Please try again.",
+        description: "Failed to update course. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -305,18 +305,18 @@ const ProgrammeDetailsSheet = ({
       if (error) throw error;
 
       toast({
-        title: "Programme Deleted",
-        description: "The programme has been permanently deleted.",
+        title: "Course Deleted",
+        description: "The course has been permanently deleted.",
       });
 
       setShowDeleteDialog(false);
       onOpenChange(false);
       onDelete();
     } catch (error) {
-      console.error("Error deleting programme:", error);
+      console.error("Error deleting course:", error);
       toast({
         title: "Error",
-        description: "Failed to delete programme. Please try again.",
+        description: "Failed to delete course. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -340,16 +340,16 @@ const ProgrammeDetailsSheet = ({
       setEditForm((prev) => ({ ...prev, active: newStatus }));
 
       toast({
-        title: newStatus ? "Programme Activated" : "Programme Paused",
-        description: `The programme is now ${newStatus ? "active" : "paused"}.`,
+        title: newStatus ? "Course Activated" : "Course Paused",
+        description: `The course is now ${newStatus ? "active" : "paused"}.`,
       });
 
       onUpdate();
     } catch (error) {
-      console.error("Error updating programme status:", error);
+      console.error("Error updating course status:", error);
       toast({
         title: "Error",
-        description: "Failed to update programme status.",
+        description: "Failed to update course status.",
         variant: "destructive",
       });
     }
@@ -393,7 +393,7 @@ const ProgrammeDetailsSheet = ({
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle className="flex items-center justify-between pr-8">
-              <span>{isEditing ? "Edit Programme" : "Programme Details"}</span>
+              <span>{isEditing ? "Edit Course" : "Course Details"}</span>
               {programme && !isEditing && (
                 <Badge variant={programme.active ? "default" : "secondary"}>
                   {programme.active ? "Active" : "Paused"}
@@ -402,8 +402,8 @@ const ProgrammeDetailsSheet = ({
             </SheetTitle>
             <SheetDescription>
               {isEditing
-                ? "Make changes to the programme details below."
-                : "View and manage programme information."}
+                ? "Make changes to the course details below."
+                : "View and manage course information."}
             </SheetDescription>
           </SheetHeader>
 
@@ -417,7 +417,7 @@ const ProgrammeDetailsSheet = ({
                 /* Edit Mode */
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-name">Programme Name</Label>
+                    <Label htmlFor="edit-name">Course Name</Label>
                     <Input
                       id="edit-name"
                       value={editForm.name}
@@ -578,7 +578,7 @@ const ProgrammeDetailsSheet = ({
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <Label>Programme Active</Label>
+                    <Label>Course Active</Label>
                     <Switch
                       checked={editForm.active}
                       onCheckedChange={(checked) =>
@@ -723,9 +723,9 @@ const ProgrammeDetailsSheet = ({
                   {/* Status Toggle */}
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium">Programme Status</p>
+                      <p className="text-sm font-medium">Course Status</p>
                       <p className="text-xs text-muted-foreground">
-                        {programme.active ? "Students can apply to this programme" : "Applications are paused"}
+                        {programme.active ? "Students can apply to this course" : "Applications are paused"}
                       </p>
                     </div>
                     <Switch checked={programme.active} onCheckedChange={handleStatusToggle} />
@@ -753,7 +753,7 @@ const ProgrammeDetailsSheet = ({
             </div>
           ) : (
             <div className="flex items-center justify-center py-12 text-muted-foreground">
-              Programme not found
+              Course not found
             </div>
           )}
         </SheetContent>
@@ -763,12 +763,12 @@ const ProgrammeDetailsSheet = ({
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Programme</AlertDialogTitle>
+            <AlertDialogTitle>Delete Course</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete "{programme?.name}"? This action cannot be undone.
               {programme && programme.applications_count > 0 && (
                 <span className="block mt-2 text-destructive">
-                  Warning: This programme has {programme.applications_count} application(s) associated with it.
+                  Warning: This course has {programme.applications_count} application(s) associated with it.
                 </span>
               )}
             </AlertDialogDescription>
@@ -781,7 +781,7 @@ const ProgrammeDetailsSheet = ({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Delete Programme
+              Delete Course
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

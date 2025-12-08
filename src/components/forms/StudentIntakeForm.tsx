@@ -979,7 +979,7 @@ export default function StudentIntakeForm() {
                     name="programLevel"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Programme level *</FormLabel>
+                        <FormLabel>Course level *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -1260,7 +1260,7 @@ export default function StudentIntakeForm() {
               )}
             </div>
             <div className="space-y-2">
-              <h4 className="text-sm font-medium text-muted-foreground">Programme focus</h4>
+              <h4 className="text-sm font-medium text-muted-foreground">Course focus</h4>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
                   <span className="font-medium">Intake:</span>

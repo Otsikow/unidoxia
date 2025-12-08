@@ -67,7 +67,7 @@ interface InterviewQuestion {
 const INTERVIEW_CATEGORIES = [
   'Academic Background',
   'Career Goals',
-  'Programme Interest',
+  'Course Interest',
   'Cultural Adaptation',
   'Financial Planning',
   'Future Plans'
@@ -263,7 +263,7 @@ ${sopData.student_name}`;
         {
           id: '2',
           question: 'What specific skills do you hope to gain from this program?',
-          category: 'Programme Interest',
+          category: 'Course Interest',
           difficulty: 'medium',
           sample_answer: 'I hope to develop advanced analytical skills, research methodology, and practical experience...',
           evaluation_criteria: ['Specificity', 'Alignment with program', 'Realistic expectations']
@@ -330,7 +330,7 @@ ${sopData.student_name}`;
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2">
           <TabsTrigger value="recommendations" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Programme Matching
+            Course Matching
           </TabsTrigger>
           <TabsTrigger value="sop" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -351,13 +351,13 @@ ${sopData.student_name}`;
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Brain className="h-5 w-5" />
-                AI Programme Recommendations
+                AI Course Recommendations
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between mb-4">
                 <p className="text-muted-foreground">
-                  Get personalised programme recommendations based on your profile
+                  Get personalised course recommendations based on your profile
                 </p>
                 <Button 
                   onClick={generateProgramRecommendations}
@@ -476,7 +476,7 @@ ${sopData.student_name}`;
                   />
                 </div>
                 <div>
-                  <Label htmlFor="program_name">Programme Name *</Label>
+                  <Label htmlFor="program_name">Course Name *</Label>
                   <Input
                     id="program_name"
                     value={sopData.program_name}

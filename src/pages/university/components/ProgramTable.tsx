@@ -148,7 +148,7 @@ export default function ProgramTable({
 
       {/* TABLE */}
       {filtered.length === 0 ? (
-        <p className="py-8 text-center text-muted-foreground">No programmes match your criteria.</p>
+        <p className="py-8 text-center text-muted-foreground">No courses match your criteria.</p>
       ) : (
         <div className={withUniversitySurfaceTint("overflow-auto rounded-lg border border-border")}>
           <table className="w-full text-sm">

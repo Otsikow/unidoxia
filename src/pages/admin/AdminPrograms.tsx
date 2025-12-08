@@ -113,7 +113,7 @@ const AdminPrograms = () => {
   });
 
   const [readinessChecks, setReadinessChecks] = useState<ReadinessCheck[]>([
-    { label: "Content readiness", value: 0, note: "Programme pages reviewed for accuracy and brand tone." },
+    { label: "Content readiness", value: 0, note: "Course pages reviewed for accuracy and brand tone." },
     { label: "Compliance & visas", value: 0, note: "Eligibility, CAS/LOA timelines, and deposit rules validated." },
     { label: "Marketing assets", value: 0, note: "Brochures, webinar decks, and FAQs updated for this intake." },
   ]);
@@ -272,7 +272,7 @@ const AdminPrograms = () => {
         {
           label: "Content readiness",
           value: contentReadiness,
-          note: "Programme pages reviewed for accuracy and brand tone.",
+          note: "Course pages reviewed for accuracy and brand tone.",
         },
         {
           label: "Compliance & visas",
@@ -420,17 +420,17 @@ const AdminPrograms = () => {
       if (error) throw error;
 
       toast({
-        title: "Programmes Activated",
-        description: `${selectedPrograms.size} programme(s) have been activated.`,
+        title: "Courses Activated",
+        description: `${selectedPrograms.size} course(s) have been activated.`,
       });
 
       setSelectedPrograms(new Set());
       fetchProgramData();
     } catch (error) {
-      console.error("Error activating programmes:", error);
+      console.error("Error activating courses:", error);
       toast({
         title: "Error",
-        description: "Failed to activate programmes. Please try again.",
+        description: "Failed to activate courses. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -452,17 +452,17 @@ const AdminPrograms = () => {
       if (error) throw error;
 
       toast({
-        title: "Programmes Paused",
-        description: `${selectedPrograms.size} programme(s) have been paused.`,
+        title: "Courses Paused",
+        description: `${selectedPrograms.size} course(s) have been paused.`,
       });
 
       setSelectedPrograms(new Set());
       fetchProgramData();
     } catch (error) {
-      console.error("Error pausing programmes:", error);
+      console.error("Error pausing courses:", error);
       toast({
         title: "Error",
-        description: "Failed to pause programmes. Please try again.",
+        description: "Failed to pause courses. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -484,18 +484,18 @@ const AdminPrograms = () => {
       if (error) throw error;
 
       toast({
-        title: "Programmes Deleted",
-        description: `${selectedPrograms.size} programme(s) have been deleted.`,
+        title: "Courses Deleted",
+        description: `${selectedPrograms.size} course(s) have been deleted.`,
       });
 
       setSelectedPrograms(new Set());
       setShowDeleteDialog(false);
       fetchProgramData();
     } catch (error) {
-      console.error("Error deleting programmes:", error);
+      console.error("Error deleting courses:", error);
       toast({
         title: "Error",
-        description: "Failed to delete programmes. Please try again.",
+        description: "Failed to delete courses. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -517,18 +517,18 @@ const AdminPrograms = () => {
       if (error) throw error;
 
       toast({
-        title: "Programme Deleted",
-        description: "The programme has been deleted.",
+        title: "Course Deleted",
+        description: "The course has been deleted.",
       });
 
       setSingleDeleteId(null);
       setShowDeleteDialog(false);
       fetchProgramData();
     } catch (error) {
-      console.error("Error deleting programme:", error);
+      console.error("Error deleting course:", error);
       toast({
         title: "Error",
-        description: "Failed to delete programme. Please try again.",
+        description: "Failed to delete course. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -547,16 +547,16 @@ const AdminPrograms = () => {
       if (error) throw error;
 
       toast({
-        title: currentActive ? "Programme Paused" : "Programme Activated",
-        description: `The programme is now ${currentActive ? "paused" : "active"}.`,
+        title: currentActive ? "Course Paused" : "Course Activated",
+        description: `The course is now ${currentActive ? "paused" : "active"}.`,
       });
 
       fetchProgramData();
     } catch (error) {
-      console.error("Error toggling programme status:", error);
+      console.error("Error toggling course status:", error);
       toast({
         title: "Error",
-        description: "Failed to update programme status.",
+        description: "Failed to update course status.",
         variant: "destructive",
       });
     }
@@ -585,7 +585,7 @@ const AdminPrograms = () => {
       value: stats.newThisMonth.toString(),
       description: "Awaiting final content checks",
     },
-    { label: "Avg. tuition", value: stats.avgTuition, description: "Across published programmes" },
+    { label: "Avg. tuition", value: stats.avgTuition, description: "Across published courses" },
     { label: "Yield", value: stats.yieldRate, description: "Applicants to enrolled" },
   ];
 
@@ -595,9 +595,9 @@ const AdminPrograms = () => {
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Programmes</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Courses</h1>
           <p className="text-sm text-muted-foreground">
-            Curate programme inventory, surface top picks for agents, and keep compliance artefacts in
+            Curate course inventory, surface top picks for agents, and keep compliance artefacts in
             sync.
           </p>
         </div>
@@ -650,7 +650,7 @@ const AdminPrograms = () => {
             trigger={
               <Button className="gap-2">
                 <Sparkles className="h-4 w-4" />
-                New programme
+                New course
               </Button>
             }
           />
@@ -677,7 +677,7 @@ const AdminPrograms = () => {
         <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <CardTitle>Catalogue</CardTitle>
-            <CardDescription>Programme performance, intake pacing, and geographic coverage.</CardDescription>
+            <CardDescription>Course performance, intake pacing, and geographic coverage.</CardDescription>
           </div>
           <div className="flex flex-col gap-2 text-sm md:text-right">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -694,7 +694,7 @@ const AdminPrograms = () => {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
               <TabsList>
-                <TabsTrigger value="all">All programmes</TabsTrigger>
+                <TabsTrigger value="all">All courses</TabsTrigger>
                 <TabsTrigger value="stem">STEM</TabsTrigger>
                 <TabsTrigger value="business">Business</TabsTrigger>
                 <TabsTrigger value="health">Health</TabsTrigger>
@@ -703,7 +703,7 @@ const AdminPrograms = () => {
                 End-to-end listing of all active and upcoming intakes across partner universities.
               </TabsContent>
               <TabsContent value="stem" className="pt-4 text-sm text-muted-foreground">
-                Computer science, data, engineering, and emerging technology programmes.
+                Computer science, data, engineering, and emerging technology courses.
               </TabsContent>
               <TabsContent value="business" className="pt-4 text-sm text-muted-foreground">
                 Business, finance, and management pathways with internship options.
@@ -714,13 +714,13 @@ const AdminPrograms = () => {
             </Tabs>
             <div className="flex w-full flex-col gap-2 md:w-80">
               <Input
-                placeholder="Search programmes, universities, or countries"
+                placeholder="Search courses, universities, or countries"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               <p className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Building2 className="h-3.5 w-3.5" />
-                Highlighting programmes with strong graduate outcomes
+                Highlighting courses with strong graduate outcomes
               </p>
             </div>
           </div>
@@ -733,11 +733,11 @@ const AdminPrograms = () => {
                     <Checkbox
                       checked={isAllSelected}
                       onCheckedChange={handleSelectAll}
-                      aria-label="Select all programmes"
+                      aria-label="Select all courses"
                       className={isSomeSelected && !isAllSelected ? "opacity-50" : ""}
                     />
                   </TableHead>
-                  <TableHead>Programme</TableHead>
+                  <TableHead>Course</TableHead>
                   <TableHead>University</TableHead>
                   <TableHead>Country</TableHead>
                   <TableHead>Discipline</TableHead>
@@ -755,14 +755,14 @@ const AdminPrograms = () => {
                     <TableCell colSpan={11} className="text-center py-8">
                       <div className="flex items-center justify-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Loading programmes...</span>
+                        <span>Loading courses...</span>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : filteredPrograms.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
-                      {searchQuery ? "No programmes match your search" : "No programmes found"}
+                      {searchQuery ? "No courses match your search" : "No courses found"}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -836,7 +836,7 @@ const AdminPrograms = () => {
                               className="gap-2"
                             >
                               <Edit3 className="h-4 w-4" />
-                              Edit programme
+                              Edit course
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -846,12 +846,12 @@ const AdminPrograms = () => {
                               {program.active ? (
                                 <>
                                   <Pause className="h-4 w-4" />
-                                  Pause programme
+                                  Pause course
                                 </>
                               ) : (
                                 <>
                                   <Play className="h-4 w-4" />
-                                  Activate programme
+                                  Activate course
                                 </>
                               )}
                             </DropdownMenuItem>
@@ -865,7 +865,7 @@ const AdminPrograms = () => {
                               className="gap-2 text-destructive focus:text-destructive"
                             >
                               <Trash2 className="h-4 w-4" />
-                              Delete programme
+                              Delete course
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -881,8 +881,8 @@ const AdminPrograms = () => {
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>
                 {selectedPrograms.size > 0
-                  ? `${selectedPrograms.size} of ${filteredPrograms.length} programme(s) selected`
-                  : `${filteredPrograms.length} programme(s)`}
+                  ? `${selectedPrograms.size} of ${filteredPrograms.length} course(s) selected`
+                  : `${filteredPrograms.length} course(s)`}
               </span>
               {selectedPrograms.size > 0 && (
                 <Button variant="ghost" size="sm" onClick={() => setSelectedPrograms(new Set())}>
@@ -898,7 +898,7 @@ const AdminPrograms = () => {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Quality gates</CardTitle>
-            <CardDescription>Pre-launch checklist for new programmes and intake updates.</CardDescription>
+            <CardDescription>Pre-launch checklist for new courses and intake updates.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             {["Admissions", "Marketing", "Finance"].map((category, index) => (
@@ -940,7 +940,7 @@ const AdminPrograms = () => {
         </Card>
       </div>
 
-      {/* Programme Details Sheet */}
+      {/* Course Details Sheet */}
       <ProgrammeDetailsSheet
         programmeId={selectedProgrammeId}
         tenantId={tenantId}
@@ -956,13 +956,13 @@ const AdminPrograms = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>
               {deleteTarget === "bulk"
-                ? `Delete ${selectedPrograms.size} Programme(s)`
-                : "Delete Programme"}
+                ? `Delete ${selectedPrograms.size} Course(s)`
+                : "Delete Course"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {deleteTarget === "bulk"
-                ? `Are you sure you want to delete ${selectedPrograms.size} programme(s)? This action cannot be undone.`
-                : "Are you sure you want to delete this programme? This action cannot be undone."}
+                ? `Are you sure you want to delete ${selectedPrograms.size} course(s)? This action cannot be undone.`
+                : "Are you sure you want to delete this course? This action cannot be undone."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

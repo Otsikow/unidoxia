@@ -300,7 +300,7 @@ export default function ApplicationDetails() {
                 {app.status === 'draft' && (
                   <Button variant="outline" onClick={cancelDraft}>Cancel Application</Button>
                 )}
-                <Button variant="outline" onClick={() => navigate('/courses?view=programs')}>Find More Programmes</Button>
+                <Button variant="outline" onClick={() => navigate('/courses?view=programs')}>Find More Courses</Button>
               </div>
             </div>
           </div>
