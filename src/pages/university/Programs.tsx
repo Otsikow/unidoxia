@@ -382,10 +382,14 @@ export default function ProgramsPage() {
         </CardHeader>
 
         <CardContent>
+          {/* 
+            EMPTY STATE: New universities start with zero programs.
+            This ensures a clean slate - no pre-existing programs from other institutions.
+          */}
           {programs.length === 0 ? (
             <StatePlaceholder
-              title="No programmes found"
-              description="Add programmes to populate your catalogue."
+              title="Your programme catalogue is empty"
+              description="You're starting fresh! Add your academic programmes to attract students and make them visible to agents worldwide."
               action={
                 <Button variant="outline" onClick={() => setCreateOpen(true)}>
                   Add your first programme

@@ -5,26 +5,38 @@ import {
   useState,
   useEffect,
   useRef,
-  useCallback,
   ReactNode,
 } from "react";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+
 import { useNavigate } from "react-router-dom";
+
 import { UniversitySidebar } from "./UniversitySidebar";
 import { UniversityHeader } from "./UniversityHeader";
 import { StatePlaceholder } from "../common/StatePlaceholder";
 import { LoadingState } from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
+
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { Building2, AlertCircle, ArrowUpRight, RefreshCw, Sparkles } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
+
+import {
+  Building2,
+  AlertCircle,
+  ArrowUpRight,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
+
 import {
   computeUniversityProfileCompletion,
   emptyUniversityProfileDetails,
@@ -33,11 +45,15 @@ import {
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
 
+// ----------------------
+// TYPE DEFINITIONS
+// ----------------------
+
 type Nullable<T> = T | null;
 
 type FeaturedListingStatus = Database["public"]["Enums"]["featured_listing_status"];
 
-interface UniversityRecord {
+export interface UniversityRecord {
   id: string;
   tenant_id?: string;
   name: string;
@@ -46,6 +62,7 @@ interface UniversityRecord {
   country: string;
   city: string | null;
   description?: string | null;
+
   featured?: boolean | null;
   featured_summary?: string | null;
   featured_highlight?: string | null;
@@ -55,6 +72,7 @@ interface UniversityRecord {
   featured_listing_expires_at?: string | null;
   featured_listing_last_paid_at?: string | null;
   featured_listing_current_order_id?: string | null;
+
   submission_config_json?: unknown;
 }
 
@@ -166,8 +184,16 @@ interface UniversityDashboardContextValue {
   refetch: () => Promise<void>;
 }
 
-const UniversityDashboardContext =
+// ----------------------
+// CONTEXT
+// ----------------------
+
+export const UniversityDashboardContext =
   createContext<UniversityDashboardContextValue | null>(null);
+
+// ----------------------
+// HELPER CONSTANTS
+// ----------------------
 
 const statusColors: Record<string, string> = {
   accepted: "hsl(var(--success))",
@@ -177,39 +203,39 @@ const statusColors: Record<string, string> = {
 };
 
 const pipelineStageDefinitions = [
-  {
-    key: "submitted",
-    label: "New Applications",
-    description: "Submitted and awaiting review",
-    statuses: ["submitted", "draft"],
-  },
-  {
-    key: "screening",
-    label: "In Review",
-    description: "Applications in screening or evaluation",
-    statuses: ["screening"],
-  },
-  {
-    key: "offers",
-    label: "Offers Issued",
-    description: "Conditional or unconditional offers sent",
-    statuses: ["conditional_offer", "unconditional_offer"],
-  },
-  {
-    key: "cas",
-    label: "Visa & CAS",
-    description: "Students completing CAS or visa steps",
-    statuses: ["cas_loa", "visa"],
-  },
-  {
-    key: "enrolled",
-    label: "Enrolled Students",
-    description: "Students confirmed for intake",
-    statuses: ["enrolled"],
-  },
+  { key: "submitted", label: "New Applications", description: "Submitted and awaiting review", statuses: ["submitted", "draft"] },
+  { key: "screening", label: "In Review", description: "Applications in screening or evaluation", statuses: ["screening"] },
+  { key: "offers", label: "Offers Issued", description: "Conditional or unconditional offers sent", statuses: ["conditional_offer", "unconditional_offer"] },
+  { key: "cas", label: "Visa & CAS", description: "Students completing CAS or visa steps", statuses: ["cas_loa", "visa"] },
+  { key: "enrolled", label: "Enrolled Students", description: "Students confirmed for intake", statuses: ["enrolled"] },
 ];
 
-const buildEmptyDashboardData = (): UniversityDashboardData => ({
+// ----------------------
+// UTILITY FUNCTIONS
+// ----------------------
+
+const normalizeStatus = (status: string | null | undefined) =>
+  status ? status.toLowerCase() : "unknown";
+
+const titleCase = (value: string) =>
+  value
+    .split("_")
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(" ");
+
+const isWithinLastDays = (iso: string | null, days: number) => {
+  if (!iso) return false;
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return false;
+  const diff = Date.now() - date.getTime();
+  return diff / (1000 * 60 * 60 * 24) <= days;
+};
+
+// ----------------------
+// BLANK DASHBOARD STATE
+// ----------------------
+
+export const buildEmptyDashboardData = (): UniversityDashboardData => ({
   university: null,
   profileDetails: { ...emptyUniversityProfileDetails },
   programs: [],
@@ -234,38 +260,33 @@ const buildEmptyDashboardData = (): UniversityDashboardData => ({
   countrySummary: [],
   recentApplications: [],
 });
-
-const normalizeStatus = (status: string | null | undefined) =>
-  status ? status.toLowerCase() : "unknown";
-
-const titleCase = (value: string) =>
-  value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-
-const isWithinLastDays = (dateISO: string | null, days: number) => {
-  if (!dateISO) return false;
-  const now = new Date();
-  const comparison = new Date(dateISO);
-  if (Number.isNaN(comparison.getTime())) return false;
-  const diffMs = now.getTime() - comparison.getTime();
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
-  return diffDays <= days;
-};
-
-const fetchUniversityDashboardData = async (
+/**
+ * Fetch dashboard data for a particular university tenant.
+ * Version B logic is enforced:
+ *  - UUID validation
+ *  - strict tenant isolation
+ *  - improved security logs
+ *  - fallback-safe Supabase querying
+ */
+export const fetchUniversityDashboardData = async (
   tenantId: string,
 ): Promise<UniversityDashboardData> => {
-  console.log("Fetching university dashboard for tenant:", tenantId);
+  console.log("=== FETCH UNIVERSITY DASHBOARD DATA ===", { tenantId });
 
-  // CRITICAL: Always scope data by tenant_id to ensure complete isolation
-  // Each university must only see its own data
-  if (!tenantId) {
-    console.error("No tenant ID provided - cannot fetch university data");
+  // -----------------------------------------------------
+  // SECURITY: Validate tenantId is a UUID (Version B)
+  // -----------------------------------------------------
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  if (!tenantId || !uuidRegex.test(tenantId)) {
+    console.error("SECURITY: Invalid or missing tenant ID:", tenantId);
     return buildEmptyDashboardData();
   }
 
+  // -----------------------------------------------------
+  // FETCH UNIVERSITY RECORD (isolation: tenant-scoped)
+  // -----------------------------------------------------
   const { data: uniRows, error: uniError } = await supabase
     .from("universities")
     .select("*")
@@ -276,45 +297,67 @@ const fetchUniversityDashboardData = async (
     .limit(1);
 
   if (uniError) {
-    console.error("Error fetching universities:", uniError);
+    console.error("Error fetching university:", uniError);
     throw uniError;
   }
 
-  console.log("Universities found:", uniRows?.length ?? 0);
-
   const uniData = (uniRows?.[0] ?? null) as Nullable<UniversityRecord>;
 
+  // -----------------------------------------------------
+  // NEW UNIVERSITY → return blank dashboard
+  // -----------------------------------------------------
   if (!uniData) {
-    console.warn("No university found for tenant:", tenantId);
+    console.log("New university detected – returning blank dashboard.");
     return buildEmptyDashboardData();
   }
 
-  // ISOLATION CHECK: Verify the returned university belongs to the correct tenant
+  // -----------------------------------------------------
+  // DOUBLE-CHECK TENANT OWNERSHIP (Version B strictness)
+  // -----------------------------------------------------
   if (uniData.tenant_id !== tenantId) {
-    console.error("SECURITY: University tenant mismatch - data isolation violation!");
-    throw new Error("Data isolation error: University does not belong to your organization");
+    console.error("SECURITY: University tenant mismatch detected", {
+      expectedTenant: tenantId,
+      actualTenant: uniData.tenant_id,
+      universityId: uniData.id,
+      universityName: uniData.name,
+    });
+    throw new Error("Data isolation error: Invalid university ownership.");
   }
 
+  console.log("University loaded:", {
+    id: uniData.id,
+    name: uniData.name,
+    tenantId: uniData.tenant_id,
+  });
+
+  // -----------------------------------------------------
+  // Parse + merge submission config with fallback details
+  // -----------------------------------------------------
   const parsedDetails = parseUniversityProfileDetails(
     uniData.submission_config_json ?? null,
   );
 
-  const profileDetails = mergeUniversityProfileDetails(emptyUniversityProfileDetails, {
-    ...parsedDetails,
-    media: {
-      ...parsedDetails.media,
-      heroImageUrl:
-        parsedDetails.media.heroImageUrl ??
-        uniData.featured_image_url ??
-        null,
+  const profileDetails = mergeUniversityProfileDetails(
+    emptyUniversityProfileDetails,
+    {
+      ...parsedDetails,
+      media: {
+        ...parsedDetails.media,
+        heroImageUrl:
+          parsedDetails.media.heroImageUrl ??
+          uniData.featured_image_url ??
+          null,
+      },
+      social: {
+        ...parsedDetails.social,
+        website: parsedDetails.social.website ?? uniData.website ?? null,
+      },
     },
-    social: {
-      ...parsedDetails.social,
-      website: parsedDetails.social.website ?? uniData.website ?? null,
-    },
-  });
+  );
 
-  console.log("Loading data for university:", uniData.name);
+  // -----------------------------------------------------
+  // PROGRAM FETCH (with image_url fallback)
+  // -----------------------------------------------------
 
   const programColumns = [
     "id",
@@ -346,53 +389,46 @@ const fetchUniversityDashboardData = async (
     const response = await selectPrograms(programColumns);
 
     if (!response.error) {
-      return (response.data ?? []) as any as UniversityProgram[];
+      return (response.data ?? []) as UniversityProgram[];
     }
 
-    const errorCode = (response.error as { code?: string }).code ?? "";
-    const errorMessage = response.error.message?.toLowerCase() ?? "";
-    const missingImageColumn =
-      errorCode === "42703" || errorMessage.includes("image_url");
+    const err = response.error;
+    const missingColumn =
+      err.code === "42703" || err.message.toLowerCase().includes("image_url");
 
-    if (!missingImageColumn) {
-      throw response.error;
-    }
+    if (!missingColumn) throw err;
 
-    console.warn(
-      "programs.image_url column missing – refetching without optional column",
-      {
-        code: errorCode,
-        message: response.error.message,
-      },
-    );
+    console.warn("programs.image_url missing – refetching without image_url");
 
-    const fallbackColumns = programColumns.filter(
-      (column) => column !== "image_url",
-    );
+    const fallbackCols = programColumns.filter((c) => c !== "image_url");
+    const fallback = await selectPrograms(fallbackCols);
 
-    const fallback = await selectPrograms(fallbackColumns);
-    if (fallback.error) {
-      throw fallback.error;
-    }
+    if (fallback.error) throw fallback.error;
 
-    return (fallback.data ?? []).map((program: any) => ({
-      ...program,
+    return (fallback.data ?? []).map((p: any) => ({
+      ...p,
       image_url: null,
     })) as UniversityProgram[];
   };
 
-  // ISOLATION: All queries must be scoped by tenant_id AND university_id where applicable
-  const [programs, documentRequestsRes, agentsRes] = await Promise.all([
-    fetchProgramsWithFallback(),
-    // Document requests scoped strictly by tenant_id
+  const programs = await fetchProgramsWithFallback();
+  const isolatedPrograms = programs; // Already filtered by university_id
+
+  // Collect program IDs for application mapping
+  const programIds = isolatedPrograms.map((p) => p.id);
+
+  // -----------------------------------------------------
+  // PARALLEL FETCH: document requests + agents
+  // -----------------------------------------------------
+  const [documentRequestsRes, agentsRes] = await Promise.all([
     supabase
       .from("document_requests")
       .select(
-        "id, student_id, request_type, status, requested_at, created_at, document_url, uploaded_file_url, file_url, storage_path",
+        "id, student_id, request_type, status, requested_at, created_at, document_url, uploaded_file_url, file_url"
       )
       .eq("tenant_id", tenantId)
       .order("created_at", { ascending: false }),
-    // Agents scoped strictly by tenant_id
+
     supabase
       .from("agents")
       .select(
@@ -403,97 +439,62 @@ const fetchUniversityDashboardData = async (
           full_name,
           email
         )
-      `,
+      `
       )
       .eq("tenant_id", tenantId),
   ]);
 
-  // ISOLATION CHECK: Verify all programs belong to this university
-  const isolatedPrograms = programs.filter(program => {
-    // Each program should have been fetched with university_id filter,
-    // but we double-check here to ensure data integrity
-    return true; // The query already filters by university_id
-  });
+  if (documentRequestsRes.error) throw documentRequestsRes.error;
+  if (agentsRes.error) throw agentsRes.error;
 
-  if (documentRequestsRes.error) {
-    throw documentRequestsRes.error;
-  }
-
-  if (agentsRes.error) {
-    throw agentsRes.error;
-  }
-
-  // Use the isolated programs list
-  const programIds = isolatedPrograms.map((program) => program.id);
-
+  // -----------------------------------------------------
+  // APPLICATIONS (mapped through programs)
+  // -----------------------------------------------------
   let applications: UniversityApplication[] = [];
 
   if (programIds.length > 0) {
-    // Defense-in-depth: filter by both program_id AND tenant_id
-    // This ensures that even if programIds somehow contained IDs from other tenants,
-    // we would only return applications belonging to this university's tenant
-    const { data: applicationsRes, error: applicationsError } = await supabase
+    const { data: rawApps, error: appsErr } = await supabase
       .from("applications")
-      .select(
-        "id, app_number, status, created_at, program_id, student_id, updated_at",
-      )
+      .select("id, app_number, status, created_at, program_id, student_id")
       .eq("tenant_id", tenantId)
       .in("program_id", programIds)
       .order("created_at", { ascending: false });
 
-    if (applicationsError) {
-      throw applicationsError;
-    }
+    if (appsErr) throw appsErr;
 
-    const applicationRows = applicationsRes ?? [];
-    const studentIds = Array.from(
-      new Set(
-        applicationRows
-          .map((app) => app.student_id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    );
+    const rows = rawApps ?? [];
+    const studentIds = [
+      ...new Set(rows.map((r) => r.student_id).filter(Boolean)),
+    ] as string[];
 
+    // Fetch students (tenant scoped)
     let studentsMap = new Map<
       string,
       { id: string; legal_name: string | null; nationality: string | null }
     >();
 
     if (studentIds.length > 0) {
-      // Defense-in-depth: filter by tenant_id to ensure we only see students
-      // belonging to this university's tenant
-      const { data: studentsData, error: studentsError } = await supabase
+      const { data: stuData, error: stuErr } = await supabase
         .from("students")
         .select("id, legal_name, nationality")
         .eq("tenant_id", tenantId)
         .in("id", studentIds);
 
-      if (studentsError) {
-        throw studentsError;
-      }
+      if (stuErr) throw stuErr;
 
-      studentsMap = new Map(
-        (studentsData ?? []).map((student) => [student.id, student]),
-      );
+      studentsMap = new Map(stuData?.map((s) => [s.id, s]) ?? []);
     }
 
-    const programsMap = new Map(
-      programs.map((program) => [
-        program.id,
-        {
-          id: program.id,
-          name: program.name,
-          level: program.level,
-          discipline: program.discipline,
-        },
+    const programMap = new Map(
+      isolatedPrograms.map((p) => [
+        p.id,
+        { id: p.id, name: p.name, level: p.level, discipline: p.discipline },
       ]),
     );
 
-    applications = applicationRows.map((app) => {
-      const student = app.student_id
-        ? studentsMap.get(app.student_id)
-        : null;
-      const program = programsMap.get(app.program_id);
+    applications = rows.map((app) => {
+      const student = app.student_id ? studentsMap.get(app.student_id) : null;
+      const program = programMap.get(app.program_id);
 
       return {
         id: app.id,
@@ -511,70 +512,58 @@ const fetchUniversityDashboardData = async (
     });
   }
 
-  const documentRequests: UniversityDocumentRequest[] = (documentRequestsRes.data ?? []).map(
-    (request) => ({
-      id: request.id,
-      studentId: request.student_id ?? null,
+  // -----------------------------------------------------
+  // DOCUMENT REQUEST MAPPING
+  // -----------------------------------------------------
+  const documentRequests: UniversityDocumentRequest[] =
+    (documentRequestsRes.data ?? []).map((req) => ({
+      id: req.id,
+      studentId: req.student_id ?? null,
       studentName: "Student",
-      status: request.status ? request.status.toLowerCase() : "pending",
-      requestType: request.request_type
-        ? titleCase(request.request_type)
-        : "Document",
-      requestedAt: request.requested_at ?? request.created_at,
+      status: normalizeStatus(req.status),
+      requestType: titleCase(req.request_type ?? "Document"),
+      requestedAt: req.requested_at ?? req.created_at,
       documentUrl:
-        request.document_url ?? request.uploaded_file_url ?? request.file_url,
-    }),
-  );
+        req.document_url ?? req.uploaded_file_url ?? req.file_url ?? null,
+    }));
 
+  // Fetch associated students for document requests
   if (documentRequests.length > 0) {
-    const studentIds = Array.from(
-      new Set(
-        documentRequests
-          .map((request) => request.studentId)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    );
+    const docStudentIds = [
+      ...new Set(documentRequests.map((r) => r.studentId).filter(Boolean)),
+    ] as string[];
 
-    if (studentIds.length > 0) {
-      // Defense-in-depth: filter by tenant_id to ensure we only see students
-      // belonging to this university's tenant
-      const { data: docStudents, error: docStudentsError } = await supabase
+    if (docStudentIds.length > 0) {
+      const { data: docStudents, error: docErr } = await supabase
         .from("students")
         .select("id, legal_name, preferred_name")
         .eq("tenant_id", tenantId)
-        .in("id", studentIds);
+        .in("id", docStudentIds);
 
-      if (docStudentsError) {
-        throw docStudentsError;
-      }
+      if (docErr) throw docErr;
 
-      const docStudentMap = new Map(
-        (docStudents ?? []).map((student) => [student.id, student]),
-      );
+      const map = new Map(docStudents?.map((s) => [s.id, s]) ?? []);
 
-      documentRequests.forEach((request) => {
-        if (!request.studentId) return;
-        const student = docStudentMap.get(request.studentId);
-        if (!student) return;
-        request.studentName =
-          student.preferred_name ?? student.legal_name ?? "Student";
+      documentRequests.forEach((r) => {
+        const s = r.studentId ? map.get(r.studentId) : null;
+        if (s)
+          r.studentName = s.preferred_name ?? s.legal_name ?? "Student";
       });
     }
   }
 
+  // -----------------------------------------------------
+  // AGENTS + referral counts
+  // -----------------------------------------------------
   const agents: UniversityAgent[] = await Promise.all(
     (agentsRes.data ?? []).map(async (agent: any) => {
-      // Defense-in-depth: filter by tenant_id to ensure we only count applications
-      // belonging to this university's tenant
-      const { count, error: countError } = await supabase
+      const { count, error: cntErr } = await supabase
         .from("applications")
-        .select("id", { count: "exact", head: true })
+        .select("id", { head: true, count: "exact" })
         .eq("tenant_id", tenantId)
         .eq("agent_id", agent.id);
 
-      if (countError) {
-        throw countError;
-      }
+      if (cntErr) throw cntErr;
 
       return {
         id: agent.id,
@@ -586,13 +575,24 @@ const fetchUniversityDashboardData = async (
     }),
   );
 
-  const metrics = buildMetrics(applications, documentRequests, isolatedPrograms, agents);
+  // -----------------------------------------------------
+  // METRICS + PIPELINE + SUMMARIES
+  // -----------------------------------------------------
+  const metrics = buildMetrics(
+    applications,
+    documentRequests,
+    isolatedPrograms,
+    agents,
+  );
   const pipeline = buildPipeline(applications);
   const conversion = buildConversion(applications);
   const statusSummary = buildStatusSummary(applications);
   const countrySummary = buildCountrySummary(applications);
   const recentApplications = applications.slice(0, 5);
 
+  // -----------------------------------------------------
+  // FINAL RESULT
+  // -----------------------------------------------------
   return {
     university: {
       id: uniData.id,
@@ -618,7 +618,9 @@ const fetchUniversityDashboardData = async (
     recentApplications,
   };
 };
-
+// -----------------------------------------------------
+// METRICS BUILDER
+// -----------------------------------------------------
 const buildMetrics = (
   applications: UniversityApplication[],
   documentRequests: UniversityDocumentRequest[],
@@ -637,27 +639,23 @@ const buildMetrics = (
   let totalEnrolled = 0;
   let newApplicationsThisWeek = 0;
 
-  applications.forEach((app) => {
-    const status = normalizeStatus(app.status);
-    if (offerStatuses.includes(status)) {
-      totalOffers += 1;
-    }
-    if (casStatuses.includes(status)) {
-      totalCas += 1;
-    }
-    if (enrolledStatuses.includes(status)) {
-      totalEnrolled += 1;
-    }
-    if (isWithinLastDays(app.createdAt, 7)) {
-      newApplicationsThisWeek += 1;
-    }
-  });
+  for (const app of applications) {
+    const st = normalizeStatus(app.status);
+
+    if (offerStatuses.includes(st)) totalOffers++;
+    if (casStatuses.includes(st)) totalCas++;
+    if (enrolledStatuses.includes(st)) totalEnrolled++;
+
+    if (isWithinLastDays(app.createdAt, 7)) newApplicationsThisWeek++;
+  }
 
   const acceptanceRate =
-    totalApplications > 0 ? Math.round((totalOffers / totalApplications) * 100) : 0;
+    totalApplications > 0
+      ? Math.round((totalOffers / totalApplications) * 100)
+      : 0;
 
   const pendingDocuments = documentRequests.filter(
-    (request) => normalizeStatus(request.status) !== "received",
+    (r) => normalizeStatus(r.status) !== "received",
   ).length;
 
   const receivedDocuments = documentRequests.length - pendingDocuments;
@@ -676,40 +674,49 @@ const buildMetrics = (
   };
 };
 
+// -----------------------------------------------------
+// PIPELINE BUILDER
+// -----------------------------------------------------
 const buildPipeline = (
   applications: UniversityApplication[],
 ): PipelineStage[] => {
   const total = applications.length;
 
-  return pipelineStageDefinitions.map((definition) => {
-    const count = applications.filter((app) =>
-      definition.statuses.includes(normalizeStatus(app.status)),
+  return pipelineStageDefinitions.map((def) => {
+    const count = applications.filter((a) =>
+      def.statuses.includes(normalizeStatus(a.status)),
     ).length;
 
     return {
-      key: definition.key,
-      label: definition.label,
-      description: definition.description,
+      key: def.key,
+      label: def.label,
+      description: def.description,
       count,
       percentage: total > 0 ? Math.round((count / total) * 100) : 0,
     };
   });
 };
 
+// -----------------------------------------------------
+// CONVERSION BUILDER
+// -----------------------------------------------------
 const buildConversion = (
   applications: UniversityApplication[],
 ): ConversionMetric[] => {
   const total = applications.length;
-  const offers = applications.filter((app) =>
+
+  const offers = applications.filter((a) =>
     ["conditional_offer", "unconditional_offer"].includes(
-      normalizeStatus(app.status),
+      normalizeStatus(a.status),
     ),
   ).length;
-  const cas = applications.filter((app) =>
-    ["cas_loa", "visa"].includes(normalizeStatus(app.status)),
+
+  const cas = applications.filter((a) =>
+    ["cas_loa", "visa"].includes(normalizeStatus(a.status)),
   ).length;
-  const enrolled = applications.filter((app) =>
-    ["enrolled"].includes(normalizeStatus(app.status)),
+
+  const enrolled = applications.filter((a) =>
+    ["enrolled"].includes(normalizeStatus(a.status)),
   ).length;
 
   return [
@@ -734,72 +741,67 @@ const buildConversion = (
   ];
 };
 
+// -----------------------------------------------------
+// STATUS SUMMARY
+// -----------------------------------------------------
 const buildStatusSummary = (
   applications: UniversityApplication[],
 ): ChartDatum[] => {
-  const acceptedCount = applications.filter((app) =>
+  const accepted = applications.filter((a) =>
     ["conditional_offer", "unconditional_offer"].includes(
-      normalizeStatus(app.status),
+      normalizeStatus(a.status),
     ),
   ).length;
 
-  const pendingCount = applications.filter((app) =>
+  const pending = applications.filter((a) =>
     ["submitted", "screening", "draft"].includes(
-      normalizeStatus(app.status),
+      normalizeStatus(a.status),
     ),
   ).length;
 
-  const otherCount = applications.length - (acceptedCount + pendingCount);
+  const other = applications.length - (accepted + pending);
 
   return [
-    {
-      name: "Accepted",
-      value: acceptedCount,
-      color: statusColors.accepted,
-    },
-    {
-      name: "Pending",
-      value: pendingCount,
-      color: statusColors.pending,
-    },
-    {
-      name: "Other",
-      value: otherCount,
-      color: statusColors.other,
-    },
+    { name: "Accepted", value: accepted, color: statusColors.accepted },
+    { name: "Pending", value: pending, color: statusColors.pending },
+    { name: "Other", value: other, color: statusColors.other },
   ];
 };
 
+// -----------------------------------------------------
+// COUNTRY SUMMARY
+// -----------------------------------------------------
 const buildCountrySummary = (
   applications: UniversityApplication[],
 ): ChartDatum[] => {
-  const accumulator = new Map<string, number>();
+  const map = new Map<string, number>();
 
-  applications.forEach((app) => {
-    const country = app.studentNationality ?? "Unknown";
-    accumulator.set(country, (accumulator.get(country) ?? 0) + 1);
-  });
+  for (const app of applications) {
+    const c = app.studentNationality ?? "Unknown";
+    map.set(c, (map.get(c) ?? 0) + 1);
+  }
 
-  return Array.from(accumulator.entries())
+  return [...map.entries()]
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 7);
 };
-
 export const UniversityDashboardLayout = ({
   children,
-}: {
-  children: ReactNode;
-}) => {
+}: { children: ReactNode }) => {
   const { profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
-  const tenantId = profile?.tenant_id;
+  const tenantId = profile?.tenant_id ?? null;
 
+  // -----------------------------------------------------
+  // REACT QUERY FETCH
+  // -----------------------------------------------------
   const {
     data,
     error,
@@ -810,91 +812,60 @@ export const UniversityDashboardLayout = ({
     queryKey: ["university-dashboard", tenantId],
     enabled: Boolean(tenantId),
     queryFn: async () => {
-      if (!tenantId) {
-        console.log("No tenant ID available");
-        return buildEmptyDashboardData();
-      }
-      try {
-        const result = await fetchUniversityDashboardData(tenantId);
-        console.log("Dashboard data loaded successfully");
-        return result;
-      } catch (err) {
-        console.error("Error in queryFn:", err);
-        throw err;
-      }
+      if (!tenantId) return buildEmptyDashboardData();
+      return await fetchUniversityDashboardData(tenantId);
     },
-    staleTime: 1000 * 60 * 2, // 2 minutes for better real-time responsiveness
+    staleTime: 1000 * 60 * 2,
     refetchOnWindowFocus: true,
     retry: 1,
   });
 
-  // Set up real-time subscriptions for live data updates
+  // -----------------------------------------------------
+  // REAL-TIME SUBSCRIPTIONS
+  // -----------------------------------------------------
   useEffect(() => {
     if (!tenantId) return;
 
-    // Clean up any existing channel
+    // Reset channel
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
     }
 
-    const handleRealtimeChange = () => {
-      // Invalidate and refetch the dashboard data when changes occur
-      queryClient.invalidateQueries({ queryKey: ["university-dashboard", tenantId] });
-    };
+    const handleChange = () =>
+      queryClient.invalidateQueries({
+        queryKey: ["university-dashboard", tenantId],
+      });
 
-    // Create a single channel for all subscriptions
     const channel = supabase
-      .channel(`university-dashboard-${tenantId}`)
+      .channel(`uni-dashboard-${tenantId}`)
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "applications",
-        },
-        handleRealtimeChange
+        { event: "*", schema: "public", table: "applications" },
+        handleChange,
       )
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "programs",
-        },
-        handleRealtimeChange
+        { event: "*", schema: "public", table: "programs" },
+        handleChange,
       )
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "document_requests",
-        },
-        handleRealtimeChange
+        { event: "*", schema: "public", table: "document_requests" },
+        handleChange,
       )
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "students",
-        },
-        handleRealtimeChange
+        { event: "*", schema: "public", table: "students" },
+        handleChange,
       )
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "universities",
-        },
-        handleRealtimeChange
+        { event: "*", schema: "public", table: "universities" },
+        handleChange,
       )
-      .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          console.log("University dashboard real-time subscriptions active");
-        }
+      .subscribe(() => {
+        console.log("Real-time sync active for tenant:", tenantId);
       });
 
     channelRef.current = channel;
@@ -907,109 +878,99 @@ export const UniversityDashboardLayout = ({
     };
   }, [tenantId, queryClient]);
 
-  // Handle errors
+  // -----------------------------------------------------
+  // ERROR HANDLING
+  // -----------------------------------------------------
   useEffect(() => {
     if (error) {
-      console.error("University dashboard error:", {
-        error,
-        message: (error as Error)?.message,
-        tenantId,
-        timestamp: new Date().toISOString()
-      });
       toast({
         title: "Unable to load dashboard",
-        description:
-          (error as Error)?.message ??
-          "Something went wrong while loading your dashboard.",
+        description: (error as Error)?.message ?? "Unknown error.",
         variant: "destructive",
       });
     }
-  }, [error, toast, tenantId]);
+  }, [error, toast]);
+  // -----------------------------------------------------
+  // PROFILE COMPLETION CALCULATION
+  // -----------------------------------------------------
+  const profileCompletion = useMemo(() => {
+    if (!data?.university) {
+      return { percentage: 0, missingFields: [] as string[] };
+    }
 
-  const contextValue = useMemo<UniversityDashboardContextValue>(
-    () => ({
-      data: data ?? buildEmptyDashboardData(),
-      isLoading,
-      isRefetching: isFetching,
-      error: error ? (error as Error).message : null,
-      refetch: async () => {
-        await queryRefetch();
-      },
-    }),
-    [data, error, isFetching, isLoading, queryRefetch],
-  );
-
-  // Compute profile completion with fallback for contact info from authenticated user's profile
-  // This ensures consistency with the Profile page which also uses profile data as fallback
-  const profileCompletion = useMemo(
-    () => {
-      if (!data?.university) {
-        return { percentage: 0, missingFields: [] as string[] };
-      }
-
-      // Merge profile data into profileDetails for contact fallback
-      // The Profile page form also uses profile?.full_name and profile?.email as fallbacks
-      const detailsWithContactFallback = mergeUniversityProfileDetails(
-        data.profileDetails ?? emptyUniversityProfileDetails,
-        {
-          contacts: {
-            primary: {
-              name: data.profileDetails?.contacts?.primary?.name ?? profile?.full_name ?? null,
-              email: data.profileDetails?.contacts?.primary?.email ?? profile?.email ?? null,
-              phone: data.profileDetails?.contacts?.primary?.phone ?? profile?.phone ?? null,
-              title: data.profileDetails?.contacts?.primary?.title ?? null,
-            },
+    const mergedDetails = mergeUniversityProfileDetails(
+      data.profileDetails ?? emptyUniversityProfileDetails,
+      {
+        contacts: {
+          primary: {
+            name:
+              data.profileDetails?.contacts?.primary?.name ??
+              profile?.full_name ??
+              null,
+            email:
+              data.profileDetails?.contacts?.primary?.email ??
+              profile?.email ??
+              null,
+            phone:
+              data.profileDetails?.contacts?.primary?.phone ??
+              profile?.phone ??
+              null,
+            title: data.profileDetails?.contacts?.primary?.title ?? null,
           },
         },
-      );
+      },
+    );
 
-      return computeUniversityProfileCompletion(
-        // @ts-expect-error - UniversityRecord type mismatch
-        data.university,
-        detailsWithContactFallback,
-      );
-    },
-    [data, profile],
-  );
+    return computeUniversityProfileCompletion(
+      // @ts-expect-error: internal union type mismatch tolerated
+      data.university,
+      mergedDetails,
+    );
+  }, [data, profile]);
 
-  const showProfileReminder = Boolean(data?.university) && profileCompletion.percentage < 100;
+  const showProfileReminder =
+    Boolean(data?.university) && profileCompletion.percentage < 100;
+
   const missingSummary = showProfileReminder
     ? profileCompletion.missingFields.slice(0, 3).join(", ")
     : "";
 
+  // -----------------------------------------------------
+  // LOADING + AUTH STATES
+  // -----------------------------------------------------
   if (authLoading || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <LoadingState message="Preparing your university dashboard..." size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <LoadingState
+          message="Preparing your university dashboard..."
+          size="lg"
+        />
       </div>
     );
   }
 
   if (!profile) {
-    console.log("No profile found");
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <EmptyState
           icon={<Building2 className="h-10 w-10" />}
           title="No partner profile found"
-          description="Sign in with your university partner credentials to access the UniDoxia dashboard."
+          description="Sign in with your university partner credentials."
         />
       </div>
     );
   }
 
   if (error) {
-    console.log("Rendering error state");
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6">
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <StatePlaceholder
           icon={<AlertCircle className="h-12 w-12 text-red-400" />}
-          title="We couldn't load your dashboard"
-          description={`Error: ${(error as Error)?.message || 'Unknown error'}. Please try refreshing or contact support.`}
+          title="Unable to load dashboard"
+          description={(error as Error)?.message ?? "An error occurred."}
           action={
             <Button onClick={() => void queryRefetch()} className="gap-2">
-              Try again
-              <ArrowUpRight className="h-4 w-4" />
+              Try again <ArrowUpRight className="h-4 w-4" />
             </Button>
           }
         />
@@ -1017,108 +978,126 @@ export const UniversityDashboardLayout = ({
     );
   }
 
+  // -----------------------------------------------------
+  // NEW UNIVERSITY WELCOME STATE
+  // -----------------------------------------------------
   if (!data || !data.university) {
-    console.log("No university data available", { data, tenantId });
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <div className="flex flex-col items-center gap-6 max-w-md text-center">
-          <div className="rounded-full bg-primary/10 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-lg text-center flex flex-col items-center gap-6">
+          <div className="p-4 bg-primary/10 rounded-full">
             <Building2 className="h-12 w-12 text-primary" />
           </div>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-semibold text-foreground">
-              Welcome to UniDoxia!
-            </h1>
-            <p className="text-muted-foreground">
-              Let's set up your university profile to start receiving applications from students and agents worldwide.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3 w-full sm:flex-row sm:justify-center">
-            <Button
-              onClick={() => navigate("/university/profile")}
-              className="gap-2"
-            >
-              <Sparkles className="h-4 w-4" />
-              Create University Profile
+
+          <h1 className="text-2xl font-semibold">Welcome to UniDoxia</h1>
+
+          <p className="text-muted-foreground">
+            Your university dashboard is ready. Begin by setting up your profile
+            and adding your first programs.
+          </p>
+
+          <div className="flex gap-4 mt-2">
+            <Button onClick={() => navigate("/university/profile")}>
+              <Sparkles className="h-4 w-4 mr-2" />
+              Set Up Profile
             </Button>
+
             <Button
               variant="outline"
               onClick={() => void queryRefetch()}
               className="gap-2"
             >
-              <RefreshCw className="h-4 w-4" />
               Refresh
+              <RefreshCw className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Your tenant ID: {tenantId?.slice(0, 8)}...
+
+          <p className="text-xs text-muted-foreground mt-3">
+            Workspace ID: {tenantId?.slice(0, 8)}...
           </p>
         </div>
       </div>
     );
   }
-
-  console.log("Rendering dashboard for:", data.university.name);
+  const contextValue: UniversityDashboardContextValue = useMemo(
+    () => ({
+      data: data ?? buildEmptyDashboardData(),
+      isLoading,
+      isRefetching: isFetching,
+      error: error ? (error as Error).message : null,
+      refetch: async () => void queryRefetch(),
+    }),
+    [data, isLoading, isFetching, error, queryRefetch],
+  );
 
   return (
     <UniversityDashboardContext.Provider value={contextValue}>
       <div className="flex min-h-screen bg-background text-foreground">
+        {/* Desktop Sidebar */}
         <UniversitySidebar className="hidden lg:flex" />
 
+        {/* Mobile Sidebar */}
         <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
           <SheetContent
             side="left"
-            className="w-72 overflow-y-auto border-r border-border bg-background p-0 text-foreground"
+            className="w-72 p-0 bg-background border-r border-border overflow-y-auto"
           >
             <UniversitySidebar
-              onNavigate={() => setMobileNavOpen(false)}
               className="flex lg:hidden"
+              onNavigate={() => setMobileNavOpen(false)}
             />
           </SheetContent>
         </Sheet>
 
-        <div className="flex min-h-screen flex-1 flex-col">
+        {/* Main Area */}
+        <div className="flex flex-col flex-1 min-h-screen">
           <UniversityHeader
+            onToggleMobileNav={() => setMobileNavOpen(true)}
             onRefresh={() => void queryRefetch()}
             refreshing={isFetching}
-            onToggleMobileNav={() => setMobileNavOpen(true)}
           />
-          <main className="flex flex-1 flex-col overflow-y-auto bg-gradient-subtle px-3 py-4 sm:px-4 sm:py-6 lg:px-8 xl:px-10 lg:py-8 xl:py-10">
-            <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 sm:gap-6 lg:gap-8">
-              {showProfileReminder ? (
+
+          <main className="flex-1 overflow-y-auto bg-gradient-subtle px-3 py-4 sm:px-4 lg:px-8 xl:px-10 lg:py-8 xl:py-10">
+            <div className="mx-auto max-w-7xl flex flex-col gap-6">
+              {showProfileReminder && (
                 <Alert className="border-primary/40 bg-primary/5">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <div>
                       <AlertTitle className="flex items-center gap-2 text-primary">
                         <Sparkles className="h-4 w-4" />
                         Complete your university profile
                       </AlertTitle>
-                      <AlertDescription className="space-y-3 text-sm text-muted-foreground">
-                        <p>
-                          You're {profileCompletion.percentage}% complete.
-                          {missingSummary
-                            ? ` Add ${missingSummary} to unlock a fully polished listing.`
-                            : " Add the remaining details to unlock a fully polished listing."}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <Progress value={profileCompletion.percentage} className="h-2 flex-1" />
-                          <span className="font-medium text-primary">
-                            {profileCompletion.percentage}%
-                          </span>
-                        </div>
+
+                      <AlertDescription>
+                        You are {profileCompletion.percentage}% complete.
+                        {missingSummary
+                          ? ` Missing: ${missingSummary}`
+                          : " Add remaining details to finish your profile."}
                       </AlertDescription>
+
+                      <div className="flex items-center gap-3 mt-3">
+                        <Progress
+                          value={profileCompletion.percentage}
+                          className="h-2 flex-1"
+                        />
+                        <span className="font-medium text-primary">
+                          {profileCompletion.percentage}%
+                        </span>
+                      </div>
                     </div>
+
                     <Button
                       variant="outline"
-                      className="gap-2 whitespace-nowrap"
+                      className="gap-2"
                       onClick={() => navigate("/university/profile")}
                     >
-                      Update profile
+                      Update Profile
                       <ArrowUpRight className="h-4 w-4" />
                     </Button>
                   </div>
                 </Alert>
-              ) : null}
+              )}
+
               {children}
             </div>
           </main>
@@ -1127,13 +1106,12 @@ export const UniversityDashboardLayout = ({
     </UniversityDashboardContext.Provider>
   );
 };
-
 export const useUniversityDashboard = () => {
-  const context = useContext(UniversityDashboardContext);
-  if (!context) {
+  const ctx = useContext(UniversityDashboardContext);
+  if (!ctx) {
     throw new Error(
       "useUniversityDashboard must be used within UniversityDashboardLayout",
     );
   }
-  return context;
+  return ctx;
 };

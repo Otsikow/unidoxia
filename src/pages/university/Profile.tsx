@@ -17,7 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { COUNTRIES } from "@/lib/countries";
-import { computeUniversityProfileCompletion, emptyUniversityProfileDetails, getUniversityProfileChecklist, mergeUniversityProfileDetails, parseUniversityProfileDetails, type UniversityProfileDetails, type UniversityProfileChecklistItem } from "@/lib/universityProfile";
+import { computeUniversityProfileCompletion, emptyUniversityProfileDetails, getUniversityProfileChecklist, mergeUniversityProfileDetails, parseUniversityProfileDetails, isNewUniversityProfile, type UniversityProfileDetails, type UniversityProfileChecklistItem } from "@/lib/universityProfile";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -478,6 +478,23 @@ const UniversityProfilePage = () => {
       console.log("Existing university ID:", queryData?.university?.id);
       console.log("Existing university tenant:", queryData?.university?.tenant_id);
 
+      // CRITICAL VALIDATION: Ensure no tenant mismatch before saving
+      // This prevents the mirroring issue where one university's data overwrites another
+      if (queryData?.university && queryData.university.tenant_id !== tenantId) {
+        console.error("SECURITY: Tenant mismatch detected during save!", {
+          expectedTenant: tenantId,
+          universityTenant: queryData.university.tenant_id,
+          universityId: queryData.university.id,
+          universityName: queryData.university.name,
+        });
+        toast({
+          title: "Security Error",
+          description: "Your account is not authorized to update this university profile. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       let logoUrl = queryData?.university?.logo_url ?? null;
       if (logoFile) {
         const uploadedUrl = await uploadAsset(logoFile, "logo");
@@ -559,11 +576,13 @@ const UniversityProfilePage = () => {
           updated_at: new Date().toISOString(),
         };
 
-        // Try simple update first - the RLS policy should handle authorization
+        // CRITICAL: Always filter by BOTH id AND tenant_id to prevent cross-tenant updates
+        // This double-filter ensures we can ONLY update universities belonging to our tenant
         const { data: updateData, error: updateError } = await supabase
           .from("universities")
           .update(updatePayload)
           .eq("id", existingUniversityId)
+          .eq("tenant_id", tenantId)
           .select();
 
         console.log("Update result:", { data: updateData, error: updateError });
@@ -650,10 +669,12 @@ const UniversityProfilePage = () => {
                 updated_at: new Date().toISOString(),
               };
               
+              // CRITICAL: Always filter by tenant_id to prevent cross-tenant updates
               const { data: fallbackData, error: fallbackUpdateError } = await supabase
                 .from("universities")
                 .update(updatePayload)
                 .eq("id", existingUni.id)
+                .eq("tenant_id", tenantId)
                 .select();
               
               if (fallbackUpdateError) {
@@ -816,15 +837,26 @@ const UniversityProfilePage = () => {
   }
   const heroBackground = heroPreview ?? undefined;
   const showCompletionReminder = completion.percentage < 100;
+  // Determine if this is a new/blank profile that needs setup
+  const isNewProfile = isNewUniversityProfile(
+    queryData?.university ?? null,
+    queryData?.details ?? emptyUniversityProfileDetails
+  );
+
   return <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
           <BackButton variant="ghost" size="sm" fallback="/university" showHistoryMenu={false} wrapperClassName="inline-flex" />
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              University profile
+              {isNewProfile ? "Set up your university profile" : "University profile"}
             </h1>
-            <p className="max-w-2xl text-sm text-muted-foreground">Craft a compelling profile that appears across the UniDoxia for agents and students.</p>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              {isNewProfile 
+                ? "You're starting fresh! Build your profile from scratch to showcase your institution to students and agents worldwide."
+                : "Craft a compelling profile that appears across the UniDoxia for agents and students."
+              }
+            </p>
           </div>
         </div>
         <Card className="max-w-sm border-primary/20 bg-primary/5">
@@ -857,16 +889,26 @@ const UniversityProfilePage = () => {
       {showCompletionReminder ? <Alert className="border-primary/40 bg-primary/5">
           <AlertTitle className="flex items-center gap-2 text-primary">
             <Sparkles className="h-4 w-4" />
-            Make your profile shine
+            {isNewProfile ? "Welcome! Let's build your profile" : "Make your profile shine"}
           </AlertTitle>
           <AlertDescription className="text-sm text-muted-foreground">
-            {completion.missingFields.length > 0 ? <span>
+            {isNewProfile ? (
+              <span>
+                Your dashboard is ready and waiting. Fill in your details below to 
+                start attracting students. Only the basic info from your signup has 
+                been pre-filled — everything else is yours to customize.
+              </span>
+            ) : completion.missingFields.length > 0 ? (
+              <span>
                 Add {completion.missingFields.slice(0, 3).join(", ")} and more to
                 reach 100% completion.
-              </span> : <span>
+              </span>
+            ) : (
+              <span>
                 Provide rich details so agents can showcase your university with
                 confidence.
-              </span>}
+              </span>
+            )}
           </AlertDescription>
         </Alert> : null}
 

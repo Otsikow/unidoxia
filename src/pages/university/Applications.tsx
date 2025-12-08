@@ -1078,17 +1078,21 @@ const ApplicationsPage = () => {
             </div>
           )}
 
+          {/* 
+            EMPTY STATE: New universities start with zero applications.
+            This ensures a clean slate - no pre-existing applications from other institutions.
+          */}
           {applications.length === 0 && !loading ? (
             <StatePlaceholder
               title={
                 hasFiltersApplied
                   ? "No applications match your filters"
-                  : "No applications yet"
+                  : "Your applications inbox is empty"
               }
               description={
                 hasFiltersApplied
                   ? "Update the status filter or search criteria to broaden your results."
-                  : "When agents submit applications to your programmes, they will appear here."
+                  : "You're starting fresh! Once you add programmes and students apply, their applications will appear here for review."
               }
               className="bg-transparent"
             />

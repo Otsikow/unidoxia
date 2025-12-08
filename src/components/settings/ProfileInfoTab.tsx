@@ -4,11 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Camera, Loader2, Save } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 
 interface ProfileInfoTabProps {
   profile: any;
@@ -17,7 +19,8 @@ interface ProfileInfoTabProps {
 
 const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
   const { toast } = useToast();
-  const { refreshProfile } = useAuth();
+  const { refreshProfile, user } = useAuth();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -162,6 +165,18 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       });
 
       await refreshProfile();
+
+      // Invalidate related queries to ensure fresh data across the app
+      await queryClient.invalidateQueries({
+        queryKey: ['roleData', profile?.id],
+      });
+      
+      // If user is a student, also invalidate student record
+      if (profile?.role === 'student') {
+        await queryClient.invalidateQueries({
+          queryKey: studentRecordQueryKey(user?.id),
+        });
+      }
 
       const successState = {
         type: 'success' as const,

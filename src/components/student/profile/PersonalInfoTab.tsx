@@ -1,32 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { useAuth } from '@/hooks/useAuth';
 
 interface PersonalInfoTabProps {
   student: Tables<'students'>;
   onUpdate: () => void;
 }
 
-export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  
-  const addressData = student.address as { 
-    phone?: string; 
-    line1?: string; 
-    line2?: string; 
-    city?: string; 
-    postal_code?: string; 
-    country?: string; 
-  } | null;
-  
-  const [formData, setFormData] = useState({
+type AddressData = { 
+  phone?: string; 
+  line1?: string; 
+  line2?: string; 
+  city?: string; 
+  postal_code?: string; 
+  country?: string; 
+} | null;
+
+const extractFormData = (student: Tables<'students'>) => {
+  const addressData = student.address as AddressData;
+  return {
     legal_name: student.legal_name || '',
     preferred_name: student.preferred_name || '',
     date_of_birth: student.date_of_birth || '',
@@ -41,7 +42,21 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
     city: addressData?.city || '',
     postal_code: addressData?.postal_code || '',
     country: addressData?.country || ''
-  });
+  };
+};
+
+export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [loading, setLoading] = useState(false);
+  
+  const [formData, setFormData] = useState(() => extractFormData(student));
+
+  // Sync form data when student prop changes (e.g., after refetch)
+  useEffect(() => {
+    setFormData(extractFormData(student));
+  }, [student]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -55,7 +70,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('students')
         .update({
           legal_name: formData.legal_name,
@@ -75,14 +90,27 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             phone: formData.contact_phone
           }
         })
-        .eq('id', student.id);
+        .eq('id', student.id)
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Immediately update the form with the saved data
+      if (data) {
+        setFormData(extractFormData(data));
+      }
+
+      // Invalidate and refetch the student record query to update all consumers
+      await queryClient.invalidateQueries({
+        queryKey: studentRecordQueryKey(user?.id),
+      });
 
       toast({
         title: 'Success',
         description: 'Personal information updated successfully'
       });
+      
       onUpdate();
     } catch (error) {
       console.error('Error updating personal info:', error);
