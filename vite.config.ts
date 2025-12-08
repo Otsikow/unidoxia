@@ -84,8 +84,12 @@ export default defineConfig(({ mode }) => ({
       "@tanstack/react-query",
       "i18next",
       "react-i18next",
+      // recharts and lodash need pre-bundling for ES module compatibility
+      // lodash individual modules don't have default exports
+      "recharts",
+      "lodash",
     ],
     // Exclude heavy libraries from pre-bundling - let them be split
-    exclude: ["@tiptap/react", "@tiptap/starter-kit", "recharts"],
+    exclude: ["@tiptap/react", "@tiptap/starter-kit"],
   },
 }));
