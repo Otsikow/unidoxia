@@ -156,9 +156,12 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
         .from('students')
         .select('id')
         .eq('profile_id', profile.id)
-        .single();
+        .maybeSingle();
 
       if (studentError) throw studentError;
+      if (!studentData) {
+        throw new Error('No student profile found. Please complete your profile setup first.');
+      }
 
       // Upload to storage using student ID (required by RLS policy)
       const fileExt = sanitizedFileName.split('.').pop();
