@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Ensure we use the ESM build of lodash to avoid missing default exports
+      // when dependencies (like recharts) deep-import lodash utilities.
+      lodash: "lodash-es",
     },
   },
   build: {
@@ -87,7 +90,7 @@ export default defineConfig(({ mode }) => ({
       // recharts and lodash need pre-bundling for ES module compatibility
       // lodash individual modules don't have default exports
       "recharts",
-      "lodash",
+      "lodash-es",
     ],
     // Exclude heavy libraries from pre-bundling - let them be split
     exclude: ["@tiptap/react", "@tiptap/starter-kit"],
