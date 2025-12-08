@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { logFailedAuthentication } from '@/lib/securityLogger';
 import { formatReferralUsername } from '@/lib/referrals';
 import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
@@ -123,6 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const ensurePartnerEmailVerification = async (
     profileData: Profile,
@@ -176,9 +178,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Do NOT return profileData here - we need to fix the isolation issue
     }
 
-    // Only consider "unidoxia" and "default" as shared tenants
+    // Consider these as shared tenants that require isolation:
+    // - 'unidoxia' (default tenant)
+    // - 'geg-global' (legacy shared tenant)
+    // - 'default' (fallback)
     // All other tenants are considered isolated (even if university name changed)
-    const isSharedTenant = tenant?.slug === DEFAULT_TENANT_SLUG || tenant?.slug === 'default';
+    const SHARED_TENANT_SLUGS = ['unidoxia', 'geg-global', 'default', DEFAULT_TENANT_SLUG].filter(Boolean);
+    const isSharedTenant = tenant?.slug ? SHARED_TENANT_SLUGS.includes(tenant.slug) : true;
 
     // Check if this tenant has a university
     const { data: existingUniversity, error: existingUniError } = await supabase
@@ -1029,10 +1035,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signOut = async (options?: { redirectTo?: string }) => {
-    await supabase.auth.signOut();
+    // Clear auth state immediately
     setUser(null);
     setSession(null);
     setProfile(null);
+    
+    // CRITICAL: Clear all React Query cache to prevent data leakage between sessions
+    // This ensures the next user won't see cached data from the previous user
+    queryClient.clear();
+    
+    // Sign out from Supabase
+    await supabase.auth.signOut();
+    
+    // Navigate to login
     const redirectTarget = options?.redirectTo ?? '/auth/login';
     navigate(redirectTarget);
   };

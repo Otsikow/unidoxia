@@ -3003,6 +3003,10 @@ export type Database = {
         Returns: boolean
       }
       is_username_available: { Args: { candidate: string }; Returns: boolean }
+      isolate_partner_profile: {
+        Args: { p_profile_id: string }
+        Returns: string
+      }
       mark_all_notifications_read: {
         Args: { p_user_id: string }
         Returns: number
@@ -3018,6 +3022,10 @@ export type Database = {
       notify_course_recommendation: {
         Args: { p_program_id: string; p_reason?: string; p_student_id: string }
         Returns: string
+      }
+      partner_needs_isolation: {
+        Args: { p_profile_id: string }
+        Returns: boolean
       }
       search_agent_contacts: {
         Args: { search_query: string }
