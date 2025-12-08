@@ -15,6 +15,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { isValidUuid } from "@/lib/validation";
 
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -274,12 +275,9 @@ export const fetchUniversityDashboardData = async (
   console.log("=== FETCH UNIVERSITY DASHBOARD DATA ===", { tenantId });
 
   // -----------------------------------------------------
-  // SECURITY: Validate tenantId is a UUID (Version B)
+  // SECURITY: Validate tenantId is a UUID
   // -----------------------------------------------------
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-  if (!tenantId || !uuidRegex.test(tenantId)) {
+  if (!isValidUuid(tenantId)) {
     console.error("SECURITY: Invalid or missing tenant ID:", tenantId);
     return buildEmptyDashboardData();
   }
