@@ -478,6 +478,23 @@ const UniversityProfilePage = () => {
       console.log("Existing university ID:", queryData?.university?.id);
       console.log("Existing university tenant:", queryData?.university?.tenant_id);
 
+      // CRITICAL VALIDATION: Ensure no tenant mismatch before saving
+      // This prevents the mirroring issue where one university's data overwrites another
+      if (queryData?.university && queryData.university.tenant_id !== tenantId) {
+        console.error("SECURITY: Tenant mismatch detected during save!", {
+          expectedTenant: tenantId,
+          universityTenant: queryData.university.tenant_id,
+          universityId: queryData.university.id,
+          universityName: queryData.university.name,
+        });
+        toast({
+          title: "Security Error",
+          description: "Your account is not authorized to update this university profile. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       let logoUrl = queryData?.university?.logo_url ?? null;
       if (logoFile) {
         const uploadedUrl = await uploadAsset(logoFile, "logo");
@@ -559,11 +576,13 @@ const UniversityProfilePage = () => {
           updated_at: new Date().toISOString(),
         };
 
-        // Try simple update first - the RLS policy should handle authorization
+        // CRITICAL: Always filter by BOTH id AND tenant_id to prevent cross-tenant updates
+        // This double-filter ensures we can ONLY update universities belonging to our tenant
         const { data: updateData, error: updateError } = await supabase
           .from("universities")
           .update(updatePayload)
           .eq("id", existingUniversityId)
+          .eq("tenant_id", tenantId)
           .select();
 
         console.log("Update result:", { data: updateData, error: updateError });
@@ -650,10 +669,12 @@ const UniversityProfilePage = () => {
                 updated_at: new Date().toISOString(),
               };
               
+              // CRITICAL: Always filter by tenant_id to prevent cross-tenant updates
               const { data: fallbackData, error: fallbackUpdateError } = await supabase
                 .from("universities")
                 .update(updatePayload)
                 .eq("id", existingUni.id)
+                .eq("tenant_id", tenantId)
                 .select();
               
               if (fallbackUpdateError) {
