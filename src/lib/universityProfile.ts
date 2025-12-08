@@ -281,3 +281,94 @@ export const mergeUniversityProfileDetails = (
     ...updates.media,
   },
 });
+
+/**
+ * Checks if a university profile is essentially "new" or "blank".
+ * 
+ * A profile is considered new if it only has minimal data from signup:
+ * - Name and country (required during signup)
+ * - Primary contact info (pre-populated from signup)
+ * 
+ * Everything else should be empty/null for a truly new profile.
+ * 
+ * This is useful for:
+ * - Showing appropriate onboarding messages
+ * - Determining if a university needs to complete their setup
+ * - Verifying no pre-existing data leaked into a new university's profile
+ */
+export const isNewUniversityProfile = (
+  university: UniversityRecord | null,
+  details: UniversityProfileDetails,
+): boolean => {
+  if (!university) return true;
+
+  // Check for any substantial content that would indicate a completed profile
+  const hasDescription = Boolean(university.description && university.description.length > 30);
+  const hasLogo = Boolean(university.logo_url);
+  const hasCity = Boolean(university.city);
+  const hasWebsite = Boolean(university.website);
+  const hasHeroImage = Boolean(details.media.heroImageUrl);
+  const hasTagline = Boolean(details.tagline);
+  const hasHighlights = details.highlights.length > 0;
+  const hasSocialLinks = Boolean(
+    details.social.facebook || 
+    details.social.instagram || 
+    details.social.linkedin || 
+    details.social.youtube
+  );
+
+  // Profile is "new" if none of these optional fields are filled
+  const hasCompletedContent = hasDescription || hasLogo || hasCity || hasWebsite || 
+                              hasHeroImage || hasTagline || hasHighlights || hasSocialLinks;
+
+  return !hasCompletedContent;
+};
+
+/**
+ * Returns a human-friendly message describing the profile setup status.
+ * Useful for onboarding prompts and dashboard messages.
+ */
+export const getProfileSetupMessage = (
+  university: UniversityRecord | null,
+  details: UniversityProfileDetails,
+): { title: string; description: string; isNew: boolean } => {
+  if (!university) {
+    return {
+      title: "Welcome to UniDoxia!",
+      description: "Let's start by creating your university profile.",
+      isNew: true,
+    };
+  }
+
+  const completion = computeUniversityProfileCompletion(university, details);
+  
+  if (isNewUniversityProfile(university, details)) {
+    return {
+      title: "Complete Your Profile",
+      description: "You're starting fresh! Add your university details to attract students and agents worldwide.",
+      isNew: true,
+    };
+  }
+
+  if (completion.percentage < 50) {
+    return {
+      title: "Keep Building Your Profile",
+      description: `You're ${completion.percentage}% complete. Add ${completion.missingFields.slice(0, 2).join(' and ')} to improve your visibility.`,
+      isNew: false,
+    };
+  }
+
+  if (completion.percentage < 100) {
+    return {
+      title: "Almost There!",
+      description: `You're ${completion.percentage}% complete. Finish up by adding ${completion.missingFields[0]}.`,
+      isNew: false,
+    };
+  }
+
+  return {
+    title: "Profile Complete",
+    description: "Your university profile is fully set up and ready to attract students!",
+    isNew: false,
+  };
+};

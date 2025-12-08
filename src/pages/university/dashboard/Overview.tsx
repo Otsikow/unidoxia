@@ -345,6 +345,10 @@ const RecentApplicationsTable = ({
     );
   }
 
+  /* 
+   * EMPTY STATE: New universities start with zero applications.
+   * This ensures a clean slate - no pre-existing applications from other institutions.
+   */
   if (applications.length === 0) {
     return (
       <div
@@ -352,9 +356,10 @@ const RecentApplicationsTable = ({
           "flex flex-col items-center justify-center space-y-3 rounded-lg border-dashed p-8 text-center",
         )}
       >
-        <p className="text-sm font-medium text-foreground">No recent applications</p>
+        <p className="text-sm font-medium text-foreground">No applications yet</p>
         <p className="text-sm text-muted-foreground">
-          As new student applications arrive, you&apos;ll see them listed here.
+          Your application inbox is empty. Once you add programmes and students start applying, 
+          their applications will appear here.
         </p>
       </div>
     );
@@ -440,16 +445,21 @@ const UniversityInfoPanel = ({
     );
   }
 
+  /* 
+   * EMPTY STATE: Shows when university profile hasn't been completed yet.
+   * New universities start with a blank profile - they need to add their details.
+   */
   if (!university) {
     return (
       <Card className={withUniversitySurfaceSubtle("text-center shadow-none rounded-3xl border-dashed")}>
         <CardContent className="flex flex-col items-center gap-3 py-12">
-          <AlertTriangle className="h-10 w-10 text-muted-foreground" />
+          <Building2 className="h-10 w-10 text-muted-foreground" />
           <CardTitle className="text-base font-semibold text-foreground">
-            No University Data Found.
+            Set Up Your University Profile
           </CardTitle>
           <CardDescription className="max-w-sm text-sm text-muted-foreground">
-            Add your institution&apos;s details to unlock tailored insights and analytics.
+            You&apos;re starting fresh! Add your institution&apos;s details, logo, and description 
+            to unlock tailored insights and attract students worldwide.
           </CardDescription>
         </CardContent>
       </Card>
