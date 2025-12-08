@@ -802,6 +802,57 @@ const pt = {
             },
           ],
         },
+        zoeMultiRole: {
+          badge: "Conheça a Zoe",
+          heading: "Assistente de IA — só que mais inteligente",
+          description:
+            "A Zoe alterna entre estudantes, agentes e equipes universitárias para fornecer respostas contextuais no momento em que você precisar.",
+          note: "Zoe é multifuncional. Poucos concorrentes oferecem isso.",
+          highlightsHeading: "O que a Zoe faz por você",
+          highlights: [
+            "Responde a todas as perguntas sobre estudar no exterior com contexto regional de vistos e políticas.",
+            "Guia você por todo o app UniDoxia para que cronogramas, painéis e automações sigam no caminho certo.",
+            "Lê documentos enviados para recomendar escolas, bolsas e próximos passos instantaneamente.",
+          ],
+          roles: [
+            {
+              key: "students",
+              title: "Estudantes e famílias",
+              description:
+                "Zoe é uma consultora de estudos no exterior que acompanha cada candidato por toda a experiência UniDoxia.",
+              capabilities: [
+                "Responde instantaneamente a qualquer pergunta sobre estudar no exterior em linguagem simples.",
+                "Guia você por cada tarefa no app UniDoxia para que nada seja esquecido.",
+                "Analisa históricos, redações e comprovantes financeiros enviados para sugerir as escolas mais adequadas.",
+                "Compartilha recomendações personalizadas de aconselhamento baseadas em seus objetivos.",
+              ],
+            },
+            {
+              key: "agents",
+              title: "Agentes e consultores",
+              description:
+                "Treinamento, coaching e respostas sob demanda estão integrados no mesmo espaço de trabalho que impulsiona sua agência.",
+              capabilities: [
+                "Oferece atualizações de treinamento em formato curto para novos consultores e equipe de suporte.",
+                "Transforma documentos de estudantes compartilhados em listas rápidas de escolas para revisar com clientes.",
+                "Elabora automaticamente scripts de prospecção, planos de acompanhamento e recomendações de aconselhamento.",
+                "Sinaliza oportunidades de melhorar a conversão usando análises de agentes do Zoe Intelligence.",
+              ],
+            },
+            {
+              key: "universities",
+              title: "Universidades e parceiros",
+              description:
+                "A Zoe vive no painel universitário para manter equipes de recrutamento, conformidade e atendimento alinhadas.",
+              capabilities: [
+                "Exibe alertas de saúde de parceiros e ações sugeridas diretamente no painel.",
+                "Resume pipelines de candidatos por região com notas sobre diferenças de políticas.",
+                "Fornece trechos de treinamento para integração de funcionários para que equipes possam se autoajudar.",
+                "Escalona problemas que precisam de atenção humana para que você possa focar em relacionamentos estratégicos.",
+              ],
+            },
+          ],
+        },
         contact: {
           heading: "Fale conosco",
           subtitle: "Tem dúvidas? Teremos prazer em ajudar.",

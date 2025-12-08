@@ -642,13 +642,134 @@ const fr = {
               updating: "Nous affichons des partenaires mis en avant pendant la mise à jour de la liste.",
             },
           },
-          partnerCta: {
-            heading: "Devenir partenaire",
-            description: "Présentez votre établissement à des milliers d'étudiants motivés dans le monde.",
-            action: "Rejoindre le réseau",
+        partnerCta: {
+          heading: "Devenir partenaire",
+          description: "Présentez votre établissement à des milliers d'étudiants motivés dans le monde.",
+          action: "Rejoindre le réseau",
+        },
+      },
+      zoeMultiRole: {
+        badge: "Rencontrez Zoe",
+        heading: "Assistant IA — en version plus intelligente",
+        description:
+          "Zoe passe des étudiants aux agents et aux équipes universitaires pour fournir des réponses contextuelles au moment où vous en avez besoin.",
+        note: "Zoe est multi-rôle. Très peu de concurrents offrent cela.",
+        highlightsHeading: "Ce que Zoe gère pour vous",
+        highlights: [
+          "Répond à toutes les questions sur les études à l'étranger avec le contexte régional des visas et des politiques.",
+          "Vous guide à travers l'application UniDoxia pour que les délais, tableaux de bord et automatisations restent sur la bonne voie.",
+          "Lit les documents téléchargés pour recommander instantanément des écoles, des bourses et les prochaines étapes.",
+        ],
+        roles: [
+          {
+            key: "students",
+            title: "Étudiants et familles",
+            description:
+              "Zoe est une conseillère en études à l'étranger qui accompagne chaque candidat tout au long de l'expérience UniDoxia.",
+            capabilities: [
+              "Répond instantanément à toute question sur les études à l'étranger en langage simple.",
+              "Vous guide à travers chaque tâche dans l'application UniDoxia pour ne rien manquer.",
+              "Examine les relevés de notes, les essais et les preuves de fonds téléchargés pour suggérer les écoles les plus adaptées.",
+              "Partage des recommandations de conseil personnalisées basées sur vos objectifs.",
+            ],
+          },
+          {
+            key: "agents",
+            title: "Agents et conseillers",
+            description:
+              "La formation, le coaching et les réponses à la demande sont intégrés dans le même espace de travail qui alimente votre agence.",
+            capabilities: [
+              "Fournit des rappels de formation courts pour les nouveaux conseillers et le personnel de support.",
+              "Transforme les documents étudiants partagés en listes d'écoles rapides à examiner avec les clients.",
+              "Rédige automatiquement des scripts de prospection, des plans de suivi et des recommandations de conseil.",
+              "Signale les opportunités d'améliorer la conversion grâce aux analyses d'agents tirées de Zoe Intelligence.",
+            ],
+          },
+          {
+            key: "universities",
+            title: "Universités et partenaires",
+            description:
+              "Zoe vit dans le tableau de bord universitaire pour maintenir l'alignement des équipes de recrutement, de conformité et de service.",
+            capabilities: [
+              "Affiche les alertes de santé des partenaires et les actions suggérées directement dans le tableau de bord.",
+              "Résume les pipelines de candidats par région avec des notes sur les différences de politiques.",
+              "Fournit des extraits de formation pour l'intégration du personnel afin que les équipes puissent trouver des réponses par elles-mêmes.",
+              "Escalade les problèmes nécessitant une attention humaine pour que vous puissiez vous concentrer sur les relations stratégiques.",
+            ],
+          },
+        ],
+      },
+    },
+    universitySearch: {
+      hero: {
+        title: "Trouvez votre université idéale",
+        subtitle: "Recherchez parmi les universités, programmes et bourses du monde entier.",
+      },
+      tabs: {
+        search: "Recherche",
+        recommendations: "Recommandations IA",
+        sop: "Générateur de SOP",
+        interview: "Simulation d'entretien",
+      },
+      filters: {
+        title: "Filtres de recherche",
+        subtitle: "Affinez votre recherche ci-dessous",
+        fields: {
+          universityName: {
+            label: "Nom de l'université",
+            placeholder: "Rechercher des universités...",
+          },
+          country: {
+            label: "Pays",
+            placeholder: "Sélectionner un pays",
+            all: "Tous les pays",
+          },
+          programLevel: {
+            label: "Niveau du programme",
+            placeholder: "Sélectionner un niveau",
+            all: "Tous les niveaux",
+          },
+          discipline: {
+            label: "Discipline",
+            placeholder: "Sélectionner une discipline",
+            all: "Toutes les disciplines",
+          },
+          maxFee: {
+            label: "Frais maximum (USD)",
+            placeholder: "Entrer le montant max",
+          },
+          scholarshipsOnly: {
+            label: "Afficher uniquement les universités avec des bourses",
           },
         },
       },
+      actions: {
+        search: "Rechercher",
+      },
+      results: {
+        loading: "Recherche en cours...",
+        found_one: "{{count}} résultat trouvé",
+        found_other: "{{count}} résultats trouvés",
+        empty: "Aucune université trouvée. Essayez d'ajuster vos filtres.",
+        scholarshipBadge_one: "{{count}} bourse",
+        scholarshipBadge_other: "{{count}} bourses",
+        programs: {
+          heading_one: "Programmes ({{count}})",
+          heading_other: "Programmes ({{count}})",
+          apply: "Postuler maintenant",
+          more_one: "+{{count}} programme supplémentaire",
+          more_other: "+{{count}} programmes supplémentaires",
+        },
+        scholarships: {
+          heading: "Bourses",
+          amountVaries: "Montant variable",
+          more_one: "+{{count}} bourse supplémentaire",
+          more_other: "+{{count}} bourses supplémentaires",
+        },
+        viewDetails: "Voir les détails",
+        visitWebsite: "Visiter le site",
+      },
+    },
     contact: {
       heroTitle: "Contactez-nous",
       heroSubtitle: "Nous répondons généralement sous un jour ouvrable.",

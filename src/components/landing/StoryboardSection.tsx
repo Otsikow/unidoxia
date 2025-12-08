@@ -23,7 +23,7 @@ const STEP_CONFIG: StoryboardStepConfig[] = [
   { key: "celebrate", icon: PlaneTakeoff, image: storyboardCelebrate },
 ];
 
-export const StoryboardSection = () => {
+const StoryboardSection = () => {
   const { t } = useTranslation();
 
   const heading = t("pages.index.storyboard.heading");
@@ -88,3 +88,6 @@ export const StoryboardSection = () => {
     </section>
   );
 };
+
+export { StoryboardSection };
+export default StoryboardSection;

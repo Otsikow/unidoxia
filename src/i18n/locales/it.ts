@@ -211,6 +211,127 @@ const it = {
           },
         ],
       },
+      zoeMultiRole: {
+        badge: "Scopri Zoe",
+        heading: "Assistente IA — ma più intelligente",
+        description:
+          "Zoe passa da studenti ad agenti e team universitari per fornire risposte contestuali nel momento in cui ne hai bisogno.",
+        note: "Zoe è multi-ruolo. Pochissimi competitor lo offrono.",
+        highlightsHeading: "Cosa gestisce Zoe per te",
+        highlights: [
+          "Risponde a ogni domanda sugli studi all'estero con contesto regionale su visti e normative.",
+          "Ti guida attraverso l'intera app UniDoxia affinché scadenze, dashboard e automazioni restino in carreggiata.",
+          "Legge i documenti caricati per consigliare istantaneamente scuole, borse di studio e prossimi passi.",
+        ],
+        roles: [
+          {
+            key: "students",
+            title: "Studenti e famiglie",
+            description:
+              "Zoe è una consulente per gli studi all'estero che accompagna ogni candidato in tutta l'esperienza UniDoxia.",
+            capabilities: [
+              "Risponde istantaneamente a qualsiasi domanda sugli studi all'estero in linguaggio semplice.",
+              "Ti guida attraverso ogni attività nell'app UniDoxia perché nulla venga trascurato.",
+              "Esamina trascrizioni, saggi e prove finanziarie caricate per suggerire le scuole più adatte.",
+              "Condivide raccomandazioni di consulenza personalizzate in base ai tuoi obiettivi.",
+            ],
+          },
+          {
+            key: "agents",
+            title: "Agenti e consulenti",
+            description:
+              "Formazione, coaching e risposte su richiesta sono integrati nello stesso spazio di lavoro che alimenta la tua agenzia.",
+            capabilities: [
+              "Fornisce brevi aggiornamenti formativi per nuovi consulenti e personale di supporto.",
+              "Trasforma i documenti degli studenti condivisi in liste rapide di scuole da esaminare con i clienti.",
+              "Redige automaticamente script di contatto, piani di follow-up e raccomandazioni di consulenza.",
+              "Segnala opportunità per migliorare la conversione utilizzando le analisi degli agenti da Zoe Intelligence.",
+            ],
+          },
+          {
+            key: "universities",
+            title: "Università e partner",
+            description:
+              "Zoe vive nella dashboard universitaria per mantenere allineati i team di recruiting, compliance e servizio.",
+            capabilities: [
+              "Mostra avvisi sulla salute dei partner e azioni suggerite direttamente nella dashboard.",
+              "Riepiloga le pipeline di candidati per regione con note sulle differenze normative.",
+              "Fornisce estratti formativi per l'onboarding del personale affinché i team possano trovare risposte autonomamente.",
+              "Escala i problemi che richiedono attenzione umana così puoi concentrarti sulle relazioni strategiche.",
+            ],
+          },
+        ],
+      },
+    },
+    universitySearch: {
+      hero: {
+        title: "Trova la tua università ideale",
+        subtitle: "Cerca tra università, programmi e borse di studio in tutto il mondo.",
+      },
+      tabs: {
+        search: "Ricerca",
+        recommendations: "Raccomandazioni IA",
+        sop: "Generatore SOP",
+        interview: "Simulazione colloquio",
+      },
+      filters: {
+        title: "Filtri di ricerca",
+        subtitle: "Affina la tua ricerca qui sotto",
+        fields: {
+          universityName: {
+            label: "Nome università",
+            placeholder: "Cerca università...",
+          },
+          country: {
+            label: "Paese",
+            placeholder: "Seleziona paese",
+            all: "Tutti i paesi",
+          },
+          programLevel: {
+            label: "Livello del programma",
+            placeholder: "Seleziona livello",
+            all: "Tutti i livelli",
+          },
+          discipline: {
+            label: "Disciplina",
+            placeholder: "Seleziona disciplina",
+            all: "Tutte le discipline",
+          },
+          maxFee: {
+            label: "Tariffa massima (USD)",
+            placeholder: "Inserisci tariffa max",
+          },
+          scholarshipsOnly: {
+            label: "Mostra solo università con borse di studio",
+          },
+        },
+      },
+      actions: {
+        search: "Cerca",
+      },
+      results: {
+        loading: "Ricerca in corso...",
+        found_one: "Trovato {{count}} risultato",
+        found_other: "Trovati {{count}} risultati",
+        empty: "Nessuna università trovata. Prova a modificare i filtri.",
+        scholarshipBadge_one: "{{count}} borsa di studio",
+        scholarshipBadge_other: "{{count}} borse di studio",
+        programs: {
+          heading_one: "Programmi ({{count}})",
+          heading_other: "Programmi ({{count}})",
+          apply: "Candidati ora",
+          more_one: "+{{count}} programma aggiuntivo",
+          more_other: "+{{count}} programmi aggiuntivi",
+        },
+        scholarships: {
+          heading: "Borse di studio",
+          amountVaries: "Importo variabile",
+          more_one: "+{{count}} borsa aggiuntiva",
+          more_other: "+{{count}} borse aggiuntive",
+        },
+        viewDetails: "Vedi dettagli",
+        visitWebsite: "Visita sito web",
+      },
     },
   },
 };

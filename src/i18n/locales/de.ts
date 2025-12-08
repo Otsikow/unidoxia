@@ -690,6 +690,57 @@ const de = {
           },
         ],
       },
+      zoeMultiRole: {
+        badge: "Lernen Sie Zoe kennen",
+        heading: "KI-Chat-Assistent – nur intelligenter",
+        description:
+          "Zoe wechselt zwischen Studierenden, Agenten und Universitätsteams, um kontextbezogene Antworten genau dann zu liefern, wenn Sie sie brauchen.",
+        note: "Zoe ist multifunktional. Das bieten nur wenige Wettbewerber.",
+        highlightsHeading: "Was Zoe für Sie übernimmt",
+        highlights: [
+          "Beantwortet jede Frage zum Auslandsstudium mit regionalem Visa- und Richtlinienkontext.",
+          "Führt Sie durch die gesamte UniDoxia-App, damit Zeitpläne, Dashboards und Automatisierungen auf Kurs bleiben.",
+          "Liest hochgeladene Dokumente, um sofort Schulen, Stipendien und nächste Schritte zu empfehlen.",
+        ],
+        roles: [
+          {
+            key: "students",
+            title: "Studierende & Familien",
+            description:
+              "Zoe ist eine Studienberaterin, die jeden Bewerber durch das gesamte UniDoxia-Erlebnis führt.",
+            capabilities: [
+              "Beantwortet jede Frage zum Auslandsstudium sofort in einfacher Sprache.",
+              "Führt Sie durch jede Aufgabe in der UniDoxia-App, damit nichts übersehen wird.",
+              "Prüft hochgeladene Zeugnisse, Essays und Finanzierungsnachweise, um passende Schulen vorzuschlagen.",
+              "Teilt personalisierte Beratungsempfehlungen basierend auf Ihren Zielen.",
+            ],
+          },
+          {
+            key: "agents",
+            title: "Agenten & Berater",
+            description:
+              "Training, Coaching und Antworten auf Abruf sind in denselben Arbeitsbereich integriert, der Ihre Agentur antreibt.",
+            capabilities: [
+              "Liefert kurze Schulungsauffrischungen für neue Berater und Support-Mitarbeiter.",
+              "Wandelt geteilte Studierendendokumente in schnelle Schul-Shortlists um, die Sie mit Kunden besprechen können.",
+              "Entwirft automatisch Outreach-Skripte, Follow-up-Pläne und Beratungsempfehlungen.",
+              "Markiert Verbesserungsmöglichkeiten für die Conversion mithilfe von Agentenanalysen aus Zoe Intelligence.",
+            ],
+          },
+          {
+            key: "universities",
+            title: "Universitäten & Partner",
+            description:
+              "Zoe lebt im Universitäts-Dashboard, um Recruiting-, Compliance- und Service-Teams aufeinander abzustimmen.",
+            capabilities: [
+              "Zeigt Partnerwarnungen und empfohlene Aktionen direkt im Dashboard an.",
+              "Fasst Bewerberpipelines nach Region mit Hinweisen zu Richtlinienunterschieden zusammen.",
+              "Bietet Schulungsausschnitte für das Mitarbeiter-Onboarding, damit Teams sich selbst helfen können.",
+              "Eskaliert Probleme, die menschliche Aufmerksamkeit erfordern, damit Sie sich auf strategische Beziehungen konzentrieren können.",
+            ],
+          },
+        ],
+      },
       contact: {
         heading: "Kontakt aufnehmen",
         subtitle: "Sie haben Fragen? Wir helfen gerne weiter.",

@@ -70,7 +70,7 @@ const parseStats = (value: unknown): StatItem[] | null => {
   return parsed.length > 0 ? parsed : null;
 };
 
-export function AIDocumentCheckerSection() {
+function AIDocumentCheckerSection() {
   const { t } = useTranslation();
 
   const badge = t("pages.index.aiDocumentChecker.badge");
@@ -226,3 +226,6 @@ export function AIDocumentCheckerSection() {
     </section>
   );
 }
+
+export { AIDocumentCheckerSection };
+export default AIDocumentCheckerSection;
