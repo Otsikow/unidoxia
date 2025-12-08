@@ -2,11 +2,13 @@ import { ReactNode, createContext, useContext, useEffect, useMemo, useState, use
 import { I18nextProvider } from "react-i18next";
 import i18n, { languageList } from "@/i18n";
 import type { SupportedLanguage } from "@/i18n/resources";
+import { loadLocale } from "@/i18n/resources";
 
 interface LanguageContextValue {
   language: SupportedLanguage;
   setLanguage: (language: SupportedLanguage) => void;
   availableLanguages: SupportedLanguage[];
+  isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
@@ -15,6 +17,7 @@ const STORAGE_KEY = "app.language";
 const RTL_LANGUAGES: SupportedLanguage[] = [];
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguageState] = useState<SupportedLanguage>(() => {
     if (typeof window === "undefined") {
       return "en";
@@ -32,6 +35,16 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     return "en";
   });
+
+  // Load the initial locale if not English
+  useEffect(() => {
+    const initialLang = (i18n.language || "en").split("-")[0] as SupportedLanguage;
+    if (initialLang !== "en" && languageList.includes(initialLang)) {
+      loadLocale(initialLang).then(() => {
+        void i18n.changeLanguage(initialLang);
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const handleLanguageChanged = (lng: string) => {
@@ -75,12 +88,21 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [language]);
 
-  const changeLanguage = useCallback((lng: SupportedLanguage) => {
+  const changeLanguage = useCallback(async (lng: SupportedLanguage) => {
     if (!languageList.includes(lng)) return;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, lng);
+    
+    setIsLoading(true);
+    try {
+      // Load the locale translations dynamically
+      await loadLocale(lng);
+      
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(STORAGE_KEY, lng);
+      }
+      await i18n.changeLanguage(lng);
+    } finally {
+      setIsLoading(false);
     }
-    void i18n.changeLanguage(lng);
   }, []);
 
   const value = useMemo<LanguageContextValue>(
@@ -88,8 +110,9 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       language,
       setLanguage: changeLanguage,
       availableLanguages: [...languageList],
+      isLoading,
     }),
-    [language, changeLanguage],
+    [language, changeLanguage, isLoading],
   );
 
   return (

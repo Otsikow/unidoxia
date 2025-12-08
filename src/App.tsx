@@ -262,10 +262,33 @@ const UniversityFeaturedShowcase = lazyWithErrorHandling(() => import("./pages/u
 const UniversityProfileSettings = lazyWithErrorHandling(() => import("./pages/university/Profile"));
 
 /* ==========================================================================
-   AI Chatbot
+   AI Chatbot - Deferred loading for performance
    ========================================================================== */
 
 const ZoeChatbot = lazyWithErrorHandling(() => import("./components/ai/AIChatbot"));
+
+/* ==========================================================================
+   Route Preloading - Prefetch common routes on idle
+   ========================================================================== */
+
+// Preload commonly accessed routes after initial render
+const preloadCommonRoutes = () => {
+  // Use requestIdleCallback for non-blocking preload
+  const preload = () => {
+    // Auth routes - often accessed from landing
+    import("./pages/auth/Login");
+    import("./pages/auth/Signup");
+    // Dashboard - accessed after login
+    import("./pages/Dashboard");
+  };
+
+  if ("requestIdleCallback" in window) {
+    (window as typeof window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(preload);
+  } else {
+    // Fallback: delay preload
+    setTimeout(preload, 2000);
+  }
+};
 
 /* ==========================================================================
    Redirect Helper
@@ -286,8 +309,34 @@ const App = () => {
   const [shouldRenderChatbot, setShouldRenderChatbot] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setShouldRenderChatbot(true));
-    return () => cancelAnimationFrame(frame);
+    // Preload common routes on idle
+    preloadCommonRoutes();
+
+    // Defer chatbot loading until after page is interactive
+    // This significantly improves Time to Interactive (TTI)
+    let timeoutId: ReturnType<typeof setTimeout>;
+    
+    const loadChatbot = () => {
+      setShouldRenderChatbot(true);
+    };
+
+    // Wait for load event + delay, or just delay if already loaded
+    if (document.readyState === "complete") {
+      // Page already loaded, defer by 1.5s for smoother experience
+      timeoutId = setTimeout(loadChatbot, 1500);
+    } else {
+      // Wait for page load, then defer
+      const handleLoad = () => {
+        timeoutId = setTimeout(loadChatbot, 1000);
+      };
+      window.addEventListener("load", handleLoad, { once: true });
+      return () => {
+        window.removeEventListener("load", handleLoad);
+        clearTimeout(timeoutId);
+      };
+    }
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (

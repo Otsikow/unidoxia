@@ -5,18 +5,12 @@ import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/providers/LanguageProvider";
 import { Suspense } from "react";
 import { HelmetProvider } from "react-helmet-async";
-import { LoadingState } from "@/components/LoadingState";
+import { MinimalLoader } from "@/components/MinimalLoader";
 
 createRoot(document.getElementById("root")!).render(
   <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
     <LanguageProvider>
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <LoadingState message="Loading interface..." size="lg" />
-          </div>
-        }
-      >
+      <Suspense fallback={<MinimalLoader message="Loading interface..." />}>
         <HelmetProvider>
           <App />
         </HelmetProvider>

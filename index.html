@@ -8,6 +8,15 @@
     <meta name="author" content="UniDoxia" />
     <meta name="theme-color" content="#1a365d" media="(prefers-color-scheme: light)">
     <meta name="theme-color" content="#0e1a2b" media="(prefers-color-scheme: dark)">
+    
+    <!-- Performance: DNS Prefetch for external services -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    
+    <!-- Performance: Preconnect to critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
     <link rel="icon" href="/favicon.png" type="image/png" media="(prefers-color-scheme: light)">
     <link rel="icon" href="/favicon-dark.png" type="image/png" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="/favicon.png" type="image/png">
@@ -20,6 +29,36 @@
     <meta name="twitter:title" content="UniDoxia - Your Path to International Education">
     <meta property="og:description" content="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, application tracking, and comprehensive support for international students.">
     <meta name="twitter:description" content="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, application tracking, and comprehensive support for international students.">
+    
+    <!-- Performance: Inline critical CSS for first paint -->
+    <style>
+      /* Minimal critical CSS for initial render */
+      *,*::before,*::after{box-sizing:border-box}
+      html{-webkit-text-size-adjust:100%;tab-size:4}
+      body{margin:0;font-family:system-ui,-apple-system,sans-serif;line-height:1.5}
+      #root{min-height:100vh}
+      /* Loading spinner CSS */
+      .min-h-screen{min-height:100vh}
+      .flex{display:flex}
+      .items-center{align-items:center}
+      .justify-center{justify-content:center}
+      .flex-col{flex-direction:column}
+      .gap-4{gap:1rem}
+      .h-10{height:2.5rem}
+      .w-10{width:2.5rem}
+      .rounded-full{border-radius:9999px}
+      .border-4{border-width:4px}
+      .animate-spin{animation:spin 1s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .text-sm{font-size:0.875rem}
+      /* Theme-aware colors */
+      :root{--bg:255 255 255;--fg:15 23 42;--primary:59 130 246}
+      @media(prefers-color-scheme:dark){:root{--bg:15 23 42;--fg:248 250 252;--primary:96 165 250}}
+      .bg-background{background-color:rgb(var(--bg))}
+      .text-muted-foreground{color:rgb(var(--fg)/0.6)}
+      .border-primary\/20{border-color:rgb(var(--primary)/0.2)}
+      .border-t-primary{border-top-color:rgb(var(--primary))}
+    </style>
 </head>
 
   <body>
