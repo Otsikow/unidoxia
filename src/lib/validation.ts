@@ -287,6 +287,33 @@ export const feedbackSchema = z.object({
 
 // ==================== HELPER FUNCTIONS ====================
 
+/**
+ * Regular expression for validating UUID v4 format
+ */
+export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/**
+ * Checks if a string is a valid UUID
+ * @param value - The string to validate
+ * @returns true if the string is a valid UUID, false otherwise
+ */
+export function isValidUuid(value: string | null | undefined): boolean {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+  return UUID_REGEX.test(value);
+}
+
+/**
+ * Returns the value if it's a valid UUID, otherwise returns null
+ * Useful for database fields that expect UUID or null
+ * @param value - The string to validate and return
+ * @returns The value if valid UUID, null otherwise
+ */
+export function toValidUuidOrNull(value: string | null | undefined): string | null {
+  return isValidUuid(value) ? value! : null;
+}
+
 export function validateField<T>(
   schema: z.ZodType<T>,
   value: unknown
