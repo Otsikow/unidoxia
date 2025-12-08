@@ -998,6 +998,7 @@ export const UniversityDashboardLayout = ({
   // -----------------------------------------------------
   if (!data || !data.university) {
     const handleSetUpProfile = () => {
+      console.log("Navigating to profile...");
       navigate("/university/profile");
     };
 
