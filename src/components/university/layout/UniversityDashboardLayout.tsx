@@ -209,13 +209,25 @@ const pipelineStageDefinitions = [
   },
 ];
 
+/**
+ * Creates an empty dashboard data structure for new universities.
+ * 
+ * IMPORTANT: This ensures new universities start with a BLANK SLATE.
+ * All metrics are zero, all lists are empty, and no pre-existing data is shown.
+ * This prevents any confusion or data leakage from other institutions.
+ */
 const buildEmptyDashboardData = (): UniversityDashboardData => ({
   university: null,
   profileDetails: { ...emptyUniversityProfileDetails },
+  // BLANK: No programs until university adds them
   programs: [],
+  // BLANK: No applications until students apply
   applications: [],
+  // BLANK: No document requests
   documentRequests: [],
+  // BLANK: No connected agents
   agents: [],
+  // ALL ZEROS: New universities start fresh with no metrics
   metrics: {
     totalApplications: 0,
     totalPrograms: 0,
@@ -228,10 +240,15 @@ const buildEmptyDashboardData = (): UniversityDashboardData => ({
     pendingDocuments: 0,
     receivedDocuments: 0,
   },
+  // EMPTY: No pipeline stages with data
   pipeline: [],
+  // EMPTY: No conversion metrics
   conversion: [],
+  // EMPTY: No status summary
   statusSummary: [],
+  // EMPTY: No country distribution
   countrySummary: [],
+  // EMPTY: No recent applications
   recentApplications: [],
 });
 
@@ -254,46 +271,73 @@ const isWithinLastDays = (dateISO: string | null, days: number) => {
   return diffDays <= days;
 };
 
+/**
+ * Fetches dashboard data for a specific university tenant.
+ * 
+ * CRITICAL SECURITY: This function enforces strict data isolation.
+ * - All queries are scoped by tenant_id
+ * - University ownership is verified before returning data
+ * - Programs/applications/documents are filtered by tenant
+ * - New universities will receive empty data sets (blank slate)
+ * 
+ * This ensures no university ever sees data from another institution.
+ */
 const fetchUniversityDashboardData = async (
   tenantId: string,
 ): Promise<UniversityDashboardData> => {
-  console.log("Fetching university dashboard for tenant:", tenantId);
+  console.log("=== FETCHING UNIVERSITY DASHBOARD ===");
+  console.log("Tenant ID:", tenantId);
 
-  // CRITICAL: Always scope data by tenant_id to ensure complete isolation
-  // Each university must only see its own data
+  // ============================================================================
+  // ISOLATION GATE: Reject requests without a valid tenant ID
+  // ============================================================================
   if (!tenantId) {
-    console.error("No tenant ID provided - cannot fetch university data");
+    console.error("SECURITY: No tenant ID provided - returning empty data");
     return buildEmptyDashboardData();
   }
 
+  // ============================================================================
+  // FETCH UNIVERSITY: Strictly scoped by tenant_id
+  // ============================================================================
   const { data: uniRows, error: uniError } = await supabase
     .from("universities")
     .select("*")
-    .eq("tenant_id", tenantId)
+    .eq("tenant_id", tenantId) // ISOLATION: Only this tenant's university
     .order("active", { ascending: false, nullsFirst: false })
     .order("updated_at", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(1);
 
   if (uniError) {
-    console.error("Error fetching universities:", uniError);
+    console.error("Error fetching university:", uniError);
     throw uniError;
   }
 
-  console.log("Universities found:", uniRows?.length ?? 0);
+  console.log("University records found for tenant:", uniRows?.length ?? 0);
 
   const uniData = (uniRows?.[0] ?? null) as Nullable<UniversityRecord>;
 
+  // ============================================================================
+  // NEW UNIVERSITY: Return blank slate if no university exists yet
+  // ============================================================================
   if (!uniData) {
-    console.warn("No university found for tenant:", tenantId);
+    console.log("NEW UNIVERSITY: No data yet - returning blank slate");
     return buildEmptyDashboardData();
   }
 
-  // ISOLATION CHECK: Verify the returned university belongs to the correct tenant
+  // ============================================================================
+  // ISOLATION VERIFICATION: Double-check tenant ownership
+  // ============================================================================
   if (uniData.tenant_id !== tenantId) {
-    console.error("SECURITY: University tenant mismatch - data isolation violation!");
+    console.error("CRITICAL SECURITY VIOLATION: University tenant mismatch!", {
+      expected: tenantId,
+      actual: uniData.tenant_id,
+      universityId: uniData.id,
+    });
     throw new Error("Data isolation error: University does not belong to your organization");
   }
+
+  console.log("University verified:", uniData.name, "(ID:", uniData.id, ")");
 
   const parsedDetails = parseUniversityProfileDetails(
     uniData.submission_config_json ?? null,
@@ -1017,20 +1061,33 @@ export const UniversityDashboardLayout = ({
     );
   }
 
+  // ============================================================================
+  // NEW UNIVERSITY WELCOME STATE
+  // ============================================================================
+  // When a new university signs up, they should see a clear welcome message
+  // indicating they have a fresh, empty dashboard ready to be customized.
+  // No pre-existing data from other institutions should ever appear here.
+  // ============================================================================
   if (!data || !data.university) {
-    console.log("No university data available", { data, tenantId });
+    console.log("New university - showing welcome state", { data, tenantId });
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-6">
-        <div className="flex flex-col items-center gap-6 max-w-md text-center">
+        <div className="flex flex-col items-center gap-6 max-w-lg text-center">
           <div className="rounded-full bg-primary/10 p-4">
             <Building2 className="h-12 w-12 text-primary" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <h1 className="text-2xl font-semibold text-foreground">
               Welcome to UniDoxia!
             </h1>
             <p className="text-muted-foreground">
-              Let's set up your university profile to start receiving applications from students and agents worldwide.
+              Your university dashboard is ready. Let's start by setting up your 
+              profile to attract students and agents from around the world.
+            </p>
+            <p className="text-sm text-muted-foreground/80">
+              You're starting fresh with a clean slate. Add your programs, 
+              upload your logo, and customize your profile to showcase 
+              what makes your institution unique.
             </p>
           </div>
           <div className="flex flex-col gap-3 w-full sm:flex-row sm:justify-center">
@@ -1039,7 +1096,7 @@ export const UniversityDashboardLayout = ({
               className="gap-2"
             >
               <Sparkles className="h-4 w-4" />
-              Create University Profile
+              Set Up Your Profile
             </Button>
             <Button
               variant="outline"
@@ -1051,7 +1108,7 @@ export const UniversityDashboardLayout = ({
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Your tenant ID: {tenantId?.slice(0, 8)}...
+            Your isolated workspace ID: {tenantId?.slice(0, 8)}...
           </p>
         </div>
       </div>

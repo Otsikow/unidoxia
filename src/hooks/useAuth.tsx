@@ -8,17 +8,29 @@ import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
 
 type SignupRole = 'student' | 'agent' | 'partner' | 'admin' | 'staff';
 
-// Helper to generate initial university profile details from user metadata
-// This ensures signup info (name, email, phone) is pre-populated in the university profile
+/**
+ * Generates a clean, empty university profile with only basic signup contact info.
+ * 
+ * IMPORTANT: This function creates a BLANK SLATE for new universities.
+ * Only the primary contact information from signup is pre-populated.
+ * All other fields (tagline, highlights, social, media) are left empty
+ * so universities can fill them in from scratch.
+ * 
+ * This prevents any data leakage or pre-populated placeholder content
+ * that might confuse new university partners during onboarding.
+ */
 const generateInitialUniversityProfileDetails = (
   fullName: string | undefined,
   email: string | undefined,
   phone: string | undefined,
-  country: string | undefined,
+  _country: string | undefined, // Country is stored separately on the university record
 ) => {
   return {
+    // BLANK: No tagline - university should create their own
     tagline: null,
+    // BLANK: No highlights - university should add their own achievements
     highlights: [],
+    // PRE-POPULATED: Only contact info from signup for communication purposes
     contacts: {
       primary: {
         name: fullName || null,
@@ -27,6 +39,7 @@ const generateInitialUniversityProfileDetails = (
         title: null,
       },
     },
+    // BLANK: No social links - university should add their own
     social: {
       website: null,
       facebook: null,
@@ -34,6 +47,7 @@ const generateInitialUniversityProfileDetails = (
       linkedin: null,
       youtube: null,
     },
+    // BLANK: No media - university should upload their own images
     media: {
       heroImageUrl: null,
       gallery: [],
@@ -617,8 +631,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             `University already exists for tenant ${tenant.id}: ${existingUniversity.name}. ` +
             `This may indicate tenant reuse. University ID: ${existingUniversity.id}`
           );
+          
+          // CRITICAL: If existing university is from a shared tenant or has stale data,
+          // we should verify it belongs to this user and reset if needed
+          // For now, we log this scenario for debugging purposes
         } else {
-          // Create a new isolated university for this partner
+          // ============================================================================
+          // CREATING A FRESH, EMPTY UNIVERSITY FOR NEW PARTNER
+          // ============================================================================
+          // This creates a BLANK SLATE with ONLY the information provided during signup:
+          // - University name (from signup or generated)
+          // - Country (from signup)
+          // - Primary contact info (name, email, phone from signup)
+          // 
+          // All other fields are intentionally left EMPTY so the university can:
+          // - Enter their own description
+          // - Add their own programs
+          // - Upload their own logo and images
+          // - Fill in their profile from scratch
+          // ============================================================================
+          
           const universityName =
             typeof user.user_metadata?.university_name === 'string' &&
             user.user_metadata.university_name.trim()
@@ -632,9 +664,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               ? user.user_metadata.country
               : 'Unknown';
 
-          console.log(`Creating new university "${universityName}" for tenant ${tenant.id}`);
+          console.log(`Creating NEW BLANK university "${universityName}" for tenant ${tenant.id}`);
 
-          // Generate initial profile details with contact info from signup
+          // Generate initial profile details with ONLY contact info from signup
+          // All other fields (tagline, highlights, social, media) are NULL/empty
           const initialProfileDetails = generateInitialUniversityProfileDetails(
             user.user_metadata?.full_name,
             user.email,
@@ -642,17 +675,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             user.user_metadata?.country,
           );
 
+          // Create the university with MINIMAL pre-populated data
+          // Only signup info is included - everything else is blank
           const { data: newUniversity, error: universityError } = await supabase
             .from('universities')
             .insert({
+              // FROM SIGNUP: Basic identity
               name: universityName,
               country,
-              city: null,
-              website: user.user_metadata?.website || null,
-              logo_url: null,
-              description: `Welcome to ${universityName}. Please update your profile to showcase your institution.`,
               tenant_id: tenant.id,
               active: true,
+              
+              // INTENTIONALLY BLANK: User will fill these in
+              city: null,
+              website: null,
+              logo_url: null,
+              featured_image_url: null,
+              description: null, // Left blank - user enters their own description
+              
+              // FROM SIGNUP: Contact info only
               submission_config_json: initialProfileDetails,
             })
             .select('id, name')
@@ -660,8 +701,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
           if (universityError) {
             console.error('CRITICAL: Error creating isolated university profile:', universityError);
-            // This is a critical error - the partner won't have a university to manage
-            // Log details for debugging
             console.error('University creation details:', {
               tenantId: tenant.id,
               universityName,
@@ -670,7 +709,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               code: universityError.code,
             });
           } else {
-            console.log(`Successfully created university "${newUniversity.name}" (ID: ${newUniversity.id}) for tenant ${tenant.id}`);
+            console.log(
+              `SUCCESS: Created BLANK university "${newUniversity.name}" (ID: ${newUniversity.id}) ` +
+              `for tenant ${tenant.id}. User can now fill in their profile from scratch.`
+            );
           }
         }
       }
