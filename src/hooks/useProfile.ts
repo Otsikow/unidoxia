@@ -19,7 +19,7 @@ export const useProfile = (userId: string) => {
       // This ensures we get exactly one profile belonging to this user
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, full_name, tenant_id")
+        .select("id, full_name, tenant_id, email, role")
         .eq("id", userId)
         .single();
 
@@ -40,5 +40,7 @@ export const useProfile = (userId: string) => {
       return data;
     },
     enabled: !!userId,
+    staleTime: 1000 * 60 * 2, // 2 minutes - refresh frequently to catch tenant changes
+    refetchOnWindowFocus: true, // Ensure fresh data on tab focus
   });
 };

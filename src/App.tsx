@@ -119,7 +119,7 @@ const lazyWithErrorHandling = <T extends ComponentType<any>>(
    React Query Setup
    ========================================================================== */
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (attempt, error) => {

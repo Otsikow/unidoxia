@@ -143,12 +143,15 @@ const UniversityProfilePage = () => {
     name: "highlights" as const
   });
   const profileQuery = useQuery<UniversityProfileQueryResult>({
-    // CRITICAL: Include profile.id in query key to ensure user-specific caching
-    queryKey: ["university-profile", tenantId, profile?.id],
+    // CRITICAL: Include profile.id AND email in query key to ensure user-specific caching
+    // This prevents stale data from being served after profile/tenant changes
+    queryKey: ["university-profile", tenantId, profile?.id, profile?.email],
     // Only enable when we have both tenant and user context
     enabled: Boolean(tenantId) && Boolean(profile?.id),
-    staleTime: 1000 * 60 * 2, // 2 minutes - match dashboard for consistency
+    staleTime: 1000 * 30, // 30 seconds - refresh more frequently to catch changes
+    gcTime: 1000 * 60 * 5, // 5 minutes - garbage collect old cache
     refetchOnWindowFocus: true,
+    refetchOnMount: 'always', // Always refetch when component mounts
     queryFn: async () => {
       // SECURITY: Require both tenant and user context
       if (!tenantId || !profile?.id) {
@@ -171,8 +174,9 @@ const UniversityProfilePage = () => {
         throw new Error("Profile isolation error: Your account tenant does not match the requested tenant");
       }
 
-      console.log("Fetching university profile for tenant:", tenantId, "user:", profile.id);
+      console.log("Fetching university profile for tenant:", tenantId, "user:", profile.id, "email:", profile?.email);
 
+      // CRITICAL: Always filter by tenant_id to ensure data isolation
       const {
         data,
         error
@@ -198,7 +202,7 @@ const UniversityProfilePage = () => {
         throw new Error("Data isolation error: University does not belong to your organization");
       }
 
-      console.log("University profile loaded:", data?.name ?? "No university found", "for user:", profile.id);
+      console.log("University profile loaded:", data?.name ?? "No university found", "for user:", profile.id, "tenant:", tenantId);
 
       const details = parseUniversityProfileDetails(data?.submission_config_json ?? null);
       return {
