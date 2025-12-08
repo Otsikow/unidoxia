@@ -504,6 +504,8 @@ const pt = {
             previewLabel: "Exemplo",
             highlightsHeading: "O que a IA prepara para você",
           },
+          zoeAlt: "Retrato de Zoe, a guia de inteligência da Bridge",
+          zoeCaption: "Conheça Zoe – o rosto amigável que guia cada insight e recomendação.",
           focusAreas: [
             {
               key: "stem",

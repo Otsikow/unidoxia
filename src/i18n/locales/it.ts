@@ -16,7 +16,7 @@ const it = {
   pages: {
     ...en.pages,
     index: {
-      ...(en.pages?.index ?? {}),
+      ...en.pages.index,
         aiDocumentChecker: {
           badge: "AI Document Checker",
           heading: "Let AI review every document in seconds",
@@ -138,6 +138,8 @@ const it = {
           previewLabel: "Esempio",
           highlightsHeading: "Cosa prepara l'IA per te",
         },
+        zoeAlt: "Ritratto di Zoe, la guida intelligente di Bridge",
+        zoeCaption: "Scopri Zoe – il volto amichevole che ti accompagna in ogni insight e raccomandazione.",
         focusAreas: [
           {
             key: "stem",
