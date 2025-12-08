@@ -366,6 +366,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string, currentUser: User | null = user) => {
     try {
+      // CRITICAL: Always fetch profile by user_id (auth.uid()) to ensure isolation
+      // The profiles table uses auth.users.id as the primary key, so this guarantees
+      // we only get the profile belonging to the authenticated user
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -390,12 +393,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             console.error('Retry failed creating profile:', retryError);
             setProfile(null);
           } else {
+            // SECURITY CHECK: Verify the returned profile ID matches the requested user ID
+            if (retryData && retryData.id !== userId) {
+              console.error('CRITICAL SECURITY ERROR: Profile ID mismatch!', {
+                requested: userId,
+                returned: retryData.id,
+              });
+              setProfile(null);
+              return;
+            }
             setProfile(retryData);
           }
         } else {
           setProfile(null);
         }
       } else {
+        // SECURITY CHECK: Verify the returned profile ID matches the requested user ID
+        // This should always be true due to the primary key constraint, but we check anyway
+        if (data.id !== userId) {
+          console.error('CRITICAL SECURITY ERROR: Profile ID mismatch!', {
+            requested: userId,
+            returned: data.id,
+          });
+          setProfile(null);
+          return;
+        }
+
         const normalizedProfile: Profile = {
           ...data,
         };
@@ -409,6 +432,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           profileWithVerification,
           currentUser,
         );
+
+        // Final security check: ensure the profile we're setting belongs to this user
+        if (profileWithIsolation.id !== userId) {
+          console.error('CRITICAL SECURITY ERROR: Post-processing profile ID mismatch!', {
+            requested: userId,
+            returned: profileWithIsolation.id,
+          });
+          setProfile(null);
+          return;
+        }
 
         setProfile(profileWithIsolation);
       }

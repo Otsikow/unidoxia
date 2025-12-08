@@ -41,11 +41,15 @@ interface UseUniversityProfileCompletionResult {
 /**
  * Shared hook for fetching and computing university profile completion.
  * This ensures consistent profile completion calculation across all pages.
+ * 
+ * SECURITY NOTE: This hook includes both tenantId AND profile.id in the query key
+ * to ensure user-specific caching and prevent data leakage between users.
  */
 export function useUniversityProfileCompletion(): UseUniversityProfileCompletionResult {
   const { profile } = useAuth();
   const queryClient = useQueryClient();
   const tenantId = profile?.tenant_id ?? null;
+  const profileId = profile?.id ?? null;
 
   const {
     data,
@@ -54,16 +58,30 @@ export function useUniversityProfileCompletion(): UseUniversityProfileCompletion
     error,
     refetch,
   } = useQuery<UniversityProfileData>({
-    queryKey: ["university-profile-completion", tenantId],
-    enabled: Boolean(tenantId),
+    // CRITICAL: Include profile.id in query key for user-specific caching
+    queryKey: ["university-profile-completion", tenantId, profileId],
+    // Only enable when we have both tenant and user context
+    enabled: Boolean(tenantId) && Boolean(profileId),
     staleTime: 1000 * 60 * 2, // 2 minutes - same as dashboard for consistency
     refetchOnWindowFocus: true,
     queryFn: async () => {
-      if (!tenantId) {
+      // SECURITY: Require both tenant and user context
+      if (!tenantId || !profileId) {
+        console.warn("Missing context for university profile completion fetch", { tenantId, profileId });
         return {
           university: null,
           details: { ...emptyUniversityProfileDetails },
         };
+      }
+
+      // SECURITY: Verify user's tenant matches the requested tenant
+      if (profile?.tenant_id !== tenantId) {
+        console.error("SECURITY: Tenant mismatch in completion query!", {
+          profileTenant: profile?.tenant_id,
+          requestedTenant: tenantId,
+          userId: profileId,
+        });
+        throw new Error("Profile isolation error: Your account tenant does not match");
       }
 
       const { data: universityData, error: fetchError } = await supabase
@@ -81,8 +99,12 @@ export function useUniversityProfileCompletion(): UseUniversityProfileCompletion
 
       // Verify tenant isolation
       if (universityData && universityData.tenant_id !== tenantId) {
-        console.error("SECURITY: University tenant mismatch in completion hook");
-        throw new Error("Data isolation error");
+        console.error("SECURITY: University tenant mismatch in completion hook", {
+          expected: tenantId,
+          actual: universityData.tenant_id,
+          userId: profileId,
+        });
+        throw new Error("Data isolation error: University does not belong to your organization");
       }
 
       const details = parseUniversityProfileDetails(
@@ -129,14 +151,15 @@ export function useUniversityProfileCompletion(): UseUniversityProfileCompletion
   };
 
   const invalidateAll = async () => {
-    if (!tenantId) return;
+    if (!tenantId || !profileId) return;
     
+    // CRITICAL: Include profileId in invalidation to ensure user-specific cache clearing
     await Promise.all([
       queryClient.invalidateQueries({
-        queryKey: ["university-profile-completion", tenantId],
+        queryKey: ["university-profile-completion", tenantId, profileId],
       }),
       queryClient.invalidateQueries({
-        queryKey: ["university-profile", tenantId],
+        queryKey: ["university-profile", tenantId, profileId],
       }),
       queryClient.invalidateQueries({
         queryKey: ["university-dashboard", tenantId],

@@ -143,12 +143,16 @@ const UniversityProfilePage = () => {
     name: "highlights" as const
   });
   const profileQuery = useQuery<UniversityProfileQueryResult>({
-    queryKey: ["university-profile", tenantId],
-    enabled: Boolean(tenantId),
+    // CRITICAL: Include profile.id in query key to ensure user-specific caching
+    queryKey: ["university-profile", tenantId, profile?.id],
+    // Only enable when we have both tenant and user context
+    enabled: Boolean(tenantId) && Boolean(profile?.id),
     staleTime: 1000 * 60 * 2, // 2 minutes - match dashboard for consistency
     refetchOnWindowFocus: true,
     queryFn: async () => {
-      if (!tenantId) {
+      // SECURITY: Require both tenant and user context
+      if (!tenantId || !profile?.id) {
+        console.warn("Missing context for university profile fetch", { tenantId, profileId: profile?.id });
         return {
           university: null,
           details: {
@@ -157,7 +161,17 @@ const UniversityProfilePage = () => {
         };
       }
 
-      console.log("Fetching university profile for tenant:", tenantId);
+      // SECURITY: Verify user's tenant matches the requested tenant
+      if (profile.tenant_id !== tenantId) {
+        console.error("SECURITY: Tenant mismatch in query!", {
+          profileTenant: profile.tenant_id,
+          requestedTenant: tenantId,
+          userId: profile.id,
+        });
+        throw new Error("Profile isolation error: Your account tenant does not match the requested tenant");
+      }
+
+      console.log("Fetching university profile for tenant:", tenantId, "user:", profile.id);
 
       const {
         data,
@@ -179,11 +193,12 @@ const UniversityProfilePage = () => {
           actual: data.tenant_id,
           universityId: data.id,
           universityName: data.name,
+          userId: profile.id,
         });
         throw new Error("Data isolation error: University does not belong to your organization");
       }
 
-      console.log("University profile loaded:", data?.name ?? "No university found");
+      console.log("University profile loaded:", data?.name ?? "No university found", "for user:", profile.id);
 
       const details = parseUniversityProfileDetails(data?.submission_config_json ?? null);
       return {
@@ -460,6 +475,7 @@ const UniversityProfilePage = () => {
     }
   };
   const onSubmit = async (values: UniversityProfileFormValues) => {
+    // CRITICAL SECURITY CHECK: Verify all required context is present
     if (!tenantId || !profile?.id) {
       toast({
         title: "Unable to save profile",
@@ -468,12 +484,29 @@ const UniversityProfilePage = () => {
       });
       return;
     }
+
+    // CRITICAL SECURITY CHECK: Verify profile tenant matches the tenant we're saving to
+    if (profile.tenant_id !== tenantId) {
+      console.error("SECURITY: Profile tenant mismatch during save!", {
+        profileTenant: profile.tenant_id,
+        savingToTenant: tenantId,
+        userId: profile.id,
+      });
+      toast({
+        title: "Security Error",
+        description: "Account isolation error detected. Your profile is not associated with this tenant. Please log out and log back in, or contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // DEBUG: Log current state for troubleshooting
       console.log("=== UNIVERSITY PROFILE SAVE DEBUG ===");
       console.log("User profile ID:", profile.id);
       console.log("User tenant ID:", tenantId);
+      console.log("Profile tenant ID (should match):", profile.tenant_id);
       console.log("User role:", profile.role);
       console.log("Existing university ID:", queryData?.university?.id);
       console.log("Existing university tenant:", queryData?.university?.tenant_id);
@@ -486,6 +519,7 @@ const UniversityProfilePage = () => {
           universityTenant: queryData.university.tenant_id,
           universityId: queryData.university.id,
           universityName: queryData.university.name,
+          userId: profile.id,
         });
         toast({
           title: "Security Error",
@@ -727,7 +761,8 @@ const UniversityProfilePage = () => {
       const savedDetails = parseUniversityProfileDetails(savedUniversity.submission_config_json);
 
       // Update local cache with saved data
-      queryClient.setQueryData<UniversityProfileQueryResult>(["university-profile", tenantId], {
+      // CRITICAL: Include profile.id in query key for user-specific caching
+      queryClient.setQueryData<UniversityProfileQueryResult>(["university-profile", tenantId, profile.id], {
         university: savedUniversity,
         details: savedDetails
       });
@@ -736,9 +771,10 @@ const UniversityProfilePage = () => {
       // This includes all queries that fetch or display university profile data.
       // Note: We use setQueryData above for immediate local update, but also invalidate
       // to ensure other mounted components and future navigations see fresh data.
+      // CRITICAL: Include profile.id in query keys for user-specific cache invalidation
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: ["university-profile-completion", tenantId]
+          queryKey: ["university-profile-completion", tenantId, profile.id]
         }),
         queryClient.invalidateQueries({
           queryKey: ["university-dashboard", tenantId]
@@ -756,7 +792,7 @@ const UniversityProfilePage = () => {
         // (this page already has fresh data via setQueryData, but this ensures
         // any other mounted components using this query will refetch)
         queryClient.invalidateQueries({
-          queryKey: ["university-profile", tenantId]
+          queryKey: ["university-profile", tenantId, profile.id]
         }),
       ]);
       await refreshProfile().catch(error => {
