@@ -368,7 +368,7 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
         {/* Top Programs */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Programmes</CardTitle>
+            <CardTitle>Top Courses</CardTitle>
           </CardHeader>
           <CardContent>
             {analyticsLoading ? (

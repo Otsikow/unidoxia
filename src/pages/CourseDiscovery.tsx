@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
 import {
   Select,
   SelectContent,
@@ -11,15 +13,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { CourseCard, Course } from "@/components/student/CourseCard";
 import {
   FiltersBar,
   FilterOptions,
   ActiveFilters,
 } from "@/components/student/FiltersBar";
+
 import { LoadingState } from "@/components/LoadingState";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Filter, X, Sparkles } from "lucide-react";
+
 import {
   Sheet,
   SheetContent,
@@ -27,18 +32,23 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+
 import { useDebounce } from "@/hooks/useDebounce";
 import BackButton from "@/components/BackButton";
 import { SEO } from "@/components/SEO";
 import { ProgramSearchView } from "@/components/course-discovery/ProgramSearchView";
 
 const ITEMS_PER_PAGE = 12;
-const DEFAULT_TENANT_SLUG = import.meta.env.VITE_DEFAULT_TENANT_SLUG ?? "unidoxia";
+
+const DEFAULT_TENANT_SLUG =
+  import.meta.env.VITE_DEFAULT_TENANT_SLUG ?? "unidoxia";
+
 const DEFAULT_TUITION_RANGE = {
   min: 0,
   max: 100000,
   currency: "USD*",
 } as const;
+
 const DEFAULT_DURATION_RANGE = { min: 0, max: 60 } as const;
 
 const createDefaultFilterOptions = (): FilterOptions => ({
@@ -64,6 +74,9 @@ const getNextIntakeYear = (month: number): number => {
   return month < currentMonth ? currentYear + 1 : currentYear;
 };
 
+/**
+ * FALLBACK SAMPLE COURSES (used when Supabase fails or no live data exists)
+ */
 const FALLBACK_PROGRAMMES: Course[] = [
   {
     id: "fallback-oxford-cs-msc",
@@ -81,7 +94,7 @@ const FALLBACK_PROGRAMMES: Course[] = [
     university_logo_url: null,
     next_intake_month: 9,
     next_intake_year: getNextIntakeYear(9),
-    instant_submission: true, // Example UniDoxia-onboarded course
+    instant_submission: true,
   },
   {
     id: "fallback-harvard-mba",
@@ -116,7 +129,7 @@ const FALLBACK_PROGRAMMES: Course[] = [
     university_logo_url: null,
     next_intake_month: 1,
     next_intake_year: getNextIntakeYear(1),
-    is_unidoxia_partner: true, // Example UniDoxia partner university
+    is_unidoxia_partner: true,
   },
   {
     id: "fallback-melbourne-meng",
@@ -289,709 +302,3 @@ const FALLBACK_PROGRAMMES: Course[] = [
     next_intake_year: getNextIntakeYear(1),
   },
 ];
-
-const SORT_OPTIONS = [
-  { value: "name:asc", label: "Name (A-Z)" },
-  { value: "name:desc", label: "Name (Z-A)" },
-  { value: "tuition:asc", label: "Lowest Tuition" },
-  { value: "tuition:desc", label: "Highest Tuition" },
-  { value: "intake:asc", label: "Soonest Intake" },
-  { value: "duration:asc", label: "Shortest Duration" },
-  { value: "duration:desc", label: "Longest Duration" },
-];
-
-export default function CourseDiscovery() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const isProgramView = searchParams.get("view") === "programs";
-  const handleViewChange = useCallback(
-    (nextView: "courses" | "programs") => {
-      const currentView = isProgramView ? "programs" : "courses";
-      if (nextView === currentView) {
-        return;
-      }
-
-      const params = new URLSearchParams(searchParams.toString());
-      if (nextView === "courses") {
-        params.delete("view");
-      } else {
-        params.set("view", "programs");
-      }
-
-      setSearchParams(params, { replace: true });
-    },
-    [isProgramView, searchParams, setSearchParams],
-  );
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<string>("name:asc");
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>(() =>
-    createDefaultFilterOptions(),
-  );
-  const [activeFilters, setActiveFilters] = useState<ActiveFilters>(() =>
-    createDefaultActiveFilters(),
-  );
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [allCourses, setAllCourses] = useState<Course[]>([]);
-  const [usingFallbackData, setUsingFallbackData] = useState(false);
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
-  const hasInitializedFilters = useRef(false);
-  const fallbackToastShownRef = useRef(false);
-
-  const resolveTenantId = useCallback(async (): Promise<string | null> => {
-    try {
-      if (user?.id) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("tenant_id")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (!error && data?.tenant_id) {
-          return data.tenant_id;
-        }
-      }
-
-      const { data: tenantBySlug, error: slugError } = await supabase
-        .from("tenants")
-        .select("id")
-        .eq("slug", DEFAULT_TENANT_SLUG)
-        .maybeSingle();
-
-      if (!slugError && tenantBySlug?.id) {
-        return tenantBySlug.id;
-      }
-
-      const { data: fallbackTenant, error: fallbackError } = await supabase
-        .from("tenants")
-        .select("id")
-        .limit(1)
-        .maybeSingle();
-
-      if (!fallbackError && fallbackTenant?.id) {
-        return fallbackTenant.id;
-      }
-    } catch (error) {
-      console.error("Error resolving tenant ID:", error);
-    }
-
-    return null;
-  }, [user?.id]);
-
-  const updateFilterOptionsFromCourses = useCallback(
-    (courses: Course[], resetActiveFilters: boolean) => {
-      if (courses.length === 0) {
-        setFilterOptions(createDefaultFilterOptions());
-        if (resetActiveFilters) {
-          setActiveFilters(createDefaultActiveFilters());
-        }
-        return;
-      }
-
-      const countries = Array.from(
-        new Set(
-          courses.map((course) => course.university_country).filter(Boolean),
-        ),
-      ).sort();
-      const levels = Array.from(
-        new Set(courses.map((course) => course.level).filter(Boolean)),
-      ).sort();
-      const disciplines = Array.from(
-        new Set(courses.map((course) => course.discipline).filter(Boolean)),
-      ).sort();
-
-      const tuitionValues = courses
-        .map((course) => course.tuition_amount)
-        .filter((value) => Number.isFinite(value));
-      const durationValues = courses
-        .map((course) => course.duration_months)
-        .filter((value) => Number.isFinite(value));
-
-      const minTuition = tuitionValues.length
-        ? Math.min(...tuitionValues)
-        : DEFAULT_TUITION_RANGE.min;
-      const maxTuition = tuitionValues.length
-        ? Math.max(...tuitionValues)
-        : DEFAULT_TUITION_RANGE.max;
-      const normalizedTuitionMin = Math.max(
-        DEFAULT_TUITION_RANGE.min,
-        Math.floor(minTuition / 1000) * 1000,
-      );
-      const normalizedTuitionMax = Math.max(
-        normalizedTuitionMin + 1000,
-        Math.ceil(maxTuition / 1000) * 1000,
-      );
-
-      const minDuration = durationValues.length
-        ? Math.min(...durationValues)
-        : DEFAULT_DURATION_RANGE.min;
-      const maxDuration = durationValues.length
-        ? Math.max(...durationValues)
-        : DEFAULT_DURATION_RANGE.max;
-      const normalizedDurationMin = Math.max(
-        DEFAULT_DURATION_RANGE.min,
-        Math.floor(minDuration),
-      );
-      const normalizedDurationMax = Math.max(
-        normalizedDurationMin + 1,
-        Math.ceil(maxDuration),
-      );
-
-      const nextFilterOptions: FilterOptions = {
-        countries,
-        levels,
-        disciplines,
-        tuition_range: {
-          min: normalizedTuitionMin,
-          max: normalizedTuitionMax,
-          currency: DEFAULT_TUITION_RANGE.currency,
-        },
-        duration_range: {
-          min: normalizedDurationMin,
-          max: normalizedDurationMax,
-        },
-      };
-
-      setFilterOptions(nextFilterOptions);
-
-      if (resetActiveFilters) {
-        setActiveFilters({
-          countries: [],
-          levels: [],
-          intakeMonths: [],
-          tuitionRange: [
-            nextFilterOptions.tuition_range.min,
-            nextFilterOptions.tuition_range.max,
-          ],
-          durationRange: [
-            nextFilterOptions.duration_range.min,
-            nextFilterOptions.duration_range.max,
-          ],
-        });
-      } else {
-        setActiveFilters((prev) => {
-          const nextTuitionMin = Math.max(
-            nextFilterOptions.tuition_range.min,
-            prev.tuitionRange[0],
-          );
-          const nextTuitionMax = Math.min(
-            nextFilterOptions.tuition_range.max,
-            prev.tuitionRange[1],
-          );
-          const tuitionRange: [number, number] =
-            nextTuitionMin > nextTuitionMax
-              ? [
-                  nextFilterOptions.tuition_range.min,
-                  nextFilterOptions.tuition_range.max,
-                ]
-              : [nextTuitionMin, nextTuitionMax];
-
-          const nextDurationMin = Math.max(
-            nextFilterOptions.duration_range.min,
-            prev.durationRange[0],
-          );
-          const nextDurationMax = Math.min(
-            nextFilterOptions.duration_range.max,
-            prev.durationRange[1],
-          );
-          const durationRange: [number, number] =
-            nextDurationMin > nextDurationMax
-              ? [
-                  nextFilterOptions.duration_range.min,
-                  nextFilterOptions.duration_range.max,
-                ]
-              : [nextDurationMin, nextDurationMax];
-
-          return {
-            ...prev,
-            tuitionRange,
-            durationRange,
-          };
-        });
-      }
-    },
-    [],
-  );
-
-  const fetchCourses = useCallback(async () => {
-    setLoading(true);
-    setUsingFallbackData(false);
-
-    try {
-      const tenantId = await resolveTenantId();
-
-      if (!tenantId) {
-        throw new Error("Unable to determine tenant");
-      }
-
-      const { data, error } = await supabase
-        .from("programs")
-        .select(
-          `
-          id,
-          name,
-          level,
-          discipline,
-          duration_months,
-          tuition_currency,
-          tuition_amount,
-          intake_months,
-          instant_submission,
-          universities (
-            id,
-            name,
-            country,
-            city,
-            logo_url,
-            is_unidoxia_partner
-          )
-        `,
-        )
-        .eq("tenant_id", tenantId)
-        .eq("active", true);
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data || data.length === 0) {
-        throw new Error("No programmes returned from Supabase");
-      }
-
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth() + 1;
-
-      const transformedCourses: Course[] = (data as any[]).map((item) => {
-        const rawIntakes: number[] = Array.isArray(item.intake_months)
-          ? item.intake_months.filter((month: number) => Number.isFinite(month))
-          : [];
-        const sortedIntakes = [...rawIntakes].sort((a, b) => a - b);
-        const nextIntakeMonth =
-          sortedIntakes.find((month) => month >= currentMonth) ??
-          sortedIntakes[0];
-        const nextIntakeYear = nextIntakeMonth
-          ? nextIntakeMonth < currentMonth
-            ? currentYear + 1
-            : currentYear
-          : undefined;
-
-        return {
-          id: item.id,
-          university_id: item.universities?.id || '',
-          name: item.name,
-          level: item.level,
-          discipline: item.discipline,
-          duration_months: item.duration_months,
-          tuition_currency: item.tuition_currency,
-          tuition_amount: item.tuition_amount,
-          intake_months: rawIntakes,
-          university_name: item.universities?.name || "",
-          university_country: item.universities?.country || "",
-          university_city: item.universities?.city || "",
-          university_logo_url: item.universities?.logo_url || null,
-          next_intake_month: nextIntakeMonth,
-          next_intake_year: nextIntakeYear,
-          instant_submission: item.instant_submission ?? false,
-          is_unidoxia_partner: item.universities?.is_unidoxia_partner ?? false,
-        } satisfies Course;
-      });
-
-      setAllCourses(transformedCourses);
-      updateFilterOptionsFromCourses(
-        transformedCourses,
-        !hasInitializedFilters.current,
-      );
-      hasInitializedFilters.current = true;
-      setUsingFallbackData(false);
-    } catch (error) {
-      console.warn("Falling back to sample programme catalogue:", error);
-      setAllCourses(FALLBACK_PROGRAMMES);
-      updateFilterOptionsFromCourses(
-        FALLBACK_PROGRAMMES,
-        !hasInitializedFilters.current,
-      );
-      hasInitializedFilters.current = true;
-      setUsingFallbackData(true);
-
-      if (!fallbackToastShownRef.current) {
-        toast({
-          title: "Showing sample programmes",
-          description:
-            "We could not load live programme data, so a curated sample catalogue is displayed instead.",
-        });
-        fallbackToastShownRef.current = true;
-      }
-    } finally {
-      setVisibleCount(ITEMS_PER_PAGE);
-      setLoading(false);
-    }
-  }, [resolveTenantId, toast, updateFilterOptionsFromCourses]);
-
-  useEffect(() => {
-    hasInitializedFilters.current = false;
-    fallbackToastShownRef.current = false;
-    fetchCourses();
-  }, [fetchCourses]);
-
-  useEffect(() => {
-    setVisibleCount(ITEMS_PER_PAGE);
-  }, [debouncedSearchQuery, activeFilters, sortBy]);
-
-  const filteredCourses = useMemo(() => {
-    const query = debouncedSearchQuery.trim().toLowerCase();
-
-    return allCourses.filter((course) => {
-      if (query) {
-        const haystack =
-          `${course.name} ${course.university_name} ${course.university_country} ${course.discipline}`.toLowerCase();
-        if (!haystack.includes(query)) {
-          return false;
-        }
-      }
-
-      if (
-        activeFilters.countries.length > 0 &&
-        !activeFilters.countries.includes(course.university_country)
-      ) {
-        return false;
-      }
-
-      if (
-        activeFilters.levels.length > 0 &&
-        !activeFilters.levels.includes(course.level)
-      ) {
-        return false;
-      }
-
-      if (
-        course.tuition_amount < activeFilters.tuitionRange[0] ||
-        course.tuition_amount > activeFilters.tuitionRange[1]
-      ) {
-        return false;
-      }
-
-      if (
-        course.duration_months < activeFilters.durationRange[0] ||
-        course.duration_months > activeFilters.durationRange[1]
-      ) {
-        return false;
-      }
-
-      if (activeFilters.intakeMonths.length > 0) {
-        const sourceMonths = course.intake_months?.length
-          ? course.intake_months
-          : course.next_intake_month
-            ? [course.next_intake_month]
-            : [];
-
-        if (
-          !sourceMonths.some((month) =>
-            activeFilters.intakeMonths.includes(month),
-          )
-        ) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-  }, [allCourses, debouncedSearchQuery, activeFilters]);
-
-  const sortedCourses = useMemo(() => {
-    const coursesToSort = [...filteredCourses];
-
-    switch (sortBy) {
-      case "name:asc":
-        coursesToSort.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "name:desc":
-        coursesToSort.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case "tuition:asc":
-        coursesToSort.sort((a, b) => a.tuition_amount - b.tuition_amount);
-        break;
-      case "tuition:desc":
-        coursesToSort.sort((a, b) => b.tuition_amount - a.tuition_amount);
-        break;
-      case "intake:asc":
-        coursesToSort.sort((a, b) => {
-          const aMonth = a.next_intake_month ?? a.intake_months?.[0] ?? 13;
-          const bMonth = b.next_intake_month ?? b.intake_months?.[0] ?? 13;
-          return aMonth - bMonth;
-        });
-        break;
-      case "duration:asc":
-        coursesToSort.sort((a, b) => a.duration_months - b.duration_months);
-        break;
-      case "duration:desc":
-        coursesToSort.sort((a, b) => b.duration_months - a.duration_months);
-        break;
-      default:
-        break;
-    }
-
-    return coursesToSort;
-  }, [filteredCourses, sortBy]);
-
-  const displayedCourses = useMemo(
-    () => sortedCourses.slice(0, Math.min(visibleCount, sortedCourses.length)),
-    [sortedCourses, visibleCount],
-  );
-
-  const totalCount = sortedCourses.length;
-  const hasMoreResults = visibleCount < totalCount;
-
-  const handleLoadMore = useCallback(() => {
-    if (!hasMoreResults) {
-      return;
-    }
-
-    setLoadingMore(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + ITEMS_PER_PAGE, totalCount));
-      setLoadingMore(false);
-    }, 250);
-  }, [hasMoreResults, totalCount]);
-
-  const handleResetFilters = useCallback(() => {
-    setActiveFilters({
-      countries: [],
-      levels: [],
-      intakeMonths: [],
-      tuitionRange: [
-        filterOptions.tuition_range.min,
-        filterOptions.tuition_range.max,
-      ],
-      durationRange: [
-        filterOptions.duration_range.min,
-        filterOptions.duration_range.max,
-      ],
-    });
-  }, [filterOptions]);
-
-  const seoTitle = isProgramView
-    ? "Find Programmes & Universities - UniDoxia"
-    : "Discover Programmes - UniDoxia";
-  const seoDescription = isProgramView
-    ? "Find and compare universities from around the world. Filter by country, programme, and more to discover the perfect institution for your study abroad journey."
-    : "Explore thousands of programmes from top universities worldwide. Filter by discipline, level, tuition, and more to find the right programme for your international education.";
-  const seoKeywords = isProgramView
-    ? "university search, find universities, study abroad programmes, international colleges, student recruitment, find a university"
-    : "programme discovery, find programmes, study abroad programmes, university programmes, international student programmes, find a degree";
-
-  return (
-    <div className="min-h-screen bg-background">
-        <SEO title={seoTitle} description={seoDescription} keywords={seoKeywords} />
-        {/* Header */}
-        <div className="border-b bg-card/50 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-6">
-            <BackButton
-              variant="ghost"
-              size="sm"
-              fallback="/"
-              wrapperClassName="mb-4"
-              className="px-0 text-muted-foreground hover:text-foreground"
-            />
-            <div className="space-y-4">
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">
-                  {isProgramView
-                    ? "Find the Right Programme & University"
-                    : "Discover Your Perfect Programme"}
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  {isProgramView
-                    ? "Search universities, compare programmes, and explore AI-powered guidance."
-                    : "Explore programmes from top universities worldwide"}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant={isProgramView ? "outline" : "default"}
-                  onClick={() => handleViewChange("courses")}
-                  size="sm"
-                  className="whitespace-nowrap"
-                >
-                  Programme Explorer
-                </Button>
-                <Button
-                  variant={isProgramView ? "default" : "outline"}
-                  onClick={() => handleViewChange("programs")}
-                  size="sm"
-                  className="whitespace-nowrap"
-                >
-                  Program Finder
-                </Button>
-              </div>
-
-              {!isProgramView && (
-                <>
-                  {/* Search and Sort Bar */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search programmes or universities..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 pr-10"
-                      />
-                      {searchQuery && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSearchQuery("")}
-                          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="w-[200px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SORT_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {/* Mobile Filter Button */}
-                      <Sheet
-                        open={mobileFiltersOpen}
-                        onOpenChange={setMobileFiltersOpen}
-                      >
-                        <SheetTrigger asChild>
-                          <Button variant="outline" className="lg:hidden">
-                            <Filter className="h-4 w-4 mr-2" />
-                            Filters
-                          </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="w-full sm:w-[400px] p-0">
-                          <SheetHeader className="p-6 pb-0">
-                            <SheetTitle>Filters</SheetTitle>
-                          </SheetHeader>
-                          <div className="mt-4">
-                            <FiltersBar
-                              filterOptions={filterOptions}
-                              activeFilters={activeFilters}
-                              onFiltersChange={setActiveFilters}
-                              onReset={handleResetFilters}
-                            />
-                          </div>
-                        </SheetContent>
-                      </Sheet>
-                    </div>
-                  </div>
-
-                  {/* Results count */}
-                  {!loading && (
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                      <span>
-                        Found{" "}
-                        <span className="font-semibold text-foreground">
-                          {totalCount}
-                        </span>{" "}
-                        programme
-                        {totalCount !== 1 ? "s" : ""}
-                      </span>
-                      {usingFallbackData && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground">
-                          <Sparkles className="h-3 w-3 text-primary" />
-                          Showing sample catalogue
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      {isProgramView ? (
-        <div className="container mx-auto px-4 py-8">
-          <ProgramSearchView variant="embedded" />
-        </div>
-      ) : (
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex gap-8">
-            {/* Desktop Filters Sidebar */}
-            <aside className="hidden lg:block w-80 flex-shrink-0">
-              <FiltersBar
-                filterOptions={filterOptions}
-                activeFilters={activeFilters}
-                onFiltersChange={setActiveFilters}
-                onReset={handleResetFilters}
-              />
-            </aside>
-
-            {/* Programmes Grid */}
-            <div className="flex-1 min-w-0">
-              {loading ? (
-                <div className="flex items-center justify-center py-12">
-                  <LoadingState message="Loading programmes..." />
-                </div>
-              ) : displayedCourses.length === 0 ? (
-                <div className="text-center py-12">
-                  <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No programmes found</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Try adjusting your search or filters to find more results
-                  </p>
-                  <Button onClick={handleResetFilters} variant="outline">
-                    Reset Filters
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {displayedCourses.map((course) => (
-                      <CourseCard key={course.id} course={course} />
-                    ))}
-                  </div>
-
-                  {/* Load More Button */}
-                  {hasMoreResults && (
-                    <div className="mt-8 flex justify-center">
-                      <Button
-                        onClick={handleLoadMore}
-                        disabled={loadingMore}
-                        size="lg"
-                        variant="outline"
-                      >
-                        {loadingMore ? (
-                          <>
-                            <LoadingState size="sm" className="mr-2" />
-                            Loading...
-                          </>
-                        ) : (
-                          `Load More (${totalCount - displayedCourses.length} remaining)`
-                        )}
-                      </Button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}

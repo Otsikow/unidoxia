@@ -48,7 +48,7 @@ const navItems = [
     icon: BarChart3,
   },
   {
-    label: "Programmes",
+    label: "Courses",
     to: "/university/programs",
     icon: GraduationCap,
   },

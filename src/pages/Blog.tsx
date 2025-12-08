@@ -126,7 +126,7 @@ export default function Blog() {
       icon: Globe2,
       headline: "Partner Resource Centre",
       description:
-        "Market intelligence to position programmes and engage the right-fit student audiences.",
+        "Market intelligence to position courses and engage the right-fit student audiences.",
       cta: { label: "See partner guides", href: "/universities" },
       resources: [
         {

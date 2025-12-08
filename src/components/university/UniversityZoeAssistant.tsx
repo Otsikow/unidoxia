@@ -442,7 +442,7 @@ export function UniversityZoeAssistant() {
             />
             <div className="mt-3 flex items-center justify-between gap-2">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                Zoe references secure programme and agent data in your tenant.
+                Zoe references secure course and agent data in your tenant.
               </p>
               <Button
                 size="sm"

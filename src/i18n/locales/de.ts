@@ -386,7 +386,7 @@ const de = {
             label: "STEM",
             headline: "Individuelle Wege für technische Innovator:innen",
             description:
-              "Entdecken Sie Programme mit Forschungslaboren, Praxisphasen und Finanzierung für Naturwissenschaften und Technik.",
+              "Entdecken Sie Kurse mit Forschungslaboren, Praxisphasen und Finanzierung für Naturwissenschaften und Technik.",
             highlights: [
               "Stipendien mit Fokus auf MINT-Fächer und Forschung",
               "Branchengerechte Curricula mit Praktika und Co-op-Phasen",
@@ -431,12 +431,12 @@ const de = {
           {
             key: "postgraduate",
             label: "Master & PhD",
-            headline: "Postgraduale Programme abgestimmt auf Ihre Ziele",
+            headline: "Postgraduale Kurse abgestimmt auf Ihre Ziele",
             description: "Vergleichen Sie Betreuende, Kohortengröße und Finanzierungsmodelle.",
             highlights: [
               "Porträts von Fakultäten mit aktuellen Forschungsthemen",
               "Informationen zu Assistenz- und Fellowship-Stellen mit Stipendien",
-              "Vorbereitung auf Interviews und Portfolio-Anforderungen je Programm",
+              "Vorbereitung auf Interviews und Portfolio-Anforderungen je Kurs",
             ],
           },
           {
@@ -444,7 +444,7 @@ const de = {
             label: "Co-op & Praktika",
             headline: "Praxisintegriertes Lernen mit globalen Arbeitgebern",
             description:
-              "Finden Sie Programme, die Studium mit praktischer Berufserfahrung verbinden.",
+              "Finden Sie Kurse, die Studium mit praktischer Berufserfahrung verbinden.",
             highlights: [
               "Vermittlungsquoten und Unternehmenspartner nach Regionen",
               "Visa-Aspekte für vergütete Praxisphasen",
@@ -504,13 +504,13 @@ const de = {
         stepLabel: "Schritt {{number}}",
         steps: {
           discover: {
-            title: "Finden Sie Ihre passenden Programme",
+            title: "Finden Sie Ihre passenden Kurse",
             description:
-              "Nennen Sie Ihre Ziele und Leistungen – UniDoxia kuratiert sofort Universitäten, Programme und Stipendien, die zu Ihnen passen.",
+              "Nennen Sie Ihre Ziele und Leistungen – UniDoxia kuratiert sofort Universitäten, Kurse und Stipendien, die zu Ihnen passen.",
             support:
               "Intelligente Filter und KI-Empfehlungen nehmen das Rätselraten ab, damit Sie in Minuten eine Shortlist erstellen.",
             imageAlt:
-              "Studierende überprüft Studienprogramme bei einem Campusbesuch",
+              "Studierende überprüft Studienkurse bei einem Campusbesuch",
           },
           plan: {
             title: "Erstellen Sie einen persönlichen Bewerbungsplan",
@@ -590,7 +590,7 @@ const de = {
         badge: "Feature-Highlight",
         title: "Verstehen Sie Ihre Visa-Chancen, bevor Sie sich bewerben",
         description:
-          "Unser Visa-Eignungsrechner analysiert Ihr Profil sofort, damit Sie sich auf die Länder und Programme konzentrieren können, die Sie am meisten willkommen heißen.",
+          "Unser Visa-Eignungsrechner analysiert Ihr Profil sofort, damit Sie sich auf die Länder und Kurse konzentrieren können, die Sie am meisten willkommen heißen.",
         cta: "Visa-Rechner entdecken",
       },
       feeCalculator: {
@@ -750,7 +750,7 @@ const de = {
       hero: {
         title: "Finden Sie Ihre ideale Universität",
         subtitle:
-          "Durchsuchen Sie Universitäten, Programme und Stipendien weltweit.",
+          "Durchsuchen Sie Universitäten, Kurse und Stipendien weltweit.",
       },
       tabs: {
         search: "Suche",
@@ -772,7 +772,7 @@ const de = {
             all: "Alle Länder",
           },
           programLevel: {
-            label: "Programmniveau",
+            label: "Kursniveau",
             placeholder: "Niveau auswählen",
             all: "Alle Niveaus",
           },
@@ -801,11 +801,11 @@ const de = {
         scholarshipBadge_one: "{{count}} Stipendium",
         scholarshipBadge_other: "{{count}} Stipendien",
         programs: {
-          heading_one: "Programme ({{count}})",
-          heading_other: "Programme ({{count}})",
+          heading_one: "Kurse ({{count}})",
+          heading_other: "Kurse ({{count}})",
           apply: "Jetzt bewerben",
-          more_one: "+{{count}} weiteres Programm",
-          more_other: "+{{count}} weitere Programme",
+          more_one: "+{{count}} weiterer Kurs",
+          more_other: "+{{count}} weitere Kurse",
         },
         scholarships: {
           heading: "Stipendien",

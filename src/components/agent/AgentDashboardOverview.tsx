@@ -434,7 +434,7 @@ export default function AgentDashboardOverview() {
               className="gap-2"
             >
               <GraduationCap className="h-4 w-4" />
-              Browse Programs
+              Browse Courses
             </Button>
             <Button
               variant="outline"
@@ -546,7 +546,7 @@ export default function AgentDashboardOverview() {
                   variant="outline"
                 >
                   <GraduationCap className="h-4 w-4" />
-                  Browse Programs
+                  Browse Courses
                 </Button>
               </div>
             </div>

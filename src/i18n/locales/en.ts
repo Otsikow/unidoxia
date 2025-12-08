@@ -437,7 +437,7 @@ const en = {
           ctaLabel: "Get Started",
           stats: [
             { value: "12k+", label: "AI insights generated for global applicants" },
-            { value: "84%", label: "Students matched to at least three best-fit programmes" },
+            { value: "84%", label: "Students matched to at least three best-fit courses" },
             { value: "50+", label: "Countries covered with verified admissions data" },
           ],
           panel: {
@@ -454,7 +454,7 @@ const en = {
               label: "STEM",
               headline: "Tailored pathways for technical innovators",
               description:
-                "Spotlight programmes with research labs, co-ops, and funding built for scientists and engineers.",
+                "Spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
               highlights: [
                 "Scholarships that prioritise STEM majors and research output",
                 "Industry-aligned curricula with internships and co-op rotations",
@@ -499,12 +499,12 @@ const en = {
             {
               key: "postgraduate",
               label: "Postgraduate",
-              headline: "Master's and doctoral programmes curated for your goals",
+              headline: "Master's and doctoral courses curated for your goals",
               description: "Compare research supervisors, cohort sizes, and funding models.",
               highlights: [
                 "Faculty highlights with current research themes",
                 "Assistantship and fellowship availability with stipends",
-                "Interview preparation and portfolio expectations by programme",
+                "Interview preparation and portfolio expectations by course",
               ],
             },
             {
@@ -512,7 +512,7 @@ const en = {
               label: "Co-op & Internships",
               headline: "Work-integrated learning with global employers",
               description:
-                "Surface programmes that blend study with hands-on professional experience.",
+                "Surface courses that blend study with hands-on professional experience.",
               highlights: [
                 "Placement rates and employer partnerships across regions",
                 "Visa considerations for paid placements and work terms",
@@ -579,7 +579,7 @@ const en = {
             metricValue: "200+",
             metricLabel: "Partner Universities",
             description:
-              "AI-matched programme recommendations surface the best-fit universities the moment you sign up.",
+              "AI-matched course recommendations surface the best-fit universities the moment you sign up.",
             ctaLabel: "Start Application",
           },
           plan: {
@@ -623,12 +623,12 @@ const en = {
         stepLabel: "Step {{number}}",
         steps: {
           discover: {
-            title: "Discover Your Best-Fit Programmes",
+            title: "Discover Your Best-Fit Courses",
             description:
-              "Tell us your goals and academics, and UniDoxia instantly curates universities, programmes, and scholarships that match.",
+              "Tell us your goals and academics, and UniDoxia instantly curates universities, courses, and scholarships that match.",
             support:
               "Smart filters and AI-powered recommendations remove the guesswork so you can shortlist confident choices in minutes.",
-            imageAlt: "Student reviewing university programmes on a campus tour",
+            imageAlt: "Student reviewing university courses on a campus tour",
           },
           plan: {
             title: "Build a Personalized Application Plan",
@@ -698,7 +698,7 @@ const en = {
           badge: "Feature Spotlight",
           title: "Understand your visa eligibility before you apply",
           description:
-            "Our Visa Eligibility Calculator analyses your profile instantly so you can focus on the countries and programmes that welcome you the most.",
+            "Our Visa Eligibility Calculator analyses your profile instantly so you can focus on the countries and courses that welcome you the most.",
           cta: "Explore the Visa Calculator",
         },
         feeCalculator: {
@@ -823,7 +823,7 @@ const en = {
               role: "Engineering Student at Stanford",
               country: "USA",
               quote:
-                "From finding the right programme to visa approval, UniDoxia supported me every step of the way. Outstanding service!",
+                "From finding the right course to visa approval, UniDoxia supported me every step of the way. Outstanding service!",
               rating: 5,
             },
           ],
@@ -903,7 +903,7 @@ const en = {
       universitySearch: {
         hero: {
           title: "Find Your Perfect University",
-          subtitle: "Search through universities, programmes, and scholarships worldwide.",
+          subtitle: "Search through universities, courses, and scholarships worldwide.",
         },
         tabs: {
           search: "Search",
@@ -925,7 +925,7 @@ const en = {
               all: "All Countries",
             },
             programLevel: {
-              label: "Programme Level",
+              label: "Course Level",
               placeholder: "Select level",
               all: "All Levels",
             },
@@ -954,11 +954,11 @@ const en = {
           scholarshipBadge_one: "{{count}} Scholarship",
           scholarshipBadge_other: "{{count}} Scholarships",
           programs: {
-            heading_one: "Programmes ({{count}})",
-            heading_other: "Programmes ({{count}})",
+            heading_one: "Courses ({{count}})",
+            heading_other: "Courses ({{count}})",
             apply: "Apply Now",
-            more_one: "+{{count}} more programme",
-            more_other: "+{{count}} more programmes",
+            more_one: "+{{count}} more course",
+            more_other: "+{{count}} more courses",
           },
           scholarships: {
             heading: "Scholarships",
@@ -1041,7 +1041,7 @@ const en = {
             {
               question: "What support do agents receive on UniDoxia?",
               answer:
-                "Agents receive a dedicated CRM, marketing collateral, and on-demand training to help match students with suitable programmes quickly.",
+                "Agents receive a dedicated CRM, marketing collateral, and on-demand training to help match students with suitable courses quickly.",
             },
             {
               question: "How are agent commissions handled?",

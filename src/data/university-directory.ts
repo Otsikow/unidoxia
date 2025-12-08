@@ -47,7 +47,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 12,
     programCount: 180,
     description:
-      "Industry-focused European university known for blending hospitality, business innovation, and applied AI across all programmes.",
+      "Industry-focused European university known for blending hospitality, business innovation, and applied AI across all courses.",
     focusAreas: [
       "Hospitality Management",
       "Business Innovation",

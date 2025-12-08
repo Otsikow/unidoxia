@@ -125,7 +125,7 @@ export default function ProgramSelectionStep({
     } catch (error) {
       console.error('Error fetching programs:', error);
       toast({
-        title: 'Unable to load programmes',
+        title: 'Unable to load courses',
         description: 'Please try again in a moment.',
         variant: 'destructive',
       });
@@ -191,10 +191,10 @@ export default function ProgramSelectionStep({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5" />
-            Select Your Desired Programme
+            Select Your Desired Course
           </CardTitle>
           <CardDescription>
-            Choose the programme you wish to apply for and select your preferred intake.
+            Choose the course you wish to apply for and select your preferred intake.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -202,30 +202,30 @@ export default function ProgramSelectionStep({
           <div className="space-y-2">
             <Label htmlFor="search" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
-              Search Programmes
+              Search Courses
             </Label>
             <Input
               id="search"
-              placeholder="Search by programme name or discipline..."
+              placeholder="Search by course name or discipline..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          {/* Programme Selection */}
+          {/* Course Selection */}
           <div className="space-y-2">
             <Label htmlFor="program" className="flex items-center gap-2">
               <GraduationCap className="h-4 w-4" />
-              Select Programme *
+              Select Course *
             </Label>
             <Select value={data.programId} onValueChange={handleProgramChange}>
               <SelectTrigger id="program">
-                <SelectValue placeholder="Choose a programme" />
+                <SelectValue placeholder="Choose a course" />
               </SelectTrigger>
               <SelectContent>
                 {programs.length === 0 ? (
                   <div className="p-4 text-center text-sm text-muted-foreground">
-                    No programmes found
+                    No courses found
                   </div>
                 ) : (
                   programs.map((program) => (

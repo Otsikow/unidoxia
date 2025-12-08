@@ -358,7 +358,7 @@ const RecentApplicationsTable = ({
       >
         <p className="text-sm font-medium text-foreground">No applications yet</p>
         <p className="text-sm text-muted-foreground">
-          Your application inbox is empty. Once you add programmes and students start applying, 
+          Your application inbox is empty. Once you add courses and students start applying, 
           their applications will appear here.
         </p>
       </div>

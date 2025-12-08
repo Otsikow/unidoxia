@@ -214,14 +214,14 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
             ? 'Competitive GPA for top universities'
             : gradeStatus === 'ok'
               ? 'Meets minimum GPA for many partners'
-              : 'Consider boosting GPA or targeting flexible programmes'
+              : 'Consider boosting GPA or targeting flexible courses'
       },
       {
         label: `Experience • ${experienceYears} yrs`,
         status: experienceStatus,
         description:
           experienceStatus === 'strong'
-            ? 'Great professional history for advanced programmes'
+            ? 'Great professional history for advanced courses'
             : experienceStatus === 'ok'
               ? 'Solid foundation; highlight projects in SOP'
               : 'Add internships or volunteering to strengthen profile'
@@ -231,7 +231,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
         status: budgetStatus,
         description:
           budgetStatus === 'strong'
-            ? 'Wide access to flagship programmes'
+            ? 'Wide access to flagship courses'
             : budgetStatus === 'ok'
               ? 'Balanced range; scholarships can unlock more options'
               : 'Focus on scholarship-heavy or lower tuition destinations'
@@ -251,7 +251,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
         status: goalStatus,
         description: goal
           ? 'AI will align recommendations to this trajectory'
-          : 'Share a desired role so we can tailor programmes'
+          : 'Share a desired role so we can tailor courses'
       }
     ];
   }, [profile]);
@@ -311,9 +311,9 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
         <div className="space-y-1">
           <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-            AI-Powered Programme Recommendations
+            AI-Powered Course Recommendations
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Discover programmes that match your profile and goals</p>
+          <p className="text-sm sm:text-base text-muted-foreground">Discover courses that match your profile and goals</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button
@@ -504,7 +504,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
       {showFilters && (
         <Card>
           <CardHeader>
-            <CardTitle>Filter Programmes</CardTitle>
+            <CardTitle>Filter Courses</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -531,7 +531,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
               </div>
 
               <div className="space-y-2">
-                <Label>Programme Level</Label>
+                <Label>Course Level</Label>
                 <div className="space-y-2">
                   {programLevels.map(level => (
                     <div key={level} className="flex items-center space-x-2">
@@ -624,7 +624,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
           ) : filteredRecommendations.length === 0 ? (
             <div className="text-center py-12">
               <Target className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No matching programmes found</h3>
+              <h3 className="text-lg font-semibold mb-2">No matching courses found</h3>
               <p className="text-muted-foreground">Try adjusting your filters or preferences</p>
             </div>
           ) : (
@@ -668,7 +668,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
                         </div>
 
                         <div className="space-y-2">
-                          <h4 className="font-medium text-xs sm:text-sm">Why this programme matches you:</h4>
+                          <h4 className="font-medium text-xs sm:text-sm">Why this course matches you:</h4>
                           <div className="flex flex-wrap gap-1.5 sm:gap-2">
                             {program.match_reasons.map((reason, index) => (
                               <Badge key={index} variant="outline" className="text-xs">

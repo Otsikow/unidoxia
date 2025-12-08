@@ -300,7 +300,7 @@ export default function UniversityProfile() {
                     onClick={() => setActiveTab("programs")}
                   >
                     <GraduationCap className="h-3.5 w-3.5 mr-1.5" />
-                    {programs.length} Programmes
+                    {programs.length} Courses
                   </Badge>
                   {university.website && (
                     <Button
@@ -375,7 +375,7 @@ export default function UniversityProfile() {
               </Card>
             )}
 
-            {/* Prominent Programs Card - Clearly Clickable */}
+            {/* Prominent Courses Card - Clearly Clickable */}
             <Card 
               className="group border-2 border-primary/20 hover:border-primary/50 hover:shadow-xl transition-all cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10"
               onClick={() => setActiveTab("programs")}
@@ -393,14 +393,14 @@ export default function UniversityProfile() {
                       </Badge>
                     </div>
                     <p className="text-xl font-semibold text-foreground">
-                      Programs Offered by {university.name}
+                      Courses Offered by {university.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      Browse all academic programs exclusive to this university. Each program has been verified and is uniquely offered by {university.name}.
+                      Browse all academic courses exclusive to this university. Each course has been verified and is uniquely offered by {university.name}.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 text-primary font-medium group-hover:translate-x-1 transition-transform">
-                    <span>View All Programs</span>
+                    <span>View All Courses</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14"/>
                       <path d="m12 5 7 7-7 7"/>
@@ -539,7 +539,7 @@ export default function UniversityProfile() {
             {/* Filters */}
             <Card>
               <CardHeader>
-                <CardTitle>Filter Programs</CardTitle>
+                <CardTitle>Filter Courses</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
                 <div className="flex flex-wrap gap-2">
@@ -589,7 +589,7 @@ export default function UniversityProfile() {
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">
-                    No programs found matching your criteria.
+                    No courses found matching your criteria.
                   </p>
                 </CardContent>
               </Card>
@@ -668,7 +668,7 @@ export default function UniversityProfile() {
               <CardHeader>
                 <CardTitle>General Admission Requirements</CardTitle>
                 <CardDescription>
-                  Requirements may vary by program. Please check individual program details.
+                  Requirements may vary by course. Please check individual course details.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -704,10 +704,10 @@ export default function UniversityProfile() {
               </CardContent>
             </Card>
 
-            {/* Program-specific requirements */}
+            {/* Course-specific requirements */}
             <Card>
               <CardHeader>
-                <CardTitle>Program-Specific Requirements</CardTitle>
+                <CardTitle>Course-Specific Requirements</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

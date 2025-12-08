@@ -180,7 +180,7 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
       if (error) throw error;
 
       toast({
-        title: "Programme Created",
+        title: "Course Created",
         description: `${name} has been successfully created.`,
       });
 
@@ -188,10 +188,10 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
       setOpen(false);
       onSuccess();
     } catch (error) {
-      console.error("Error creating programme:", error);
+      console.error("Error creating course:", error);
       toast({
         title: "Error",
-        description: "Failed to create programme. Please try again.",
+        description: "Failed to create course. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -205,23 +205,23 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
         {trigger || (
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
-            New programme
+            New course
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Programme</DialogTitle>
+          <DialogTitle>Create New Course</DialogTitle>
           <DialogDescription>
-            Add a new academic programme to your catalogue. Fill in the details below.
+            Add a new academic course to your catalogue. Fill in the details below.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* Programme Name */}
+            {/* Course Name */}
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="name">Programme Name *</Label>
+              <Label htmlFor="name">Course Name *</Label>
               <Input
                 id="name"
                 placeholder="e.g., Master of Computer Science"
@@ -395,7 +395,7 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Provide a detailed description of the programme..."
+                placeholder="Provide a detailed description of the course..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
@@ -414,7 +414,7 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
                   Creating...
                 </>
               ) : (
-                "Create Programme"
+                "Create Course"
               )}
             </Button>
           </DialogFooter>

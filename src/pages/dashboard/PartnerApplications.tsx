@@ -431,7 +431,7 @@ const PartnerApplications = () => {
                     <div className="rounded-xl border p-4 space-y-2">
                       <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground uppercase">
                         <GraduationCap className="h-4 w-4" />
-                        Programme
+                        Course
                       </div>
                       <div className="space-y-1">
                         <p className="text-base font-medium">{getProgramName(selectedApplication)}</p>

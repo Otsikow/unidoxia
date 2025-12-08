@@ -27,9 +27,9 @@ export default function ProgramDeleteDialog({
     <AlertDialog open={open} onOpenChange={onClose}>
       <AlertDialogContent className="border border-border bg-background text-card-foreground">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete programme</AlertDialogTitle>
+          <AlertDialogTitle>Delete course</AlertDialogTitle>
           <AlertDialogDescription>
-            This action will permanently remove the programme.  
+            This action will permanently remove the course.  
             It will no longer appear to agents or students in UniDoxia.  
             <br />
             <strong>This cannot be undone.</strong>

@@ -105,7 +105,7 @@ const partnershipSchema = z
     otherPrograms: z
       .string()
       .trim()
-      .max(255, "Programme description is too long")
+      .max(255, "Course description is too long")
       .optional()
       .or(z.literal("")),
     annualIntake: z

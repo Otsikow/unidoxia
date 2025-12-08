@@ -640,7 +640,7 @@ export default function StaffReports() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Top Programmes</CardTitle>
+                  <CardTitle>Top Courses</CardTitle>
                   <CardDescription>Most popular programs by applications</CardDescription>
                 </div>
                 <BarChart3 className="h-5 w-5 text-muted-foreground" />

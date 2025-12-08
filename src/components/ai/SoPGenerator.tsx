@@ -244,7 +244,7 @@ export default function SoPGenerator({
           index === paragraphs.length - 1 &&
           (formData.programInterest || formData.universityInterest)
         ) {
-          const programLabel = formData.programInterest || "this programme";
+          const programLabel = formData.programInterest || "this course";
           const universityLabel =
             formData.universityInterest || "your university";
           enhanced += ` I am ready to contribute meaningfully to ${programLabel} at ${universityLabel} and leverage its resources to advance my career goals.`;
@@ -477,7 +477,7 @@ export default function SoPGenerator({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="programInterest">Programme of Interest</Label>
+                  <Label htmlFor="programInterest">Course of Interest</Label>
                   <Input
                     id="programInterest"
                     value={formData.programInterest}

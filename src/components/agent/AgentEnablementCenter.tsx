@@ -42,8 +42,8 @@ interface AgentEnablementCenterProps {
 const marketingCollateral = [
   {
     id: "program-playbook",
-    title: "Global Programme Match Playbook",
-    description: "Co-branded brochure that highlights top-performing programmes and includes talking points for parent calls.",
+    title: "Global Course Match Playbook",
+    description: "Co-branded brochure that highlights top-performing courses and includes talking points for parent calls.",
     format: "PDF",
     updated: "2 weeks ago",
     action: "Download Brochure",
@@ -77,7 +77,7 @@ const trainingModules = [
     level: "Intermediate",
     nextSession: "Live lab: Apr 24",
     progress: 65,
-    description: "Use the CRM to build shortlists and recommend best-fit programmes using interest signals.",
+    description: "Use the CRM to build shortlists and recommend best-fit courses using interest signals.",
   },
   {
     id: "conversion",
@@ -189,7 +189,7 @@ export default function AgentEnablementCenter({ pipelineStages, summary }: Agent
             Marketing Collateral Hub
           </CardTitle>
           <CardDescription>
-            Download ready-to-use assets to promote programmes and nurture leads across every channel.
+            Download ready-to-use assets to promote courses and nurture leads across every channel.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

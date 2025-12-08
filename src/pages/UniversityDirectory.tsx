@@ -70,8 +70,8 @@ type SortOption =
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "name-asc", label: "Name A → Z" },
   { value: "name-desc", label: "Name Z → A" },
-  { value: "programs-desc", label: "Programmes: High to Low" },
-  { value: "programs-asc", label: "Programmes: Low to High" },
+  { value: "programs-desc", label: "Courses: High to Low" },
+  { value: "programs-asc", label: "Courses: Low to High" },
 ];
 
 const numberFormatter = new Intl.NumberFormat("en-US");
@@ -348,7 +348,7 @@ export default function UniversityDirectory() {
               </div>
               <div>
                 <p className="text-2xl font-bold text-primary">{formatNumber(university.programCount)}</p>
-                <p className="text-sm font-medium text-muted-foreground">Programmes Available</p>
+                <p className="text-sm font-medium text-muted-foreground">Courses Available</p>
               </div>
             </div>
             <div className="flex items-center gap-1 text-primary font-medium text-sm group-hover:translate-x-1 transition-transform">
@@ -487,7 +487,7 @@ export default function UniversityDirectory() {
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-foreground">University Directory</h1>
               <p className="max-w-2xl text-base text-muted-foreground">
-                Discover partner universities with key information, programmes,
+                Discover partner universities with key information, courses,
                 and direct links to explore admissions further.
               </p>
             </div>
@@ -522,7 +522,7 @@ export default function UniversityDirectory() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <GraduationCap className="h-4 w-4 text-primary" />
-                Available Programmes
+                Available Courses
               </CardTitle>
               <CardDescription>Active degree pathways</CardDescription>
             </CardHeader>
@@ -542,14 +542,14 @@ export default function UniversityDirectory() {
                 <Award className="h-4 w-4 text-primary" />
                 Top University
               </CardTitle>
-              <CardDescription>Most programmes available</CardDescription>
+              <CardDescription>Most courses available</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-lg font-bold text-foreground truncate">
                 {summaryMetrics.universityWithMostPrograms?.name || "—"}
               </p>
               <p className="text-sm text-muted-foreground">
-                {summaryMetrics.universityWithMostPrograms?.programCount || 0} programmes
+                {summaryMetrics.universityWithMostPrograms?.programCount || 0} courses
               </p>
             </CardContent>
           </Card>

@@ -670,7 +670,7 @@ export const useTopSegments = (tenantId?: string | null) => {
       const topDiscipline = Array.from(disciplineCounts.entries()).sort((a, b) => b[1] - a[1])[0];
       if (topDiscipline) {
         segments.push({
-          label: `${topDiscipline[0]} Programmes`,
+          label: `${topDiscipline[0]} Courses`,
           growth: `+${Math.round(Math.random() * 15 + 5)}%`,
           volume: `${topDiscipline[1]} applications`,
         });

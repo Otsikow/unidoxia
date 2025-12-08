@@ -179,7 +179,7 @@ export const useAIRecommendations = () => {
             reasons.push(`Meets minimum GPA of ${requiredGpa}`);
           } else if (!requiredGpa && gpa >= 3.5) {
             academicScore += 6;
-            reasons.push('Strong GPA for competitive programmes');
+            reasons.push('Strong GPA for competitive courses');
           } else if (gpa >= 3.0) {
             academicScore += 4;
             reasons.push('Solid academic record for eligibility');

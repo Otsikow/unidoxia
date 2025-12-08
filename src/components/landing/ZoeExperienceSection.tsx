@@ -57,7 +57,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "STEM",
     headline: "Tailored pathways for technical innovators",
     description:
-      "Spotlight programmes with research labs, co-ops, and funding built for scientists and engineers.",
+      "Spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
     highlights: [
       "Scholarships that prioritise STEM majors and research output",
       "Industry-aligned curricula with internships and co-op rotations",
@@ -103,13 +103,13 @@ const fallbackFocusAreas: FocusArea[] = [
   {
     key: "postgraduate",
     label: "Postgraduate",
-    headline: "Master's and doctoral programmes curated for your goals",
+    headline: "Master's and doctoral courses curated for your goals",
     description:
       "Compare research supervisors, cohort sizes, and funding models.",
     highlights: [
       "Faculty highlights with current research themes",
       "Assistantship and fellowship availability with stipends",
-      "Interview preparation and portfolio expectations by programme",
+      "Interview preparation and portfolio expectations by course",
     ],
   },
   {
@@ -117,7 +117,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "Co-op & Internships",
     headline: "Work-integrated learning with global employers",
     description:
-      "Surface programmes that blend study with hands-on professional experience.",
+      "Surface courses that blend study with hands-on professional experience.",
     highlights: [
       "Placement rates and employer partnerships across regions",
       "Visa considerations for paid placements and work terms",
@@ -133,7 +133,7 @@ const fallbackStats: InsightStat[] = [
   },
   {
     value: "84%",
-    label: "Students matched to at least three best-fit programmes",
+    label: "Students matched to at least three best-fit courses",
   },
   {
     value: "50+",
