@@ -198,7 +198,7 @@ export default function ProgramSelectionStep({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Search Programs */}
+          {/* Search Programmes */}
           <div className="space-y-2">
             <Label htmlFor="search" className="flex items-center gap-2">
               <Search className="h-4 w-4" />

@@ -36,7 +36,7 @@ const es = {
     navigation: {
       home: "Inicio",
       search: "Buscar",
-      courses: "Cursos",
+      programmes: "Programas",
       blog: "Blog",
       contact: "Contacto",
       dashboard: "Panel",
@@ -70,7 +70,7 @@ const es = {
         home: "Inicio",
         search: "Buscar",
         scholarships: "Becas",
-        courses: "Cursos",
+        programmes: "Programas",
         blog: "Blog",
         contact: "Contacto",
       },

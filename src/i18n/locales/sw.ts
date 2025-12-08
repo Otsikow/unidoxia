@@ -36,7 +36,7 @@ const sw = {
     navigation: {
       home: "Nyumbani",
       search: "Tafuta",
-      courses: "Kozi",
+      programmes: "Programu",
       blog: "Blogu",
       contact: "Wasiliana",
       dashboard: "Dashibodi",
@@ -70,7 +70,7 @@ const sw = {
         home: "Nyumbani",
         search: "Tafuta",
         scholarships: "Ufadhili wa Masomo",
-        courses: "Kozi",
+        programmes: "Programu",
         blog: "Blogu",
         contact: "Wasiliana",
       },

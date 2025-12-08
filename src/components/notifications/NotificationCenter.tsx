@@ -666,7 +666,7 @@ export default function NotificationCenter() {
             <DollarSign className="mr-1 h-3 w-3" /> Commissions
           </TabsTrigger>
           <TabsTrigger className="px-3 text-xs" value="course_recommendation">
-            <BookOpen className="mr-1 h-3 w-3" /> Courses
+            <BookOpen className="mr-1 h-3 w-3" /> Programmes
           </TabsTrigger>
         </TabsList>
 

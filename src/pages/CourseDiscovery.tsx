@@ -64,7 +64,7 @@ const getNextIntakeYear = (month: number): number => {
   return month < currentMonth ? currentYear + 1 : currentYear;
 };
 
-const FALLBACK_COURSES: Course[] = [
+const FALLBACK_PROGRAMMES: Course[] = [
   {
     id: "fallback-oxford-cs-msc",
     university_id: "fallback-oxford",
@@ -255,21 +255,21 @@ const FALLBACK_COURSES: Course[] = [
     next_intake_year: getNextIntakeYear(4),
   },
   {
-    id: "fallback-cape-town-bcom",
-    university_id: "fallback-cape-town",
-    name: "BCom Finance & Analytics",
-    level: "Undergraduate",
-    discipline: "Finance",
-    duration_months: 36,
-    tuition_currency: "ZAR",
-    tuition_amount: 220000,
-    intake_months: [2, 7],
-    university_name: "University of Cape Town",
-    university_country: "South Africa",
-    university_city: "Cape Town",
+    id: "fallback-trinity-msc-cs",
+    university_id: "fallback-trinity",
+    name: "MSc Computer Science",
+    level: "Postgraduate",
+    discipline: "Computer Science",
+    duration_months: 12,
+    tuition_currency: "EUR",
+    tuition_amount: 24500,
+    intake_months: [9],
+    university_name: "Trinity College Dublin",
+    university_country: "Ireland",
+    university_city: "Dublin",
     university_logo_url: null,
-    next_intake_month: 2,
-    next_intake_year: getNextIntakeYear(2),
+    next_intake_month: 9,
+    next_intake_year: getNextIntakeYear(9),
   },
   {
     id: "fallback-uc-berkeley-msds",
@@ -561,7 +561,7 @@ export default function CourseDiscovery() {
       }
 
       if (!data || data.length === 0) {
-        throw new Error("No courses returned from Supabase");
+        throw new Error("No programmes returned from Supabase");
       }
 
       const now = new Date();
@@ -611,10 +611,10 @@ export default function CourseDiscovery() {
       hasInitializedFilters.current = true;
       setUsingFallbackData(false);
     } catch (error) {
-      console.warn("Falling back to sample course catalogue:", error);
-      setAllCourses(FALLBACK_COURSES);
+      console.warn("Falling back to sample programme catalogue:", error);
+      setAllCourses(FALLBACK_PROGRAMMES);
       updateFilterOptionsFromCourses(
-        FALLBACK_COURSES,
+        FALLBACK_PROGRAMMES,
         !hasInitializedFilters.current,
       );
       hasInitializedFilters.current = true;
@@ -622,9 +622,9 @@ export default function CourseDiscovery() {
 
       if (!fallbackToastShownRef.current) {
         toast({
-          title: "Showing sample courses",
+          title: "Showing sample programmes",
           description:
-            "We could not load live course data, so a curated sample catalogue is displayed instead.",
+            "We could not load live programme data, so a curated sample catalogue is displayed instead.",
         });
         fallbackToastShownRef.current = true;
       }
@@ -777,14 +777,14 @@ export default function CourseDiscovery() {
   }, [filterOptions]);
 
   const seoTitle = isProgramView
-    ? "Find Programs & Universities - UniDoxia"
-    : "Discover Courses - UniDoxia";
+    ? "Find Programmes & Universities - UniDoxia"
+    : "Discover Programmes - UniDoxia";
   const seoDescription = isProgramView
-    ? "Find and compare universities from around the world. Filter by country, program, and more to discover the perfect institution for your study abroad journey."
-    : "Explore thousands of courses from top universities worldwide. Filter by discipline, level, tuition, and more to find the right program for your international education.";
+    ? "Find and compare universities from around the world. Filter by country, programme, and more to discover the perfect institution for your study abroad journey."
+    : "Explore thousands of programmes from top universities worldwide. Filter by discipline, level, tuition, and more to find the right programme for your international education.";
   const seoKeywords = isProgramView
-    ? "university search, find universities, study abroad programs, international colleges, student recruitment, find a university"
-    : "course discovery, find courses, study abroad programs, university courses, international student courses, find a degree";
+    ? "university search, find universities, study abroad programmes, international colleges, student recruitment, find a university"
+    : "programme discovery, find programmes, study abroad programmes, university programmes, international student programmes, find a degree";
 
   return (
     <div className="min-h-screen bg-background">
@@ -803,13 +803,13 @@ export default function CourseDiscovery() {
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">
                   {isProgramView
-                    ? "Find the Right Program & University"
-                    : "Discover Your Perfect Course"}
+                    ? "Find the Right Programme & University"
+                    : "Discover Your Perfect Programme"}
                 </h1>
                 <p className="text-muted-foreground mt-1">
                   {isProgramView
-                    ? "Search universities, compare programs, and explore AI-powered guidance."
-                    : "Explore programs from top universities worldwide"}
+                    ? "Search universities, compare programmes, and explore AI-powered guidance."
+                    : "Explore programmes from top universities worldwide"}
                 </p>
               </div>
 
@@ -820,7 +820,7 @@ export default function CourseDiscovery() {
                   size="sm"
                   className="whitespace-nowrap"
                 >
-                  Course Explorer
+                  Programme Explorer
                 </Button>
                 <Button
                   variant={isProgramView ? "default" : "outline"}
@@ -839,7 +839,7 @@ export default function CourseDiscovery() {
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Search courses or universities..."
+                        placeholder="Search programmes or universities..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-10 pr-10"
@@ -906,7 +906,7 @@ export default function CourseDiscovery() {
                         <span className="font-semibold text-foreground">
                           {totalCount}
                         </span>{" "}
-                        course
+                        programme
                         {totalCount !== 1 ? "s" : ""}
                       </span>
                       {usingFallbackData && (
@@ -941,16 +941,16 @@ export default function CourseDiscovery() {
               />
             </aside>
 
-            {/* Courses Grid */}
+            {/* Programmes Grid */}
             <div className="flex-1 min-w-0">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <LoadingState message="Loading courses..." />
+                  <LoadingState message="Loading programmes..." />
                 </div>
               ) : displayedCourses.length === 0 ? (
                 <div className="text-center py-12">
                   <Search className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No courses found</h3>
+                  <h3 className="text-lg font-semibold mb-2">No programmes found</h3>
                   <p className="text-muted-foreground mb-4">
                     Try adjusting your search or filters to find more results
                   </p>

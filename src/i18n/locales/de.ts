@@ -37,7 +37,7 @@ const de = {
     navigation: {
       home: "Startseite",
       search: "Suche",
-      courses: "Studiengänge",
+      programmes: "Studiengänge",
       blog: "Blog",
       contact: "Kontakt",
       dashboard: "Dashboard",
@@ -71,7 +71,7 @@ const de = {
         home: "Startseite",
         search: "Suche",
         scholarships: "Stipendien",
-        courses: "Studiengänge",
+        programmes: "Studiengänge",
         blog: "Blog",
         contact: "Kontakt",
       },
