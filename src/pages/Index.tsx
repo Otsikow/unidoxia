@@ -11,6 +11,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator, Loader2 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
+import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 
 // Static assets - these are URL references, not heavy JS
@@ -165,6 +166,9 @@ const Index = () => {
           </h1>
         </div>
       </section>
+
+      {/* STUDY PROGRAM SEARCH */}
+      <StudyProgramSearch />
 
       {/* CTA CARDS SECTION */}
       <section className="relative bg-gradient-to-b from-background to-muted/20 py-16 sm:py-24">
