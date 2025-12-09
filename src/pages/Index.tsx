@@ -167,22 +167,27 @@ const Index = () => {
         </div>
       </section>
 
-      {/* STUDY PROGRAM SEARCH */}
-      <StudyProgramSearch />
-
-      {/* CTA CARDS SECTION */}
-      <section className="relative bg-gradient-to-b from-background to-muted/20 py-16 sm:py-24">
+      {/* WELCOME SECTION - Above Search */}
+      <section className="relative py-12 sm:py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             {heroTitleParts.prefix}{" "}
             <span className="text-primary">{heroTitleParts.highlight}</span>
             {heroTitleParts.suffix ? ` ${heroTitleParts.suffix}` : ""}
           </h2>
 
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-12">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {heroDescription}
           </p>
+        </div>
+      </section>
 
+      {/* STUDY PROGRAM SEARCH */}
+      <StudyProgramSearch className="pt-0" />
+
+      {/* CTA CARDS SECTION */}
+      <section className="relative bg-gradient-to-b from-background to-muted/20 py-16 sm:py-24">
+        <div className="container mx-auto px-4 text-center">
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-5 md:grid-cols-3">
             {heroCtas.map(cta => <Link key={cta.key} to={cta.href} className="block h-full">
                 <Card className="group flex h-full flex-col overflow-hidden rounded-3xl border border-primary/10 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl">

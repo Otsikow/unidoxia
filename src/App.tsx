@@ -300,6 +300,13 @@ const LegacySignupRedirect = () => {
   return <Navigate to={destination} replace />;
 };
 
+const SearchRedirect = () => {
+  const location = useLocation();
+  // Preserve query parameters when redirecting from /search to /courses
+  const destination = `/courses${location.search}${location.hash}`;
+  return <Navigate to={destination} replace />;
+};
+
 /* ==========================================================================
    Main App Component
    ========================================================================== */
@@ -381,7 +388,7 @@ const App = () => {
                         <Route path="/auth/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
                         <Route path="/auth/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
 
-                        <Route path="/search" element={<Navigate to="/courses?view=programs" replace />} />
+                        <Route path="/search" element={<SearchRedirect />} />
                         <Route path="/courses" element={<PublicLayout><CourseDiscovery /></PublicLayout>} />
 
                         <Route path="/scholarships" element={<PublicLayout><Scholarships /></PublicLayout>} />

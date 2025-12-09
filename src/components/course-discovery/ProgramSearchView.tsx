@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +37,7 @@ import {
   Sparkles,
   FileText,
   MessageSquare,
+  X,
   } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
@@ -186,48 +188,104 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
     [t],
   );
 
-  // Load filter options
+  // Debounce search term for better performance
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  
+  // Track if this is the initial load
+  const isInitialMount = useRef(true);
+
+  // Load filter options once on mount
   useEffect(() => {
+    const loadFilterOptions = async () => {
+      try {
+        const { data: programs } = await supabase
+          .from("programs")
+          .select("level, discipline")
+          .or("active.eq.true,active.is.null");
+
+        if (programs) {
+          setLevels(PROGRAM_LEVELS);
+          const uniqueDisciplines = [...new Set(programs.map((p) => p.discipline).filter(Boolean))].sort();
+          setDisciplines(uniqueDisciplines);
+        }
+      } catch (error) {
+        console.error("Error loading filters:", error);
+      }
+    };
+    
     loadFilterOptions();
   }, []);
-
-  const loadFilterOptions = async () => {
-    try {
-      const { data: programs } = await supabase
-        .from("programs")
-        .select("level, discipline")
-        // Keep programs even if the active flag is missing so filters remain complete.
-        .or("active.eq.true,active.is.null");
-
-      if (programs) {
-        setLevels(PROGRAM_LEVELS);
-        setDisciplines([...new Set(programs.map((p) => p.discipline))].sort());
-      }
-    } catch (error) {
-      console.error("Error loading filters:", error);
-    }
-  };
 
   const handleSearch = useCallback(async () => {
     setLoading(true);
     try {
+      // Build search query - search both universities and programs
+      const searchQuery = debouncedSearchTerm?.trim().toLowerCase() || "";
+      
+      // Query universities
       let uniQuery = supabase
         .from("universities")
-        .select("*")
-        // Include universities where the active flag is missing to avoid hiding partners.
+        .select("id, name, country, city, logo_url, website, description")
         .or("active.eq.true,active.is.null");
-      if (searchTerm) uniQuery = uniQuery.ilike("name", `%${searchTerm}%`);
-      if (selectedCountry !== "all") uniQuery = uniQuery.eq("country", selectedCountry);
+      
+      if (searchQuery) {
+        uniQuery = uniQuery.ilike("name", `%${searchQuery}%`);
+      }
+      if (selectedCountry !== "all") {
+        uniQuery = uniQuery.eq("country", selectedCountry);
+      }
 
-      const { data: universitiesData, error: uniError } = await uniQuery;
-      if (uniError) throw uniError;
-      if (!universitiesData?.length) {
+      // Query programs in parallel if we have a search term (to also match program names)
+      const programSearchQuery = searchQuery 
+        ? supabase
+            .from("programs")
+            .select("university_id")
+            .or("active.eq.true,active.is.null")
+            .ilike("name", `%${searchQuery}%`)
+        : null;
+
+      // Execute queries in parallel
+      const [uniResult, progMatchResult] = await Promise.all([
+        uniQuery,
+        programSearchQuery
+      ]);
+
+      if (uniResult.error) throw uniResult.error;
+
+      let universitiesData = uniResult.data || [];
+      
+      // If we searched for programs by name, get those universities too
+      if (progMatchResult?.data?.length) {
+        const programUniIds = new Set(progMatchResult.data.map(p => p.university_id));
+        
+        // Fetch universities that matched via program name but weren't already found
+        const existingUniIds = new Set(universitiesData.map(u => u.id));
+        const missingUniIds = [...programUniIds].filter(id => !existingUniIds.has(id));
+        
+        if (missingUniIds.length > 0) {
+          const { data: additionalUnis } = await supabase
+            .from("universities")
+            .select("id, name, country, city, logo_url, website, description")
+            .in("id", missingUniIds)
+            .or("active.eq.true,active.is.null");
+          
+          if (additionalUnis) {
+            // Apply country filter to additional universities
+            const filteredAdditional = selectedCountry !== "all"
+              ? additionalUnis.filter(u => u.country === selectedCountry)
+              : additionalUnis;
+            universitiesData = [...universitiesData, ...filteredAdditional];
+          }
+        }
+      }
+
+      if (!universitiesData.length) {
         setResults([]);
         setLoading(false);
         return;
       }
 
-      // Deduplicate universities by name (case-insensitive) to prevent duplicates
+      // Deduplicate universities by name (case-insensitive)
       const seenNames = new Set<string>();
       const universities = universitiesData.filter((uni) => {
         const normalizedName = uni.name.toLowerCase().trim();
@@ -238,45 +296,74 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
         return true;
       });
 
-      const ids = universities.map((u) => u.id);
+      const uniIds = universities.map((u) => u.id);
+      
+      // Build program query with filters
       let progQuery = supabase
         .from("programs")
-        .select("*")
-        .in("university_id", ids)
-        // Keep programs even if the active flag is null to align with university visibility.
+        .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id")
+        .in("university_id", uniIds)
         .or("active.eq.true,active.is.null");
-      if (selectedLevel !== "all") progQuery = progQuery.eq("level", selectedLevel);
-      if (selectedDiscipline !== "all") progQuery = progQuery.eq("discipline", selectedDiscipline);
-      if (maxFee) progQuery = progQuery.lte("tuition_amount", parseFloat(maxFee));
+      
+      if (selectedLevel !== "all") {
+        progQuery = progQuery.eq("level", selectedLevel);
+      }
+      if (selectedDiscipline !== "all") {
+        progQuery = progQuery.eq("discipline", selectedDiscipline);
+      }
+      if (maxFee) {
+        progQuery = progQuery.lte("tuition_amount", parseFloat(maxFee));
+      }
+      // Also filter by program name if searching
+      if (searchQuery) {
+        progQuery = progQuery.ilike("name", `%${searchQuery}%`);
+      }
 
-      const { data: programs } = await progQuery;
-      const { data: scholarships } = await supabase
-        .from("scholarships")
-        .select("*")
-        .in("university_id", ids)
-        .eq("active", true);
+      // Fetch programs and scholarships in parallel
+      const [programsResult, scholarshipsResult] = await Promise.all([
+        progQuery,
+        supabase
+          .from("scholarships")
+          .select("id, name, amount_cents, currency, coverage_type, university_id, program_id")
+          .in("university_id", uniIds)
+          .eq("active", true)
+      ]);
 
+      const programs = programsResult.data || [];
+      const scholarships = scholarshipsResult.data || [];
+
+      // Merge results
       const merged: SearchResult[] = universities
         .map((uni) => ({
           university: uni,
-          programs: programs?.filter((p) => p.university_id === uni.id) || [],
-          scholarships: scholarships?.filter((s) => s.university_id === uni.id) || [],
+          programs: programs.filter((p) => p.university_id === uni.id),
+          scholarships: scholarships.filter((s) => s.university_id === uni.id),
         }))
         .filter(
           (r) =>
             r.programs.length > 0 &&
             (!onlyWithScholarships || r.scholarships.length > 0)
-        );
+        )
+        // Sort by number of matching programs (most relevant first)
+        .sort((a, b) => b.programs.length - a.programs.length);
 
       setResults(merged);
     } catch (error) {
       console.error("Search error:", error);
+      setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships]);
+  }, [debouncedSearchTerm, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships]);
 
+  // Auto-search when filters change
   useEffect(() => {
+    // Skip the initial mount to avoid double-fetching
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      handleSearch();
+      return;
+    }
     handleSearch();
   }, [handleSearch]);
 
@@ -340,8 +427,19 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
                           placeholder={t("pages.universitySearch.filters.fields.universityName.placeholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-9"
+                        className={cn("pl-9", searchTerm && "pr-9")}
+                        aria-label="Search universities and programs"
                       />
+                      {searchTerm && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchTerm("")}
+                          className="absolute right-3 top-3 p-0.5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label="Clear search"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
                   </div>
 
