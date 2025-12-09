@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Input } from "@/components/ui/input";
@@ -130,10 +130,13 @@ export interface ProgramSearchViewProps {
 
 export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { profile } = useAuth();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("all");
-  const [selectedLevel, setSelectedLevel] = useState("all");
+  
+  // Initialize state from URL params if available
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || searchParams.get("query") || "");
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "all");
+  const [selectedLevel, setSelectedLevel] = useState(searchParams.get("level") || "all");
   const [selectedDiscipline, setSelectedDiscipline] = useState("all");
   const [maxFee, setMaxFee] = useState("");
   const [onlyWithScholarships, setOnlyWithScholarships] = useState(false);
