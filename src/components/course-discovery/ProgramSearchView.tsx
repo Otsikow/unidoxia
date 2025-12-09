@@ -57,6 +57,14 @@ import edinburghImg from "@/assets/university-edinburgh.jpg";
 import defaultUniversityImg from "@/assets/university-default.jpg";
 
 const PROGRAM_LEVELS = ["Undergraduate", "Postgraduate", "PHD"];
+const MAJOR_DESTINATION_COUNTRIES = [
+  "United Kingdom",
+  "United States",
+  "Canada",
+  "Australia",
+  "Germany",
+  "Ireland",
+];
 const TAB_TRIGGER_STYLES =
   "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
 
@@ -131,7 +139,6 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   const [onlyWithScholarships, setOnlyWithScholarships] = useState(false);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
-  const [countries, setCountries] = useState<string[]>([]);
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
   const [disciplines, setDisciplines] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("search");
@@ -183,20 +190,12 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
 
   const loadFilterOptions = async () => {
     try {
-      const { data: universities } = await supabase
-        .from("universities")
-        .select("country")
-        // Some seeded universities may not have the active flag set; treat null as visible
-        // so they appear in student and agent dashboards.
-        .or("active.eq.true,active.is.null");
       const { data: programs } = await supabase
         .from("programs")
         .select("level, discipline")
         // Keep programs even if the active flag is missing so filters remain complete.
         .or("active.eq.true,active.is.null");
 
-      if (universities)
-        setCountries([...new Set(universities.map((u) => u.country))].sort());
       if (programs) {
         setLevels(PROGRAM_LEVELS);
         setDisciplines([...new Set(programs.map((p) => p.discipline))].sort());
@@ -349,7 +348,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
                         <SelectTrigger><SelectValue placeholder={t("pages.universitySearch.filters.fields.country.placeholder")} /></SelectTrigger>
                       <SelectContent>
                           <SelectItem value="all">{t("pages.universitySearch.filters.fields.country.all")}</SelectItem>
-                        {countries.map((c) => (
+                        {MAJOR_DESTINATION_COUNTRIES.map((c) => (
                           <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>
