@@ -145,8 +145,14 @@ export default function UniversityDirectory() {
         // Fetch universities - each university is a unique tenant with isolated data
         const { data: universitiesData, error: uniError } = await supabase
           .from("universities")
-          .select("id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id")
-          .eq("active", true)
+          .select(
+            "id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id",
+          )
+          // Some seeded universities were missing the active flag. Treat null as visible
+          // so that partner universities (Albert A University, John Kols University,
+          // Pineapple University, Shalombay University, etc.) always appear for students
+          // and agents.
+          .or("active.eq.true,active.is.null")
           .order("name");
 
         if (uniError) throw uniError;
@@ -156,7 +162,9 @@ export default function UniversityDirectory() {
         const { data: programCounts, error: progError } = await supabase
           .from("programs")
           .select("id, university_id")
-          .eq("active", true);
+          // Programs may also have a missing active flag; include them when counting
+          // so the directory metrics remain accurate.
+          .or("active.eq.true,active.is.null");
 
         if (progError) throw progError;
 

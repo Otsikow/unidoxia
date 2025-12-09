@@ -186,11 +186,14 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
       const { data: universities } = await supabase
         .from("universities")
         .select("country")
-        .eq("active", true);
+        // Some seeded universities may not have the active flag set; treat null as visible
+        // so they appear in student and agent dashboards.
+        .or("active.eq.true,active.is.null");
       const { data: programs } = await supabase
         .from("programs")
         .select("level, discipline")
-        .eq("active", true);
+        // Keep programs even if the active flag is missing so filters remain complete.
+        .or("active.eq.true,active.is.null");
 
       if (universities)
         setCountries([...new Set(universities.map((u) => u.country))].sort());
@@ -206,7 +209,11 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   const handleSearch = useCallback(async () => {
     setLoading(true);
     try {
-      let uniQuery = supabase.from("universities").select("*").eq("active", true);
+      let uniQuery = supabase
+        .from("universities")
+        .select("*")
+        // Include universities where the active flag is missing to avoid hiding partners.
+        .or("active.eq.true,active.is.null");
       if (searchTerm) uniQuery = uniQuery.ilike("name", `%${searchTerm}%`);
       if (selectedCountry !== "all") uniQuery = uniQuery.eq("country", selectedCountry);
 
@@ -230,7 +237,12 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
       });
 
       const ids = universities.map((u) => u.id);
-      let progQuery = supabase.from("programs").select("*").in("university_id", ids).eq("active", true);
+      let progQuery = supabase
+        .from("programs")
+        .select("*")
+        .in("university_id", ids)
+        // Keep programs even if the active flag is null to align with university visibility.
+        .or("active.eq.true,active.is.null");
       if (selectedLevel !== "all") progQuery = progQuery.eq("level", selectedLevel);
       if (selectedDiscipline !== "all") progQuery = progQuery.eq("discipline", selectedDiscipline);
       if (maxFee) progQuery = progQuery.lte("tuition_amount", parseFloat(maxFee));
