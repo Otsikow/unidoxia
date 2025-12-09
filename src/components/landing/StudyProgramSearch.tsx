@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,10 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 
-// Country options with flags
+// Country options with flags - aligned with ProgramSearchView
 const DESTINATIONS = [
   { value: "all", label: "All Destinations", flag: "🌍" },
   { value: "United Kingdom", label: "United Kingdom", flag: "🇬🇧" },
@@ -25,15 +24,12 @@ const DESTINATIONS = [
   { value: "Ireland", label: "Ireland", flag: "🇮🇪" },
 ] as const;
 
-// Study level options
+// Study level options - aligned with ProgramSearchView PROGRAM_LEVELS
 const STUDY_LEVELS = [
   { value: "all", label: "All Levels" },
-  { value: "Foundation", label: "Foundation" },
   { value: "Undergraduate", label: "Undergraduate" },
   { value: "Postgraduate", label: "Postgraduate" },
-  { value: "Diploma / Advanced Diploma", label: "Diploma / Advanced Diploma" },
-  { value: "Certificate", label: "Certificate" },
-  { value: "PhD / Research", label: "PhD / Research" },
+  { value: "PHD", label: "PhD / Research" },
 ] as const;
 
 interface StudyProgramSearchProps {
@@ -45,27 +41,15 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDestination, setSelectedDestination] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
-  const [isTyping, setIsTyping] = useState(false);
-
-  // Debounce search input (300ms as specified)
-  const debouncedSearch = useDebounce(searchTerm, 300);
-
-  // Track typing state for glow animation
-  useEffect(() => {
-    if (searchTerm.length > 0) {
-      setIsTyping(true);
-      const timer = setTimeout(() => setIsTyping(false), 500);
-      return () => clearTimeout(timer);
-    } else {
-      setIsTyping(false);
-    }
-  }, [searchTerm]);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
     
-    if (debouncedSearch.trim()) {
-      params.set("q", debouncedSearch.trim());
+    // Use raw searchTerm for immediate search on button click
+    const trimmedSearch = searchTerm.trim();
+    if (trimmedSearch) {
+      params.set("q", trimmedSearch);
     }
     if (selectedDestination !== "all") {
       params.set("country", selectedDestination);
@@ -75,14 +59,20 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
     }
 
     navigate(`/search?${params.toString()}`);
-  }, [debouncedSearch, selectedDestination, selectedLevel, navigate]);
+  }, [searchTerm, selectedDestination, selectedLevel, navigate]);
 
   // Handle Enter key press
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      e.preventDefault();
       handleSearch();
     }
   };
+
+  // Clear search input
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm("");
+  }, []);
 
   return (
     <motion.section
@@ -137,36 +127,57 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                     <Search
                       className={cn(
                         "absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors duration-200",
-                        isTyping
+                        isFocused || searchTerm
                           ? "text-primary"
                           : "text-muted-foreground"
                       )}
+                      aria-hidden="true"
                     />
                     <Input
                       type="text"
-                      placeholder="Search programs, schools or keywords…"
+                      placeholder="Search programs, universities or keywords…"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyDown={handleKeyDown}
+                      onFocus={() => setIsFocused(true)}
+                      onBlur={() => setIsFocused(false)}
+                      aria-label="Search programs and universities"
                       className={cn(
-                        "pl-12 pr-4 h-12 md:h-14 text-base",
+                        "pl-12 h-12 md:h-14 text-base",
+                        searchTerm ? "pr-10" : "pr-4",
                         "bg-background/50 dark:bg-background/30",
                         "border-border/60 focus:border-primary/50",
                         "transition-all duration-300",
-                        isTyping &&
+                        isFocused &&
                           "ring-2 ring-primary/20 shadow-[0_0_20px_hsl(var(--primary)/0.15)]"
                       )}
                     />
-                    {/* Typing glow effect */}
+                    {/* Clear button */}
                     <AnimatePresence>
-                      {isTyping && (
-                        <motion.div
+                      {searchTerm && (
+                        <motion.button
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
+                          type="button"
+                          onClick={handleClearSearch}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+                          aria-label="Clear search"
+                        >
+                          <X className="h-4 w-4" />
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
+                    {/* Focus glow effect */}
+                    <AnimatePresence>
+                      {isFocused && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98 }}
                           className="absolute inset-0 rounded-md pointer-events-none"
                           style={{
-                            boxShadow: "0 0 20px hsl(var(--primary) / 0.3)",
+                            boxShadow: "0 0 20px hsl(var(--primary) / 0.2)",
                           }}
                         />
                       )}
