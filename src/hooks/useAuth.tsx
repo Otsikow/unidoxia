@@ -813,7 +813,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await supabase.from('agents').insert({
           tenant_id: tenant.id,
           profile_id: userId,
-          username,
+          verification_status: 'pending',
+          active: true,
         });
       }
 

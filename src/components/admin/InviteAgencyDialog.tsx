@@ -90,17 +90,35 @@ export function InviteAgencyDialog({
     setIsSubmitting(true);
 
     try {
-      const normalizedEmail = values.email.trim().toLowerCase();
+      // Get the current session for authentication
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
 
-      // Check if user already exists
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id, tenant_id, role")
-        .eq("email", normalizedEmail)
-        .maybeSingle();
+      if (!accessToken) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in again to invite agencies.",
+          variant: "destructive",
+        });
+        return;
+      }
 
-      if (existingProfile) {
-        if (existingProfile.tenant_id !== tenantId) {
+      // Call the invite-agent edge function
+      const response = await supabase.functions.invoke("invite-agent", {
+        body: {
+          fullName: values.fullName.trim(),
+          email: values.email.trim().toLowerCase(),
+          companyName: values.companyName.trim(),
+          phone: values.phone?.trim() || undefined,
+          tenantId,
+        },
+      });
+
+      if (response.error) {
+        // Handle specific error cases
+        const errorMessage = response.error.message || "Failed to invite agency";
+        
+        if (errorMessage.includes("already associated with a different tenant")) {
           toast({
             title: "Email already in use",
             description: "This email is associated with a different organization.",
@@ -109,7 +127,7 @@ export function InviteAgencyDialog({
           return;
         }
 
-        if (existingProfile.role === "agent") {
+        if (errorMessage.includes("agent with this email already exists")) {
           toast({
             title: "Agency already exists",
             description: "An agency with this email already exists.",
@@ -117,79 +135,8 @@ export function InviteAgencyDialog({
           });
           return;
         }
-      }
 
-      // Invite the user via Supabase Auth
-      const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(
-        normalizedEmail,
-        {
-          data: {
-            full_name: values.fullName.trim(),
-            role: "agent",
-            tenant_id: tenantId,
-            phone: values.phone?.trim() || undefined,
-          },
-        }
-      );
-
-      if (inviteError) {
-        // If admin invite fails, try regular signup flow
-        console.log("Admin invite failed, attempting alternate method:", inviteError);
-        
-        // Create the profile and agent records directly
-        const tempUserId = crypto.randomUUID();
-        
-        const { error: profileError } = await supabase.from("profiles").insert({
-          id: tempUserId,
-          tenant_id: tenantId,
-          email: normalizedEmail,
-          full_name: values.fullName.trim(),
-          role: "agent",
-          phone: values.phone?.trim() || null,
-          onboarded: false,
-          username: `agent_${tempUserId.slice(0, 8)}`,
-        });
-
-        if (profileError) {
-          throw profileError;
-        }
-
-        const { error: agentError } = await supabase.from("agents").insert({
-          tenant_id: tenantId,
-          profile_id: tempUserId,
-          company_name: values.companyName.trim(),
-          verification_status: "pending",
-          active: true,
-        });
-
-        if (agentError) {
-          // Rollback profile creation
-          await supabase.from("profiles").delete().eq("id", tempUserId);
-          throw agentError;
-        }
-
-        // Add user role
-        await supabase.from("user_roles").insert({
-          user_id: tempUserId,
-          role: "agent",
-        });
-      } else {
-        // Admin invite succeeded, create agent record
-        const userId = inviteData.user?.id;
-        
-        if (userId) {
-          const { error: agentError } = await supabase.from("agents").insert({
-            tenant_id: tenantId,
-            profile_id: userId,
-            company_name: values.companyName.trim(),
-            verification_status: "pending",
-            active: true,
-          });
-
-          if (agentError) {
-            console.error("Error creating agent record:", agentError);
-          }
-        }
+        throw new Error(errorMessage);
       }
 
       toast({
