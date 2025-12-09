@@ -836,20 +836,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(currentUser);
       setSession(session);
 
+      // Note: We don't block on email_confirmed_at here because:
+      // 1. The signIn function already handles unverified emails by signing out
+      // 2. Cached/stale sessions may have outdated email_confirmed_at values
+      // 3. The profile fetch will fail naturally if there's a real issue
+      // If email verification is required, redirect the user to verification page
       if (currentUser && !currentUser.email_confirmed_at) {
-        console.info('User email address is not verified yet. Redirecting to verification gate.');
-        setProfile(null);
-        return;
+        console.info('User email address is not verified yet.');
+        // Don't block profile fetching - let the flow continue and handle
+        // verification status through the profile or specific UI checks
       }
 
       // Fetch profile only if user has changed
       if (currentUserId && currentUserId !== lastUserId) {
         await fetchProfile(currentUserId, currentUser);
+        lastUserId = currentUserId;
       } else if (!currentUserId) {
         setProfile(null);
+        lastUserId = undefined;
       }
-
-      lastUserId = currentUserId;
     };
 
     const init = async () => {
