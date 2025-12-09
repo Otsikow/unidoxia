@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { TypingAnimation } from '@/components/ui/TypingAnimation';
 import {
   CheckCircle,
   FileText,
@@ -180,7 +181,6 @@ export default function StudentOnboarding() {
   const { user, profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const fullWelcomeText = 'Welcome to UniDoxia';
-  const [typedText, setTypedText] = useState('');
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Tables<'students'> | null>(null);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -483,25 +483,6 @@ export default function StudentOnboarding() {
     };
   }, [student?.id, fetchStudentData]);
 
-  useEffect(() => {
-    let currentIndex = 0;
-    const typingInterval = window.setInterval(() => {
-      currentIndex += 1;
-      setTypedText(fullWelcomeText.slice(0, currentIndex));
-
-      if (currentIndex >= fullWelcomeText.length) {
-        window.clearInterval(typingInterval);
-      }
-    }, 90);
-
-    return () => {
-      window.clearInterval(typingInterval);
-    };
-  }, [fullWelcomeText]);
-
-  const highlightStart = fullWelcomeText.indexOf('UniDoxia');
-  const typedPrefix = typedText.slice(0, highlightStart);
-  const typedHighlight = typedText.slice(highlightStart);
 
   if (loading) {
     return (
@@ -525,13 +506,13 @@ export default function StudentOnboarding() {
         <BackButton variant="ghost" size="sm" fallback="/dashboard" />
 
         <div className="space-y-2 animate-fade-in">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-center">
             <span className="sr-only">{fullWelcomeText}</span>
-            <span aria-hidden className="inline-flex items-center gap-1">
-              <span>{typedPrefix}</span>
-              <span className="text-primary">{typedHighlight}</span>
-              <span className="typing-cursor" />
-            </span>
+            <TypingAnimation 
+              text={fullWelcomeText}
+              speed={100}
+              className="text-foreground"
+            />
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
             Complete your profile to start applying to universities worldwide
