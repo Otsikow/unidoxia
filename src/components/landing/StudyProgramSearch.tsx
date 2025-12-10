@@ -120,9 +120,9 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
             {/* Content */}
             <div className="relative z-10">
               {/* Search Input and Filters Grid */}
-              <div className="flex flex-col md:flex-row gap-4 items-end">
+              <div className="flex flex-col gap-5">
                 {/* Main Search Input */}
-                <div className="flex-1 w-full">
+                <div className="w-full">
                   <div className="relative">
                     <Search
                       className={cn(
@@ -143,7 +143,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                       onBlur={() => setIsFocused(false)}
                       aria-label="Search programs and universities"
                       className={cn(
-                        "pl-12 h-12 md:h-14 text-base",
+                        "pl-12 h-14 md:h-16 text-base md:text-lg",
                         searchTerm ? "pr-10" : "pr-4",
                         "bg-background/50 dark:bg-background/30",
                         "border-border/60 focus:border-primary/50",
@@ -185,85 +185,87 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   </div>
                 </div>
 
-                {/* Destination Dropdown */}
-                <div className="w-full md:w-48">
-                  <Select
-                    value={selectedDestination}
-                    onValueChange={setSelectedDestination}
-                  >
-                    <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
-                      <SelectValue placeholder="Destination" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DESTINATIONS.map((dest) => (
-                        <SelectItem key={dest.value} value={dest.value}>
-                          <span className="flex items-center gap-2">
-                            <span>{dest.flag}</span>
-                            <span>{dest.label}</span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+                  {/* Destination Dropdown */}
+                  <div className="w-full md:w-48 lg:w-56">
+                    <Select
+                      value={selectedDestination}
+                      onValueChange={setSelectedDestination}
+                    >
+                      <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
+                        <SelectValue placeholder="Destination" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DESTINATIONS.map((dest) => (
+                          <SelectItem key={dest.value} value={dest.value}>
+                            <span className="flex items-center gap-2">
+                              <span>{dest.flag}</span>
+                              <span>{dest.label}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Level of Study Dropdown */}
-                <div className="w-full md:w-56">
-                  <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                    <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
-                      <SelectValue placeholder="Level of Study" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {STUDY_LEVELS.map((level) => (
-                        <SelectItem key={level.value} value={level.value}>
-                          {level.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  {/* Level of Study Dropdown */}
+                  <div className="w-full md:w-56 lg:w-64">
+                    <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+                      <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
+                        <SelectValue placeholder="Level of Study" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STUDY_LEVELS.map((level) => (
+                          <SelectItem key={level.value} value={level.value}>
+                            {level.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                {/* Search Button */}
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full md:w-auto"
-                >
-                  <Button
-                    onClick={handleSearch}
-                    size="lg"
-                    className={cn(
-                      "h-12 md:h-14 px-8 w-full md:w-auto",
-                      "bg-gradient-to-r from-primary to-primary/90",
-                      "hover:from-primary/90 hover:to-primary",
-                      "text-primary-foreground font-semibold",
-                      "shadow-lg shadow-primary/25",
-                      "hover:shadow-xl hover:shadow-primary/30",
-                      "transition-all duration-300",
-                      "relative overflow-hidden",
-                      "button-border-beam"
-                    )}
+                  {/* Search Button */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full md:w-auto"
                   >
-                    {/* Sparkles icon */}
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Search
-                    
-                    {/* Pulse ripple effect on hover */}
-                    <motion.div
-                      className="absolute inset-0 rounded-md"
-                      initial={{ scale: 0, opacity: 0.5 }}
-                      whileHover={{
-                        scale: 1.5,
-                        opacity: 0,
-                        transition: { duration: 0.6 },
-                      }}
-                      style={{
-                        background:
-                          "radial-gradient(circle, hsl(var(--primary-foreground) / 0.3) 0%, transparent 70%)",
-                      }}
-                    />
-                  </Button>
-                </motion.div>
+                    <Button
+                      onClick={handleSearch}
+                      size="lg"
+                      className={cn(
+                        "h-12 md:h-14 px-8 w-full md:w-auto",
+                        "bg-gradient-to-r from-primary to-primary/90",
+                        "hover:from-primary/90 hover:to-primary",
+                        "text-primary-foreground font-semibold",
+                        "shadow-lg shadow-primary/25",
+                        "hover:shadow-xl hover:shadow-primary/30",
+                        "transition-all duration-300",
+                        "relative overflow-hidden",
+                        "button-border-beam"
+                      )}
+                    >
+                      {/* Sparkles icon */}
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Search
+
+                      {/* Pulse ripple effect on hover */}
+                      <motion.div
+                        className="absolute inset-0 rounded-md"
+                        initial={{ scale: 0, opacity: 0.5 }}
+                        whileHover={{
+                          scale: 1.5,
+                          opacity: 0,
+                          transition: { duration: 0.6 },
+                        }}
+                        style={{
+                          background:
+                            "radial-gradient(circle, hsl(var(--primary-foreground) / 0.3) 0%, transparent 70%)",
+                        }}
+                      />
+                    </Button>
+                  </motion.div>
+                </div>
               </div>
             </div>
           </div>
