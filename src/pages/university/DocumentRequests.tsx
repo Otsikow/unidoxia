@@ -154,6 +154,8 @@ const UniversityDocumentRequestsPage = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilterValue>("all");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const hasCompletedFirstLoadRef = useRef(false);
 
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
@@ -165,6 +167,8 @@ const UniversityDocumentRequestsPage = () => {
       if (showLoader) {
         setLoading(true);
       }
+
+      setErrorMessage(null);
 
       try {
         // ISOLATION: Filter by tenant_id to ensure only this tenant's document requests
@@ -219,11 +223,23 @@ const UniversityDocumentRequestsPage = () => {
         setDocumentRequests(mapped);
       } catch (error) {
         logError(error, "UniversityDocumentRequests.fetchRequests");
-        toast(formatErrorForToast(error, "Failed to load document requests"));
+        const formattedError = formatErrorForToast(
+          error,
+          "Failed to load document requests",
+        );
+
+        setErrorMessage(formattedError);
+
+        // Avoid flashing a toast during the initial load so the UI stays calm
+        if (hasCompletedFirstLoadRef.current) {
+          toast(formattedError);
+        }
       } finally {
         if (showLoader) {
           setLoading(false);
         }
+
+        hasCompletedFirstLoadRef.current = true;
       }
     },
     [toast, universityId, tenantId],
@@ -264,6 +280,10 @@ const UniversityDocumentRequestsPage = () => {
     } finally {
       setRefreshing(false);
     }
+  };
+
+  const handleRetry = () => {
+    void fetchRequests();
   };
 
   const handleFileUpload = async (requestId: string, file: File) => {
@@ -430,14 +450,26 @@ const UniversityDocumentRequestsPage = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="py-12">
-              <LoadingState message="Loading document requests..." />
-            </div>
-          ) : documentRequests.length === 0 ? (
-            <StatePlaceholder
-              title="No document requests yet"
-              description="When a document is requested from an agent or student, it will appear here for follow-up."
-              className="bg-transparent"
+          <div className="py-12">
+            <LoadingState message="Loading document requests..." />
+          </div>
+        ) : errorMessage ? (
+          <StatePlaceholder
+            title="We couldn't load your document requests"
+            description={errorMessage}
+            action={
+              <Button onClick={handleRetry} className="gap-2">
+                Try again
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            }
+            className="bg-transparent"
+          />
+        ) : documentRequests.length === 0 ? (
+          <StatePlaceholder
+            title="No document requests yet"
+            description="When a document is requested from an agent or student, it will appear here for follow-up."
+            className="bg-transparent"
             />
           ) : filteredRequests.length === 0 ? (
             <StatePlaceholder
