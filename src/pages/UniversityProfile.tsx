@@ -598,13 +598,27 @@ export default function UniversityProfile() {
                 {filteredPrograms.map((program) => (
                   <Card key={program.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-1 flex-1">
-                          <CardTitle className="text-xl">{program.name}</CardTitle>
-                          <CardDescription className="flex items-center gap-2">
-                            <Badge variant="secondary">{program.level}</Badge>
-                            <Badge variant="outline">{program.discipline}</Badge>
-                          </CardDescription>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex flex-1 items-start gap-3">
+                          {university ? (
+                            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-white shadow-sm">
+                              <img
+                                src={university.logo_url || getUniversityImage(university.name)}
+                                alt={`${university.name} logo`}
+                                className="h-full w-full object-contain p-2"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = getUniversityImage(university.name);
+                                }}
+                              />
+                            </div>
+                          ) : null}
+                          <div className="space-y-1 flex-1">
+                            <CardTitle className="text-xl">{program.name}</CardTitle>
+                            <CardDescription className="flex items-center gap-2">
+                              <Badge variant="secondary">{program.level}</Badge>
+                              <Badge variant="outline">{program.discipline}</Badge>
+                            </CardDescription>
+                          </div>
                         </div>
                         <Button asChild>
                           <Link to={getApplyUrl(program.id)}>
