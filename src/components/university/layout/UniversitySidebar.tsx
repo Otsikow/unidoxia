@@ -122,7 +122,7 @@ export const UniversitySidebar = ({
                         collapsed && "justify-center px-3",
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground",
+                          : "text-foreground/80",
                       )
                     }
                     onClick={onNavigate}
@@ -134,7 +134,7 @@ export const UniversitySidebar = ({
                             "h-5 w-5 transition-transform duration-200",
                             isActive
                               ? "scale-110 text-primary-foreground"
-                              : "text-muted-foreground",
+                              : "text-foreground/70",
                           )}
                         />
                         <span
