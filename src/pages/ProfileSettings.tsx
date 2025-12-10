@@ -16,7 +16,7 @@ import PasswordSecurityTab from '@/components/settings/PasswordSecurityTab';
 import AccountTab from '@/components/settings/AccountTab';
 import { calculateProfileCompletion } from '@/lib/profileCompletion';
 import { generateReferralLink } from '@/lib/referrals';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useUniversityProfileCompletion } from '@/hooks/useUniversityProfileCompletion';
 
@@ -38,6 +38,12 @@ export default function ProfileSettings() {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const referralLink = profile ? generateReferralLink(profile.username) : '';
   const fallbackRoute = profile ? '/dashboard' : '/';
+  const completionLink =
+    profile?.role === 'partner'
+      ? '/university/profile'
+      : profile?.role === 'student'
+        ? '/student/profile'
+        : '/dashboard';
   
   // Fetch university profile completion for partner users
   const isPartner = profile?.role === 'partner';
@@ -208,14 +214,22 @@ export default function ProfileSettings() {
 
         {/* Profile Completion Card */}
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Profile Completion
-            </CardTitle>
-            <CardDescription>
-              Complete your profile to get the most out of your account
-            </CardDescription>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Profile Completion
+              </CardTitle>
+              <CardDescription>
+                Complete your profile to get the most out of your account
+              </CardDescription>
+            </div>
+            <Button asChild variant="outline" size="sm" className="gap-2">
+              <Link to={completionLink}>
+                Continue profile
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
