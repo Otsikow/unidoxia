@@ -187,7 +187,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
 
                 <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
                   {/* Destination Dropdown */}
-                  <div className="w-full md:w-48 lg:w-56">
+                  <div className="flex-1">
                     <Select
                       value={selectedDestination}
                       onValueChange={setSelectedDestination}
@@ -209,7 +209,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   </div>
 
                   {/* Level of Study Dropdown */}
-                  <div className="w-full md:w-56 lg:w-64">
+                  <div className="flex-1">
                     <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                       <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
                         <SelectValue placeholder="Level of Study" />
@@ -228,7 +228,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    className="w-full md:w-auto"
+                    className="flex-1"
                   >
                     <Button
                       onClick={handleSearch}
