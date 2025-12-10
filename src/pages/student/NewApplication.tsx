@@ -31,7 +31,7 @@ import ReviewSubmitStep from '@/components/application/ReviewSubmitStep';
 const STEPS = [
   { id: 1, title: 'Personal Information', description: 'Your basic details' },
   { id: 2, title: 'Education History', description: 'Academic background' },
-  { id: 3, title: 'Desired Programme', description: 'Select your programme' },
+  { id: 3, title: 'Desired Course', description: 'Select your course' },
   { id: 4, title: 'Documents', description: 'Upload required files' },
   { id: 5, title: 'Review & Submit', description: 'Final review' },
 ];

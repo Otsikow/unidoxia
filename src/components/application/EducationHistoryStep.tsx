@@ -262,7 +262,7 @@ export default function EducationHistoryStep({
               Back
             </Button>
             <Button onClick={onNext} disabled={!isValid()}>
-              Continue to Program Selection
+              Continue to Course Selection
             </Button>
           </div>
         </CardContent>

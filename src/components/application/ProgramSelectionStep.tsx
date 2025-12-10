@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
+import { useDebounce } from '@/hooks/useDebounce';
 import { GraduationCap, MapPin, DollarSign, Calendar, Search, Loader2 } from 'lucide-react';
 
 interface ProgramSelection {
@@ -66,6 +67,7 @@ export default function ProgramSelectionStep({
   const [loading, setLoading] = useState(true);
   const [loadingIntakes, setLoadingIntakes] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Fetch programs
   const fetchPrograms = useCallback(async () => {
@@ -90,8 +92,8 @@ export default function ProgramSelectionStep({
         .eq('active', true)
         .order('name');
 
-      if (searchQuery) {
-        query = query.or(`name.ilike.%${searchQuery}%,discipline.ilike.%${searchQuery}%`);
+      if (debouncedSearch) {
+        query = query.or(`name.ilike.%${debouncedSearch}%,discipline.ilike.%${debouncedSearch}%`);
       }
 
       const { data: programsData, error } = await query.limit(50);
@@ -133,7 +135,7 @@ export default function ProgramSelectionStep({
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, data.programId, toast]);
+  }, [debouncedSearch, data.programId, toast]);
 
   useEffect(() => {
     fetchPrograms();
@@ -173,18 +175,6 @@ export default function ProgramSelectionStep({
     return data.programId !== '' && data.intakeYear > 0 && data.intakeMonth > 0;
   };
 
-  if (loading) {
-    return (
-      <Card>
-        <CardContent className="py-12">
-          <div className="flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
       <Card>
@@ -198,7 +188,7 @@ export default function ProgramSelectionStep({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Search Programmes */}
+          {/* Search Courses */}
           <div className="space-y-2">
             <Label htmlFor="search" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
@@ -219,11 +209,18 @@ export default function ProgramSelectionStep({
               Select Course *
             </Label>
             <Select value={data.programId} onValueChange={handleProgramChange}>
-              <SelectTrigger id="program">
-                <SelectValue placeholder="Choose a course" />
+              <SelectTrigger id="program" aria-busy={loading}>
+                <SelectValue placeholder={loading ? 'Loading courses...' : 'Choose a course'} />
               </SelectTrigger>
               <SelectContent>
-                {programs.length === 0 ? (
+                {loading ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading courses...
+                    </div>
+                  </div>
+                ) : programs.length === 0 ? (
                   <div className="p-4 text-center text-sm text-muted-foreground">
                     No courses found
                   </div>
