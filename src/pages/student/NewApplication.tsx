@@ -647,24 +647,56 @@ export default function NewApplication() {
 
   const isSavingDraft = autoSaveMutation.isPending || manualSaveMutation.isPending;
 
-  const handleManualSave = useCallback(() => {
+  const persistLocalDraft = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+
+    const sanitized = sanitizeFormDataForDraft(formDataRef.current);
+    const snapshot = {
+      ...sanitized,
+      currentStep,
+    };
+
+    window.localStorage.setItem(LEGACY_DRAFT_STORAGE_KEY, JSON.stringify(snapshot));
+    setLastSavedAt(new Date());
+    return true;
+  }, [currentStep]);
+
+  const handleManualSave = useCallback(async () => {
     if (!studentId) {
+      const savedLocally = persistLocalDraft();
       toast({
-        title: 'Unable to save draft',
-        description: 'Student profile not loaded yet.',
-        variant: 'destructive',
+        title: savedLocally ? 'Draft saved locally' : 'Unable to save draft',
+        description: savedLocally
+          ? 'We will sync your progress once your student profile is available.'
+          : 'Student profile not loaded yet.',
+        variant: savedLocally ? 'default' : 'destructive',
       });
       return;
     }
 
-    manualSaveMutation.mutate({
-      studentId,
-      tenantId,
-      programId: formData.programSelection.programId || null,
-      lastStep: currentStep,
-      formData,
-    });
-  }, [currentStep, formData, manualSaveMutation, studentId, tenantId, toast]);
+    try {
+      skipNextAutoSave.current = true;
+      await manualSaveMutation.mutateAsync({
+        studentId,
+        tenantId,
+        programId: formData.programSelection.programId || null,
+        lastStep: currentStep,
+        formData,
+      });
+    } catch (error) {
+      logError(error, 'NewApplication.manualSaveDraft');
+      toast(formatErrorForToast(error, 'Failed to save draft'));
+      setAutoSaveError(getErrorMessage(error));
+    }
+  }, [
+    currentStep,
+    formData,
+    manualSaveMutation,
+    persistLocalDraft,
+    studentId,
+    tenantId,
+    toast,
+  ]);
 
   const isInitialLoading = loading || draftQuery.isLoading;
 
@@ -945,8 +977,8 @@ export default function NewApplication() {
               variant="outline"
               onClick={handleManualSave}
               className="w-full sm:w-auto"
-              disabled={!studentId || isSavingDraft}
-            >
+              disabled={isSavingDraft}
+              >
               {isSavingDraft && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save & Continue Later
             </Button>
