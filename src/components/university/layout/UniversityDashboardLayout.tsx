@@ -272,72 +272,73 @@ export const buildEmptyDashboardData = (): UniversityDashboardData => ({
 export const fetchUniversityDashboardData = async (
   tenantId: string,
 ): Promise<UniversityDashboardData> => {
-  console.log("=== FETCH UNIVERSITY DASHBOARD DATA ===", { tenantId });
+  try {
+    console.log("=== FETCH UNIVERSITY DASHBOARD DATA ===", { tenantId });
 
-  // -----------------------------------------------------
-  // SECURITY: Validate tenantId is a UUID
-  // -----------------------------------------------------
-  if (!isValidUuid(tenantId)) {
-    console.error("SECURITY: Invalid or missing tenant ID:", tenantId);
-    return buildEmptyDashboardData();
-  }
+    // -----------------------------------------------------
+    // SECURITY: Validate tenantId is a UUID
+    // -----------------------------------------------------
+    if (!isValidUuid(tenantId)) {
+      console.error("SECURITY: Invalid or missing tenant ID:", tenantId);
+      return buildEmptyDashboardData();
+    }
 
-  // -----------------------------------------------------
-  // FETCH UNIVERSITY RECORD (isolation: tenant-scoped)
-  // -----------------------------------------------------
-  const { data: uniRows, error: uniError } = await supabase
-    .from("universities")
-    .select("*")
-    .eq("tenant_id", tenantId)
-    .order("active", { ascending: false, nullsFirst: false })
-    .order("updated_at", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(1);
+    // -----------------------------------------------------
+    // FETCH UNIVERSITY RECORD (isolation: tenant-scoped)
+    // -----------------------------------------------------
+    const { data: uniRows, error: uniError } = await supabase
+      .from("universities")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .order("active", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1);
 
-  if (uniError) {
-    console.error("Error fetching university:", uniError);
-    throw uniError;
-  }
+    if (uniError) {
+      console.error("Error fetching university:", uniError);
+      return buildEmptyDashboardData();
+    }
 
-  const uniData = (uniRows?.[0] ?? null) as Nullable<UniversityRecord>;
+    const uniData = (uniRows?.[0] ?? null) as Nullable<UniversityRecord>;
 
-  // -----------------------------------------------------
-  // NEW UNIVERSITY → return blank dashboard
-  // -----------------------------------------------------
-  if (!uniData) {
-    console.log("New university detected – returning blank dashboard.");
-    return buildEmptyDashboardData();
-  }
+    // -----------------------------------------------------
+    // NEW UNIVERSITY → return blank dashboard
+    // -----------------------------------------------------
+    if (!uniData) {
+      console.log("New university detected – returning blank dashboard.");
+      return buildEmptyDashboardData();
+    }
 
-  // -----------------------------------------------------
-  // DOUBLE-CHECK TENANT OWNERSHIP (Version B strictness)
-  // -----------------------------------------------------
-  if (uniData.tenant_id !== tenantId) {
-    console.error("SECURITY: University tenant mismatch detected", {
-      expectedTenant: tenantId,
-      actualTenant: uniData.tenant_id,
-      universityId: uniData.id,
-      universityName: uniData.name,
+    // -----------------------------------------------------
+    // DOUBLE-CHECK TENANT OWNERSHIP (Version B strictness)
+    // -----------------------------------------------------
+    if (uniData.tenant_id !== tenantId) {
+      console.error("SECURITY: University tenant mismatch detected", {
+        expectedTenant: tenantId,
+        actualTenant: uniData.tenant_id,
+        universityId: uniData.id,
+        universityName: uniData.name,
+      });
+      throw new Error("Data isolation error: Invalid university ownership.");
+    }
+
+    console.log("University loaded:", {
+      id: uniData.id,
+      name: uniData.name,
+      tenantId: uniData.tenant_id,
     });
-    throw new Error("Data isolation error: Invalid university ownership.");
-  }
 
-  console.log("University loaded:", {
-    id: uniData.id,
-    name: uniData.name,
-    tenantId: uniData.tenant_id,
-  });
+    // -----------------------------------------------------
+    // Parse + merge submission config with fallback details
+    // -----------------------------------------------------
+    const parsedDetails = parseUniversityProfileDetails(
+      uniData.submission_config_json ?? null,
+    );
 
-  // -----------------------------------------------------
-  // Parse + merge submission config with fallback details
-  // -----------------------------------------------------
-  const parsedDetails = parseUniversityProfileDetails(
-    uniData.submission_config_json ?? null,
-  );
-
-  const profileDetails = mergeUniversityProfileDetails(
-    emptyUniversityProfileDetails,
-    {
+    const profileDetails = mergeUniversityProfileDetails(
+      emptyUniversityProfileDetails,
+      {
       ...parsedDetails,
       media: {
         ...parsedDetails.media,
@@ -615,6 +616,17 @@ export const fetchUniversityDashboardData = async (
     countrySummary,
     recentApplications,
   };
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Data isolation error")
+    ) {
+      throw error;
+    }
+
+    console.error("Failed to fetch university dashboard data:", error);
+    return buildEmptyDashboardData();
+  }
 };
 // -----------------------------------------------------
 // METRICS BUILDER
