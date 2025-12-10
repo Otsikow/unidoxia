@@ -18,7 +18,7 @@ export default function LeadActions({ lead }: LeadActionsProps) {
   };
 
   const handleChat = () => {
-    navigate(`/agent/student/${lead.id}`);
+    navigate(`/agent/students/${lead.id}`);
   };
 
   return (

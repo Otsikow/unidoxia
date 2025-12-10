@@ -25,7 +25,7 @@ export default function LeadTableRow({
         />
       </TableCell>
       <TableCell>
-        <Link to={`/agent/student/${lead.id}`} className="hover:underline">
+        <Link to={`/agent/students/${lead.id}`} className="hover:underline">
           {`${lead.first_name} ${lead.last_name}`}
         </Link>
       </TableCell>
