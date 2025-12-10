@@ -73,51 +73,46 @@ export const getLeads = async (): Promise<Lead[]> => {
   }) as Lead[];
 };
 
-export const getStudent = async (studentId: string): Promise<Lead> => {
+export const getStudent = async (
+  studentId: string,
+  tenantId?: string | null,
+): Promise<Lead> => {
   if (!isSupabaseConfigured) {
     const mockLead = MOCK_LEADS.find((lead) => lead.id === studentId) || MOCK_LEADS[0];
     return enrichLeadWithQualification(mockLead);
   }
 
-  const { data, error } = await supabase
-    .from("students")
-    .select(
-      `
-      id,
-      legal_name,
-      preferred_name,
-      contact_email,
-      current_country,
-      agent_student_links(
-        status
-      )
-    `
-    )
-    .eq("id", studentId)
-    .maybeSingle();
+  if (!tenantId) {
+    throw new Error("Missing tenant context for student lookup");
+  }
+
+  const { data, error } = await supabase.rpc("get_students_by_tenant", {
+    p_tenant_id: tenantId,
+  });
 
   if (error) {
     console.error("Error fetching student:", error);
     throw error;
   }
 
-  if (!data) {
+  const tenantStudent = data?.find((row: any) => row.student_id === studentId)?.student;
+
+  if (!tenantStudent) {
     throw new Error("Student not found");
   }
 
-  const agentStatus = Array.isArray(data.agent_student_links)
-    ? data.agent_student_links[0]?.status
-    : undefined;
-  const nameParts = (data.legal_name || data.preferred_name || "").split(" ");
+  const nameParts = (
+    tenantStudent.preferred_name || tenantStudent.legal_name || tenantStudent.profile?.full_name || ""
+  ).split(" ");
   const firstName = nameParts.shift() || "";
   const lastName = nameParts.join(" ");
   const baseLead: LeadCore = {
-    id: data.id,
+    id: tenantStudent.id,
     first_name: firstName,
     last_name: lastName,
-    email: data.contact_email || "",
-    country: data.current_country || "",
-    status: agentStatus || "unknown",
+    email: tenantStudent.contact_email || tenantStudent.profile?.email || "",
+    country: tenantStudent.current_country || tenantStudent.profile?.country || "",
+    status: tenantStudent.profile?.onboarded ? "onboarded" : "pending",
   };
   return enrichLeadWithQualification(baseLead) as Lead;
 };
