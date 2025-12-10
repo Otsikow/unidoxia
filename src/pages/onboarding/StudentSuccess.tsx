@@ -107,6 +107,45 @@ const AchievementBadge = ({ type }: { type: string }) => {
   );
 };
 
+const AnimatedCardRow = ({
+  stories,
+  animationDuration,
+  reverse = false,
+  activeIndex,
+  offsetDelay = 0,
+}: {
+  stories: typeof successStories;
+  animationDuration: number;
+  reverse?: boolean;
+  activeIndex: number;
+  offsetDelay?: number;
+}) => {
+  const trackClass = reverse ? "animate-marquee-reverse" : "animate-marquee";
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-background/60 shadow-lg backdrop-blur-lg">
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background via-background/80 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background via-background/80 to-transparent" />
+      <div
+        className={`flex gap-3 sm:gap-4 py-4 ${trackClass}`}
+        style={{
+          animationDuration: `${animationDuration}s`,
+          animationDelay: `${offsetDelay}s`,
+        }}
+      >
+        {stories.map((story, index) => (
+          <TestimonialCard
+            key={`${story.id}-${index}`}
+            story={story}
+            index={index}
+            isActive={index % successStories.length === activeIndex}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // Floating star component
 const FloatingStar = ({ 
   delay, 
@@ -149,11 +188,13 @@ const TestimonialCard = ({
   return (
     <div
       className={`
-        relative flex flex-col p-3 sm:p-4 rounded-2xl border border-border/50 
+        relative flex flex-col p-3 sm:p-4 rounded-2xl border border-border/50
         bg-gradient-to-br ${story.color} backdrop-blur-sm
-        transition-all duration-500 ease-out
-        ${isActive ? "scale-100 opacity-100" : "scale-95 opacity-60"}
+        transition-all duration-700 ease-out
+        min-w-[240px] sm:min-w-[260px] max-w-sm shadow-lg
+        ${isActive ? "scale-100 opacity-100 ring-2 ring-primary/40 shadow-2xl" : "scale-95 opacity-70"}
         animate-${slideDirection}
+        hover:-translate-y-1 hover:shadow-2xl
       `}
       style={{
         animationDelay: `${index * 0.15}s`,
@@ -277,6 +318,16 @@ export default function OnboardingStudentSuccess() {
     []
   );
 
+  const marqueeStories = useMemo(
+    () => [...successStories, ...successStories],
+    []
+  );
+
+  const staggeredMarqueeStories = useMemo(() => {
+    const rotated = [...successStories.slice(3), ...successStories.slice(0, 3)];
+    return [...rotated, ...rotated];
+  }, []);
+
   const handleNext = () => {
     navigate("/onboarding/destinations");
   };
@@ -325,17 +376,19 @@ export default function OnboardingStudentSuccess() {
           </div>
 
           {/* Testimonial cards grid - Animated collage */}
-          <div className="w-full max-w-4xl mb-6 sm:mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-              {successStories.map((story, index) => (
-                <TestimonialCard
-                  key={story.id}
-                  story={story}
-                  index={index}
-                  isActive={index === activeIndex || index === (activeIndex + 1) % successStories.length}
-                />
-              ))}
-            </div>
+          <div className="w-full max-w-5xl space-y-4 sm:space-y-5 mb-6 sm:mb-8">
+            <AnimatedCardRow
+              stories={marqueeStories}
+              animationDuration={26}
+              activeIndex={activeIndex}
+            />
+            <AnimatedCardRow
+              stories={staggeredMarqueeStories}
+              animationDuration={28}
+              reverse
+              activeIndex={(activeIndex + 2) % successStories.length}
+              offsetDelay={1.5}
+            />
           </div>
 
           {/* Success indicators */}
@@ -439,6 +492,24 @@ export default function OnboardingStudentSuccess() {
 
         .animate-slide-right {
           animation: slide-right 0.6s ease-out forwards;
+        }
+
+        .animate-marquee {
+          animation: marquee linear infinite;
+        }
+
+        .animate-marquee-reverse {
+          animation: marquee-reverse linear infinite;
+        }
+
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+
+        @keyframes marquee-reverse {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
         }
       `}</style>
     </div>
