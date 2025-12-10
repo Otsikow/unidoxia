@@ -160,7 +160,7 @@ export default function AgentStudentsManager() {
   };
 
   const handleViewStudent = (student: AgentStudent) => {
-    navigate(`/agent/student/${student.studentId}`);
+    navigate(`/agent/students/${student.studentId}`);
   };
 
   const handleBrowsePrograms = (student: AgentStudent) => {
