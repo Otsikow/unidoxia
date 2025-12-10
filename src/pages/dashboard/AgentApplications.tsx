@@ -631,8 +631,8 @@ const AgentApplications = () => {
                         : `Showing ${showingRangeStart}-${showingRangeEnd} of ${totalCount} applications`}
                     </CardDescription>
                   </div>
-                  <div className="flex flex-col w-full gap-3 sm:flex-row sm:items-center sm:justify-end">
-                    <div className="relative w-full sm:w-64">
+                  <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                    <div className="relative w-full min-w-[220px] sm:min-w-[260px] sm:flex-1">
                       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         value={searchTerm}
@@ -642,7 +642,7 @@ const AgentApplications = () => {
                       />
                     </div>
                     <Select value={statusFilter} onValueChange={handleStatusChange}>
-                      <SelectTrigger className="w-full sm:w-40">
+                      <SelectTrigger className="w-full sm:w-44 md:w-40">
                         <SelectValue placeholder="Filter by status" />
                       </SelectTrigger>
                       <SelectContent>
@@ -654,7 +654,7 @@ const AgentApplications = () => {
                       </SelectContent>
                     </Select>
                     <Select value={universityFilter} onValueChange={handleUniversityChange}>
-                      <SelectTrigger className="w-full sm:w-48">
+                      <SelectTrigger className="w-full sm:w-52 md:w-48">
                         <SelectValue placeholder="Filter by university" />
                       </SelectTrigger>
                       <SelectContent>
@@ -666,12 +666,18 @@ const AgentApplications = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={handleRefresh} disabled={loading}>
+                    <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        onClick={handleRefresh}
+                        disabled={loading}
+                      >
                         <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
                       </Button>
-                      <Button size="sm" asChild>
+                      <Button size="sm" className="w-full sm:w-auto" asChild>
                         <Link to="/dashboard/applications/new">
                           <Plus className="h-4 w-4 mr-2" />
                           New
