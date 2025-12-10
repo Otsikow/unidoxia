@@ -290,7 +290,7 @@ export default function NewApplication() {
           description: 'Select a student before submitting an application.',
           variant: 'destructive',
         });
-        setLoading(false);
+        navigate('/dashboard/students', { replace: true });
         return;
       }
 
