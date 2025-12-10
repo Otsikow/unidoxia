@@ -368,11 +368,10 @@ All colors MUST be HSL.
     @apply relative overflow-hidden rounded-[32px] border border-primary/10 bg-gradient-to-b from-background/30 via-background/60 to-background/30 px-3 py-5 sm:px-4;
     mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
-    --marquee-duration: 50s;
+    --marquee-duration: 70s;
     --item-count: 10;
-    --marquee-blur: 8px;
-    --marquee-focus-boost: 1.08;
-    --marquee-focus-contrast: 1.05;
+    --marquee-focus-scale: 1.03;
+    --marquee-focus-brightness: 1.04;
   }
 
   .journey-marquee__glow {
@@ -416,7 +415,7 @@ All colors MUST be HSL.
     padding: 0.5rem;
     flex: 0 0 auto;
     width: clamp(270px, 24vw, 340px);
-    animation: journeyCardFade var(--marquee-duration, 50s) linear infinite;
+    animation: journeyCardGlide var(--marquee-duration, 50s) ease-in-out infinite;
     animation-delay: calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)));
     will-change: opacity, filter;
   }
@@ -431,8 +430,8 @@ All colors MUST be HSL.
     box-shadow: 0 25px 60px -30px rgba(0, 0, 0, 0.45), 0 12px 30px -20px rgba(0, 0, 0, 0.3);
     transform: translateZ(0);
     animation:
-      journeyFloat 8s ease-in-out infinite alternate,
-      journeyFocus var(--marquee-duration, 50s) linear infinite;
+      journeyFloatSoft 10s ease-in-out infinite alternate,
+      journeyFocusGlow var(--marquee-duration, 50s) ease-in-out infinite;
     animation-delay:
       0s,
       calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)) +
@@ -830,42 +829,44 @@ All colors MUST be HSL.
   }
 }
 
-@keyframes journeyCardFade {
+@keyframes journeyCardGlide {
   0%,
-  4% {
+  5% {
     opacity: 0;
-    filter: blur(var(--marquee-blur, 8px));
+    transform: translateY(12px) scale(0.98);
   }
-  10%,
-  90% {
+  20%,
+  80% {
     opacity: 1;
-    filter: blur(0px);
+    transform: translateY(0) scale(1);
   }
-  96%,
+  95%,
   100% {
     opacity: 0;
-    filter: blur(var(--marquee-blur, 8px));
+    transform: translateY(-10px) scale(0.985);
   }
 }
 
-@keyframes journeyFocus {
+@keyframes journeyFocusGlow {
   0%,
-  15%,
-  85%,
+  16%,
+  84%,
   100% {
     filter: brightness(1) contrast(1);
+    transform: translateZ(0) scale(1);
   }
   50% {
-    filter: brightness(var(--marquee-focus-boost, 1.08)) contrast(var(--marquee-focus-contrast, 1.05));
+    filter: brightness(var(--marquee-focus-brightness, 1.04)) contrast(1.03);
+    transform: translateZ(0) scale(var(--marquee-focus-scale, 1.03));
   }
 }
 
-@keyframes journeyFloat {
+@keyframes journeyFloatSoft {
   0% {
     transform: translate3d(0, 0px, 0);
   }
   100% {
-    transform: translate3d(0, -6px, 8px);
+    transform: translate3d(0, -8px, 6px);
   }
 }
 

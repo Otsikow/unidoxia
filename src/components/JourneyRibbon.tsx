@@ -47,7 +47,7 @@ export const JourneyRibbon = () => {
   }, [segments]);
 
   const marqueeDurationSeconds = useMemo(
-    () => Math.max(48, segments.length * 10),
+    () => Math.max(60, segments.length * 12),
     [segments.length],
   );
 
