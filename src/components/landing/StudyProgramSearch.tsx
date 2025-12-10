@@ -185,7 +185,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {/* Destination Dropdown */}
                   <div className="flex-1">
                     <Select
@@ -234,7 +234,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                       onClick={handleSearch}
                       size="lg"
                       className={cn(
-                        "h-12 md:h-14 px-8 w-full md:w-auto",
+                        "h-12 md:h-14 px-8 w-full",
                         "bg-gradient-to-r from-primary to-primary/90",
                         "hover:from-primary/90 hover:to-primary",
                         "text-primary-foreground font-semibold",
