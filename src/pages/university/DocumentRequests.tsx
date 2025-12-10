@@ -228,7 +228,7 @@ const UniversityDocumentRequestsPage = () => {
           "Failed to load document requests",
         );
 
-        setErrorMessage(formattedError);
+        setErrorMessage(formattedError.description || formattedError.title);
 
         // Avoid flashing a toast during the initial load so the UI stays calm
         if (hasCompletedFirstLoadRef.current) {
