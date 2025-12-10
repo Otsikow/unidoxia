@@ -10,10 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, AlertCircle } from "lucide-react";
 import { LoadingState } from "@/components/LoadingState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from "@/hooks/useAuth";
+import { isSupabaseConfigured } from "@/integrations/supabase/client";
 
 export default function StudentDetailsPage() {
   const { studentId } = useParams<{ studentId: string }>();
-  const { data: student, isLoading, error } = useStudent(studentId || "");
+  const { profile, loading: authLoading } = useAuth();
+  const tenantId = profile?.tenant_id;
+  const { data: student, isLoading, error } = useStudent(studentId || "", tenantId);
 
   const aiInsights = () => {
     if (!student) {
@@ -50,6 +54,32 @@ export default function StudentDetailsPage() {
             <AlertTitle>Student not found</AlertTitle>
             <AlertDescription>
               No student ID was provided. Please go back and select a valid student.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex min-h-[50vh] items-center justify-center p-6">
+          <LoadingState message="Loading student details..." size="lg" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (isSupabaseConfigured && !tenantId) {
+    return (
+      <DashboardLayout>
+        <div className="flex min-h-[50vh] items-center justify-center p-6">
+          <Alert variant="destructive" className="max-w-md">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Unable to load student</AlertTitle>
+            <AlertDescription>
+              Your account is missing tenant details. Please sign out and sign back in or contact support.
             </AlertDescription>
           </Alert>
         </div>
