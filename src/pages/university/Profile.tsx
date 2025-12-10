@@ -1278,12 +1278,12 @@ const UniversityProfilePage = () => {
                   </div>
                 </section>
 
-                <div className="flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="sticky bottom-0 left-0 right-0 -mx-4 -mb-4 flex flex-col gap-3 border-t border-border bg-card/95 px-4 pb-4 pt-6 backdrop-blur supports-[backdrop-filter]:bg-card/80 sm:-mx-6 sm:-mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div className="text-sm text-muted-foreground">
                     Changes go live immediately across your dashboards, public
                     directory and course catalogue.
                   </div>
-                  <Button type="submit" className="gap-2" disabled={isSubmitting}>
+                  <Button type="submit" size="lg" className="gap-2" disabled={isSubmitting}>
                     {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                     Save profile
                   </Button>
