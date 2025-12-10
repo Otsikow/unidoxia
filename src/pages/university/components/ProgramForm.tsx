@@ -39,6 +39,7 @@ export const INTAKE_MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => {
 const CURRENCY_OPTIONS = ["USD", "CAD", "GBP", "EUR", "AUD", "NZD", "SGD"];
 
 const PROGRAM_IMAGE_BUCKET = "course-images";
+const PROGRAM_IMAGE_FALLBACK_BUCKET = "university-media";
 const PROGRAM_IMAGE_FOLDER = "program-images";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -158,24 +159,48 @@ export default function ProgramForm({
 
     setIsUploading(true);
 
-    try {
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-      const uniqueName = `${tenantId}/${userId}/${Date.now()}.${ext}`;
-      const storagePath = `${PROGRAM_IMAGE_FOLDER}/${uniqueName}`;
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const uniqueName = `${tenantId}/${userId}/${Date.now()}.${ext}`;
+    const storagePath = `${PROGRAM_IMAGE_FOLDER}/${uniqueName}`;
 
+    const uploadToBucket = async (bucket: string) => {
       const { error: uploadError } = await supabase.storage
-        .from(PROGRAM_IMAGE_BUCKET)
+        .from(bucket)
         .upload(storagePath, file, { upsert: false });
 
       if (uploadError) throw uploadError;
 
-      const { data: publicUrlData } = supabase.storage
-        .from(PROGRAM_IMAGE_BUCKET)
-        .getPublicUrl(storagePath);
+      const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+      return publicUrlData.publicUrl;
+    };
 
-      form.setValue("imageUrl", publicUrlData.publicUrl, { shouldValidate: true });
+    try {
+      let usedBucket = PROGRAM_IMAGE_BUCKET;
+      let publicUrl: string | null = null;
 
-      toast({ title: "Image uploaded" });
+      try {
+        publicUrl = await uploadToBucket(usedBucket);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "";
+        if (message.includes("Bucket not found")) {
+          usedBucket = PROGRAM_IMAGE_FALLBACK_BUCKET;
+          publicUrl = await uploadToBucket(usedBucket);
+          toast({
+            title: "Image uploaded",
+            description: "Used fallback storage bucket for now.",
+          });
+        } else {
+          throw err;
+        }
+      }
+
+      if (!publicUrl) throw new Error("Upload failed");
+
+      form.setValue("imageUrl", publicUrl, { shouldValidate: true });
+
+      if (usedBucket === PROGRAM_IMAGE_BUCKET) {
+        toast({ title: "Image uploaded" });
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Upload failed";
       toast({ variant: "destructive", title: "Upload failed", description: msg });
