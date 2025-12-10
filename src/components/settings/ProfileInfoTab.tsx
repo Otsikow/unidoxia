@@ -164,19 +164,17 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
         country: data?.country ?? formData.country,
       });
 
-      await refreshProfile();
-
-      // Invalidate related queries to ensure fresh data across the app
-      await queryClient.invalidateQueries({
-        queryKey: ['roleData', profile?.id],
-      });
-      
-      // If user is a student, also invalidate student record
-      if (profile?.role === 'student') {
-        await queryClient.invalidateQueries({
-          queryKey: studentRecordQueryKey(user?.id),
-        });
-      }
+      await Promise.all([
+        refreshProfile(),
+        queryClient.invalidateQueries({
+          queryKey: ['roleData', profile?.id],
+        }),
+        profile?.role === 'student'
+          ? queryClient.invalidateQueries({
+              queryKey: studentRecordQueryKey(user?.id),
+            })
+          : Promise.resolve(),
+      ]);
 
       const successState = {
         type: 'success' as const,

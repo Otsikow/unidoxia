@@ -184,7 +184,8 @@ export default function ProgramsPage() {
 
       toast({ title: "Course created" });
       setCreateOpen(false);
-      await refetch();
+      // Trigger a background refresh so the list updates without blocking the UI
+      void refetch();
     } catch (err) {
       toast({
         title: "Unable to create course",
