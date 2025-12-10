@@ -17,7 +17,7 @@ import { SEO } from "@/components/SEO";
 // Static assets - these are URL references, not heavy JS
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import studentsStudyingGroup from "@/assets/students-studying-group.png";
-import agentStudentConsulting from "@/assets/agent-student-consulting.png";
+import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 
@@ -53,7 +53,7 @@ const Index = () => {
   }, {
     key: "agents" as const,
     href: "/auth/signup?role=agent",
-    image: agentStudentConsulting
+    image: agentsCta
   }, {
     key: "universities" as const,
     href: "/partnership",
