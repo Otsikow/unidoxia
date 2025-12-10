@@ -213,96 +213,29 @@ export default function ProfileSettings() {
         </div>
 
         {/* Profile Completion Card */}
-        <Card className="mb-6">
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                Profile Completion
-              </CardTitle>
-              <CardDescription>
-                Complete your profile to get the most out of your account
-              </CardDescription>
-            </div>
-            <Button asChild variant="outline" size="sm" className="gap-2">
-              <Link to={completionLink}>
-                Continue profile
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{completionPercentage}% Complete</span>
-              </div>
-              <Progress value={completionPercentage} className="h-2" />
-            </div>
-
-            {/* Role-specific stats */}
-            {roleData?.type === 'agent' && roleData.data && (
-              <div className="mt-4 p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Briefcase className="h-4 w-4" />
-                  <span className="font-semibold">Agent Info</span>
-                </div>
-                  <div className="grid gap-4 text-sm sm:grid-cols-2">
-                    <div>
-                      <span className="text-muted-foreground block">Referral Username</span>
-                      <p className="font-mono font-bold">
-                        {profile.username ? `@${profile.username}` : 'Not assigned'}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Referral Link</span>
-                      <p className="font-mono break-all">
-                        {referralLink || 'Available after username is set'}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Direct Referrals</span>
-                      <p className="font-bold">{referralSummary.direct}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground block">Level 2 Referrals</span>
-                      <p className="font-bold">{referralSummary.levelTwo}</p>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <span className="text-muted-foreground block">Referral Earnings</span>
-                      <p className="font-bold">{formattedReferralEarnings}</p>
-                    </div>
-                  </div>
-              </div>
-            )}
-
-            {roleData?.type === 'student' && applicationsData && (
-              <div className="mt-4 p-4 bg-muted rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText className="h-4 w-4" />
-                  <span className="font-semibold">Application Status</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-muted-foreground">Active Applications:</span>
-                  <p className="font-bold text-lg">{applicationsData.length}</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* University Profile Completion for Partners */}
-        {isPartner && (
+        {isPartner ? (
           <Card className="mb-6 border-primary/20 bg-primary/5">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                University Profile
-              </CardTitle>
-              <CardDescription>
-                {university?.name
-                  ? `Complete your university profile to unlock full visibility`
-                  : `Set up your university profile to get started`}
-              </CardDescription>
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  University Profile
+                </CardTitle>
+                <CardDescription>
+                  {university?.name
+                    ? 'Your university profile is the single source of truth for partners and students.'
+                    : 'Set up your university profile to get started.'}
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => navigate('/university/profile')}
+              >
+                {university ? 'Edit profile' : 'Create profile'}
+                <ArrowUpRight className="h-4 w-4" />
+              </Button>
             </CardHeader>
             <CardContent>
               {universityCompletionLoading ? (
@@ -311,7 +244,7 @@ export default function ProfileSettings() {
                   <div className="h-2 bg-muted animate-pulse rounded" />
                 </div>
               ) : university ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">
@@ -327,18 +260,12 @@ export default function ProfileSettings() {
                     <Progress value={universityCompletion.percentage} className="h-2" />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {university.name}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => navigate('/university/profile')}
-                    >
-                      Edit Profile
-                      <ArrowUpRight className="h-4 w-4" />
-                    </Button>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{university.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Keep your university details complete to unlock full visibility.
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -355,6 +282,83 @@ export default function ProfileSettings() {
                     Create Profile
                     <ArrowUpRight className="h-4 w-4" />
                   </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-6">
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5" />
+                  Profile Completion
+                </CardTitle>
+                <CardDescription>
+                  Complete your profile to get the most out of your account
+                </CardDescription>
+              </div>
+              <Button asChild variant="outline" size="sm" className="gap-2">
+                <Link to={completionLink}>
+                  Continue profile
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{completionPercentage}% Complete</span>
+                </div>
+                <Progress value={completionPercentage} className="h-2" />
+              </div>
+
+              {/* Role-specific stats */}
+              {roleData?.type === 'agent' && roleData.data && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Briefcase className="h-4 w-4" />
+                    <span className="font-semibold">Agent Info</span>
+                  </div>
+                    <div className="grid gap-4 text-sm sm:grid-cols-2">
+                      <div>
+                        <span className="text-muted-foreground block">Referral Username</span>
+                        <p className="font-mono font-bold">
+                          {profile.username ? `@${profile.username}` : 'Not assigned'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">Referral Link</span>
+                        <p className="font-mono break-all">
+                          {referralLink || 'Available after username is set'}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">Direct Referrals</span>
+                        <p className="font-bold">{referralSummary.direct}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block">Level 2 Referrals</span>
+                        <p className="font-bold">{referralSummary.levelTwo}</p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <span className="text-muted-foreground block">Referral Earnings</span>
+                        <p className="font-bold">{formattedReferralEarnings}</p>
+                      </div>
+                    </div>
+                </div>
+              )}
+
+              {roleData?.type === 'student' && applicationsData && (
+                <div className="mt-4 p-4 bg-muted rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-4 w-4" />
+                    <span className="font-semibold">Application Status</span>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Active Applications:</span>
+                    <p className="font-bold text-lg">{applicationsData.length}</p>
+                  </div>
                 </div>
               )}
             </CardContent>
