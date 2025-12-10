@@ -48,7 +48,7 @@ const Index = () => {
   // HERO CTAs
   const heroCtas = useMemo(() => [{
     key: "students" as const,
-    href: "/auth/signup?role=student",
+    href: "/onboarding/welcome",
     image: studentsStudyingGroup
   }, {
     key: "agents" as const,
