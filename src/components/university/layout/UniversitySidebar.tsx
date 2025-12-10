@@ -117,12 +117,12 @@ export const UniversitySidebar = ({
                     end={item.to === "/university"}
                     className={({ isActive }) =>
                       cn(
-                        "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
-                        "hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200",
+                        "hover:bg-muted hover:text-slate-900 dark:hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         collapsed && "justify-center px-3",
                         isActive
                           ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-foreground/80",
+                          : "text-slate-900 dark:text-foreground/90",
                       )
                     }
                     onClick={onNavigate}
@@ -134,12 +134,12 @@ export const UniversitySidebar = ({
                             "h-5 w-5 transition-transform duration-200",
                             isActive
                               ? "scale-110 text-primary-foreground"
-                              : "text-foreground/70",
+                              : "text-slate-900 dark:text-foreground/70",
                           )}
                         />
                         <span
                           className={cn(
-                            "whitespace-nowrap",
+                            "whitespace-nowrap text-slate-900 dark:text-foreground",
                             collapsed && "sr-only",
                           )}
                         >
