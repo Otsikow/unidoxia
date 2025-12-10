@@ -36,47 +36,6 @@ export interface UniversityDirectoryItem {
 
 export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
   {
-    id: "pineapple",
-    name: "Pineapple University",
-    city: "Vienna",
-    country: "Austria",
-    region: "Europe",
-    institutionType: "Private research university",
-    founded: 1928,
-    ranking: 11,
-    acceptanceRate: 12,
-    programCount: 180,
-    description:
-      "Industry-focused European university known for blending hospitality, business innovation, and applied AI across all courses.",
-    focusAreas: [
-      "Hospitality Management",
-      "Business Innovation",
-      "Data Science",
-      "Sustainability",
-      "Design & Experience",
-    ],
-    notablePrograms: [
-      "Global Hospitality Leadership",
-      "International Business & Innovation",
-      "Applied Data Science for Services",
-    ],
-    badges: ["Partner Agents", "Applied AI"],
-    website: "https://pineapple.university",
-    averageTuitionInternational: 32000,
-    tuitionDisplay: "€24k–€32k per year",
-    studentBody: {
-      total: 18000,
-      internationalPercentage: 52,
-    },
-    researchHighlights: [
-      "AI-driven guest experience labs with hospitality partners",
-      "Sustainability accelerator for circular campus operations",
-    ],
-    employabilityRank: 12,
-    imageUrl:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80",
-  },
-  {
     id: "oxford",
     name: "University of Oxford",
     city: "Oxford",
@@ -85,7 +44,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     institutionType: "Public research university",
     founded: 1096,
     ranking: 1,
-    acceptanceRate: 17,
+    acceptanceRate: 14,
     programCount: 350,
     description:
       "World's oldest English-speaking university renowned for tutorial system, groundbreaking research, and prestigious global reputation.",
@@ -103,8 +62,8 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     ],
     badges: ["Russell Group", "Oxbridge"],
     website: "https://www.ox.ac.uk",
-    averageTuitionInternational: 35000,
-    tuitionDisplay: "£26k–£39k per year",
+    averageTuitionInternational: 36000,
+    tuitionDisplay: "£28k–£44k per year",
     studentBody: {
       total: 24000,
       internationalPercentage: 43,
@@ -124,7 +83,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     institutionType: "Public research university",
     founded: 1209,
     ranking: 2,
-    acceptanceRate: 21,
+    acceptanceRate: 18,
     programCount: 330,
     description:
       "Historic collegiate university with exceptional research output, Nobel Prize winners, and world-class STEM programs.",
@@ -142,8 +101,8 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     ],
     badges: ["Russell Group", "Oxbridge"],
     website: "https://www.cam.ac.uk",
-    averageTuitionInternational: 35000,
-    tuitionDisplay: "£24k–£63k per year",
+    averageTuitionInternational: 38000,
+    tuitionDisplay: "£24k–£64k per year",
     studentBody: {
       total: 24000,
       internationalPercentage: 39,
