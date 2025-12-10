@@ -96,9 +96,9 @@ const createDefaultProgram = (): NewProgram => ({
   active: true,
 });
 
-const createDefaultUniversityForm = () => ({
+const createDefaultUniversityForm = (country = '') => ({
   name: '',
-  country: '',
+  country,
   city: '',
   website: '',
   logo_url: '',
@@ -125,7 +125,15 @@ export default function UniversityDashboard() {
   const [newProgram, setNewProgram] = useState<NewProgram>(() => createDefaultProgram());
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
   const [creatingUniversity, setCreatingUniversity] = useState(false);
-  const [universityForm, setUniversityForm] = useState(() => createDefaultUniversityForm());
+  const [universityForm, setUniversityForm] = useState(() =>
+    createDefaultUniversityForm(profile?.country ?? '')
+  );
+
+  useEffect(() => {
+    if (!university && !universityForm.country && profile?.country) {
+      setUniversityForm((prev) => ({ ...prev, country: profile.country }));
+    }
+  }, [profile?.country, university, universityForm.country]);
 
   const fetchData = useCallback(async () => {
     if (!profile?.tenant_id) {
@@ -456,7 +464,7 @@ export default function UniversityDashboard() {
       });
 
       setIsSetupModalOpen(false);
-      setUniversityForm(createDefaultUniversityForm());
+      setUniversityForm(createDefaultUniversityForm(profile?.country ?? ''));
 
       await fetchData();
     } catch (error) {
@@ -663,7 +671,7 @@ export default function UniversityDashboard() {
           onOpenChange={(open) => {
             setIsSetupModalOpen(open);
             if (!open) {
-              setUniversityForm(createDefaultUniversityForm());
+              setUniversityForm(createDefaultUniversityForm(profile?.country ?? ''));
             }
           }}
         >

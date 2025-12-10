@@ -429,6 +429,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ...data,
         };
 
+        const countryFromMetadata =
+          typeof currentUser?.user_metadata?.country === 'string'
+            ? currentUser.user_metadata.country.trim()
+            : '';
+
+        if (!normalizedProfile.country && countryFromMetadata) {
+          const { data: countryUpdatedProfile, error: countryUpdateError } = await supabase
+            .from('profiles')
+            .update({ country: countryFromMetadata })
+            .eq('id', userId)
+            .select('*')
+            .single();
+
+          if (countryUpdateError) {
+            console.error('Failed to backfill profile country from signup metadata:', countryUpdateError);
+          } else if (countryUpdatedProfile) {
+            normalizedProfile.country = countryUpdatedProfile.country;
+          }
+        }
+
         const profileWithVerification = await ensurePartnerEmailVerification(
           normalizedProfile,
           currentUser,
