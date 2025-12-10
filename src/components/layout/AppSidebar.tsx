@@ -142,11 +142,11 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="relative border-r bg-background/95 transition-[width] duration-300 ease-in-out backdrop-blur supports-[backdrop-filter]:bg-background/90 data-[state=expanded]:w-[clamp(14rem,18vw,16rem)] data-[state=collapsed]:w-[4.25rem]"
+      className="relative border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out backdrop-blur supports-[backdrop-filter]:bg-sidebar/95 data-[state=expanded]:w-[clamp(14rem,18vw,16rem)] data-[state=collapsed]:w-[4.25rem]"
     >
       <SidebarRail className="hidden sm:flex" />
       {/* Header */}
-      <SidebarHeader className="border-b p-3 md:p-4">
+      <SidebarHeader className="border-b border-sidebar-border p-3 md:p-4">
         <div className="flex items-center gap-2 md:gap-3">
           <img
             src={unidoxiaLogo}
@@ -156,7 +156,7 @@ export function AppSidebar() {
           {state !== "collapsed" && (
             <div className="min-w-0 flex-1">
               <h2 className="font-bold text-base md:text-lg truncate">UniDoxia</h2>
-              <p className="text-xs text-muted-foreground capitalize truncate">
+              <p className="text-xs text-sidebar-foreground/70 capitalize truncate">
                 {rolesLoading ? "Loading..." : formatRoleLabel(primaryRole)}
               </p>
             </div>
@@ -172,7 +172,7 @@ export function AppSidebar() {
       <SidebarContent className="scrollbar-hide">
         <SidebarGroup>
           {state !== "collapsed" && (
-            <SidebarGroupLabel className="text-xs px-3">Navigation</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs px-3 text-sidebar-foreground/60">Navigation</SidebarGroupLabel>
           )}
           <SidebarGroupContent>
             <SidebarMenu>
@@ -190,10 +190,10 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={cn(
-                        "group relative overflow-hidden border border-transparent",
+                        "group relative overflow-hidden border border-transparent text-sidebar-foreground",
                         isActive
                           ? "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary ring-1 ring-primary/40 shadow-[0_10px_30px_-15px_rgba(59,130,246,0.55)]"
-                          : "hover:border-accent hover:bg-accent/70 hover:translate-x-1"
+                          : "hover:border-sidebar-border/80 hover:bg-sidebar-accent/70 hover:translate-x-1"
                       )}
                     >
                       <NavLink
@@ -233,7 +233,7 @@ export function AppSidebar() {
                         </div>
                         {state !== "collapsed" && (
                           <>
-                            <span className="truncate text-sm font-medium text-foreground">
+                            <span className="truncate text-sm font-medium text-sidebar-foreground">
                               {item.title}
                             </span>
                             {item.title === "Notifications" && unreadCount > 0 && (
@@ -257,14 +257,14 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t p-3 md:p-4">
+      <SidebarFooter className="border-t border-sidebar-border p-3 md:p-4">
         <div className="space-y-2">
           {state !== "collapsed" && (
-            <div className="px-2.5 md:px-3 py-2 bg-muted rounded-lg">
-              <p className="text-xs md:text-sm font-medium truncate">
+            <div className="px-2.5 md:px-3 py-2 bg-sidebar-accent/60 rounded-lg">
+              <p className="text-xs md:text-sm font-medium truncate text-sidebar-foreground">
                 {profile?.full_name}
               </p>
-              <p className="text-[10px] md:text-xs text-muted-foreground truncate">
+              <p className="text-[10px] md:text-xs text-sidebar-foreground/75 truncate">
                 {profile?.email}
               </p>
             </div>
@@ -272,7 +272,7 @@ export function AppSidebar() {
           <Button
             variant="ghost"
             size={state === "collapsed" ? "icon" : "sm"}
-            className="w-full justify-start"
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/70"
             onClick={() => navigate("/profile/settings")}
           >
             <Settings className="h-4 w-4 flex-shrink-0" />
@@ -281,7 +281,7 @@ export function AppSidebar() {
           <Button
             variant="ghost"
             size={state === "collapsed" ? "icon" : "sm"}
-            className="w-full justify-start"
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent/70"
             onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4 flex-shrink-0" />
