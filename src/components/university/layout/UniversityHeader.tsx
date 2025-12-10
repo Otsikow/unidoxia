@@ -71,7 +71,7 @@ export const UniversityHeader = ({
       avatarUrl: partnerBranding.avatarUrl,
       contactEmail: partnerBranding.contactEmail,
       contactName: partnerBranding.contactName,
-      roleLabel: partnerBranding.roleLabel as const,
+      roleLabel: partnerBranding.roleLabel,
     }),
     [
       partnerBranding.avatarUrl,

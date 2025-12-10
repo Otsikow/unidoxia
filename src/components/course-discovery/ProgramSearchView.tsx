@@ -336,7 +336,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
           .eq("active", true)
       ]);
 
-      let programs = programsResult.data || [];
+      let programs: Program[] = [];
 
       if (programsResult.error) {
         const missingColumn =
@@ -353,7 +353,30 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
 
         const fallbackResult = await fallbackQuery;
         if (fallbackResult.error) throw fallbackResult.error;
-        programs = (fallbackResult.data || []).map((p) => ({ ...p, image_url: null }));
+        programs = (fallbackResult.data || []).map((p) => ({ 
+          id: p.id,
+          name: p.name,
+          level: p.level,
+          discipline: p.discipline,
+          tuition_amount: p.tuition_amount,
+          tuition_currency: p.tuition_currency,
+          duration_months: p.duration_months,
+          university_id: p.university_id,
+          image_url: null 
+        }));
+      } else {
+        const data = programsResult.data || [];
+        programs = data.map((p: any) => ({ 
+          id: p.id,
+          name: p.name,
+          level: p.level,
+          discipline: p.discipline,
+          tuition_amount: p.tuition_amount,
+          tuition_currency: p.tuition_currency,
+          duration_months: p.duration_months,
+          university_id: p.university_id,
+          image_url: p.image_url ?? null 
+        }));
       }
       const scholarships = scholarshipsResult.data || [];
 
