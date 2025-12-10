@@ -124,7 +124,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
-                  className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary-foreground bg-clip-text text-transparent"
+                  className="text-2xl md:text-3xl font-semibold text-primary"
                 >
                   Discover Your Perfect Program
                 </motion.h2>
