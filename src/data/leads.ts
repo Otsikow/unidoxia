@@ -102,7 +102,6 @@ export const getStudent = async (
           current_country,
           created_at,
           updated_at,
-          destination_countries,
           profile:profiles (
             id,
             full_name,
