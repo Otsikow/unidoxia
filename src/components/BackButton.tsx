@@ -89,6 +89,13 @@ export default function BackButton({
           return;
         }
 
+        // Next, try the browser history stack if available
+        const canNavigateBrowserHistory = typeof window !== "undefined" && window.history.state?.idx > 0;
+        if (canNavigateBrowserHistory) {
+          navigate(-1);
+          return;
+        }
+
         // Otherwise, always use the fallback route
         // Note: We don't rely on window.history.length because it may include
         // external pages or pages from before the user entered our app
@@ -98,7 +105,7 @@ export default function BackButton({
         handleFallbackNavigation();
       }
     },
-    [disabled, handleFallbackNavigation, immediatePrevious, navigateTo, onClick],
+    [disabled, handleFallbackNavigation, immediatePrevious, navigate, navigateTo, onClick],
   );
 
   const handleClearHistory = React.useCallback(
