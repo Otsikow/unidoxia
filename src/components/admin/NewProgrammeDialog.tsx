@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -209,7 +210,7 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden p-0">
+      <DialogContent className="flex h-[85vh] w-[95vw] max-w-3xl flex-col overflow-hidden p-0 sm:h-[90vh]">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
           <DialogTitle>Create New Course</DialogTitle>
           <DialogDescription>
@@ -217,8 +218,12 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6">
-          <form id="new-programme-form" onSubmit={handleSubmit} className="grid gap-4 pb-4 sm:grid-cols-2">
+        <ScrollArea className="min-h-0 flex-1 px-6 py-2">
+          <form
+            id="new-programme-form"
+            onSubmit={handleSubmit}
+            className="grid gap-4 pb-6 sm:grid-cols-2"
+          >
             {/* Course Name */}
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="name">Course Name *</Label>
@@ -402,10 +407,16 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
               />
             </div>
           </form>
-        </div>
+        </ScrollArea>
 
         <DialogFooter className="shrink-0 flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading} className="w-full sm:w-auto">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
             Cancel
           </Button>
           <Button type="submit" form="new-programme-form" disabled={loading} className="w-full sm:w-auto">
