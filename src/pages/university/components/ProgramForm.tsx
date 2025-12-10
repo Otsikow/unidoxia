@@ -86,17 +86,6 @@ export const programSchema = z.object({
 
 export type ProgramFormValues = z.infer<typeof programSchema>;
 
-const extractStorageObject = (url: string | null | undefined) => {
-  if (!url) return null;
-  const match = url.match(/storage\/v1\/object\/public\/([^?]+)/);
-  if (!match) return null;
-
-  const [bucket, ...pathParts] = match[1].split("/");
-  if (!bucket || pathParts.length === 0) return null;
-
-  return { bucket, path: pathParts.join("/") };
-};
-
 interface ProgramFormProps {
   initialValues: ProgramFormValues;
   onSubmit: (values: ProgramFormValues) => Promise<void> | void;
@@ -135,13 +124,6 @@ export default function ProgramForm({
   useEffect(() => {
     form.reset(initialValues);
   }, [initialValues]);
-
-  const removeImage = async (url: string | null) => {
-    const obj = extractStorageObject(url);
-    if (!obj) return;
-
-    await supabase.storage.from(obj.bucket).remove([obj.path]);
-  };
 
   const handleFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -191,11 +173,6 @@ export default function ProgramForm({
         .from(PROGRAM_IMAGE_BUCKET)
         .getPublicUrl(storagePath);
 
-      const previousUrl = form.getValues("imageUrl");
-      if (previousUrl) {
-        await removeImage(previousUrl);
-      }
-
       form.setValue("imageUrl", publicUrlData.publicUrl, { shouldValidate: true });
 
       toast({ title: "Image uploaded" });
@@ -209,10 +186,6 @@ export default function ProgramForm({
   };
 
   const handleRemoveImage = async () => {
-    const url = form.getValues("imageUrl");
-    if (url) {
-      await removeImage(url);
-    }
     form.setValue("imageUrl", null, { shouldValidate: true });
   };
 
