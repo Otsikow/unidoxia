@@ -363,6 +363,101 @@ All colors MUST be HSL.
     display: none;  /* Chrome, Safari and Opera */
   }
 
+  /* Journey marquee animation */
+  .journey-marquee {
+    @apply relative overflow-hidden rounded-[32px] border border-primary/10 bg-gradient-to-b from-background/40 via-background/60 to-background/30 px-2 py-4 sm:px-3;
+    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
+    --marquee-duration: 50s;
+    --item-count: 10;
+    --marquee-blur: 8px;
+    --marquee-focus-boost: 1.08;
+    --marquee-focus-contrast: 1.05;
+  }
+
+  .journey-marquee__glow {
+    @apply pointer-events-none absolute inset-0 rounded-[32px] bg-gradient-to-r from-primary/10 via-primary/5 to-cyan-400/10 blur-2xl;
+  }
+
+  .journey-marquee__fade {
+    @apply pointer-events-none absolute top-0 h-full w-16 sm:w-24 lg:w-32;
+    background: linear-gradient(to right, rgba(10, 16, 34, 0.85), transparent);
+    mix-blend-mode: screen;
+  }
+
+  .journey-marquee__fade--left {
+    left: 0;
+  }
+
+  .journey-marquee__fade--right {
+    right: 0;
+    transform: scaleX(-1);
+  }
+
+  .journey-marquee__track {
+    display: flex;
+    gap: 0.75rem;
+    width: max-content;
+    animation: journeyMarquee var(--marquee-duration, 50s) linear infinite;
+    will-change: transform;
+  }
+
+  .journey-marquee__track:hover {
+    animation-play-state: paused;
+  }
+
+  .journey-marquee:hover .journey-marquee__track,
+  .journey-marquee:hover .journey-marquee__item,
+  .journey-marquee:hover .journey-marquee__card {
+    animation-play-state: paused;
+  }
+
+  .journey-marquee__item {
+    padding: 0.5rem;
+    flex: 0 0 auto;
+    width: clamp(260px, 24vw, 320px);
+    animation: journeyCardFade var(--marquee-duration, 50s) linear infinite;
+    animation-delay: calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)));
+    will-change: opacity, filter;
+  }
+
+  .journey-marquee__card-wrapper {
+    position: relative;
+    height: 100%;
+    perspective: 1200px;
+  }
+
+  .journey-marquee__card {
+    box-shadow: 0 25px 60px -30px rgba(0, 0, 0, 0.45), 0 12px 30px -20px rgba(0, 0, 0, 0.3);
+    transform: translateZ(0);
+    animation:
+      journeyFloat 8s ease-in-out infinite alternate,
+      journeyFocus var(--marquee-duration, 50s) linear infinite;
+    animation-delay:
+      0s,
+      calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)) +
+        (var(--marquee-duration, 50s) / (var(--item-count, 10) * 2)));
+    will-change: transform, opacity, filter;
+    backdrop-filter: blur(6px) saturate(1.1);
+    transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+  }
+
+  .journey-marquee__card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    opacity: 0.12;
+    pointer-events: none;
+  }
+
+  .journey-marquee__card:hover {
+    transform: translate3d(0, -4px, 10px) scale(1.02);
+    filter: brightness(1.05) saturate(1.05);
+    box-shadow: 0 28px 80px -40px rgba(0, 199, 255, 0.5), 0 18px 48px -24px rgba(0, 0, 0, 0.45);
+  }
+
   /* Animation utilities */
   .animate-delay-100 {
     animation-delay: 100ms;
@@ -686,6 +781,12 @@ All colors MUST be HSL.
     .button-border-beam::after {
       animation: none !important;
     }
+
+    .journey-marquee__track,
+    .journey-marquee__item,
+    .journey-marquee__card {
+      animation: none !important;
+    }
   }
 }
 
@@ -704,6 +805,54 @@ All colors MUST be HSL.
   }
   100% {
     clip-path: inset(0 100% 100% 0);
+  }
+}
+
+@keyframes journeyMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes journeyCardFade {
+  0%,
+  4% {
+    opacity: 0;
+    filter: blur(var(--marquee-blur, 8px));
+  }
+  10%,
+  90% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  96%,
+  100% {
+    opacity: 0;
+    filter: blur(var(--marquee-blur, 8px));
+  }
+}
+
+@keyframes journeyFocus {
+  0%,
+  15%,
+  85%,
+  100% {
+    filter: brightness(1) contrast(1);
+  }
+  50% {
+    filter: brightness(var(--marquee-focus-boost, 1.08)) contrast(var(--marquee-focus-contrast, 1.05));
+  }
+}
+
+@keyframes journeyFloat {
+  0% {
+    transform: translate3d(0, 0px, 0);
+  }
+  100% {
+    transform: translate3d(0, -6px, 8px);
   }
 }
 

@@ -1,16 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronRight, Compass, ClipboardList, MessageCircle, Radar, PlaneTakeoff } from "lucide-react";
-
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel";
 
 interface JourneySegmentConfig {
   key: "discover" | "plan" | "collaborate" | "submit" | "celebrate";
@@ -30,9 +21,6 @@ const SEGMENT_CONFIG: JourneySegmentConfig[] = [
 export const JourneyRibbon = () => {
   const { t } = useTranslation();
 
-  const [api, setApi] = useState<CarouselApi | null>(null);
-  const [isHovering, setIsHovering] = useState(false);
-
   const segments = useMemo(
     () =>
       SEGMENT_CONFIG.map((segment) => {
@@ -51,35 +39,43 @@ export const JourneyRibbon = () => {
     [t],
   );
 
-  useEffect(() => {
-    if (!api) return;
+  const marqueeSegments = useMemo(() => {
+    // Duplicate the data set to ensure a seamless, jitter-free marquee loop.
+    return Array.from({ length: 2 }, (_, loopIndex) =>
+      segments.map((segment) => ({ ...segment, loopIndex })),
+    ).flat();
+  }, [segments]);
 
-    const timer = window.setInterval(() => {
-      if (isHovering) return;
-      api.scrollNext();
-    }, 5000);
-
-    return () => window.clearInterval(timer);
-  }, [api, isHovering]);
+  const marqueeDurationSeconds = useMemo(
+    () => Math.max(48, segments.length * 10),
+    [segments.length],
+  );
 
   return (
     <div className="relative mx-auto mt-8 max-w-6xl px-4 sm:mt-12 sm:px-6 lg:mt-16">
       <div className="absolute inset-0 -translate-y-6 scale-105 rounded-[40px] bg-primary/10 blur-3xl" />
 
-      <Carousel
-        opts={{ loop: true, align: "start" }}
-        setApi={setApi}
-        className="relative"
-        onMouseEnter={() => setIsHovering(true)}
-        onMouseLeave={() => setIsHovering(false)}
-      >
-        <CarouselContent className="-ml-3 sm:-ml-4">
-          {segments.map((segment) => (
-            <CarouselItem key={segment.key} className="pl-3 sm:pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-              <div className="relative h-full">
-                <div className="pointer-events-none absolute inset-y-10 -right-8 hidden w-16 rotate-3 bg-gradient-to-r from-white/10 via-primary/10 to-transparent blur-xl xl:block" />
+      <div className="journey-marquee" aria-label="UniDoxia journey metrics marquee">
+        <div className="journey-marquee__glow" />
+        <div className="journey-marquee__fade journey-marquee__fade--left" />
+        <div className="journey-marquee__fade journey-marquee__fade--right" />
+
+        <div
+          className="journey-marquee__track"
+          style={{
+            ["--marquee-duration" as string]: `${marqueeDurationSeconds}s`,
+            ["--item-count" as string]: marqueeSegments.length,
+          }}
+        >
+          {marqueeSegments.map((segment, index) => (
+            <div
+              key={`${segment.key}-${index}`}
+              className="journey-marquee__item"
+              style={{ ["--item-index" as string]: index }}
+            >
+              <div className="journey-marquee__card-wrapper">
                 <div
-                  className={`group relative flex h-full min-h-[280px] flex-col overflow-hidden rounded-2xl bg-gradient-to-br p-5 text-left text-white shadow-lg transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl active:scale-[0.98] sm:min-h-[300px] sm:rounded-3xl sm:p-6 ${segment.gradient}`}
+                  className={`journey-marquee__card group relative flex h-full min-h-[280px] flex-col overflow-hidden rounded-2xl bg-gradient-to-br p-5 text-left text-white shadow-lg sm:min-h-[300px] sm:rounded-3xl sm:p-6 ${segment.gradient}`}
                 >
                   <div className="flex items-center gap-2.5 text-xs uppercase tracking-wide text-white/80 sm:gap-3 sm:text-sm">
                     <segment.icon className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" />
@@ -110,13 +106,10 @@ export const JourneyRibbon = () => {
                   </div>
                 </div>
               </div>
-            </CarouselItem>
+            </div>
           ))}
-        </CarouselContent>
-
-        <CarouselPrevious className="-left-10 top-1/2 hidden -translate-y-1/2 sm:flex" />
-        <CarouselNext className="-right-10 top-1/2 hidden -translate-y-1/2 sm:flex" />
-      </Carousel>
+        </div>
+      </div>
     </div>
   );
 };
