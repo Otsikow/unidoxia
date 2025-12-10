@@ -38,7 +38,7 @@ export const INTAKE_MONTH_OPTIONS = Array.from({ length: 12 }, (_, index) => {
 
 const CURRENCY_OPTIONS = ["USD", "CAD", "GBP", "EUR", "AUD", "NZD", "SGD"];
 
-const PROGRAM_IMAGE_BUCKET = "university-media";
+const PROGRAM_IMAGE_BUCKET = "course-images";
 const PROGRAM_IMAGE_FOLDER = "program-images";
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];

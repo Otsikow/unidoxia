@@ -9,6 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const monthFormatter = new Intl.DateTimeFormat(undefined, { month: "short" });
 
@@ -61,11 +62,18 @@ export default function ProgramViewDialog({
           <div className="space-y-4 text-sm">
             {/* IMAGE */}
             {program.image_url && (
-              <img
-                src={program.image_url}
-                alt={program.name}
-                className="w-full max-h-48 object-cover rounded-md"
-              />
+              <div className="overflow-hidden rounded-lg border border-border bg-muted/60 shadow-sm">
+                <AspectRatio ratio={16 / 9}>
+                  <img
+                    src={program.image_url}
+                    alt={program.name}
+                    className="h-full w-full object-cover"
+                    onError={(event) => {
+                      (event.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                  />
+                </AspectRatio>
+              </div>
             )}
 
             {/* DETAILS GRID */}
