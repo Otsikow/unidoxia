@@ -359,6 +359,9 @@ function UniversityMessagesPage() {
   }, [currentConversation, removeConversation, setCurrentConversation, toast]);
 
   /* ------------------------------- UI Layout ------------------------------- */
+  const panelHeightClasses =
+    "min-h-[65vh] md:min-h-[72vh] xl:h-[calc(100vh-16rem)] xl:min-h-[640px]";
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col gap-6">
       <header
@@ -455,10 +458,13 @@ function UniversityMessagesPage() {
         </section>
       ) : (
         <>
-          <div className="flex flex-1 gap-4 lg:gap-6">
+          <div
+            className="grid flex-1 grid-cols-1 gap-4 lg:gap-6 md:grid-cols-[360px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)_420px]"
+          >
             <section
               className={withUniversityCardStyles(
-                "flex h-[calc(100vh-14rem)] w-full flex-col overflow-hidden rounded-3xl text-card-foreground md:w-[360px] lg:w-[380px]"
+                "flex w-full flex-col overflow-hidden rounded-3xl text-card-foreground md:w-full lg:w-full xl:w-auto",
+                panelHeightClasses
               )}
             >
               <ChatList
@@ -473,7 +479,8 @@ function UniversityMessagesPage() {
 
             <section
               className={withUniversityCardStyles(
-                "hidden h-[calc(100vh-14rem)] flex-1 overflow-hidden rounded-3xl text-card-foreground md:flex"
+                "hidden min-w-0 flex-1 overflow-hidden rounded-3xl text-card-foreground md:flex",
+                panelHeightClasses
               )}
             >
               <ChatArea
@@ -492,7 +499,8 @@ function UniversityMessagesPage() {
 
             <section
               className={withUniversityCardStyles(
-                "hidden h-[calc(100vh-14rem)] w-full max-w-xl overflow-hidden rounded-3xl text-card-foreground xl:flex"
+                "hidden min-w-0 w-full overflow-hidden rounded-3xl text-card-foreground xl:flex",
+                panelHeightClasses
               )}
             >
               <ErrorBoundary fallback={<ZoeAssistantErrorState />}>
