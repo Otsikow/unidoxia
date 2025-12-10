@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -18,9 +18,19 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const { signIn, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      setIsRedirecting(true);
+      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/dashboard';
+      navigate(redirectTo, { replace: true });
+    }
+  }, [authLoading, user, location.state, navigate]);
 
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -90,6 +100,17 @@ const Login = () => {
       }, 1500);
     }
   };
+
+    if (isRedirecting) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">You are already signed in. Redirecting to your dashboard...</p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
