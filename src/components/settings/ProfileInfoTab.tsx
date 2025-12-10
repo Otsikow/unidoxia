@@ -17,6 +17,9 @@ interface ProfileInfoTabProps {
   roleData: any;
 }
 
+const PROFILE_PHOTOS_BUCKET =
+  import.meta.env.VITE_SUPABASE_PROFILE_PHOTOS_BUCKET || 'profile-photos';
+
 const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
   const { toast } = useToast();
   const { refreshProfile, user } = useAuth();
@@ -88,7 +91,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
         const oldPath = profile.avatar_url.split('/').pop();
         if (oldPath) {
           await supabase.storage
-            .from('profile-photos')
+            .from(PROFILE_PHOTOS_BUCKET)
             .remove([`${profile.id}/${oldPath}`]);
         }
       }
@@ -98,7 +101,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       const fileName = `${profile.id}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('profile-photos')
+        .from(PROFILE_PHOTOS_BUCKET)
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
@@ -108,7 +111,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
 
       // Get public URL
       const { data } = supabase.storage
-        .from('profile-photos')
+        .from(PROFILE_PHOTOS_BUCKET)
         .getPublicUrl(fileName);
 
       // Update profile with new avatar URL
@@ -127,9 +130,14 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       });
     } catch (error: any) {
       console.error('Error uploading photo:', error);
+      const bucketMessage =
+        error?.message?.toLowerCase().includes('bucket not found')
+          ? 'Profile photo storage is not configured. Please verify the Supabase storage bucket exists or set VITE_SUPABASE_PROFILE_PHOTOS_BUCKET to a valid bucket name.'
+          : error.message || 'Failed to upload profile photo';
+
       toast({
         title: 'Upload failed',
-        description: error.message || 'Failed to upload profile photo',
+        description: bucketMessage,
         variant: 'destructive',
       });
     } finally {
