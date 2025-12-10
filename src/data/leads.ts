@@ -86,28 +86,56 @@ export const getStudent = async (
     throw new Error("Missing tenant context for student lookup");
   }
 
-  const { data, error } = await supabase.rpc("get_students_by_tenant", {
-    p_tenant_id: tenantId,
-  });
+  const { data, error } = await supabase
+    .from("agent_student_links")
+    .select(
+      `
+        status,
+        student:students (
+          id,
+          tenant_id,
+          profile_id,
+          legal_name,
+          preferred_name,
+          contact_email,
+          contact_phone,
+          current_country,
+          created_at,
+          updated_at,
+          destination_countries,
+          profile:profiles (
+            id,
+            full_name,
+            email,
+            phone,
+            country,
+            onboarded,
+            username
+          )
+        )
+      `,
+    )
+    .eq("student_id", studentId)
+    .eq("status", "active")
+    .eq("student.tenant_id", tenantId)
+    .maybeSingle();
 
   if (error) {
     console.error("Error fetching student:", error);
     throw error;
   }
 
-  const studentRow = data?.find((row: any) => row.student_id === studentId);
-  const tenantStudent = studentRow?.student as Record<string, any> | undefined;
+  const tenantStudent = data?.student as Record<string, any> | undefined;
 
   if (!tenantStudent || typeof tenantStudent !== "object") {
     throw new Error("Student not found");
   }
 
-  const preferredName = tenantStudent.preferred_name as string | undefined;
-  const legalName = tenantStudent.legal_name as string | undefined;
+  const preferredName = (tenantStudent.preferred_name as string | undefined)?.trim();
+  const legalName = (tenantStudent.legal_name as string | undefined)?.trim();
   const profile = tenantStudent.profile as Record<string, any> | undefined;
-  const nameParts = (
-    preferredName || legalName || profile?.full_name || ""
-  ).split(" ");
+  const profileName = (profile?.full_name as string | undefined)?.trim();
+  const nameParts = (preferredName || legalName || profileName || "").split(" ");
   const firstName = nameParts.shift() || "";
   const lastName = nameParts.join(" ");
   const baseLead: LeadCore = {
@@ -118,6 +146,7 @@ export const getStudent = async (
     country: (tenantStudent.current_country as string) || profile?.country || "",
     status: profile?.onboarded ? "onboarded" : "pending",
   };
+
   return enrichLeadWithQualification(baseLead) as Lead;
 };
 
