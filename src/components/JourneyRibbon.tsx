@@ -75,21 +75,28 @@ export const JourneyRibbon = () => {
             >
               <div className="journey-marquee__card-wrapper">
                 <div
-                  className={`journey-marquee__card group relative flex h-full min-h-[280px] flex-col overflow-hidden rounded-2xl bg-gradient-to-br p-5 text-left text-white shadow-lg sm:min-h-[300px] sm:rounded-3xl sm:p-6 ${segment.gradient}`}
+                  className={`journey-marquee__card group relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl bg-gradient-to-br p-5 text-left text-white shadow-lg sm:min-h-[320px] sm:rounded-3xl sm:p-6 ${segment.gradient}`}
                 >
-                  <div className="flex items-center gap-2.5 text-xs uppercase tracking-wide text-white/80 sm:gap-3 sm:text-sm">
-                    <segment.icon className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5" />
-                    <span className="max-w-[170px] text-left leading-tight text-white sm:max-w-[200px]">
-                      {segment.stage}
-                    </span>
+                  <div className="journey-marquee__card-overlay" aria-hidden />
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/15 bg-white/10 backdrop-blur-sm shadow-inner">
+                      <segment.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/90 shadow-sm sm:text-xs">
+                        {segment.stage}
+                      </span>
+                      <div className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-3xl font-bold leading-none drop-shadow-sm sm:text-4xl">{segment.metricValue}</span>
+                        <span className="max-w-[140px] break-words text-[11px] font-semibold uppercase text-white/80 sm:text-xs">
+                          {segment.metricLabel}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-4 flex flex-wrap items-baseline gap-2 sm:mt-6">
-                    <span className="text-3xl font-bold leading-none sm:text-4xl">{segment.metricValue}</span>
-                    <span className="max-w-[120px] break-words text-[10px] font-semibold uppercase text-white/70 sm:max-w-none sm:text-xs">
-                      {segment.metricLabel}
-                    </span>
-                  </div>
-                  <p className="mt-3 flex-1 text-xs leading-relaxed text-white/80 sm:mt-4 sm:text-sm">
+
+                  <p className="mt-4 flex-1 text-sm leading-relaxed text-white/90 sm:mt-5 sm:text-base">
                     {segment.description}
                   </p>
                   {segment.ctaHref && segment.ctaLabel && (
