@@ -51,13 +51,13 @@ import { SortableButton } from "@/components/SortableButton";
 import { useToast } from "@/hooks/use-toast";
 
 import { useAuth } from "@/hooks/useAuth";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTenantStudents } from "@/hooks/useTenantStudents";
 import { useSort } from "@/hooks/useSort";
 import type { AgentStudent } from "@/hooks/useAgentStudents";
 import { cn } from "@/lib/utils";
 import AgentInviteCodeManager from "./AgentInviteCodeManager";
 import InviteStudentDialog from "@/components/students/InviteStudentDialog";
+import BackButton from "@/components/BackButton";
 
 type SortableColumn = "country" | "status";
 
@@ -129,13 +129,6 @@ export default function AgentStudentsManager() {
   const { profile, loading: authLoading } = useAuth();
   const agentProfileId = profile?.id ?? null;
   const tenantId = profile?.tenant_id ?? null;
-  const firstName = useMemo(() => {
-    const fullName = profile?.full_name?.trim();
-    if (!fullName) return "Agent";
-
-    const [first] = fullName.split(/\s+/);
-    return first || "Agent";
-  }, [profile?.full_name]);
 
   const { data, isLoading, isFetching, isError, error, refetch } = useTenantStudents(tenantId);
 
@@ -252,29 +245,13 @@ export default function AgentStudentsManager() {
 
   return (
     <div className="space-y-6 min-w-0">
-      <Card className="bg-gradient-to-r from-primary/5 via-background to-background border border-primary/10">
-        <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1.5">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-primary">
-              Welcome back
-            </p>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold leading-tight">Hi, {firstName}</h1>
-              <Badge variant="secondary" className="text-xs">Agent</Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Here&rsquo;s a snapshot of your student roster and recent activity.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg border bg-background/80 px-4 py-3 shadow-sm">
-              <p className="text-xs text-muted-foreground">Current view</p>
-              <p className="text-sm font-medium">Students dashboard</p>
-            </div>
-            <ThemeToggle />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <BackButton variant="ghost" size="sm" fallback="/dashboard" />
+        <div className="rounded-lg border bg-background/80 px-3 py-2 shadow-sm text-sm">
+          <p className="font-semibold text-foreground">Students dashboard</p>
+          <p className="text-muted-foreground">Manage your roster and invites.</p>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1.5">
