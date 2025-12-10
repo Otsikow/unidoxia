@@ -66,7 +66,8 @@ const countries = [
     shortName: "Germany",
     flag: "🇩🇪",
     landmark: "Brandenburg Gate",
-    landmarkImage: "https://images.unsplash.com/photo-1526481280695-3c469c2f0b14?w=400&h=300&fit=crop",
+    landmarkImage:
+      "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80",
     color: "from-black to-yellow-500",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
