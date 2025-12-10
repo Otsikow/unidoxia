@@ -141,7 +141,8 @@ export const queryClient = new QueryClient({
    Lazy Imports — Public
    ========================================================================== */
 
-const Index = lazyWithErrorHandling(() => import("./pages/Index"));
+// Keep the landing page eager so the initial paint has no suspense delay
+import Index from "./pages/Index";
 const OnboardingWelcome = lazyWithErrorHandling(() => import("./pages/onboarding/Welcome"));
 const OnboardingStudentSuccess = lazyWithErrorHandling(() => import("./pages/onboarding/StudentSuccess"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
@@ -268,27 +269,79 @@ const UniversityProfileSettings = lazyWithErrorHandling(() => import("./pages/un
 const ZoeChatbot = lazyWithErrorHandling(() => import("./components/ai/AIChatbot"));
 
 /* ==========================================================================
+   Prefetching helpers
+   ========================================================================== */
+
+const PREFETCHED_IMPORTS = new Set<() => Promise<unknown>>();
+
+const canPrefetch = () => {
+  if (typeof navigator === "undefined") return false;
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  if (!connection) return true;
+  if (connection.saveData) return false;
+  if (connection.effectiveType && ["slow-2g", "2g"].includes(connection.effectiveType)) return false;
+  return true;
+};
+
+const schedulePrefetch = (imports: Array<() => Promise<unknown>>, timeout = 300) => {
+  if (!canPrefetch()) return;
+
+  const runPrefetch = () => {
+    imports.forEach((importFn) => {
+      if (PREFETCHED_IMPORTS.has(importFn)) return;
+      PREFETCHED_IMPORTS.add(importFn);
+      void importFn().catch((error) => {
+        console.warn("Prefetch failed", error);
+      });
+    });
+  };
+
+  if ("requestIdleCallback" in window) {
+    (window as typeof window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(runPrefetch);
+  } else {
+    setTimeout(runPrefetch, timeout);
+  }
+};
+
+const COMMON_ROUTE_IMPORTS: Array<() => Promise<unknown>> = [
+  () => import("./pages/auth/Login"),
+  () => import("./pages/auth/Signup"),
+  () => import("./pages/Dashboard"),
+  () => import("./pages/CourseDiscovery"),
+  () => import("./pages/Blog"),
+];
+
+const DASHBOARD_ROUTE_IMPORTS: Array<() => Promise<unknown>> = [
+  () => import("./pages/dashboard/StaffStudents"),
+  () => import("./pages/dashboard/StaffTasks"),
+  () => import("./pages/dashboard/StaffMessages"),
+  () => import("./pages/dashboard/ApplicationsRouter"),
+];
+
+const STUDENT_ROUTE_IMPORTS: Array<() => Promise<unknown>> = [
+  () => import("./pages/student/StudentProfile"),
+  () => import("./pages/student/Documents"),
+  () => import("./pages/student/Applications"),
+];
+
+const ADMIN_ROUTE_IMPORTS: Array<() => Promise<unknown>> = [
+  () => import("./pages/dashboards/AdminDashboard"),
+  () => import("./pages/admin/AdminOverview"),
+  () => import("./pages/admin/AdminUsers"),
+];
+
+const UNIVERSITY_ROUTE_IMPORTS: Array<() => Promise<unknown>> = [
+  () => import("./pages/university/UniversityDashboard"),
+  () => import("./pages/university/Overview"),
+  () => import("./pages/university/Applications"),
+];
+
+/* ==========================================================================
    Route Preloading - Prefetch common routes on idle
    ========================================================================== */
 
 // Preload commonly accessed routes after initial render
-const preloadCommonRoutes = () => {
-  // Use requestIdleCallback for non-blocking preload
-  const preload = () => {
-    // Auth routes - often accessed from landing
-    import("./pages/auth/Login");
-    import("./pages/auth/Signup");
-    // Dashboard - accessed after login
-    import("./pages/Dashboard");
-  };
-
-  if ("requestIdleCallback" in window) {
-    (window as typeof window & { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(preload);
-  } else {
-    // Fallback: delay preload
-    setTimeout(preload, 2000);
-  }
-};
+const preloadCommonRoutes = () => schedulePrefetch(COMMON_ROUTE_IMPORTS, 200);
 
 /* ==========================================================================
    Redirect Helper
@@ -305,6 +358,40 @@ const SearchRedirect = () => {
   // Preserve query parameters when redirecting from /search to /courses
   const destination = `/courses${location.search}${location.hash}`;
   return <Navigate to={destination} replace />;
+};
+
+/* ==========================================================================
+   Route Prefetcher
+   ========================================================================== */
+
+const RoutePrefetcher = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    schedulePrefetch(COMMON_ROUTE_IMPORTS, 100);
+  }, []);
+
+  useEffect(() => {
+    const { pathname } = location;
+
+    if (pathname.startsWith("/dashboard")) {
+      schedulePrefetch(DASHBOARD_ROUTE_IMPORTS, 120);
+    }
+
+    if (pathname.startsWith("/student")) {
+      schedulePrefetch(STUDENT_ROUTE_IMPORTS, 120);
+    }
+
+    if (pathname.startsWith("/admin")) {
+      schedulePrefetch(ADMIN_ROUTE_IMPORTS, 120);
+    }
+
+    if (pathname.startsWith("/university")) {
+      schedulePrefetch(UNIVERSITY_ROUTE_IMPORTS, 120);
+    }
+  }, [location.pathname]);
+
+  return null;
 };
 
 /* ==========================================================================
@@ -530,6 +617,7 @@ const App = () => {
 
                         <Route path="*" element={<NotFound />} />
                       </Routes>
+                      <RoutePrefetcher />
                     </div>
                     {shouldRenderChatbot && <ZoeChatbot />}
                   </div>
