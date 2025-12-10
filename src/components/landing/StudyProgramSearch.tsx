@@ -119,6 +119,25 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
 
             {/* Content */}
             <div className="relative z-10">
+              <div className="text-center space-y-3 mb-2">
+                <motion.h2
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                  className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-primary via-primary/80 to-primary-foreground bg-clip-text text-transparent"
+                >
+                  Discover Your Perfect Program
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.15 }}
+                  className="text-muted-foreground max-w-3xl mx-auto"
+                >
+                  Explore curated universities, destinations, and study levels tailored to your ambitions—start by searching what inspires you.
+                </motion.p>
+              </div>
+
               {/* Search Input and Filters Grid */}
               <div className="flex flex-col gap-5">
                 {/* Main Search Input */}
