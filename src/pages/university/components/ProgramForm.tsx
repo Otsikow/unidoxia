@@ -220,18 +220,18 @@ export default function ProgramForm({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden border border-border bg-background p-0">
+      <DialogContent className="flex h-[85vh] w-[95vw] max-w-3xl flex-col overflow-hidden border border-border bg-background p-0 sm:h-[90vh]">
         <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="min-h-0 flex-1 px-6">
+        <ScrollArea className="min-h-0 flex-1 px-6 py-2">
           <Form {...form}>
             <form
               id="program-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-5 pb-4"
+              className="space-y-5 pb-6"
             >
               {/* Name */}
               <FormField
