@@ -794,9 +794,24 @@ export const UniversityDashboardLayout = ({
   const queryClient = useQueryClient();
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("university-sidebar-collapsed") === "true";
+  });
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const tenantId = profile?.tenant_id ?? null;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(
+      "university-sidebar-collapsed",
+      String(isSidebarCollapsed),
+    );
+  }, [isSidebarCollapsed]);
+
+  const handleToggleSidebar = () =>
+    setIsSidebarCollapsed((previous) => !previous);
 
   // -----------------------------------------------------
   // REACT QUERY FETCH
@@ -1065,7 +1080,10 @@ export const UniversityDashboardLayout = ({
     <UniversityDashboardContext.Provider value={contextValue}>
       <div className="flex min-h-screen bg-background text-foreground">
         {/* Desktop Sidebar */}
-        <UniversitySidebar className="hidden lg:flex" />
+        <UniversitySidebar
+          className="hidden lg:flex"
+          collapsed={isSidebarCollapsed}
+        />
 
         {/* Mobile Sidebar */}
         <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
@@ -1084,6 +1102,8 @@ export const UniversityDashboardLayout = ({
         <div className="flex flex-col flex-1 min-h-screen">
           <UniversityHeader
             onToggleMobileNav={() => setMobileNavOpen(true)}
+            onToggleSidebar={handleToggleSidebar}
+            sidebarCollapsed={isSidebarCollapsed}
             onRefresh={() => void queryRefetch()}
             refreshing={isFetching}
           />

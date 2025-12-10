@@ -1,4 +1,11 @@
-import { Menu, RefreshCcw, Bell, LogOut } from "lucide-react";
+import {
+  Menu,
+  RefreshCcw,
+  Bell,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +34,8 @@ interface UniversityHeaderProps {
   onRefresh?: () => void;
   refreshing?: boolean;
   onToggleMobileNav?: () => void;
+  onToggleSidebar?: () => void;
+  sidebarCollapsed?: boolean;
 }
 
 const resolveSectionTitle = (pathname: string) => {
@@ -47,6 +56,8 @@ export const UniversityHeader = ({
   onRefresh,
   refreshing,
   onToggleMobileNav,
+  onToggleSidebar,
+  sidebarCollapsed = false,
 }: UniversityHeaderProps) => {
   const location = useLocation();
   const { profile, signOut } = useAuth();
@@ -180,6 +191,20 @@ export const UniversityHeader = ({
           onClick={onToggleMobileNav}
         >
           <Menu className="h-5 w-5" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="hidden text-muted-foreground hover:text-foreground lg:inline-flex"
+          onClick={onToggleSidebar}
+          aria-pressed={sidebarCollapsed}
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {sidebarCollapsed ? (
+            <PanelLeftOpen className="h-5 w-5" />
+          ) : (
+            <PanelLeftClose className="h-5 w-5" />
+          )}
         </Button>
         <div>
           <p className="text-xs uppercase tracking-[0.4rem] text-muted-foreground">
