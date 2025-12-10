@@ -89,6 +89,7 @@ interface Program {
   tuition_currency: string;
   duration_months: number;
   university_id: string;
+  image_url?: string | null;
 }
 
 interface Scholarship {
@@ -124,6 +125,10 @@ const getUniversityVisual = (name: string, logo: string | null): string => {
   if (lower.includes("imperial")) return imperialImg;
   if (lower.includes("edinburgh")) return edinburghImg;
   return defaultUniversityImg;
+};
+
+const getProgramVisual = (program: Program, university: University): string => {
+  return program.image_url || getUniversityVisual(university.name, university.logo_url);
 };
 
 export interface ProgramSearchViewProps {
@@ -301,7 +306,9 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
       // Build program query with filters
       let progQuery = supabase
         .from("programs")
-        .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id")
+        .select(
+          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url",
+        )
         .in("university_id", uniIds)
         .or("active.eq.true,active.is.null");
       
@@ -329,7 +336,25 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
           .eq("active", true)
       ]);
 
-      const programs = programsResult.data || [];
+      let programs = programsResult.data || [];
+
+      if (programsResult.error) {
+        const missingColumn =
+          programsResult.error.code === "42703" ||
+          programsResult.error.message.toLowerCase().includes("image_url");
+
+        if (!missingColumn) throw programsResult.error;
+
+        const fallbackQuery = supabase
+          .from("programs")
+          .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id")
+          .in("university_id", uniIds)
+          .or("active.eq.true,active.is.null");
+
+        const fallbackResult = await fallbackQuery;
+        if (fallbackResult.error) throw fallbackResult.error;
+        programs = (fallbackResult.data || []).map((p) => ({ ...p, image_url: null }));
+      }
       const scholarships = scholarshipsResult.data || [];
 
       // Merge results
@@ -589,22 +614,44 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
                               </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                               {r.programs.slice(0, 4).map((p) => (
-                                <div key={p.id} className="p-3 rounded-md bg-muted/50 space-y-2">
-                                  <p className="font-medium text-sm">{p.name}</p>
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <Badge variant="outline">{p.level}</Badge>
-                                    <span className="flex items-center gap-1">
-                                      <DollarSign className="h-3 w-3" /> {p.tuition_amount.toLocaleString()}{" "}
-                                      {p.tuition_currency}
-                                    </span>
+                                <div
+                                  key={p.id}
+                                  className="flex gap-3 rounded-md bg-muted/50 p-3 transition hover:bg-muted"
+                                >
+                                  <div className="h-16 w-24 overflow-hidden rounded-md bg-muted">
+                                    <img
+                                      src={getProgramVisual(p, r.university)}
+                                      alt={p.name}
+                                      className="h-full w-full object-cover"
+                                      loading="lazy"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).src = getUniversityVisual(
+                                          r.university.name,
+                                          r.university.logo_url,
+                                        );
+                                      }}
+                                    />
                                   </div>
-                                  <Button size="sm" variant="outline" className="w-full text-xs" asChild>
+                                  <div className="flex-1 space-y-2">
+                                    <p className="font-medium text-sm leading-tight">{p.name}</p>
+                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                      <Badge variant="outline">{p.level}</Badge>
+                                      <span className="flex items-center gap-1">
+                                        <DollarSign className="h-3 w-3" /> {p.tuition_amount.toLocaleString()} {" "}
+                                        {p.tuition_currency}
+                                      </span>
+                                      <span className="text-[11px] text-muted-foreground/90">
+                                        {p.duration_months} months
+                                      </span>
+                                    </div>
+                                    <Button size="sm" variant="outline" className="w-full text-xs" asChild>
                                       <Link to={getApplyUrl(p.id)}>
-                                        {isAgentOrStaff 
-                                          ? t("pages.universitySearch.results.programs.submitApplication", { defaultValue: "Submit Application" }) 
+                                        {isAgentOrStaff
+                                          ? t("pages.universitySearch.results.programs.submitApplication", { defaultValue: "Submit Application" })
                                           : t("pages.universitySearch.results.programs.apply")}
                                       </Link>
-                                  </Button>
+                                    </Button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
