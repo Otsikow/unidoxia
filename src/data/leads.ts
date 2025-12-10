@@ -95,24 +95,28 @@ export const getStudent = async (
     throw error;
   }
 
-  const tenantStudent = data?.find((row: any) => row.student_id === studentId)?.student;
+  const studentRow = data?.find((row: any) => row.student_id === studentId);
+  const tenantStudent = studentRow?.student as Record<string, any> | undefined;
 
-  if (!tenantStudent) {
+  if (!tenantStudent || typeof tenantStudent !== "object") {
     throw new Error("Student not found");
   }
 
+  const preferredName = tenantStudent.preferred_name as string | undefined;
+  const legalName = tenantStudent.legal_name as string | undefined;
+  const profile = tenantStudent.profile as Record<string, any> | undefined;
   const nameParts = (
-    tenantStudent.preferred_name || tenantStudent.legal_name || tenantStudent.profile?.full_name || ""
+    preferredName || legalName || profile?.full_name || ""
   ).split(" ");
   const firstName = nameParts.shift() || "";
   const lastName = nameParts.join(" ");
   const baseLead: LeadCore = {
-    id: tenantStudent.id,
+    id: tenantStudent.id as string,
     first_name: firstName,
     last_name: lastName,
-    email: tenantStudent.contact_email || tenantStudent.profile?.email || "",
-    country: tenantStudent.current_country || tenantStudent.profile?.country || "",
-    status: tenantStudent.profile?.onboarded ? "onboarded" : "pending",
+    email: (tenantStudent.contact_email as string) || profile?.email || "",
+    country: (tenantStudent.current_country as string) || profile?.country || "",
+    status: profile?.onboarded ? "onboarded" : "pending",
   };
   return enrichLeadWithQualification(baseLead) as Lead;
 };

@@ -18,7 +18,7 @@ import { SEO } from "@/components/SEO";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import studentsStudyingGroup from "@/assets/students-studying-group.png";
 import agentStudentConsulting from "@/assets/agent-student-consulting.png";
-import universityBuildings from "@/assets/university-buildings.png";
+import destinationsCta from "@/assets/destinations-cta.jpeg";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 
 // ==========================================
@@ -57,7 +57,7 @@ const Index = () => {
   }, {
     key: "universities" as const,
     href: "/partnership",
-    image: universityBuildings
+    image: destinationsCta
   }].map(cta => ({
     ...cta,
     badge: t(`pages.index.hero.ctas.${cta.key}.badge`),
