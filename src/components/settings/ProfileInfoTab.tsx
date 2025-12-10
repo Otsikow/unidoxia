@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { useUniversityBranding } from '@/hooks/useUniversityBranding';
 
 interface ProfileInfoTabProps {
   profile: any;
@@ -41,6 +42,17 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
     phone: profile.phone || '',
     country: profile.country || '',
   });
+
+  const isUniversityPartner = profile.role === 'partner';
+  const universityBranding = useUniversityBranding();
+  const avatarSource =
+    (isUniversityPartner ? universityBranding.avatarUrl : null) ||
+    profile.avatar_url ||
+    '';
+  const initialsSource =
+    (isUniversityPartner ? universityBranding.displayName : profile.full_name) ||
+    profile.full_name ||
+    '';
 
   useEffect(() => {
     setFormData({
@@ -242,9 +254,9 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
           <div className="flex items-center gap-6">
             <div className="relative">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={profile.avatar_url || ''} alt={profile.full_name} />
+                <AvatarImage src={avatarSource} alt={initialsSource} />
                 <AvatarFallback className="text-xl">
-                  {getInitials(profile.full_name)}
+                  {getInitials(initialsSource)}
                 </AvatarFallback>
               </Avatar>
               <Button

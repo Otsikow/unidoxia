@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,10 +24,10 @@ import {
 } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
+import { useUniversityBranding } from "@/hooks/useUniversityBranding";
 
 interface UniversityHeaderProps {
   onRefresh?: () => void;
@@ -64,72 +63,24 @@ export const UniversityHeader = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const partnerBranding = useUniversityBranding();
 
-  const partnerProfileQuery = useQuery({
-    queryKey: ["university-partner-profile", profile?.id, profile?.tenant_id],
-    enabled: Boolean(profile?.id),
-    staleTime: 1000 * 60 * 10,
-    queryFn: async () => {
-      if (!profile?.id) {
-        throw new Error("Cannot load partner profile without an authenticated user");
-      }
-
-      const { data: profileRow, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, full_name, email, avatar_url, tenant_id")
-        .eq("id", profile.id)
-        .single();
-
-      if (profileError) {
-        throw profileError;
-      }
-
-      let displayName =
-        profileRow?.full_name?.trim() ||
-        profile?.full_name?.trim() ||
-        "University Partner";
-      let avatarUrl = profileRow?.avatar_url ?? profile?.avatar_url ?? null;
-
-      if (profileRow?.tenant_id) {
-        // Query university by tenant_id only - don't filter by active status
-        // since partners should see their own university regardless of active status
-        // (RLS policy already handles proper access control)
-        const { data: universityRow, error: universityError } = await supabase
-          .from("universities")
-          .select("name, logo_url")
-          .eq("tenant_id", profileRow.tenant_id)
-          .order("updated_at", { ascending: false, nullsFirst: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (!universityError && universityRow) {
-          displayName = universityRow.name ?? displayName;
-          avatarUrl = universityRow.logo_url ?? avatarUrl;
-        } else if (universityError) {
-          console.warn(
-            "Unable to load university details for header menu",
-            universityError,
-          );
-        }
-      }
-
-      return {
-        displayName,
-        avatarUrl,
-        contactEmail: profileRow?.email ?? profile?.email ?? null,
-        contactName: profileRow?.full_name ?? profile?.full_name ?? null,
-        roleLabel: "University Partner" as const,
-      };
-    },
-  });
-
-  const partnerProfile = partnerProfileQuery.data ?? {
-    displayName: profile?.full_name ?? "University Partner",
-    avatarUrl: profile?.avatar_url ?? null,
-    contactEmail: profile?.email ?? null,
-    contactName: profile?.full_name ?? null,
-    roleLabel: "University Partner" as const,
-  };
+  const partnerProfile = useMemo(
+    () => ({
+      displayName: partnerBranding.displayName,
+      avatarUrl: partnerBranding.avatarUrl,
+      contactEmail: partnerBranding.contactEmail,
+      contactName: partnerBranding.contactName,
+      roleLabel: partnerBranding.roleLabel as const,
+    }),
+    [
+      partnerBranding.avatarUrl,
+      partnerBranding.contactEmail,
+      partnerBranding.contactName,
+      partnerBranding.displayName,
+      partnerBranding.roleLabel,
+    ],
+  );
 
   const initials = useMemo(() => {
     const basis =
@@ -256,7 +207,7 @@ export const UniversityHeader = ({
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden text-left leading-tight md:block">
-                  {partnerProfileQuery.isLoading ? (
+                  {partnerBranding.isLoading ? (
                     <div className="flex flex-col gap-1">
                       <Skeleton className="h-3 w-24" />
                       <Skeleton className="h-2.5 w-20" />
