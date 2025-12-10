@@ -421,6 +421,9 @@ const OffersCASPage = () => {
     );
   }
 
+  const hasRecords = records.length > 0;
+  const shouldShowErrorState = Boolean(error && !isFetching && !hasRecords);
+
   return (
     <div className="space-y-8">
       <div>
@@ -490,7 +493,7 @@ const OffersCASPage = () => {
             <div className="py-16">
               <LoadingState message="Loading offers and CAS records..." />
             </div>
-          ) : error ? (
+          ) : shouldShowErrorState ? (
             <StatePlaceholder
               title="We couldn't load your records"
               description="Please refresh the page or try again later."
