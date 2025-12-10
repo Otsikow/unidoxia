@@ -144,6 +144,7 @@ export const queryClient = new QueryClient({
 // Keep the landing page eager so the initial paint has no suspense delay
 import Index from "./pages/Index";
 const OnboardingWelcome = lazyWithErrorHandling(() => import("./pages/onboarding/Welcome"));
+const OnboardingVisaRequirements = lazyWithErrorHandling(() => import("./pages/onboarding/VisaRequirements"));
 const OnboardingStudentSuccess = lazyWithErrorHandling(() => import("./pages/onboarding/StudentSuccess"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
 const OnboardingVisaSupport = lazyWithErrorHandling(() => import("./pages/onboarding/VisaSupport"));
@@ -457,6 +458,7 @@ const App = () => {
 
                         <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
                         <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
+                        <Route path="/onboarding/visa-requirements" element={<OnboardingVisaRequirements />} />
                         <Route path="/onboarding/success-stories" element={<OnboardingStudentSuccess />} />
                         <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
                         <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />

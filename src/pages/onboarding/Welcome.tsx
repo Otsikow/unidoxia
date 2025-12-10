@@ -370,7 +370,7 @@ export default function OnboardingWelcome() {
           style={{ animationDelay: "0.9s" }}
         >
           <Button asChild size="lg" className="w-full sm:flex-1 gap-2 text-base group">
-            <Link to="/onboarding/success-stories">
+            <Link to="/onboarding/visa-requirements">
               <Sparkles className="w-4 h-4 group-hover:animate-spin" />
               Get Started
             </Link>

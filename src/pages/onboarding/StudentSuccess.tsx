@@ -349,7 +349,7 @@ export default function OnboardingStudentSuccess() {
       >
         {/* Back button */}
         <div className="container mx-auto max-w-5xl">
-          <BackButton fallback="/onboarding/welcome" />
+          <BackButton fallback="/onboarding/visa-requirements" />
         </div>
 
         {/* Content */}
