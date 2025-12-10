@@ -365,7 +365,7 @@ All colors MUST be HSL.
 
   /* Journey marquee animation */
   .journey-marquee {
-    @apply relative overflow-hidden rounded-[32px] border border-primary/10 bg-gradient-to-b from-background/40 via-background/60 to-background/30 px-2 py-4 sm:px-3;
+    @apply relative overflow-hidden rounded-[32px] border border-primary/10 bg-gradient-to-b from-background/30 via-background/60 to-background/30 px-3 py-5 sm:px-4;
     mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
     --marquee-duration: 50s;
@@ -381,7 +381,7 @@ All colors MUST be HSL.
 
   .journey-marquee__fade {
     @apply pointer-events-none absolute top-0 h-full w-16 sm:w-24 lg:w-32;
-    background: linear-gradient(to right, rgba(10, 16, 34, 0.85), transparent);
+    background: linear-gradient(to right, rgba(10, 16, 34, 0.8), transparent);
     mix-blend-mode: screen;
   }
 
@@ -415,7 +415,7 @@ All colors MUST be HSL.
   .journey-marquee__item {
     padding: 0.5rem;
     flex: 0 0 auto;
-    width: clamp(260px, 24vw, 320px);
+    width: clamp(270px, 24vw, 340px);
     animation: journeyCardFade var(--marquee-duration, 50s) linear infinite;
     animation-delay: calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)));
     will-change: opacity, filter;
@@ -438,7 +438,9 @@ All colors MUST be HSL.
       calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)) +
         (var(--marquee-duration, 50s) / (var(--item-count, 10) * 2)));
     will-change: transform, opacity, filter;
-    backdrop-filter: blur(6px) saturate(1.1);
+    backdrop-filter: blur(8px) saturate(1.15);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    text-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
     transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
   }
 
@@ -447,15 +449,26 @@ All colors MUST be HSL.
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-    opacity: 0.12;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.32);
+    opacity: 0.14;
     pointer-events: none;
   }
 
   .journey-marquee__card:hover {
-    transform: translate3d(0, -4px, 10px) scale(1.02);
-    filter: brightness(1.05) saturate(1.05);
-    box-shadow: 0 28px 80px -40px rgba(0, 199, 255, 0.5), 0 18px 48px -24px rgba(0, 0, 0, 0.45);
+    transform: translate3d(0, -6px, 12px) scale(1.025);
+    filter: brightness(1.08) saturate(1.08);
+    box-shadow: 0 28px 90px -40px rgba(0, 199, 255, 0.6), 0 18px 52px -24px rgba(0, 0, 0, 0.48);
+  }
+
+  .journey-marquee__card-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22), transparent 30%),
+      radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.18), transparent 28%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.15), transparent 45%);
+    opacity: 0.9;
+    mix-blend-mode: screen;
+    pointer-events: none;
   }
 
   /* Animation utilities */
