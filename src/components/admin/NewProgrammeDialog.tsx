@@ -209,18 +209,18 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden p-0">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
           <DialogTitle>Create New Course</DialogTitle>
           <DialogDescription>
-            Add a new academic course to your catalogue. Fill in the details below.
+            Add a new academic course to your catalogue.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6">
+          <form id="new-programme-form" onSubmit={handleSubmit} className="grid gap-4 pb-4 sm:grid-cols-2">
             {/* Course Name */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="name">Course Name *</Label>
               <Input
                 id="name"
@@ -297,21 +297,6 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
               />
             </div>
 
-            {/* Tuition Amount */}
-            <div className="space-y-2">
-              <Label htmlFor="tuition">Tuition Amount *</Label>
-              <Input
-                id="tuition"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="e.g., 45000"
-                value={tuitionAmount}
-                onChange={(e) => setTuitionAmount(e.target.value)}
-                required
-              />
-            </div>
-
             {/* Tuition Currency */}
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>
@@ -329,9 +314,24 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
               </Select>
             </div>
 
+            {/* Tuition Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="tuition">Tuition Amount *</Label>
+              <Input
+                id="tuition"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g., 45000"
+                value={tuitionAmount}
+                onChange={(e) => setTuitionAmount(e.target.value)}
+                required
+              />
+            </div>
+
             {/* IELTS Score */}
             <div className="space-y-2">
-              <Label htmlFor="ielts">IELTS Overall</Label>
+              <Label htmlFor="ielts">IELTS Overall (optional)</Label>
               <Input
                 id="ielts"
                 type="number"
@@ -346,7 +346,7 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
 
             {/* TOEFL Score */}
             <div className="space-y-2">
-              <Label htmlFor="toefl">TOEFL Overall</Label>
+              <Label htmlFor="toefl">TOEFL Overall (optional)</Label>
               <Input
                 id="toefl"
                 type="number"
@@ -359,8 +359,8 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
             </div>
 
             {/* Seats Available */}
-            <div className="space-y-2">
-              <Label htmlFor="seats">Seats Available</Label>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="seats">Seats Available (optional)</Label>
               <Input
                 id="seats"
                 type="number"
@@ -372,11 +372,11 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
             </div>
 
             {/* Intake Months */}
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2 sm:col-span-2">
               <Label>Intake Months</Label>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
                 {MONTHS.map((month) => (
-                  <div key={month.value} className="flex items-center space-x-2">
+                  <div key={month.value} className="flex items-center space-x-1.5">
                     <Checkbox
                       id={`month-${month.value}`}
                       checked={intakeMonths.includes(month.value)}
@@ -391,34 +391,34 @@ const NewProgrammeDialog = ({ tenantId, onSuccess, trigger }: NewProgrammeDialog
             </div>
 
             {/* Description */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="description">Description</Label>
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
-                placeholder="Provide a detailed description of the course..."
+                placeholder="Provide a description of the course..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
+                rows={3}
               />
             </div>
-          </div>
+          </form>
+        </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Course"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter className="shrink-0 flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading} className="w-full sm:w-auto">
+            Cancel
+          </Button>
+          <Button type="submit" form="new-programme-form" disabled={loading} className="w-full sm:w-auto">
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              "Create Course"
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

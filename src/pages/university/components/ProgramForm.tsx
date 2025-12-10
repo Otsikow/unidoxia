@@ -220,18 +220,18 @@ export default function ProgramForm({
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-hidden border border-border bg-background p-0">
-        <DialogHeader className="px-6 pt-6 pb-2">
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col overflow-hidden border border-border bg-background p-0">
+        <DialogHeader className="shrink-0 px-6 pt-6 pb-2">
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(90vh-8rem)] px-6">
+        <ScrollArea className="min-h-0 flex-1 px-6">
           <Form {...form}>
             <form
               id="program-form"
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6 pb-6"
+              className="space-y-5 pb-4"
             >
               {/* Name */}
               <FormField
@@ -455,13 +455,13 @@ export default function ProgramForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Intake Months</FormLabel>
-                    <div className="flex flex-wrap gap-3 pt-1">
+                    <div className="grid grid-cols-3 gap-2 pt-1 sm:grid-cols-4 md:grid-cols-6">
                       {INTAKE_MONTH_OPTIONS.map((m) => {
                         const selected = field.value.includes(m.value);
                         return (
                           <label
                             key={m.value}
-                            className="flex cursor-pointer items-center gap-2 select-none"
+                            className="flex cursor-pointer items-center gap-1.5 select-none"
                           >
                             <Checkbox
                               checked={selected}
@@ -490,7 +490,7 @@ export default function ProgramForm({
                   <FormItem>
                     <FormLabel>Entry Requirements</FormLabel>
                     <FormControl>
-                      <Textarea rows={3} placeholder="Minimum qualifications…" {...field} />
+                      <Textarea rows={2} placeholder="Minimum qualifications…" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -505,7 +505,7 @@ export default function ProgramForm({
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea rows={4} placeholder="Course overview…" {...field} />
+                      <Textarea rows={3} placeholder="Course overview…" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -519,21 +519,22 @@ export default function ProgramForm({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Course Image (optional)</FormLabel>
-                    <FormDescription>
-                      Upload an image or paste a public URL. Max 5 MB.
+                    <FormDescription className="text-xs">
+                      Upload an image or paste a URL. Max 5 MB.
                     </FormDescription>
-                    <div className="space-y-3">
-                      <div className="flex gap-2">
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button
                           type="button"
                           variant="outline"
+                          size="sm"
                           disabled={isUploading}
                           onClick={() => fileInputRef.current?.click()}
                         >
                           {isUploading ? (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                           ) : (
-                            <Upload className="mr-2 h-4 w-4" />
+                            <Upload className="mr-1.5 h-3.5 w-3.5" />
                           )}
                           Upload
                         </Button>
@@ -544,6 +545,27 @@ export default function ProgramForm({
                           className="hidden"
                           onChange={handleFileSelect}
                         />
+                        {imageUrl && (
+                          <div className="relative h-10 w-16 overflow-hidden rounded border border-border bg-muted">
+                            <img
+                              src={imageUrl}
+                              alt="Preview"
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "/placeholder.svg";
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              className="absolute right-0.5 top-0.5 h-4 w-4 p-0 text-[10px]"
+                              onClick={handleRemoveImage}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <FormControl>
@@ -551,31 +573,10 @@ export default function ProgramForm({
                           placeholder="https://…"
                           value={field.value ?? ""}
                           onChange={(e) => field.onChange(e.target.value || null)}
+                          className="text-sm"
                         />
                       </FormControl>
                       <FormMessage />
-
-                      {imageUrl && (
-                        <div className="relative w-40 overflow-hidden rounded-md border border-border bg-muted">
-                          <img
-                            src={imageUrl}
-                            alt="Preview"
-                            className="h-24 w-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/placeholder.svg";
-                            }}
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            className="absolute right-1 top-1 h-6 w-6 p-0"
-                            onClick={handleRemoveImage}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   </FormItem>
                 )}
@@ -586,11 +587,11 @@ export default function ProgramForm({
                 control={form.control}
                 name="active"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border border-border bg-background p-4">
+                  <FormItem className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
                     <div className="space-y-0.5">
-                      <FormLabel className="font-medium">Publish Course</FormLabel>
-                      <FormDescription>
-                        Visible to agents and students in course search.
+                      <FormLabel className="text-sm font-medium">Publish Course</FormLabel>
+                      <FormDescription className="text-xs">
+                        Visible to agents and students.
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -604,11 +605,11 @@ export default function ProgramForm({
         </ScrollArea>
 
         {/* Actions - Outside scroll area for consistent positioning */}
-        <div className="flex justify-end gap-2 border-t border-border px-6 py-4">
-          <Button type="button" variant="ghost" onClick={onCancel}>
+        <div className="shrink-0 flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={onCancel} className="w-full sm:w-auto">
             Cancel
           </Button>
-          <Button type="submit" form="program-form" disabled={isSubmitting}>
+          <Button type="submit" form="program-form" disabled={isSubmitting} className="w-full sm:w-auto">
             {isSubmitting ? "Saving..." : submitLabel}
           </Button>
         </div>
