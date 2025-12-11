@@ -610,6 +610,7 @@ const App = () => {
                         {/* ---------------- PROFILE SETTINGS (All authenticated users) ---------------- */}
 
                         <Route path="/profile/settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
+                        <Route path="/profile-settings" element={<ProtectedRoute><ProfileSettings /></ProtectedRoute>} />
 
                         {/* ---------------- PAYMENTS ---------------- */}
 
