@@ -726,6 +726,16 @@ export default function NewApplication() {
       return;
     }
 
+    const programId = toValidUuidOrNull(formData.programSelection.programId);
+    if (!programId) {
+      toast({
+        title: 'Invalid program selected',
+        description: 'Please pick a valid program before submitting your application.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const submittedByAgent = profile?.role === 'agent' && Boolean(agentId);
     const submissionChannel = submittedByAgent ? 'agent_portal' : 'student_portal';
 
@@ -736,7 +746,7 @@ export default function NewApplication() {
         .from('applications')
         .insert({
           student_id: studentId,
-          program_id: formData.programSelection.programId,
+          program_id: programId,
           intake_year: formData.programSelection.intakeYear,
           intake_month: formData.programSelection.intakeMonth,
           intake_id: formData.programSelection.intakeId || null,
@@ -795,33 +805,37 @@ export default function NewApplication() {
       }
 
       // Get program details for notifications
-      const { data: programData } = await supabase
-        .from('programs')
-        .select('*, university:universities(*)')
-        .eq('id', formData.programSelection.programId)
-        .single();
+      try {
+        const { data: programData } = await supabase
+          .from('programs')
+          .select('*, university:universities(*)')
+          .eq('id', programId)
+          .single();
 
-      // Send notification to agent if assigned
-      const { data: assignmentData } = await supabase
-        .from('student_assignments')
-        .select('counselor_id')
-        .eq('student_id', studentId)
-        .maybeSingle();
+        // Send notification to agent if assigned
+        const { data: assignmentData } = await supabase
+          .from('student_assignments')
+          .select('counselor_id')
+          .eq('student_id', studentId)
+          .maybeSingle();
 
-      if (assignmentData?.counselor_id) {
-        await supabase.from('notifications').insert({
-          user_id: assignmentData.counselor_id,
-          tenant_id: tenantId,
-          type: 'general',
-          title: 'New Application Submitted',
-          content: `A new application has been submitted for ${programData?.name || 'a program'}.`,
-          metadata: {
-            program_id: programData?.id ?? null,
-            program_name: programData?.name ?? null,
-            university_name: programData?.university?.name ?? null,
-          },
-          action_url: '/dashboard/applications',
-        });
+        if (assignmentData?.counselor_id) {
+          await supabase.from('notifications').insert({
+            user_id: assignmentData.counselor_id,
+            tenant_id: tenantId,
+            type: 'general',
+            title: 'New Application Submitted',
+            content: `A new application has been submitted for ${programData?.name || 'a program'}.`,
+            metadata: {
+              program_id: programData?.id ?? null,
+              program_name: programData?.name ?? null,
+              university_name: programData?.university?.name ?? null,
+            },
+            action_url: '/dashboard/applications',
+          });
+        }
+      } catch (notificationError) {
+        logError(notificationError, 'NewApplication.notifications');
       }
 
       // Clear stored draft after successful submission
