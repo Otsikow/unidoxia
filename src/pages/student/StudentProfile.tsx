@@ -13,7 +13,7 @@ import { FinancesTab } from '@/components/student/profile/FinancesTab';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import type { Tables } from '@/integrations/supabase/types';
-import { Loader2, LogOut } from 'lucide-react';
+import { Circle, CheckCircle, Loader2, LogOut } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
@@ -43,6 +43,9 @@ export default function StudentProfile() {
   const [activeTab, setActiveTab] = useState('personal');
   const [completeness, setCompleteness] = useState(0);
   const [completedSteps, setCompletedSteps] = useState(0);
+  const [checklist, setChecklist] = useState<
+    { id: string; title: string; description: string; completed: boolean; link: string }[]
+  >([]);
   const [isCalculatingCompleteness, setIsCalculatingCompleteness] = useState(false);
   const hasRedirectedRef = useRef(false);
   const hasInitializedRef = useRef(false);
@@ -76,6 +79,43 @@ export default function StudentProfile() {
 
       setCompletedSteps(done);
       setCompleteness(percent);
+      setChecklist([
+        {
+          id: 'personal',
+          title: 'Personal Info',
+          description: 'Legal name, contact email, and passport details',
+          completed: personalDone,
+          link: '/student/profile#personal',
+        },
+        {
+          id: 'education',
+          title: 'Education',
+          description: 'Add at least one education record',
+          completed: educationDone,
+          link: '/student/profile#education',
+        },
+        {
+          id: 'tests',
+          title: 'Test Scores',
+          description: 'Provide English test results',
+          completed: testsDone,
+          link: '/student/profile#tests',
+        },
+        {
+          id: 'finances',
+          title: 'Finances',
+          description: 'Add your financial information',
+          completed: financesDone,
+          link: '/student/profile#finances',
+        },
+        {
+          id: 'documents',
+          title: 'Documents',
+          description: 'Upload passport and transcripts in Documents',
+          completed: documentsDone,
+          link: '/student/documents',
+        },
+      ]);
 
       if (record.profile_completeness !== percent) {
         await supabase
@@ -300,6 +340,34 @@ export default function StudentProfile() {
                   section to improve completeness.
                 </p>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow animate-fade-in">
+            <CardHeader>
+              <CardTitle className="text-lg sm:text-xl">Profile Checklist</CardTitle>
+              <CardDescription>
+                Track what’s left to reach 100% completeness.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {checklist.map((item) => (
+                <Link
+                  key={item.id}
+                  to={item.link}
+                  className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted transition-colors"
+                >
+                  {item.completed ? (
+                    <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
+                  ) : (
+                    <Circle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+                  )}
+                  <div className="space-y-1">
+                    <p className="font-medium leading-tight">{item.title}</p>
+                    <p className="text-sm text-muted-foreground leading-tight">{item.description}</p>
+                  </div>
+                </Link>
+              ))}
             </CardContent>
           </Card>
 
