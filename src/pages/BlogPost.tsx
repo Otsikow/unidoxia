@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Navigate } from "react-router-dom";
+import { Link, useParams, Navigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import BackButton from "@/components/BackButton";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface BlogPostDetail {
   id: string;
@@ -51,21 +52,26 @@ export default function BlogPost() {
   if (!data) return <Navigate to="/blog" replace />;
   if (data.status !== "published") return <Navigate to="/blog" replace />;
 
-    const sanitized = data.content_html ? DOMPurify.sanitize(data.content_html) : null;
+  const sanitized = data.content_html ? DOMPurify.sanitize(data.content_html) : null;
 
-    return (
-      <article className="container mx-auto px-4 py-10">
-        <BackButton
+  return (
+    <article className="container mx-auto px-4 py-10">
+      <div className="mb-6">
+        <Button
+          asChild
           variant="ghost"
           size="sm"
-          fallback="/blog"
-          label="Back to all articles"
-          wrapperClassName="mb-6"
           className="px-0 text-muted-foreground hover:text-foreground"
-        />
+        >
+          <Link to="/blog" className="inline-flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to blog</span>
+          </Link>
+        </Button>
+      </div>
 
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{data.title}</h1>
-        {data.excerpt && <p className="text-muted-foreground mb-6">{data.excerpt}</p>}
+      <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{data.title}</h1>
+      {data.excerpt && <p className="text-muted-foreground mb-6">{data.excerpt}</p>}
 
       {(data.tags || []).length > 0 && (
         <div className="flex items-center gap-2 mb-8 flex-wrap">
