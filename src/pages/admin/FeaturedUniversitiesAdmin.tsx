@@ -9,6 +9,7 @@ import {
   RefreshCcw,
   Search,
   Sparkles,
+  X,
 } from "lucide-react";
 
 import BackButton from "@/components/BackButton";
@@ -139,12 +140,28 @@ export default function FeaturedUniversitiesAdmin() {
 
     if (!term) return universities;
 
-    return universities.filter((university) =>
-      [university.name, university.country, university.city]
+    const normalize = (value: string | null) =>
+      value?.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+    const normalizedTerm = normalize(term) ?? "";
+
+    return universities.filter((university) => {
+      const searchableValues = [
+        university.name,
+        university.country,
+        university.city,
+        university.featured_highlight,
+        university.featured_summary,
+        university.website,
+      ]
         .filter(Boolean)
-        .some((value) => value?.toLowerCase().includes(term)),
-    );
+        .map((value) => normalize(value ?? ""));
+
+      return searchableValues.some((value) => value?.includes(normalizedTerm));
+    });
   }, [searchTerm, universities]);
+
+  const totalUniversities = universities?.length ?? 0;
+  const visibleUniversities = filteredUniversities.length;
 
   const lastUpdated = useMemo(() => {
     if (!universities?.length) return null;
@@ -452,31 +469,45 @@ export default function FeaturedUniversitiesAdmin() {
         </div>
 
         <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ListOrdered className="h-5 w-5 text-primary" />
-                How prioritisation works
-              </CardTitle>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListOrdered className="h-5 w-5 text-primary" />
+              How prioritisation works
+            </CardTitle>
             <CardDescription>
               Lower numbers appear first on the landing page. Leave the priority
               blank for institutions that are not currently featured.
             </CardDescription>
           </CardHeader>
-            <CardContent className="flex flex-wrap gap-3">
-              <div className="relative w-full md:max-w-md">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={searchTerm}
-                  onChange={(event) => setSearchTerm(event.target.value)}
-                  placeholder="Search by name or location"
-                  className="pl-10"
-                />
-              </div>
-              <Button asChild variant="outline" size="sm">
-                <Link to="/universities">
-                  <Globe className="mr-2 h-4 w-4" /> View public directory
-                </Link>
-              </Button>
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <div className="relative w-full md:max-w-md">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search by name, location, or highlight"
+                className="pl-10 pr-10"
+              />
+              {searchTerm && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 text-muted-foreground"
+                  onClick={() => setSearchTerm("")}
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Showing {visibleUniversities} of {totalUniversities} universities
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/universities">
+                <Globe className="mr-2 h-4 w-4" /> View public directory
+              </Link>
+            </Button>
             <Button
               variant="ghost"
               size="sm"
