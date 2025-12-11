@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, isSupabaseConfigured } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
@@ -879,6 +879,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const init = async () => {
+      if (!isSupabaseConfigured) {
+        console.warn('[auth] Supabase is not configured. Authentication is disabled.');
+        setLoading(false);
+        return;
+      }
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
         await handleAuthChange(session);
@@ -924,6 +930,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
+      if (!isSupabaseConfigured) {
+        const error = new Error('Authentication service is not configured. Please try again later.');
+        return { error };
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -1016,6 +1027,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     referrerUsername,
   }: SignUpParams) => {
     try {
+      if (!isSupabaseConfigured) {
+        const error = new Error('Authentication service is not configured. Please try again later.');
+        return { error };
+      }
+
       const redirectUrl = buildEmailRedirectUrl('/auth/callback');
 
       const sanitizedUsername = formatReferralUsername(username);
