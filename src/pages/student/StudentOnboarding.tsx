@@ -122,7 +122,7 @@ const buildNavigatorSteps = (
         ? 'AI stored your SOP so agents can annotate instantly.'
         : 'AI will coach you through each paragraph once you start writing.',
       actionLabel: sopDoc ? 'Review SOP' : 'Launch SOP generator',
-      actionHref: '/student/sop-generator',
+      actionHref: '/student/sop',
       icon: ScrollText,
       lastUpdated: getRecordTimestamp(sopDoc ?? null),
     },
