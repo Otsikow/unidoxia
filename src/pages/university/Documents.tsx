@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Loader2, FileDown } from "lucide-react";
+import { Loader2, FileDown, FolderOpen, Clock4, CheckCircle2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -25,6 +25,7 @@ import {
 import { useUniversityDashboard } from "@/components/university/layout/UniversityDashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const statusFilters = [
   { value: "all", label: "All statuses" },
@@ -55,6 +56,38 @@ const DocumentsPage = () => {
 
   const documentRequests = data?.documentRequests ?? [];
   const tenantId = data?.university?.tenant_id ?? null;
+
+  const pendingCount = documentRequests.filter(
+    (request) => request.status.toLowerCase() !== "received",
+  ).length;
+  const receivedCount = documentRequests.length - pendingCount;
+
+  const folderItems = [
+    {
+      key: "all",
+      label: "All requests",
+      description: "Entire document queue",
+      count: documentRequests.length,
+      icon: FolderOpen,
+      tone: "info" as const,
+    },
+    {
+      key: "pending",
+      label: "Pending",
+      description: "Awaiting uploads or verification",
+      count: pendingCount,
+      icon: Clock4,
+      tone: "warning" as const,
+    },
+    {
+      key: "received",
+      label: "Received",
+      description: "Ready for compliance review",
+      count: receivedCount,
+      icon: CheckCircle2,
+      tone: "success" as const,
+    },
+  ];
 
   const filteredRequests = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -122,6 +155,65 @@ const DocumentsPage = () => {
           Track outstanding document requests and update their status as files are
           received.
         </p>
+      </div>
+
+      <div className="space-y-3">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">Folders</p>
+        <div className="grid gap-3 md:grid-cols-3">
+          {folderItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = statusFilter === item.key;
+
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setStatusFilter(item.key)}
+                className={cn(
+                  withUniversitySurfaceTint(
+                    "group flex items-start gap-3 rounded-2xl p-4 text-left transition hover:-translate-y-0.5",
+                  ),
+                  isActive
+                    ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                    : "border border-border/60",
+                )}
+                aria-pressed={isActive}
+              >
+                <span
+                  className={cn(
+                    "inline-flex h-10 w-10 items-center justify-center rounded-xl border",
+                    item.tone === "warning"
+                      ? "border-amber-500/30 bg-warning/10 text-warning"
+                      : item.tone === "success"
+                        ? "border-success/30 bg-success/10 text-success"
+                        : "border-primary/30 bg-primary/10 text-primary",
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                </span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <span>{item.label}</span>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "border-border bg-muted/50 text-xs",
+                        item.tone === "warning"
+                          ? "border-amber-500/40 text-warning"
+                          : item.tone === "success"
+                            ? "border-success/40 text-success"
+                            : "border-primary/40 text-primary",
+                      )}
+                    >
+                      {item.count}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{item.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}>
