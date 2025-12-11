@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import BackButton from "@/components/BackButton";
 
 interface BlogPost {
   id: string;
@@ -178,6 +179,9 @@ export default function Blog() {
       />
       <section className="border-b bg-gradient-to-b from-background to-muted/40">
         <div className="container mx-auto px-4 py-12 sm:py-16">
+          <div className="mb-6 flex justify-start">
+            <BackButton variant="ghost" size="sm" fallback="/" showHistoryMenu={false} />
+          </div>
           <div className="mx-auto max-w-3xl text-center space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm text-muted-foreground">
               <Sparkles className="h-4 w-4" />
