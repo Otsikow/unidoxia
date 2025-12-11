@@ -1,10 +1,14 @@
 "use client";
 
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Globe2, GraduationCap, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const portraits = [
   {
@@ -52,6 +56,55 @@ const IconOrb = ({ icon: Icon }: { icon: typeof Globe2 }) => (
 );
 
 const AgentOnboardingWelcome = () => {
+  const { profile, user, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [markingOnboarded, setMarkingOnboarded] = useState(false);
+
+  const markOnboarded = useCallback(async () => {
+    if (!user?.id || profile?.role !== "agent") {
+      navigate("/auth/signup?role=agent");
+      return;
+    }
+
+    if (profile.onboarded) {
+      navigate("/dashboard/leads");
+      return;
+    }
+
+    try {
+      setMarkingOnboarded(true);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ onboarded: true })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      await refreshProfile();
+      toast({
+        title: "Onboarding complete",
+        description: "Welcome aboard! Redirecting you to your leads dashboard.",
+      });
+      navigate("/dashboard/leads");
+    } catch (error) {
+      console.error("Unable to mark agent onboarding complete", error);
+      toast({
+        title: "Could not finish onboarding",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setMarkingOnboarded(false);
+    }
+  }, [navigate, profile?.role, profile?.onboarded, refreshProfile, toast, user?.id]);
+
+  useEffect(() => {
+    if (profile?.role === "agent" && profile.onboarded) {
+      navigate("/dashboard/leads");
+    }
+  }, [navigate, profile?.onboarded, profile?.role]);
+
   return (
     <div className="relative min-h-screen bg-white text-slate-900 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -93,6 +146,18 @@ const AgentOnboardingWelcome = () => {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
+              {profile?.role === "agent" && (
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="gap-2"
+                  onClick={markOnboarded}
+                  disabled={markingOnboarded}
+                >
+                  {markingOnboarded ? "Saving..." : "Finish onboarding"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

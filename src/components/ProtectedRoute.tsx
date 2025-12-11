@@ -14,6 +14,11 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   const location = useLocation();
   const loading = authLoading || rolesLoading;
 
+  const isStudent = profile?.role === "student" || user?.user_metadata?.role === "student";
+  const isAgent = profile?.role === "agent" || user?.user_metadata?.role === "agent";
+  const isStudentOnboardingRoute = location.pathname.startsWith("/student/onboarding");
+  const isAgentOnboardingRoute = location.pathname.startsWith("/agents/onboarding");
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -30,9 +35,17 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/verify-email" replace state={{ from: location.pathname }} />;
   }
 
+  if (isStudent && profile && profile.onboarded === false && !isStudentOnboardingRoute) {
+    return <Navigate to="/student/onboarding" replace state={{ from: location.pathname }} />;
+  }
+
+  if (isAgent && profile && profile.onboarded === false && !isAgentOnboardingRoute) {
+    return <Navigate to="/agents/onboarding" replace state={{ from: location.pathname }} />;
+  }
+
   // Map 'university' role to 'partner' for backward compatibility
   const isPartner =
-    profile?.role === 'partner' || 
+    profile?.role === 'partner' ||
     profile?.role === 'university' || 
     user.user_metadata?.role === 'partner' ||
     user.user_metadata?.role === 'university';
