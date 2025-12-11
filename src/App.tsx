@@ -148,6 +148,9 @@ export const queryClient = new QueryClient({
    ========================================================================== */
 
 import Index from "./pages/Index";
+// Auth login is imported eagerly to avoid chunk loading issues that prevent
+// the sign-in form from rendering when users click the call-to-action.
+import Login from "./pages/auth/Login";
 
 const OnboardingWelcome = lazyWithErrorHandling(() =>
   import("./pages/onboarding/Welcome")
@@ -179,7 +182,6 @@ const HelpCenter = lazyWithErrorHandling(() => import("./pages/HelpCenter"));
 const LegalPrivacy = lazyWithErrorHandling(() => import("./pages/LegalPrivacy"));
 const LegalTerms = lazyWithErrorHandling(() => import("./pages/LegalTerms"));
 const Feedback = lazyWithErrorHandling(() => import("./pages/Feedback"));
-const Login = lazyWithErrorHandling(() => import("./pages/auth/Login"));
 const Signup = lazyWithErrorHandling(() => import("./pages/auth/Signup"));
 const VerifyEmail = lazyWithErrorHandling(() => import("./pages/auth/VerifyEmail"));
 const ForgotPassword = lazyWithErrorHandling(() => import("./pages/auth/ForgotPassword"));
@@ -451,7 +453,6 @@ const schedulePrefetch = (imports: Array<() => Promise<unknown>>, timeout = 300)
 };
 
 const COMMON_IMPORTS = [
-  () => import("./pages/auth/Login"),
   () => import("./pages/auth/Signup"),
   () => import("./pages/CourseDiscovery"),
   () => import("./pages/Blog"),
