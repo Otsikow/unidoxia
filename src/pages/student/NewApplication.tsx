@@ -741,30 +741,63 @@ export default function NewApplication() {
 
     setSubmitting(true);
     try {
-      // Create application
+      const baseApplicationPayload = {
+        student_id: studentId,
+        program_id: programId,
+        intake_year: formData.programSelection.intakeYear,
+        intake_month: formData.programSelection.intakeMonth,
+        intake_id: formData.programSelection.intakeId || null,
+        status: 'submitted',
+        notes: formData.notes || null,
+        tenant_id: tenantId,
+        submitted_at: new Date().toISOString(),
+        agent_id: submittedByAgent ? agentId : null,
+        submitted_by_agent: submittedByAgent,
+        submission_channel: submissionChannel,
+      };
+
+      // Create application (with graceful fallback if the optional attribution column is missing)
       const { data: applicationData, error: appError } = await supabase
         .from('applications')
         .insert({
-          student_id: studentId,
-          program_id: programId,
-          intake_year: formData.programSelection.intakeYear,
-          intake_month: formData.programSelection.intakeMonth,
-          intake_id: formData.programSelection.intakeId || null,
-          status: 'submitted',
-          notes: formData.notes || null,
-          tenant_id: tenantId,
-          submitted_at: new Date().toISOString(),
-          agent_id: submittedByAgent ? agentId : null,
-          submitted_by_agent: submittedByAgent,
-          submission_channel: submissionChannel,
+          ...baseApplicationPayload,
           application_source: 'UniDoxia', // Attribution: track that this application came through UniDoxia platform
         })
         .select()
         .single();
 
-      if (appError) throw appError;
+      const isApplicationSourceMissing =
+        appError &&
+        (appError.message?.toLowerCase().includes('application_source') ||
+          appError.details?.toLowerCase().includes('application_source'));
 
-      setApplicationId(applicationData.id);
+      const applicationInsertError = appError && !isApplicationSourceMissing ? appError : null;
+
+      if (applicationInsertError) throw applicationInsertError;
+
+      const finalApplicationData = applicationData;
+
+      let fallbackApplicationData = applicationData;
+      if (!applicationData && isApplicationSourceMissing) {
+        // Retry without the attribution column if the database schema hasn't added it yet
+        console.warn('application_source column missing, retrying application insert without it', appError);
+        const { data: retryData, error: retryError } = await supabase
+          .from('applications')
+          .insert(baseApplicationPayload)
+          .select()
+          .single();
+
+        if (retryError) throw retryError;
+        fallbackApplicationData = retryData;
+      }
+
+      const createdApplication = finalApplicationData || fallbackApplicationData;
+
+      if (!createdApplication) {
+        throw new Error('Failed to create application');
+      }
+
+      setApplicationId(createdApplication.id);
 
       // Upload documents to storage and create document records
       const documentTypes = ['transcript', 'passport', 'ielts', 'sop'] as const;
@@ -775,7 +808,7 @@ export default function NewApplication() {
           try {
             const fileExt = file.name.split('.').pop();
             const fileName = `${docType}_${Date.now()}.${fileExt}`;
-            const filePath = `${applicationData.id}/${fileName}`;
+            const filePath = `${createdApplication.id}/${fileName}`;
 
             // Upload to storage
             const { error: uploadError } = await supabase.storage
@@ -792,7 +825,7 @@ export default function NewApplication() {
 
             // Create document record
             await supabase.from('application_documents').insert({
-              application_id: applicationData.id,
+              application_id: createdApplication.id,
               document_type: docType,
               storage_path: filePath,
               file_size: file.size,
