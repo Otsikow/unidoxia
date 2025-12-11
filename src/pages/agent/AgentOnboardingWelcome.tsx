@@ -161,14 +161,23 @@ const AgentOnboardingWelcome = () => {
 
             {/* ACTION BUTTONS */}
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" className="gap-2" asChild>
+              <Button
+                size="lg"
+                className="gap-2 bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90"
+                asChild
+              >
                 <Link to={earningsHref}>
                   Launch onboarding
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
 
-              <Button size="lg" variant="outline" className="gap-2 border-slate-200" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                className="gap-2 border-slate-300 bg-white text-slate-900 hover:bg-white/90 hover:border-slate-400 shadow-sm"
+                asChild
+              >
                 <Link to="/auth/login">
                   Preview dashboard
                   <ArrowRight className="h-4 w-4" />
@@ -180,7 +189,7 @@ const AgentOnboardingWelcome = () => {
                 <Button
                   size="lg"
                   variant="secondary"
-                  className="gap-2"
+                  className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
                   onClick={markOnboarded}
                   disabled={markingOnboarded}
                 >
@@ -273,10 +282,10 @@ const AgentOnboardingWelcome = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-indigo-50 p-4 shadow-sm">
+                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-indigo-50 p-4 shadow-sm sm:col-span-3">
                       <p className="text-sm text-slate-500">Featured destinations</p>
                       <div className="mt-2 flex flex-wrap gap-2">
-                        {["UK", "Canada", "USA", "UAE", "Australia"].map((country) => (
+                        {["UK", "Canada", "USA", "Australia", "Ireland", "Germany"].map((country) => (
                           <span
                             key={country}
                             className="text-xs font-medium text-primary bg-white/80 border border-primary/20 rounded-full px-3 py-1"
