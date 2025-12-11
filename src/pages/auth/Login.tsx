@@ -25,6 +25,21 @@ const Login = () => {
   const location = useLocation();
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get('role');
+
+    if (roleParam === 'agent' && !authLoading && !user && typeof window !== 'undefined') {
+      const hasSeenAgentOnboarding = sessionStorage.getItem('agentOnboardingSeen') === 'true';
+      if (!hasSeenAgentOnboarding) {
+        sessionStorage.setItem('agentOnboardingSeen', 'true');
+        navigate(`/agents/onboarding?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`, {
+          replace: true,
+        });
+      }
+    }
+  }, [authLoading, location.pathname, location.search, navigate, user]);
+
+  useEffect(() => {
     if (!authLoading && user) {
       setIsRedirecting(true);
       const redirectTo = (location.state as { from?: string } | null)?.from ?? '/dashboard';
