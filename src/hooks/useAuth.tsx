@@ -847,12 +847,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
     let lastUserId: string | undefined = undefined;
+    let isInitializing = true;
 
-    const handleAuthChange = async (session: Session | null) => {
+    const handleAuthChange = async (session: Session | null, skipIfSameUser = false) => {
       if (!isMounted) return;
 
       const currentUser = session?.user ?? null;
       const currentUserId = currentUser?.id;
+
+      // Skip if same user and we're told to skip
+      if (skipIfSameUser && currentUserId === lastUserId && currentUserId !== undefined) {
+        // Just update session state without re-fetching profile
+        setSession(session);
+        return;
+      }
 
       setUser(currentUser);
       setSession(session);
@@ -880,9 +888,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        // Check if we're on a callback URL with tokens in hash
+        // This can happen when navigating directly to pages after auth callback
+        const hashParams = typeof window !== 'undefined' 
+          ? new URLSearchParams(window.location.hash.substring(1)) 
+          : new URLSearchParams();
+        const hasTokensInHash = hashParams.has('access_token') && hashParams.has('refresh_token');
+        
+        if (hasTokensInHash) {
+          // If tokens are in the URL hash, Supabase's getSession will handle them
+          // but we should wait for the onAuthStateChange event instead of calling getSession
+          // because getSession might return null before the tokens are processed
+          console.log('Auth tokens detected in URL hash, waiting for auth state change...');
+          
+          // Give Supabase a moment to process the tokens
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        // Get the current session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting initial session:', error);
+        }
+        
         await handleAuthChange(session);
+      } catch (err) {
+        console.error('Error during auth initialization:', err);
       } finally {
+        isInitializing = false;
         if (isMounted) setLoading(false);
       }
     };
@@ -892,25 +926,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Subscribe to auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        // The event SIGNED_IN is already handled by the initial check.
-        // TOKEN_REFRESHED should not re-trigger profile fetching unless needed.
-        // The event SIGNED_IN is already handled by the initial check.
-        // TOKEN_REFRESHED should not re-trigger profile fetching unless needed.
-        if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
-          handleAuthChange(session);
+      async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id ? `user:${session.user.id.slice(0, 8)}...` : 'no user');
+        
+        // During initialization, let init() handle the session
+        // This prevents race conditions between init() and onAuthStateChange
+        if (isInitializing && event === 'INITIAL_SESSION') {
+          return;
+        }
+
+        if (event === 'SIGNED_OUT') {
+          await handleAuthChange(null);
+        } else if (event === 'USER_UPDATED') {
+          await handleAuthChange(session);
         } else if (event === 'SIGNED_IN') {
-          // Only handle SIGNED_IN if the user is different, to prevent double-fetch on load
-          if (session?.user?.id !== lastUserId) {
-            handleAuthChange(session);
-          }
+          // Handle SIGNED_IN - this fires after successful login or token exchange
+          await handleAuthChange(session);
         } else if (event === 'TOKEN_REFRESHED') {
-          // Handle token refresh, which could be for a different user
-          if (session?.user?.id !== lastUserId) {
-            handleAuthChange(session);
-          } else if (isMounted) {
-            // If same user, just update the session
-            setSession(session);
+          // Handle token refresh - just update session, don't refetch profile
+          await handleAuthChange(session, true);
+        } else if (event === 'INITIAL_SESSION') {
+          // This can fire when the page loads and there's an existing session
+          // Only process if we're not in the middle of initialization
+          if (!isInitializing) {
+            await handleAuthChange(session, true);
           }
         }
       }

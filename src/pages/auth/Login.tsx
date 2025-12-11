@@ -93,11 +93,9 @@ const Login = () => {
         title: 'Welcome back!',
         description: 'Successfully logged in. Redirecting...',
       });
-      // Role-based redirect will be handled by useAuth hook
-      // Just wait a moment for the profile to load
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+      setLoading(false);
+      // Navigation will be handled by the useEffect watching user state
+      // The useEffect above will redirect once the user is set
     }
   };
 
