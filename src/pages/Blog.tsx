@@ -154,7 +154,7 @@ export default function Blog() {
         "Connecting international students with world-class universities through verified agents and transparent application management.",
       links: [
         { label: "info@unidoxia.com", href: "mailto:info@unidoxia.com", external: true },
-        { label: "+1 (202) 555-0148", href: "tel:+12025550148", external: true },
+        { label: "+447360961803", href: "tel:+447360961803", external: true },
         { label: "Book a discovery call", href: "/contact", external: false },
       ],
     },
