@@ -32,6 +32,21 @@ type ProgramQueryRow = Tables<'programs'> & {
   } | null;
 };
 
+const mapProgramRow = (program: ProgramQueryRow): Program => ({
+  id: program.id,
+  name: program.name,
+  level: program.level,
+  discipline: program.discipline,
+  tuition_amount: program.tuition_amount,
+  tuition_currency: program.tuition_currency ?? '',
+  duration_months: program.duration_months,
+  university: {
+    name: program.university?.name ?? 'Unknown University',
+    city: program.university?.city ?? 'Unknown City',
+    country: program.university?.country ?? 'Unknown Country',
+  },
+});
+
 interface Program {
   id: string;
   name: string;
@@ -68,6 +83,8 @@ export default function ProgramSelectionStep({
   const [loadingIntakes, setLoadingIntakes] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const [loadingProgramById, setLoadingProgramById] = useState(false);
+  const isCourseLoading = loading || loadingProgramById;
 
   // Fetch programs
   const fetchPrograms = useCallback(async () => {
@@ -99,20 +116,7 @@ export default function ProgramSelectionStep({
       const { data: programsData, error } = await query.limit(50);
 
       if (error) throw error;
-      const mappedPrograms: Program[] = (programsData ?? []).map((program) => ({
-        id: program.id,
-        name: program.name,
-        level: program.level,
-        discipline: program.discipline,
-        tuition_amount: program.tuition_amount,
-        tuition_currency: program.tuition_currency ?? '',
-        duration_months: program.duration_months,
-        university: {
-          name: program.university?.name ?? 'Unknown University',
-          city: program.university?.city ?? 'Unknown City',
-          country: program.university?.country ?? 'Unknown Country',
-        },
-      }));
+      const mappedPrograms: Program[] = (programsData ?? []).map(mapProgramRow);
 
       setPrograms(mappedPrograms);
 
@@ -140,6 +144,44 @@ export default function ProgramSelectionStep({
   useEffect(() => {
     fetchPrograms();
   }, [fetchPrograms]);
+
+  useEffect(() => {
+    const loadSelectedProgram = async () => {
+      if (!data.programId) return;
+      if (programs.some((program) => program.id === data.programId)) return;
+
+      setLoadingProgramById(true);
+      try {
+        const { data: programData, error } = await supabase
+          .from('programs')
+          .select(
+            `id, name, level, discipline, tuition_amount, tuition_currency, duration_months,
+            university:universities (name, city, country)`
+          )
+          .eq('id', data.programId)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (!programData) return;
+
+        const mappedProgram = mapProgramRow(programData as ProgramQueryRow);
+        setPrograms((prev) => [...prev, mappedProgram]);
+        setSelectedProgram(mappedProgram);
+        await fetchIntakes(mappedProgram.id);
+      } catch (error) {
+        console.error('Error loading pre-selected program:', error);
+        toast({
+          title: 'Unable to load selected course',
+          description: 'Please search and select your course again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingProgramById(false);
+      }
+    };
+
+    void loadSelectedProgram();
+  }, [data.programId, programs, toast, fetchIntakes]);
 
   // Fetch intakes for selected program
   const fetchIntakes = async (programId: string) => {
@@ -209,11 +251,11 @@ export default function ProgramSelectionStep({
               Select Course *
             </Label>
             <Select value={data.programId} onValueChange={handleProgramChange}>
-              <SelectTrigger id="program" aria-busy={loading}>
-                <SelectValue placeholder={loading ? 'Loading courses...' : 'Choose a course'} />
+              <SelectTrigger id="program" aria-busy={isCourseLoading}>
+                <SelectValue placeholder={isCourseLoading ? 'Loading courses...' : 'Choose a course'} />
               </SelectTrigger>
               <SelectContent>
-                {loading ? (
+                {isCourseLoading ? (
                   <div className="p-4 text-center text-sm text-muted-foreground">
                     <div className="flex items-center justify-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
