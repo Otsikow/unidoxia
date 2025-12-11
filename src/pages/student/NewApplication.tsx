@@ -747,24 +747,51 @@ export default function NewApplication() {
         intake_year: formData.programSelection.intakeYear,
         intake_month: formData.programSelection.intakeMonth,
         intake_id: formData.programSelection.intakeId || null,
-        status: 'submitted' as const,
+        status: 'submitted',
         notes: formData.notes || null,
         tenant_id: tenantId,
         submitted_at: new Date().toISOString(),
         agent_id: submittedByAgent ? agentId : null,
+        submitted_by_agent: submittedByAgent,
         submission_channel: submissionChannel,
       };
 
-      // Create application
+      // Create application (with graceful fallback if the optional attribution column is missing)
       const { data: applicationData, error: appError } = await supabase
         .from('applications')
-        .insert(baseApplicationPayload)
+        .insert({
+          ...baseApplicationPayload,
+          application_source: 'UniDoxia', // Attribution: track that this application came through UniDoxia platform
+        })
         .select()
         .single();
 
-      if (appError) throw appError;
+      const isApplicationSourceMissing =
+        appError &&
+        (appError.message?.toLowerCase().includes('application_source') ||
+          appError.details?.toLowerCase().includes('application_source'));
 
-      const createdApplication = applicationData;
+      const applicationInsertError = appError && !isApplicationSourceMissing ? appError : null;
+
+      if (applicationInsertError) throw applicationInsertError;
+
+      const finalApplicationData = applicationData;
+
+      let fallbackApplicationData = applicationData;
+      if (!applicationData && isApplicationSourceMissing) {
+        // Retry without the attribution column if the database schema hasn't added it yet
+        console.warn('application_source column missing, retrying application insert without it', appError);
+        const { data: retryData, error: retryError } = await supabase
+          .from('applications')
+          .insert(baseApplicationPayload)
+          .select()
+          .single();
+
+        if (retryError) throw retryError;
+        fallbackApplicationData = retryData;
+      }
+
+      const createdApplication = finalApplicationData || fallbackApplicationData;
 
       if (!createdApplication) {
         throw new Error('Failed to create application');

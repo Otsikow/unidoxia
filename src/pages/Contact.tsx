@@ -12,7 +12,7 @@ const Contact = () => {
   const whatsappNumber = t("pages.contact.whatsappNumber");
   const whatsappLink = "https://wa.me/447360961803";
   return (
-    <div className="bg-gradient-subtle">
+    <div className="min-h-screen bg-gradient-subtle">
       <SEO
         title="Contact Us - UniDoxia"
         description="Get in touch with the UniDoxia team. We're here to help with your questions about studying abroad, university applications, and our services."
