@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
 
+// Import destination images
+import usaImage from "@/assets/destinations/usa.jpeg";
+import germanyImage from "@/assets/destinations/germany.jpeg";
+import irelandImage from "@/assets/destinations/ireland.jpeg";
+
 // Country data with iconic landmarks
 const countries = [
   {
@@ -27,7 +32,7 @@ const countries = [
     shortName: "USA",
     flag: "🇺🇸",
     landmark: "Statue of Liberty",
-    landmarkImage: "https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?w=400&h=300&fit=crop",
+    landmarkImage: usaImage,
     color: "from-blue-700 to-red-700",
     bgColor: "bg-red-500/10",
     borderColor: "border-red-500/30",
@@ -66,8 +71,7 @@ const countries = [
     shortName: "Germany",
     flag: "🇩🇪",
     landmark: "Brandenburg Gate",
-    landmarkImage:
-      "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=800&q=80",
+    landmarkImage: germanyImage,
     color: "from-black to-yellow-500",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
@@ -79,8 +83,8 @@ const countries = [
     name: "Ireland",
     shortName: "Ireland",
     flag: "🇮🇪",
-    landmark: "Cliffs of Moher",
-    landmarkImage: "https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=400&h=300&fit=crop",
+    landmark: "Dublin Spire",
+    landmarkImage: irelandImage,
     color: "from-green-600 to-orange-500",
     bgColor: "bg-green-500/10",
     borderColor: "border-green-500/30",
