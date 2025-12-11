@@ -415,9 +415,7 @@ All colors MUST be HSL.
     padding: 0.5rem;
     flex: 0 0 auto;
     width: clamp(270px, 24vw, 340px);
-    animation: journeyCardGlide var(--marquee-duration, 50s) ease-in-out infinite;
-    animation-delay: calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)));
-    will-change: opacity, filter;
+    opacity: 1;
   }
 
   .journey-marquee__card-wrapper {
@@ -427,20 +425,12 @@ All colors MUST be HSL.
   }
 
   .journey-marquee__card {
-    box-shadow: 0 25px 60px -30px rgba(0, 0, 0, 0.45), 0 12px 30px -20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.35);
     transform: translateZ(0);
-    animation:
-      journeyFloatSoft 10s ease-in-out infinite alternate,
-      journeyFocusGlow var(--marquee-duration, 50s) ease-in-out infinite;
-    animation-delay:
-      0s,
-      calc(var(--item-index, 0) * (var(--marquee-duration, 50s) / var(--item-count, 10)) +
-        (var(--marquee-duration, 50s) / (var(--item-count, 10) * 2)));
-    will-change: transform, opacity, filter;
-    backdrop-filter: blur(8px) saturate(1.15);
+    backdrop-filter: blur(6px) saturate(1.05);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    text-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-    transition: transform 220ms ease, box-shadow 220ms ease, filter 220ms ease;
+    text-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
   }
 
   .journey-marquee__card::after {
@@ -454,9 +444,9 @@ All colors MUST be HSL.
   }
 
   .journey-marquee__card:hover {
-    transform: translate3d(0, -6px, 12px) scale(1.025);
-    filter: brightness(1.08) saturate(1.08);
-    box-shadow: 0 28px 90px -40px rgba(0, 199, 255, 0.6), 0 18px 52px -24px rgba(0, 0, 0, 0.48);
+    transform: translate3d(0, -4px, 4px);
+    filter: brightness(1.04) saturate(1.02);
+    box-shadow: 0 18px 60px -32px rgba(0, 0, 0, 0.4);
   }
 
   .journey-marquee__card-overlay {
@@ -465,7 +455,7 @@ All colors MUST be HSL.
     background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22), transparent 30%),
       radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.18), transparent 28%),
       linear-gradient(145deg, rgba(255, 255, 255, 0.15), transparent 45%);
-    opacity: 0.9;
+    opacity: 0.45;
     mix-blend-mode: screen;
     pointer-events: none;
   }
