@@ -13,7 +13,7 @@ interface JourneySegmentConfig {
 const SEGMENT_CONFIG: JourneySegmentConfig[] = [
   { key: "discover", icon: Compass, gradient: "from-primary via-sky-500 to-cyan-500", ctaHref: "/auth/signup?role=student" },
   { key: "plan", icon: ClipboardList, gradient: "from-blue-600 via-indigo-500 to-purple-500" },
-  { key: "collaborate", icon: MessageCircle, gradient: "from-purple-600 via-fuchsia-500 to-pink-500", ctaHref: "/auth/signup?role=agent" },
+  { key: "collaborate", icon: MessageCircle, gradient: "from-purple-600 via-fuchsia-500 to-pink-500", ctaHref: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}` },
   { key: "submit", icon: Radar, gradient: "from-amber-500 via-orange-500 to-rose-500" },
   { key: "celebrate", icon: PlaneTakeoff, gradient: "from-emerald-500 via-teal-500 to-primary" },
 ];

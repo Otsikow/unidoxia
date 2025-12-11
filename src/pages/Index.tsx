@@ -52,7 +52,7 @@ const Index = () => {
     image: studentsStudyingGroup
   }, {
     key: "agents" as const,
-    href: "/auth/signup?role=agent",
+    href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
     image: agentsCta
   }, {
     key: "universities" as const,

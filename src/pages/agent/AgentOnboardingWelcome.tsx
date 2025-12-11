@@ -1,6 +1,7 @@
 "use client";
 
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import { ArrowRight, CheckCircle2, Globe2, GraduationCap, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,17 @@ const IconOrb = ({ icon: Icon }: { icon: typeof Globe2 }) => (
 );
 
 const AgentOnboardingWelcome = () => {
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/auth/signup?role=agent";
+  const earningsHref = `/agents/earnings?next=${encodeURIComponent(nextTarget)}`;
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("agentOnboardingSeen", "true");
+    }
+  }, []);
+
   return (
     <div className="relative min-h-screen bg-white text-slate-900 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -82,7 +94,7 @@ const AgentOnboardingWelcome = () => {
 
             <div className="flex flex-wrap gap-3">
               <Button size="lg" className="gap-2" asChild>
-                <Link to="/auth/signup" className="flex items-center gap-2">
+                <Link to={earningsHref} className="flex items-center gap-2">
                   Launch onboarding
                   <ArrowRight className="h-4 w-4" />
                 </Link>

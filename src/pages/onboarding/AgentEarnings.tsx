@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { ArrowRight, ArrowUpRight, BarChart3, Gift, LineChart, ShieldCheck, Sparkles, Wallet } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 const earningsTimeline = [
@@ -43,6 +44,16 @@ const referralStats = [
 ];
 
 const AgentEarnings = () => {
+  const [searchParams] = useSearchParams();
+  const nextParam = searchParams.get("next");
+  const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/auth/signup?role=agent";
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("agentOnboardingSeen", "true");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       {/* Background gradients */}
@@ -95,7 +106,7 @@ const AgentEarnings = () => {
 
                   <div className="flex flex-wrap gap-4">
                     <Button asChild size="lg" className="gap-2 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white shadow-lg shadow-cyan-500/30">
-                      <Link to="/signup">
+                      <Link to={nextTarget}>
                         Start earning now
                         <ArrowRight className="h-4 w-4" />
                       </Link>
@@ -261,8 +272,8 @@ const AgentEarnings = () => {
                   </div>
                 </div>
                 <Button asChild variant="secondary" className="w-full bg-white text-slate-900 hover:bg-slate-100">
-                  <Link to="/onboarding/welcome" className="flex items-center justify-center gap-2">
-                    Continue onboarding
+                  <Link to={nextTarget} className="flex items-center justify-center gap-2">
+                    Continue to sign up
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>

@@ -110,6 +110,20 @@ const Signup = () => {
 
   const countryOptions = useMemo(() => buildCountryOptions(), []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const roleParam = params.get("role");
+
+    if (roleParam === "agent" && !authLoading && !user && typeof window !== "undefined") {
+      const hasSeenAgentOnboarding = sessionStorage.getItem("agentOnboardingSeen") === "true";
+      if (!hasSeenAgentOnboarding) {
+        sessionStorage.setItem("agentOnboardingSeen", "true");
+        navigate(`/agents/onboarding?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`);
+        return;
+      }
+    }
+  }, [authLoading, location.pathname, location.search, navigate, user]);
+
   // Redirect logged-in user
   useEffect(() => {
     if (!authLoading && user && !hasRedirectedRef.current) {
