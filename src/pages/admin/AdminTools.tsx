@@ -201,8 +201,11 @@ const AdminTools = () => {
               and performance insights.
             </p>
           </div>
-          <Button asChild className="gap-2" variant="outline">
-            <Link to="/admin/insights">View automation insights</Link>
+          <Button asChild className="gap-2 shadow-sm" variant="default">
+            <Link to="/admin/insights">
+              <BarChart3 className="h-4 w-4" />
+              View automation insights
+            </Link>
           </Button>
         </div>
 
