@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -178,8 +178,9 @@ const buildNavigatorSteps = (
 };
 
 export default function StudentOnboarding() {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const fullWelcomeText = 'Welcome to UniDoxia';
   const [loading, setLoading] = useState(true);
   const [student, setStudent] = useState<Tables<'students'> | null>(null);
@@ -188,6 +189,47 @@ export default function StudentOnboarding() {
   const [navigatorSteps, setNavigatorSteps] = useState<NavigatorStep[]>([]);
   const [navigatorUpdatedAt, setNavigatorUpdatedAt] = useState<string | null>(null);
   const applicationIdsRef = useRef<string[]>([]);
+  const [markingOnboarded, setMarkingOnboarded] = useState(false);
+
+  const markOnboardingComplete = useCallback(async () => {
+    if (!user?.id || profile?.role !== 'student') {
+      navigate('/student/dashboard');
+      return;
+    }
+
+    if (profile.onboarded) {
+      navigate('/student/dashboard');
+      return;
+    }
+
+    try {
+      setMarkingOnboarded(true);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarded: true })
+        .eq('id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      await refreshProfile();
+      toast({
+        title: 'Onboarding completed',
+        description: 'Thanks for setting up your profile. Redirecting to your dashboard...'
+      });
+      navigate('/student/dashboard');
+    } catch (error) {
+      console.error('Error marking student onboarding complete:', error);
+      toast({
+        title: 'Unable to complete onboarding',
+        description: 'Please try again or contact support if the issue persists.',
+        variant: 'destructive'
+      });
+    } finally {
+      setMarkingOnboarded(false);
+    }
+  }, [navigate, profile?.role, profile?.onboarded, refreshProfile, toast, user?.id]);
 
   const resolveTenantId = useCallback(async (): Promise<string | null> => {
     try {
@@ -483,6 +525,13 @@ export default function StudentOnboarding() {
     };
   }, [student?.id, fetchStudentData]);
 
+  useEffect(() => {
+    if (profile?.role !== 'student' || profile.onboarded) return;
+    if (completeness < 100) return;
+
+    void markOnboardingComplete();
+  }, [completeness, markOnboardingComplete, profile?.onboarded, profile?.role]);
+
 
   if (loading) {
     return (
@@ -521,12 +570,22 @@ export default function StudentOnboarding() {
 
         {/* Progress Overview */}
         <Card className="hover:shadow-lg transition-shadow animate-fade-in">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
-            <CardDescription className="text-sm sm:text-base">
-              {completeness}% complete • {checklist.filter((i) => i.completed).length} of{' '}
-              {checklist.length} steps completed
-            </CardDescription>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                {completeness}% complete • {checklist.filter((i) => i.completed).length} of{' '}
+                {checklist.length} steps completed
+              </CardDescription>
+            </div>
+            <Button
+              variant="default"
+              onClick={markOnboardingComplete}
+              disabled={markingOnboarded || profile?.onboarded || completeness < 60}
+              className="w-full sm:w-auto"
+            >
+              {markingOnboarded ? 'Finalizing...' : profile?.onboarded ? 'Onboarding completed' : 'Finish onboarding'}
+            </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="relative">

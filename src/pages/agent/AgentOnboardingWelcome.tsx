@@ -1,11 +1,16 @@
 "use client";
 
-import { Link, useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Globe2, GraduationCap, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+/* -------------------------- STATIC DATA -------------------------- */
 
 const portraits = [
   {
@@ -46,26 +51,84 @@ const quickBenefits = [
   "Global student pipeline analytics",
 ];
 
+/* -------------------------- UI ICON ORB -------------------------- */
+
 const IconOrb = ({ icon: Icon }: { icon: typeof Globe2 }) => (
   <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-primary/30 shadow-lg shadow-primary/10 border border-primary/20 flex items-center justify-center text-primary">
     <Icon className="h-5 w-5" />
   </div>
 );
 
+/* =====================================================================
+   AGENT ONBOARDING — FINAL CLEAN VERSION
+   ===================================================================== */
+
 const AgentOnboardingWelcome = () => {
+  const { profile, user, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [markingOnboarded, setMarkingOnboarded] = useState(false);
+
+  /* --------------------- Handle ?next redirect param --------------------- */
   const [searchParams] = useSearchParams();
   const nextParam = searchParams.get("next");
-  const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/auth/signup?role=agent";
+  const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/dashboard/leads";
   const earningsHref = `/agents/earnings?next=${encodeURIComponent(nextTarget)}`;
 
+  /* --------------------- Auto-redirect if already onboarded --------------------- */
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("agentOnboardingSeen", "true");
+    if (profile?.role === "agent" && profile?.onboarded) {
+      navigate("/dashboard/leads");
     }
-  }, []);
+  }, [profile?.role, profile?.onboarded, navigate]);
+
+  /* --------------------- Mark onboarding as complete --------------------- */
+  const markOnboarded = useCallback(async () => {
+    if (!user?.id || profile?.role !== "agent") {
+      navigate("/auth/signup?role=agent");
+      return;
+    }
+
+    if (profile.onboarded) {
+      navigate("/dashboard/leads");
+      return;
+    }
+
+    try {
+      setMarkingOnboarded(true);
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ onboarded: true })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      await refreshProfile();
+
+      toast({
+        title: "Onboarding complete",
+        description: "Welcome aboard! Redirecting you to your dashboard.",
+      });
+
+      navigate("/dashboard/leads");
+    } catch (error) {
+      console.error("Unable to mark agent onboarding complete", error);
+      toast({
+        title: "Could not finish onboarding",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setMarkingOnboarded(false);
+    }
+  }, [profile?.role, profile?.onboarded, user?.id, refreshProfile, navigate, toast]);
+
+  /* ===================================================================== */
 
   return (
     <div className="relative min-h-screen bg-white text-slate-900 overflow-hidden">
+      {/* Gradient background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
         <div className="absolute top-10 right-10 w-80 h-80 rounded-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-100 blur-3xl" />
@@ -74,39 +137,60 @@ const AgentOnboardingWelcome = () => {
 
       <div className="container mx-auto px-4 md:px-8 py-14 md:py-20 relative">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+          {/* LEFT PANEL */}
           <div className="flex-1 space-y-8">
             <div className="inline-flex items-center gap-3 rounded-full bg-primary/5 px-4 py-2 shadow-sm shadow-primary/10 border border-primary/10">
               <Badge variant="outline" className="bg-white text-primary border-primary/30">
                 Premium Onboarding
               </Badge>
-              <span className="text-sm text-muted-foreground">Designed for high-performing UniDoxia Agents</span>
+              <span className="text-sm text-muted-foreground">
+                Designed for high-performing UniDoxia Agents
+              </span>
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-semibold leading-tight tracking-tight text-slate-900">
+              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900">
                 Welcome to UniDoxia Agent Portal
               </h1>
               <p className="text-lg text-slate-600 max-w-2xl">
-                Grow your recruitment business with verified programs, high commissions, and a powerful dashboard. Deliver a
-                premium experience to students while keeping every intake on track.
+                Grow your recruitment business with verified programs, high commissions,
+                and a powerful dashboard. Deliver a premium experience to students while
+                keeping every intake on track.
               </p>
             </div>
 
+            {/* ACTION BUTTONS */}
             <div className="flex flex-wrap gap-3">
               <Button size="lg" className="gap-2" asChild>
-                <Link to={earningsHref} className="flex items-center gap-2">
+                <Link to={earningsHref}>
                   Launch onboarding
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
+
               <Button size="lg" variant="outline" className="gap-2 border-slate-200" asChild>
-                <Link to="/auth/login" className="flex items-center gap-2">
+                <Link to="/auth/login">
                   Preview dashboard
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
+
+              {/* Only show "Finish onboarding" to logged-in agents */}
+              {profile?.role === "agent" && (
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="gap-2"
+                  onClick={markOnboarded}
+                  disabled={markingOnboarded}
+                >
+                  {markingOnboarded ? "Saving..." : "Finish onboarding"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
             </div>
 
+            {/* METRICS */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { label: "Verified programs", value: "2,400+" },
@@ -123,6 +207,7 @@ const AgentOnboardingWelcome = () => {
             </div>
           </div>
 
+          {/* RIGHT PANEL – PORTRAITS + HIGHLIGHTS */}
           <div className="flex-1 w-full max-w-xl lg:max-w-none relative">
             <div className="absolute -top-10 -right-6 hidden lg:block">
               <IconOrb icon={Globe2} />
@@ -151,19 +236,21 @@ const AgentOnboardingWelcome = () => {
                       >
                         <img
                           src={portrait.image}
-                          alt={`${portrait.name} holding a laptop`}
+                          alt={portrait.name}
                           className="h-64 w-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/65 via-slate-900/20 to-transparent" />
+
                         <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 text-white">
                           <div className="bg-white/20 backdrop-blur rounded-full p-2">
                             <LaptopGlyph />
                           </div>
                           <div>
-                            <p className="font-semibold text-lg leading-tight">{portrait.name}</p>
+                            <p className="font-semibold text-lg">{portrait.name}</p>
                             <p className="text-sm text-white/80">{portrait.title}</p>
                           </div>
                         </div>
+
                         <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/80 text-primary text-xs font-medium rounded-full px-3 py-1 shadow-sm">
                           <CheckCircle2 className="h-4 w-4" />
                           Verified Agent
@@ -172,6 +259,7 @@ const AgentOnboardingWelcome = () => {
                     ))}
                   </div>
 
+                  {/* Feature mini section */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
                     <div className="sm:col-span-2 rounded-2xl border border-primary/15 bg-white/80 shadow-inner shadow-primary/5 p-4 flex items-center gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-indigo-100 flex items-center justify-center text-primary">
@@ -180,10 +268,11 @@ const AgentOnboardingWelcome = () => {
                       <div className="space-y-1">
                         <p className="font-semibold text-slate-900">Education-first storytelling</p>
                         <p className="text-sm text-slate-600">
-                          Showcasing global programs with compliance-ready media kits and destination spotlights.
+                          Showcasing global programs with compliance-ready media kits.
                         </p>
                       </div>
                     </div>
+
                     <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-indigo-50 p-4 shadow-sm">
                       <p className="text-sm text-slate-500">Featured destinations</p>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -204,9 +293,13 @@ const AgentOnboardingWelcome = () => {
           </div>
         </div>
 
+        {/* Feature cards */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
           {featureHighlights.map((feature) => (
-            <Card key={feature.title} className="h-full bg-white/90 border-slate-200 shadow-sm hover:shadow-lg transition-shadow">
+            <Card
+              key={feature.title}
+              className="h-full bg-white/90 border-slate-200 shadow-sm hover:shadow-lg transition-shadow"
+            >
               <CardContent className="p-6 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
@@ -214,12 +307,13 @@ const AgentOnboardingWelcome = () => {
                   </div>
                   <p className="font-semibold text-lg text-slate-900">{feature.title}</p>
                 </div>
-                <p className="text-sm text-slate-600 leading-relaxed">{feature.description}</p>
+                <p className="text-sm text-slate-600">{feature.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
 
+        {/* Quick benefits */}
         <div className="mt-10 flex flex-wrap gap-3 items-center">
           {quickBenefits.map((benefit) => (
             <div
@@ -235,6 +329,8 @@ const AgentOnboardingWelcome = () => {
     </div>
   );
 };
+
+/* -------------------------- ICONS -------------------------- */
 
 const LaptopGlyph = () => (
   <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 text-white">
