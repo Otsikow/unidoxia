@@ -148,6 +148,7 @@ export const queryClient = new QueryClient({
    ========================================================================== */
 
 import Index from "./pages/Index";
+import DashboardRedirect from "./pages/DashboardRedirect";
 // Auth login is imported eagerly to avoid chunk loading issues that prevent
 // the sign-in form from rendering when users click the call-to-action.
 import Login from "./pages/auth/Login";
@@ -602,7 +603,14 @@ const App = () => {
                            PROTECTED ROUTES
                            ============================================================ */}
 
-                        <Route path="/dashboard" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                        <Route
+                          path="/dashboard"
+                          element={
+                            <ProtectedRoute>
+                              <DashboardRedirect />
+                            </ProtectedRoute>
+                          }
+                        />
 
                         {/* Staff / Agent / Partner Shared */}
                         <Route path="/dashboard/offers" element={<ProtectedRoute allowedRoles={["staff","partner","admin"]}><OffersManagement /></ProtectedRoute>} />
