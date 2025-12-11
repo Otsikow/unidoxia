@@ -47,7 +47,7 @@ export default function OnboardingVisaRequirements() {
 
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="relative w-full max-w-5xl">
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg">
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg">
               <FileCheck className="h-6 w-6 text-primary" />
             </div>
 
