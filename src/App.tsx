@@ -582,7 +582,8 @@ const App = () => {
                           <Route path="user-management" element={<UserManagement />} />
                           <Route path="analytics" element={<Analytics />} />
                           <Route path="blog" element={<BlogAdminPage />} />
-                          <Route path="usage" element={<AdminUsageMonitoringPage />} />
+                          <Route path="usage-monitoring" element={<AdminUsageMonitoringPage />} />
+                          <Route path="usage" element={<Navigate to="/admin/usage-monitoring" replace />} />
                           <Route path="previews" element={<BuildPreviews />} />
                           <Route path="featured-universities" element={<FeaturedUniversitiesAdmin />} />
                           <Route path="universities" element={<AdminUniversitiesPage />} />
