@@ -148,6 +148,7 @@ const OnboardingVisaRequirements = lazyWithErrorHandling(() => import("./pages/o
 const OnboardingStudentSuccess = lazyWithErrorHandling(() => import("./pages/onboarding/StudentSuccess"));
 const OnboardingDestinations = lazyWithErrorHandling(() => import("./pages/onboarding/Destinations"));
 const OnboardingVisaSupport = lazyWithErrorHandling(() => import("./pages/onboarding/VisaSupport"));
+const OnboardingAgentEarnings = lazyWithErrorHandling(() => import("./pages/onboarding/AgentEarnings"));
 
 const Contact = lazyWithErrorHandling(() => import("./pages/Contact"));
 const FAQ = lazyWithErrorHandling(() => import("./pages/FAQ"));
@@ -462,6 +463,7 @@ const App = () => {
                         <Route path="/onboarding/success-stories" element={<OnboardingStudentSuccess />} />
                         <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
                         <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />
+                        <Route path="/onboarding/agent-earnings" element={<OnboardingAgentEarnings />} />
 
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
                         <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
