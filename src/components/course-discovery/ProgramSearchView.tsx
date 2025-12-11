@@ -69,6 +69,8 @@ const MAJOR_DESTINATION_COUNTRIES = [
 ];
 const TAB_TRIGGER_STYLES =
   "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
+const MAX_UNIVERSITY_RESULTS = 50;
+const MAX_PROGRAM_RESULTS = 400;
 
 interface University {
   id: string;
@@ -152,6 +154,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
   const [disciplines, setDisciplines] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("search");
+  const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
   
   // Check if user is an agent/staff/admin to determine the correct apply URL
@@ -195,9 +198,21 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
 
   // Debounce search term for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  
+
   // Track if this is the initial load
   const isInitialMount = useRef(true);
+  const hasInitialQuery = useMemo(
+    () =>
+      Boolean(
+        searchParams.get("q") ||
+          searchParams.get("query") ||
+          searchParams.get("country") ||
+          searchParams.get("level") ||
+          searchParams.get("discipline") ||
+          searchParams.get("maxFee")
+      ),
+    [searchParams],
+  );
 
   // Load filter options once on mount
   useEffect(() => {
@@ -222,6 +237,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   }, []);
 
   const handleSearch = useCallback(async () => {
+    setHasSearched(true);
     setLoading(true);
     try {
       // Build search query - search both universities and programs
@@ -231,7 +247,8 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
       let uniQuery = supabase
         .from("universities")
         .select("id, name, country, city, logo_url, website, description")
-        .or("active.eq.true,active.is.null");
+        .or("active.eq.true,active.is.null")
+        .limit(MAX_UNIVERSITY_RESULTS);
       
       if (searchQuery) {
         uniQuery = uniQuery.ilike("name", `%${searchQuery}%`);
@@ -241,12 +258,13 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
       }
 
       // Query programs in parallel if we have a search term (to also match program names)
-      const programSearchQuery = searchQuery 
+      const programSearchQuery = searchQuery
         ? supabase
             .from("programs")
             .select("university_id")
             .or("active.eq.true,active.is.null")
             .ilike("name", `%${searchQuery}%`)
+            .limit(MAX_PROGRAM_RESULTS)
         : null;
 
       // Execute queries in parallel
@@ -310,7 +328,8 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
           "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url",
         )
         .in("university_id", uniIds)
-        .or("active.eq.true,active.is.null");
+        .or("active.eq.true,active.is.null")
+        .limit(MAX_PROGRAM_RESULTS);
       
       if (selectedLevel !== "all") {
         progQuery = progQuery.eq("level", selectedLevel);
@@ -334,6 +353,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
           .select("id, name, amount_cents, currency, coverage_type, university_id, program_id")
           .in("university_id", uniIds)
           .eq("active", true)
+          .limit(MAX_PROGRAM_RESULTS)
       ]);
 
       let programs: Program[] = [];
@@ -409,11 +429,16 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
     // Skip the initial mount to avoid double-fetching
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      handleSearch();
+      if (hasInitialQuery) {
+        handleSearch();
+      }
       return;
     }
+
+    if (!hasSearched) return;
+
     handleSearch();
-  }, [handleSearch]);
+  }, [handleSearch, hasInitialQuery, hasSearched]);
 
   return (
     <div className={containerClasses}>
@@ -562,10 +587,27 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
               <h2 className="text-2xl font-semibold">
                   {loading
                     ? t("pages.universitySearch.results.loading")
-                    : t("pages.universitySearch.results.found", { count: results.length })}
+                    : hasSearched
+                      ? t("pages.universitySearch.results.found", { count: results.length })
+                      : t("pages.universitySearch.results.startSearching", {
+                        defaultValue: "Start searching to see universities and programs",
+                      })}
               </h2>
 
-              {loading ? (
+              {!hasSearched ? (
+                <Card>
+                  <CardContent className="py-10 text-center text-muted-foreground space-y-2">
+                    <p>{t("pages.universitySearch.results.quickTip", {
+                      defaultValue: "Use the filters above to quickly narrow down universities by country, level, and fees.",
+                    })}</p>
+                    <p className="text-sm">
+                      {t("pages.universitySearch.results.performanceNote", {
+                        defaultValue: "Results load faster once you start typing or adjust a filter.",
+                      })}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : loading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
                     <Card key={i}>
