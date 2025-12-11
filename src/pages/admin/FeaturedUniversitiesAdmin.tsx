@@ -7,6 +7,7 @@ import {
   ListOrdered,
   Loader2,
   RefreshCcw,
+  Search,
   Sparkles,
 } from "lucide-react";
 
@@ -84,6 +85,7 @@ export default function FeaturedUniversitiesAdmin() {
   const [imageGenerationState, setImageGenerationState] = useState<
     Record<string, { isGenerating: boolean; message?: string; error?: string }>
   >({});
+  const [searchTerm, setSearchTerm] = useState("");
 
   const {
     data: universities,
@@ -130,6 +132,19 @@ export default function FeaturedUniversitiesAdmin() {
     () => universities?.filter((uni) => Boolean(uni.featured)).length ?? 0,
     [universities],
   );
+
+  const filteredUniversities = useMemo(() => {
+    if (!universities) return [];
+    const term = searchTerm.trim().toLowerCase();
+
+    if (!term) return universities;
+
+    return universities.filter((university) =>
+      [university.name, university.country, university.city]
+        .filter(Boolean)
+        .some((value) => value?.toLowerCase().includes(term)),
+    );
+  }, [searchTerm, universities]);
 
   const lastUpdated = useMemo(() => {
     if (!universities?.length) return null;
@@ -437,22 +452,31 @@ export default function FeaturedUniversitiesAdmin() {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ListOrdered className="h-5 w-5 text-primary" />
-              How prioritisation works
-            </CardTitle>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ListOrdered className="h-5 w-5 text-primary" />
+                How prioritisation works
+              </CardTitle>
             <CardDescription>
               Lower numbers appear first on the landing page. Leave the priority
               blank for institutions that are not currently featured.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Button asChild variant="outline" size="sm">
-              <Link to="/universities">
-                <Globe className="mr-2 h-4 w-4" /> View public directory
-              </Link>
-            </Button>
+            <CardContent className="flex flex-wrap gap-3">
+              <div className="relative w-full md:max-w-md">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search by name or location"
+                  className="pl-10"
+                />
+              </div>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/universities">
+                  <Globe className="mr-2 h-4 w-4" /> View public directory
+                </Link>
+              </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -476,7 +500,7 @@ export default function FeaturedUniversitiesAdmin() {
           renderSkeleton()
         ) : (
           <div className="grid gap-6">
-            {universities?.map((university) => {
+            {filteredUniversities?.map((university) => {
               const draft = drafts[university.id];
               if (!draft) return null;
 
@@ -762,6 +786,14 @@ export default function FeaturedUniversitiesAdmin() {
                 </Card>
               );
             })}
+
+            {filteredUniversities.length === 0 && !isFetching && (
+              <Card>
+                <CardContent className="py-10 text-center text-muted-foreground">
+                  No universities match your search.
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
     </div>
