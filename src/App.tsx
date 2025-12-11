@@ -661,7 +661,8 @@ const App = () => {
                           <Route path="chat" element={<AdminChatConsolePage />} />
                           <Route path="reports" element={<AdminPerformanceReportsPage />} />
                           <Route path="insights" element={<AdminInsightsPage />} />
-                          <Route path="zoe" element={<ZoeIntelligencePage />} />
+                          <Route path="intelligence" element={<ZoeIntelligencePage />} />
+                          <Route path="zoe" element={<Navigate to="/admin/intelligence" replace />} />
                           <Route path="settings" element={<AdminSettingsPage />} />
                           <Route path="notifications" element={<AdminNotificationsPage />} />
                           <Route path="logs" element={<AdminLogsPage />} />
