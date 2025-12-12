@@ -1,85 +1,41 @@
-# Welcome to your Lovable project
+# UniDoxia Platform
 
-## Project info
+UniDoxia connects students with global education opportunities through a modern React + Supabase stack. This repository contains the web application, Supabase edge functions, and database migrations that power the experience.
 
-**URL**: https://lovable.dev/projects/85578b91-45ce-4a22-b275-f732009d9503
+## Developing locally
 
-## How can I edit this code?
+1. Ensure Node.js and npm are installed (e.g., via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)).
+2. Clone the repository and install dependencies:
+   ```sh
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_NAME>
+   npm install
+   ```
+3. Start the development server with auto-reloading and an instant preview:
+   ```sh
+   npm run dev
+   ```
 
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/85578b91-45ce-4a22-b275-f732009d9503) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+## Technology stack
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (database, authentication, and functions)
 
-## How can I deploy this project?
+## Deployment
 
-Simply open [Lovable](https://lovable.dev/projects/85578b91-45ce-4a22-b275-f732009d9503) and click on Share -> Publish.
+Deploy via your preferred hosting provider (e.g., Vercel, Netlify, or a custom Vite-compatible host). Configure environment variables for Supabase and any third-party services as needed.
 
-## Can I connect a custom domain to my Lovable project?
+## Final integration checklist
 
-Yes, you can!
+Before releasing changes, verify:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
-
-## Final Integration Checklist
-
-At the end of your prompt sessions, instruct your AI builder:
-
-“Verify:
-
-- All pages use consistent layout and typography.
-- Admin navigation is protected by role check.
+- All pages use a consistent layout and typography.
+- Admin navigation is protected by role checks.
 - Supabase tables are properly connected (profiles, agents, universities, applications, audit_logs, notifications).
 - Dark mode, language switching, and data export work globally.
-- Zoe AI insights render dynamically using cached analytics.”
+- Zoe AI insights render dynamically using cached analytics.
+- Outbound emails use UniDoxia branding and messaging.
