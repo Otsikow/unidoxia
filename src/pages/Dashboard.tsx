@@ -32,7 +32,7 @@ const getUniversityRouteForPartnerView = (viewParam: string | null) => {
 };
 
 const Dashboard = () => {
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading, signOut } = useAuth();
   const { roles, loading: rolesLoading, error: rolesError } = useUserRoles();
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,14 +73,28 @@ const Dashboard = () => {
   }
 
   if (!profile) {
+    const email = user?.email ?? '';
+    const resetTarget = email ? `/auth/forgot-password?email=${encodeURIComponent(email)}` : '/auth/forgot-password';
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <EmptyState
           icon={<HelpCircle className="h-8 w-8" />}
           title="Profile not found"
-          description="We couldn't load your profile information. Try signing in again or contact support for help."
-          action={{ label: 'Go to login', onClick: () => navigate('/auth/login') }}
+          description="We couldn't load your profile information. To avoid getting stuck, we’ll take you back to login — or you can reset your password."
+          action={{
+            label: 'Reset password',
+            onClick: () => void signOut({ redirectTo: resetTarget }),
+          }}
         />
+        <div className="mt-3 text-center">
+          <button
+            type="button"
+            className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+            onClick={() => void signOut({ redirectTo: '/auth/login' })}
+          >
+            Go to login
+          </button>
+        </div>
       </div>
     );
   }
