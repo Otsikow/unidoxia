@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/dialog';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useDebounce } from '@/hooks/useDebounce';
 import type { Database, Json } from '@/integrations/supabase/types';
 import type { ApplicationFormData } from '@/types/application';
 
@@ -39,7 +38,6 @@ const STEPS = [
 
 type ApplicationDraftRow = Database['public']['Tables']['application_drafts']['Row'];
 
-const AUTO_SAVE_DEBOUNCE_MS = 1500;
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const LEGACY_DRAFT_STORAGE_KEY = 'application_draft';
 
@@ -194,11 +192,12 @@ export default function NewApplication() {
   const [applicationId, setApplicationId] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [autoSaveError, setAutoSaveError] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const isAgentFlow = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
 
   const hasHydratedFromDraft = useRef(false);
   const hasAttemptedLegacyMigration = useRef(false);
-  const skipNextAutoSave = useRef(true);
+  const hasInitializedForm = useRef(false);
   const tenantId = profile?.tenant_id || DEFAULT_TENANT_ID;
 
   // Form data state
@@ -395,6 +394,7 @@ export default function NewApplication() {
       setLastSavedAt(new Date());
     }
     setAutoSaveError(null);
+    setHasUnsavedChanges(false);
   }, [draftQueryKey, queryClient]);
 
   const draftQuery = useQuery({
@@ -452,7 +452,6 @@ export default function NewApplication() {
       const parsed = JSON.parse(legacyDraft);
       const mergedFormData = mergeLegacyFormData(formDataRef.current, parsed);
       formDataRef.current = mergedFormData;
-      skipNextAutoSave.current = true;
       setFormData(mergedFormData);
 
       const legacyStep = (() => {
@@ -550,15 +549,6 @@ export default function NewApplication() {
     hasHydratedFromDraft.current = true;
   }, [draftQuery.data]);
 
-  const autoSaveMutation = useMutation<ApplicationDraftRow, unknown, DraftMutationPayload>({
-    mutationFn: upsertDraftMutationFn,
-    onSuccess: handleDraftSuccess,
-    onError: (error) => {
-      logError(error, 'NewApplication.autoSaveDraft');
-      setAutoSaveError(getErrorMessage(error));
-    },
-  });
-
   const manualSaveMutation = useMutation<ApplicationDraftRow, unknown, DraftMutationPayload>({
     mutationFn: upsertDraftMutationFn,
     onSuccess: (data) => {
@@ -574,38 +564,28 @@ export default function NewApplication() {
       setAutoSaveError(getErrorMessage(error));
     },
   });
-
-  const debouncedFormData = useDebounce(formData, AUTO_SAVE_DEBOUNCE_MS);
-  const debouncedStep = useDebounce(currentStep, AUTO_SAVE_DEBOUNCE_MS);
+  const backgroundSaveMutation = useMutation<ApplicationDraftRow, unknown, DraftMutationPayload>({
+    mutationFn: upsertDraftMutationFn,
+    onSuccess: (data) => {
+      handleDraftSuccess(data);
+    },
+    onError: (error) => {
+      logError(error, 'NewApplication.backgroundSaveDraft');
+      setAutoSaveError(getErrorMessage(error));
+    },
+  });
 
   useEffect(() => {
-    if (!studentId || !tenantId) return;
-    if (loading || draftQuery.isLoading || submitting) return;
-
-    if (skipNextAutoSave.current) {
-      skipNextAutoSave.current = false;
+    if (loading || !hasHydratedFromDraft.current) return;
+    if (!hasInitializedForm.current) {
+      hasInitializedForm.current = true;
       return;
     }
 
-    autoSaveMutation.mutate({
-      studentId,
-      tenantId,
-      programId: debouncedFormData.programSelection.programId || null,
-      lastStep: debouncedStep,
-      formData: debouncedFormData,
-    });
-  }, [
-    autoSaveMutation,
-    debouncedFormData,
-    debouncedStep,
-    draftQuery.isLoading,
-    loading,
-    studentId,
-    submitting,
-    tenantId,
-  ]);
+    setHasUnsavedChanges(true);
+  }, [currentStep, formData, loading]);
 
-  const isSavingDraft = autoSaveMutation.isPending || manualSaveMutation.isPending;
+  const isSavingDraft = backgroundSaveMutation.isPending || manualSaveMutation.isPending;
 
   const persistLocalDraft = useCallback(() => {
     if (typeof window === 'undefined') return false;
@@ -621,6 +601,58 @@ export default function NewApplication() {
     return true;
   }, [currentStep]);
 
+  const handleBackgroundSave = useCallback(async () => {
+    if (!hasUnsavedChanges) return;
+
+    if (!studentId || !tenantId) {
+      persistLocalDraft();
+      return;
+    }
+
+    try {
+      await backgroundSaveMutation.mutateAsync({
+        studentId,
+        tenantId,
+        programId: formDataRef.current.programSelection.programId || null,
+        lastStep: currentStep,
+        formData: formDataRef.current,
+      });
+    } catch (error) {
+      logError(error, 'NewApplication.backgroundSaveOnExit');
+      setAutoSaveError(getErrorMessage(error));
+      persistLocalDraft();
+    }
+  }, [
+    backgroundSaveMutation,
+    currentStep,
+    hasUnsavedChanges,
+    persistLocalDraft,
+    studentId,
+    tenantId,
+  ]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        void handleBackgroundSave();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (!hasUnsavedChanges) return;
+      void handleBackgroundSave();
+      persistLocalDraft();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [handleBackgroundSave, hasUnsavedChanges, persistLocalDraft]);
+
   const handleManualSave = useCallback(async () => {
     if (!studentId) {
       const savedLocally = persistLocalDraft();
@@ -631,11 +663,13 @@ export default function NewApplication() {
           : 'Student profile not loaded yet.',
         variant: savedLocally ? 'default' : 'destructive',
       });
+      if (savedLocally) {
+        setHasUnsavedChanges(false);
+      }
       return;
     }
 
     try {
-      skipNextAutoSave.current = true;
       await manualSaveMutation.mutateAsync({
         studentId,
         tenantId,
@@ -645,11 +679,11 @@ export default function NewApplication() {
       });
     } catch (error) {
       logError(error, 'NewApplication.manualSaveDraft');
-      toast(formatErrorForToast(error, 'Failed to save draft'));
-      setAutoSaveError(getErrorMessage(error));
-    }
-  }, [
-    currentStep,
+        toast(formatErrorForToast(error, 'Failed to save draft'));
+        setAutoSaveError(getErrorMessage(error));
+      }
+    }, [
+      currentStep,
     formData,
     manualSaveMutation,
     persistLocalDraft,
@@ -840,7 +874,6 @@ export default function NewApplication() {
         queryClient.removeQueries({ queryKey: draftQueryKey });
         setLastSavedAt(null);
         setAutoSaveError(null);
-        skipNextAutoSave.current = true;
         if (typeof window !== 'undefined') {
           window.localStorage.removeItem(LEGACY_DRAFT_STORAGE_KEY);
         }
@@ -996,14 +1029,18 @@ export default function NewApplication() {
                 <p className="text-xs text-muted-foreground">
                   Last saved at {lastSavedAt.toLocaleTimeString()}
                 </p>
+              ) : hasUnsavedChanges ? (
+                <p className="text-xs text-muted-foreground">
+                  Unsaved changes. Click "Save & Continue Later" to keep your work.
+                </p>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Auto-save keeps your progress safe.
+                  We'll save your progress automatically if you leave this page.
                 </p>
               )}
               {autoSaveError && (
                 <p className="text-xs text-destructive mt-1">
-                  Auto-save failed: {autoSaveError}
+                  Background save failed: {autoSaveError}
                 </p>
               )}
             </div>
