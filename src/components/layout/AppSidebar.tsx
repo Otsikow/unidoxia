@@ -19,18 +19,23 @@ import {
   Sparkles,
   GraduationCap,
   Coins,
+  SlidersHorizontal,
+  Check,
+  RotateCcw,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { useNotifications } from "@/hooks/useNotifications";
 import { cn } from "@/lib/utils";
+import { applyNavOrder, moveArrayItem } from "@/lib/navOrdering";
+import { useDashboardNavPreferences } from "@/hooks/useDashboardNavPreferences";
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -43,6 +48,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import { DragHandle, MoveDownButton, MoveUpButton } from "@/components/navigation/ReorderControls";
 
 // ✅ Unified menuItems combining both branches
 const menuItems = {
@@ -120,6 +126,8 @@ export function AppSidebar() {
   const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -138,6 +146,32 @@ export function AppSidebar() {
     primaryRole && Object.prototype.hasOwnProperty.call(menuItems, primaryRole)
       ? menuItems[primaryRole as keyof typeof menuItems]
       : menuItems.student;
+
+  const roleKey =
+    primaryRole && Object.prototype.hasOwnProperty.call(menuItems, primaryRole)
+      ? (primaryRole as string)
+      : "student";
+
+  const menuKey = `dashboard_sidebar:${roleKey}`;
+  const { savedOrder, saveOrder, resetToDefault, isSaving } =
+    useDashboardNavPreferences(menuKey);
+
+  const orderedItems = useMemo(
+    () => applyNavOrder(items, (item) => item.url, savedOrder),
+    [items, savedOrder],
+  );
+
+  const orderedIds = useMemo(
+    () => orderedItems.map((item) => item.url),
+    [orderedItems],
+  );
+
+  const canCustomize = state !== "collapsed";
+  const showControls = canCustomize && isCustomizing;
+
+  const commitReorder = (nextIds: string[]) => {
+    saveOrder(nextIds);
+  };
 
   return (
     <Sidebar
@@ -161,8 +195,36 @@ export function AppSidebar() {
               </p>
             </div>
           )}
+          {canCustomize ? (
+            <div className="ml-auto hidden items-center gap-1 sm:flex">
+              {showControls ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => resetToDefault()}
+                  disabled={isSaving}
+                >
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                  Reset
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setIsCustomizing((v) => !v)}
+                aria-pressed={showControls}
+                aria-label={showControls ? "Done customizing navigation" : "Customize navigation"}
+              >
+                {showControls ? <Check className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+              </Button>
+            </div>
+          ) : null}
           <SidebarTrigger
-            className="ml-auto hidden h-8 w-8 shrink-0 sm:inline-flex"
+            className="ml-auto sm:ml-0 hidden h-8 w-8 shrink-0 sm:inline-flex"
             aria-label={state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
           />
         </div>
@@ -171,83 +233,139 @@ export function AppSidebar() {
       {/* Menu Content */}
       <SidebarContent className="scrollbar-hide">
         <SidebarGroup>
-          {state !== "collapsed" && (
-            <SidebarGroupLabel className="text-xs px-3 text-sidebar-foreground/60">Navigation</SidebarGroupLabel>
-          )}
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item, index) => {
+              {orderedItems.map((item, index) => {
                 const isActive = isItemActive(item.url);
+                const id = item.url;
+                const currentIndex = orderedIds.indexOf(id);
 
                 return (
                   <SidebarMenuItem
-                    key={item.title}
-                    className="animate-fade-in-left"
+                    key={item.url}
+                    className={cn(
+                      "animate-fade-in-left",
+                      showControls && "rounded-md ring-1 ring-transparent hover:ring-sidebar-border/60",
+                    )}
                     style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={state === "collapsed" ? item.title : undefined}
-                      className={cn(
-                        "group relative overflow-hidden border border-transparent text-sidebar-foreground",
-                        isActive
-                          ? "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary ring-1 ring-primary/40 shadow-[0_10px_30px_-15px_rgba(59,130,246,0.55)]"
-                          : "hover:border-sidebar-border/80 hover:bg-sidebar-accent/70 hover:translate-x-1"
-                      )}
-                    >
-                      <NavLink
-                        to={item.url}
-                        end={item.url === "/dashboard"}
-                        className="flex w-full items-center gap-3"
-                        onClick={() => {
-                          if (isMobile) {
-                            setOpenMobile(false);
+                    onDragOver={
+                      showControls
+                        ? (e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = "move";
                           }
-                        }}
-                      >
-                        <span
-                          className={cn(
-                            "absolute inset-y-1 left-1 w-1 rounded-full bg-primary/80 transition-all duration-300",
-                            isActive
-                              ? "opacity-100 scale-y-100"
-                              : "scale-y-0 opacity-0 group-hover:scale-y-100 group-hover:opacity-60"
-                          )}
-                          aria-hidden
+                        : undefined
+                    }
+                    onDrop={
+                      showControls
+                        ? (e) => {
+                            e.preventDefault();
+                            const dragged = e.dataTransfer.getData("text/plain") || draggingId;
+                            if (!dragged || dragged === id) return;
+                            const from = orderedIds.indexOf(dragged);
+                            const to = orderedIds.indexOf(id);
+                            if (from === -1 || to === -1) return;
+                            commitReorder(moveArrayItem(orderedIds, from, to));
+                            setDraggingId(null);
+                          }
+                        : undefined
+                    }
+                  >
+                    <div className={cn("flex items-center gap-1", state === "collapsed" && "justify-center")}>
+                      {showControls ? (
+                        <DragHandle
+                          draggable
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDragStart={(e) => {
+                            e.dataTransfer.effectAllowed = "move";
+                            e.dataTransfer.setData("text/plain", id);
+                            setDraggingId(id);
+                          }}
+                          onDragEnd={() => setDraggingId(null)}
                         />
-                        <div className="relative">
-                          <item.icon
+                      ) : null}
+
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={state === "collapsed" ? item.title : undefined}
+                        className={cn(
+                          "group relative overflow-hidden border border-transparent text-sidebar-foreground",
+                          showControls && "flex-1",
+                          isActive
+                            ? "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary ring-1 ring-primary/40 shadow-[0_10px_30px_-15px_rgba(59,130,246,0.55)]"
+                            : "hover:border-sidebar-border/80 hover:bg-sidebar-accent/70 hover:translate-x-1",
+                        )}
+                      >
+                        <NavLink
+                          to={item.url}
+                          end={item.url === "/dashboard"}
+                          className={cn("flex w-full items-center gap-3", showControls && "pr-0")}
+                          onClick={() => {
+                            if (isMobile) {
+                              setOpenMobile(false);
+                            }
+                          }}
+                        >
+                          <span
                             className={cn(
-                              "h-4 w-4 flex-shrink-0 transition-all duration-200",
-                              isActive ? "text-primary" : "group-hover:scale-110"
+                              "absolute inset-y-1 left-1 w-1 rounded-full bg-primary/80 transition-all duration-300",
+                              isActive
+                                ? "opacity-100 scale-y-100"
+                                : "scale-y-0 opacity-0 group-hover:scale-y-100 group-hover:opacity-60",
                             )}
+                            aria-hidden
                           />
-                          {item.title === "Notifications" && unreadCount > 0 && (
-                            <Badge
-                              variant="destructive"
-                              className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px] animate-pulse"
-                            >
-                              {unreadCount > 9 ? "9+" : unreadCount}
-                            </Badge>
-                          )}
-                        </div>
-                        {state !== "collapsed" && (
-                          <>
-                            <span className="truncate text-sm font-medium text-sidebar-foreground">
-                              {item.title}
-                            </span>
+                          <div className="relative">
+                            <item.icon
+                              className={cn(
+                                "h-4 w-4 flex-shrink-0 transition-all duration-200",
+                                isActive ? "text-primary" : "group-hover:scale-110",
+                              )}
+                            />
                             {item.title === "Notifications" && unreadCount > 0 && (
                               <Badge
                                 variant="destructive"
-                                className="ml-auto h-5 w-5 flex items-center justify-center text-[10px] animate-pulse"
+                                className="absolute -top-2 -right-2 h-4 w-4 p-0 flex items-center justify-center text-[10px] animate-pulse"
                               >
                                 {unreadCount > 9 ? "9+" : unreadCount}
                               </Badge>
                             )}
-                          </>
-                        )}
-                      </NavLink>
-                    </SidebarMenuButton>
+                          </div>
+                          {state !== "collapsed" && (
+                            <>
+                              <span className="truncate text-sm font-medium text-sidebar-foreground">
+                                {item.title}
+                              </span>
+                              {item.title === "Notifications" && unreadCount > 0 && (
+                                <Badge
+                                  variant="destructive"
+                                  className="ml-auto h-5 w-5 flex items-center justify-center text-[10px] animate-pulse"
+                                >
+                                  {unreadCount > 9 ? "9+" : unreadCount}
+                                </Badge>
+                              )}
+                            </>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+
+                      {showControls ? (
+                        <div className="flex items-center">
+                          <MoveUpButton
+                            disabled={currentIndex <= 0 || isSaving}
+                            onClick={() => commitReorder(moveArrayItem(orderedIds, currentIndex, currentIndex - 1))}
+                          />
+                          <MoveDownButton
+                            disabled={currentIndex === -1 || currentIndex >= orderedIds.length - 1 || isSaving}
+                            onClick={() => commitReorder(moveArrayItem(orderedIds, currentIndex, currentIndex + 1))}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
                   </SidebarMenuItem>
                 );
               })}
