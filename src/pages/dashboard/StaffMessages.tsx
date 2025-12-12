@@ -34,6 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import AIChatbot from "@/components/ai/AIChatbot";
 import { Skeleton } from "@/components/ui/skeleton";
 import StaffMessagesTable from "@/components/staff/StaffMessagesTable";
+import MessagesDashboard from "@/components/messages/MessagesDashboard";
 import {
   findDirectoryProfileById,
   searchDirectoryProfiles,
@@ -64,6 +65,19 @@ const getInitials = (name: string) =>
 export default function StaffMessages() {
   const { profile } = useAuth();
   const { toast } = useToast();
+
+  // Agents use application-linked messaging threads (student/agent/university).
+  if (profile?.role === "agent") {
+    return (
+      <DashboardLayout>
+        <div className="space-y-4">
+          <BackButton variant="ghost" size="sm" fallback="/dashboard" />
+          <MessagesDashboard />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   const partnerMessaging = useAgentMessages();
   const staffMessaging = useMessages();
   const { getUserPresence, isUserOnline } = usePresence();
