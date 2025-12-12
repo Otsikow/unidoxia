@@ -626,11 +626,11 @@ export default function MessagesDashboard() {
 
   if (messagingDisabled) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 animate-fade-in">
-          <div className="space-y-1.5 min-w-0">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight break-words">Messages</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+      <div className="flex flex-col gap-4 sm:gap-6 flex-1">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 animate-fade-in">
+          <div className="space-y-1 sm:space-y-1.5 min-w-0">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight break-words">Messages</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               Stay connected with advisors and support
             </p>
           </div>
@@ -645,91 +645,92 @@ export default function MessagesDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 animate-fade-in">
-        <div className="space-y-1.5 min-w-0">
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight break-words">Messages</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">Stay connected with advisors and support</p>
+    <div className="flex flex-col gap-4 sm:gap-6 flex-1 min-h-0">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 animate-fade-in flex-shrink-0">
+        <div className="space-y-1 sm:space-y-1.5 min-w-0">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight break-words">Messages</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">Stay connected with advisors and support</p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <Button variant="outline" className="gap-2 hover-scale whitespace-nowrap" disabled>
-            <MessageSquare className="h-4 w-4" /> <span className="hidden sm:inline">New Message</span>
+          <Button variant="outline" className="gap-1.5 sm:gap-2 hover-scale whitespace-nowrap h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm" disabled>
+            <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">New Message</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 flex-1 min-h-0">
         <Card
           className={cn(
-            'lg:col-span-1 rounded-xl border shadow-card',
-            selectedAppId ? 'hidden lg:block' : 'block',
+            'lg:col-span-1 rounded-xl border shadow-card flex flex-col',
+            selectedAppId ? 'hidden lg:flex' : 'flex',
           )}
         >
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Messages</CardTitle>
+          <CardHeader className="pb-3 flex-shrink-0">
+            <CardTitle className="text-base sm:text-lg">Messages</CardTitle>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by program or university"
-                className="pl-9"
+                className="pl-9 h-9 sm:h-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
           </CardHeader>
-          <CardContent className="p-0">
-            <ScrollArea className="h-[calc(100vh-16rem)] min-h-[320px] lg:h-[420px]">
+          <CardContent className="p-0 flex-1 min-h-0">
+            <ScrollArea className="h-[calc(100vh-18rem)] min-h-[280px] sm:min-h-[320px] lg:h-[calc(100vh-16rem)] lg:max-h-[500px]">
               {loading ? (
                 <div className="p-4 text-sm text-muted-foreground">Loading...</div>
               ) : filteredApplications.length === 0 ? (
                 <div className="p-4 text-sm text-muted-foreground">No messages yet</div>
               ) : (
-                <ul className="divide-y">
-                  {filteredApplications.map((app) => {
-                    const latest = latestByApp[app.id];
-                    const title = getThreadTitle(app);
-                    const preview = latest?.body || 'No messages yet';
-                    const when = formatRelativeTime(latest?.created_at || null);
-                    const unread = unreadIndicator(app.id);
-                    return (
-                      <li
-                        key={app.id}
-                        className={`p-4 hover:bg-accent/50 cursor-pointer ${
-                          selectedAppId === app.id ? 'bg-accent/50' : ''
-                        }`}
-                        onClick={() => {
-                          setSelectedAppId(app.id);
-                        }}
-                      >
-                        <div className="flex items-start gap-3">
-                          <Avatar>
-                            <AvatarImage alt={title} />
-                            <AvatarFallback>
-                              {(app.program?.university?.name || 'A').slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <p className="font-medium truncate">{title}</p>
-                              <span className="text-xs text-muted-foreground flex-shrink-0">{when}</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground truncate">{preview}</p>
-                            {role !== 'student' ? (
-                              <p className="text-xs text-muted-foreground/80 truncate mt-1">
-                                {getThreadSubtitle(app)}
-                              </p>
-                            ) : null}
-                          </div>
-                          {unread > 0 && (
-                            <Badge variant="secondary" className="rounded-full px-2 py-0.5">
-                              {unread}
-                            </Badge>
-                          )}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
+<ul className="divide-y">
+                                  {filteredApplications.map((app) => {
+                                    const latest = latestByApp[app.id];
+                                    const title = getThreadTitle(app);
+                                    const preview = latest?.body || 'No messages yet';
+                                    const when = formatRelativeTime(latest?.created_at || null);
+                                    const unread = unreadIndicator(app.id);
+                                    return (
+                                      <li
+                                        key={app.id}
+                                        className={cn(
+                                          'p-3 sm:p-4 hover:bg-accent/50 cursor-pointer transition-colors active:bg-accent/70',
+                                          selectedAppId === app.id && 'bg-accent/50',
+                                        )}
+                                        onClick={() => {
+                                          setSelectedAppId(app.id);
+                                        }}
+                                      >
+                                        <div className="flex items-start gap-2 sm:gap-3">
+                                          <Avatar className="h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0">
+                                            <AvatarImage alt={title} />
+                                            <AvatarFallback className="text-xs sm:text-sm">
+                                              {(app.program?.university?.name || 'A').slice(0, 2).toUpperCase()}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                              <p className="font-medium text-sm sm:text-base truncate">{title}</p>
+                                              <span className="text-[10px] sm:text-xs text-muted-foreground flex-shrink-0">{when}</span>
+                                            </div>
+                                            <p className="text-xs sm:text-sm text-muted-foreground truncate">{preview}</p>
+                                            {role !== 'student' ? (
+                                              <p className="text-[10px] sm:text-xs text-muted-foreground/80 truncate mt-0.5 sm:mt-1">
+                                                {getThreadSubtitle(app)}
+                                              </p>
+                                            ) : null}
+                                          </div>
+                                          {unread > 0 && (
+                                            <Badge variant="secondary" className="rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs flex-shrink-0">
+                                              {unread}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
               )}
             </ScrollArea>
           </CardContent>
@@ -737,17 +738,17 @@ export default function MessagesDashboard() {
 
         <Card
           className={cn(
-            'lg:col-span-2 rounded-xl border shadow-card',
-            selectedAppId ? 'block' : 'hidden lg:block',
+            'lg:col-span-2 rounded-xl border shadow-card flex flex-col',
+            selectedAppId ? 'flex' : 'hidden lg:flex',
           )}
         >
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex items-center gap-2">
               {selectedAppId && (
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="lg:hidden -ml-2"
+                  size="icon"
+                  className="lg:hidden -ml-2 h-8 w-8"
                   onClick={() => {
                     // On mobile, "Back" should return to thread list even if the URL has an applicationId preset.
                     try {
@@ -761,31 +762,32 @@ export default function MessagesDashboard() {
                       setSelectedAppId(null);
                     }
                   }}
+                  aria-label="Back to messages"
                 >
-                  Back
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 </Button>
               )}
-              <CardTitle className="text-base">
+              <CardTitle className="text-base sm:text-lg truncate">
                 {selectedAppId ? selectedTitle : 'Message'}
               </CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="flex-1 min-h-0 flex flex-col space-y-3 sm:space-y-4">
             {!selectedAppId ? (
-                <div className="h-[360px] flex items-center justify-center text-muted-foreground text-sm">
-                  Select a message thread to view details
+              <div className="h-[calc(100vh-20rem)] min-h-[280px] lg:h-[400px] flex items-center justify-center text-muted-foreground text-sm">
+                Select a message thread to view details
               </div>
             ) : (
               <>
                 {(selectedUniversityContact.email || selectedUniversityContact.phone || selectedUniversityContact.website) && (
-                  <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                  <div className="rounded-lg border bg-muted/30 p-2 sm:p-3 text-[10px] sm:text-xs text-muted-foreground flex-shrink-0">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="font-medium text-foreground">
+                      <div className="font-medium text-foreground text-xs sm:text-sm">
                         {selectedApplication?.program?.university?.name ?? 'University'}
                       </div>
-                      <div className="flex flex-wrap gap-3">
+                      <div className="flex flex-wrap gap-2 sm:gap-3">
                         {selectedUniversityContact.email ? (
-                          <a className="underline underline-offset-4" href={`mailto:${selectedUniversityContact.email}`}>
+                          <a className="underline underline-offset-4 break-all" href={`mailto:${selectedUniversityContact.email}`}>
                             {selectedUniversityContact.email}
                           </a>
                         ) : null}
@@ -808,38 +810,39 @@ export default function MessagesDashboard() {
                     </div>
                   </div>
                 )}
-                <ScrollArea className="h-[calc(100vh-20rem)] min-h-[280px] lg:h-[360px] pr-2">
-                  <div className="space-y-3">
+                <ScrollArea className="flex-1 h-[calc(100vh-22rem)] min-h-[240px] sm:min-h-[280px] lg:h-[calc(100vh-18rem)] lg:max-h-[440px] pr-2">
+                  <div className="space-y-2 sm:space-y-3">
                     {threadError && (
-                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-2 sm:p-3 text-xs sm:text-sm text-destructive">
                         {threadError}
                       </div>
                     )}
                     {selectedMessages.length === 0 ? (
-                        <div className="text-sm text-muted-foreground px-1">
-                          No messages yet. Start messaging below.
-                        </div>
+                      <div className="text-xs sm:text-sm text-muted-foreground px-1 py-4 text-center">
+                        No messages yet. Start messaging below.
+                      </div>
                     ) : (
                       selectedMessages.map((m) => {
                         const mine = user && m.sender_id === user.id;
                         return (
-                          <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                          <div key={m.id} className={cn('flex', mine ? 'justify-end' : 'justify-start')}>
                             <div
-                              className={`max-w-[80%] rounded-lg p-3 text-sm ${
+                              className={cn(
+                                'max-w-[85%] sm:max-w-[75%] rounded-2xl px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm',
                                 mine
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted text-foreground'
-                              }`}
+                              )}
                             >
                               {!mine ? (
-                                <div className="mb-1 text-xs font-medium opacity-80">
-                                  (m as any)?.sender?.full_name ??
-                                  (m as any)?.sender?.email ??
-                                  'Sender'
+                                <div className="mb-1 text-[10px] sm:text-xs font-medium opacity-80">
+                                  {(m as any)?.sender?.full_name ??
+                                    (m as any)?.sender?.email ??
+                                    'Sender'}
                                 </div>
                               ) : null}
-                              <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                              <div className={`mt-1 text-[10px] ${mine ? 'opacity-80' : 'text-muted-foreground'}`}>
+                              <p className="whitespace-pre-wrap break-words leading-relaxed">{m.body}</p>
+                              <div className={cn('mt-1 text-[9px] sm:text-[10px]', mine ? 'opacity-80 text-right' : 'text-muted-foreground')}>
                                 {formatRelativeTime(m.created_at)}
                               </div>
                             </div>
@@ -850,10 +853,10 @@ export default function MessagesDashboard() {
                     <div ref={listBottomRef} />
                   </div>
                 </ScrollArea>
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-2 flex-shrink-0">
                   <Input
                     placeholder="Type a message..."
-                    className="flex-1"
+                    className="flex-1 h-9 sm:h-10 text-sm"
                     value={composerText}
                     onChange={(e) => setComposerText(e.target.value)}
                     onKeyDown={(e) => {
@@ -865,11 +868,12 @@ export default function MessagesDashboard() {
                     disabled={sending || Boolean(threadError)}
                   />
                   <Button
-                    className="gap-2"
+                    className="gap-1.5 sm:gap-2 h-9 sm:h-10 px-3 sm:px-4"
                     onClick={handleSend}
                     disabled={sending || Boolean(threadError) || !composerText.trim()}
                   >
-                    <Send className="h-4 w-4" /> Send
+                    <Send className="h-4 w-4" />
+                    <span className="hidden xs:inline sm:inline">Send</span>
                   </Button>
                 </div>
               </>
