@@ -307,7 +307,7 @@ const AnalyticsPage = () => {
       "Application Number",
       "Student Name",
       "Student Nationality",
-      "Program",
+      "Course",
       "Status",
       "Created At",
     ];

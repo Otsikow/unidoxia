@@ -705,7 +705,7 @@ export function AgentPayments() {
                     <TableRow>
                       <TableHead>Date</TableHead>
                       <TableHead>Student</TableHead>
-                      <TableHead>Program</TableHead>
+                      <TableHead>Course</TableHead>
                       <TableHead>University</TableHead>
                       <TableHead className="text-right">Rate</TableHead>
                       <TableHead className="text-right">Amount</TableHead>

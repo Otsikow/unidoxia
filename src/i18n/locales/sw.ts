@@ -36,7 +36,7 @@ const sw = {
     navigation: {
       home: "Nyumbani",
       search: "Tafuta",
-      programmes: "Programu",
+      courses: "Kozi",
       blog: "Blogu",
       contact: "Wasiliana",
       dashboard: "Dashibodi",
@@ -70,7 +70,7 @@ const sw = {
         home: "Nyumbani",
         search: "Tafuta",
         scholarships: "Ufadhili wa Masomo",
-        programmes: "Programu",
+        courses: "Kozi",
         blog: "Blogu",
         contact: "Wasiliana",
       },
@@ -268,7 +268,7 @@ const sw = {
         },
       aiSearch: {
         badge: "Utafutaji wa vyuo na ufadhili unaoendeshwa na AI",
-        heading: "Pata programu sahihi kwa akili ya papo hapo",
+        heading: "Pata kozi sahihi kwa akili ya papo hapo",
         description:
           "Uliza chochote kuhusu vyuo, kozi au ufadhili popote ulimwenguni. AI yetu huchambua taarifa za udahili, ufadhili na njia za viza zinazolingana na malengo yako.",
         subheading:
@@ -276,7 +276,7 @@ const sw = {
         ctaLabel: "Anza",
         stats: [
           { value: "12k+", label: "Maarifa ya AI yaliyotolewa kwa waombaji wa kimataifa" },
-          { value: "84%", label: "Wanafunzi waliolinganishwa na angalau programu tatu zinazofaa" },
+          { value: "84%", label: "Wanafunzi waliolinganishwa na angalau kozi tatu zinazofaa" },
           { value: "50+", label: "Nchi zilizo na data ya udahili iliyothibitishwa" },
         ],
         panel: {
@@ -291,10 +291,10 @@ const sw = {
             label: "STEM",
             headline: "Njia maalumu kwa wavumbuzi wa kiufundi",
             description:
-              "Angazia programu zenye maabara ya utafiti, mafunzo kazini na ufadhili kwa sayansi na uhandisi.",
+              "Angazia kozi zenye maabara ya utafiti, mafunzo kazini na ufadhili kwa sayansi na uhandisi.",
             highlights: [
               "Ufadhili unaopea kipaumbele masomo ya STEM na matokeo ya utafiti",
-              "Mitaala inayolingana na soko yenye mafunzo ya viwandani na programu za co-op",
+              "Mitaala inayolingana na soko yenye mafunzo ya viwandani na kozi za co-op",
               "Mwongozo wa viza kwa kazi za teknolojia na uhandisi zenye uhitaji mkubwa",
             ],
           },
@@ -336,12 +336,12 @@ const sw = {
           {
             key: "postgraduate",
             label: "Shahada ya uzamili",
-            headline: "Programu za uzamili na uzamivu zinazolingana na malengo yako",
+            headline: "Kozi za uzamili na uzamivu zinazolingana na malengo yako",
             description: "Linganisha wasimamizi wa utafiti, ukubwa wa vikundi na mifumo ya ufadhili.",
             highlights: [
               "Taarifa za wahadhiri na mada za utafiti za sasa",
               "Upatikanaji wa assistantship na fellowship zenye posho",
-              "Maandalizi ya usaili na mahitaji ya jalada kwa kila programu",
+              "Maandalizi ya usaili na mahitaji ya jalada kwa kila kozi",
             ],
           },
           {
@@ -349,7 +349,7 @@ const sw = {
             label: "Co-op na mafunzo",
             headline: "Kujifunza kunakounganishwa na kazi kwa waajiri wa kimataifa",
             description:
-              "Gundua programu zinazochanganya masomo na uzoefu halisi wa kazi.",
+              "Gundua kozi zinazochanganya masomo na uzoefu halisi wa kazi.",
             highlights: [
               "Viwango vya ajira na ushirikiano na makampuni katika maeneo mbalimbali",
               "Mambo ya kuzingatia kuhusu viza kwa mafunzo yanayolipwa na vipindi vya kazi",
@@ -430,7 +430,7 @@ const sw = {
             {
               question: "Mawakala wanapata msaada gani kupitia UniDoxia?",
               answer:
-                "Mawakala hupata CRM maalum, vifaa vya masoko na mafunzo ya mara kwa mara ili kuwasaidia wanafunzi kupata programu zinazofaa haraka.",
+                "Mawakala hupata CRM maalum, vifaa vya masoko na mafunzo ya mara kwa mara ili kuwasaidia wanafunzi kupata kozi zinazofaa haraka.",
             },
             {
               question: "Kamisheni za mawakala hushughulikiwaje?",

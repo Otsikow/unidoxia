@@ -255,7 +255,7 @@ export default function ApplicationTrackingSystem() {
             <div className="space-y-2">
               <h3 className="text-lg font-semibold">No Applications Yet</h3>
               <p className="text-muted-foreground text-sm">
-                Start your journey by browsing programs and creating your first
+                Start your journey by browsing courses and creating your first
                 application.
               </p>
             </div>
@@ -263,7 +263,7 @@ export default function ApplicationTrackingSystem() {
               <Button asChild className="hover-scale">
                 <Link to="/courses?view=programs">
                   <Plus className="h-4 w-4 mr-2" />
-                  Browse Programs
+                  Browse Courses
                 </Link>
               </Button>
               <Button asChild variant="outline" className="hover-scale">

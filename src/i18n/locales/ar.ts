@@ -36,7 +36,7 @@ const ar = {
     navigation: {
       home: "الرئيسية",
       search: "بحث",
-      programmes: "البرامج",
+      courses: "الدورات",
       blog: "المدونة",
       contact: "اتصل بنا",
       dashboard: "لوحة التحكم",
@@ -70,7 +70,7 @@ const ar = {
         home: "الرئيسية",
         search: "بحث",
         scholarships: "المنح الدراسية",
-        programmes: "البرامج",
+        courses: "الدورات",
         blog: "المدونة",
         contact: "اتصل بنا",
       },

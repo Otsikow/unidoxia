@@ -158,7 +158,7 @@ const fetchAgentStats = async (
           app.student?.legal_name ||
           app.student?.profile?.full_name ||
           "Unknown Student",
-        programName: app.program?.name || "Unknown Program",
+        programName: app.program?.name || "Unknown Course",
         universityName: app.program?.university?.name || "Unknown University",
       }));
     }
@@ -523,7 +523,7 @@ export default function AgentDashboardOverview() {
             <div className="py-8 text-center">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
               <p className="mt-3 text-sm text-muted-foreground">
-                No applications yet. Start by browsing universities and programs, then submit applications on behalf of your students.
+                No applications yet. Start by browsing universities and courses, then submit applications on behalf of your students.
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-3">
                 <Button
@@ -550,7 +550,7 @@ export default function AgentDashboardOverview() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Student</TableHead>
-                    <TableHead>Program</TableHead>
+                    <TableHead>Course</TableHead>
                     <TableHead>University</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Submitted</TableHead>

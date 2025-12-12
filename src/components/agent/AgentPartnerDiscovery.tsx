@@ -307,7 +307,7 @@ export function AgentPartnerDiscovery() {
                 </div>
 
                 <div className="text-xs text-muted-foreground space-y-1">
-                  <p>Programs: {university.programCount}+ | Average tuition: {university.tuitionDisplay}</p>
+                  <p>Courses: {university.programCount}+ | Average tuition: {university.tuitionDisplay}</p>
                   <p>Research highlights: {university.researchHighlights.slice(0, 1).join(", ")}</p>
                 </div>
 

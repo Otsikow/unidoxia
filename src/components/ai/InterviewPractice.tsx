@@ -81,26 +81,26 @@ export default function InterviewPractice() {
     },
     {
       id: '2',
-      question: 'What are your career goals and how will this program help you achieve them?',
+      question: 'What are your career goals and how will this course help you achieve them?',
       category: 'academic',
       difficulty: 'medium',
       tips: [
         'Be specific about your short-term and long-term goals',
-        'Connect your goals to the program curriculum',
-        'Show research into the program and university',
+        'Connect your goals to the course curriculum',
+        'Show research into the course and university',
         'Demonstrate clear career progression'
       ]
     },
     {
       id: '3',
-      question: 'Why did you choose this specific university and program?',
+      question: 'Why did you choose this specific university and course?',
       category: 'academic',
       difficulty: 'medium',
       tips: [
         'Research the university\'s strengths and reputation',
         'Mention specific faculty members or research areas',
         'Connect to your academic interests',
-        'Show knowledge of program structure'
+        'Show knowledge of course structure'
       ]
     },
     {

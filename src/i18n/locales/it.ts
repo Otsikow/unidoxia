@@ -121,7 +121,7 @@ const it = {
         },
       aiSearch: {
         badge: "Ricerca università e borse di studio con IA",
-        heading: "Trova il programma giusto con un'intelligenza in tempo reale",
+        heading: "Trova il corso giusto con un'intelligenza in tempo reale",
         description:
           "Fai domande su università, corsi o finanziamenti in qualsiasi parte del mondo. La nostra IA analizza dati di ammissione, borse di studio e percorsi di visto in linea con i tuoi obiettivi.",
         subheading:
@@ -129,7 +129,7 @@ const it = {
         ctaLabel: "Inizia ora",
         stats: [
           { value: "12k+", label: "Approfondimenti IA generati per candidati internazionali" },
-          { value: "84%", label: "Studenti abbinati ad almeno tre programmi ideali" },
+          { value: "84%", label: "Studenti abbinati ad almeno tre corsi ideali" },
           { value: "50+", label: "Paesi coperti con dati di ammissione verificati" },
         ],
         panel: {
@@ -146,10 +146,10 @@ const it = {
             label: "STEM",
             headline: "Percorsi su misura per innovatori tecnici",
             description:
-              "Metti in evidenza programmi con laboratori di ricerca, tirocini e finanziamenti dedicati a scienze e ingegneria.",
+              "Metti in evidenza corsi con laboratori di ricerca, tirocini e finanziamenti dedicati a scienze e ingegneria.",
             highlights: [
               "Borse che privilegiano corsi STEM e risultati di ricerca",
-              "Curricula allineati al mercato con stage e programmi co-op",
+              "Curricula allineati al mercato con stage e corsi co-op",
               "Indicazioni sul visto per ruoli tecnologici e ingegneristici molto richiesti",
             ],
           },
@@ -196,7 +196,7 @@ const it = {
             highlights: [
               "Profili dei docenti e temi di ricerca attuali",
               "Disponibilità di assistantship e fellowship con borsa",
-              "Preparazione a colloqui e portfolio per ciascun programma",
+              "Preparazione a colloqui e portfolio per ciascun corso",
             ],
           },
           {
@@ -204,7 +204,7 @@ const it = {
             label: "Co-op e tirocini",
             headline: "Apprendimento integrato al lavoro con aziende globali",
             description:
-              "Trova programmi che combinano studio ed esperienza professionale concreta.",
+              "Trova corsi che combinano studio ed esperienza professionale concreta.",
             highlights: [
               "Tassi di inserimento e partnership con aziende nelle varie regioni",
               "Considerazioni sul visto per tirocini retribuiti e periodi lavorativi",
@@ -268,7 +268,7 @@ const it = {
     universitySearch: {
       hero: {
         title: "Trova la tua università ideale",
-        subtitle: "Cerca tra università, programmi e borse di studio in tutto il mondo.",
+        subtitle: "Cerca tra università, corsi e borse di studio in tutto il mondo.",
       },
       tabs: {
         search: "Ricerca",
@@ -290,7 +290,7 @@ const it = {
             all: "Tutti i paesi",
           },
           programLevel: {
-            label: "Livello del programma",
+            label: "Livello del corso",
             placeholder: "Seleziona livello",
             all: "Tutti i livelli",
           },

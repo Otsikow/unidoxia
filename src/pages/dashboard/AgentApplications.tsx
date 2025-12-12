@@ -656,7 +656,7 @@ const AgentApplications = () => {
                       <Input
                         value={searchTerm}
                         onChange={handleSearchChange}
-                        placeholder="Search student or program..."
+                        placeholder="Search student or course..."
                         className="pl-9"
                       />
                     </div>
@@ -760,13 +760,13 @@ const AgentApplications = () => {
                               <p className="max-w-md text-xs sm:text-sm text-muted-foreground/80">
                                 {searchTerm || statusFilter !== 'all' || universityFilter !== 'all'
                                   ? 'No applications match your current filters. Try adjusting your search criteria.'
-                                  : 'Start by browsing programs and submitting applications for your students.'}
+                                  : 'Start by browsing courses and submitting applications for your students.'}
                               </p>
                               {!searchTerm && statusFilter === 'all' && universityFilter === 'all' && (
                                 <Button asChild className="mt-2">
                                   <Link to="/courses?view=programs">
                                     <GraduationCap className="h-4 w-4 mr-2" />
-                                    Browse Programs
+                                    Browse Courses
                                   </Link>
                                 </Button>
                               )}

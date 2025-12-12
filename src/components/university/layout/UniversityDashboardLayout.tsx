@@ -502,7 +502,7 @@ export const fetchUniversityDashboardData = async (
         status: app.status ?? "unknown",
         createdAt: app.created_at,
         programId: app.program_id,
-        programName: program?.name ?? "Unknown Program",
+        programName: program?.name ?? "Unknown Course",
         programLevel: program?.level ?? "—",
         programDiscipline: program?.discipline ?? null,
         studentId: app.student_id ?? null,
@@ -1052,7 +1052,7 @@ export const UniversityDashboardLayout = ({
 
           <p className="text-muted-foreground">
             Your university dashboard is ready. Begin by setting up your profile
-            and adding your first programs.
+            and adding your first courses.
           </p>
 
           <div className="flex gap-4 mt-2">
