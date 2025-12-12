@@ -102,6 +102,7 @@ export const UniversityHeader = ({
   const showBack =
     location.pathname !== "/university" &&
     location.pathname !== "/university/" &&
+    location.pathname !== "/university/overview" &&
     location.pathname !== "/";
 
   const handleViewProfile = () => {
