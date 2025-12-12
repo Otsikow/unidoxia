@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
 // Import destination images
 import usaImage from "@/assets/destinations/usa.jpeg";
@@ -263,26 +264,19 @@ export default function OnboardingDestinations() {
           </Link>
         </div>
 
-        {/* Progress dots */}
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
-          <div className="flex justify-center gap-2">
-
-            {/* Dot 1 — Welcome */}
-            <Link
-              to="/onboarding/welcome"
-              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-            />
-
-            {/* Dot 2 — Success Stories */}
-            <Link
-              to="/onboarding/success-stories"
-              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-            />
-
-            {/* Dot 3 — Destinations (current) */}
-            <div className="w-2 h-2 rounded-full bg-primary" />
-
-          </div>
+          <OnboardingProgressNav
+            previousHref="/onboarding/success-stories"
+            previousLabel="Back to success"
+            nextHref="/onboarding/visa-support"
+            nextLabel="Next: Visa support"
+            steps={[
+              { label: "Welcome", href: "/onboarding/welcome" },
+              { label: "Student success", href: "/onboarding/success-stories" },
+              { label: "Destinations", href: "/onboarding/destinations", active: true },
+              { label: "Visa support", href: "/onboarding/visa-support" },
+            ]}
+          />
         </div>
       </div>
 

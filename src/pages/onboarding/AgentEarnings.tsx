@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { ArrowRight, ArrowUpRight, BarChart3, Gift, LineChart, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { markOnboardingSeen } from "@/lib/onboardingStorage";
 
 const earningsTimeline = [
   { label: "Week 1", value: 2800 },
@@ -49,9 +50,7 @@ const AgentEarnings = () => {
   const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/auth/signup?role=agent";
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("agentOnboardingSeen", "true");
-    }
+    markOnboardingSeen("agent");
   }, []);
 
   return (

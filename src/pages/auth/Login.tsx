@@ -11,6 +11,7 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import unidoxiaLogo from '@/assets/unidoxia-logo.png';
 import BackButton from '@/components/BackButton';
 import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
+import { hasSeenOnboarding, markOnboardingSeen, type OnboardingRole } from '@/lib/onboardingStorage';
 import { SEO } from "@/components/SEO";
 
 const Login = () => {
@@ -28,11 +29,15 @@ const Login = () => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
 
-    if (roleParam === 'agent' && !authLoading && !user && typeof window !== 'undefined') {
-      const hasSeenAgentOnboarding = sessionStorage.getItem('agentOnboardingSeen') === 'true';
-      if (!hasSeenAgentOnboarding) {
-        sessionStorage.setItem('agentOnboardingSeen', 'true');
-        navigate(`/agents/onboarding?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`, {
+    const onboardingRole = roleParam === 'agent' || roleParam === 'university' ? roleParam : null;
+
+    if (onboardingRole && !authLoading && !user && typeof window !== 'undefined') {
+      const hasSeen = hasSeenOnboarding(onboardingRole as OnboardingRole);
+      if (!hasSeen) {
+        markOnboardingSeen(onboardingRole as OnboardingRole);
+        const nextTarget = encodeURIComponent(`${location.pathname}${location.search}`);
+        const onboardingPath = onboardingRole === 'agent' ? '/agents/onboarding' : '/onboarding/welcome';
+        navigate(`${onboardingPath}?next=${nextTarget}`, {
           replace: true,
         });
       }

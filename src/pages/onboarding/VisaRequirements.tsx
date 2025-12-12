@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 import { FileCheck, CheckCircle2, ArrowRight } from "lucide-react";
 
 const visaCountries = [
@@ -120,12 +121,18 @@ export default function OnboardingVisaRequirements() {
             </div>
           </div>
 
-          <div className="mt-6 flex gap-2" aria-label="onboarding progress">
-            <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-            <div className="w-8 h-2 rounded-full bg-primary" />
-            <Link to="/onboarding/success-stories" className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-            <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-          </div>
+          <OnboardingProgressNav
+            previousHref="/onboarding/welcome"
+            previousLabel="Back to welcome"
+            nextHref="/onboarding/success-stories"
+            nextLabel="Next: Success stories"
+            steps={[
+              { label: "Welcome", href: "/onboarding/welcome" },
+              { label: "Visa requirements", href: "/onboarding/visa-requirements", active: true },
+              { label: "Student success", href: "/onboarding/success-stories" },
+              { label: "Destinations", href: "/onboarding/destinations" },
+            ]}
+          />
         </div>
       </div>
     </div>
