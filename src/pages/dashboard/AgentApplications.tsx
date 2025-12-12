@@ -41,6 +41,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { supabase } from '@/integrations/supabase/client';
 import { formatErrorForToast, getErrorMessage, logError } from '@/lib/errorUtils';
+import { parseUniversityProfileDetails } from '@/lib/universityProfile';
 import {
   Building2,
   Calendar,
@@ -58,6 +59,7 @@ import {
   Send,
   TrendingUp,
   Award,
+  Globe,
 } from 'lucide-react';
 import type { ChangeEvent } from 'react';
 
@@ -93,6 +95,8 @@ interface ApplicationRow {
       name?: string | null;
       country?: string | null;
       city?: string | null;
+      website?: string | null;
+      submission_config_json?: unknown;
       ranking?: {
         accreditation?: string;
         accreditation_summary?: string;
@@ -220,6 +224,17 @@ const AgentApplications = () => {
 
   const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
+  const selectedUniversityContact = useMemo(() => {
+    const uni = selectedApplication?.program?.university ?? null;
+    const parsed = parseUniversityProfileDetails((uni as any)?.submission_config_json ?? null);
+    const primary = parsed?.contacts?.primary ?? null;
+    return {
+      email: primary?.email ?? null,
+      phone: primary?.phone ?? null,
+      website: (uni as any)?.website ?? null,
+    };
+  }, [selectedApplication]);
+
   const startIndex = useMemo(() => (page - 1) * PAGE_SIZE, [page]);
   const endIndex = useMemo(() => startIndex + PAGE_SIZE - 1, [startIndex]);
   const totalPages = useMemo(() => (totalCount === 0 ? 1 : Math.ceil(totalCount / PAGE_SIZE)), [totalCount]);
@@ -307,7 +322,9 @@ const AgentApplications = () => {
               program:programs (
                 university:universities (
                   id,
-                  name
+                  name,
+                  website,
+                  submission_config_json
                 )
               )
             `
@@ -391,6 +408,8 @@ const AgentApplications = () => {
                   name,
                   country,
                   city,
+                  website,
+                  submission_config_json,
                   ranking
                 )
               )
@@ -797,10 +816,20 @@ const AgentApplications = () => {
                             <TableCell>{formatDate(application.submitted_at)}</TableCell>
                             <TableCell>{formatDate(application.updated_at)}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" onClick={() => handleViewDetails(application)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                Details
-                              </Button>
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/dashboard/messages?applicationId=${application.id}`)}
+                                >
+                                  <Send className="h-4 w-4 mr-2" />
+                                  Message
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => handleViewDetails(application)}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Details
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))
@@ -878,6 +907,48 @@ const AgentApplications = () => {
                               <span>{getAccreditation(selectedApplication)}</span>
                             </div>
                           )}
+                          {selectedApplication.submitted_at &&
+                          (selectedUniversityContact.email ||
+                            selectedUniversityContact.phone ||
+                            selectedUniversityContact.website) ? (
+                            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                              {selectedUniversityContact.email ? (
+                                <div className="flex items-center gap-2">
+                                  <Mail className="h-3.5 w-3.5" />
+                                  <a
+                                    className="underline underline-offset-4"
+                                    href={`mailto:${selectedUniversityContact.email}`}
+                                  >
+                                    {selectedUniversityContact.email}
+                                  </a>
+                                </div>
+                              ) : null}
+                              {selectedUniversityContact.phone ? (
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-3.5 w-3.5" />
+                                  <a
+                                    className="underline underline-offset-4"
+                                    href={`tel:${selectedUniversityContact.phone}`}
+                                  >
+                                    {selectedUniversityContact.phone}
+                                  </a>
+                                </div>
+                              ) : null}
+                              {selectedUniversityContact.website ? (
+                                <div className="flex items-center gap-2">
+                                  <Globe className="h-3.5 w-3.5" />
+                                  <a
+                                    className="underline underline-offset-4"
+                                    href={selectedUniversityContact.website}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                  >
+                                    Website
+                                  </a>
+                                </div>
+                              ) : null}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                       {(selectedApplication.intake_month || selectedApplication.intake_year) && (
@@ -886,6 +957,15 @@ const AgentApplications = () => {
                           <span>Intake: {formatIntake(selectedApplication.intake_month, selectedApplication.intake_year)}</span>
                         </div>
                       )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-center gap-2"
+                        onClick={() => navigate(`/dashboard/messages?applicationId=${selectedApplication.id}`)}
+                      >
+                        <Send className="h-4 w-4" />
+                        Message university
+                      </Button>
                     </div>
 
                     {/* Application Info */}
