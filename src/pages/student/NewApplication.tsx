@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Database, Json } from '@/integrations/supabase/types';
 import type { ApplicationFormData } from '@/types/application';
 import { normalizeEducationLevel } from '@/lib/education';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 // Import step components
 import PersonalInfoStep from '@/components/application/PersonalInfoStep';
@@ -63,6 +64,16 @@ const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isMissingColumnError = (error: PostgrestError | null, column: string) => {
+  if (!error) return false;
+
+  const normalizedColumn = column.toLowerCase();
+  return (
+    error.message?.toLowerCase().includes(normalizedColumn) ||
+    error.details?.toLowerCase().includes(normalizedColumn)
+  );
+};
 
 const mergeLegacyFormData = (
   current: ApplicationFormData,
@@ -822,47 +833,55 @@ export default function NewApplication() {
         notes: formData.notes || null,
         tenant_id: tenantId,
         submitted_at: new Date().toISOString(),
-        agent_id: submittedByAgent ? agentId : null,
-        submitted_by_agent: submittedByAgent,
-        submission_channel: submissionChannel,
       };
 
-      // Create application (with graceful fallback if the optional attribution column is missing)
-      const { data: applicationData, error: appError } = await supabase
-        .from('applications')
-        .insert({
-          ...baseApplicationPayload,
-          application_source: 'UniDoxia', // Attribution: track that this application came through UniDoxia platform
-        })
-        .select()
-        .single();
+      const optionalApplicationColumns = {
+        application_source: 'UniDoxia' as const, // Attribution: track that this application came through UniDoxia platform
+        submitted_by_agent: submittedByAgent,
+        submission_channel: submissionChannel,
+        agent_id: submittedByAgent ? agentId : null,
+      };
 
-      const isApplicationSourceMissing =
-        appError &&
-        (appError.message?.toLowerCase().includes('application_source') ||
-          appError.details?.toLowerCase().includes('application_source'));
+      const attemptInsert = async (payload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns>) =>
+        supabase.from('applications').insert(payload).select().single();
 
-      const applicationInsertError = appError && !isApplicationSourceMissing ? appError : null;
+      const { data: applicationData, error: appError } = await attemptInsert({
+        ...baseApplicationPayload,
+        ...optionalApplicationColumns,
+      });
 
-      if (applicationInsertError) throw applicationInsertError;
+      const missingOptionalColumns = Object.keys(optionalApplicationColumns).filter((column) =>
+        isMissingColumnError(appError, column),
+      );
 
-      const finalApplicationData = applicationData;
+      let createdApplication = applicationData;
 
-      let fallbackApplicationData = applicationData;
-      if (!applicationData && isApplicationSourceMissing) {
-        // Retry without the attribution column if the database schema hasn't added it yet
-        console.warn('application_source column missing, retrying application insert without it', appError);
-        const { data: retryData, error: retryError } = await supabase
-          .from('applications')
-          .insert(baseApplicationPayload)
-          .select()
-          .single();
-
-        if (retryError) throw retryError;
-        fallbackApplicationData = retryData;
+      if (appError && missingOptionalColumns.length === 0) {
+        throw appError;
       }
 
-      const createdApplication = finalApplicationData || fallbackApplicationData;
+      if (!createdApplication && missingOptionalColumns.length > 0) {
+        console.warn(
+          'Optional application columns missing, retrying insert without them',
+          missingOptionalColumns,
+        );
+
+        const fallbackPayload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns> = {
+          ...baseApplicationPayload,
+        };
+
+        for (const [column, value] of Object.entries(optionalApplicationColumns)) {
+          if (!missingOptionalColumns.includes(column)) {
+            // Only include optional columns that exist in the target database schema
+            fallbackPayload[column as keyof typeof optionalApplicationColumns] = value;
+          }
+        }
+
+        const { data: retryData, error: retryError } = await attemptInsert(fallbackPayload);
+
+        if (retryError) throw retryError;
+        createdApplication = retryData;
+      }
 
       if (!createdApplication) {
         throw new Error('Failed to create application');
