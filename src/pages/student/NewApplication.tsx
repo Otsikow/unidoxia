@@ -39,6 +39,7 @@ const STEPS = [
 ];
 
 type ApplicationDraftRow = Database['public']['Tables']['application_drafts']['Row'];
+type ApplicationRow = Database['public']['Tables']['applications']['Row'];
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const LEGACY_DRAFT_STORAGE_KEY = 'application_draft';
@@ -69,9 +70,16 @@ const isMissingColumnError = (error: PostgrestError | null, column: string) => {
   if (!error) return false;
 
   const normalizedColumn = column.toLowerCase();
+  const message = error.message?.toLowerCase() ?? '';
+  const details = error.details?.toLowerCase() ?? '';
+  const hint = error.hint?.toLowerCase() ?? '';
+  const mentionsColumn =
+    message.includes(normalizedColumn) || details.includes(normalizedColumn) || hint.includes(normalizedColumn);
+
   return (
-    error.message?.toLowerCase().includes(normalizedColumn) ||
-    error.details?.toLowerCase().includes(normalizedColumn)
+    (error.code === '42703' && mentionsColumn) ||
+    mentionsColumn ||
+    message.includes('schema cache')
   );
 };
 
@@ -842,49 +850,61 @@ export default function NewApplication() {
         agent_id: submittedByAgent ? agentId : null,
       };
 
-      const attemptInsert = async (payload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns>) =>
-        supabase.from('applications').insert(payload).select().single();
+      const attemptInsert = async (
+        payload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns>,
+      ) => supabase.from('applications').insert(payload).select().single();
 
-      const { data: applicationData, error: appError } = await attemptInsert({
+      // Keep retrying by stripping optional columns that are missing from the target schema
+      // until the insert succeeds or we exhaust all optional columns.
+      const optionalColumnEntries = Object.entries(optionalApplicationColumns);
+      const excludedColumns = new Set<string>();
+      let currentPayload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns> = {
         ...baseApplicationPayload,
         ...optionalApplicationColumns,
-      });
+      };
+      let lastError: PostgrestError | null = null;
+      let createdApplication: ApplicationRow | null = null;
 
-      const missingOptionalColumns = Object.keys(optionalApplicationColumns).filter((column) =>
-        isMissingColumnError(appError, column),
-      );
+      for (let attempt = 0; attempt <= optionalColumnEntries.length; attempt++) {
+        const { data, error } = await attemptInsert(currentPayload);
 
-      let createdApplication = applicationData;
+        if (!error && data) {
+          createdApplication = data;
+          break;
+        }
 
-      if (appError && missingOptionalColumns.length === 0) {
-        throw appError;
-      }
+        lastError = error;
 
-      if (!createdApplication && missingOptionalColumns.length > 0) {
+        const missingColumns = optionalColumnEntries
+          .map(([column]) => column)
+          .filter((column) => !excludedColumns.has(column) && isMissingColumnError(error, column));
+
+        if (missingColumns.length === 0) {
+          break;
+        }
+
+        missingColumns.forEach((column) => excludedColumns.add(column));
+
         console.warn(
           'Optional application columns missing, retrying insert without them',
-          missingOptionalColumns,
+          missingColumns,
         );
 
-        const fallbackPayload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns> = {
+        const nextPayload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns> = {
           ...baseApplicationPayload,
         };
 
-        for (const [column, value] of Object.entries(optionalApplicationColumns)) {
-          if (!missingOptionalColumns.includes(column)) {
-            // Only include optional columns that exist in the target database schema
-            fallbackPayload[column as keyof typeof optionalApplicationColumns] = value;
+        for (const [column, value] of optionalColumnEntries) {
+          if (!excludedColumns.has(column)) {
+            nextPayload[column as keyof typeof optionalApplicationColumns] = value;
           }
         }
 
-        const { data: retryData, error: retryError } = await attemptInsert(fallbackPayload);
-
-        if (retryError) throw retryError;
-        createdApplication = retryData;
+        currentPayload = nextPayload;
       }
 
       if (!createdApplication) {
-        throw new Error('Failed to create application');
+        throw lastError || new Error('Failed to create application');
       }
 
       setApplicationId(createdApplication.id);
