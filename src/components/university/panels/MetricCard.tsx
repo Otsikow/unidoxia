@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ReactNode, KeyboardEvent, MouseEvent, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +10,8 @@ interface MetricCardProps {
   icon?: ReactNode;
   tone?: "default" | "success" | "warning" | "info";
   footer?: ReactNode;
+  to?: string;
+  onClick?: () => void;
 }
 
 const toneStyles: Record<Required<MetricCardProps>["tone"], {
@@ -45,14 +48,56 @@ export const MetricCard = ({
   icon,
   tone = "default",
   footer,
+  to,
+  onClick,
 }: MetricCardProps) => {
   const toneConfig = toneStyles[tone];
+  const navigate = useNavigate();
+  const isClickable = Boolean(to || onClick);
+
+  const handleNavigate = useCallback(() => {
+    if (onClick) onClick();
+    if (to) navigate(to);
+  }, [navigate, onClick, to]);
+
+  const handleClick = useCallback(
+    (event: MouseEvent) => {
+      if (!isClickable) return;
+
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("a,button,[role='button'],input,select,textarea")) {
+        return;
+      }
+
+      handleNavigate();
+    },
+    [handleNavigate, isClickable],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (!isClickable) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleNavigate();
+      }
+    },
+    [handleNavigate, isClickable],
+  );
+
   return (
     <Card
       className={cn(
         "h-full overflow-hidden rounded-2xl bg-card text-card-foreground shadow-sm transition-shadow duration-200 hover:shadow-md",
         toneConfig.card,
+        isClickable &&
+          "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       )}
+      role={isClickable ? "link" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      aria-label={isClickable ? `Open ${label}` : undefined}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <div>

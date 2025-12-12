@@ -51,6 +51,12 @@ export const ThreeDCarousel = ({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  /* ------------------ Keep index in bounds ------------------ */
+  useEffect(() => {
+    if (cardCount === 0) return;
+    setActiveIndex((prev) => clampIndex(prev, cardCount));
+  }, [cardCount]);
+
   /* ------------------ Auto Play ------------------ */
   useEffect(() => {
     if (timerRef.current) {

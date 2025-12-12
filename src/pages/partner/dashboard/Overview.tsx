@@ -315,34 +315,50 @@ const SummaryCard = ({
   value,
   icon: Icon,
   loading = false,
+  to,
 }: {
   title: string;
   description?: string;
   value: string;
   icon: typeof Briefcase;
   loading?: boolean;
-}) => (
-  <Card className="border border-slate-200 bg-white/80 shadow-lg shadow-slate-200/40 transition hover:border-slate-300 hover:shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-slate-950/20 dark:hover:border-slate-700 dark:hover:shadow-slate-900/30">
-    <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-      <div>
-        <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">{title}</CardTitle>
-        {description ? (
-          <CardDescription className="text-xs text-slate-500">{description}</CardDescription>
-        ) : null}
-      </div>
-      <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300">
-        <Icon className="h-5 w-5" />
-      </div>
-    </CardHeader>
-    <CardContent>
-      {loading ? (
-        <Skeleton className="mt-1" lines={1} />
-      ) : (
-        <p className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{value}</p>
-      )}
-    </CardContent>
-  </Card>
-);
+  to?: string;
+}) => {
+  const card = (
+    <Card className="border border-slate-200 bg-white/80 shadow-lg shadow-slate-200/40 transition hover:border-slate-300 hover:shadow-slate-300/50 dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-slate-950/20 dark:hover:border-slate-700 dark:hover:shadow-slate-900/30 group-focus-visible:ring-2 group-focus-visible:ring-blue-500/40 group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-white dark:group-focus-visible:ring-offset-slate-950">
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300">{title}</CardTitle>
+          {description ? (
+            <CardDescription className="text-xs text-slate-500">{description}</CardDescription>
+          ) : null}
+        </div>
+        <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-300">
+          <Icon className="h-5 w-5" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <Skeleton className="mt-1" lines={1} />
+        ) : (
+          <p className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{value}</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (!to) return card;
+
+  return (
+    <Link
+      to={to}
+      className="group block focus-visible:outline-none"
+      aria-label={`Open ${title}`}
+    >
+      {card}
+    </Link>
+  );
+};
 
 const RecentApplicationsTable = ({
   applications,
@@ -670,6 +686,7 @@ const PartnerOverviewPage = () => {
           value={numberFormatter.format(data?.summary.totalApplications ?? 0)}
           icon={ClipboardList}
           loading={isLoading && !data}
+          to="/dashboard/applications"
         />
         <SummaryCard
           title="Active Applications"
@@ -677,6 +694,7 @@ const PartnerOverviewPage = () => {
           value={numberFormatter.format(data?.summary.activeApplications ?? 0)}
           icon={Briefcase}
           loading={isLoading && !data}
+          to="/dashboard/applications"
         />
         <SummaryCard
           title="Offers Received"
@@ -684,6 +702,7 @@ const PartnerOverviewPage = () => {
           value={numberFormatter.format(data?.summary.offersReceived ?? 0)}
           icon={Gift}
           loading={isLoading && !data}
+          to="/dashboard/offers"
         />
         <SummaryCard
           title="Pending Documents"
@@ -691,6 +710,7 @@ const PartnerOverviewPage = () => {
           value={numberFormatter.format(data?.summary.pendingDocuments ?? 0)}
           icon={FileClock}
           loading={isLoading && !data}
+          to="/dashboard/requests"
         />
         <SummaryCard
           title="Conversion Rate (%)"
@@ -702,6 +722,7 @@ const PartnerOverviewPage = () => {
           }
           icon={Percent}
           loading={isLoading && !data}
+          to="/dashboard/offers"
         />
       </section>
 
