@@ -1,6 +1,9 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 
 import AgentDashboardOverview from "@/components/agent/AgentDashboardOverview";
 import AgentStudentsManager from "@/components/agent/AgentStudentsManager";
@@ -15,6 +18,8 @@ import TaskManagement from "@/components/tasks/TaskManagement";
 import PreferenceRanking from "@/components/ranking/PreferenceRanking";
 import CommissionManagement from "@/components/commission/CommissionManagement";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useAgentProfileCompletion } from "@/hooks/useAgentProfileCompletion";
+import { useAuth } from "@/hooks/useAuth";
 
 import {
   LayoutDashboard,
@@ -29,6 +34,7 @@ import {
   Handshake,
   Building2,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 
 import BackButton from "@/components/BackButton";
@@ -48,6 +54,14 @@ const tabItems = [
 ];
 
 export default function AgentDashboard() {
+  const { profile } = useAuth();
+  const isAgent = profile?.role === "agent";
+  const {
+    completion: agentCompletion,
+    checklist: agentChecklist,
+    isLoading: agentCompletionLoading,
+  } = useAgentProfileCompletion();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -117,6 +131,46 @@ export default function AgentDashboard() {
               </p>
             </div>
           </div>
+
+          {isAgent && (
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <CardTitle className="flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-primary" />
+                    Complete your agent profile
+                  </CardTitle>
+                  <CardDescription>
+                    Finish your details to unlock applications and commissions.
+                  </CardDescription>
+                </div>
+                <Button asChild variant="outline" size="sm" className="gap-2 h-9">
+                  <Link to="/agent/settings">Update profile</Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {agentCompletionLoading ? (
+                  <div className="space-y-2">
+                    <div className="h-4 w-24 rounded bg-muted animate-pulse" />
+                    <div className="h-2 rounded bg-muted animate-pulse" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between text-sm font-medium">
+                      <span>Profile completeness</span>
+                      <span>{agentCompletion.percentage}%</span>
+                    </div>
+                    <Progress value={agentCompletion.percentage} className="h-2" />
+                    {agentCompletion.percentage < 100 && (
+                      <p className="text-xs text-muted-foreground">
+                        Next steps: {agentChecklist.filter((item) => !item.isComplete).map((item) => item.label).slice(0, 2).join(', ') || 'Add your agent details'}
+                      </p>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Navigation Tabs */}
           <TooltipProvider delayDuration={200}>
