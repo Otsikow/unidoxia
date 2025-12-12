@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,7 +26,7 @@ import { normalizeEducationLevel } from '@/lib/education';
 import PersonalInfoStep from '@/components/application/PersonalInfoStep';
 import EducationHistoryStep from '@/components/application/EducationHistoryStep';
 import ProgramSelectionStep from '@/components/application/ProgramSelectionStep';
-import DocumentsUploadStep from '@/components/application/DocumentsUploadStep';
+import DocumentsUploadStep, { ExistingDocumentMap } from '@/components/application/DocumentsUploadStep';
 import ReviewSubmitStep from '@/components/application/ReviewSubmitStep';
 
 const STEPS = [
@@ -41,6 +41,25 @@ type ApplicationDraftRow = Database['public']['Tables']['application_drafts']['R
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const LEGACY_DRAFT_STORAGE_KEY = 'application_draft';
+const APPLICATION_DOCUMENT_TYPES = ['transcript', 'passport', 'ielts', 'sop'] as const;
+type ApplicationDocumentType = (typeof APPLICATION_DOCUMENT_TYPES)[number];
+
+type StudentDocumentMetadata = {
+  id: string;
+  document_type: string;
+  file_name: string;
+  file_size: number;
+  mime_type: string;
+  storage_path: string;
+  verified_status?: string | null;
+};
+
+const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
+  transcript: ['transcript', 'degree_certificate'],
+  passport: ['passport'],
+  ielts: ['english_test'],
+  sop: ['personal_statement'],
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -194,6 +213,9 @@ export default function NewApplication() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [autoSaveError, setAutoSaveError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [studentDocuments, setStudentDocuments] = useState<
+    Partial<Record<ApplicationDocumentType, StudentDocumentMetadata>>
+  >({});
   const isAgentFlow = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
 
   const hasHydratedFromDraft = useRef(false);
@@ -232,6 +254,41 @@ export default function NewApplication() {
   useEffect(() => {
     formDataRef.current = formData;
   }, [formData]);
+
+  const mapStudentDocuments = useCallback(
+    (documents: StudentDocumentMetadata[]): Partial<Record<ApplicationDocumentType, StudentDocumentMetadata>> => {
+      const mapped: Partial<Record<ApplicationDocumentType, StudentDocumentMetadata>> = {};
+
+      for (const docType of APPLICATION_DOCUMENT_TYPES) {
+        const matches = documents.filter((doc) => STUDENT_DOCUMENT_TYPE_MAP[docType].includes(doc.document_type));
+
+        if (matches.length > 0) {
+          mapped[docType] = matches[0];
+        }
+      }
+
+      return mapped;
+    },
+    [],
+  );
+
+  const loadStudentDocuments = useCallback(
+    async (id: string) => {
+      try {
+        const { data, error } = await supabase
+          .from('student_documents')
+          .select('id, document_type, file_name, file_size, mime_type, storage_path, verified_status')
+          .eq('student_id', id);
+
+        if (error) throw error;
+
+        setStudentDocuments(mapStudentDocuments(data ?? []));
+      } catch (error) {
+        logError(error, 'NewApplication.loadStudentDocuments');
+      }
+    },
+    [mapStudentDocuments],
+  );
 
   // Fetch student data and pre-fill personal info
   const fetchStudentData = useCallback(async () => {
@@ -283,6 +340,7 @@ export default function NewApplication() {
       }
 
       setStudentId(studentData.id);
+      void loadStudentDocuments(studentData.id);
 
       // Pre-fill personal information
       setFormData((prev) => ({
@@ -357,6 +415,12 @@ export default function NewApplication() {
       fetchStudentData();
     }
   }, [user, fetchStudentData]);
+
+  useEffect(() => {
+    if (studentId) {
+      void loadStudentDocuments(studentId);
+    }
+  }, [loadStudentDocuments, studentId]);
 
   const draftQueryKey = ['application-draft', studentId] as const;
 
@@ -807,9 +871,7 @@ export default function NewApplication() {
       setApplicationId(createdApplication.id);
 
       // Upload documents to storage and create document records
-      const documentTypes = ['transcript', 'passport', 'ielts', 'sop'] as const;
-      
-      for (const docType of documentTypes) {
+      for (const docType of APPLICATION_DOCUMENT_TYPES) {
         const file = formData.documents[docType];
         if (file) {
           try {
@@ -840,6 +902,49 @@ export default function NewApplication() {
             });
           } catch (error) {
             console.error(`Error processing ${docType}:`, error);
+          }
+        } else {
+          const studentDocument = studentDocuments[docType];
+
+          if (!studentDocument) {
+            continue;
+          }
+
+          try {
+            const { data: existingFile, error: downloadError } = await supabase.storage
+              .from('student-documents')
+              .download(studentDocument.storage_path);
+
+            if (downloadError || !existingFile) {
+              console.error(`Failed to fetch existing ${docType} for reuse:`, downloadError);
+              continue;
+            }
+
+            const fileName = `${docType}_${Date.now()}_${studentDocument.file_name}`;
+            const filePath = `${createdApplication.id}/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+              .from('application-documents')
+              .upload(filePath, existingFile, {
+                cacheControl: '3600',
+                upsert: false,
+                contentType: studentDocument.mime_type,
+              });
+
+            if (uploadError) {
+              console.error(`Failed to reuse ${docType}:`, uploadError);
+              continue;
+            }
+
+            await supabase.from('application_documents').insert({
+              application_id: createdApplication.id,
+              document_type: docType,
+              storage_path: filePath,
+              file_size: studentDocument.file_size,
+              mime_type: studentDocument.mime_type,
+            });
+          } catch (error) {
+            console.error(`Error reusing ${docType}:`, error);
           }
         }
       }
@@ -903,6 +1008,24 @@ export default function NewApplication() {
       setSubmitting(false);
     }
   };
+
+  const existingDocumentsForStep = useMemo<ExistingDocumentMap>(() => {
+    const map: ExistingDocumentMap = {};
+
+    for (const docType of APPLICATION_DOCUMENT_TYPES) {
+      const studentDoc = studentDocuments[docType];
+      if (studentDoc) {
+        map[docType] = {
+          fileName: studentDoc.file_name,
+          fileSize: studentDoc.file_size,
+          mimeType: studentDoc.mime_type,
+          verifiedStatus: studentDoc.verified_status,
+        };
+      }
+    }
+
+    return map;
+  }, [studentDocuments]);
 
   const progressPercentage = (currentStep / STEPS.length) * 100;
   const applicationsListUrl = isAgentFlow ? '/dashboard/applications' : '/student/applications';
@@ -1009,6 +1132,7 @@ export default function NewApplication() {
             onChange={(data) => setFormData((prev) => ({ ...prev, documents: data }))}
             onNext={goToNextStep}
             onBack={goToPreviousStep}
+            existingDocuments={existingDocumentsForStep}
           />
         )}
         {currentStep === 5 && (
