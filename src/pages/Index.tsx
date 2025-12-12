@@ -13,6 +13,7 @@ import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
+import { TypewriterText } from "@/components/TypewriterText";
 
 // Static assets - these are URL references, not heavy JS
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
@@ -170,11 +171,15 @@ const Index = () => {
       {/* WELCOME SECTION - Above Search */}
       <section className="relative py-12 sm:py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-            {heroTitleParts.prefix}{" "}
-            <span className="text-primary">{heroTitleParts.highlight}</span>
-            {heroTitleParts.suffix ? ` ${heroTitleParts.suffix}` : ""}
-          </h2>
+          <TypewriterText
+            prefix={heroTitleParts.prefix}
+            highlight={heroTitleParts.highlight}
+            suffix={heroTitleParts.suffix}
+            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
+            highlightClassName="text-primary"
+            typingSpeed={80}
+            startDelay={600}
+          />
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {heroDescription}
