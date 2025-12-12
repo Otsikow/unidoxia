@@ -73,7 +73,7 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
           AI Scholarship Finder
         </CardTitle>
         <CardDescription>
-          Tell Zoe a few details. She will automatically filter scholarships by GPA, location, program, deadlines, tuition coverage
+          Tell Zoe a few details. She will automatically filter scholarships by GPA, location, course, deadlines, tuition coverage
 , and experience.
         </CardDescription>
       </CardHeader>
@@ -109,7 +109,7 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Program level</Label>
+              <Label>Course level</Label>
               <Select value={formState.programLevel ?? undefined} onValueChange={(value) => setField("programLevel", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select level" />

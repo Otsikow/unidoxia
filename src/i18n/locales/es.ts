@@ -36,7 +36,7 @@ const es = {
     navigation: {
       home: "Inicio",
       search: "Buscar",
-      programmes: "Programas",
+      courses: "Cursos",
       blog: "Blog",
       contact: "Contacto",
       dashboard: "Panel",
@@ -70,7 +70,7 @@ const es = {
         home: "Inicio",
         search: "Buscar",
         scholarships: "Becas",
-        programmes: "Programas",
+        courses: "Cursos",
         blog: "Blog",
         contact: "Contacto",
       },
@@ -299,15 +299,15 @@ const es = {
         },
       aiSearch: {
         badge: "Búsqueda de universidades y becas con IA",
-        heading: "Encuentra el programa adecuado con inteligencia en tiempo real",
+        heading: "Encuentra el curso adecuado con inteligencia en tiempo real",
         description:
-          "Pregunta lo que necesites sobre universidades, programas o financiación en cualquier parte del mundo. Nuestra IA analiza información de admisiones, becas y vías de visado adaptadas a tus objetivos.",
+          "Pregunta lo que necesites sobre universidades, cursos o financiación en cualquier parte del mundo. Nuestra IA analiza información de admisiones, becas y vías de visado adaptadas a tus objetivos.",
         subheading:
           "Regístrate para desbloquear recomendaciones personalizadas con IA sobre admisiones, becas y visados.",
         ctaLabel: "Comenzar",
         stats: [
           { value: "12k+", label: "Ideas generadas con IA para postulantes globales" },
-          { value: "84%", label: "Estudiantes con al menos tres programas idóneos" },
+          { value: "84%", label: "Estudiantes con al menos tres cursos idóneos" },
           { value: "50+", label: "Países con datos de admisión verificados" },
         ],
         panel: {
@@ -322,7 +322,7 @@ const es = {
             label: "STEM",
             headline: "Rutas personalizadas para innovadores técnicos",
             description:
-              "Destaca programas con laboratorios de investigación, prácticas y financiación diseñados para ciencias e ingeniería.",
+              "Destaca cursos con laboratorios de investigación, prácticas y financiación diseñados para ciencias e ingeniería.",
             highlights: [
               "Becas que priorizan carreras STEM y proyectos de investigación",
               "Planes de estudio alineados con la industria y periodos de prácticas o co-op",
@@ -367,12 +367,12 @@ const es = {
           {
             key: "postgraduate",
             label: "Posgrado",
-            headline: "Programas de maestría y doctorado adaptados a tus metas",
+            headline: "Cursos de maestría y doctorado adaptados a tus metas",
             description: "Compara tutores de investigación, tamaño de cohortes y modelos de financiación.",
             highlights: [
               "Resumen de docentes y líneas de investigación actuales",
               "Disponibilidad de assistantships y fellowships con estipendios",
-              "Preparación para entrevistas y requisitos de portafolio por programa",
+              "Preparación para entrevistas y requisitos de portafolio por curso",
             ],
           },
           {
@@ -380,7 +380,7 @@ const es = {
             label: "Co-op e internados",
             headline: "Aprendizaje integrado al trabajo con empleadores globales",
             description:
-              "Descubre programas que combinan estudios con experiencia profesional práctica.",
+              "Descubre cursos que combinan estudios con experiencia profesional práctica.",
             highlights: [
               "Tasas de colocación y alianzas empresariales en diferentes regiones",
               "Consideraciones de visado para prácticas remuneradas y periodos laborales",
@@ -461,7 +461,7 @@ const es = {
             {
               question: "¿Qué apoyo reciben los agentes en UniDoxia?",
               answer:
-                "Los agentes obtienen un CRM dedicado, material de marketing y capacitación bajo demanda para ayudar a los estudiantes a encontrar programas adecuados rápidamente.",
+                "Los agentes obtienen un CRM dedicado, material de marketing y capacitación bajo demanda para ayudar a los estudiantes a encontrar cursos adecuados rápidamente.",
             },
             {
               question: "¿Cómo se gestionan las comisiones de los agentes?",

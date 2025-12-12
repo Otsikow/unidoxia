@@ -277,7 +277,7 @@ export default function CommissionManagement() {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Student: {commission.applications?.students?.profiles?.full_name ?? 'Student name unavailable'} • {commission.applications?.programs?.name ?? 'Program'} at {commission.applications?.programs?.universities?.name ?? 'University'}
+                          Student: {commission.applications?.students?.profiles?.full_name ?? 'Student name unavailable'} • {commission.applications?.programs?.name ?? 'Course'} at {commission.applications?.programs?.universities?.name ?? 'University'}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           <span>Date: {commission.created_at ? new Date(commission.created_at).toLocaleDateString() : 'Not available'}</span>
@@ -326,7 +326,7 @@ export default function CommissionManagement() {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">Course</p>
-                          <p className="font-semibold">{commission.applications?.programs?.name ?? 'Program'}</p>
+                          <p className="font-semibold">{commission.applications?.programs?.name ?? 'Course'}</p>
                         </div>
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">Amount</p>

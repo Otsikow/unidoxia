@@ -328,7 +328,7 @@ const evaluateProfileMatch = (
   if (profile.programLevel) {
     if (normalise(scholarship.level).includes(normalise(profile.programLevel))) {
       score += 12;
-      reasons.push(`${scholarship.level} program matches your goal`);
+      reasons.push(`${scholarship.level} course matches your goal`);
     } else {
       score -= 4;
     }

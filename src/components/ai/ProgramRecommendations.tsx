@@ -331,13 +331,13 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
         </div>
       </div>
 
-      {/* AI Program Finder */}
+      {/* AI Course Finder */}
       <Card className="border-primary/10 bg-muted/30">
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Sparkles className="h-4 w-4 text-primary" />
-              AI Program Finder
+              AI Course Finder
             </CardTitle>
             <CardDescription>
               Share your academic profile and goals to unlock hyper-relevant university matches.

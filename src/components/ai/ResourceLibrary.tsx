@@ -162,7 +162,7 @@ export default function ResourceLibrary() {
       {
         id: '1',
         title: 'Top 10 Universities in Canada for International Students',
-        excerpt: 'Discover the best Canadian universities that offer excellent programs and support for international students.',
+        excerpt: 'Discover the best Canadian universities that offer excellent courses and support for international students.',
         content: 'Full article content...',
         author: 'UniDoxia Team',
         created_at: '2024-01-20',

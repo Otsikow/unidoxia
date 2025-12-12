@@ -477,7 +477,7 @@ export default function SoPGenerator({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="programInterest">Course of Interest</Label>
+                  <Label htmlFor="courseInterest">Course of Interest</Label>
                   <Input
                     id="programInterest"
                     value={formData.programInterest}

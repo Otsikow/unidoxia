@@ -36,7 +36,7 @@ const hi = {
     navigation: {
       home: "मुखपृष्ठ",
       search: "खोज",
-      programmes: "कार्यक्रम",
+      courses: "पाठ्यक्रम",
       blog: "ब्लॉग",
       contact: "संपर्क",
       dashboard: "डैशबोर्ड",
@@ -70,7 +70,7 @@ const hi = {
         home: "मुखपृष्ठ",
         search: "खोज",
         scholarships: "छात्रवृत्तियाँ",
-        programmes: "कार्यक्रम",
+        courses: "पाठ्यक्रम",
         blog: "ब्लॉग",
         contact: "संपर्क",
       },

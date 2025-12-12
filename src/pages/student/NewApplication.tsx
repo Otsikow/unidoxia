@@ -35,7 +35,7 @@ import ReviewSubmitStep from '@/components/application/ReviewSubmitStep';
 const STEPS = [
   { id: 1, title: 'Personal Information', description: 'Your basic details' },
   { id: 2, title: 'Education History', description: 'Academic background' },
-  { id: 3, title: 'Desired Course', description: 'Select your course' },
+  { id: 3, title: 'Course Selection', description: 'Select your course' },
   { id: 4, title: 'Documents', description: 'Upload required files' },
   { id: 5, title: 'Review & Submit', description: 'Final review' },
 ];
@@ -858,7 +858,7 @@ export default function NewApplication() {
     if (!programId) {
       toast({
         title: 'Invalid program selected',
-        description: 'Please pick a valid program before submitting your application.',
+        description: 'Please pick a valid course before submitting your application.',
         variant: 'destructive',
       });
       return;
