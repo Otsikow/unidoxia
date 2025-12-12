@@ -102,10 +102,10 @@ serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
-    if (!apiKey) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+      const apiKey = Deno.env.get("LOVABLE_API_KEY");
+      if (!apiKey) {
+        throw new Error("Image generation API key is not configured");
+      }
 
     const prompt = buildPrompt(title, excerpt, tags);
 
@@ -132,41 +132,41 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI error", response.status, errorText);
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error: "Rate limit reached. Please try again soon.",
-          }),
+        console.error("Image generation service error", response.status, errorText);
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({
+              error: "Rate limit reached. Please try again soon.",
+            }),
           {
             status: 429,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           },
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({
-            error: "Payment required. Please add credits to your Lovable workspace.",
-          }),
-          {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
-      }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({
+              error: "Payment required. Please add credits to your image generation service account.",
+            }),
+            {
+              status: 402,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
 
-      throw new Error(`Lovable AI error: ${response.status}`);
-    }
+        throw new Error(`Image generation service error: ${response.status}`);
+      }
 
     const result = await response.json();
     const imageBase64 = result?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-    if (!imageBase64) {
-      console.error("Lovable AI response missing image", result);
-      return new Response(
-        JSON.stringify({
-          error: "AI did not return an image",
+      if (!imageBase64) {
+        console.error("Image generation service response missing image", result);
+        return new Response(
+          JSON.stringify({
+            error: "AI did not return an image",
         }),
         {
           status: 502,
