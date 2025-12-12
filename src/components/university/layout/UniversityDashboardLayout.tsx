@@ -108,6 +108,7 @@ export interface UniversityApplication {
   studentId: string | null;
   studentName: string;
   studentNationality: string | null;
+  agentId?: string | null;
 }
 
 export interface UniversityDocumentRequest {
@@ -454,8 +455,9 @@ export const fetchUniversityDashboardData = async (
   if (programIds.length > 0) {
     const { data: rawApps, error: appsErr } = await supabase
       .from("applications")
-      .select("id, app_number, status, created_at, program_id, student_id")
-      .eq("tenant_id", tenantId)
+      // IMPORTANT: do not filter by applications.tenant_id; filter by program ownership instead.
+      // Some historical rows may have been written under the submitter tenant.
+      .select("id, app_number, status, created_at, program_id, student_id, agent_id")
       .in("program_id", programIds)
       .order("created_at", { ascending: false });
 
@@ -476,7 +478,6 @@ export const fetchUniversityDashboardData = async (
       const { data: stuData, error: stuErr } = await supabase
         .from("students")
         .select("id, legal_name, nationality")
-        .eq("tenant_id", tenantId)
         .in("id", studentIds);
 
       if (stuErr) throw stuErr;
@@ -507,6 +508,7 @@ export const fetchUniversityDashboardData = async (
         studentId: app.student_id ?? null,
         studentName: student?.legal_name ?? "Unknown Student",
         studentNationality: student?.nationality ?? "Unknown",
+        agentId: (app as any).agent_id ?? null,
       };
     });
   }
@@ -536,7 +538,6 @@ export const fetchUniversityDashboardData = async (
       const { data: docStudents, error: docErr } = await supabase
         .from("students")
         .select("id, legal_name, preferred_name")
-        .eq("tenant_id", tenantId)
         .in("id", docStudentIds);
 
       if (docErr) throw docErr;
@@ -554,25 +555,20 @@ export const fetchUniversityDashboardData = async (
   // -----------------------------------------------------
   // AGENTS + referral counts
   // -----------------------------------------------------
-  const agents: UniversityAgent[] = await Promise.all(
-    (agentsRes.data ?? []).map(async (agent: any) => {
-      const { count, error: cntErr } = await supabase
-        .from("applications")
-        .select("id", { head: true, count: "exact" })
-        .eq("tenant_id", tenantId)
-        .eq("agent_id", agent.id);
+  const referralCountByAgent = new Map<string, number>();
+  for (const app of applications) {
+    const agentId = app.agentId ?? null;
+    if (!agentId) continue;
+    referralCountByAgent.set(agentId, (referralCountByAgent.get(agentId) ?? 0) + 1);
+  }
 
-      if (cntErr) throw cntErr;
-
-      return {
-        id: agent.id,
-        companyName: agent.company_name ?? null,
-        contactName: agent.profile?.full_name ?? "Agent",
-        contactEmail: agent.profile?.email ?? "—",
-        referralCount: count ?? 0,
-      };
-    }),
-  );
+  const agents: UniversityAgent[] = (agentsRes.data ?? []).map((agent: any) => ({
+    id: agent.id,
+    companyName: agent.company_name ?? null,
+    contactName: agent.profile?.full_name ?? "Agent",
+    contactEmail: agent.profile?.email ?? "—",
+    referralCount: referralCountByAgent.get(agent.id) ?? 0,
+  }));
 
   // -----------------------------------------------------
   // METRICS + PIPELINE + SUMMARIES

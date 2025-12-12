@@ -869,6 +869,23 @@ export default function NewApplication() {
 
     setSubmitting(true);
     try {
+      // Ensure the application is stored under the program/university tenant (not the submitter's tenant).
+      // This is critical for university dashboards to see applications instantly and consistently.
+      const { data: programMeta, error: programMetaError } = await supabase
+        .from('programs')
+        .select('id, tenant_id')
+        .eq('id', programId)
+        .single();
+
+      if (programMetaError) {
+        throw programMetaError;
+      }
+
+      const applicationTenantId =
+        typeof programMeta?.tenant_id === 'string' && programMeta.tenant_id.length > 0
+          ? programMeta.tenant_id
+          : tenantId;
+
       const baseApplicationPayload = {
         student_id: studentId,
         program_id: programId,
@@ -877,7 +894,7 @@ export default function NewApplication() {
         intake_id: formData.programSelection.intakeId || null,
         status: 'submitted',
         notes: formData.notes || null,
-        tenant_id: tenantId,
+        tenant_id: applicationTenantId,
         submitted_at: new Date().toISOString(),
       };
 
