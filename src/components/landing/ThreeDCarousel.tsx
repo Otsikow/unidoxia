@@ -41,8 +41,6 @@ export const ThreeDCarousel = ({
 
   const cardCount = cards.length;
 
-  if (cardCount === 0) return null;
-
   /* ------------------ Detect Mobile ------------------ */
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 768px)");
@@ -52,6 +50,12 @@ export const ThreeDCarousel = ({
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
+
+  /* ------------------ Keep index in bounds ------------------ */
+  useEffect(() => {
+    if (cardCount === 0) return;
+    setActiveIndex((prev) => clampIndex(prev, cardCount));
+  }, [cardCount]);
 
   /* ------------------ Auto Play ------------------ */
   useEffect(() => {
@@ -111,6 +115,8 @@ export const ThreeDCarousel = ({
   );
 
   /* ------------------ Render ------------------ */
+  if (cardCount === 0) return null;
+
   return (
     <div
       className={cn(

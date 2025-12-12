@@ -259,6 +259,7 @@ const OverviewPage = () => {
           description="Total applications connected to your programs"
           icon={<FileStack className="h-5 w-5" />}
           tone="info"
+          to="/university/applications"
         />
         <MetricCard
           label="Acceptance Rate"
@@ -266,12 +267,14 @@ const OverviewPage = () => {
           description="Offer issuance vs total applications"
           icon={<Target className="h-5 w-5" />}
           tone="success"
+          to="/university/offers"
         />
         <MetricCard
           label="New applications (7 days)"
           value={formatNumber(metrics.newApplicationsThisWeek)}
           description="Fresh submissions in the last week"
           icon={<Sparkles className="h-5 w-5" />}
+          to="/university/applications"
         />
         <MetricCard
           label="Pending document requests"
@@ -279,6 +282,7 @@ const OverviewPage = () => {
           description="Awaiting student uploads or verification"
           icon={<Inbox className="h-5 w-5" />}
           tone="warning"
+          to="/university/documents"
           footer={
             <Link
               to="/university/documents"
