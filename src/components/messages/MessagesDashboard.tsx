@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,18 +11,70 @@ import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import type { Tables } from '@/integrations/supabase/types';
 import { MessagingUnavailable } from './MessagingUnavailable';
+import { parseUniversityProfileDetails } from '@/lib/universityProfile';
 
 type MessageRow = Tables<'messages'>;
 
+type AppRole =
+  | 'student'
+  | 'agent'
+  | 'partner'
+  | 'university'
+  | 'school_rep'
+  | 'staff'
+  | 'admin'
+  | 'counselor'
+  | string;
+
+interface UniversitySummary {
+  id?: string;
+  name?: string | null;
+  website?: string | null;
+  submission_config_json?: unknown;
+}
+
 interface ProgramSummary {
-  name: string;
-  level: string;
-  university: { name: string };
+  id?: string;
+  name?: string | null;
+  level?: string | null;
+  university?: UniversitySummary | null;
+}
+
+interface StudentSummary {
+  id?: string;
+  legal_name?: string | null;
+  preferred_name?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  profile?: {
+    id?: string;
+    full_name?: string | null;
+    email?: string | null;
+    avatar_url?: string | null;
+    phone?: string | null;
+  } | null;
+}
+
+interface AgentSummary {
+  id?: string;
+  company_name?: string | null;
+  profile?: {
+    id?: string;
+    full_name?: string | null;
+    email?: string | null;
+    avatar_url?: string | null;
+    phone?: string | null;
+  } | null;
 }
 
 interface ApplicationSummary {
   id: string;
-  program: ProgramSummary;
+  status?: string | null;
+  created_at?: string | null;
+  submitted_at?: string | null;
+  program?: ProgramSummary | null;
+  student?: StudentSummary | null;
+  agent?: AgentSummary | null;
 }
 
 type LastSeenMap = Record<string, string>; // application_id -> ISO timestamp
@@ -43,9 +96,9 @@ function formatRelativeTime(dateIso: string | null | undefined) {
 
 export default function MessagesDashboard() {
   const { user, profile } = useAuth();
+  const location = useLocation();
   const messagingDisabled = !isSupabaseConfigured;
   const [loading, setLoading] = useState(true);
-  const [studentId, setStudentId] = useState<string | null>(null);
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
   const [search, setSearch] = useState('');
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -55,6 +108,19 @@ export default function MessagesDashboard() {
   const [sending, setSending] = useState(false);
   const listBottomRef = useRef<HTMLDivElement | null>(null);
   const [lastSeen, setLastSeen] = useState<LastSeenMap>({});
+  const applicationIdsRef = useRef<Set<string>>(new Set());
+
+  const role = (profile?.role ?? user?.user_metadata?.role ?? 'student') as AppRole;
+
+  const initialApplicationId = useMemo(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const value = params.get('applicationId');
+      return value && value.trim().length > 0 ? value.trim() : null;
+    } catch {
+      return null;
+    }
+  }, [location.search]);
 
   // Load last seen map from localStorage
   useEffect(() => {
@@ -76,46 +142,221 @@ export default function MessagesDashboard() {
     }
   };
 
-  // Fetch student id and applications
+  const buildUniversityContact = (university?: UniversitySummary | null) => {
+    const config = university?.submission_config_json ?? null;
+    const parsed = parseUniversityProfileDetails(config);
+    const primary = parsed?.contacts?.primary ?? null;
+    return {
+      name: primary?.name ?? null,
+      email: primary?.email ?? null,
+      phone: primary?.phone ?? null,
+      website: university?.website ?? null,
+    };
+  };
+
+  const getThreadTitle = (app: ApplicationSummary) => {
+    const programName = app.program?.name ?? 'Application';
+    const uniName = app.program?.university?.name ?? 'University';
+    const studentName =
+      app.student?.preferred_name ??
+      app.student?.legal_name ??
+      app.student?.profile?.full_name ??
+      'Student';
+
+    if (role === 'partner' || role === 'university' || role === 'school_rep') {
+      return `${studentName} • ${programName}`;
+    }
+    if (role === 'agent') {
+      return `${studentName} • ${uniName} • ${programName}`;
+    }
+    return `${uniName} • ${programName}`;
+  };
+
+  const getThreadSubtitle = (app: ApplicationSummary) => {
+    const uni = app.program?.university;
+    const contact = buildUniversityContact(uni);
+    const parts = [contact.email, contact.phone, contact.website].filter(Boolean);
+    return parts.length > 0 ? parts.join(' • ') : '';
+  };
+
+  // Fetch applications (threads)
   useEffect(() => {
     if (messagingDisabled) {
       setLoading(false);
       setApplications([]);
-      setStudentId(null);
       return;
     }
     const bootstrap = async () => {
       if (!user) return;
       setLoading(true);
       try {
-        const { data: student, error: studentError } = await supabase
-          .from('students')
-          .select('id')
-          .eq('profile_id', user.id)
-          .maybeSingle();
-        if (studentError) throw studentError;
-        if (!student) {
-          setApplications([]);
-          setStudentId(null);
-          return;
-        }
-        setStudentId(student.id);
+        let appSummaries: ApplicationSummary[] = [];
 
-        const { data: apps, error: appsError } = await supabase
-          .from('applications')
-          .select(`
-            id,
-            program:programs(
-              name,
-              level,
-              university:universities(name)
+        if (role === 'partner' || role === 'university' || role === 'school_rep') {
+          // University partner: applications to programs owned by the university in this tenant
+          const { data: uni, error: uniError } = await supabase
+            .from('universities')
+            .select('id')
+            .eq('tenant_id', profile?.tenant_id as any)
+            .maybeSingle();
+          if (uniError) throw uniError;
+
+          if (!uni?.id) {
+            setApplications([]);
+            return;
+          }
+
+          const { data: apps, error: appsError } = await supabase
+            .from('applications')
+            .select(
+              `
+                id,
+                status,
+                created_at,
+                submitted_at,
+                program:programs!inner(
+                  id,
+                  name,
+                  level,
+                  university_id,
+                  university:universities!inner(
+                    id,
+                    name,
+                    website,
+                    submission_config_json
+                  )
+                ),
+                student:students(
+                  id,
+                  legal_name,
+                  preferred_name,
+                  contact_email,
+                  contact_phone,
+                  profile:profiles(
+                    id,
+                    full_name,
+                    email,
+                    avatar_url,
+                    phone
+                  )
+                ),
+                agent:agents(
+                  id,
+                  company_name,
+                  profile:profiles(
+                    id,
+                    full_name,
+                    email,
+                    avatar_url,
+                    phone
+                  )
+                )
+              `,
             )
-          `)
-          .eq('student_id', student.id)
-          .order('created_at', { ascending: false });
-        if (appsError) throw appsError;
-        const appSummaries: ApplicationSummary[] = (apps || []) as unknown as ApplicationSummary[];
+            .eq('program.university_id', uni.id as any)
+            .not('submitted_at', 'is', null)
+            .order('submitted_at', { ascending: false });
+
+          if (appsError) throw appsError;
+          appSummaries = (apps || []) as unknown as ApplicationSummary[];
+        } else if (role === 'agent') {
+          // Agent: applications where this agent is assigned
+          const { data: agent, error: agentError } = await supabase
+            .from('agents')
+            .select('id')
+            .eq('profile_id', user.id)
+            .maybeSingle();
+          if (agentError) throw agentError;
+          if (!agent?.id) {
+            setApplications([]);
+            return;
+          }
+
+          const { data: apps, error: appsError } = await supabase
+            .from('applications')
+            .select(
+              `
+                id,
+                status,
+                created_at,
+                submitted_at,
+                program:programs(
+                  id,
+                  name,
+                  level,
+                  university:universities(
+                    id,
+                    name,
+                    website,
+                    submission_config_json
+                  )
+                ),
+                student:students(
+                  id,
+                  legal_name,
+                  preferred_name,
+                  contact_email,
+                  contact_phone,
+                  profile:profiles(
+                    id,
+                    full_name,
+                    email,
+                    avatar_url,
+                    phone
+                  )
+                )
+              `,
+            )
+            .eq('agent_id', agent.id)
+            .not('submitted_at', 'is', null)
+            .order('created_at', { ascending: false });
+
+          if (appsError) throw appsError;
+          appSummaries = (apps || []) as unknown as ApplicationSummary[];
+        } else {
+          // Student: their applications
+          const { data: student, error: studentError } = await supabase
+            .from('students')
+            .select('id')
+            .eq('profile_id', user.id)
+            .maybeSingle();
+          if (studentError) throw studentError;
+          if (!student?.id) {
+            setApplications([]);
+            return;
+          }
+
+          const { data: apps, error: appsError } = await supabase
+            .from('applications')
+            .select(
+              `
+                id,
+                status,
+                created_at,
+                submitted_at,
+                program:programs(
+                  id,
+                  name,
+                  level,
+                  university:universities(
+                    id,
+                    name,
+                    website,
+                    submission_config_json
+                  )
+                )
+              `,
+            )
+            .eq('student_id', student.id)
+            .not('submitted_at', 'is', null)
+            .order('created_at', { ascending: false });
+
+          if (appsError) throw appsError;
+          appSummaries = (apps || []) as unknown as ApplicationSummary[];
+        }
+
         setApplications(appSummaries);
+        applicationIdsRef.current = new Set(appSummaries.map((a) => a.id));
 
         // Preload latest messages across these applications (best-effort)
         if (appSummaries.length > 0) {
@@ -125,7 +366,7 @@ export default function MessagesDashboard() {
             .select('*')
             .in('application_id', appIds)
             .order('created_at', { ascending: false })
-            .limit(200);
+            .limit(300);
           const latest: Record<string, MessageRow | undefined> = {};
           (msgs || []).forEach((m) => {
             if (!latest[m.application_id]) latest[m.application_id] = m as MessageRow;
@@ -137,7 +378,18 @@ export default function MessagesDashboard() {
       }
     };
     bootstrap();
-  }, [messagingDisabled, user]);
+  }, [messagingDisabled, profile?.tenant_id, role, user]);
+
+  // Initialize selected thread from URL or first application
+  useEffect(() => {
+    if (!applications.length) return;
+    if (selectedAppId) return;
+    const preferred =
+      (initialApplicationId &&
+        applications.find((a) => a.id === initialApplicationId)?.id) ||
+      null;
+    setSelectedAppId(preferred ?? applications[0]?.id ?? null);
+  }, [applications, initialApplicationId, selectedAppId]);
 
   // Fetch full thread when selecting a message thread
   useEffect(() => {
@@ -146,7 +398,7 @@ export default function MessagesDashboard() {
       if (!selectedAppId) return;
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('*, sender:profiles(id, full_name, email, avatar_url, role)')
         .eq('application_id', selectedAppId)
         .order('created_at', { ascending: true });
       if (!error) {
@@ -170,12 +422,13 @@ export default function MessagesDashboard() {
   useEffect(() => {
     if (messagingDisabled) return;
     const channel = supabase
-      .channel('student-messages')
+      .channel('application-messages')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
           const m = payload.new as MessageRow;
+          if (!applicationIdsRef.current.has(m.application_id)) return;
             // Update latest per message thread
           setLatestByApp((prev) => ({ ...prev, [m.application_id]: m }));
           // If current thread loaded, append
@@ -201,10 +454,10 @@ export default function MessagesDashboard() {
     const q = search.trim().toLowerCase();
     if (!q) return applications;
     return applications.filter((a) => {
-      const title = `${a.program?.name || ''} ${a.program?.university?.name || ''}`.toLowerCase();
+      const title = `${getThreadTitle(a)} ${a.program?.university?.name || ''}`.toLowerCase();
       return title.includes(q);
     });
-  }, [applications, search]);
+  }, [applications, search, role]);
 
   const unreadCount = (appId: string) => {
     const last = lastSeen[appId] ? new Date(lastSeen[appId]).getTime() : 0;
@@ -219,9 +472,18 @@ export default function MessagesDashboard() {
     if (!selectedAppId) return '';
     const app = applications.find((a) => a.id === selectedAppId);
     if (!app) return '';
-    const parts = [app.program?.name, app.program?.university?.name].filter(Boolean);
-    return parts.join(' • ');
+    return getThreadTitle(app);
   }, [applications, selectedAppId]);
+
+  const selectedApplication = useMemo(
+    () => (selectedAppId ? applications.find((a) => a.id === selectedAppId) ?? null : null),
+    [applications, selectedAppId],
+  );
+
+  const selectedUniversityContact = useMemo(() => {
+    const uni = selectedApplication?.program?.university ?? null;
+    return buildUniversityContact(uni);
+  }, [selectedApplication]);
 
   const handleSend = async () => {
     if (!composerText.trim() || !selectedAppId || !user) return;
@@ -236,7 +498,7 @@ export default function MessagesDashboard() {
       const { data, error } = await supabase
         .from('messages')
         .insert(insert)
-        .select('*')
+        .select('*, sender:profiles(id, full_name, email, avatar_url, role)')
         .single();
       if (!error && data) {
         const row = data as MessageRow;
@@ -311,9 +573,7 @@ export default function MessagesDashboard() {
                 <ul className="divide-y">
                   {filteredApplications.map((app) => {
                     const latest = latestByApp[app.id];
-                    const title = `${app.program?.name || 'Application'}${
-                      app.program?.university?.name ? ' • ' + app.program.university.name : ''
-                    }`;
+                    const title = getThreadTitle(app);
                     const preview = latest?.body || 'No messages yet';
                     const when = formatRelativeTime(latest?.created_at || null);
                     const unread = unreadCount(app.id);
@@ -340,6 +600,11 @@ export default function MessagesDashboard() {
                               <span className="text-xs text-muted-foreground flex-shrink-0">{when}</span>
                             </div>
                             <p className="text-sm text-muted-foreground truncate">{preview}</p>
+                            {role !== 'student' ? (
+                              <p className="text-xs text-muted-foreground/80 truncate mt-1">
+                                {getThreadSubtitle(app)}
+                              </p>
+                            ) : null}
                           </div>
                           {unread > 0 && (
                             <Badge variant="secondary" className="rounded-full px-2 py-0.5">
@@ -369,6 +634,37 @@ export default function MessagesDashboard() {
               </div>
             ) : (
               <>
+                {(selectedUniversityContact.email || selectedUniversityContact.phone || selectedUniversityContact.website) && (
+                  <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="font-medium text-foreground">
+                        {selectedApplication?.program?.university?.name ?? 'University'}
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {selectedUniversityContact.email ? (
+                          <a className="underline underline-offset-4" href={`mailto:${selectedUniversityContact.email}`}>
+                            {selectedUniversityContact.email}
+                          </a>
+                        ) : null}
+                        {selectedUniversityContact.phone ? (
+                          <a className="underline underline-offset-4" href={`tel:${selectedUniversityContact.phone}`}>
+                            {selectedUniversityContact.phone}
+                          </a>
+                        ) : null}
+                        {selectedUniversityContact.website ? (
+                          <a
+                            className="underline underline-offset-4"
+                            href={selectedUniversityContact.website}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Website
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <ScrollArea className="h-[360px] pr-2">
                   <div className="space-y-3">
                     {selectedMessages.length === 0 ? (
@@ -387,6 +683,11 @@ export default function MessagesDashboard() {
                                   : 'bg-muted text-foreground'
                               }`}
                             >
+                              {!mine ? (
+                                <div className="mb-1 text-xs font-medium opacity-80">
+                                  {(m as any)?.sender?.full_name ?? 'Sender'}
+                                </div>
+                              ) : null}
                               <p className="whitespace-pre-wrap break-words">{m.body}</p>
                               <div className={`mt-1 text-[10px] ${mine ? 'opacity-80' : 'text-muted-foreground'}`}>
                                 {formatRelativeTime(m.created_at)}

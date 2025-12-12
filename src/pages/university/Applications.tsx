@@ -13,6 +13,7 @@ import {
   Eye,
   User,
   Building2,
+  MessageSquare,
   GraduationCap,
   FileText,
   Mail,
@@ -81,6 +82,7 @@ import { useUniversityDashboard } from "@/components/university/layout/Universit
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 import {
   formatErrorForToast,
@@ -237,6 +239,7 @@ const formatDocumentType = (value: string | null | undefined) => {
 const ApplicationsPage = () => {
   const { data } = useUniversityDashboard();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const universityId = data?.university?.id ?? null;
   const tenantId = data?.university?.tenant_id ?? null;
@@ -1768,6 +1771,19 @@ const ApplicationsPage = () => {
                           <AlertCircle className="mr-1 h-3.5 w-3.5" />
                           Request documents
                         </Button>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() =>
+                            navigate(
+                              `/university/messages?applicationId=${selectedApplication.id}`,
+                            )
+                          }
+                        >
+                          <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                          Message
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1791,6 +1807,23 @@ const ApplicationsPage = () => {
                           No agent email on record.
                         </p>
                       )}
+                      {selectedApplication.agent?.id ? (
+                        <div className="pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={() =>
+                              navigate(
+                                `/university/messages?applicationId=${selectedApplication.id}`,
+                              )
+                            }
+                          >
+                            <MessageSquare className="mr-1 h-3.5 w-3.5" />
+                            Message agent
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>

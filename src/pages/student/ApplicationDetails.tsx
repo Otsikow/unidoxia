@@ -14,13 +14,16 @@ import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingState } from '@/components/LoadingState';
-import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer } from 'lucide-react';
+import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer, MessageSquare, Mail, Phone, Globe } from 'lucide-react';
 import BackButton from '@/components/BackButton';
+import { parseUniversityProfileDetails } from '@/lib/universityProfile';
 
 interface University {
   name: string;
   city: string | null;
   country: string;
+  website?: string | null;
+  submission_config_json?: unknown;
 }
 
 interface Program {
@@ -144,7 +147,9 @@ export default function ApplicationDetails() {
             university:universities (
               name,
               city,
-              country
+              country,
+              website,
+              submission_config_json
             )
           )
         `);
@@ -240,6 +245,17 @@ export default function ApplicationDetails() {
 
   const taskProgress = tasks.length === 0 ? 0 : Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100);
 
+  const universityContact = useMemo(() => {
+    const uni = app?.program?.university;
+    const parsed = parseUniversityProfileDetails((uni as any)?.submission_config_json ?? null);
+    const primary = parsed?.contacts?.primary ?? null;
+    return {
+      email: primary?.email ?? null,
+      phone: primary?.phone ?? null,
+      website: (uni as any)?.website ?? null,
+    };
+  }, [app]);
+
   return (
     <div className="container mx-auto py-8 space-y-6">
       <BackButton variant="ghost" size="sm" wrapperClassName="mb-2" fallback="/dashboard" />
@@ -304,6 +320,58 @@ export default function ApplicationDetails() {
           </div>
         </CardContent>
       </Card>
+
+      {/* University contact (available once submitted) */}
+      {app.submitted_at && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">University contact</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <div className="font-medium text-foreground">{app.program.university.name}</div>
+              <div className="flex flex-col gap-1">
+                {universityContact.email ? (
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <a className="underline underline-offset-4" href={`mailto:${universityContact.email}`}>
+                      {universityContact.email}
+                    </a>
+                  </div>
+                ) : null}
+                {universityContact.phone ? (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <a className="underline underline-offset-4" href={`tel:${universityContact.phone}`}>
+                      {universityContact.phone}
+                    </a>
+                  </div>
+                ) : null}
+                {universityContact.website ? (
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    <a
+                      className="underline underline-offset-4"
+                      href={universityContact.website}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Website
+                    </a>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <Button
+              className="gap-2"
+              onClick={() => navigate(`/student/messages?applicationId=${app.id}`)}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Message university
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="overview">
         <TabsList>
