@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,7 +21,7 @@ import { parseUniversityProfileDetails } from '@/lib/universityProfile';
 import { cn } from '@/lib/utils';
 
 /* -------------------------------------------------------------------------- */
-/*                                   Types                                    */
+/* Types */
 /* -------------------------------------------------------------------------- */
 
 type MessageRow = Tables<'messages'>;
@@ -29,84 +34,57 @@ type AppRole =
   | 'school_rep'
   | 'staff'
   | 'admin'
-  | 'counselor'
   | string;
-
-interface UniversitySummary {
-  id?: string;
-  name?: string | null;
-  website?: string | null;
-  submission_config_json?: unknown;
-}
-
-interface ProgramSummary {
-  id?: string;
-  name?: string | null;
-  level?: string | null;
-  university?: UniversitySummary | null;
-}
-
-interface StudentSummary {
-  id?: string;
-  legal_name?: string | null;
-  preferred_name?: string | null;
-  contact_email?: string | null;
-  contact_phone?: string | null;
-  profile?: {
-    id?: string;
-    full_name?: string | null;
-    email?: string | null;
-    avatar_url?: string | null;
-    phone?: string | null;
-  } | null;
-}
-
-interface AgentSummary {
-  id?: string;
-  company_name?: string | null;
-  profile?: {
-    id?: string;
-    full_name?: string | null;
-    email?: string | null;
-    avatar_url?: string | null;
-    phone?: string | null;
-  } | null;
-}
 
 interface ApplicationSummary {
   id: string;
-  status?: string | null;
-  created_at?: string | null;
-  submitted_at?: string | null;
-  program?: ProgramSummary | null;
-  student?: StudentSummary | null;
-  agent?: AgentSummary | null;
+  program?: {
+    name?: string | null;
+    university?: {
+      name?: string | null;
+      website?: string | null;
+      submission_config_json?: unknown;
+    } | null;
+  } | null;
+  student?: {
+    preferred_name?: string | null;
+    legal_name?: string | null;
+    profile?: { full_name?: string | null; avatar_url?: string | null } | null;
+    contact_email?: string | null;
+    contact_phone?: string | null;
+  } | null;
+  agent?: {
+    company_name?: string | null;
+    profile?: {
+      full_name?: string | null;
+      email?: string | null;
+      phone?: string | null;
+    } | null;
+  } | null;
 }
 
 type LastSeenMap = Record<string, string>;
 
-const LAST_SEEN_STORAGE_KEY = (profileId?: string) =>
+const LAST_SEEN_KEY = (profileId?: string) =>
   `messages:lastSeen:${profileId || 'anon'}`;
 
 /* -------------------------------------------------------------------------- */
-/*                               Utils / Helpers                              */
+/* Helpers */
 /* -------------------------------------------------------------------------- */
 
 function formatRelativeTime(dateIso?: string | null) {
   if (!dateIso) return '';
-  const diffMs = Date.now() - new Date(dateIso).getTime();
-  const sec = Math.floor(diffMs / 1000);
-  if (sec < 60) return 'just now';
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m ago`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const d = Math.floor(hr / 24);
-  return `${d}d ago`;
+  const diff = Date.now() - new Date(dateIso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
 /* -------------------------------------------------------------------------- */
-/*                             Messages Dashboard                              */
+/* Component */
 /* -------------------------------------------------------------------------- */
 
 export default function MessagesDashboard() {
@@ -115,334 +93,204 @@ export default function MessagesDashboard() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const messagingDisabled = !isSupabaseConfigured;
+  const role = (profile?.role ?? 'student') as AppRole;
+  const isUniversityUser = ['partner', 'university', 'school_rep'].includes(role);
 
-  const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
-  const [search, setSearch] = useState('');
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
   const [messagesByApp, setMessagesByApp] = useState<Record<string, MessageRow[]>>({});
-  const [latestByApp, setLatestByApp] = useState<Record<string, MessageRow | undefined>>({});
+  const [latestByApp, setLatestByApp] = useState<Record<string, MessageRow>>({});
   const [composerText, setComposerText] = useState('');
-  const [sending, setSending] = useState(false);
-  const [threadError, setThreadError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [lastSeen, setLastSeen] = useState<LastSeenMap>({});
+  const [sending, setSending] = useState(false);
 
-  const listBottomRef = useRef<HTMLDivElement | null>(null);
-  const applicationIdsRef = useRef<Set<string>>(new Set());
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const role = (profile?.role ?? user?.user_metadata?.role ?? 'student') as AppRole;
-
-  const initialApplicationId = useMemo(() => {
-    const params = new URLSearchParams(location.search);
-    const id = params.get('applicationId');
-    return id && id.trim() ? id : null;
-  }, [location.search]);
-
-  /* ----------------------------- Last seen sync ---------------------------- */
+  /* ---------------- Last seen persistence ---------------- */
 
   useEffect(() => {
-    const key = LAST_SEEN_STORAGE_KEY(profile?.id);
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) setLastSeen(JSON.parse(raw));
-    } catch {
-      /* noop */
-    }
+    const raw = localStorage.getItem(LAST_SEEN_KEY(profile?.id));
+    if (raw) setLastSeen(JSON.parse(raw));
   }, [profile?.id]);
 
-  const persistLastSeen = (map: LastSeenMap) => {
-    try {
-      localStorage.setItem(LAST_SEEN_STORAGE_KEY(profile?.id), JSON.stringify(map));
-    } catch {
-      /* noop */
-    }
+  const updateLastSeen = (appId: string) => {
+    const next = { ...lastSeen, [appId]: new Date().toISOString() };
+    setLastSeen(next);
+    localStorage.setItem(LAST_SEEN_KEY(profile?.id), JSON.stringify(next));
   };
 
-  /* ----------------------------- UI helpers -------------------------------- */
+  /* ---------------- Derived values ---------------- */
 
-  const buildUniversityContact = useCallback((university?: UniversitySummary | null) => {
-    const parsed = parseUniversityProfileDetails(university?.submission_config_json ?? null);
-    const primary = parsed?.contacts?.primary ?? null;
-    return {
-      name: primary?.name ?? null,
-      email: primary?.email ?? null,
-      phone: primary?.phone ?? null,
-      website: university?.website ?? null,
-    };
-  }, []);
+  const selectedMessages = selectedAppId
+    ? messagesByApp[selectedAppId] || []
+    : [];
 
-  const getThreadTitle = useCallback(
-    (app: ApplicationSummary) => {
-      const programName = app.program?.name ?? 'Application';
-      const uniName = app.program?.university?.name ?? 'University';
-      const studentName =
-        app.student?.preferred_name ??
-        app.student?.legal_name ??
-        app.student?.profile?.full_name ??
-        'Student';
+  const unreadIndicator = (appId: string) => {
+    const seen = lastSeen[appId];
+    const latest = latestByApp[appId]?.created_at;
+    if (!latest) return 0;
+    if (!seen) return 1;
+    return new Date(latest) > new Date(seen) ? 1 : 0;
+  };
 
-      if (['partner', 'university', 'school_rep'].includes(role)) {
-        return `${studentName} • ${programName}`;
-      }
-      if (role === 'agent') {
-        return `${studentName} • ${uniName} • ${programName}`;
-      }
-      return `${uniName} • ${programName}`;
-    },
-    [role],
-  );
+  const getThreadTitle = (app: ApplicationSummary) => {
+    const student =
+      app.student?.preferred_name ||
+      app.student?.legal_name ||
+      app.student?.profile?.full_name ||
+      'Student';
 
-  const getThreadSubtitle = useCallback(
-    (app: ApplicationSummary) => {
-      const uni = app.program?.university;
-      const contact = buildUniversityContact(uni);
-      return [contact.email, contact.phone, contact.website].filter(Boolean).join(' • ');
-    },
-    [buildUniversityContact],
-  );
+    const uni = app.program?.university?.name || 'University';
+    const program = app.program?.name || 'Program';
 
-  /* ----------------------------- Load threads ------------------------------ */
+    if (isUniversityUser) return `${student} • ${program}`;
+    if (role === 'agent') return `${student} • ${uni} • ${program}`;
+    return `${uni} • ${program}`;
+  };
 
-  useEffect(() => {
-    if (messagingDisabled || !user) {
-      setLoading(false);
-      setApplications([]);
-      return;
-    }
+  const selectedTitle = selectedAppId
+    ? getThreadTitle(
+        applications.find((a) => a.id === selectedAppId)!
+      )
+    : 'Message';
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        let apps: ApplicationSummary[] = [];
-
-        if (['partner', 'university', 'school_rep'].includes(role)) {
-          const tenantId = profile?.tenant_id;
-          if (!tenantId) return setApplications([]);
-
-          const { data: uni } = await supabase
-            .from('universities')
-            .select('id')
-            .eq('tenant_id', tenantId as any)
-            .order('updated_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (!uni?.id) return setApplications([]);
-
-          const { data } = await supabase
-            .from('applications')
-            .select(
-              `id,status,created_at,submitted_at,
-               program:programs!inner(id,name,level,university_id,
-                 university:universities!inner(id,name,website,submission_config_json)
-               ),
-               student:students(id,legal_name,preferred_name,contact_email,contact_phone,
-                 profile:profiles(id,full_name,email,avatar_url,phone)
-               ),
-               agent:agents(id,company_name,profile:profiles(id,full_name,email,avatar_url,phone))`
-            )
-            .eq('program.university_id', uni.id as any)
-            .not('submitted_at', 'is', null)
-            .order('submitted_at', { ascending: false });
-
-          apps = (data || []) as any;
-        } else if (role === 'agent') {
-          const { data: agent } = await supabase
-            .from('agents')
-            .select('id')
-            .eq('profile_id', user.id)
-            .maybeSingle();
-
-          if (!agent?.id) return setApplications([]);
-
-          const { data } = await supabase
-            .from('applications')
-            .select(
-              `id,status,created_at,submitted_at,
-               program:programs(id,name,level,university:universities(id,name,website,submission_config_json)),
-               student:students(id,legal_name,preferred_name,contact_email,contact_phone,
-                 profile:profiles(id,full_name,email,avatar_url,phone)
-               )`
-            )
-            .eq('agent_id', agent.id)
-            .not('submitted_at', 'is', null)
-            .order('created_at', { ascending: false });
-
-          apps = (data || []) as any;
-        } else {
-          const { data: student } = await supabase
-            .from('students')
-            .select('id')
-            .eq('profile_id', user.id)
-            .maybeSingle();
-
-          if (!student?.id) return setApplications([]);
-
-          const { data } = await supabase
-            .from('applications')
-            .select(
-              `id,status,created_at,submitted_at,
-               program:programs(id,name,level,university:universities(id,name,website,submission_config_json))`
-            )
-            .eq('student_id', student.id)
-            .not('submitted_at', 'is', null)
-            .order('created_at', { ascending: false });
-
-          apps = (data || []) as any;
-        }
-
-        setApplications(apps);
-        applicationIdsRef.current = new Set(apps.map((a) => a.id));
-
-        if (apps.length) {
-          const { data: msgs } = await supabase
-            .from('messages')
-            .select('*')
-            .in('application_id', apps.map((a) => a.id))
-            .order('created_at', { ascending: false })
-            .limit(500);
-
-          const latest: Record<string, MessageRow> = {};
-          (msgs || []).forEach((m) => {
-            if (!latest[m.application_id]) latest[m.application_id] = m as MessageRow;
-          });
-          setLatestByApp(latest);
-        }
-      } catch (err) {
-        console.error(err);
-        setApplications([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, [messagingDisabled, role, profile?.tenant_id, user]);
-
-  /* ------------------------ Init selected thread --------------------------- */
-
-  useEffect(() => {
-    if (!applications.length || selectedAppId) return;
-    const preferred = applications.find((a) => a.id === initialApplicationId)?.id;
-    setSelectedAppId(preferred ?? applications[0]?.id ?? null);
-  }, [applications, initialApplicationId, selectedAppId]);
-
-  /* ----------------------------- Load messages ----------------------------- */
-
-  useEffect(() => {
-    if (messagingDisabled || !selectedAppId) return;
-
-    const loadThread = async () => {
-      setThreadError(null);
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*, sender:profiles(id,full_name,email,avatar_url,role)')
-        .eq('application_id', selectedAppId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        setThreadError(error.message);
-        toast({ title: 'Messaging error', description: error.message, variant: 'destructive' });
-        return;
-      }
-
-      setMessagesByApp((p) => ({ ...p, [selectedAppId]: (data || []) as any }));
-      setLastSeen((p) => {
-        const next = { ...p, [selectedAppId]: new Date().toISOString() };
-        persistLastSeen(next);
-        return next;
-      });
-
-      const last = data?.[data.length - 1] as MessageRow | undefined;
-      if (last) setLatestByApp((p) => ({ ...p, [selectedAppId]: last }));
-
-      setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-    };
-
-    loadThread();
-  }, [messagingDisabled, selectedAppId, toast]);
-
-  /* ------------------------------ Realtime --------------------------------- */
-
-  useEffect(() => {
-    if (messagingDisabled) return;
-
-    const channel = supabase
-      .channel('application-messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
-        const msg = payload.new as MessageRow;
-        if (!applicationIdsRef.current.has(msg.application_id)) return;
-
-        setLatestByApp((p) => ({ ...p, [msg.application_id]: msg }));
-        setMessagesByApp((p) => ({
-          ...p,
-          [msg.application_id]: [...(p[msg.application_id] || []), msg],
-        }));
-
-        if (msg.application_id === selectedAppId) {
-          setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [messagingDisabled, selectedAppId]);
-
-  /* ----------------------------- Derived data ------------------------------ */
-
-  const filteredApplications = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    if (!q) return applications;
-    return applications.filter((a) => getThreadTitle(a).toLowerCase().includes(q));
-  }, [applications, getThreadTitle, search]);
-
-  const selectedApplication = useMemo(
-    () => (selectedAppId ? applications.find((a) => a.id === selectedAppId) ?? null : null),
-    [applications, selectedAppId],
-  );
-
-  const selectedUniversityContact = useMemo(() => {
-    return buildUniversityContact(selectedApplication?.program?.university ?? null);
-  }, [buildUniversityContact, selectedApplication]);
-
-  /* ------------------------------- Send msg -------------------------------- */
+  /* ---------------- Sending ---------------- */
 
   const handleSend = async () => {
-    if (!composerText.trim() || !selectedAppId || !user) return;
+    if (!composerText.trim() || !selectedAppId) return;
 
     setSending(true);
-    const body = composerText.trim();
+    await supabase.from('messages').insert({
+      application_id: selectedAppId,
+      sender_id: user!.id,
+      body: composerText.trim(),
+      message_type: 'text',
+    });
 
-    try {
-      await supabase.from('messages').insert({
-        application_id: selectedAppId,
-        sender_id: user.id,
-        body,
-        message_type: 'text',
-      });
-
-      setComposerText('');
-    } catch (err: any) {
-      toast({ title: 'Send failed', description: err?.message, variant: 'destructive' });
-    } finally {
-      setSending(false);
-    }
+    setComposerText('');
+    setSending(false);
   };
 
-  /* ------------------------------- Render ---------------------------------- */
+  /* ---------------- Guard ---------------- */
 
-  if (messagingDisabled) {
-    return (
-      <MessagingUnavailable
-        reason="Messaging is currently unavailable because the service is not configured."
-        redirectHref="/"
-        redirectLabel="Return to home"
-      />
-    );
+  if (!isSupabaseConfigured) {
+    return <MessagingUnavailable />;
   }
 
-  return <div className="flex-1 min-h-0">{/* UI rendering unchanged for brevity */}</div>;
+  /* ---------------- Render ---------------- */
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold">Messages</h2>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Thread list */}
+        <Card className={cn('lg:col-span-1', selectedAppId && 'hidden lg:block')}>
+          <CardHeader>
+            <CardTitle>Threads</CardTitle>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={
+                  isUniversityUser
+                    ? 'Search by student or program'
+                    : 'Search by university or program'
+                }
+                className="pl-9"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </CardHeader>
+
+          <ScrollArea className="h-[420px]">
+            {applications
+              .filter((a) =>
+                getThreadTitle(a).toLowerCase().includes(search.toLowerCase())
+              )
+              .map((app) => (
+                <div
+                  key={app.id}
+                  className={cn(
+                    'p-4 cursor-pointer hover:bg-accent',
+                    selectedAppId === app.id && 'bg-accent'
+                  )}
+                  onClick={() => {
+                    setSelectedAppId(app.id);
+                    updateLastSeen(app.id);
+                  }}
+                >
+                  <div className="flex justify-between">
+                    <span className="font-medium truncate">
+                      {getThreadTitle(app)}
+                    </span>
+                    {unreadIndicator(app.id) > 0 && (
+                      <Badge variant="secondary">New</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {latestByApp[app.id]?.body || 'No messages yet'}
+                  </p>
+                </div>
+              ))}
+          </ScrollArea>
+        </Card>
+
+        {/* Thread view */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>{selectedTitle}</CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            {!selectedAppId ? (
+              <p className="text-muted-foreground">
+                Select a conversation to begin
+              </p>
+            ) : (
+              <>
+                <ScrollArea className="h-[360px] pr-2">
+                  {selectedMessages.map((m) => {
+                    const mine = m.sender_id === user?.id;
+                    return (
+                      <div
+                        key={m.id}
+                        className={cn(
+                          'mb-3 max-w-[75%] p-3 rounded-lg text-sm',
+                          mine
+                            ? 'ml-auto bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        )}
+                      >
+                        {m.body}
+                        <div className="text-[10px] opacity-70 mt-1">
+                          {formatRelativeTime(m.created_at)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={bottomRef} />
+                </ScrollArea>
+
+                <div className="flex gap-2 mt-3">
+                  <Input
+                    value={composerText}
+                    onChange={(e) => setComposerText(e.target.value)}
+                    placeholder="Type a message…"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSend();
+                    }}
+                  />
+                  <Button onClick={handleSend} disabled={sending}>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }
