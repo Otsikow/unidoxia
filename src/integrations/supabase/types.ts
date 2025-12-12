@@ -65,33 +65,6 @@ export type Database = {
           },
         ]
       }
-      dashboard_nav_preferences: {
-        Row: {
-          created_at: string
-          id: string
-          item_order: string[]
-          menu_key: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          item_order?: string[]
-          menu_key: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          item_order?: string[]
-          menu_key?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       agents: {
         Row: {
           active: boolean | null
