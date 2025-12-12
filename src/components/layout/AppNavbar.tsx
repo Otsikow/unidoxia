@@ -45,7 +45,7 @@ const navLinks: Array<{
   { id: "contact", to: "/contact", icon: MessageCircle },
 ];
 
-const HIDDEN_BACK_BUTTON_PATHS = new Set(["/", "/search", "/courses", "/scholarships", "/contact"]);
+const HIDDEN_BACK_BUTTON_PATHS = new Set(["/"]);
 
 const AppNavbar = () => {
   const { profile, signOut } = useAuth();
