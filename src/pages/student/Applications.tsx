@@ -16,9 +16,11 @@ import {
   MapPin,
   Timer,
   XCircle,
+  Clock,
 } from 'lucide-react';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
+import { formatDistanceToNow } from 'date-fns';
 
 interface Application {
   id: string;
@@ -40,6 +42,22 @@ interface Application {
   };
 }
 
+interface ApplicationDraft {
+  id: string;
+  last_step: number | null;
+  updated_at: string;
+  program: {
+    name: string;
+    level: string;
+    discipline: string;
+    university: {
+      name: string;
+      city: string;
+      country: string;
+    } | null;
+  } | null;
+}
+
 export default function Applications() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -52,6 +70,7 @@ export default function Applications() {
   } = useErrorHandler({ context: 'Applications' });
 
   const [applications, setApplications] = useState<Application[]>([]);
+  const [drafts, setDrafts] = useState<ApplicationDraft[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [countryFilter, setCountryFilter] = useState<string>('all');
@@ -67,43 +86,85 @@ export default function Applications() {
       setDataLoading(true);
       clearError();
 
-      const { data: appsData, error: appsError } = await supabase
-        .from('applications')
-        .select(`
-          id,
-          app_number,
-          status,
-          intake_year,
-          intake_month,
-          created_at,
-          submitted_at,
-          program:programs (
-            name,
-            level,
-            discipline,
-            university:universities (
+      const { data: studentRecord, error: studentError } = await supabase
+        .from('students')
+        .select('id')
+        .eq('profile_id', user.id)
+        .maybeSingle();
+
+      if (studentError) throw studentError;
+      const studentId = studentRecord?.id;
+      if (!studentId) {
+        throw new Error('Student record not found');
+      }
+
+      const [applicationsResponse, draftsResponse] = await Promise.all([
+        supabase
+          .from('applications')
+          .select(`
+            id,
+            app_number,
+            status,
+            intake_year,
+            intake_month,
+            created_at,
+            submitted_at,
+            program:programs (
               name,
-              city,
-              country
+              level,
+              discipline,
+              university:universities (
+                name,
+                city,
+                country
+              )
+            ),
+            student:students!inner (
+              profile_id
             )
-          ),
-          student:students!inner (
-            profile_id
-          )
-        `)
-        .eq('student.profile_id', user.id)
-        .order('created_at', { ascending: false });
+          `)
+          .eq('student.profile_id', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('application_drafts')
+          .select(`
+            id,
+            last_step,
+            updated_at,
+            program:programs (
+              name,
+              level,
+              discipline,
+              university:universities (
+                name,
+                city,
+                country
+              )
+            )
+          `)
+          .eq('student_id', studentId)
+          .order('updated_at', { ascending: false }),
+      ]);
 
-      if (appsError) throw appsError;
+      if (applicationsResponse.error) throw applicationsResponse.error;
+      if (draftsResponse.error) throw draftsResponse.error;
 
-      const list = (appsData ?? []) as Application[];
-      setApplications(list);
+      const applicationList = (applicationsResponse.data ?? []) as Application[];
+      const draftList = (draftsResponse.data ?? []) as ApplicationDraft[];
+
+      setApplications(applicationList);
+      setDrafts(draftList);
 
       const countries = Array.from(
         new Set(
-          list
-            .map((a) => a.program?.university?.country)
-            .filter((country): country is string => Boolean(country))
+          [
+            ...applicationList
+              .map((a) => a.program?.university?.country)
+              .filter((country): country is string => Boolean(country)),
+            ...draftList
+              .map((draft) => draft.program?.university?.country)
+              .filter((country): country is string => Boolean(country)),
+          ]
         )
       ).sort();
       setAllCountries(countries);
@@ -121,6 +182,7 @@ export default function Applications() {
       void fetchApplications();
     } else if (!authLoading) {
       setApplications([]);
+      setDrafts([]);
       setAllCountries([]);
     }
   }, [user?.id, authLoading, fetchApplications]);
@@ -150,6 +212,22 @@ export default function Applications() {
       (a.app_number && a.app_number.toLowerCase().includes(term)) ||
       programName.includes(term) ||
       universityName.includes(term);
+    return matchesStatus && matchesCountry && matchesSearch;
+  });
+
+  const filteredDrafts = drafts.filter((draft) => {
+    const program = draft.program;
+    const university = program?.university;
+
+    const matchesStatus = statusFilter === 'all' || statusFilter === 'draft';
+    const matchesCountry =
+      countryFilter === 'all' || university?.country === countryFilter;
+    const term = searchTerm.toLowerCase();
+    const programName = program?.name?.toLowerCase() ?? '';
+    const universityName = university?.name?.toLowerCase() ?? '';
+    const matchesSearch =
+      !term || programName.includes(term) || universityName.includes(term);
+
     return matchesStatus && matchesCountry && matchesSearch;
   });
 
@@ -285,7 +363,7 @@ export default function Applications() {
             <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{applications.length}</div>
+            <div className="text-2xl font-bold">{applications.length + drafts.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -307,7 +385,7 @@ export default function Applications() {
               {
                 applications.filter(
                   (a) => a.status === 'draft' || a.status === 'screening'
-                ).length
+                ).length + drafts.length
               }
             </div>
           </CardContent>
@@ -331,6 +409,88 @@ export default function Applications() {
       </div>
 
       {/* Applications List */}
+      {drafts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5" /> Draft Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {filteredDrafts.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  No drafts match your current filters.
+                </p>
+              )}
+
+              {filteredDrafts.map((draft) => (
+                <Card key={draft.id} className="bg-muted/40">
+                  <CardContent className="pt-6">
+                    <div className="flex items-start justify-between gap-4 flex-col sm:flex-row">
+                      <div className="space-y-3 flex-1">
+                        <div>
+                          <h3 className="font-semibold text-lg flex items-center gap-2">
+                            <GraduationCap className="h-5 w-5 text-primary" />
+                            {draft.program?.name || 'New Application Draft'}
+                          </h3>
+                          {draft.program ? (
+                            <p className="text-sm text-muted-foreground">
+                              {draft.program.level} • {draft.program.discipline}
+                            </p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              Continue where you left off to choose a program.
+                            </p>
+                          )}
+                        </div>
+
+                        {draft.program?.university && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            {draft.program.university.name}
+                            {draft.program.university.city
+                              ? ` • ${draft.program.university.city}`
+                              : ''}
+                            {draft.program.university.country
+                              ? `, ${draft.program.university.country}`
+                              : ''}
+                          </div>
+                        )}
+
+                        <div className="flex items-center flex-wrap gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Timer className="h-4 w-4" />
+                            <span>
+                              {draft.last_step
+                                ? `Progress: Step ${draft.last_step} of 5`
+                                : 'Progress: Not started'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>
+                              Last saved {formatDistanceToNow(new Date(draft.updated_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
+                        <StatusBadge status="draft" />
+                        <Button asChild>
+                          <Link to="/student/applications/new">Continue Application</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
