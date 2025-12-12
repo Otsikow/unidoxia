@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
   DollarSign,
   TrendingUp, 
@@ -12,7 +13,7 @@ import {
   Calendar,
   Filter,
   Download,
-  Plus
+  AlertCircle
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -143,7 +144,7 @@ export default function CommissionManagement() {
   const agentCount = user ? 1 : 0;
 
   if (loading) {
-    return <LoadingState title="Loading commissions" description="Fetching your latest commission activity" />;
+    return <LoadingState message="Fetching your latest commission activity" />;
   }
 
   return (

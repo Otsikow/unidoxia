@@ -185,7 +185,7 @@ export function useMessages() {
     // Fetch the user's conversation memberships first (authoritative list).
     const { data: memberships, error: membershipError } = await supabase
       .from("conversation_participants")
-      .select("conversation_id,last_read_at,role")
+      .select("conversation_id,last_read_at")
       .eq("user_id", user.id);
     if (membershipError) throw membershipError;
 

@@ -237,7 +237,12 @@ export default function PartnerMessagesPage() {
                 />
               ) : (
                 <>
-                  <div className="w-full border-r border-slate-200/70 bg-white/80 transition-colors dark:border-slate-900/70 dark:bg-slate-950/60 md:w-[360px] lg:w-[400px]">
+                  {/* Chat List - hidden on mobile when a conversation is selected */}
+                  <div
+                    className={`w-full border-r border-slate-200/70 bg-white/80 transition-colors dark:border-slate-900/70 dark:bg-slate-950/60 md:w-[320px] lg:w-[360px] xl:w-[400px] ${
+                      currentConversation ? "hidden md:block" : "block"
+                    }`}
+                  >
                     <ChatList
                       conversations={conversations}
                       currentConversation={currentConversation}
@@ -248,7 +253,12 @@ export default function PartnerMessagesPage() {
                     />
                   </div>
 
-                  <div className="hidden flex-1 bg-slate-100/70 transition-colors dark:bg-slate-900/50 md:flex">
+                  {/* Chat Area - visible on mobile when conversation is selected, always visible on desktop */}
+                  <div
+                    className={`flex-1 bg-slate-100/70 transition-colors dark:bg-slate-900/50 ${
+                      currentConversation ? "flex" : "hidden md:flex"
+                    }`}
+                  >
                     <ChatArea
                       conversation={currentConversationData}
                       messages={messages}
@@ -260,6 +270,7 @@ export default function PartnerMessagesPage() {
                       getUserPresence={getUserPresence}
                       isUserOnline={isUserOnline}
                       onBack={() => setCurrentConversation(null)}
+                      showBackButton={Boolean(currentConversation)}
                     />
                   </div>
 
@@ -270,24 +281,6 @@ export default function PartnerMessagesPage() {
               )}
             </div>
           </main>
-
-          {!messagingDisabled && currentConversation && (
-            <div className="md:hidden fixed inset-0 z-40 flex flex-col bg-white transition-colors dark:bg-slate-950">
-              <ChatArea
-                conversation={currentConversationData}
-                messages={messages}
-                typingUsers={typingUsers}
-                loading={loading}
-                onSendMessage={handleSendMessage}
-                onStartTyping={handleStartTyping}
-                onStopTyping={handleStopTyping}
-                getUserPresence={getUserPresence}
-                isUserOnline={isUserOnline}
-                onBack={() => setCurrentConversation(null)}
-                showBackButton
-              />
-            </div>
-          )}
         </SidebarInset>
       </div>
 

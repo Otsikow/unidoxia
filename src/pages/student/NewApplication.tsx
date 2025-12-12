@@ -906,14 +906,14 @@ export default function NewApplication() {
       };
 
       const attemptInsert = async (
-        payload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns>,
-      ) => supabase.from('applications').insert(payload).select().single();
+        payload: Record<string, unknown>,
+      ) => supabase.from('applications').insert(payload as never).select().single();
 
       // Keep retrying by stripping optional columns that are missing from the target schema
       // until the insert succeeds or we exhaust all optional columns.
       const optionalColumnEntries = Object.entries(optionalApplicationColumns);
       const excludedColumns = new Set<string>();
-      let currentPayload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns> = {
+      let currentPayload: Record<string, unknown> = {
         ...baseApplicationPayload,
         ...optionalApplicationColumns,
       };
@@ -945,13 +945,13 @@ export default function NewApplication() {
           missingColumns,
         );
 
-        const nextPayload: typeof baseApplicationPayload & Partial<typeof optionalApplicationColumns> = {
+        const nextPayload: Record<string, unknown> = {
           ...baseApplicationPayload,
         };
 
         for (const [column, value] of optionalColumnEntries) {
           if (!excludedColumns.has(column)) {
-            nextPayload[column as keyof typeof optionalApplicationColumns] = value;
+            nextPayload[column] = value;
           }
         }
 

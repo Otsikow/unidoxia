@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import type { Database } from "@/integrations/supabase/types";
 
 export interface AgentProfileChecklistItem {
   key: string;
@@ -16,6 +15,15 @@ export interface AgentProfileCompletionResult {
   missingFields: string[];
 }
 
+interface AgentProfileData {
+  id: string;
+  company_name: string | null;
+  verification_document_url: string | null;
+  verification_status: string | null;
+  tenant_id: string;
+  profile_id: string;
+}
+
 const normalizeText = (value: string | null | undefined) => value?.trim() ?? "";
 
 export function useAgentProfileCompletion() {
@@ -24,12 +32,12 @@ export function useAgentProfileCompletion() {
   const profileId = profile?.id ?? null;
   const isAgent = profile?.role === "agent";
 
-  const query = useQuery<Database["public"]["Tables"]["agents"]["Row"] | null>({
+  const query = useQuery<AgentProfileData | null>({
     queryKey: ["agent-profile-completion", profileId],
     enabled: Boolean(profileId && isAgent),
     staleTime: 60_000,
     refetchOnWindowFocus: true,
-    queryFn: async () => {
+    queryFn: async (): Promise<AgentProfileData | null> => {
       if (!profileId) return null;
 
       const { data, error } = await supabase
