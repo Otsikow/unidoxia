@@ -37,7 +37,7 @@ const de = {
     navigation: {
       home: "Startseite",
       search: "Suche",
-      programmes: "Studiengänge",
+      courses: "Studiengänge",
       blog: "Blog",
       contact: "Kontakt",
       dashboard: "Dashboard",
@@ -71,7 +71,7 @@ const de = {
         home: "Startseite",
         search: "Suche",
         scholarships: "Stipendien",
-        programmes: "Studiengänge",
+        courses: "Studiengänge",
         blog: "Blog",
         contact: "Kontakt",
       },
@@ -363,7 +363,7 @@ const de = {
         },
       aiSearch: {
         badge: "KI-gestützte Universitäts- & Stipendiensuche",
-        heading: "Finden Sie das passende Programm mit Echtzeit-Intelligenz",
+        heading: "Finden Sie den passenden Kurs mit Echtzeit-Intelligenz",
         description:
           "Stellen Sie Fragen zu Universitäten, Studiengängen oder Finanzierungen weltweit. Unsere KI analysiert Zulassungsinformationen, Stipendien und Visawege, die auf Ihre Ziele zugeschnitten sind.",
         subheading:
@@ -371,7 +371,7 @@ const de = {
         ctaLabel: "Jetzt starten",
         stats: [
           { value: "12k+", label: "KI-Einblicke für Studieninteressierte weltweit" },
-          { value: "84%", label: "Studierende mit mindestens drei passenden Programmen" },
+          { value: "84%", label: "Studierende mit mindestens drei passenden Kursen" },
           { value: "50+", label: "Länder mit verifizierten Zulassungsdaten" },
         ],
         panel: {
@@ -659,7 +659,7 @@ const de = {
             role: "Ingenieurstudentin an der Stanford University",
             country: "USA",
             quote:
-              "Von der Programmsuche bis zur Visa-Genehmigung hat mich UniDoxia in jedem Schritt unterstützt. Hervorragender Service!",
+              "Von der Kurssuche bis zur Visa-Genehmigung hat mich UniDoxia in jedem Schritt unterstützt. Hervorragender Service!",
             rating: 5,
           },
         ],
@@ -773,7 +773,7 @@ const de = {
             placeholder: "Land auswählen",
             all: "Alle Länder",
           },
-          programLevel: {
+          courseLevel: {
             label: "Kursniveau",
             placeholder: "Niveau auswählen",
             all: "Alle Niveaus",
@@ -895,7 +895,7 @@ const de = {
             {
               question: "Welche Unterstützung erhalten Agenten bei UniDoxia?",
               answer:
-                "Agenten erhalten ein dediziertes CRM, Marketingmaterialien und bedarfsgerechte Schulungen, um Studierende schnell mit passenden Programmen zu verknüpfen.",
+                "Agenten erhalten ein dediziertes CRM, Marketingmaterialien und bedarfsgerechte Schulungen, um Studierende schnell mit passenden Kursen zu verknüpfen.",
             },
             {
               question: "Wie werden Agentenkommissionen gehandhabt?",

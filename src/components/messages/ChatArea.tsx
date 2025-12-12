@@ -241,17 +241,17 @@ export function ChatArea({
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-muted/20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex-1 flex items-center justify-center bg-muted/20 p-4">
+        <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!conversation) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-muted/20">
+      <div className="flex-1 flex items-center justify-center bg-muted/20 p-4">
         <div className="text-center text-muted-foreground">
-          <p className="text-lg">Select a conversation to start messaging</p>
+          <p className="text-sm sm:text-lg">Select a conversation to start messaging</p>
         </div>
       </div>
     );
@@ -266,49 +266,49 @@ export function ChatArea({
       : undefined;
 
   return (
-    <div className="flex-1 flex flex-col h-full">
+    <div className="flex-1 flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="p-4 border-b bg-background flex items-center gap-3">
+      <div className="p-3 sm:p-4 border-b bg-background flex items-center gap-2 sm:gap-3 flex-shrink-0">
         {showBackButton && onBack && (
           <Button
             variant="ghost"
             size="icon"
-              onClick={onBack}
-              className="md:hidden"
-              aria-label="Go back to messages"
+            onClick={onBack}
+            className="md:hidden h-9 w-9 flex-shrink-0"
+            aria-label="Go back to messages"
           >
             <ArrowLeft className="h-5 w-5" />
-              <span className="sr-only">Back to messages</span>
+            <span className="sr-only">Back to messages</span>
           </Button>
         )}
-        <Avatar className="h-10 w-10">
+        <Avatar className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
           <AvatarImage src={avatarUrl || undefined} alt={conversationName} />
-          <AvatarFallback>{getInitials(conversationName)}</AvatarFallback>
+          <AvatarFallback className="text-xs sm:text-sm">{getInitials(conversationName)}</AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <h2 className="font-semibold">{conversationName}</h2>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-semibold text-sm sm:text-base truncate">{conversationName}</h2>
           {conversationSubtitle && (
-            <p className="text-xs text-muted-foreground">{conversationSubtitle}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{conversationSubtitle}</p>
           )}
           <p
             className={cn(
-              'text-xs text-muted-foreground flex items-center gap-1',
+              'text-[10px] sm:text-xs text-muted-foreground flex items-center gap-1',
               conversationSubtitle && 'mt-0.5'
             )}
           >
             <span
-              className={cn('inline-block w-2 h-2 rounded-full', presenceDetails.indicator)}
+              className={cn('inline-block w-2 h-2 rounded-full flex-shrink-0', presenceDetails.indicator)}
             />
-            {presenceDetails.label}
+            <span className="truncate">{presenceDetails.label}</span>
           </p>
         </div>
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-3 sm:p-4 min-h-0">
         {loading && messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center h-full min-h-[200px]">
+            <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <div className="space-y-1" ref={scrollRef}>
@@ -332,19 +332,19 @@ export function ChatArea({
 
                   <div
                     className={cn(
-                      'flex gap-2 items-end',
+                      'flex gap-1.5 sm:gap-2 items-end',
                       isOwnMessage ? 'justify-end' : 'justify-start',
                       groupWithPrevious && 'mt-0.5',
-                      !groupWithPrevious && 'mt-4'
+                      !groupWithPrevious && 'mt-3 sm:mt-4'
                     )}
                   >
                     {!isOwnMessage && (
-                      <Avatar className={cn('h-8 w-8', !showAvatar && 'invisible')}>
+                      <Avatar className={cn('h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0', !showAvatar && 'invisible')}>
                         <AvatarImage
                           src={message.sender?.avatar_url || undefined}
                           alt={message.sender?.full_name || ''}
                         />
-                        <AvatarFallback>
+                        <AvatarFallback className="text-[10px] sm:text-xs">
                           {getInitials(message.sender?.full_name || 'U')}
                         </AvatarFallback>
                       </Avatar>
@@ -352,18 +352,18 @@ export function ChatArea({
 
                     <div
                       className={cn(
-                        'max-w-[70%] rounded-2xl px-4 py-2',
+                        'max-w-[80%] sm:max-w-[70%] rounded-2xl px-3 py-2 sm:px-4 sm:py-2',
                         isOwnMessage
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted'
                       )}
                     >
                         {!isOwnMessage && !groupWithPrevious && (
-                          <p className="text-xs font-semibold mb-1">
+                          <p className="text-[10px] sm:text-xs font-semibold mb-0.5 sm:mb-1">
                             {message.sender?.full_name}
                           </p>
                         )}
-                        <p className="text-sm whitespace-pre-wrap break-words">
+                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed">
                           {message.content}
                         </p>
                         {message.attachments.length > 0 && (
@@ -430,7 +430,7 @@ export function ChatArea({
                         )}
                         <div
                           className={cn(
-                            'mt-1 text-xs flex flex-col gap-0.5',
+                            'mt-1 text-[10px] sm:text-xs flex flex-col gap-0.5',
                             isOwnMessage
                               ? 'items-end text-right text-primary-foreground/70'
                               : 'text-muted-foreground'
@@ -440,7 +440,7 @@ export function ChatArea({
                           {receipt && (
                             <span
                               className={cn(
-                                'leading-none',
+                                'leading-none text-[9px] sm:text-[10px]',
                                 isOwnMessage
                                   ? 'text-primary-foreground/80'
                                   : 'text-muted-foreground/90'
@@ -458,12 +458,12 @@ export function ChatArea({
 
             {/* Typing Indicators */}
             {typingUsers.length > 0 && (
-              <div className="flex gap-2 items-end mt-4">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>•••</AvatarFallback>
+              <div className="flex gap-1.5 sm:gap-2 items-end mt-3 sm:mt-4">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 flex-shrink-0">
+                  <AvatarFallback className="text-xs">•••</AvatarFallback>
                 </Avatar>
-                <div className="bg-muted rounded-2xl px-4 py-3">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                <div className="bg-muted rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
+                  <p className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1.5 sm:mb-2">
                     {typingUsers
                       .map(indicator => indicator.profile?.full_name || 'Someone')
                       .join(', ')}{' '}
@@ -471,15 +471,15 @@ export function ChatArea({
                   </p>
                   <div className="flex gap-1">
                     <span
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full animate-bounce"
                       style={{ animationDelay: '0ms' }}
                     />
                     <span
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full animate-bounce"
                       style={{ animationDelay: '150ms' }}
                     />
                     <span
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
+                      className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full animate-bounce"
                       style={{ animationDelay: '300ms' }}
                     />
                   </div>

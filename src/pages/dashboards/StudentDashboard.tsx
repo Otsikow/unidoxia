@@ -446,7 +446,7 @@ export default function StudentDashboard() {
             <Button asChild size="sm" className="hover-scale whitespace-nowrap text-xs sm:text-sm">
               <Link to="/courses?view=programs" className="flex items-center gap-1.5 sm:gap-2">
                 <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Find Programs</span>
+                <span className="hidden sm:inline">Find Courses</span>
                 <span className="sm:hidden">Find</span>
               </Link>
             </Button>
@@ -487,7 +487,7 @@ export default function StudentDashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {[
-            { to: '/courses', icon: Search, label: 'Discover Programmes' },
+            { to: '/courses', icon: Search, label: 'Discover Courses' },
             { to: '/student/applications', icon: FileText, label: 'Track Applications' },
             { to: '/scholarships', icon: Award, label: 'Find Scholarships' },
             { to: '/student/documents', icon: Upload, label: 'Upload Documents' },
@@ -532,10 +532,10 @@ export default function StudentDashboard() {
                       <FileText className="h-8 w-8 text-muted-foreground" />
                     </div>
                     <h3 className="text-lg font-semibold mb-2">No applications yet</h3>
-                    <p className="text-muted-foreground mb-4">Start by applying to programs</p>
+                    <p className="text-muted-foreground mb-4">Start by applying to courses</p>
                     <Button asChild>
                       <Link to="/courses?view=programs">
-                        <Search className="mr-2 h-4 w-4" /> Search Programmes
+                        <Search className="mr-2 h-4 w-4" /> Search Courses
                       </Link>
                     </Button>
                   </div>
@@ -544,7 +544,7 @@ export default function StudentDashboard() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Programme</TableHead>
+                          <TableHead>Course</TableHead>
                           <TableHead>University</TableHead>
                           <TableHead className="text-right">Tuition</TableHead>
                           <TableHead>Status</TableHead>
@@ -608,9 +608,9 @@ export default function StudentDashboard() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
-                  <CardTitle className="text-2xl">Recommended Programs</CardTitle>
+                  <CardTitle className="text-2xl">Recommended Courses</CardTitle>
                 </div>
-                <CardDescription>Programs that match your interests</CardDescription>
+                <CardDescription>Courses that match your interests</CardDescription>
               </CardHeader>
               <CardContent>
                 {recommendedPrograms.length === 0 ? (

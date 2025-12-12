@@ -37,7 +37,7 @@ const pt = {
     navigation: {
       home: "Início",
       search: "Buscar",
-      programmes: "Programas",
+      courses: "Cursos",
       blog: "Blog",
       contact: "Contato",
       dashboard: "Painel",
@@ -71,7 +71,7 @@ const pt = {
         home: "Início",
         search: "Buscar",
         scholarships: "Bolsas",
-        programmes: "Programas",
+        courses: "Cursos",
         blog: "Blog",
         contact: "Contato",
       },
@@ -487,7 +487,7 @@ const pt = {
         },
         aiSearch: {
           badge: "Busca de universidades e bolsas com IA",
-          heading: "Encontre o programa ideal com inteligência em tempo real",
+          heading: "Encontre o curso ideal com inteligência em tempo real",
           description:
             "Pergunte tudo sobre universidades, cursos ou financiamento no mundo inteiro. Nossa IA analisa dados de admissão, bolsas e rotas de visto alinhadas aos seus objetivos.",
           subheading:
@@ -495,7 +495,7 @@ const pt = {
           ctaLabel: "Começar",
           stats: [
             { value: "12k+", label: "Insights com IA para candidatos globais" },
-            { value: "84%", label: "Estudantes com pelo menos três programas ideais" },
+            { value: "84%", label: "Estudantes com pelo menos três cursos ideais" },
             { value: "50+", label: "Países com dados de admissão verificados" },
           ],
           panel: {
@@ -512,10 +512,10 @@ const pt = {
               label: "STEM",
               headline: "Caminhos personalizados para inovadores técnicos",
               description:
-                "Destaque programas com laboratórios de pesquisa, estágios e financiamento para ciências e engenharia.",
+                "Destaque cursos com laboratórios de pesquisa, estágios e financiamento para ciências e engenharia.",
               highlights: [
                 "Bolsas que priorizam cursos STEM e produção científica",
-                "Currículos alinhados ao mercado com estágios e programas co-op",
+                "Currículos alinhados ao mercado com estágios e cursos co-op",
                 "Orientação de visto para carreiras tecnológicas e de engenharia em alta demanda",
               ],
             },
@@ -557,12 +557,12 @@ const pt = {
             {
               key: "postgraduate",
               label: "Pós-graduação",
-              headline: "Programas de mestrado e doutorado alinhados às suas metas",
+              headline: "Cursos de mestrado e doutorado alinhados às suas metas",
               description: "Compare orientadores, tamanho de turmas e modelos de financiamento.",
               highlights: [
                 "Destaques de docentes e temas de pesquisa atuais",
                 "Disponibilidade de assistantships e bolsas com bolsas auxílio",
-                "Preparação para entrevistas e portfólios conforme o programa",
+                "Preparação para entrevistas e portfólios conforme o curso",
               ],
             },
             {
@@ -570,7 +570,7 @@ const pt = {
               label: "Co-op e estágios",
               headline: "Aprendizado integrado ao trabalho com empregadores globais",
               description:
-                "Encontre programas que combinam estudo com experiência profissional prática.",
+                "Encontre cursos que combinam estudo com experiência profissional prática.",
               highlights: [
                 "Taxas de colocação e parcerias com empresas em diversas regiões",
                 "Considerações de visto para estágios remunerados e períodos de trabalho",
@@ -630,12 +630,12 @@ const pt = {
           stepLabel: "Etapa {{number}}",
           steps: {
             discover: {
-              title: "Descubra os programas ideais",
+              title: "Descubra os cursos ideais",
               description:
                 "Compartilhe objetivos e histórico: a UniDoxia seleciona instantaneamente universidades, cursos e bolsas que combinam com você.",
               support:
                 "Filtros inteligentes e recomendações com IA eliminam a incerteza para montar uma short-list em minutos.",
-              imageAlt: "Estudante analisando programas universitários durante visita ao campus",
+              imageAlt: "Estudante analisando cursos universitários durante visita ao campus",
             },
             plan: {
               title: "Monte um plano de candidatura personalizado",
@@ -705,7 +705,7 @@ const pt = {
           badge: "Destaque",
           title: "Entenda sua elegibilidade de visto antes de se candidatar",
           description:
-            "Nossa Calculadora de Elegibilidade de Visto analisa seu perfil em instantes para que você foque nos países e programas com maior afinidade.",
+            "Nossa Calculadora de Elegibilidade de Visto analisa seu perfil em instantes para que você foque nos países e cursos com maior afinidade.",
           cta: "Explorar a calculadora de visto",
         },
         feeCalculator: {
@@ -885,7 +885,7 @@ const pt = {
               all: "Todos os países",
             },
             programLevel: {
-              label: "Nível do programa",
+              label: "Nível do curso",
               placeholder: "Selecionar nível",
               all: "Todos os níveis",
             },
@@ -1001,7 +1001,7 @@ const pt = {
             {
               question: "Que suporte os agentes recebem no UniDoxia?",
               answer:
-                "Os agentes recebem um CRM dedicado, materiais de marketing e treinamentos sob demanda para aproximar estudantes dos programas ideais rapidamente.",
+                "Os agentes recebem um CRM dedicado, materiais de marketing e treinamentos sob demanda para aproximar estudantes dos cursos ideais rapidamente.",
             },
             {
               question: "Como as comissões dos agentes são tratadas?",

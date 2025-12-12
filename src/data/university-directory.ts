@@ -86,7 +86,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 18,
     programCount: 330,
     description:
-      "Historic collegiate university with exceptional research output, Nobel Prize winners, and world-class STEM programs.",
+      "Historic collegiate university with exceptional research output, Nobel Prize winners, and world-class STEM courses.",
     focusAreas: [
       "Mathematics",
       "Engineering",
@@ -281,7 +281,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 43,
     programCount: 700,
     description:
-      "Canada's top-ranked university with world-leading research, diverse programs, and strong connections to Toronto's tech scene.",
+      "Canada's top-ranked university with world-leading research, diverse courses, and strong connections to Toronto's tech scene.",
     focusAreas: [
       "Computer Science",
       "Engineering",
@@ -437,7 +437,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 48,
     programCount: 440,
     description:
-      "London's global university with world-leading research, diverse international community, and innovative interdisciplinary programs.",
+      "London's global university with world-leading research, diverse international community, and innovative interdisciplinary courses.",
     focusAreas: [
       "Architecture",
       "Law",
@@ -671,7 +671,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 90,
     programCount: 800,
     description:
-      "Innovative university focused on accessibility and inclusion, offering cutting-edge online programs and research opportunities.",
+      "Innovative university focused on accessibility and inclusion, offering cutting-edge online courses and research opportunities.",
     focusAreas: [
       "Engineering",
       "Business",
@@ -682,7 +682,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     notablePrograms: [
       "Engineering",
       "Business",
-      "Online Learning Programs",
+      "Online Learning Courses",
     ],
     badges: ["High Acceptance", "Innovation Leader"],
     website: "https://www.asu.edu",
@@ -711,7 +711,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 75,
     programCount: 230,
     description:
-      "One of the largest universities in the U.S., offering diverse programs with strong partnerships in aerospace, simulation, and hospitality.",
+      "One of the largest universities in the U.S., offering diverse courses with strong partnerships in aerospace, simulation, and hospitality.",
     focusAreas: [
       "Engineering",
       "Computer Science",
@@ -791,7 +791,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 60,
     programCount: 190,
     description:
-      "One of Europe's oldest universities offering affordable, high-quality education in the heart of Vienna with diverse international programs.",
+      "One of Europe's oldest universities offering affordable, high-quality education in the heart of Vienna with diverse international courses.",
     focusAreas: [
       "Humanities",
       "Social Sciences",
@@ -814,7 +814,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     },
     researchHighlights: [
       "Leading quantum physics research",
-      "Strong humanities and social sciences programs",
+      "Strong humanities and social sciences courses",
     ],
     employabilityRank: 120,
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/University_of_Vienna_Main_Building_in_Summer.jpg/1280px-University_of_Vienna_Main_Building_in_Summer.jpg",
@@ -951,7 +951,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 68,
     programCount: 250,
     description:
-      "Poland's leading university offering quality education at affordable prices with strong programs in sciences, humanities, and business.",
+      "Poland's leading university offering quality education at affordable prices with strong courses in sciences, humanities, and business.",
     focusAreas: [
       "Economics",
       "Law",
@@ -974,7 +974,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     },
     researchHighlights: [
       "Leading Eastern European research center",
-      "Strong economics and business programs",
+      "Strong economics and business courses",
     ],
     employabilityRank: 220,
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Warsaw_University_-_Auditorium_Maximum.jpg/1280px-Warsaw_University_-_Auditorium_Maximum.jpg",
@@ -991,7 +991,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 53,
     programCount: 400,
     description:
-      "Canada's innovation university famous for co-op programs, entrepreneurship, and strong connections to the tech industry.",
+      "Canada's innovation university famous for co-op courses, entrepreneurship, and strong connections to the tech industry.",
     focusAreas: [
       "Computer Science",
       "Engineering",
@@ -1014,7 +1014,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     },
     researchHighlights: [
       "Leading quantum computing research",
-      "World's largest co-op education program",
+      "World's largest co-op education course",
     ],
     employabilityRank: 25,
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/University_of_Waterloo_Engineering_7.jpg/1280px-University_of_Waterloo_Engineering_7.jpg",
@@ -1054,7 +1054,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     },
     researchHighlights: [
       "Leading vaccine development research",
-      "World-class agriculture and veterinary programs",
+      "World-class agriculture and veterinary courses",
     ],
     employabilityRank: 55,
     imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/UQ_Great_Court.jpg/1280px-UQ_Great_Court.jpg",
@@ -1071,7 +1071,7 @@ export const UNIVERSITY_DIRECTORY_DATA: UniversityDirectoryItem[] = [
     acceptanceRate: 54,
     programCount: 200,
     description:
-      "Netherlands' top technical university known for engineering innovation, sustainable design, and strong international programs taught in English.",
+      "Netherlands' top technical university known for engineering innovation, sustainable design, and strong international courses taught in English.",
     focusAreas: [
       "Engineering",
       "Computer Science",

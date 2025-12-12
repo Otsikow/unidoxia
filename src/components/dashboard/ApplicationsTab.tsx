@@ -213,7 +213,7 @@ export default function ApplicationsTab() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by student, program, or university..."
+              placeholder="Search by student, course, or university..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -250,7 +250,7 @@ export default function ApplicationsTab() {
             <TableHeader>
               <TableRow>
                 <TableHead>Student</TableHead>
-                <TableHead>Program</TableHead>
+                <TableHead>Course</TableHead>
                 <TableHead>University</TableHead>
                 <TableHead>
                   <Button

@@ -7,7 +7,7 @@ import { ArrowRight, Sparkles, GraduationCap, Globe, DollarSign, Target, Brain }
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Program data with country-specific programs
+// Course data with country-specific courses
 const programs = [
   {
     id: 1,
@@ -317,7 +317,7 @@ export default function OnboardingProgramMatching() {
           >
             Smart Matching for Your{" "}
             <span className="bg-gradient-to-r from-primary via-primary to-amber-500 bg-clip-text text-transparent">
-              Dream Program
+              Dream Course
             </span>
           </motion.h1>
 
