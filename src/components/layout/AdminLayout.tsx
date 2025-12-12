@@ -38,6 +38,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { Badge } from "@/components/ui/badge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import BackButton from "@/components/BackButton";
 
 /* -------------------------------------------------------------------------- */
 /* ✅ Nav Items with Localization Support                                     */
@@ -372,7 +373,19 @@ const AdminLayout = () => {
       <div className={cn("hidden md:flex shrink-0", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
       <div className="flex w-full min-w-0 flex-col">
         {/* Top Header Bar with Notification Bell */}
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-end gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
+          {location.pathname !== "/admin/dashboard" && location.pathname !== "/admin" ? (
+            <BackButton
+              variant="ghost"
+              size="sm"
+              showHistoryMenu={false}
+              fallback="/admin/dashboard"
+              className="h-9 px-2"
+              label="Back"
+            />
+          ) : (
+            <span />
+          )}
           <NotificationBell notificationsUrl="/admin/notifications" maxItems={7} />
         </header>
         <main className="flex-1 bg-background">

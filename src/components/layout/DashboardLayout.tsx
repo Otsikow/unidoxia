@@ -54,6 +54,7 @@ function SidebarToolbar() {
   const showBack =
     location.pathname !== "/dashboard" &&
     location.pathname !== "/dashboard/" &&
+    location.pathname !== "/student/dashboard" &&
     location.pathname !== "/";
 
   return (

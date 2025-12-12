@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FileStack, Sparkles, BadgeCheck } from "lucide-react";
+import { FileStack, Sparkles, BadgeCheck, Eye, Copy, ArrowUpRight } from "lucide-react";
 
 import {
   Card,
@@ -25,6 +25,14 @@ import {
   withUniversitySurfaceTint,
 } from "@/components/university/common/cardStyles";
 import { useUniversityDashboard } from "@/components/university/layout/UniversityDashboardLayout";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 const formatDate = (value: string | null) => {
   if (!value) return "—";
@@ -48,14 +56,50 @@ const titleCase = (value: string) =>
 
 const ApplicationsPage = () => {
   const { data, isRefetching, refetch } = useUniversityDashboard();
+  const { toast } = useToast();
 
   const applications = useMemo(
     () => data?.applications ?? [],
     [data?.applications],
   );
+  const documentRequests = useMemo(
+    () => data?.documentRequests ?? [],
+    [data?.documentRequests],
+  );
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
+
+  const selectedApplication = useMemo(
+    () =>
+      selectedApplicationId
+        ? applications.find((app) => app.id === selectedApplicationId) ?? null
+        : null,
+    [applications, selectedApplicationId],
+  );
+
+  const selectedStudentRequests = useMemo(() => {
+    const studentId = selectedApplication?.studentId ?? null;
+    if (!studentId) return [];
+    return documentRequests
+      .filter((req) => req.studentId === studentId)
+      .slice(0, 6);
+  }, [documentRequests, selectedApplication?.studentId]);
+
+  const handleCopy = async (label: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast({ title: "Copied", description: `${label} copied to clipboard.` });
+    } catch (error) {
+      console.error("Copy failed", error);
+      toast({
+        title: "Copy failed",
+        description: "Your browser blocked clipboard access.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const availableStatuses = useMemo(() => {
     const set = new Set<string>();
@@ -224,21 +268,33 @@ const ApplicationsPage = () => {
                     <th className="py-2">Student</th>
                     <th className="py-2">Course</th>
                     <th className="py-2">Status</th>
+                    <th className="py-2 text-right">Actions</th>
                     <th className="py-2 text-right">Submitted</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredApplications.map((app) => (
-                    <tr key={app.id} className="text-muted-foreground">
+                    <tr
+                      key={app.id}
+                      className="text-muted-foreground transition-colors hover:bg-muted/30"
+                    >
                       <td className="py-3 font-medium text-foreground">
                         <div className="flex flex-col gap-1">
                           <span>{app.appNumber}</span>
-                          <Badge
-                            variant="outline"
-                            className="w-fit border-border bg-muted/50 text-[10px]"
+                          <button
+                            type="button"
+                            className="w-fit"
+                            onClick={() => void handleCopy("Application ID", app.id)}
+                            aria-label="Copy application ID"
                           >
-                            {app.id.slice(0, 8)}…
-                          </Badge>
+                            <Badge
+                              variant="outline"
+                              className="w-fit border-border bg-muted/50 text-[10px] hover:bg-muted/70"
+                            >
+                              {app.id.slice(0, 8)}…
+                              <Copy className="ml-1 inline h-3 w-3 text-muted-foreground" />
+                            </Badge>
+                          </button>
                         </div>
                       </td>
                       <td className="py-3">
@@ -260,6 +316,17 @@ const ApplicationsPage = () => {
                       <td className="py-3">
                         <StatusBadge status={app.status} />
                       </td>
+                      <td className="py-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="gap-2 text-primary hover:text-primary"
+                          onClick={() => setSelectedApplicationId(app.id)}
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Button>
+                      </td>
                       <td className="py-3 text-right text-sm text-muted-foreground">
                         {formatDate(app.createdAt)}
                       </td>
@@ -275,6 +342,127 @@ const ApplicationsPage = () => {
       <div className="text-xs text-muted-foreground">
         Tip: Use the back button in the header to return to the previous page.
       </div>
+
+      <Dialog
+        open={Boolean(selectedApplicationId)}
+        onOpenChange={(open) => setSelectedApplicationId(open ? selectedApplicationId : null)}
+      >
+        <DialogContent className="max-w-3xl">
+          {selectedApplication ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex flex-col gap-1">
+                  <span className="text-base font-semibold text-foreground">
+                    {selectedApplication.programName}
+                  </span>
+                  <span className="text-sm font-normal text-muted-foreground">
+                    {selectedApplication.studentName} • {selectedApplication.programLevel}
+                  </span>
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  Application {selectedApplication.appNumber} • Submitted{" "}
+                  {formatDate(selectedApplication.createdAt)}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusBadge status={selectedApplication.status} />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => void handleCopy("Application number", selectedApplication.appNumber)}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy application #
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => void handleCopy("Application ID", selectedApplication.id)}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy ID
+                  </Button>
+                </div>
+
+                <div className={withUniversitySurfaceTint("rounded-2xl border border-border/60 bg-muted/40 p-4")}>
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Student
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{selectedApplication.studentName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Nationality: {selectedApplication.studentNationality ?? "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => window.open("/university/offers", "_self")}
+                  >
+                    Go to Offers &amp; CAS
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="gap-2"
+                    onClick={() => window.open("/university/documents", "_self")}
+                  >
+                    View document requests
+                    <ArrowUpRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Related document requests
+                  </p>
+                  {selectedStudentRequests.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      No document requests found for this student yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedStudentRequests.map((req) => (
+                        <div
+                          key={req.id}
+                          className="flex flex-col gap-2 rounded-xl border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {req.requestType}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Status: {req.status} • Requested {formatDate(req.requestedAt)}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {req.documentUrl ? (
+                              <Button variant="outline" size="sm" asChild>
+                                <a href={req.documentUrl} target="_blank" rel="noreferrer">
+                                  View
+                                </a>
+                              </Button>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">No file yet</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
