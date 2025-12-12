@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Database, Json } from '@/integrations/supabase/types';
 import type { ApplicationFormData } from '@/types/application';
+import { normalizeEducationLevel } from '@/lib/education';
 
 // Import step components
 import PersonalInfoStep from '@/components/application/PersonalInfoStep';
@@ -92,7 +93,7 @@ const mergeLegacyFormData = (
 
           return {
             id: typeof id === 'string' && id.length > 0 ? id : `legacy-${index}`,
-            level: typeof level === 'string' ? level : '',
+            level: typeof level === 'string' ? normalizeEducationLevel(level) : '',
             institutionName: typeof institutionName === 'string' ? institutionName : '',
             country: typeof country === 'string' ? country : '',
             startDate: typeof startDate === 'string' ? startDate : '',
@@ -309,19 +310,19 @@ export default function NewApplication() {
       if (eduError) throw eduError;
 
       if (eduRecords && eduRecords.length > 0) {
-        setFormData((prev) => ({
-          ...prev,
-          educationHistory: eduRecords.map((record) => ({
-            id: record.id,
-            level: record.level,
-            institutionName: record.institution_name,
-            country: record.country,
-            startDate: record.start_date,
-            endDate: record.end_date || '',
-            gpa: record.gpa?.toString() || '',
-            gradeScale: record.grade_scale || '',
-          })),
-        }));
+      setFormData((prev) => ({
+        ...prev,
+        educationHistory: eduRecords.map((record) => ({
+          id: record.id,
+          level: normalizeEducationLevel(record.level),
+          institutionName: record.institution_name,
+          country: record.country,
+          startDate: record.start_date,
+          endDate: record.end_date || '',
+          gpa: record.gpa?.toString() || '',
+          gradeScale: record.grade_scale || '',
+        })),
+      }));
       }
     } catch (error) {
       logError(error, 'NewApplication.fetchStudentData');
@@ -528,12 +529,24 @@ export default function NewApplication() {
 
     const draftData = draftQuery.data.form_data as unknown as ApplicationFormData | null;
     if (draftData) {
+      const normalizedDraftData: ApplicationFormData = {
+        ...draftData,
+        educationHistory: Array.isArray(draftData.educationHistory)
+          ? draftData.educationHistory.map((record, index) => ({
+              ...record,
+              id: record.id || `draft-${index}`,
+              level: normalizeEducationLevel(record.level),
+            }))
+          : [],
+        documents: draftData.documents,
+      };
+
       setFormData((prev) => ({
         ...prev,
-        ...draftData,
+        ...normalizedDraftData,
         programSelection: {
           ...prev.programSelection,
-          ...draftData.programSelection,
+          ...normalizedDraftData.programSelection,
         },
         documents: prev.documents,
       }));

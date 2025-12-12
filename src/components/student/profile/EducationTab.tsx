@@ -12,6 +12,11 @@ import { Plus, GraduationCap, Pencil, Trash2, Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  EDUCATION_LEVEL_OPTIONS,
+  getEducationLevelLabel,
+  normalizeEducationLevel,
+} from '@/lib/education';
 
 interface EducationTabProps {
   studentId: string;
@@ -62,11 +67,14 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
     setLoading(true);
 
     try {
+      const normalizedLevel = normalizeEducationLevel(formData.level);
+
       if (editingRecord) {
         const { error } = await supabase
           .from('education_records')
           .update({
             ...formData,
+            level: normalizedLevel,
             gpa: formData.gpa ? parseFloat(formData.gpa) : null
           })
           .eq('id', editingRecord.id);
@@ -79,6 +87,7 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
           .insert({
             student_id: studentId,
             ...formData,
+            level: normalizedLevel,
             gpa: formData.gpa ? parseFloat(formData.gpa) : null
           });
 
@@ -153,7 +162,7 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
   const openEditDialog = (record: Tables<'education_records'>) => {
     setEditingRecord(record);
     setFormData({
-      level: record.level,
+      level: normalizeEducationLevel(record.level),
       institution_name: record.institution_name,
       country: record.country,
       start_date: record.start_date,
@@ -198,10 +207,11 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
                       <SelectValue placeholder="Select level" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="high_school">High School</SelectItem>
-                      <SelectItem value="undergraduate">Undergraduate</SelectItem>
-                      <SelectItem value="postgraduate">Postgraduate</SelectItem>
-                      <SelectItem value="doctorate">Doctorate</SelectItem>
+                      {EDUCATION_LEVEL_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -310,7 +320,7 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
                       {record.institution_name}
                     </CardTitle>
                     <CardDescription>
-                      {record.level.replace('_', ' ').toUpperCase()} • {record.country}
+                      {getEducationLevelLabel(normalizeEducationLevel(record.level))} • {record.country}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">

@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GraduationCap, Plus, Trash2, Calendar, Globe, Building } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { EDUCATION_LEVEL_OPTIONS, normalizeEducationLevel } from '@/lib/education';
 
 interface EducationRecord {
   id: string;
@@ -24,16 +25,6 @@ interface EducationHistoryStepProps {
   onNext: () => void;
   onBack: () => void;
 }
-
-const EDUCATION_LEVELS = [
-  'High School',
-  'Associate Degree',
-  'Bachelor Degree',
-  'Master Degree',
-  'Doctorate/PhD',
-  'Diploma',
-  'Certificate',
-];
 
 const GRADE_SCALES = ['4.0', '5.0', '10.0', '100', 'Percentage', 'Other'];
 
@@ -62,7 +53,12 @@ export default function EducationHistoryStep({
 
   const updateRecord = (id: string, field: keyof EducationRecord, value: string) => {
     const updated = data.map((record) =>
-      record.id === id ? { ...record, [field]: value } : record
+      record.id === id
+        ? {
+            ...record,
+            [field]: field === 'level' ? normalizeEducationLevel(value) : value,
+          }
+        : record
     );
     onChange(updated);
   };
@@ -140,9 +136,9 @@ export default function EducationHistoryStep({
                           <SelectValue placeholder="Select education level" />
                         </SelectTrigger>
                         <SelectContent>
-                          {EDUCATION_LEVELS.map((level) => (
-                            <SelectItem key={level} value={level}>
-                              {level}
+                          {EDUCATION_LEVEL_OPTIONS.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
