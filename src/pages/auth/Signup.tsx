@@ -95,6 +95,10 @@ const Signup = () => {
   const [usernameInfo, setUsernameInfo] = useState<string | null>(null);
 
   const [refParam, setRefParam] = useState<string | null>(null);
+  const [referralLookup, setReferralLookup] = useState<{ inviteCode: string | null; username: string | null }>({
+    inviteCode: null,
+    username: null,
+  });
   const [referrerInfo, setReferrerInfo] = useState<{ id: string; username: string; full_name?: string } | null>(null);
   const [referrerError, setReferrerError] = useState<string | null>(null);
   const [referrerLoading, setReferrerLoading] = useState(false);
@@ -110,6 +114,20 @@ const Signup = () => {
   const location = useLocation();
 
   const countryOptions = useMemo(() => buildCountryOptions(), []);
+
+  const parseReferralParam = (value: string | null) => {
+    if (!value) return { inviteCode: null, username: null } as const;
+
+    const trimmed = value.trim();
+    if (!trimmed) return { inviteCode: null, username: null } as const;
+
+    const inviteCandidate = trimmed.replace(/[^A-Za-z0-9]/g, "");
+    const inviteCode = inviteCandidate.length === 8 ? inviteCandidate.toUpperCase() : null;
+
+    const username = formatReferralUsername(trimmed) || null;
+
+    return { inviteCode, username } as const;
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -142,7 +160,12 @@ const Signup = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get("role");
-    const refQuery = params.get("ref");
+    const refQuery =
+      params.get("ref") ||
+      params.get("invite") ||
+      params.get("invite_code") ||
+      params.get("inviteCode") ||
+      params.get("code");
 
     if (roleParam) {
       const normalizedRole = roleParam.toLowerCase() as UserRole;
@@ -153,9 +176,18 @@ const Signup = () => {
     }
 
     if (refQuery) {
-      const normalizedRef = formatReferralUsername(refQuery);
-      setRefParam((prev) => (prev === normalizedRef ? prev : normalizedRef));
+      const parsedRef = parseReferralParam(refQuery);
+
+      setReferralLookup((current) =>
+        current.inviteCode === parsedRef.inviteCode && current.username === parsedRef.username
+          ? current
+          : parsedRef,
+      );
+
+      const refDisplay = parsedRef.inviteCode ?? parsedRef.username;
+      setRefParam((prev) => (prev === refDisplay ? prev : refDisplay));
     } else {
+      setReferralLookup({ inviteCode: null, username: null });
       setRefParam(null);
       setReferrerInfo(null);
       setReferrerError(null);
@@ -164,7 +196,7 @@ const Signup = () => {
 
   // Lookup referral info
   useEffect(() => {
-    if (!refParam) {
+    if (!referralLookup.inviteCode && !referralLookup.username) {
       setReferrerInfo(null);
       setReferrerError(null);
       setReferrerLoading(false);
@@ -173,27 +205,61 @@ const Signup = () => {
 
     let active = true;
     setReferrerLoading(true);
-    supabase
-      .from("profiles")
-      .select("id, username, full_name")
-      .eq("username", refParam)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error || !data) {
-          setReferrerError("We could not find a matching referrer for this link.");
-          setReferrerInfo(null);
-        } else {
-          setReferrerInfo(data);
-          setReferrerError(null);
+    const lookupReferrer = async () => {
+      try {
+        if (referralLookup.inviteCode) {
+          const { data, error } = await supabase
+            .from("referrals")
+            .select(
+              "code, agent:agents!referrals_agent_id_fkey (profile:profiles!agents_profile_id_fkey (id, username, full_name))",
+            )
+            .eq("code", referralLookup.inviteCode)
+            .eq("active", true)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          const agentProfile = data?.agent?.profile;
+          if (agentProfile) {
+            setReferrerInfo(agentProfile as { id: string; username: string; full_name?: string });
+            setReferrerError(null);
+            return;
+          }
         }
+
+        if (referralLookup.username) {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("id, username, full_name")
+            .eq("username", referralLookup.username)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          if (data) {
+            setReferrerInfo(data);
+            setReferrerError(null);
+            return;
+          }
+        }
+
+        setReferrerInfo(null);
+        setReferrerError("We could not find a matching referrer for this link or invite code.");
+      } catch (error) {
+        console.error("Error looking up referrer", error);
+        setReferrerInfo(null);
+        setReferrerError("We could not find a matching referrer for this link or invite code.");
+      } finally {
         if (active) setReferrerLoading(false);
-      });
+      }
+    };
+
+    void lookupReferrer();
 
     return () => {
       active = false;
     };
-  }, [refParam]);
+  }, [referralLookup]);
 
   // Check username availability
   useEffect(() => {
