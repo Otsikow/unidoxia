@@ -330,6 +330,32 @@ export default function NewApplication() {
         return;
       }
 
+      if (profile?.role === 'agent') {
+        if (!agentId) {
+          return;
+        }
+
+        const { data: link, error: linkError } = await supabase
+          .from('agent_student_links')
+          .select('id')
+          .eq('agent_id', agentId)
+          .eq('student_id', targetStudentId)
+          .maybeSingle();
+
+        if (linkError) throw linkError;
+
+        if (!link) {
+          toast({
+            title: 'Access restricted',
+            description: 'You can only work with students assigned to you.',
+            variant: 'destructive',
+          });
+          navigate('/dashboard/students', { replace: true });
+          setLoading(false);
+          return;
+        }
+      }
+
       const { data: studentData, error: studentError } = await supabase
         .from('students')
         .select(
@@ -406,7 +432,7 @@ export default function NewApplication() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, profile, navigate, toast, studentIdFromUrl]);
+  }, [user?.id, profile, navigate, toast, studentIdFromUrl, agentId]);
 
   useEffect(() => {
     const loadAgentId = async () => {
@@ -430,10 +456,11 @@ export default function NewApplication() {
   }, [profile?.role, user?.id]);
 
   useEffect(() => {
-    if (user) {
-      fetchStudentData();
-    }
-  }, [user, fetchStudentData]);
+    if (!user) return;
+    if (profile?.role === 'agent' && !agentId) return;
+
+    fetchStudentData();
+  }, [user, fetchStudentData, profile?.role, agentId]);
 
   useEffect(() => {
     if (studentId) {

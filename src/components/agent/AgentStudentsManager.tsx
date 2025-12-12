@@ -51,7 +51,7 @@ import { SortableButton } from "@/components/SortableButton";
 import { useToast } from "@/hooks/use-toast";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useTenantStudents } from "@/hooks/useTenantStudents";
+import { useAgentStudents } from "@/hooks/useAgentStudents";
 import { useSort } from "@/hooks/useSort";
 import type { AgentStudent } from "@/hooks/useAgentStudents";
 import { cn } from "@/lib/utils";
@@ -130,7 +130,14 @@ export default function AgentStudentsManager() {
   const agentProfileId = profile?.id ?? null;
   const tenantId = profile?.tenant_id ?? null;
 
-  const { data, isLoading, isFetching, isError, error, refetch } = useTenantStudents(tenantId);
+  const {
+    data,
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    refetch,
+  } = useAgentStudents(agentProfileId);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -285,7 +292,7 @@ export default function AgentStudentsManager() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{metrics.total}</div>
-              <p className="text-xs text-muted-foreground">In your organization</p>
+              <p className="text-xs text-muted-foreground">Assigned to you</p>
             </CardContent>
           </Card>
           <Card className="min-w-0">
