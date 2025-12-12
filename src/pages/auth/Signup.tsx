@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { getSiteUrl } from "@/lib/supabaseClientConfig";
+import { hasSeenOnboarding, markOnboardingSeen, type OnboardingRole } from "@/lib/onboardingStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,11 +115,15 @@ const Signup = () => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get("role");
 
-    if (roleParam === "agent" && !authLoading && !user && typeof window !== "undefined") {
-      const hasSeenAgentOnboarding = sessionStorage.getItem("agentOnboardingSeen") === "true";
-      if (!hasSeenAgentOnboarding) {
-        sessionStorage.setItem("agentOnboardingSeen", "true");
-        navigate(`/agents/onboarding?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`);
+    const onboardingRole = roleParam === "agent" || roleParam === "university" ? roleParam : null;
+
+    if (onboardingRole && !authLoading && !user && typeof window !== "undefined") {
+      const hasSeen = hasSeenOnboarding(onboardingRole as OnboardingRole);
+      if (!hasSeen) {
+        markOnboardingSeen(onboardingRole as OnboardingRole);
+        navigate(
+          `${onboardingRole === "agent" ? "/agents/onboarding" : "/onboarding/welcome"}?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`,
+        );
         return;
       }
     }

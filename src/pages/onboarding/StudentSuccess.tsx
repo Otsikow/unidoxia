@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Quote, GraduationCap, Plane, FileCheck, Award } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
 // Success story data representing African students
 const successStories = [
@@ -404,8 +405,8 @@ export default function OnboardingStudentSuccess() {
             className="w-full max-w-xs animate-fade-in-up"
             style={{ animationDelay: "0.7s" }}
           >
-            <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base">
-              Next
+            <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base shadow-lg">
+              Continue to destinations
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
@@ -420,19 +421,19 @@ export default function OnboardingStudentSuccess() {
           </Link>
         </div>
 
-        {/* Progress indicator */}
         <div className="container mx-auto max-w-5xl mt-auto pt-6">
-          <div className="flex justify-center gap-2">
-            <Link
-              to="/onboarding/welcome"
-              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-            />
-            <div className="w-2 h-2 rounded-full bg-primary" />
-            <Link
-              to="/onboarding/destinations"
-              className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-            />
-          </div>
+          <OnboardingProgressNav
+            previousHref="/onboarding/visa-requirements"
+            previousLabel="Back to requirements"
+            nextHref="/onboarding/destinations"
+            nextLabel="Next: Destinations"
+            steps={[
+              { label: "Welcome", href: "/onboarding/welcome" },
+              { label: "Visa requirements", href: "/onboarding/visa-requirements" },
+              { label: "Student success", href: "/onboarding/success-stories", active: true },
+              { label: "Destinations", href: "/onboarding/destinations" },
+            ]}
+          />
         </div>
       </div>
 

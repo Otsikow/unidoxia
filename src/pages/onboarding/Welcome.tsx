@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MapPin, Plane } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
 // Destination data with landmark images and flags
 const destinations = [
@@ -405,18 +406,17 @@ export default function OnboardingWelcome() {
           </div>
         </div>
 
-        {/* Progress indicator */}
-        <div className="mt-6 sm:mt-8 flex justify-center gap-2 animate-fade-in" style={{ animationDelay: "1.2s" }}>
-          <div className="w-2 h-2 rounded-full bg-primary" />
-          <Link
-            to="/onboarding/destinations"
-            className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-          />
-          <Link
-            to="/onboarding/fast-applications"
-            className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors"
-          />
-        </div>
+        <OnboardingProgressNav
+          previousHref="/"
+          previousLabel="Back home"
+          nextHref="/onboarding/visa-requirements"
+          nextLabel="Next: Visa requirements"
+          steps={[
+            { label: "Welcome", href: "/onboarding/welcome", active: true },
+            { label: "Destinations", href: "/onboarding/destinations" },
+            { label: "Faster applications", href: "/onboarding/fast-applications" },
+          ]}
+        />
       </div>
 
       {/* Custom keyframes for animations */}
