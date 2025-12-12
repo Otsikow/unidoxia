@@ -206,6 +206,32 @@ const STATUS_FILTER_MAP: Record<StatusFilter, string[]> = {
   rejected: ["withdrawn", "deferred", "rejected"],
 };
 
+const getStatusLabel = (status: string) => {
+  const normalized = status?.toLowerCase?.() ?? status;
+  const map: Record<string, string> = {
+    draft: "Draft",
+    submitted: "Submitted",
+    screening: "Under Review",
+    conditional_offer: "Conditional Offer",
+    unconditional_offer: "Unconditional Offer",
+    cas_loa: "CAS/LOA Stage",
+    visa: "Visa Stage",
+    enrolled: "Enrolled",
+    rejected: "Rejected",
+    withdrawn: "Withdrawn",
+    deferred: "Deferred",
+  };
+
+  return map[normalized] ?? status.replace(/_/g, " ");
+};
+
+const resolveFilterForStatus = (status: string): StatusFilter => {
+  const normalized = status?.toLowerCase?.() ?? status;
+  const entries = Object.entries(STATUS_FILTER_MAP) as [StatusFilter, string[]][];
+  const match = entries.find(([key, values]) => key !== "all" && values.includes(normalized));
+  return match?.[0] ?? "all";
+};
+
 const formatDate = (
   value?: string | null,
   options: Intl.DateTimeFormatOptions = { dateStyle: "medium" },
@@ -766,8 +792,10 @@ const ApplicationsPage = () => {
       }
 
       // Build timeline entry
+      const previousStatus = decisionApplication.status;
+      const statusLabel = getStatusLabel(newStatus);
       const timelineEntry = {
-        title: `Status updated to ${newStatus.replace(/_/g, " ")}`,
+        title: `Status updated to ${statusLabel}`,
         description: decisionNotes || undefined,
         date: new Date().toISOString(),
         status: newStatus,
@@ -781,7 +809,7 @@ const ApplicationsPage = () => {
       const updatedTimeline = [timelineEntry, ...existingTimeline];
 
       // ISOLATION: Update application only if it belongs to a program of this university
-      const { error } = await supabase
+      const { data: updatedApplication, error } = await supabase
         .from("applications")
         .update({
           status: newStatus as any,
@@ -789,9 +817,16 @@ const ApplicationsPage = () => {
           timeline_json: updatedTimeline as any,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", decisionApplication.id);
+        .eq("id", decisionApplication.id)
+        .select("id, status, updated_at, internal_notes, timeline_json")
+        .maybeSingle();
 
       if (error) throw error;
+      if (!updatedApplication) {
+        throw new Error(
+          "Status update could not be saved. You may not have permission to update this application.",
+        );
+      }
 
       // Create offer record if status is an offer
       if (newStatus === "conditional_offer" || newStatus === "unconditional_offer") {
@@ -813,12 +848,75 @@ const ApplicationsPage = () => {
 
       toast({
         title: "Application updated",
-        description: `Application status changed to ${newStatus.replace(/_/g, " ")}.`,
+        description: `Application status changed to ${statusLabel}.`,
       });
 
       // Clear cache and refresh
       delete detailsCacheRef.current[decisionApplication.id];
+
+      // Update local state immediately so the UI reflects the change even before refresh.
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.id === decisionApplication.id
+            ? ({
+                ...app,
+                status: (updatedApplication as any).status ?? newStatus,
+                updated_at: (updatedApplication as any).updated_at ?? app.updated_at,
+                internal_notes:
+                  (updatedApplication as any).internal_notes ?? app.internal_notes,
+                timeline_json:
+                  (updatedApplication as any).timeline_json ?? (app as any).timeline_json,
+              } as ApplicationRow)
+            : app,
+        ),
+      );
+      setSelectedApplication((prev) =>
+        prev?.id === decisionApplication.id
+          ? ({
+              ...prev,
+              status: (updatedApplication as any).status ?? newStatus,
+              updated_at: (updatedApplication as any).updated_at ?? prev.updated_at,
+              internal_notes:
+                (updatedApplication as any).internal_notes ?? prev.internal_notes,
+              timeline_json:
+                (updatedApplication as any).timeline_json ?? (prev as any).timeline_json,
+            } as ApplicationRow)
+          : prev,
+      );
+      setDetailedApplication((prev) =>
+        prev?.id === decisionApplication.id
+          ? ({
+              ...prev,
+              status: (updatedApplication as any).status ?? newStatus,
+              updated_at: (updatedApplication as any).updated_at ?? prev.updated_at,
+              internal_notes:
+                (updatedApplication as any).internal_notes ?? prev.internal_notes,
+              timeline_json:
+                (updatedApplication as any).timeline_json ?? (prev as any).timeline_json,
+            } as DetailedApplication)
+          : prev,
+      );
+
       handleCloseDecisionDialog();
+
+      const updatedStatusValue =
+        ((updatedApplication as any).status as string | null) ?? newStatus;
+      const shouldSwitchFilter =
+        statusFilter !== "all" &&
+        STATUS_FILTER_MAP[statusFilter].length > 0 &&
+        !STATUS_FILTER_MAP[statusFilter].includes(updatedStatusValue);
+
+      if (shouldSwitchFilter) {
+        const nextFilter = resolveFilterForStatus(updatedStatusValue);
+        setStatusFilter(nextFilter);
+        setPage(1);
+        toast({
+          title: "Moved to a different queue",
+          description: `This update moved the application to "${STATUS_FILTER_OPTIONS.find((o) => o.value === nextFilter)?.label ?? "All statuses"}".`,
+        });
+        return;
+      }
+
       await fetchApplications();
     } catch (error) {
       logError(error, "ApplicationsPage.updateApplicationStatus");
