@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  DollarSign, 
+import {
+  DollarSign,
   TrendingUp, 
   Users, 
   Calendar,
@@ -15,59 +14,101 @@ import {
   Download,
   Plus
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { LoadingState } from '@/components/LoadingState';
 
 interface Commission {
   id: string;
-  agentName: string;
-  studentName: string;
-  program: string;
-  university: string;
-  amount: number;
-  status: 'pending' | 'approved' | 'paid';
-  date: string;
-  commissionRate: number;
+  amount_cents: number;
+  currency: string | null;
+  status: 'pending' | 'approved' | 'paid' | 'clawback';
+  created_at: string | null;
+  paid_at: string | null;
+  rate_percent: number;
+  applications: {
+    students: {
+      profiles: {
+        full_name: string;
+      };
+    };
+    programs: {
+      name: string;
+      universities: {
+        name: string;
+      };
+    };
+  } | null;
 }
 
-const mockCommissions: Commission[] = [
-  {
-    id: '1',
-    agentName: 'John Smith',
-    studentName: 'Alice Johnson',
-    program: 'MSc Computer Science',
-    university: 'University of Toronto',
-    amount: 2500,
-    status: 'approved',
-    date: '2024-01-15',
-    commissionRate: 5
-  },
-  {
-    id: '2',
-    agentName: 'Jane Doe',
-    studentName: 'Bob Wilson',
-    program: 'MBA',
-    university: 'Harvard University',
-    amount: 5000,
-    status: 'pending',
-    date: '2024-01-20',
-    commissionRate: 8
-  },
-  {
-    id: '3',
-    agentName: 'Mike Johnson',
-    studentName: 'Sarah Davis',
-    program: 'MA International Business',
-    university: 'University of Oxford',
-    amount: 3000,
-    status: 'paid',
-    date: '2024-01-10',
-    commissionRate: 6
-  }
-];
-
 export default function CommissionManagement() {
-  const [commissions, setCommissions] = useState<Commission[]>(mockCommissions);
+  const [commissions, setCommissions] = useState<Commission[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterAgent, setFilterAgent] = useState<string>('all');
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const fetchCommissions = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const { data: agentData, error: agentError } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('profile_id', user?.id)
+        .single();
+
+      if (agentError || !agentData) {
+        throw agentError || new Error('Agent not found');
+      }
+
+      const { data, error } = await supabase
+        .from('commissions')
+        .select(`
+          *,
+          applications (
+            students (
+              profiles (
+                full_name
+              )
+            ),
+            programs (
+              name,
+              universities (
+                name
+              )
+            )
+          )
+        `)
+        .eq('agent_id', agentData.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setCommissions(data || []);
+    } catch (err) {
+      console.error('Error loading commission data', err);
+      toast({
+        title: 'Unable to load commissions',
+        description: 'Real-time commission data could not be retrieved.',
+        variant: 'destructive'
+      });
+      setCommissions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [toast, user]);
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      setCommissions([]);
+      return;
+    }
+    void fetchCommissions();
+  }, [fetchCommissions, user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -78,15 +119,32 @@ export default function CommissionManagement() {
     }
   };
 
+  const agentName = user?.user_metadata?.full_name || 'You';
+
   const filteredCommissions = commissions.filter(commission => {
     if (filterStatus !== 'all' && commission.status !== filterStatus) return false;
-    if (filterAgent !== 'all' && commission.agentName !== filterAgent) return false;
+    if (filterAgent !== 'all' && filterAgent !== agentName) return false;
     return true;
   });
 
-  const totalCommissions = filteredCommissions.reduce((sum, commission) => sum + commission.amount, 0);
-  const pendingCommissions = filteredCommissions.filter(c => c.status === 'pending').length;
-  const paidCommissions = filteredCommissions.filter(c => c.status === 'paid').length;
+  const { totalCommissions, pendingCommissions, paidCommissions } = useMemo(() => {
+    const totals = filteredCommissions.reduce(
+      (acc, commission) => {
+        acc.totalCommissions += commission.amount_cents;
+        if (commission.status === 'pending' || commission.status === 'approved') acc.pendingCommissions += 1;
+        if (commission.status === 'paid') acc.paidCommissions += 1;
+        return acc;
+      },
+      { totalCommissions: 0, pendingCommissions: 0, paidCommissions: 0 }
+    );
+
+    return totals;
+  }, [filteredCommissions]);
+  const agentCount = user ? 1 : 0;
+
+  if (loading) {
+    return <LoadingState title="Loading commissions" description="Fetching your latest commission activity" />;
+  }
 
   return (
     <div className="space-y-6">
@@ -107,7 +165,7 @@ export default function CommissionManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Total Commissions</p>
-                <p className="text-2xl font-bold">${totalCommissions.toLocaleString()}</p>
+                <p className="text-2xl font-bold">${(totalCommissions / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
               </div>
               <DollarSign className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -140,7 +198,7 @@ export default function CommissionManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Agents</p>
-                <p className="text-2xl font-bold">{new Set(commissions.map(c => c.agentName)).size}</p>
+                <p className="text-2xl font-bold">{agentCount}</p>
               </div>
               <Users className="h-8 w-8 text-muted-foreground" />
             </div>
@@ -176,6 +234,7 @@ export default function CommissionManagement() {
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="approved">Approved</SelectItem>
                       <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="clawback">Clawback</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -187,9 +246,7 @@ export default function CommissionManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Agents</SelectItem>
-                      {Array.from(new Set(commissions.map(c => c.agentName))).map(agent => (
-                        <SelectItem key={agent} value={agent}>{agent}</SelectItem>
-                      ))}
+                      <SelectItem value={agentName}>{agentName}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -199,33 +256,43 @@ export default function CommissionManagement() {
 
           {/* Commissions List */}
           <div className="space-y-4">
-            {filteredCommissions.map((commission) => (
-              <Card key={commission.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{commission.agentName}</h3>
-                        <Badge className={getStatusColor(commission.status)}>
-                          {commission.status}
-                        </Badge>
+            {filteredCommissions.length === 0 ? (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>No commissions to show</AlertTitle>
+                <AlertDescription>
+                  Adjust your filters or check back when new enrollments are approved.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              filteredCommissions.map((commission) => (
+                <Card key={commission.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{agentName}</h3>
+                          <Badge className={getStatusColor(commission.status)}>
+                            {commission.status}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Student: {commission.applications?.students?.profiles?.full_name ?? 'Student name unavailable'} • {commission.applications?.programs?.name ?? 'Program'} at {commission.applications?.programs?.universities?.name ?? 'University'}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>Date: {commission.created_at ? new Date(commission.created_at).toLocaleDateString() : 'Not available'}</span>
+                          <span>Rate: {commission.rate_percent}%</span>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Student: {commission.studentName} • {commission.program} at {commission.university}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span>Date: {commission.date}</span>
-                        <span>Rate: {commission.commissionRate}%</span>
+                      <div className="text-right">
+                        <p className="text-2xl font-bold">${(commission.amount_cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                        <p className="text-sm text-muted-foreground">Commission</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold">${commission.amount.toLocaleString()}</p>
-                      <p className="text-sm text-muted-foreground">Commission</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
 
@@ -239,49 +306,57 @@ export default function CommissionManagement() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {filteredCommissions.map((commission) => (
-                  <div key={commission.id} className="border rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                        <p className="font-semibold">{commission.agentName}</p>
+                {filteredCommissions.length === 0 ? (
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>No commission records</AlertTitle>
+                    <AlertDescription>Commission transaction history will appear once available.</AlertDescription>
+                  </Alert>
+                ) : (
+                  filteredCommissions.map((commission) => (
+                    <div key={commission.id} className="border rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Agent</p>
+                          <p className="font-semibold">{agentName}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Student</p>
+                          <p className="font-semibold">{commission.applications?.students?.profiles?.full_name ?? 'Student name unavailable'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Course</p>
+                          <p className="font-semibold">{commission.applications?.programs?.name ?? 'Program'}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground">Amount</p>
+                          <p className="font-semibold">${(commission.amount_cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Student</p>
-                        <p className="font-semibold">{commission.studentName}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Course</p>
-                        <p className="font-semibold">{commission.program}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-muted-foreground">Amount</p>
-                        <p className="font-semibold">${commission.amount.toLocaleString()}</p>
-                      </div>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Badge className={getStatusColor(commission.status)}>
-                          {commission.status}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {commission.commissionRate}% commission rate
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
-                          <Download className="h-4 w-4 mr-2" />
-                          Export
-                        </Button>
-                        {commission.status === 'pending' && (
-                          <Button size="sm">
-                            Approve
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Badge className={getStatusColor(commission.status)}>
+                            {commission.status}
+                          </Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {commission.rate_percent}% commission rate
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Export
                           </Button>
-                        )}
+                          {commission.status === 'pending' && (
+                            <Button size="sm">
+                              Approve
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
