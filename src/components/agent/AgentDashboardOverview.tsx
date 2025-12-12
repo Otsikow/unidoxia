@@ -77,7 +77,6 @@ const formatCurrency = (value: number) =>
 
 const fetchAgentStats = async (
   agentProfileId: string,
-  tenantId: string | null
 ): Promise<AgentApplicationStats> => {
   // Get the agent ID from profile
   const { data: agentData, error: agentError } = await supabase
@@ -90,20 +89,17 @@ const fetchAgentStats = async (
 
   const agentId = agentData?.id;
 
-  // Count students in the tenant
+  // Count students assigned to the agent
   let totalStudents = 0;
-  if (tenantId) {
-    const { count, error: studentsError } = await supabase.rpc(
-      "get_students_by_tenant",
-      { p_tenant_id: tenantId }
-    );
+  if (agentId) {
+    const { count: studentsCount, error: studentsError } = await supabase
+      .from("agent_student_links")
+      .select("id", { count: "exact", head: true })
+      .eq("agent_id", agentId);
 
-    // If RPC returns an array, count its length
-    const { data: studentsData } = await supabase.rpc("get_students_by_tenant", {
-      p_tenant_id: tenantId,
-    });
-
-    totalStudents = Array.isArray(studentsData) ? studentsData.length : 0;
+    if (!studentsError) {
+      totalStudents = studentsCount ?? 0;
+    }
   }
 
   // Get applications submitted by this agent
@@ -251,8 +247,6 @@ export default function AgentDashboardOverview() {
   const [copied, setCopied] = useState(false);
 
   const agentProfileId = profile?.id ?? null;
-  const tenantId = profile?.tenant_id ?? null;
-
   const {
     data: stats,
     isLoading,
@@ -261,8 +255,8 @@ export default function AgentDashboardOverview() {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ["agent-dashboard-stats", agentProfileId, tenantId],
-    queryFn: () => fetchAgentStats(agentProfileId!, tenantId),
+    queryKey: ["agent-dashboard-stats", agentProfileId],
+    queryFn: () => fetchAgentStats(agentProfileId!),
     enabled: Boolean(agentProfileId),
     staleTime: 60_000,
   });
