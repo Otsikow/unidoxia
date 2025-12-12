@@ -86,6 +86,34 @@ export default function ProgramSelectionStep({
   const [loadingProgramById, setLoadingProgramById] = useState(false);
   const isCourseLoading = loading || loadingProgramById;
 
+  const fetchIntakes = useCallback(
+    async (programId: string) => {
+      setLoadingIntakes(true);
+      try {
+        const { data: intakesData, error } = await supabase
+          .from('intakes')
+          .select('*')
+          .eq('program_id', programId)
+          .gte('app_deadline', new Date().toISOString().split('T')[0])
+          .order('start_date', { ascending: true });
+
+        if (error) throw error;
+        setIntakes(intakesData || []);
+      } catch (error) {
+        console.error('Error fetching intakes:', error);
+        toast({
+          title: 'Unable to load intakes',
+          description: 'Please select the intake period manually.',
+          variant: 'destructive',
+        });
+        setIntakes([]);
+      } finally {
+        setLoadingIntakes(false);
+      }
+    },
+    [toast],
+  );
+
   // Fetch programs
   const fetchPrograms = useCallback(async () => {
     setLoading(true);
@@ -139,7 +167,7 @@ export default function ProgramSelectionStep({
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, data.programId, toast]);
+  }, [debouncedSearch, data.programId, toast, fetchIntakes]);
 
   useEffect(() => {
     fetchPrograms();
@@ -182,27 +210,6 @@ export default function ProgramSelectionStep({
 
     void loadSelectedProgram();
   }, [data.programId, programs, toast, fetchIntakes]);
-
-  // Fetch intakes for selected program
-  const fetchIntakes = async (programId: string) => {
-    setLoadingIntakes(true);
-    try {
-      const { data: intakesData, error } = await supabase
-        .from('intakes')
-        .select('*')
-        .eq('program_id', programId)
-        .gte('app_deadline', new Date().toISOString().split('T')[0])
-        .order('start_date', { ascending: true });
-
-      if (error) throw error;
-      setIntakes(intakesData || []);
-    } catch (error) {
-      console.error('Error fetching intakes:', error);
-      setIntakes([]);
-    } finally {
-      setLoadingIntakes(false);
-    }
-  };
 
   const handleProgramChange = (programId: string) => {
     const program = programs.find((p) => p.id === programId);
