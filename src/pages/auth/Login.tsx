@@ -26,6 +26,12 @@ const Login = () => {
   const location = useLocation();
 
   useEffect(() => {
+    const emailParam = new URLSearchParams(location.search).get('email');
+    if (!emailParam) return;
+    setEmail((prev) => (prev ? prev : emailParam));
+  }, [location.search]);
+
+  useEffect(() => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
 
