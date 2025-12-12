@@ -84,7 +84,7 @@ export default function CommissionTracker() {
   }, [commissions]);
 
   if (loading) {
-    return <LoadingState title="Loading commissions" description="Fetching your latest earnings" />;
+    return <LoadingState message="Fetching your latest earnings" />;
   }
 
   return (
