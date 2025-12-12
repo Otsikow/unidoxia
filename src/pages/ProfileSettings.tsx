@@ -19,6 +19,7 @@ import { generateReferralLink } from '@/lib/referrals';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useUniversityProfileCompletion } from '@/hooks/useUniversityProfileCompletion';
+import { useAgentProfileCompletion } from '@/hooks/useAgentProfileCompletion';
 
 const SETTINGS_TAB_VALUES = ['profile', 'documents', 'notifications', 'security', 'account'] as const;
 type SettingsTab = (typeof SETTINGS_TAB_VALUES)[number];
@@ -43,8 +44,12 @@ export default function ProfileSettings() {
       ? '/university/profile'
       : profile?.role === 'student'
         ? '/student/profile'
-        : '/dashboard';
-  
+        : profile?.role === 'agent'
+          ? '/agent/settings'
+          : '/dashboard';
+
+  const isAgent = profile?.role === 'agent';
+
   // Fetch university profile completion for partner users
   const isPartner = profile?.role === 'partner';
   const {
@@ -52,6 +57,14 @@ export default function ProfileSettings() {
     isLoading: universityCompletionLoading,
     university,
   } = useUniversityProfileCompletion();
+
+  // Fetch agent profile completion
+  const {
+    completion: agentCompletion,
+    isLoading: agentCompletionLoading,
+    checklist: agentChecklist,
+    hasAgentProfile,
+  } = useAgentProfileCompletion();
 
   // Fetch additional profile data based on role
   const { data: roleData, isLoading: roleDataLoading } = useQuery({
@@ -282,6 +295,61 @@ export default function ProfileSettings() {
                     Create Profile
                     <ArrowUpRight className="h-4 w-4" />
                   </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : isAgent ? (
+          <Card className="mb-6 border-primary/20 bg-primary/5">
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                  Agent Profile
+                </CardTitle>
+                <CardDescription>
+                  Keep your agency details up to date to start submitting applications.
+                </CardDescription>
+              </div>
+              <Button asChild variant="outline" size="sm" className="gap-2">
+                <Link to="/agent/settings">
+                  Update profile
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {agentCompletionLoading ? (
+                <div className="space-y-2">
+                  <div className="h-4 bg-muted animate-pulse rounded" />
+                  <div className="h-2 bg-muted animate-pulse rounded" />
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {agentCompletion.percentage}% Complete
+                      </span>
+                      {agentCompletion.percentage < 100 && (
+                        <span className="text-xs text-muted-foreground">
+                          Missing: {agentCompletion.missingFields.slice(0, 2).join(', ')}
+                          {agentCompletion.missingFields.length > 2 && '...'}
+                        </span>
+                      )}
+                    </div>
+                    <Progress value={agentCompletion.percentage} className="h-2" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{hasAgentProfile ? 'Agency details' : 'No agent profile found'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {hasAgentProfile
+                          ? 'Complete verification and contact details to unlock full access.'
+                          : 'Add your agency information to begin working with students.'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
