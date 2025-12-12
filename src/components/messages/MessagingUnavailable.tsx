@@ -21,23 +21,23 @@ export function MessagingUnavailable({
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-1 items-center justify-center p-6">
-      <Card className="w-full max-w-xl text-center shadow-lg">
-        <CardHeader className="space-y-4">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-            <AlertTriangle className="h-6 w-6" aria-hidden="true" />
+    <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
+      <Card className="w-full max-w-md sm:max-w-xl text-center shadow-lg">
+        <CardHeader className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+          <div className="mx-auto flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-5 w-5 sm:h-6 sm:w-6" aria-hidden="true" />
           </div>
-          <CardTitle className="text-xl font-semibold">{title}</CardTitle>
+          <CardTitle className="text-base sm:text-xl font-semibold">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">{reason}</p>
-          <div className="flex flex-wrap justify-center gap-3">
+        <CardContent className="space-y-4 px-4 sm:px-6">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{reason}</p>
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
             {onRetry && (
-              <Button variant="outline" onClick={onRetry} data-testid="messaging-retry">
+              <Button variant="outline" onClick={onRetry} data-testid="messaging-retry" className="h-8 sm:h-9 text-xs sm:text-sm">
                 Try again
               </Button>
             )}
-            <Button onClick={() => navigate(redirectHref)} data-testid="messaging-redirect">
+            <Button onClick={() => navigate(redirectHref)} data-testid="messaging-redirect" className="h-8 sm:h-9 text-xs sm:text-sm">
               {redirectLabel}
             </Button>
           </div>

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-// Country options with flags - aligned with ProgramSearchView
+// Country options with flags - aligned with CourseSearchView
 const DESTINATIONS = [
   { value: "all", label: "All Destinations", flag: "🌍" },
   { value: "United Kingdom", label: "United Kingdom", flag: "🇬🇧" },
@@ -24,7 +24,7 @@ const DESTINATIONS = [
   { value: "Ireland", label: "Ireland", flag: "🇮🇪" },
 ] as const;
 
-// Study level options - aligned with ProgramSearchView PROGRAM_LEVELS
+// Study level options - aligned with CourseSearchView COURSE_LEVELS
 const STUDY_LEVELS = [
   { value: "all", label: "All Levels" },
   { value: "Undergraduate", label: "Undergraduate" },
@@ -126,7 +126,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="text-2xl md:text-3xl font-semibold text-primary dark:text-white"
                 >
-                  Discover Your Perfect Program
+                  Discover Your Perfect Course
                 </motion.h2>
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
@@ -154,13 +154,13 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                     />
                     <Input
                       type="text"
-                      placeholder="Search programs, universities or keywords…"
+                      placeholder="Search courses, universities or keywords…"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyDown={handleKeyDown}
                       onFocus={() => setIsFocused(true)}
                       onBlur={() => setIsFocused(false)}
-                      aria-label="Search programs and universities"
+                      aria-label="Search courses and universities"
                       className={cn(
                         "pl-12 h-14 md:h-16 text-base md:text-lg",
                         searchTerm ? "pr-10" : "pr-4",

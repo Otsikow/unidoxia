@@ -36,7 +36,7 @@ const zh = {
     navigation: {
       home: "首页",
       search: "搜索",
-      programmes: "课程",
+      courses: "课程",
       blog: "博客",
       contact: "联系",
       dashboard: "控制台",
@@ -70,7 +70,7 @@ const zh = {
         home: "首页",
         search: "搜索",
         scholarships: "奖学金",
-        programmes: "课程",
+        courses: "课程",
         blog: "博客",
         contact: "联系",
       },

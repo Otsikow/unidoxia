@@ -308,7 +308,7 @@ export default function BulkImport() {
       if (!nationality) recordErrors.push('Nationality is required');
       if (!academicHistory) recordErrors.push('Academic history is required');
       if (!desiredCountry) recordErrors.push('Desired country is required');
-      if (!programInterests) recordErrors.push('Program interests are required');
+      if (!programInterests) recordErrors.push('Course interests are required');
 
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         recordErrors.push('Invalid email format');
@@ -419,7 +419,7 @@ export default function BulkImport() {
     const template = [
       'name,email,phone,nationality,academic_history,desired_country,program_interests,gpa,ielts_score,toefl_score,budget,notes',
       '"John Doe",john@example.com,+1234567890,USA,"Bachelor in Computer Science, University of Toronto",Canada,"Computer Science, Data Science",3.5,7.5,100,50000,"Interested in AI, data, and research opportunities"',
-      '"Jane Smith",jane@example.com,+1234567891,UK,"Master in Business Administration",USA,"Business Administration",3.8,8,110,60000,"Looking for MBA programs with co-op options"'
+      '"Jane Smith",jane@example.com,+1234567891,UK,"Master in Business Administration",USA,"Business Administration",3.8,8,110,60000,"Looking for MBA courses with co-op options"'
     ].join('\n');
     
     const blob = new Blob([template], { type: 'text/csv' });
@@ -600,7 +600,7 @@ export default function BulkImport() {
                     <th className="text-left p-2">Email</th>
                     <th className="text-left p-2">Nationality</th>
                     <th className="text-left p-2">Desired Country</th>
-                    <th className="text-left p-2">Program Interests</th>
+                    <th className="text-left p-2">Course Interests</th>
                     <th className="text-left p-2">GPA</th>
                   </tr>
                 </thead>

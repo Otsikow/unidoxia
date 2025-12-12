@@ -113,7 +113,7 @@ const NAV_ITEMS: NavItem[] = [
     to: "/admin/programs",
     labelKey: "admin.layout.navigation.programs.label",
     descriptionKey: "admin.layout.navigation.programs.description",
-    labelDefault: "Programs",
+    labelDefault: "Courses",
     descriptionDefault: "Catalogue & intakes",
     icon: BookOpen,
   },

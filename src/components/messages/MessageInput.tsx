@@ -613,16 +613,16 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       <button
         type="button"
         onClick={() => handleRemoveAttachment(attachment.id)}
-        className="absolute -top-2 -right-2 rounded-full border bg-background p-1 shadow-sm"
+        className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 rounded-full border bg-background p-0.5 sm:p-1 shadow-sm"
         aria-label="Remove attachment"
       >
-        <X className="h-3 w-3" />
+        <X className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
       </button>
     );
 
     if (attachment.type === 'image') {
       return (
-        <div key={attachment.id} className="relative h-24 w-24 rounded-lg border overflow-hidden">
+        <div key={attachment.id} className="relative h-16 w-16 sm:h-24 sm:w-24 rounded-lg border overflow-hidden">
           <img
             src={attachment.preview_url || attachment.url}
             alt={attachment.name || 'Image attachment'}
@@ -635,7 +635,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 
     if (attachment.type === 'video') {
       return (
-        <div key={attachment.id} className="relative h-24 w-32 rounded-lg border overflow-hidden">
+        <div key={attachment.id} className="relative h-16 w-24 sm:h-24 sm:w-32 rounded-lg border overflow-hidden">
           <video className="h-full w-full object-cover" controls>
             <source src={attachment.url} type={attachment.mime_type || 'video/mp4'} />
           </video>
@@ -648,17 +648,17 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       return (
         <div
           key={attachment.id}
-          className="relative flex flex-col justify-center gap-2 rounded-lg border px-4 py-3 min-w-[200px]"
+          className="relative flex flex-col justify-center gap-1.5 sm:gap-2 rounded-lg border px-2 py-2 sm:px-4 sm:py-3 min-w-[150px] sm:min-w-[200px]"
         >
           {removeButton}
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <AudioLines className="h-4 w-4" />
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium">
+            <AudioLines className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="truncate">{attachment.name || 'Audio message'}</span>
           </div>
-          <audio controls className="w-full">
+          <audio controls className="w-full h-8 sm:h-auto">
             <source src={attachment.url} type={attachment.mime_type || 'audio/webm'} />
           </audio>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-[10px] sm:text-xs text-muted-foreground">
             {formatFileSize(attachment.size)}
           </div>
         </div>
@@ -668,12 +668,12 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     return (
       <div
         key={attachment.id}
-        className="relative flex items-start gap-2 rounded-lg border px-3 py-2 min-w-[200px]"
+        className="relative flex items-start gap-1.5 sm:gap-2 rounded-lg border px-2 py-1.5 sm:px-3 sm:py-2 min-w-[140px] sm:min-w-[200px]"
       >
-        <FileText className="h-5 w-5 text-muted-foreground" />
+        <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium truncate">{attachment.name || 'File attachment'}</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs sm:text-sm font-medium truncate">{attachment.name || 'File attachment'}</div>
+          <div className="text-[10px] sm:text-xs text-muted-foreground">
             {formatFileSize(attachment.size)}
           </div>
         </div>
@@ -683,33 +683,33 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
   };
 
   return (
-    <div className="p-4 border-t bg-background">
-      <div className="flex items-end gap-2">
-        {/* Emoji Picker */}
+    <div className="p-3 sm:p-4 border-t bg-background flex-shrink-0">
+      <div className="flex items-end gap-1 sm:gap-2">
+        {/* Emoji Picker - hidden on very small screens */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0"
+              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden xs:flex"
               disabled={disabled}
             >
-              <Smile className="h-5 w-5" />
+              <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-2" align="start">
-            <div className="max-h-72 overflow-y-auto">
+          <PopoverContent className="w-72 sm:w-80 p-2" align="start">
+            <div className="max-h-60 sm:max-h-72 overflow-y-auto">
               {Object.entries(EMOJI_CATEGORIES).map(([category, emojis]) => (
                 <div key={category} className="mb-3">
-                  <p className="text-xs font-semibold text-muted-foreground mb-2 px-2">
+                  <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-2 px-2">
                     {category}
                   </p>
-                  <div className="grid grid-cols-8 gap-1">
+                  <div className="grid grid-cols-8 gap-0.5 sm:gap-1">
                     {emojis.map((emoji) => (
                       <button
                         key={emoji}
                         onClick={() => insertEmoji(emoji)}
-                        className="p-2 hover:bg-accent rounded transition-colors text-xl"
+                        className="p-1.5 sm:p-2 hover:bg-accent rounded transition-colors text-lg sm:text-xl"
                       >
                         {emoji}
                       </button>
@@ -721,54 +721,54 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           </PopoverContent>
         </Popover>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={SUPPORTED_FILE_TYPES}
-            multiple
-            className="hidden"
-            data-testid="message-file-input"
-            onChange={(event) => handleAttachmentSelection(event.target.files)}
-          />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={SUPPORTED_FILE_TYPES}
+          multiple
+          className="hidden"
+          data-testid="message-file-input"
+          onChange={(event) => handleAttachmentSelection(event.target.files)}
+        />
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="flex-shrink-0"
-            disabled={disabled || isUploading || attachments.length >= MAX_ATTACHMENTS}
-            onClick={handleAttachmentButtonClick}
-            title="Attach files"
-            aria-label="Attach files"
-          >
-            <Paperclip className="h-5 w-5" />
-          </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+          disabled={disabled || isUploading || attachments.length >= MAX_ATTACHMENTS}
+          onClick={handleAttachmentButtonClick}
+          title="Attach files"
+          aria-label="Attach files"
+        >
+          <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
+        </Button>
 
-          <Button
-            variant={isTranscribing ? 'destructive' : 'ghost'}
-            size="icon"
-            className="flex-shrink-0"
-            disabled={disabled || isUploading || isRecordingAudio}
-            onClick={handleToggleTranscription}
-            title={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
-            aria-label={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
-          >
-            {isTranscribing ? <Square className="h-5 w-5" /> : <Keyboard className="h-5 w-5" />}
-          </Button>
+        <Button
+          variant={isTranscribing ? 'destructive' : 'ghost'}
+          size="icon"
+          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex"
+          disabled={disabled || isUploading || isRecordingAudio}
+          onClick={handleToggleTranscription}
+          title={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
+          aria-label={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
+        >
+          {isTranscribing ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Keyboard className="h-4 w-4 sm:h-5 sm:w-5" />}
+        </Button>
 
-          <Button
-            variant={isRecordingAudio ? 'destructive' : 'ghost'}
-            size="icon"
-            className="flex-shrink-0"
-            disabled={disabled || isUploading || isTranscribing}
-            onClick={handleAudioRecordingToggle}
-            title={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
-            aria-label={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
-          >
-            {isRecordingAudio ? <Square className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-          </Button>
+        <Button
+          variant={isRecordingAudio ? 'destructive' : 'ghost'}
+          size="icon"
+          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+          disabled={disabled || isUploading || isTranscribing}
+          onClick={handleAudioRecordingToggle}
+          title={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
+          aria-label={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
+        >
+          {isRecordingAudio ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
+        </Button>
 
         {/* Message Input */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-w-0">
           <Textarea
             ref={textareaRef}
             value={message}
@@ -777,47 +777,47 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[44px] max-h-32 resize-none pr-12"
+            className="min-h-[36px] sm:min-h-[44px] max-h-24 sm:max-h-32 resize-none pr-2 text-sm sm:text-base"
             rows={1}
           />
         </div>
 
         {/* Send Button */}
-          <Button
-            onClick={handleSend}
-            disabled={disabled || isUploading || isRecordingAudio || (!message.trim() && attachments.length === 0)}
-            size="icon"
-            className="flex-shrink-0"
-            aria-label="Send message"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+        <Button
+          onClick={handleSend}
+          disabled={disabled || isUploading || isRecordingAudio || (!message.trim() && attachments.length === 0)}
+          size="icon"
+          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+          aria-label="Send message"
+        >
+          <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+        </Button>
       </div>
-        {(isRecordingAudio || isTranscribing) && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            {isRecordingAudio ? `Recording audio… ${formatDuration(recordingDuration)}` : 'Listening…'}
-          </div>
-        )}
+      {(isRecordingAudio || isTranscribing) && (
+        <div className="mt-2 flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+          <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+          {isRecordingAudio ? `Recording… ${formatDuration(recordingDuration)}` : 'Listening…'}
+        </div>
+      )}
 
-        {(attachments.length > 0 || isUploading) && (
-          <div className="flex flex-col gap-2 mt-3 px-2">
-            {isUploading && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Uploading...
-              </div>
-            )}
-            {attachments.length > 0 && (
-              <div className="flex flex-wrap gap-3">
-                {attachments.map((attachment) => renderAttachmentPreview(attachment))}
-              </div>
-            )}
-          </div>
-        )}
-        <p className="text-xs text-muted-foreground mt-3 px-2">
-          Press Enter to send, Shift+Enter for new line
-        </p>
+      {(attachments.length > 0 || isUploading) && (
+        <div className="flex flex-col gap-2 mt-2 sm:mt-3 px-1 sm:px-2">
+          {isUploading && (
+            <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+              <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+              Uploading...
+            </div>
+          )}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {attachments.map((attachment) => renderAttachmentPreview(attachment))}
+            </div>
+          )}
+        </div>
+      )}
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-3 px-1 sm:px-2 hidden sm:block">
+        Press Enter to send, Shift+Enter for new line
+      </p>
     </div>
   );
 }

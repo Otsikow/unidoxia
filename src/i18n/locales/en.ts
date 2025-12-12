@@ -37,7 +37,7 @@ const en = {
     navigation: {
       home: "Home",
       search: "Search",
-      programmes: "Programmes",
+      courses: "Courses",
       blog: "Blog",
       contact: "Contact",
       dashboard: "Dashboard",
@@ -71,7 +71,7 @@ const en = {
         home: "Home",
         search: "Search",
         scholarships: "Scholarships",
-        programmes: "Programmes",
+        courses: "Courses",
         blog: "Blog",
         contact: "Contact",
       },
@@ -429,9 +429,9 @@ const en = {
         },
         aiSearch: {
           badge: "AI-Powered University & Scholarship Search",
-          heading: "Find the right program with real-time intelligence",
+          heading: "Find the right course with real-time intelligence",
           description:
-            "Ask anything about universities, programmes, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
+            "Ask anything about universities, courses, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
           subheading:
             "Sign up to unlock tailored AI recommendations across admissions, scholarships, and visas.",
           ctaLabel: "Get Started",
@@ -879,7 +879,7 @@ const en = {
                 {
                   question: "What support do agents receive on UniDoxia?",
                   answer:
-                    "Agents receive a dedicated CRM, marketing collateral, and on-demand training to help match students with suitable programs quickly.",
+                    "Agents receive a dedicated CRM, marketing collateral, and on-demand training to help match students with suitable courses quickly.",
                 },
                 {
                   question: "How are agent commissions handled?",

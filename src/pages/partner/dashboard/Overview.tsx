@@ -401,7 +401,7 @@ const RecentApplicationsTable = ({
           <TableRow className="border-b border-slate-200 bg-slate-50/60 hover:bg-slate-50/60 dark:border-slate-800 dark:bg-slate-900/40 dark:hover:bg-slate-900/40">
             <TableHead className="text-slate-600 dark:text-slate-300">Student</TableHead>
             <TableHead className="text-slate-600 dark:text-slate-300">University</TableHead>
-            <TableHead className="text-slate-600 dark:text-slate-300">Programme</TableHead>
+            <TableHead className="text-slate-600 dark:text-slate-300">Course</TableHead>
             <TableHead className="text-slate-600 dark:text-slate-300">Status</TableHead>
             <TableHead className="text-right text-slate-600 dark:text-slate-300">Date</TableHead>
           </TableRow>

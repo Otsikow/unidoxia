@@ -750,7 +750,7 @@ export default function UniversityDashboard() {
                   onChange={(e) =>
                     setUniversityForm((prev) => ({ ...prev, description: e.target.value }))
                   }
-                  placeholder="Share an overview of your institution, flagship programs, and partnership goals."
+                  placeholder="Share an overview of your institution, flagship courses, and partnership goals."
                   rows={4}
                 />
               </div>
@@ -825,7 +825,7 @@ export default function UniversityDashboard() {
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-2xl font-bold">{programs.length}</div>
-                  <div className="text-sm text-muted-foreground">Programs</div>
+                  <div className="text-sm text-muted-foreground">Courses</div>
                 </div>
                 <div>
                   <div className="text-2xl font-bold">{applications.length}</div>
@@ -1055,10 +1055,10 @@ export default function UniversityDashboard() {
                   </div>
                   <Select value={programFilter} onValueChange={setProgramFilter}>
                     <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="Filter by program" />
+                      <SelectValue placeholder="Filter by course" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Programs</SelectItem>
+                      <SelectItem value="all">All Courses</SelectItem>
                       {programs.map((program) => (
                         <SelectItem key={program.id} value={program.id}>
                           {program.name}
@@ -1094,7 +1094,7 @@ export default function UniversityDashboard() {
                           <TableHead>App Number</TableHead>
                           <TableHead>Student</TableHead>
                           <TableHead>Nationality</TableHead>
-                          <TableHead>Program</TableHead>
+                          <TableHead>Course</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
                         </TableRow>
@@ -1138,7 +1138,7 @@ export default function UniversityDashboard() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Courses & Programs</CardTitle>
+                  <CardTitle>Courses</CardTitle>
                   <Dialog open={isAddCourseOpen} onOpenChange={(open) => {
                     setIsAddCourseOpen(open);
                     if (!open) {
@@ -1306,7 +1306,7 @@ export default function UniversityDashboard() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Program Name</TableHead>
+                          <TableHead>Course Name</TableHead>
                           <TableHead>Level</TableHead>
                           <TableHead>Discipline</TableHead>
                           <TableHead>Duration</TableHead>

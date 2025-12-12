@@ -20,7 +20,7 @@ export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
     description:
       "Chevening Scholarships enable emerging leaders to pursue a one-year master’s degree in the UK with comprehensive funding support.",
     overview:
-      "Chevening is the UK government's global scholarship programme, supporting future leaders who demonstrate outstanding leadership potential.",
+      "Chevening is the UK government's global scholarship course, supporting future leaders who demonstrate outstanding leadership potential.",
     applicationSteps: [
       "Complete the online application form with personal statements",
       "Submit two professional or academic references",
@@ -101,7 +101,7 @@ export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
     overview:
       "Supports future leaders who aim to take on responsibility for sustainable development in their home countries.",
     applicationSteps: [
-      "Select eligible programme and contact host university",
+      "Select eligible course and contact host university",
       "Prepare DAAD scholarship application form",
       "Submit application with supporting documents to the university",
       "Attend interviews where applicable and receive DAAD decision",
@@ -123,7 +123,7 @@ export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
   },
   {
     id: "fulbright-foreign-student-2025",
-    title: "Fulbright Foreign Student Program",
+    title: "Fulbright Foreign Student Course",
     country: "United States",
     institution: "U.S. Department of State",
     level: "Masters",
@@ -138,7 +138,7 @@ export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
     eligibilitySummary: "Open to graduate students, young professionals, and artists from over 160 countries.",
     deadline: "2024-06-15",
     description:
-      "The Fulbright Program enables graduate students and young professionals to study and conduct research in the United States.",
+      "The Fulbright Course enables graduate students and young professionals to study and conduct research in the United States.",
     overview:
       "Promotes mutual understanding between nations through educational exchange.",
     applicationSteps: [
@@ -178,9 +178,9 @@ export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
     eligibilitySummary: "High-achieving international students commencing undergraduate studies.",
     deadline: "2025-03-30",
     description:
-      "Monash University offers merit-based scholarships for outstanding international students enrolling in undergraduate programs.",
+      "Monash University offers merit-based scholarships for outstanding international students enrolling in undergraduate courses.",
     overview:
-      "Rewards academic excellence and provides leadership opportunities via the Monash International Leadership Program.",
+      "Rewards academic excellence and provides leadership opportunities via the Monash International Leadership Course.",
     applicationSteps: [
       "Submit application for admission to Monash University",
       "Complete online scholarship application with personal statement",

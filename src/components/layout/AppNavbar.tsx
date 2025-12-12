@@ -33,14 +33,14 @@ import BackButton from "@/components/BackButton";
 
 // ✅ Finalized Navigation Links (merged correctly)
 const navLinks: Array<{
-  id: "home" | "search" | "scholarships" | "programmes" | "blog" | "contact";
+  id: "home" | "search" | "scholarships" | "courses" | "blog" | "contact";
   to: string;
   icon: LucideIcon;
 }> = [
   { id: "home", to: "/", icon: HomeIcon },
   { id: "search", to: "/search", icon: Search },
   { id: "scholarships", to: "/scholarships", icon: Award },
-  { id: "programmes", to: "/courses", icon: GraduationCap },
+  { id: "courses", to: "/courses", icon: GraduationCap },
   { id: "blog", to: "/blog", icon: Newspaper },
   { id: "contact", to: "/contact", icon: MessageCircle },
 ];
