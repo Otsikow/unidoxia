@@ -12,11 +12,24 @@ interface Documents {
   sop: File | null;
 }
 
+export type ExistingDocumentMap = Partial<
+  Record<
+    keyof Documents,
+    {
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      verifiedStatus?: string | null;
+    }
+  >
+>;
+
 interface DocumentsUploadStepProps {
   data: Documents;
   onChange: (data: Documents) => void;
   onNext: () => void;
   onBack: () => void;
+  existingDocuments?: ExistingDocumentMap;
 }
 
 const DOCUMENT_TYPES = [
@@ -61,6 +74,7 @@ export default function DocumentsUploadStep({
   onChange,
   onNext,
   onBack,
+  existingDocuments,
 }: DocumentsUploadStepProps) {
   const handleFileChange = (key: keyof Documents, file: File | null) => {
     if (file) {
@@ -93,7 +107,9 @@ export default function DocumentsUploadStep({
   const isValid = () => {
     // Check if all required documents are uploaded
     const requiredDocs = DOCUMENT_TYPES.filter((doc) => doc.required);
-    return requiredDocs.every((doc) => data[doc.key] !== null);
+    return requiredDocs.every(
+      (doc) => data[doc.key] !== null || Boolean(existingDocuments?.[doc.key]),
+    );
   };
 
   const uploadedCount = Object.values(data).filter((file) => file !== null).length;
@@ -120,6 +136,7 @@ export default function DocumentsUploadStep({
           {DOCUMENT_TYPES.map((docType) => {
             const file = data[docType.key];
             const hasFile = file !== null;
+            const existingDocument = existingDocuments?.[docType.key];
 
             return (
               <Card key={docType.key} className="border-2">
@@ -162,6 +179,42 @@ export default function DocumentsUploadStep({
                       >
                         <X className="h-4 w-4" />
                       </Button>
+                    </div>
+                  ) : existingDocument ? (
+                    <div className="flex flex-col gap-3 rounded-lg border bg-muted/50 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <div>
+                            <p className="text-sm font-medium">Using your saved document</p>
+                            <p className="text-xs text-muted-foreground">
+                              {existingDocument.fileName} • {formatFileSize(existingDocument.fileSize)}
+                            </p>
+                            {existingDocument.mimeType && (
+                              <p className="text-xs text-muted-foreground">{existingDocument.mimeType}</p>
+                            )}
+                            {existingDocument.verifiedStatus && (
+                              <p className="text-xs text-muted-foreground">
+                                Status: {existingDocument.verifiedStatus}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="secondary">Already uploaded</Badge>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const input = document.getElementById(`file-${docType.key}`) as HTMLInputElement | null;
+                            input?.click();
+                          }}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Replace file
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
