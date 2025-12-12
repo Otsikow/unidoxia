@@ -363,9 +363,10 @@ const ApplicationsPage = () => {
             `,
             { count: "exact" },
           )
-          // ISOLATION: Filter by both tenant_id AND university_id to ensure complete data isolation
-          // Defense in depth: even if program.university_id filter fails, tenant_id ensures isolation
-          .eq("tenant_id", tenantId)
+          // IMPORTANT: Filter by program tenant/university (not application.tenant_id).
+          // Some historical applications may have been written with the submitter tenant_id;
+          // using program.* keeps visibility correct and prevents "zero dashboard" when apps exist.
+          .eq("program.tenant_id", tenantId)
           .eq("program.university_id", universityId)
           .not("submitted_at", "is", null)
           .neq("status", "draft");
@@ -450,6 +451,49 @@ const ApplicationsPage = () => {
       controller.abort();
     };
   }, [fetchApplications, universityId, tenantId]);
+
+  // Real-time sync: keep the applications inbox live without manual refresh.
+  useEffect(() => {
+    if (!tenantId || !universityId) return;
+
+    let timeout: number | null = null;
+    const scheduleRefresh = () => {
+      if (timeout) window.clearTimeout(timeout);
+      // Debounce bursts of updates (e.g., document uploads + status changes).
+      timeout = window.setTimeout(() => {
+        void fetchApplications();
+      }, 350);
+    };
+
+    const channel = supabase
+      .channel(`uni-applications-${tenantId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "applications",
+          // Best-effort filter: new rows should be written under the program/university tenant.
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        scheduleRefresh,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "application_documents",
+        },
+        scheduleRefresh,
+      )
+      .subscribe();
+
+    return () => {
+      if (timeout) window.clearTimeout(timeout);
+      supabase.removeChannel(channel);
+    };
+  }, [tenantId, universityId, fetchApplications]);
 
   const loadApplicationDetails = useCallback(
     async (applicationId: string) => {
