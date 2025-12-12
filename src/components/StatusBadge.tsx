@@ -16,6 +16,7 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   visa: { label: 'Visa Stage', className: 'status-submitted' },
   enrolled: { label: 'Enrolled', className: 'status-enrolled' },
   withdrawn: { label: 'Withdrawn', className: 'status-withdrawn' },
+  rejected: { label: 'Rejected', className: 'status-withdrawn' },
   deferred: { label: 'Deferred', className: 'status-deferred' },
   pending: { label: 'Pending', className: 'status-conditional' },
   succeeded: { label: 'Succeeded', className: 'status-enrolled' },

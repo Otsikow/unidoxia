@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Filter,
   Eye,
+  Download,
   User,
   Building2,
   GraduationCap,
@@ -155,6 +156,7 @@ interface ApplicationRow {
   notes?: string | null;
   internal_notes?: string | null;
   timeline_json?: unknown[] | null;
+  decision_json?: unknown | null;
 }
 
 interface ApplicationDocument {
@@ -166,6 +168,21 @@ interface ApplicationDocument {
   uploaded_at: string | null;
   verified: boolean | null;
   verification_notes?: string | null;
+}
+
+interface DocumentRequestItem {
+  id: string;
+  request_type: string | null;
+  document_type: string;
+  description: string | null;
+  due_date: string | null;
+  status: string | null;
+  requested_at: string | null;
+  submitted_at: string | null;
+  document_url: string | null;
+  uploaded_file_url: string | null;
+  file_url: string | null;
+  storage_path: string | null;
 }
 
 interface EducationRecord {
@@ -184,6 +201,7 @@ interface EducationRecord {
 interface DetailedApplication extends ApplicationRow {
   documents?: ApplicationDocument[];
   educationRecords?: EducationRecord[];
+  documentRequests?: DocumentRequestItem[];
 }
 
 const PAGE_SIZE = 10;
@@ -195,7 +213,7 @@ const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "pending", label: "Pending" },
   { value: "under_review", label: "Under review" },
   { value: "offer_sent", label: "Offer sent" },
-  { value: "rejected", label: "Rejected" },
+  { value: "rejected", label: "Declined" },
 ];
 
 const STATUS_FILTER_MAP: Record<StatusFilter, string[]> = {
@@ -203,7 +221,9 @@ const STATUS_FILTER_MAP: Record<StatusFilter, string[]> = {
   pending: ["draft", "submitted"],
   under_review: ["screening", "cas_loa", "visa"],
   offer_sent: ["conditional_offer", "unconditional_offer", "enrolled"],
-  rejected: ["withdrawn", "deferred", "rejected"],
+  // NOTE: "rejected" is not part of the application_status enum in generated types.
+  // Treat declined applications as "withdrawn" at the status layer.
+  rejected: ["withdrawn", "deferred"],
 };
 
 const formatDate = (
@@ -227,11 +247,28 @@ const toDisplayName = (...candidates: (string | null | undefined)[]) =>
 
 const formatDocumentType = (value: string | null | undefined) => {
   if (!value) return "Document";
+  if (value === "sop") return "Statement of Purpose";
+  if (value === "lor") return "Letter of Recommendation";
   return value
     .replace(/_/g, " ")
     .split(" ")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+};
+
+const normalizeDecisionStatusForDb = (
+  value: string,
+): Database["public"]["Enums"]["application_status"] => {
+  // DB enum does not include "rejected" in the generated types.
+  if (value === "rejected") return "withdrawn";
+  return value as Database["public"]["Enums"]["application_status"];
+};
+
+const parseTimelineItems = (value: unknown): TimelineItem[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => (typeof item === "object" && item ? (item as TimelineItem) : null))
+    .filter(Boolean) as TimelineItem[];
 };
 
 const ApplicationsPage = () => {
@@ -280,6 +317,9 @@ const ApplicationsPage = () => {
   const [newStatus, setNewStatus] = useState<string>("");
   const [decisionNotes, setDecisionNotes] = useState("");
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  const [internalNotesDraft, setInternalNotesDraft] = useState("");
+  const [savingInternalNotes, setSavingInternalNotes] = useState(false);
 
   const debouncedSearch = useDebounce(searchTerm.trim(), 300);
 
@@ -563,6 +603,7 @@ const ApplicationsPage = () => {
               notes,
               internal_notes,
               timeline_json,
+              decision_json,
               intake_year,
               intake_month,
               student:students (
@@ -634,6 +675,7 @@ const ApplicationsPage = () => {
           | undefined;
 
         let educationRecords: EducationRecord[] = [];
+        let documentRequests: DocumentRequestItem[] = [];
         if (studentId) {
           const { data: eduData, error: eduError } = await supabase
             .from("education_records")
@@ -648,12 +690,29 @@ const ApplicationsPage = () => {
           }
 
           educationRecords = (eduData ?? []) as unknown as EducationRecord[];
+
+          // Pull the latest document requests for this student (university uses tenant isolation).
+          const { data: requestRows, error: requestError } = await supabase
+            .from("document_requests")
+            .select(
+              "id, request_type, document_type, description, due_date, status, requested_at, submitted_at, document_url, uploaded_file_url, file_url, storage_path",
+            )
+            .eq("tenant_id", tenantId as any)
+            .eq("student_id", studentId)
+            .order("requested_at", { ascending: false });
+
+          if (requestError) {
+            throw requestError;
+          }
+
+          documentRequests = (requestRows ?? []) as unknown as DocumentRequestItem[];
         }
 
         const detailed: DetailedApplication = {
           ...(applicationRow as ApplicationRow),
           documents: (documentsData ?? []) as unknown as ApplicationDocument[],
           educationRecords,
+          documentRequests,
         };
 
         detailsCacheRef.current[applicationId] = detailed;
@@ -679,11 +738,17 @@ const ApplicationsPage = () => {
       setDetailedApplication(null);
       setDetailsError(null);
       setDetailsLoading(false);
+      setInternalNotesDraft("");
+      setSavingInternalNotes(false);
       return;
     }
 
     void loadApplicationDetails(applicationId);
   }, [loadApplicationDetails, selectedApplication?.id]);
+
+  useEffect(() => {
+    setInternalNotesDraft(detailedApplication?.internal_notes ?? "");
+  }, [detailedApplication?.id, detailedApplication?.internal_notes]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -753,30 +818,45 @@ const ApplicationsPage = () => {
 
     setIsUpdatingStatus(true);
     try {
-      // ISOLATION CHECK: Verify the application belongs to a program of this university
-      const { data: programCheck } = await supabase
-        .from("programs")
-        .select("id, university_id")
-        .eq("id", decisionApplication.program?.id)
-        .eq("university_id", universityId)
-        .single();
+      const { data: auth } = await supabase.auth.getUser();
+      const decidedBy = auth?.user?.id ?? null;
 
-      if (!programCheck) {
-        throw new Error("Cannot update application: program not found or does not belong to your university");
-      }
+      // Fetch the latest timeline/internal notes with an isolation-enforcing join.
+      const { data: current, error: currentError } = await supabase
+        .from("applications")
+        .select(
+          `
+            id,
+            status,
+            internal_notes,
+            timeline_json,
+            decision_json,
+            program:programs!inner ( university_id, tenant_id )
+          `,
+        )
+        .eq("id", decisionApplication.id)
+        .eq("program.university_id", universityId as any)
+        .eq("program.tenant_id", tenantId as any)
+        .maybeSingle();
+
+      if (currentError) throw currentError;
+      if (!current) throw new Error("Application not found or not accessible.");
+
+      const dbStatus = normalizeDecisionStatusForDb(newStatus);
 
       // Build timeline entry
       const timelineEntry = {
-        title: `Status updated to ${newStatus.replace(/_/g, " ")}`,
+        title:
+          newStatus === "rejected"
+            ? "Application declined"
+            : `Status updated to ${newStatus.replace(/_/g, " ")}`,
         description: decisionNotes || undefined,
         date: new Date().toISOString(),
-        status: newStatus,
+        status: dbStatus,
       };
 
       // Get existing timeline or create new array
-      const existingTimeline = Array.isArray(decisionApplication.timeline_json)
-        ? decisionApplication.timeline_json
-        : [];
+      const existingTimeline = parseTimelineItems((current as any)?.timeline_json);
 
       const updatedTimeline = [timelineEntry, ...existingTimeline];
 
@@ -784,8 +864,20 @@ const ApplicationsPage = () => {
       const { error } = await supabase
         .from("applications")
         .update({
-          status: newStatus as any,
-          internal_notes: decisionNotes || decisionApplication.internal_notes,
+          status: dbStatus,
+          internal_notes:
+            decisionNotes.trim().length > 0
+              ? decisionNotes.trim()
+              : (current as any)?.internal_notes ?? null,
+          decision_json: {
+            ...(typeof (current as any)?.decision_json === "object" && (current as any)?.decision_json
+              ? (current as any).decision_json
+              : {}),
+            outcome: newStatus,
+            notes: decisionNotes.trim().length > 0 ? decisionNotes.trim() : null,
+            decided_at: new Date().toISOString(),
+            decided_by: decidedBy,
+          } as any,
           timeline_json: updatedTimeline as any,
           updated_at: new Date().toISOString(),
         })
@@ -794,8 +886,8 @@ const ApplicationsPage = () => {
       if (error) throw error;
 
       // Create offer record if status is an offer
-      if (newStatus === "conditional_offer" || newStatus === "unconditional_offer") {
-        const offerType = newStatus === "conditional_offer" ? "conditional" : "unconditional";
+      if (dbStatus === "conditional_offer" || dbStatus === "unconditional_offer") {
+        const offerType = dbStatus === "conditional_offer" ? "conditional" : "unconditional";
         const { error: offerError } = await supabase
           .from("offers")
           .insert({
@@ -813,7 +905,10 @@ const ApplicationsPage = () => {
 
       toast({
         title: "Application updated",
-        description: `Application status changed to ${newStatus.replace(/_/g, " ")}.`,
+        description:
+          newStatus === "rejected"
+            ? "Application marked as declined."
+            : `Application status changed to ${newStatus.replace(/_/g, " ")}.`,
       });
 
       // Clear cache and refresh
@@ -836,7 +931,8 @@ const ApplicationsPage = () => {
     { value: "cas_loa", label: "CAS/LOA Stage", description: "Preparing documents" },
     { value: "visa", label: "Visa Stage", description: "Visa processing" },
     { value: "enrolled", label: "Enrolled", description: "Student enrolled" },
-    { value: "rejected", label: "Rejected", description: "Application declined" },
+    // UI option: mapped to a valid DB status in normalizeDecisionStatusForDb()
+    { value: "rejected", label: "Declined", description: "Application declined" },
     { value: "withdrawn", label: "Withdrawn", description: "Student withdrew" },
     { value: "deferred", label: "Deferred", description: "Deferred to later intake" },
   ];
@@ -846,7 +942,8 @@ const ApplicationsPage = () => {
     totalCount === 0 ? 0 : Math.min(totalCount, startIndex + applications.length);
 
   const renderTimeline = (items?: TimelineItem[] | null) => {
-    if (!items || items.length === 0) {
+    const normalized = items ?? [];
+    if (!normalized || normalized.length === 0) {
       return (
         <p className="text-sm text-muted-foreground">
           No timeline updates recorded yet.
@@ -856,7 +953,7 @@ const ApplicationsPage = () => {
 
     return (
       <div className="space-y-4">
-        {items.map((item, index) => (
+        {normalized.map((item, index) => (
           <div key={`${item.title ?? "timeline"}-${index}`} className="flex gap-3">
             <div className="relative">
               <div className="mt-2 h-2 w-2 rounded-full bg-primary" />
@@ -895,7 +992,10 @@ const ApplicationsPage = () => {
       );
     }
 
-    const handleOpenDocument = async (document: ApplicationDocument) => {
+    const openSignedDocument = async (
+      document: ApplicationDocument,
+      options?: { download?: boolean },
+    ) => {
       if (!document.storage_path) {
         toast({
           title: "Missing document path",
@@ -909,7 +1009,9 @@ const ApplicationsPage = () => {
       try {
         const { data: signed, error } = await supabase.storage
           .from(APPLICATION_DOCS_BUCKET)
-          .createSignedUrl(document.storage_path, SIGNED_URL_EXPIRY_SECONDS);
+          .createSignedUrl(document.storage_path, SIGNED_URL_EXPIRY_SECONDS, {
+            download: options?.download ?? false,
+          });
 
         if (error) throw error;
 
@@ -921,7 +1023,12 @@ const ApplicationsPage = () => {
         window.open(url, "_blank", "noopener,noreferrer");
       } catch (error) {
         logError(error, "UniversityApplications.openDocument");
-        toast(formatErrorForToast(error, "Unable to open document"));
+        toast(
+          formatErrorForToast(
+            error,
+            options?.download ? "Unable to download document" : "Unable to open document",
+          ),
+        );
       } finally {
         setOpeningDocumentId(null);
       }
@@ -1016,7 +1123,7 @@ const ApplicationsPage = () => {
                   variant="outline"
                   size="sm"
                   className="h-7 px-2 text-xs"
-                  onClick={() => void handleOpenDocument(document)}
+                  onClick={() => void openSignedDocument(document)}
                   disabled={!document.storage_path || openingDocumentId === document.id}
                 >
                   {openingDocumentId === document.id ? (
@@ -1030,6 +1137,16 @@ const ApplicationsPage = () => {
                       View
                     </>
                   )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => void openSignedDocument(document, { download: true })}
+                  disabled={!document.storage_path || openingDocumentId === document.id}
+                >
+                  <Download className="mr-1 h-3.5 w-3.5" />
+                  Download
                 </Button>
                 <Button
                   variant="ghost"
@@ -1145,14 +1262,6 @@ const ApplicationsPage = () => {
   };
 
   const renderNotes = (application?: DetailedApplication | null) => {
-    if (!application?.notes && !application?.internal_notes) {
-      return (
-        <p className="text-sm text-muted-foreground">
-          No notes have been added yet.
-        </p>
-      );
-    }
-
     return (
       <div className="space-y-4 text-sm">
         {application.notes && (
@@ -1165,16 +1274,105 @@ const ApplicationsPage = () => {
             </p>
           </div>
         )}
-        {application.internal_notes && (
-          <div className="space-y-1">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-2">
             <p className="text-xs uppercase text-muted-foreground">
               Internal notes
             </p>
-            <p className="whitespace-pre-line text-card-foreground">
-              {application.internal_notes}
-            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={async () => {
+                if (!selectedApplication?.id) return;
+                if (!tenantId || !universityId) return;
+                setSavingInternalNotes(true);
+                try {
+                  const safeDraft = internalNotesDraft.trim();
+
+                  const { data: current, error: currentError } = await supabase
+                    .from("applications")
+                    .select(
+                      `
+                        id,
+                        internal_notes,
+                        timeline_json,
+                        program:programs!inner ( university_id, tenant_id )
+                      `,
+                    )
+                    .eq("id", selectedApplication.id)
+                    .eq("program.university_id", universityId as any)
+                    .eq("program.tenant_id", tenantId as any)
+                    .maybeSingle();
+
+                  if (currentError) throw currentError;
+                  if (!current) throw new Error("Application not found or not accessible.");
+
+                  const timeline = parseTimelineItems((current as any)?.timeline_json);
+                  const entry = {
+                    title: "Internal note updated",
+                    description: safeDraft.length > 0 ? safeDraft : undefined,
+                    date: new Date().toISOString(),
+                    status: (selectedApplication.status ?? "submitted") as any,
+                  };
+                  const nextTimeline = [entry, ...timeline];
+
+                  const { error } = await supabase
+                    .from("applications")
+                    .update({
+                      internal_notes: safeDraft.length > 0 ? safeDraft : null,
+                      timeline_json: nextTimeline as any,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", selectedApplication.id);
+
+                  if (error) throw error;
+
+                  // Update local/cache
+                  setDetailedApplication((prev) => {
+                    if (!prev) return prev;
+                    const next = {
+                      ...prev,
+                      internal_notes: safeDraft.length > 0 ? safeDraft : null,
+                      timeline_json: nextTimeline as any,
+                    };
+                    detailsCacheRef.current[prev.id] = next;
+                    return next;
+                  });
+
+                  toast({
+                    title: "Internal notes saved",
+                    description: "Your notes are stored on the application record.",
+                  });
+                } catch (error) {
+                  logError(error, "UniversityApplications.saveInternalNotes");
+                  toast(formatErrorForToast(error, "Failed to save internal notes"));
+                } finally {
+                  setSavingInternalNotes(false);
+                }
+              }}
+              disabled={savingInternalNotes}
+            >
+              {savingInternalNotes ? (
+                <>
+                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
           </div>
-        )}
+          <Textarea
+            value={internalNotesDraft}
+            onChange={(e) => setInternalNotesDraft(e.target.value)}
+            rows={4}
+            placeholder="Add internal review notes (visible to your admissions team only)..."
+          />
+          <p className="text-xs text-muted-foreground">
+            Saving adds an entry to the application timeline.
+          </p>
+        </div>
       </div>
     );
   };
@@ -1200,17 +1398,29 @@ const ApplicationsPage = () => {
     const requiredDocuments = [
       { key: "passport", label: "Passport bio page" },
       { key: "transcript", label: "Academic transcripts" },
-      { key: "english_proficiency", label: "English test result" },
+      // English proficiency can be IELTS or TOEFL
+      { key: "ielts", label: "English test (IELTS)" },
+      { key: "toefl", label: "English test (TOEFL)" },
+      { key: "sop", label: "Statement of Purpose" },
       { key: "cv", label: "CV/Resume" },
     ];
 
+    const hasEnglish = uploadedTypes.has("ielts") || uploadedTypes.has("toefl");
     requiredDocuments.forEach((requirement) => {
+      if (requirement.key === "ielts" || requirement.key === "toefl") {
+        return;
+      }
       if (!uploadedTypes.has(requirement.key)) {
         insights.push(
           `${requirement.label} missing — request the student or agent to upload it for a complete review.`,
         );
       }
     });
+    if (!hasEnglish) {
+      insights.push(
+        "English test result missing — request IELTS or TOEFL to complete the review pack.",
+      );
+    }
 
     if (!getStudentPhone(application)) {
       insights.push(
@@ -1669,7 +1879,6 @@ const ApplicationsPage = () => {
                       <Button
                         size="sm"
                         onClick={() => {
-                          setSelectedApplication(null);
                           handleOpenDecisionDialog(selectedApplication);
                         }}
                         className="gap-1.5"
@@ -1816,6 +2025,271 @@ const ApplicationsPage = () => {
                 <div className="grid gap-4 lg:grid-cols-2">
                   <div className={withUniversitySurfaceTint("space-y-3 rounded-2xl p-4")}>
                     <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                      <FileText className="h-4 w-4" />
+                      Statement of purpose
+                    </div>
+                    {(() => {
+                      const sopDocs = (detailedApplication?.documents ?? []).filter(
+                        (d) => (d.document_type ?? "").toLowerCase() === "sop",
+                      );
+                      if (sopDocs.length === 0) {
+                        return (
+                          <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                              No statement of purpose uploaded yet.
+                            </p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 px-2 text-xs"
+                              onClick={() => {
+                                setRequestType("Statement of Purpose (SOP)");
+                                setRequestDescription(
+                                  "Please upload your Statement of Purpose so admissions can complete the review.",
+                                );
+                                setRequestDueDate("");
+                                setRequestDialogOpen(true);
+                              }}
+                            >
+                              <AlertCircle className="mr-1 h-3.5 w-3.5" />
+                              Request SOP
+                            </Button>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-3">
+                          {sopDocs.map((doc) => (
+                            <div
+                              key={doc.id}
+                              className={withUniversitySurfaceTint(
+                                "flex flex-col gap-3 rounded-xl p-4 sm:flex-row sm:items-start sm:justify-between",
+                              )}
+                            >
+                              <div className="space-y-1">
+                                <p className="text-sm font-semibold text-card-foreground">
+                                  {formatDocumentType(doc.document_type)}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  Uploaded {formatDateTime(doc.uploaded_at)}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant={doc.verified ? "default" : "outline"}>
+                                  {doc.verified ? "Verified" : "Pending review"}
+                                </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => {
+                                    const target = (detailedApplication?.documents ?? []).find(
+                                      (d) => d.id === doc.id,
+                                    );
+                                    if (target) {
+                                      // reuse the documents renderer behavior via opening by id
+                                      void (async () => {
+                                        if (!target.storage_path) return;
+                                        setOpeningDocumentId(target.id);
+                                        try {
+                                          const { data: signed, error } = await supabase.storage
+                                            .from(APPLICATION_DOCS_BUCKET)
+                                            .createSignedUrl(
+                                              target.storage_path,
+                                              SIGNED_URL_EXPIRY_SECONDS,
+                                            );
+                                          if (error) throw error;
+                                          const url = signed?.signedUrl;
+                                          if (!url) throw new Error("Missing signed URL");
+                                          window.open(url, "_blank", "noopener,noreferrer");
+                                        } catch (e) {
+                                          toast(formatErrorForToast(e, "Unable to open SOP"));
+                                        } finally {
+                                          setOpeningDocumentId(null);
+                                        }
+                                      })();
+                                    }
+                                  }}
+                                  disabled={!doc.storage_path || openingDocumentId === doc.id}
+                                >
+                                  <Eye className="mr-1 h-3.5 w-3.5" />
+                                  View
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => {
+                                    const target = (detailedApplication?.documents ?? []).find(
+                                      (d) => d.id === doc.id,
+                                    );
+                                    if (target) {
+                                      void (async () => {
+                                        if (!target.storage_path) return;
+                                        setOpeningDocumentId(target.id);
+                                        try {
+                                          const { data: signed, error } = await supabase.storage
+                                            .from(APPLICATION_DOCS_BUCKET)
+                                            .createSignedUrl(
+                                              target.storage_path,
+                                              SIGNED_URL_EXPIRY_SECONDS,
+                                              { download: true },
+                                            );
+                                          if (error) throw error;
+                                          const url = signed?.signedUrl;
+                                          if (!url) throw new Error("Missing signed URL");
+                                          window.open(url, "_blank", "noopener,noreferrer");
+                                        } catch (e) {
+                                          toast(formatErrorForToast(e, "Unable to download SOP"));
+                                        } finally {
+                                          setOpeningDocumentId(null);
+                                        }
+                                      })();
+                                    }
+                                  }}
+                                  disabled={!doc.storage_path || openingDocumentId === doc.id}
+                                >
+                                  <Download className="mr-1 h-3.5 w-3.5" />
+                                  Download
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  <div className={withUniversitySurfaceTint("space-y-3 rounded-2xl p-4")}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                      <ClipboardList className="h-4 w-4" />
+                      Outstanding requests
+                    </div>
+                    {(() => {
+                      const requests = detailedApplication?.documentRequests ?? [];
+                      if (requests.length === 0) {
+                        return (
+                          <p className="text-sm text-muted-foreground">
+                            No outstanding requests for this student.
+                          </p>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-2">
+                          {requests.slice(0, 6).map((req) => {
+                            const status = (req.status ?? "pending").toLowerCase();
+                            return (
+                              <div
+                                key={req.id}
+                                className={withUniversitySurfaceTint(
+                                  "flex flex-col gap-2 rounded-xl p-3 sm:flex-row sm:items-center sm:justify-between",
+                                )}
+                              >
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium text-foreground">
+                                    {req.request_type ?? req.document_type}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Requested {formatDateTime(req.requested_at)}
+                                    {req.due_date ? ` • Due ${formatDate(req.due_date)}` : ""}
+                                  </p>
+                                  {req.description ? (
+                                    <p className="text-xs text-muted-foreground">
+                                      {req.description}
+                                    </p>
+                                  ) : null}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Badge variant={status === "received" ? "default" : "outline"}>
+                                    {status === "received" ? "Received" : "Pending"}
+                                  </Badge>
+                                  {(req.document_url ||
+                                    req.uploaded_file_url ||
+                                    req.file_url) && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      asChild
+                                    >
+                                      <a
+                                        href={
+                                          req.document_url ??
+                                          req.uploaded_file_url ??
+                                          req.file_url ??
+                                          "#"
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        <Eye className="mr-1 h-3.5 w-3.5" />
+                                        View
+                                      </a>
+                                    </Button>
+                                  )}
+                                  {status !== "received" && tenantId && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-7 px-2 text-xs"
+                                      onClick={() => {
+                                        void (async () => {
+                                          try {
+                                            const { error } = await supabase
+                                              .from("document_requests")
+                                              .update({
+                                                status: "received",
+                                                updated_at: new Date().toISOString(),
+                                              } as any)
+                                              .eq("id", req.id)
+                                              .eq("tenant_id", tenantId);
+                                            if (error) throw error;
+
+                                            toast({
+                                              title: "Request updated",
+                                              description: "Marked as received.",
+                                            });
+
+                                            // Refresh details cache
+                                            if (selectedApplication?.id) {
+                                              delete detailsCacheRef.current[selectedApplication.id];
+                                              await loadApplicationDetails(selectedApplication.id);
+                                            }
+                                          } catch (e) {
+                                            toast(
+                                              formatErrorForToast(
+                                                e,
+                                                "Unable to update request status",
+                                              ),
+                                            );
+                                          }
+                                        })();
+                                      }}
+                                    >
+                                      <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                                      Mark received
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {requests.length > 6 && (
+                            <p className="text-xs text-muted-foreground">
+                              Showing latest 6 requests. See the Document Requests page for the full queue.
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className={withUniversitySurfaceTint("space-y-3 rounded-2xl p-4")}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
                       <GraduationCap className="h-4 w-4" />
                       Academic history
                     </div>
@@ -1884,8 +2358,10 @@ const ApplicationsPage = () => {
                     Timeline
                   </div>
                   {renderTimeline(
-                    detailedApplication?.timeline_json ??
-                      selectedApplication.timeline_json,
+                    parseTimelineItems(
+                      (detailedApplication?.timeline_json ??
+                        selectedApplication.timeline_json) as any,
+                    ),
                   )}
                 </div>
               </div>
@@ -1979,7 +2455,7 @@ const ApplicationsPage = () => {
               <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
                 <XCircle className="h-4 w-4 text-destructive mt-0.5" />
                 <div className="space-y-1 text-sm">
-                  <p className="font-medium text-destructive">Rejecting application</p>
+                  <p className="font-medium text-destructive">Declining application</p>
                   <p className="text-muted-foreground">
                     Please ensure you've thoroughly reviewed all documents before declining.
                   </p>
