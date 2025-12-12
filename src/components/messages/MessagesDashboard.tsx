@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,9 +9,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MessageSquare, Search, Send } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 import { MessagingUnavailable } from './MessagingUnavailable';
 import { parseUniversityProfileDetails } from '@/lib/universityProfile';
+import { cn } from '@/lib/utils';
 
 type MessageRow = Tables<'messages'>;
 
@@ -97,6 +99,8 @@ function formatRelativeTime(dateIso: string | null | undefined) {
 export default function MessagesDashboard() {
   const { user, profile } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const messagingDisabled = !isSupabaseConfigured;
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<ApplicationSummary[]>([]);
@@ -106,6 +110,7 @@ export default function MessagesDashboard() {
   const [latestByApp, setLatestByApp] = useState<Record<string, MessageRow | undefined>>({});
   const [composerText, setComposerText] = useState('');
   const [sending, setSending] = useState(false);
+  const [threadError, setThreadError] = useState<string | null>(null);
   const listBottomRef = useRef<HTMLDivElement | null>(null);
   const [lastSeen, setLastSeen] = useState<LastSeenMap>({});
   const applicationIdsRef = useRef<Set<string>>(new Set());
@@ -142,7 +147,7 @@ export default function MessagesDashboard() {
     }
   };
 
-  const buildUniversityContact = (university?: UniversitySummary | null) => {
+  const buildUniversityContact = useCallback((university?: UniversitySummary | null) => {
     const config = university?.submission_config_json ?? null;
     const parsed = parseUniversityProfileDetails(config);
     const primary = parsed?.contacts?.primary ?? null;
@@ -152,9 +157,9 @@ export default function MessagesDashboard() {
       phone: primary?.phone ?? null,
       website: university?.website ?? null,
     };
-  };
+  }, []);
 
-  const getThreadTitle = (app: ApplicationSummary) => {
+  const getThreadTitle = useCallback((app: ApplicationSummary) => {
     const programName = app.program?.name ?? 'Application';
     const uniName = app.program?.university?.name ?? 'University';
     const studentName =
@@ -170,14 +175,14 @@ export default function MessagesDashboard() {
       return `${studentName} • ${uniName} • ${programName}`;
     }
     return `${uniName} • ${programName}`;
-  };
+  }, [role]);
 
-  const getThreadSubtitle = (app: ApplicationSummary) => {
+  const getThreadSubtitle = useCallback((app: ApplicationSummary) => {
     const uni = app.program?.university;
     const contact = buildUniversityContact(uni);
     const parts = [contact.email, contact.phone, contact.website].filter(Boolean);
     return parts.length > 0 ? parts.join(' • ') : '';
-  };
+  }, [buildUniversityContact]);
 
   // Fetch applications (threads)
   useEffect(() => {
@@ -414,6 +419,7 @@ export default function MessagesDashboard() {
     if (messagingDisabled) return;
     const loadThread = async () => {
       if (!selectedAppId) return;
+      setThreadError(null);
       const { data, error } = await supabase
         .from('messages')
         .select('*, sender:profiles(id, full_name, email, avatar_url, role)')
@@ -434,6 +440,12 @@ export default function MessagesDashboard() {
         setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
       } else {
         console.error('Failed to load messages:', error);
+        setThreadError(error.message ?? 'Unable to load messages.');
+        toast({
+          title: 'Messaging unavailable',
+          description: error.message ?? 'Unable to load messages for this thread.',
+          variant: 'destructive',
+        });
       }
     };
     loadThread();
@@ -492,7 +504,7 @@ export default function MessagesDashboard() {
       const title = `${getThreadTitle(a)} ${a.program?.university?.name || ''}`.toLowerCase();
       return title.includes(q);
     });
-  }, [applications, search, role]);
+  }, [applications, getThreadTitle, search]);
 
   const unreadCount = (appId: string) => {
     const last = lastSeen[appId] ? new Date(lastSeen[appId]).getTime() : 0;
@@ -519,7 +531,7 @@ export default function MessagesDashboard() {
     const app = applications.find((a) => a.id === selectedAppId);
     if (!app) return '';
     return getThreadTitle(app);
-  }, [applications, selectedAppId]);
+  }, [applications, getThreadTitle, selectedAppId]);
 
   const selectedApplication = useMemo(
     () => (selectedAppId ? applications.find((a) => a.id === selectedAppId) ?? null : null),
@@ -529,33 +541,84 @@ export default function MessagesDashboard() {
   const selectedUniversityContact = useMemo(() => {
     const uni = selectedApplication?.program?.university ?? null;
     return buildUniversityContact(uni);
-  }, [selectedApplication]);
+  }, [buildUniversityContact, selectedApplication]);
 
   const handleSend = async () => {
-    if (!composerText.trim() || !selectedAppId || !user) return;
+    const content = composerText.trim();
+    if (!content || !selectedAppId || !user) return;
+    const appId = selectedAppId;
     setSending(true);
+    const optimisticId =
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `optimistic-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    const optimisticCreatedAt = new Date().toISOString();
+    const optimisticRow: MessageRow = {
+      id: optimisticId,
+      application_id: selectedAppId,
+      sender_id: user.id,
+      body: content,
+      message_type: 'text',
+      attachments: [],
+      read_by: [],
+      created_at: optimisticCreatedAt,
+    };
+
+    // Optimistically render the message immediately (and keep it if realtime is delayed).
+    setMessagesByApp((prev) => {
+      const arr = prev[appId] || [];
+      return { ...prev, [appId]: [...arr, optimisticRow] };
+    });
+    let previousLatest: MessageRow | undefined;
+    setLatestByApp((prev) => {
+      previousLatest = prev[appId];
+      return { ...prev, [appId]: optimisticRow };
+    });
+
     try {
       const insert = {
-        application_id: selectedAppId,
+        application_id: appId,
         sender_id: user.id,
-        body: composerText.trim(),
+        body: content,
         message_type: 'text' as const,
       };
       const { data, error } = await supabase
         .from('messages')
-        .insert(insert)
-        .select('*, sender:profiles(id, full_name, email, avatar_url, role)')
+        .insert(insert as any)
+        // Avoid joined selects here (RLS on profiles can hide sender rows, and we don't need it for "mine" messages).
+        .select('id,application_id,attachments,body,created_at,message_type,read_by,sender_id')
         .single();
-      if (!error && data) {
-        const row = data as MessageRow;
-        setMessagesByApp((prev) => {
-          const arr = prev[selectedAppId] || [];
-          return { ...prev, [selectedAppId]: [...arr, row] };
-        });
-        setLatestByApp((prev) => ({ ...prev, [selectedAppId]: row }));
-        setComposerText('');
-        setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+      if (error || !data) {
+        throw error ?? new Error('Unable to send message.');
       }
+
+      const row = data as MessageRow;
+      // Replace optimistic row with server row.
+      setMessagesByApp((prev) => {
+        const arr = prev[appId] || [];
+        // If realtime delivered the server row first, avoid duplicates.
+        const withoutServerDuplicate = arr.filter((m) => m.id !== row.id);
+        const next = withoutServerDuplicate.map((m) => (m.id === optimisticId ? row : m));
+        return { ...prev, [appId]: next };
+      });
+      setLatestByApp((prev) => ({ ...prev, [appId]: row }));
+      setComposerText('');
+      setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to send message.';
+      toast({
+        title: 'Message failed',
+        description: message,
+        variant: 'destructive',
+      });
+
+      // Roll back optimistic row (keep composer text so user can retry).
+      setMessagesByApp((prev) => {
+        const arr = prev[appId] || [];
+        const next = arr.filter((m) => m.id !== optimisticId);
+        return { ...prev, [appId]: next };
+      });
+      setLatestByApp((prev) => ({ ...prev, [appId]: previousLatest }));
     } finally {
       setSending(false);
     }
@@ -596,7 +659,12 @@ export default function MessagesDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        <Card className="lg:col-span-1 rounded-xl border shadow-card">
+        <Card
+          className={cn(
+            'lg:col-span-1 rounded-xl border shadow-card',
+            selectedAppId ? 'hidden lg:block' : 'block',
+          )}
+        >
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Messages</CardTitle>
             <div className="relative">
@@ -610,7 +678,7 @@ export default function MessagesDashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[min(52vh,420px)] lg:h-[420px]">
+            <ScrollArea className="h-[calc(100vh-16rem)] min-h-[320px] lg:h-[420px]">
               {loading ? (
                 <div className="p-4 text-sm text-muted-foreground">Loading...</div>
               ) : filteredApplications.length === 0 ? (
@@ -667,11 +735,40 @@ export default function MessagesDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2 rounded-xl border shadow-card">
+        <Card
+          className={cn(
+            'lg:col-span-2 rounded-xl border shadow-card',
+            selectedAppId ? 'block' : 'hidden lg:block',
+          )}
+        >
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">
-              {selectedAppId ? selectedTitle : 'Message'}
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              {selectedAppId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="lg:hidden -ml-2"
+                  onClick={() => {
+                    // On mobile, "Back" should return to thread list even if the URL has an applicationId preset.
+                    try {
+                      const params = new URLSearchParams(location.search);
+                      params.delete('applicationId');
+                      const nextSearch = params.toString();
+                      navigate({ search: nextSearch ? `?${nextSearch}` : '' }, { replace: true });
+                    } catch {
+                      // ignore URL parse errors
+                    } finally {
+                      setSelectedAppId(null);
+                    }
+                  }}
+                >
+                  Back
+                </Button>
+              )}
+              <CardTitle className="text-base">
+                {selectedAppId ? selectedTitle : 'Message'}
+              </CardTitle>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {!selectedAppId ? (
@@ -711,8 +808,13 @@ export default function MessagesDashboard() {
                     </div>
                   </div>
                 )}
-                <ScrollArea className="h-[min(52vh,360px)] lg:h-[360px] pr-2">
+                <ScrollArea className="h-[calc(100vh-20rem)] min-h-[280px] lg:h-[360px] pr-2">
                   <div className="space-y-3">
+                    {threadError && (
+                      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                        {threadError}
+                      </div>
+                    )}
                     {selectedMessages.length === 0 ? (
                         <div className="text-sm text-muted-foreground px-1">
                           No messages yet. Start messaging below.
@@ -760,9 +862,13 @@ export default function MessagesDashboard() {
                         handleSend();
                       }
                     }}
-                    disabled={sending}
+                    disabled={sending || Boolean(threadError)}
                   />
-                  <Button className="gap-2" onClick={handleSend} disabled={sending || !composerText.trim()}>
+                  <Button
+                    className="gap-2"
+                    onClick={handleSend}
+                    disabled={sending || Boolean(threadError) || !composerText.trim()}
+                  >
                     <Send className="h-4 w-4" /> Send
                   </Button>
                 </div>
