@@ -81,6 +81,7 @@ import { useUniversityDashboard } from "@/components/university/layout/Universit
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   formatErrorForToast,
   getErrorMessage,
@@ -108,6 +109,14 @@ interface StudentInfo {
   date_of_birth?: string | null;
   current_country?: string | null;
   passport_number?: string | null;
+  passport_expiry?: string | null;
+  preferred_name?: string | null;
+  address?: Database["public"]["Tables"]["students"]["Row"]["address"] | null;
+  guardian?: Database["public"]["Tables"]["students"]["Row"]["guardian"] | null;
+  finances_json?: Database["public"]["Tables"]["students"]["Row"]["finances_json"] | null;
+  test_scores?: Database["public"]["Tables"]["students"]["Row"]["test_scores"] | null;
+  visa_history_json?: Database["public"]["Tables"]["students"]["Row"]["visa_history_json"] | null;
+  education_history?: Database["public"]["Tables"]["students"]["Row"]["education_history"] | null;
   profile?: ProfileInfo | null;
 }
 
@@ -152,19 +161,34 @@ interface ApplicationDocument {
   id: string;
   document_type: string | null;
   storage_path: string | null;
-  document_url?: string | null;
-  file_url?: string | null;
   mime_type?: string | null;
+  file_size?: number | null;
   uploaded_at: string | null;
   verified: boolean | null;
   verification_notes?: string | null;
 }
 
+interface EducationRecord {
+  id: string;
+  institution_name: string;
+  country: string;
+  level: string;
+  start_date: string;
+  end_date: string | null;
+  gpa: number | null;
+  grade_scale: string | null;
+  transcript_url: string | null;
+  certificate_url: string | null;
+}
+
 interface DetailedApplication extends ApplicationRow {
   documents?: ApplicationDocument[];
+  educationRecords?: EducationRecord[];
 }
 
 const PAGE_SIZE = 10;
+const APPLICATION_DOCS_BUCKET = "application-documents";
+const SIGNED_URL_EXPIRY_SECONDS = 60 * 10;
 
 const STATUS_FILTER_OPTIONS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All statuses" },
@@ -233,6 +257,22 @@ const ApplicationsPage = () => {
   const [detailsError, setDetailsError] = useState<string | null>(null);
 
   const detailsCacheRef = useRef<Record<string, DetailedApplication>>({});
+
+  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
+    null,
+  );
+
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
+  const [verificationTarget, setVerificationTarget] =
+    useState<ApplicationDocument | null>(null);
+  const [verificationNotesDraft, setVerificationNotesDraft] = useState("");
+  const [verifyingDoc, setVerifyingDoc] = useState(false);
+
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestType, setRequestType] = useState("");
+  const [requestDescription, setRequestDescription] = useState("");
+  const [requestDueDate, setRequestDueDate] = useState("");
+  const [creatingRequest, setCreatingRequest] = useState(false);
 
   // Admission decision state
   const [decisionDialogOpen, setDecisionDialogOpen] = useState(false);
@@ -508,6 +548,7 @@ const ApplicationsPage = () => {
       setDetailsError(null);
 
       try {
+        // ISOLATION: Ensure the application belongs to this university/tenant.
         const { data: applicationRow, error } = await supabase
           .from("applications")
           .select(
@@ -527,12 +568,20 @@ const ApplicationsPage = () => {
               student:students (
                 id,
                 legal_name,
+                preferred_name,
                 contact_email,
                 contact_phone,
                 nationality,
                 date_of_birth,
                 current_country,
                 passport_number,
+                passport_expiry,
+                address,
+                guardian,
+                finances_json,
+                test_scores,
+                visa_history_json,
+                education_history,
                 profile:profiles (
                   full_name,
                   email
@@ -546,14 +595,18 @@ const ApplicationsPage = () => {
                   email
                 )
               ),
-              program:programs (
+              program:programs!inner (
                 id,
                 name,
-                level
+                level,
+                university_id,
+                tenant_id
               )
             `,
           )
           .eq("id", applicationId)
+          .eq("program.tenant_id", tenantId as any)
+          .eq("program.university_id", universityId as any)
           .maybeSingle();
 
         if (error) {
@@ -567,7 +620,7 @@ const ApplicationsPage = () => {
         const { data: documentsData, error: documentsError } = await supabase
           .from("application_documents")
           .select(
-            "id, document_type, storage_path, document_url, file_url, mime_type, uploaded_at, verified, verification_notes",
+            "id, document_type, storage_path, mime_type, file_size, uploaded_at, verified, verification_notes",
           )
           .eq("application_id", applicationId)
           .order("uploaded_at", { ascending: false });
@@ -576,9 +629,31 @@ const ApplicationsPage = () => {
           throw documentsError;
         }
 
+        const studentId = (applicationRow as any)?.student?.id as
+          | string
+          | undefined;
+
+        let educationRecords: EducationRecord[] = [];
+        if (studentId) {
+          const { data: eduData, error: eduError } = await supabase
+            .from("education_records")
+            .select(
+              "id, institution_name, country, level, start_date, end_date, gpa, grade_scale, transcript_url, certificate_url",
+            )
+            .eq("student_id", studentId)
+            .order("start_date", { ascending: false });
+
+          if (eduError) {
+            throw eduError;
+          }
+
+          educationRecords = (eduData ?? []) as unknown as EducationRecord[];
+        }
+
         const detailed: DetailedApplication = {
           ...(applicationRow as ApplicationRow),
           documents: (documentsData ?? []) as unknown as ApplicationDocument[],
+          educationRecords,
         };
 
         detailsCacheRef.current[applicationId] = detailed;
@@ -594,7 +669,7 @@ const ApplicationsPage = () => {
         setDetailsLoading(false);
       }
     },
-    [toast],
+    [toast, tenantId, universityId],
   );
 
   useEffect(() => {
@@ -820,6 +895,88 @@ const ApplicationsPage = () => {
       );
     }
 
+    const handleOpenDocument = async (document: ApplicationDocument) => {
+      if (!document.storage_path) {
+        toast({
+          title: "Missing document path",
+          description: "This document has no storage path on record.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setOpeningDocumentId(document.id);
+      try {
+        const { data: signed, error } = await supabase.storage
+          .from(APPLICATION_DOCS_BUCKET)
+          .createSignedUrl(document.storage_path, SIGNED_URL_EXPIRY_SECONDS);
+
+        if (error) throw error;
+
+        const url = signed?.signedUrl;
+        if (!url) {
+          throw new Error("Unable to generate a secure link for this document.");
+        }
+
+        window.open(url, "_blank", "noopener,noreferrer");
+      } catch (error) {
+        logError(error, "UniversityApplications.openDocument");
+        toast(formatErrorForToast(error, "Unable to open document"));
+      } finally {
+        setOpeningDocumentId(null);
+      }
+    };
+
+    const handleToggleVerified = async (document: ApplicationDocument) => {
+      setVerifyingDoc(true);
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const verifierId = auth?.user?.id ?? null;
+        const nextVerified = !document.verified;
+
+        const { error } = await supabase
+          .from("application_documents")
+          .update({
+            verified: nextVerified,
+            verifier_id: verifierId,
+            verification_notes:
+              document.verification_notes && document.verification_notes.length > 0
+                ? document.verification_notes
+                : null,
+          })
+          .eq("id", document.id);
+
+        if (error) throw error;
+
+        // Update local state/cache
+        setDetailedApplication((prev) => {
+          if (!prev?.documents) return prev;
+          const nextDocs = prev.documents.map((d) =>
+            d.id === document.id ? { ...d, verified: nextVerified } : d,
+          );
+          const next = { ...prev, documents: nextDocs };
+          if (prev.id) detailsCacheRef.current[prev.id] = next;
+          return next;
+        });
+
+        toast({
+          title: nextVerified ? "Document verified" : "Verification removed",
+          description: "The document verification status has been updated.",
+        });
+      } catch (error) {
+        logError(error, "UniversityApplications.toggleVerified");
+        toast(formatErrorForToast(error, "Failed to update verification"));
+      } finally {
+        setVerifyingDoc(false);
+      }
+    };
+
+    const handleOpenVerificationNotes = (document: ApplicationDocument) => {
+      setVerificationTarget(document);
+      setVerificationNotesDraft(document.verification_notes ?? "");
+      setVerificationDialogOpen(true);
+    };
+
     return (
       <div className="space-y-3">
         {documents.map((document) => (
@@ -834,14 +991,9 @@ const ApplicationsPage = () => {
               <p className="text-xs text-muted-foreground">
                 Uploaded {formatDateTime(document.uploaded_at)}
               </p>
-              {document.storage_path && (
-                <p className="break-all text-xs text-muted-foreground/80">
-                  Storage path: {document.storage_path}
-                </p>
-              )}
-              {document.document_url && (
-                <p className="break-all text-xs text-muted-foreground/80">
-                  URL: {document.document_url}
+              {document.file_size != null && (
+                <p className="text-xs text-muted-foreground/80">
+                  Size: {(document.file_size / 1024).toFixed(1)} KB
                 </p>
               )}
               {document.verification_notes && (
@@ -859,11 +1011,137 @@ const ApplicationsPage = () => {
                   {document.mime_type}
                 </Badge>
               )}
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => void handleOpenDocument(document)}
+                  disabled={!document.storage_path || openingDocumentId === document.id}
+                >
+                  {openingDocumentId === document.id ? (
+                    <>
+                      <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                      Opening...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="mr-1 h-3.5 w-3.5" />
+                      View
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => handleOpenVerificationNotes(document)}
+                >
+                  <FileText className="mr-1 h-3.5 w-3.5" />
+                  Notes
+                </Button>
+                <Button
+                  variant={document.verified ? "outline" : "default"}
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => void handleToggleVerified(document)}
+                  disabled={verifyingDoc}
+                >
+                  {document.verified ? (
+                    <>
+                      <AlertCircle className="mr-1 h-3.5 w-3.5" />
+                      Unverify
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-1 h-3.5 w-3.5" />
+                      Verify
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         ))}
       </div>
     );
+  };
+
+  const renderEducationRecords = (records?: EducationRecord[] | null) => {
+    if (!records || records.length === 0) {
+      return (
+        <p className="text-sm text-muted-foreground">
+          No academic history records found.
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-3">
+        {records.map((record) => (
+          <div
+            key={record.id}
+            className={withUniversitySurfaceTint("rounded-xl p-4")}
+          >
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-foreground">
+                {record.institution_name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {record.level} • {record.country}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDate(record.start_date)} – {formatDate(record.end_date)}
+              </p>
+              {(record.gpa != null || record.grade_scale) && (
+                <p className="text-xs text-muted-foreground">
+                  GPA: {record.gpa ?? "—"}
+                  {record.grade_scale ? ` (${record.grade_scale})` : ""}
+                </p>
+              )}
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {record.transcript_url && (
+                <a
+                  href={record.transcript_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-primary underline underline-offset-4"
+                >
+                  View transcript
+                </a>
+              )}
+              {record.certificate_url && (
+                <a
+                  href={record.certificate_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs text-primary underline underline-offset-4"
+                >
+                  View certificate
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderJsonBlock = (value: unknown, emptyLabel: string) => {
+    if (value == null) {
+      return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
+    }
+
+    try {
+      return (
+        <pre className="whitespace-pre-wrap break-words rounded-xl bg-muted/40 p-3 text-xs text-muted-foreground">
+          {JSON.stringify(value, null, 2)}
+        </pre>
+      );
+    } catch {
+      return <p className="text-sm text-muted-foreground">{String(value)}</p>;
+    }
   };
 
   const renderNotes = (application?: DetailedApplication | null) => {
@@ -1462,6 +1740,34 @@ const ApplicationsPage = () => {
                             DOB: {formatDate(getStudentDateOfBirth(selectedApplication))}
                           </span>
                         )}
+                        {selectedApplication.student?.passport_number && (
+                          <span className="flex items-center gap-2">
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                            Passport: {selectedApplication.student.passport_number}
+                          </span>
+                        )}
+                        {selectedApplication.student?.passport_expiry && (
+                          <span className="flex items-center gap-2">
+                            <CalendarDays className="h-3.5 w-3.5" />
+                            Passport expiry: {formatDate(selectedApplication.student.passport_expiry)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          onClick={() => {
+                            setRequestType("");
+                            setRequestDescription("");
+                            setRequestDueDate("");
+                            setRequestDialogOpen(true);
+                          }}
+                        >
+                          <AlertCircle className="mr-1 h-3.5 w-3.5" />
+                          Request documents
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1504,6 +1810,51 @@ const ApplicationsPage = () => {
                       Notes
                     </div>
                     {renderNotes(detailedApplication)}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 lg:grid-cols-2">
+                  <div className={withUniversitySurfaceTint("space-y-3 rounded-2xl p-4")}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                      <GraduationCap className="h-4 w-4" />
+                      Academic history
+                    </div>
+                    {renderEducationRecords(detailedApplication?.educationRecords)}
+                  </div>
+                  <div className={withUniversitySurfaceTint("space-y-3 rounded-2xl p-4")}>
+                    <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+                      <ClipboardList className="h-4 w-4" />
+                      Additional information
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Test scores
+                        </p>
+                        {renderJsonBlock(
+                          detailedApplication?.student?.test_scores ?? null,
+                          "No test scores submitted.",
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Finances
+                        </p>
+                        {renderJsonBlock(
+                          detailedApplication?.student?.finances_json ?? null,
+                          "No finance information submitted.",
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold uppercase text-muted-foreground">
+                          Address
+                        </p>
+                        {renderJsonBlock(
+                          detailedApplication?.student?.address ?? null,
+                          "No address submitted.",
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1659,6 +2010,252 @@ const ApplicationsPage = () => {
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Update Status
                 </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Verification Notes Dialog */}
+      <Dialog
+        open={verificationDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setVerificationDialogOpen(false);
+            setVerificationTarget(null);
+            setVerificationNotesDraft("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Document notes</DialogTitle>
+            <DialogDescription>
+              Add internal verification notes for{" "}
+              {formatDocumentType(verificationTarget?.document_type)}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            <Label htmlFor="verification-notes">Notes</Label>
+            <Textarea
+              id="verification-notes"
+              value={verificationNotesDraft}
+              onChange={(e) => setVerificationNotesDraft(e.target.value)}
+              rows={4}
+              placeholder="e.g. Verified name matches passport; transcript needs clearer scan..."
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setVerificationDialogOpen(false)}
+              disabled={verifyingDoc}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!verificationTarget) return;
+                setVerifyingDoc(true);
+                try {
+                  const { data: auth } = await supabase.auth.getUser();
+                  const verifierId = auth?.user?.id ?? null;
+
+                  const { error } = await supabase
+                    .from("application_documents")
+                    .update({
+                      verification_notes:
+                        verificationNotesDraft.trim().length > 0
+                          ? verificationNotesDraft.trim()
+                          : null,
+                      verifier_id: verifierId,
+                    })
+                    .eq("id", verificationTarget.id);
+
+                  if (error) throw error;
+
+                  setDetailedApplication((prev) => {
+                    if (!prev?.documents) return prev;
+                    const nextDocs = prev.documents.map((d) =>
+                      d.id === verificationTarget.id
+                        ? {
+                            ...d,
+                            verification_notes:
+                              verificationNotesDraft.trim().length > 0
+                                ? verificationNotesDraft.trim()
+                                : null,
+                          }
+                        : d,
+                    );
+                    const next = { ...prev, documents: nextDocs };
+                    if (prev.id) detailsCacheRef.current[prev.id] = next;
+                    return next;
+                  });
+
+                  toast({
+                    title: "Notes saved",
+                    description: "Document notes updated successfully.",
+                  });
+                  setVerificationDialogOpen(false);
+                } catch (error) {
+                  logError(error, "UniversityApplications.saveVerificationNotes");
+                  toast(formatErrorForToast(error, "Failed to save notes"));
+                } finally {
+                  setVerifyingDoc(false);
+                }
+              }}
+              disabled={verifyingDoc}
+            >
+              {verifyingDoc ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request additional documents */}
+      <Dialog
+        open={requestDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRequestDialogOpen(false);
+            setRequestType("");
+            setRequestDescription("");
+            setRequestDueDate("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Request additional documents</DialogTitle>
+            <DialogDescription>
+              Create a document request for the student. It will appear in the{" "}
+              university document requests queue.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="request-type">Request type</Label>
+              <Input
+                id="request-type"
+                value={requestType}
+                onChange={(e) => setRequestType(e.target.value)}
+                placeholder="e.g. Bank statement, updated passport, missing transcript"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="request-desc">Description (optional)</Label>
+              <Textarea
+                id="request-desc"
+                value={requestDescription}
+                onChange={(e) => setRequestDescription(e.target.value)}
+                rows={3}
+                placeholder="Add instructions or context for the student/agent..."
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="request-due">Due date (optional)</Label>
+              <Input
+                id="request-due"
+                type="date"
+                value={requestDueDate}
+                onChange={(e) => setRequestDueDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRequestDialogOpen(false)}
+              disabled={creatingRequest}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!tenantId) {
+                  toast({
+                    title: "Missing tenant context",
+                    description: "Unable to verify your university account.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                const studentId = selectedApplication?.student?.id;
+                if (!studentId) {
+                  toast({
+                    title: "Missing student",
+                    description: "This application is missing a student record.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                if (requestType.trim().length === 0) {
+                  toast({
+                    title: "Request type required",
+                    description: "Please enter what you’re requesting.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+
+                setCreatingRequest(true);
+                try {
+                  const { data: auth } = await supabase.auth.getUser();
+                  const requestedBy = auth?.user?.id ?? null;
+
+                  const dueDateIso =
+                    requestDueDate.trim().length > 0
+                      ? new Date(requestDueDate).toISOString()
+                      : null;
+
+                  const { error } = await supabase.from("document_requests").insert({
+                    tenant_id: tenantId,
+                    student_id: studentId,
+                    document_type: requestType.trim(),
+                    request_type: requestType.trim(),
+                    description:
+                      requestDescription.trim().length > 0
+                        ? requestDescription.trim()
+                        : null,
+                    due_date: dueDateIso,
+                    status: "pending",
+                    requested_at: new Date().toISOString(),
+                    requested_by: requestedBy,
+                  } as any);
+
+                  if (error) throw error;
+
+                  toast({
+                    title: "Request created",
+                    description:
+                      "The document request is now visible in the Documents queue.",
+                  });
+                  setRequestDialogOpen(false);
+                } catch (error) {
+                  logError(error, "UniversityApplications.createDocumentRequest");
+                  toast(formatErrorForToast(error, "Failed to create request"));
+                } finally {
+                  setCreatingRequest(false);
+                }
+              }}
+              disabled={creatingRequest}
+            >
+              {creatingRequest ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create request"
               )}
             </Button>
           </DialogFooter>
