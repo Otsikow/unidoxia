@@ -89,8 +89,9 @@ export function DocumentUploadDialog({
 
       // Upload file to Supabase Storage
       const fileExt = sanitizedFileName.split('.').pop();
-      const fileName = `${applicationId}/${documentType}_${Date.now()}.${fileExt}`;
-      const filePath = `documents/${fileName}`;
+      // IMPORTANT: application-documents bucket policies expect the first folder
+      // segment to be the application id (no extra prefix like `documents/`).
+      const filePath = `${applicationId}/${documentType}_${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('application-documents')

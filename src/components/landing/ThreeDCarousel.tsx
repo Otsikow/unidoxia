@@ -41,8 +41,6 @@ export const ThreeDCarousel = ({
 
   const cardCount = cards.length;
 
-  if (cardCount === 0) return null;
-
   /* ------------------ Detect Mobile ------------------ */
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 768px)");
@@ -111,6 +109,8 @@ export const ThreeDCarousel = ({
   );
 
   /* ------------------ Render ------------------ */
+  if (cardCount === 0) return null;
+
   return (
     <div
       className={cn(
