@@ -15,6 +15,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { ApplicationFormData } from '@/types/application';
+import { ExistingDocumentMap } from './DocumentsUploadStep';
 import { Badge } from '@/components/ui/badge';
 
 interface ReviewSubmitStepProps {
@@ -23,6 +24,7 @@ interface ReviewSubmitStepProps {
   onSubmit: () => void;
   submitting: boolean;
   onNotesChange: (notes: string) => void;
+  existingDocuments?: ExistingDocumentMap;
 }
 
 type ProgramDetailsRow = Pick<
@@ -53,6 +55,7 @@ export default function ReviewSubmitStep({
   onSubmit,
   submitting,
   onNotesChange,
+  existingDocuments,
 }: ReviewSubmitStepProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
@@ -130,7 +133,9 @@ export default function ReviewSubmitStep({
     return months[month - 1] || '';
   };
 
-  const documentCount = Object.values(formData.documents).filter((doc) => doc !== null).length;
+  const documentCount = (Object.keys(formData.documents) as Array<keyof typeof formData.documents>)
+    .map((key) => Boolean(formData.documents[key]) || Boolean(existingDocuments?.[key]))
+    .filter(Boolean).length;
 
   return (
     <div className="space-y-6">
@@ -281,19 +286,37 @@ export default function ReviewSubmitStep({
               <Badge>{documentCount}</Badge>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-              {Object.entries(formData.documents).map(([key, file]) => (
-                <div key={key} className="flex items-center gap-2">
-                  {file ? (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <div className="h-4 w-4 rounded-full border-2" />
-                  )}
-                  <span className="capitalize">
-                    {key === 'ielts' ? 'IELTS/TOEFL' : key === 'sop' ? 'Statement of Purpose' : key}
-                  </span>
-                  {file && <span className="text-muted-foreground">• {file.name}</span>}
-                </div>
-              ))}
+              {Object.entries(formData.documents).map(([key, file]) => {
+                const existingDocument = existingDocuments?.[key as keyof typeof formData.documents];
+                const hasDocument = Boolean(file || existingDocument);
+                const displayLabel =
+                  key === 'ielts'
+                    ? 'IELTS/TOEFL'
+                    : key === 'sop'
+                    ? 'Statement of Purpose'
+                    : key;
+
+                return (
+                  <div key={key} className="flex items-center gap-2">
+                    {hasDocument ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <div className="h-4 w-4 rounded-full border-2" />
+                    )}
+                    <span className="capitalize">{displayLabel}</span>
+                    {file && <span className="text-muted-foreground">• {file.name}</span>}
+                    {!file && existingDocument && (
+                      <span className="text-muted-foreground">
+                        • {existingDocument.fileName}
+                        {existingDocument.verifiedStatus ? ` (${existingDocument.verifiedStatus})` : ''}
+                      </span>
+                    )}
+                    {!file && existingDocument && (
+                      <Badge variant="secondary">Using saved file</Badge>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </CardContent>

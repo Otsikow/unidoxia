@@ -1161,6 +1161,7 @@ export default function NewApplication() {
             onSubmit={handleSubmit}
             submitting={submitting}
             onNotesChange={(notes) => setFormData((prev) => ({ ...prev, notes }))}
+            existingDocuments={existingDocumentsForStep}
           />
         )}
       </div>

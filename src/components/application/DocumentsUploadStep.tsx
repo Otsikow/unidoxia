@@ -112,7 +112,12 @@ export default function DocumentsUploadStep({
     );
   };
 
-  const uploadedCount = Object.values(data).filter((file) => file !== null).length;
+  const uploadedCount = DOCUMENT_TYPES.reduce((count, docType) => {
+    const hasFile = data[docType.key] !== null;
+    const hasExisting = Boolean(existingDocuments?.[docType.key]);
+
+    return count + (hasFile || hasExisting ? 1 : 0);
+  }, 0);
   const totalDocs = DOCUMENT_TYPES.length;
 
   return (
@@ -137,6 +142,7 @@ export default function DocumentsUploadStep({
             const file = data[docType.key];
             const hasFile = file !== null;
             const existingDocument = existingDocuments?.[docType.key];
+            const hasDocument = hasFile || Boolean(existingDocument);
 
             return (
               <Card key={docType.key} className="border-2">
@@ -155,7 +161,7 @@ export default function DocumentsUploadStep({
                         {docType.description}
                       </CardDescription>
                     </div>
-                    {hasFile && (
+                    {hasDocument && (
                       <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                     )}
                   </div>
