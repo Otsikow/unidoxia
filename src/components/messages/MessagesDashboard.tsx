@@ -159,6 +159,29 @@ export default function MessagesDashboard() {
     };
   }, []);
 
+  const buildStudentContact = useCallback((student?: StudentSummary | null) => {
+    if (!student) return { name: null, email: null, phone: null };
+    return {
+      name:
+        student.preferred_name ??
+        student.legal_name ??
+        student.profile?.full_name ??
+        null,
+      email: student.contact_email ?? student.profile?.email ?? null,
+      phone: student.contact_phone ?? student.profile?.phone ?? null,
+    };
+  }, []);
+
+  const buildAgentContact = useCallback((agent?: AgentSummary | null) => {
+    if (!agent) return { name: null, email: null, phone: null, company: null };
+    return {
+      name: agent.profile?.full_name ?? null,
+      email: agent.profile?.email ?? null,
+      phone: agent.profile?.phone ?? null,
+      company: agent.company_name ?? null,
+    };
+  }, []);
+
   const getThreadTitle = useCallback((app: ApplicationSummary) => {
     const programName = app.program?.name ?? 'Application';
     const uniName = app.program?.university?.name ?? 'University';
@@ -178,11 +201,22 @@ export default function MessagesDashboard() {
   }, [role]);
 
   const getThreadSubtitle = useCallback((app: ApplicationSummary) => {
+    // For university users, show student/agent contact info
+    if (role === 'partner' || role === 'university' || role === 'school_rep') {
+      const studentContact = buildStudentContact(app.student);
+      const agentContact = buildAgentContact(app.agent);
+      const parts: string[] = [];
+      if (studentContact.email) parts.push(studentContact.email);
+      if (studentContact.phone) parts.push(studentContact.phone);
+      if (agentContact.company) parts.push(`Agent: ${agentContact.company}`);
+      return parts.length > 0 ? parts.join(' • ') : '';
+    }
+    // For students and agents, show university contact info
     const uni = app.program?.university;
     const contact = buildUniversityContact(uni);
     const parts = [contact.email, contact.phone, contact.website].filter(Boolean);
     return parts.length > 0 ? parts.join(' • ') : '';
-  }, [buildUniversityContact]);
+  }, [buildAgentContact, buildStudentContact, buildUniversityContact, role]);
 
   // Fetch applications (threads)
   useEffect(() => {
@@ -500,11 +534,25 @@ export default function MessagesDashboard() {
   const filteredApplications = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return applications;
+    const isUniRole = role === 'partner' || role === 'university' || role === 'school_rep';
     return applications.filter((a) => {
-      const title = `${getThreadTitle(a)} ${a.program?.university?.name || ''}`.toLowerCase();
-      return title.includes(q);
+      const studentName = (
+        a.student?.preferred_name ??
+        a.student?.legal_name ??
+        a.student?.profile?.full_name ??
+        ''
+      ).toLowerCase();
+      const programName = (a.program?.name || '').toLowerCase();
+      const uniName = (a.program?.university?.name || '').toLowerCase();
+      
+      // For university users, search by student name and program
+      // For other users, search by program and university
+      if (isUniRole) {
+        return studentName.includes(q) || programName.includes(q);
+      }
+      return programName.includes(q) || uniName.includes(q);
     });
-  }, [applications, getThreadTitle, search]);
+  }, [applications, role, search]);
 
   const unreadCount = (appId: string) => {
     const last = lastSeen[appId] ? new Date(lastSeen[appId]).getTime() : 0;
@@ -542,6 +590,18 @@ export default function MessagesDashboard() {
     const uni = selectedApplication?.program?.university ?? null;
     return buildUniversityContact(uni);
   }, [buildUniversityContact, selectedApplication]);
+
+  // For university users: show student/agent contact info
+  const selectedStudentContact = useMemo(() => {
+    return buildStudentContact(selectedApplication?.student);
+  }, [buildStudentContact, selectedApplication]);
+
+  const selectedAgentContact = useMemo(() => {
+    return buildAgentContact(selectedApplication?.agent);
+  }, [buildAgentContact, selectedApplication]);
+
+  // Determine if we should show student contact info (for university users)
+  const isUniversityUser = role === 'partner' || role === 'university' || role === 'school_rep';
 
   const handleSend = async () => {
     const content = composerText.trim();
@@ -670,7 +730,7 @@ export default function MessagesDashboard() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by program or university"
+                placeholder={isUniversityUser ? "Search by student or program" : "Search by program or university"}
                 className="pl-9"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -703,9 +763,24 @@ export default function MessagesDashboard() {
                       >
                         <div className="flex items-start gap-3">
                           <Avatar>
-                            <AvatarImage alt={title} />
+                            <AvatarImage 
+                              src={
+                                (role === 'partner' || role === 'university' || role === 'school_rep')
+                                  ? (app.student?.profile?.avatar_url || undefined)
+                                  : undefined
+                              }
+                              alt={title} 
+                            />
                             <AvatarFallback>
-                              {(app.program?.university?.name || 'A').slice(0, 2).toUpperCase()}
+                              {(role === 'partner' || role === 'university' || role === 'school_rep')
+                                ? (
+                                    app.student?.preferred_name ??
+                                    app.student?.legal_name ??
+                                    app.student?.profile?.full_name ??
+                                    'S'
+                                  ).slice(0, 2).toUpperCase()
+                                : (app.program?.university?.name || 'U').slice(0, 2).toUpperCase()
+                              }
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
@@ -777,7 +852,54 @@ export default function MessagesDashboard() {
               </div>
             ) : (
               <>
-                {(selectedUniversityContact.email || selectedUniversityContact.phone || selectedUniversityContact.website) && (
+                {/* For university users: show student/agent contact info */}
+                {isUniversityUser && (selectedStudentContact.email || selectedStudentContact.phone || selectedAgentContact.email) && (
+                  <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
+                    <div className="flex flex-col gap-2">
+                      {/* Student contact info */}
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="font-medium text-foreground">
+                          {selectedStudentContact.name ?? 'Student'}
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {selectedStudentContact.email ? (
+                            <a className="underline underline-offset-4" href={`mailto:${selectedStudentContact.email}`}>
+                              {selectedStudentContact.email}
+                            </a>
+                          ) : null}
+                          {selectedStudentContact.phone ? (
+                            <a className="underline underline-offset-4" href={`tel:${selectedStudentContact.phone}`}>
+                              {selectedStudentContact.phone}
+                            </a>
+                          ) : null}
+                        </div>
+                      </div>
+                      {/* Agent contact info (if assigned) */}
+                      {(selectedAgentContact.name || selectedAgentContact.company) && (
+                        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between border-t border-muted/50 pt-2">
+                          <div className="font-medium text-foreground">
+                            {selectedAgentContact.company ? `Agent: ${selectedAgentContact.company}` : 'Agent'}
+                            {selectedAgentContact.name && ` (${selectedAgentContact.name})`}
+                          </div>
+                          <div className="flex flex-wrap gap-3">
+                            {selectedAgentContact.email ? (
+                              <a className="underline underline-offset-4" href={`mailto:${selectedAgentContact.email}`}>
+                                {selectedAgentContact.email}
+                              </a>
+                            ) : null}
+                            {selectedAgentContact.phone ? (
+                              <a className="underline underline-offset-4" href={`tel:${selectedAgentContact.phone}`}>
+                                {selectedAgentContact.phone}
+                              </a>
+                            ) : null}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {/* For students/agents: show university contact info */}
+                {!isUniversityUser && (selectedUniversityContact.email || selectedUniversityContact.phone || selectedUniversityContact.website) && (
                   <div className="rounded-lg border bg-muted/30 p-3 text-xs text-muted-foreground">
                     <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                       <div className="font-medium text-foreground">
