@@ -9,17 +9,18 @@ import { useToast } from '@/hooks/use-toast';
 import { getErrorMessage, logError, formatErrorForToast } from '@/lib/errorUtils';
 import { toValidUuidOrNull } from '@/lib/validation';
 import BackButton from '@/components/BackButton';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDebounce } from '@/hooks/useDebounce';
 import type { Database, Json } from '@/integrations/supabase/types';
+import type { ApplicationFormData } from '@/types/application';
 
 // Import step components
 import PersonalInfoStep from '@/components/application/PersonalInfoStep';
@@ -35,47 +36,6 @@ const STEPS = [
   { id: 4, title: 'Documents', description: 'Upload required files' },
   { id: 5, title: 'Review & Submit', description: 'Final review' },
 ];
-
-export interface ApplicationFormData {
-  // Personal Information
-  personalInfo: {
-    fullName: string;
-    email: string;
-    phone: string;
-    dateOfBirth: string;
-    nationality: string;
-    passportNumber: string;
-    currentCountry: string;
-    address: string;
-  };
-  // Education History
-  educationHistory: Array<{
-    id: string;
-    level: string;
-    institutionName: string;
-    country: string;
-    startDate: string;
-    endDate: string;
-    gpa: string;
-    gradeScale: string;
-  }>;
-  // Program Selection
-  programSelection: {
-    programId: string;
-    intakeYear: number;
-    intakeMonth: number;
-    intakeId?: string;
-  };
-  // Documents
-  documents: {
-    transcript: File | null;
-    passport: File | null;
-    ielts: File | null;
-    sop: File | null;
-  };
-  // Additional
-  notes: string;
-}
 
 type ApplicationDraftRow = Database['public']['Tables']['application_drafts']['Row'];
 

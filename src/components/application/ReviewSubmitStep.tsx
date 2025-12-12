@@ -14,7 +14,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
-import { ApplicationFormData } from '@/pages/student/NewApplication';
+import { ApplicationFormData } from '@/types/application';
 import { Badge } from '@/components/ui/badge';
 
 interface ReviewSubmitStepProps {
