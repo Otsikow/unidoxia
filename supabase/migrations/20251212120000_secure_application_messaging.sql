@@ -1,7 +1,10 @@
 -- Secure application-linked messaging across students, agents, and universities
 -- Ensures only parties connected through an application can view/send messages.
-
-BEGIN;
+--
+-- NOTE: This migration had a bug using 'university'::public.app_role which is not a valid enum value.
+-- The 'university' role doesn't exist - university users have role 'partner'.
+-- Fixed to use 'partner' instead. The subsequent migration 20251216100000 provides
+-- a more robust implementation with additional fallbacks.
 
 -- Helper: can the given user access messages for this application?
 CREATE OR REPLACE FUNCTION public.can_access_application_messages(
@@ -41,9 +44,9 @@ AS $$
       )
 
       -- University partner (tenant-scoped) for submitted applications
+      -- Note: 'university' is not a valid app_role enum value - university users have role 'partner'
       OR (
         (public.has_role(p_user_id, 'partner'::public.app_role)
-          OR public.has_role(p_user_id, 'university'::public.app_role)
           OR public.has_role(p_user_id, 'school_rep'::public.app_role))
         AND EXISTS (
           SELECT 1
@@ -81,5 +84,3 @@ CREATE POLICY "Application messaging: insert"
     sender_id = auth.uid()
     AND public.can_access_application_messages(application_id, auth.uid())
   );
-
-COMMIT;
