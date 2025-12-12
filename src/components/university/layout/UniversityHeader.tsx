@@ -28,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { useUniversityBranding } from "@/hooks/useUniversityBranding";
+import BackButton from "@/components/BackButton";
 
 interface UniversityHeaderProps {
   onRefresh?: () => void;
@@ -98,6 +99,10 @@ export const UniversityHeader = ({
   }, [partnerProfile.displayName, partnerProfile.contactName, profile?.full_name]);
 
   const title = resolveSectionTitle(location.pathname);
+  const showBack =
+    location.pathname !== "/university" &&
+    location.pathname !== "/university/" &&
+    location.pathname !== "/";
 
   const handleViewProfile = () => {
     navigate("/profile/settings?tab=profile");
@@ -157,6 +162,16 @@ export const UniversityHeader = ({
             <PanelLeftClose className="h-5 w-5" />
           )}
         </Button>
+        {showBack ? (
+          <BackButton
+            variant="ghost"
+            size="sm"
+            showHistoryMenu={false}
+            fallback="/university"
+            className="h-8 px-2"
+            label="Back"
+          />
+        ) : null}
         <div>
           <p className="text-xs uppercase tracking-[0.4rem] text-muted-foreground">
             UniDoxia

@@ -66,18 +66,6 @@ export default function StaffMessages() {
   const { profile } = useAuth();
   const { toast } = useToast();
 
-  // Agents use application-linked messaging threads (student/agent/university).
-  if (profile?.role === "agent") {
-    return (
-      <DashboardLayout>
-        <div className="space-y-4">
-          <BackButton variant="ghost" size="sm" fallback="/dashboard" />
-          <MessagesDashboard />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
   const partnerMessaging = useAgentMessages();
   const staffMessaging = useMessages();
   const { getUserPresence, isUserOnline } = usePresence();
@@ -122,6 +110,8 @@ export default function StaffMessages() {
 
   const canStartInternalChat =
     profile?.role === "staff" || profile?.role === "admin";
+
+  const isAgent = profile?.role === "agent";
 
   const messagingProfile = useMemo(() => {
     if (profile?.id) {
@@ -396,6 +386,18 @@ export default function StaffMessages() {
             redirectHref="/dashboard"
             redirectLabel="Return to dashboard"
           />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Agents use application-linked messaging threads (student/agent/university).
+  if (isAgent) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-4">
+          <BackButton variant="ghost" size="sm" fallback="/dashboard" />
+          <MessagesDashboard />
         </div>
       </DashboardLayout>
     );
