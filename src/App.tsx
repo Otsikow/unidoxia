@@ -666,8 +666,11 @@ const App = () => {
                           <Route path="programs" element={<AdminProgramsPage />} />
                           <Route path="tools" element={<AdminToolsPage />} />
                           <Route path="broadcast" element={<AdminBroadcastCenterPage />} />
+                          <Route path="tools/broadcast-center" element={<AdminBroadcastCenterPage />} />
                           <Route path="chat" element={<AdminChatConsolePage />} />
+                          <Route path="tools/chat-console" element={<AdminChatConsolePage />} />
                           <Route path="reports" element={<AdminPerformanceReportsPage />} />
+                          <Route path="tools/performance-reports" element={<AdminPerformanceReportsPage />} />
                           <Route path="insights" element={<AdminInsightsPage />} />
                           <Route path="intelligence" element={<ZoeIntelligencePage />} />
                           <Route path="zoe" element={<Navigate to="/admin/intelligence" replace />} />
