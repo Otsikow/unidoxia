@@ -52,8 +52,9 @@ export const calculateProfileCompletion = (
   } else if (roleData?.type === 'agent' && roleData.data) {
     const agentFields = [
       roleData.data.company_name,
-      roleData.data.verification_status !== 'pending',
-      roleData.data.referral_code,
+      roleData.data.verification_document_url,
+      profile.phone,
+      profile.country,
     ];
 
     totalFields += agentFields.length;

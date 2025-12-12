@@ -54,10 +54,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAgentStudents } from "@/hooks/useAgentStudents";
 import { useSort } from "@/hooks/useSort";
 import type { AgentStudent } from "@/hooks/useAgentStudents";
+import { useAgentProfileCompletion } from "@/hooks/useAgentProfileCompletion";
 import { cn } from "@/lib/utils";
 import AgentInviteCodeManager from "./AgentInviteCodeManager";
 import InviteStudentDialog from "@/components/students/InviteStudentDialog";
 import BackButton from "@/components/BackButton";
+import { AgentProfileCompletionCard } from "./AgentProfileCompletionCard";
 
 type SortableColumn = "country" | "status";
 
@@ -129,6 +131,15 @@ export default function AgentStudentsManager() {
   const { profile, loading: authLoading } = useAuth();
   const agentProfileId = profile?.id ?? null;
   const tenantId = profile?.tenant_id ?? null;
+  const isAgent = profile?.role === "agent";
+
+  const {
+    completion: agentCompletion,
+    checklist: agentChecklist,
+    hasAgentProfile,
+    isLoading: agentProfileLoading,
+  } = useAgentProfileCompletion();
+  const isAgentProfileComplete = !isAgent || agentCompletion.percentage >= 100;
 
   const {
     data,
@@ -147,7 +158,20 @@ export default function AgentStudentsManager() {
     direction: "asc",
   });
 
+  const applicationsBlocked =
+    isAgent && (!hasAgentProfile || !isAgentProfileComplete || agentProfileLoading);
+
   const handleStartApplication = (student: AgentStudent) => {
+    if (applicationsBlocked) {
+      toast({
+        title: "Complete your agent profile",
+        description:
+          "Finish your agency details and verification documents before submitting applications for students.",
+        variant: "destructive",
+      });
+      navigate("/agent/settings");
+      return;
+    }
     if (!student.onboarded) {
       toast({
         title: "Student not ready",
@@ -277,6 +301,15 @@ export default function AgentStudentsManager() {
           />
         </div>
       </div>
+
+      {applicationsBlocked && (
+        <AgentProfileCompletionCard
+          completion={agentCompletion}
+          checklist={agentChecklist}
+          loading={agentProfileLoading}
+          actionHref="/agent/settings"
+        />
+      )}
 
       <AgentInviteCodeManager agentProfileId={agentProfileId} />
 
@@ -526,7 +559,7 @@ export default function AgentStudentsManager() {
                                 e.stopPropagation();
                                 handleStartApplication(student);
                               }}
-                              disabled={!student.onboarded}
+                              disabled={!student.onboarded || applicationsBlocked}
                             >
                               <FileText className="h-3.5 w-3.5" />
                               <span className="hidden sm:inline">Apply</span>
@@ -554,7 +587,7 @@ export default function AgentStudentsManager() {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleStartApplication(student)}
-                                  disabled={!student.onboarded}
+                                  disabled={!student.onboarded || applicationsBlocked}
                                 >
                                   <FileText className="mr-2 h-4 w-4" />
                                   New Application

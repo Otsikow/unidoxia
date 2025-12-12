@@ -42,6 +42,10 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
     phone: profile.phone || '',
     country: profile.country || '',
   });
+  const [agentData, setAgentData] = useState({
+    company_name: roleData?.data?.company_name || '',
+    verification_document_url: roleData?.data?.verification_document_url || '',
+  });
 
   const isUniversityPartner = profile.role === 'partner';
   const universityBranding = useUniversityBranding();
@@ -60,11 +64,22 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       phone: profile.phone || '',
       country: profile.country || '',
     });
-  }, [profile.country, profile.full_name, profile.phone]);
+    if (roleData?.type === 'agent' && roleData.data) {
+      setAgentData({
+        company_name: roleData.data.company_name || '',
+        verification_document_url: roleData.data.verification_document_url || '',
+      });
+    }
+  }, [profile.country, profile.full_name, profile.phone, roleData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAgentInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setAgentData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleProfilePhotoClick = () => {
@@ -178,21 +193,42 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
 
       if (error) throw error;
 
+      if (roleData?.type === 'agent' && roleData.data?.id) {
+        const { error: agentError } = await supabase
+          .from('agents')
+          .update({
+            company_name: agentData.company_name || null,
+            verification_document_url: agentData.verification_document_url || null,
+          })
+          .eq('id', roleData.data.id)
+          .eq('profile_id', profile.id);
+
+        if (agentError) throw agentError;
+      }
+
       setFormData({
         full_name: data?.full_name ?? formData.full_name,
         phone: data?.phone ?? formData.phone,
         country: data?.country ?? formData.country,
       });
 
+      if (roleData?.type === 'agent' && roleData.data?.id) {
+        setAgentData({
+          company_name: agentData.company_name,
+          verification_document_url: agentData.verification_document_url,
+        });
+      }
+
       await Promise.all([
         refreshProfile(),
         queryClient.invalidateQueries({
-          queryKey: ['roleData', profile?.id],
-        }),
-        profile?.role === 'student'
-          ? queryClient.invalidateQueries({
-              queryKey: studentRecordQueryKey(user?.id),
-            })
+        queryKey: ['roleData', profile?.id],
+      }),
+      queryClient.invalidateQueries({ queryKey: ['agent-profile-completion', profile?.id] }),
+      profile?.role === 'student'
+        ? queryClient.invalidateQueries({
+            queryKey: studentRecordQueryKey(user?.id),
+          })
           : Promise.resolve(),
       ]);
 
@@ -342,18 +378,36 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
             </div>
           </div>
 
-          {/* Role-specific information (read-only) */}
+          {/* Role-specific information */}
           {roleData?.type === 'agent' && roleData.data && (
             <div className="border-t pt-4">
               <h3 className="font-semibold mb-3">Agent Information</h3>
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label>Company Name</Label>
+                  <Label htmlFor="company_name">Agency / Company Name</Label>
                   <Input
-                    value={roleData.data.company_name || 'Not set'}
-                    disabled
-                    className="bg-muted"
+                    id="company_name"
+                    name="company_name"
+                    value={agentData.company_name}
+                    onChange={handleAgentInputChange}
+                    placeholder="Enter the legal name of your agency"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    This name will be shown to students and university partners on every application.
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="verification_document_url">Accreditation certificate</Label>
+                  <Input
+                    id="verification_document_url"
+                    name="verification_document_url"
+                    value={agentData.verification_document_url}
+                    onChange={handleAgentInputChange}
+                    placeholder="Link to your license or accreditation document"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Share a secure link to your agency registration or certificate. PDF or cloud storage links work best.
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label>Verification Status</Label>
@@ -362,6 +416,9 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
                     disabled
                     className="bg-muted capitalize"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    We review every certificate to protect students. You can still update documents if needed.
+                  </p>
                 </div>
               </div>
             </div>

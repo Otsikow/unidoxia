@@ -22,6 +22,8 @@ import type { Database, Json } from '@/integrations/supabase/types';
 import type { ApplicationFormData } from '@/types/application';
 import { normalizeEducationLevel } from '@/lib/education';
 import type { PostgrestError } from '@supabase/supabase-js';
+import { useAgentProfileCompletion } from '@/hooks/useAgentProfileCompletion';
+import { AgentProfileCompletionCard } from '@/components/agent/AgentProfileCompletionCard';
 
 // Import step components
 import PersonalInfoStep from '@/components/application/PersonalInfoStep';
@@ -219,6 +221,12 @@ export default function NewApplication() {
   const programIdFromUrl = searchParams.get('program');
   const studentIdFromUrl = searchParams.get('studentId') || searchParams.get('student');
   const { user, profile } = useAuth();
+  const {
+    completion: agentCompletion,
+    checklist: agentChecklist,
+    hasAgentProfile,
+    isLoading: agentProfileLoading,
+  } = useAgentProfileCompletion();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -236,6 +244,9 @@ export default function NewApplication() {
     Partial<Record<ApplicationDocumentType, StudentDocumentMetadata>>
   >({});
   const isAgentFlow = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
+  const isAgent = profile?.role === 'agent';
+  const agentProfileIncomplete =
+    isAgent && (!hasAgentProfile || agentCompletion.percentage < 100);
 
   const hasHydratedFromDraft = useRef(false);
   const hasAttemptedLegacyMigration = useRef(false);
@@ -1098,6 +1109,39 @@ export default function NewApplication() {
   const viewApplicationUrl = isAgentFlow || !applicationId
     ? applicationsListUrl
     : `/student/applications/${applicationId}`;
+
+  if (isAgent && agentProfileLoading) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isAgent && agentProfileIncomplete) {
+    return (
+      <div className="container mx-auto py-8 max-w-5xl space-y-6">
+        <BackButton variant="ghost" size="sm" wrapperClassName="mb-2" fallback="/dashboard" />
+        <AgentProfileCompletionCard
+          completion={agentCompletion}
+          checklist={agentChecklist}
+          loading={agentProfileLoading}
+          actionHref="/agent/settings"
+        />
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="text-destructive">Profile required to start applications</CardTitle>
+            <CardDescription>
+              Complete every field in your agent profile (name, agency, certificate, phone, and location) to unlock
+              student applications.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   if (isInitialLoading) {
     return (
