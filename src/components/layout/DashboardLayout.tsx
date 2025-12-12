@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppFooter } from "@/components/layout/AppFooter";
@@ -6,6 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import BackButton from "@/components/BackButton";
 
 const formatRoleLabel = (role?: string | null) =>
   role ? role.replace(/_/g, " ") : "User";
@@ -43,11 +45,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
 function SidebarToolbar() {
   const { state } = useSidebar();
+  const location = useLocation();
   const { profile } = useAuth();
   const { primaryRole } = useUserRoles();
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
   const roleLabel = formatRoleLabel(primaryRole);
+  const showBack =
+    location.pathname !== "/dashboard" &&
+    location.pathname !== "/dashboard/" &&
+    location.pathname !== "/";
 
   return (
     <div className="sticky top-0 z-30 flex flex-col gap-2 sm:gap-3 border-b bg-background/80 px-2 sm:px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -56,6 +63,15 @@ function SidebarToolbar() {
           className="h-7 w-7 sm:h-8 sm:w-8"
           aria-label={state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
         />
+        {showBack ? (
+          <BackButton
+            variant="ghost"
+            size="sm"
+            showHistoryMenu={false}
+            fallback="/dashboard"
+            className="h-7 px-2"
+          />
+        ) : null}
         <span className="hidden text-xs sm:text-sm font-medium text-muted-foreground md:inline">
           {state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
         </span>

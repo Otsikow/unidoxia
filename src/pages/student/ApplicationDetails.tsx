@@ -233,6 +233,17 @@ export default function ApplicationDetails() {
     }
   };
 
+  const universityContact = useMemo(() => {
+    const uni = app?.program?.university;
+    const parsed = parseUniversityProfileDetails((uni as any)?.submission_config_json ?? null);
+    const primary = parsed?.contacts?.primary ?? null;
+    return {
+      email: primary?.email ?? null,
+      phone: primary?.phone ?? null,
+      website: (uni as any)?.website ?? null,
+    };
+  }, [app?.program?.university]);
+
   if (loading || !app) {
     return (
       <div className="container mx-auto py-8">
@@ -244,17 +255,6 @@ export default function ApplicationDetails() {
   }
 
   const taskProgress = tasks.length === 0 ? 0 : Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100);
-
-  const universityContact = useMemo(() => {
-    const uni = app?.program?.university;
-    const parsed = parseUniversityProfileDetails((uni as any)?.submission_config_json ?? null);
-    const primary = parsed?.contacts?.primary ?? null;
-    return {
-      email: primary?.email ?? null,
-      phone: primary?.phone ?? null,
-      website: (uni as any)?.website ?? null,
-    };
-  }, [app]);
 
   return (
     <div className="container mx-auto py-8 space-y-6">

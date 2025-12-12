@@ -15,11 +15,13 @@ import {
 import { Bell, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import BackButton from "@/components/BackButton";
 
 export function PartnerHeader() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const initials = useMemo(() => {
     if (!profile?.full_name) return "P";
@@ -28,10 +30,25 @@ export function PartnerHeader() {
     return `${first.charAt(0)}${second.charAt(0)}`.toUpperCase();
   }, [profile?.full_name]);
 
+  const showBack =
+    location.pathname !== "/partner" &&
+    location.pathname !== "/partner/" &&
+    location.pathname !== "/";
+
   return (
     <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-slate-200/70 bg-white/80 px-4 backdrop-blur transition-colors dark:border-slate-900/70 dark:bg-slate-950/75 md:px-8">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="rounded-lg border border-slate-200/70 bg-white/70 text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900" />
+        {showBack ? (
+          <BackButton
+            variant="ghost"
+            size="sm"
+            showHistoryMenu={false}
+            fallback="/partner"
+            className="h-9 px-2"
+            label="Back"
+          />
+        ) : null}
         <div className="flex items-center gap-3">
           <img
             src={unidoxiaLogo}

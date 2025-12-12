@@ -187,21 +187,36 @@ export default function MessagesDashboard() {
       return;
     }
     const bootstrap = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        setApplications([]);
+        return;
+      }
       setLoading(true);
       try {
         let appSummaries: ApplicationSummary[] = [];
 
         if (role === 'partner' || role === 'university' || role === 'school_rep') {
           // University partner: applications to programs owned by the university in this tenant
-          const { data: uni, error: uniError } = await supabase
+          const tenantId = profile?.tenant_id;
+          if (!tenantId) {
+            setApplications([]);
+            return;
+          }
+
+          // NOTE: tenants may (rarely) have multiple universities. We intentionally pick the most recently updated active record.
+          const { data: uniRows, error: uniError } = await supabase
             .from('universities')
             .select('id')
-            .eq('tenant_id', profile?.tenant_id as any)
-            .maybeSingle();
+            .eq('tenant_id', tenantId as any)
+            .order('active', { ascending: false, nullsFirst: false })
+            .order('updated_at', { ascending: false })
+            .order('created_at', { ascending: false })
+            .limit(1);
           if (uniError) throw uniError;
 
-          if (!uni?.id) {
+          const uniId = uniRows?.[0]?.id ?? null;
+          if (!uniId) {
             setApplications([]);
             return;
           }
@@ -253,7 +268,7 @@ export default function MessagesDashboard() {
                 )
               `,
             )
-            .eq('program.university_id', uni.id as any)
+            .eq('program.university_id', uniId as any)
             .not('submitted_at', 'is', null)
             .order('submitted_at', { ascending: false });
 
@@ -366,13 +381,16 @@ export default function MessagesDashboard() {
             .select('*')
             .in('application_id', appIds)
             .order('created_at', { ascending: false })
-            .limit(300);
+            .limit(600);
           const latest: Record<string, MessageRow | undefined> = {};
           (msgs || []).forEach((m) => {
             if (!latest[m.application_id]) latest[m.application_id] = m as MessageRow;
           });
           setLatestByApp(latest);
         }
+      } catch (e) {
+        console.error('Failed to load message threads:', e);
+        setApplications([]);
       } finally {
         setLoading(false);
       }
@@ -403,15 +421,19 @@ export default function MessagesDashboard() {
         .order('created_at', { ascending: true });
       if (!error) {
         setMessagesByApp((prev) => ({ ...prev, [selectedAppId]: (data || []) as MessageRow[] }));
-          // mark last seen for this message thread now
-        const nextSeen = { ...lastSeen, [selectedAppId]: new Date().toISOString() };
-        setLastSeen(nextSeen);
-        persistLastSeen(nextSeen);
+        // mark last seen for this message thread now (use functional update to avoid dropping other keys)
+        setLastSeen((prev) => {
+          const nextSeen = { ...prev, [selectedAppId]: new Date().toISOString() };
+          persistLastSeen(nextSeen);
+          return nextSeen;
+        });
         // update latest
-        const last = (data || [])[data!.length - 1] as MessageRow | undefined;
+        const last = (data?.[data.length - 1] ?? undefined) as MessageRow | undefined;
         if (last) setLatestByApp((prev) => ({ ...prev, [selectedAppId]: last }));
         // scroll to bottom
         setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+      } else {
+        console.error('Failed to load messages:', error);
       }
     };
     loadThread();
@@ -426,19 +448,32 @@ export default function MessagesDashboard() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
-        (payload) => {
+        async (payload) => {
           const m = payload.new as MessageRow;
           if (!applicationIdsRef.current.has(m.application_id)) return;
-            // Update latest per message thread
-          setLatestByApp((prev) => ({ ...prev, [m.application_id]: m }));
-          // If current thread loaded, append
+
+          // Best-effort hydrate sender for display consistency
+          let hydrated: any = m;
+          if (!(m as any)?.sender && m.sender_id) {
+            const { data: senderRow } = await supabase
+              .from('profiles')
+              .select('id, full_name, email, avatar_url, role')
+              .eq('id', m.sender_id as any)
+              .maybeSingle();
+            if (senderRow) hydrated = { ...(m as any), sender: senderRow };
+          }
+
+          // Update latest per message thread
+          setLatestByApp((prev) => ({ ...prev, [m.application_id]: hydrated as MessageRow }));
+          // Append/update cache for unread + fast open
           setMessagesByApp((prev) => {
-            const arr = prev[m.application_id];
-            if (!arr) return prev;
-            const next = [...arr, m];
+            const arr = prev[m.application_id] ?? [];
+            if (arr.some((existing) => existing.id === m.id)) return prev;
+            const next = [...arr, hydrated as MessageRow];
             return { ...prev, [m.application_id]: next };
           });
-            // Auto-scroll if new message belongs to open message thread
+
+          // Auto-scroll if new message belongs to open message thread
           if (m.application_id === selectedAppId) {
             setTimeout(() => listBottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
           }
@@ -464,6 +499,17 @@ export default function MessagesDashboard() {
     const msgs = messagesByApp[appId];
     if (!msgs || !user) return 0;
     return msgs.filter((m) => new Date(m.created_at || 0).getTime() > last && m.sender_id !== user.id).length;
+  };
+
+  const unreadIndicator = (appId: string) => {
+    if (!user) return 0;
+    const exact = unreadCount(appId);
+    if (exact > 0) return exact;
+    const latest = latestByApp[appId];
+    if (!latest?.created_at) return 0;
+    const last = lastSeen[appId] ? new Date(lastSeen[appId]).getTime() : 0;
+    const latestTime = new Date(latest.created_at).getTime();
+    return latestTime > last && latest.sender_id !== user.id ? 1 : 0;
   };
 
   const selectedMessages = selectedAppId ? messagesByApp[selectedAppId] || [] : [];
@@ -564,7 +610,7 @@ export default function MessagesDashboard() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[420px]">
+            <ScrollArea className="h-[min(52vh,420px)] lg:h-[420px]">
               {loading ? (
                 <div className="p-4 text-sm text-muted-foreground">Loading...</div>
               ) : filteredApplications.length === 0 ? (
@@ -576,7 +622,7 @@ export default function MessagesDashboard() {
                     const title = getThreadTitle(app);
                     const preview = latest?.body || 'No messages yet';
                     const when = formatRelativeTime(latest?.created_at || null);
-                    const unread = unreadCount(app.id);
+                    const unread = unreadIndicator(app.id);
                     return (
                       <li
                         key={app.id}
@@ -665,7 +711,7 @@ export default function MessagesDashboard() {
                     </div>
                   </div>
                 )}
-                <ScrollArea className="h-[360px] pr-2">
+                <ScrollArea className="h-[min(52vh,360px)] lg:h-[360px] pr-2">
                   <div className="space-y-3">
                     {selectedMessages.length === 0 ? (
                         <div className="text-sm text-muted-foreground px-1">
@@ -685,7 +731,9 @@ export default function MessagesDashboard() {
                             >
                               {!mine ? (
                                 <div className="mb-1 text-xs font-medium opacity-80">
-                                  {(m as any)?.sender?.full_name ?? 'Sender'}
+                                  (m as any)?.sender?.full_name ??
+                                  (m as any)?.sender?.email ??
+                                  'Sender'
                                 </div>
                               ) : null}
                               <p className="whitespace-pre-wrap break-words">{m.body}</p>
