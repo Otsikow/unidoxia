@@ -95,12 +95,8 @@ const ApplicationsPage = () => {
 
   const handleStatusUpdate = useCallback((applicationId: string, newStatus: string) => {
     // Update local state immediately for instant UI feedback
-    updateLocalStatus(newStatus, {
-      id: crypto.randomUUID(),
-      action: `Status changed to ${newStatus}`,
-      timestamp: new Date().toISOString(),
-      actor: "University",
-    });
+    // Note: Timeline event is already added to DB by the dialog, so we only update status here
+    updateLocalStatus(newStatus);
     // Refetch dashboard data to update the applications list
     void refetch();
   }, [refetch, updateLocalStatus]);
