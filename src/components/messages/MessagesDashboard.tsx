@@ -219,6 +219,18 @@ export default function MessagesDashboard() {
     void fetchConversations();
   }, [fetchConversations]);
 
+  // Handle starting a conversation from URL parameter (e.g., from application review)
+  useEffect(() => {
+    if (isLoading) return;
+    
+    const startContactId = sessionStorage.getItem("messaging_start_contact");
+    if (startContactId) {
+      sessionStorage.removeItem("messaging_start_contact");
+      // Trigger conversation creation with the specified contact
+      void getOrCreateConversation(startContactId);
+    }
+  }, [isLoading, getOrCreateConversation]);
+
   // Show loading state while auth or messages are loading
   if (isLoading) {
     return (
