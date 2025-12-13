@@ -1,23 +1,13 @@
 import { useMemo } from 'react';
-import type { Dispatch, SetStateAction } from 'react';
 import { useAuth } from './useAuth';
 import {
   useMessages,
   type Conversation,
   type Message,
   type TypingIndicator,
-  type SendMessagePayload,
 } from './useMessages';
 
 const PARTNER_MESSAGING_ROLES = new Set(['agent', 'partner', 'staff', 'admin']);
-
-const noopSetConversation: Dispatch<SetStateAction<string | null>> = (_value) => undefined;
-const noopTyping = async (_conversationId?: string) => undefined;
-const noopSendMessage = async (_conversationId: string, _payload: SendMessagePayload) => undefined;
-const noopGetOrCreateConversation = async (_otherUserId: string) => null;
-const noopFetchConversations = async () => undefined;
-const noopMarkAsRead = async (_conversationId: string) => undefined;
-const noopRemoveConversation = async (_conversationId: string) => undefined;
 
 export function useAgentMessages() {
   const { profile } = useAuth();
@@ -40,28 +30,35 @@ export function useAgentMessages() {
     error,
   } = messaging;
 
-  const enabled = useMemo(() => {
+  // Check if user has a role that can use partner messaging
+  // Don't disable based on error - let the UI handle error states
+  const hasRequiredRole = useMemo(() => {
     const role = profile?.role;
     if (!role) return false;
-    if (error) return false;
     return PARTNER_MESSAGING_ROLES.has(role);
-  }, [error, profile?.role]);
+  }, [profile?.role]);
 
+  // Messaging is enabled if user has the required role
+  // Even if there's an error, we still consider it "enabled" to allow retry
+  const enabled = hasRequiredRole;
+
+  // Return real functions when user has required role, even if there's an error
+  // This allows the UI to show error states and retry functionality
   return {
     enabled,
     error,
     conversations: enabled ? conversations : ([] as Conversation[]),
     currentConversation: enabled ? currentConversation : null,
-    setCurrentConversation: enabled ? setCurrentConversation : noopSetConversation,
+    setCurrentConversation,
     messages: enabled ? messages : ([] as Message[]),
     typingUsers: enabled ? typingUsers : ([] as TypingIndicator[]),
-    loading: enabled ? loading : false,
-    sendMessage: enabled ? sendMessage : noopSendMessage,
-    startTyping: enabled ? startTyping : noopTyping,
-    stopTyping: enabled ? stopTyping : noopTyping,
-    getOrCreateConversation: enabled ? getOrCreateConversation : noopGetOrCreateConversation,
-    fetchConversations: enabled ? fetchConversations : noopFetchConversations,
-    markConversationAsRead: enabled ? markConversationAsRead : noopMarkAsRead,
-    removeConversation: enabled ? removeConversation : noopRemoveConversation,
+    loading,
+    sendMessage,
+    startTyping,
+    stopTyping,
+    getOrCreateConversation,
+    fetchConversations,
+    markConversationAsRead,
+    removeConversation,
   };
 }

@@ -43,6 +43,7 @@ export default function PartnerMessagesPage() {
     sendMessage,
     startTyping,
     stopTyping,
+    fetchConversations,
   } = useAgentMessages();
 
   const { getUserPresence, isUserOnline } = usePresence();
@@ -50,7 +51,9 @@ export default function PartnerMessagesPage() {
   const [showComposer, setShowComposer] = useState(false);
   const [composerSearch, setComposerSearch] = useState("");
   const [isInitializingAudio, setIsInitializingAudio] = useState(false);
-  const messagingDisabled = Boolean(error);
+  
+  // Only disable messaging for actual errors, not for empty conversation list
+  const hasError = Boolean(error);
 
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -64,10 +67,10 @@ export default function PartnerMessagesPage() {
   }, []);
 
   useEffect(() => {
-    if (messagingDisabled) {
+    if (hasError) {
       setShowComposer(false);
     }
-  }, [messagingDisabled]);
+  }, [hasError]);
 
   const playSendSound = useCallback(async () => {
     if (typeof window === "undefined") return;
@@ -105,22 +108,22 @@ export default function PartnerMessagesPage() {
 
   const handleSendMessage = useCallback(
     (payload: SendMessagePayload) => {
-      if (!currentConversation || messagingDisabled) return;
+      if (!currentConversation || hasError) return;
       sendMessage(currentConversation, payload);
       void playSendSound();
     },
-    [currentConversation, messagingDisabled, playSendSound, sendMessage]
+    [currentConversation, hasError, playSendSound, sendMessage]
   );
 
   const handleStartTyping = useCallback(() => {
-    if (messagingDisabled) return;
+    if (hasError) return;
     startTyping(currentConversation ?? undefined);
-  }, [currentConversation, messagingDisabled, startTyping]);
+  }, [currentConversation, hasError, startTyping]);
 
   const handleStopTyping = useCallback(() => {
-    if (messagingDisabled) return;
+    if (hasError) return;
     stopTyping(currentConversation ?? undefined);
-  }, [currentConversation, messagingDisabled, stopTyping]);
+  }, [currentConversation, hasError, stopTyping]);
 
   const totalUnread = useMemo(
     () => conversations.reduce((sum, conversation) => sum + (conversation.unreadCount ?? 0), 0),
@@ -177,7 +180,12 @@ export default function PartnerMessagesPage() {
   }, []);
 
   const isMessagingEnabled =
-    enabled && !messagingDisabled && (conversations.length > 0 || !loading);
+    enabled && !hasError && (conversations.length > 0 || !loading);
+
+  // Retry handler for error states
+  const handleRetry = useCallback(() => {
+    void fetchConversations?.();
+  }, [fetchConversations]);
 
   return (
     <SidebarProvider>
@@ -201,7 +209,7 @@ export default function PartnerMessagesPage() {
                     onClick={() => setShowComposer(true)}
                     size="sm"
                     className="gap-2 rounded-full bg-blue-600 px-4 py-2 text-blue-50 shadow-lg hover:bg-blue-500"
-                    disabled={messagingDisabled}
+                    disabled={hasError}
                   >
                     <MessageCircle className="h-4 w-4" />
                     New Message
@@ -219,7 +227,7 @@ export default function PartnerMessagesPage() {
                     size="sm"
                     className="gap-2 rounded-full border-blue-200/70 bg-blue-50/80 text-blue-700 transition-colors hover:bg-blue-100 dark:border-blue-900/50 dark:bg-blue-950/50 dark:text-blue-100 dark:hover:bg-blue-900/60"
                     onClick={() => setShowComposer(true)}
-                    disabled={messagingDisabled}
+                    disabled={hasError}
                   >
                     <Sparkles className="h-4 w-4" />
                     Quick Switch
@@ -229,11 +237,12 @@ export default function PartnerMessagesPage() {
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-              {messagingDisabled ? (
+              {hasError ? (
                 <MessagingUnavailable
                   reason={error ?? "Messaging is currently unavailable."}
                   redirectHref="/partner"
                   redirectLabel="Return to partner home"
+                  onRetry={handleRetry}
                 />
               ) : (
                 <>
@@ -284,7 +293,7 @@ export default function PartnerMessagesPage() {
         </SidebarInset>
       </div>
 
-      {!messagingDisabled && (
+      {!hasError && (
         <Dialog
           open={showComposer}
           onOpenChange={(open) => {
