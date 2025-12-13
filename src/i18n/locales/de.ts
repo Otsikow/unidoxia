@@ -773,7 +773,7 @@ const de = {
             placeholder: "Land auswählen",
             all: "Alle Länder",
           },
-          courseLevel: {
+          programLevel: {
             label: "Kursniveau",
             placeholder: "Niveau auswählen",
             all: "Alle Niveaus",
