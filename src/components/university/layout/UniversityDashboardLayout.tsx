@@ -468,21 +468,40 @@ export const fetchUniversityDashboardData = async (
       ...new Set(rows.map((r) => r.student_id).filter(Boolean)),
     ] as string[];
 
-    // Fetch students (tenant scoped)
+    // Fetch students with profile fallback for name
     let studentsMap = new Map<
       string,
-      { id: string; legal_name: string | null; nationality: string | null }
+      { id: string; legal_name: string | null; nationality: string | null; profile_name: string | null }
     >();
 
     if (studentIds.length > 0) {
       const { data: stuData, error: stuErr } = await supabase
         .from("students")
-        .select("id, legal_name, nationality")
+        .select(`
+          id, 
+          legal_name, 
+          preferred_name,
+          nationality,
+          profile:profiles!students_profile_id_fkey (
+            full_name,
+            email
+          )
+        `)
         .in("id", studentIds);
 
       if (stuErr) throw stuErr;
 
-      studentsMap = new Map(stuData?.map((s) => [s.id, s]) ?? []);
+      studentsMap = new Map(
+        stuData?.map((s) => [
+          s.id,
+          {
+            id: s.id,
+            legal_name: s.legal_name ?? s.preferred_name ?? (s.profile as any)?.full_name ?? null,
+            nationality: s.nationality,
+            profile_name: (s.profile as any)?.full_name ?? null,
+          },
+        ]) ?? []
+      );
     }
 
     const programMap = new Map(
@@ -496,6 +515,9 @@ export const fetchUniversityDashboardData = async (
       const student = app.student_id ? studentsMap.get(app.student_id) : null;
       const program = programMap.get(app.program_id);
 
+      // Use legal_name, then profile_name, then "Unknown Student" as fallback
+      const studentName = student?.legal_name ?? student?.profile_name ?? "Unknown Student";
+
       return {
         id: app.id,
         appNumber: app.app_number ?? "—",
@@ -506,7 +528,7 @@ export const fetchUniversityDashboardData = async (
         programLevel: program?.level ?? "—",
         programDiscipline: program?.discipline ?? null,
         studentId: app.student_id ?? null,
-        studentName: student?.legal_name ?? "Unknown Student",
+        studentName,
         studentNationality: student?.nationality ?? "Unknown",
         agentId: (app as any).agent_id ?? null,
       };

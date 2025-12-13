@@ -9,7 +9,7 @@ interface StatusBadgeProps {
 const statusConfig: Record<string, { label: string; className: string }> = {
   draft: { label: 'Draft', className: 'status-draft' },
   submitted: { label: 'Submitted', className: 'status-submitted' },
-  screening: { label: 'Screening', className: 'status-screening' },
+  screening: { label: 'Under Review', className: 'status-screening' },
   conditional_offer: { label: 'Conditional Offer', className: 'status-conditional' },
   unconditional_offer: { label: 'Unconditional Offer', className: 'status-unconditional' },
   cas_loa: { label: 'CAS/LOA', className: 'status-unconditional' },

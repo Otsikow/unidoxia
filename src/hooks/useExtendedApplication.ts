@@ -17,7 +17,12 @@ interface UseExtendedApplicationReturn {
   error: string | null;
   fetchExtendedApplication: (applicationId: string) => Promise<void>;
   clearApplication: () => void;
+  updateLocalStatus: (newStatus: string, timelineEvent?: TimelineEvent) => void;
 }
+
+/* ======================================================
+   Helpers
+====================================================== */
 
 const getPublicUrl = (storagePath: string | null): string | null => {
   if (!storagePath) return null;
@@ -25,34 +30,7 @@ const getPublicUrl = (storagePath: string | null): string | null => {
   return data?.publicUrl ?? null;
 };
 
-const parseEducationHistory = (raw: unknown): EducationRecord[] | null => {
-  if (!raw) return null;
-  if (!Array.isArray(raw)) return null;
-  return raw.map((item: any) => ({
-    id: item.id ?? undefined,
-    level: item.level ?? "",
-    institutionName: item.institutionName ?? item.institution_name ?? "",
-    country: item.country ?? "",
-    startDate: item.startDate ?? item.start_date ?? "",
-    endDate: item.endDate ?? item.end_date ?? "",
-    gpa: item.gpa ?? "",
-    gradeScale: item.gradeScale ?? item.grade_scale ?? "4.0",
-  }));
-};
-
-const parseTestScores = (raw: unknown): TestScore[] | null => {
-  if (!raw) return null;
-  if (!Array.isArray(raw)) return null;
-  return raw.map((item: any) => ({
-    testType: item.testType ?? item.test_type ?? "",
-    totalScore: item.totalScore ?? item.total_score ?? 0,
-    testDate: item.testDate ?? item.test_date ?? "",
-    subscores: item.subscores ?? item.subscores_json ?? undefined,
-  }));
-};
-
 const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
-  if (!raw) return null;
   if (!Array.isArray(raw)) return null;
   return raw.map((item: any) => ({
     id: item.id ?? crypto.randomUUID(),
@@ -63,8 +41,8 @@ const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
   }));
 };
 
-const mapEducationRecordsFromDB = (records: any[]): EducationRecord[] => {
-  return records.map((rec) => ({
+const mapEducationRecordsFromDB = (records: any[]): EducationRecord[] =>
+  records.map((rec) => ({
     id: rec.id,
     level: rec.level ?? "",
     institutionName: rec.institution_name ?? "",
@@ -76,22 +54,29 @@ const mapEducationRecordsFromDB = (records: any[]): EducationRecord[] => {
     transcriptUrl: rec.transcript_url ?? null,
     certificateUrl: rec.certificate_url ?? null,
   }));
-};
 
-const mapTestScoresFromDB = (scores: any[]): TestScore[] => {
-  return scores.map((score) => ({
+const mapTestScoresFromDB = (scores: any[]): TestScore[] =>
+  scores.map((score) => ({
     testType: score.test_type ?? "",
-    totalScore: parseFloat(score.total_score) ?? 0,
+    totalScore: Number(score.total_score) || 0,
     testDate: score.test_date ?? "",
     subscores: score.subscores_json ?? undefined,
     reportUrl: score.report_url ?? null,
   }));
-};
+
+/* ======================================================
+   Hook
+====================================================== */
 
 export function useExtendedApplication(): UseExtendedApplicationReturn {
-  const [extendedApplication, setExtendedApplication] = useState<ExtendedApplication | null>(null);
+  const [extendedApplication, setExtendedApplication] =
+    useState<ExtendedApplication | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /* ============================
+     Fetch Extended Application
+  ============================ */
 
   const fetchExtendedApplication = useCallback(async (applicationId: string) => {
     if (!applicationId) return;
@@ -100,7 +85,9 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     setError(null);
 
     try {
-      // Fetch application with program info
+      /* ---------------------------
+         Application + Program
+      --------------------------- */
       const { data: appData, error: appError } = await supabase
         .from("applications")
         .select(`
@@ -118,7 +105,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           notes,
           internal_notes,
           timeline_json,
-          programs:programs (
+          programs (
             id,
             name,
             level,
@@ -128,15 +115,18 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         .eq("id", applicationId)
         .single();
 
-      if (appError) throw appError;
-      if (!appData) throw new Error("Application not found");
+      if (appError || !appData) {
+        throw new Error("Application not found");
+      }
 
       const program = appData.programs as any;
 
-      // Fetch student details with profile
+      /* ---------------------------
+         Student Details
+      --------------------------- */
       let studentDetails: StudentDetails | null = null;
+
       if (appData.student_id) {
-        // Fetch student with profile data
         const { data: studentData, error: studentError } = await supabase
           .from("students")
           .select(`
@@ -152,8 +142,6 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             passport_expiry,
             current_country,
             address,
-            education_history,
-            test_scores,
             guardian,
             finances_json,
             visa_history_json,
@@ -170,41 +158,39 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
         if (!studentError && studentData) {
           const profile = studentData.profile as any;
-          
-          // Fetch education records from the education_records table
-          let educationRecords: EducationRecord[] = [];
+
+          /* Education Records (table → fallback JSON if needed) */
+          let educationHistory: EducationRecord[] | null = null;
           const { data: eduData } = await supabase
             .from("education_records")
             .select("*")
-            .eq("student_id", appData.student_id)
+            .eq("student_id", studentData.id)
             .order("start_date", { ascending: false });
-          
+
           if (eduData && eduData.length > 0) {
-            educationRecords = mapEducationRecordsFromDB(eduData);
-          } else if (studentData.education_history) {
-            // Fallback to JSONB field if no separate records exist
-            educationRecords = parseEducationHistory(studentData.education_history) ?? [];
+            educationHistory = mapEducationRecordsFromDB(eduData);
           }
 
-          // Fetch test scores from the test_scores table
-          let testScores: TestScore[] = [];
+          /* Test Scores */
+          let testScores: TestScore[] | null = null;
           const { data: testData } = await supabase
             .from("test_scores")
             .select("*")
-            .eq("student_id", appData.student_id)
+            .eq("student_id", studentData.id)
             .order("test_date", { ascending: false });
-          
+
           if (testData && testData.length > 0) {
             testScores = mapTestScoresFromDB(testData);
-          } else if (studentData.test_scores) {
-            // Fallback to JSONB field if no separate records exist
-            testScores = parseTestScores(studentData.test_scores) ?? [];
           }
 
           studentDetails = {
             id: studentData.id,
             profileId: studentData.profile_id,
-            legalName: studentData.legal_name ?? profile?.full_name ?? "Unknown",
+            legalName:
+              studentData.legal_name ??
+              studentData.preferred_name ??
+              profile?.full_name ??
+              "Unknown",
             preferredName: studentData.preferred_name ?? null,
             email: studentData.contact_email ?? profile?.email ?? null,
             phone: studentData.contact_phone ?? profile?.phone ?? null,
@@ -218,17 +204,18 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             finances: studentData.finances_json as any ?? null,
             visaHistory: studentData.visa_history_json as any ?? null,
             avatarUrl: profile?.avatar_url ?? null,
-            educationHistory: educationRecords.length > 0 ? educationRecords : null,
-            testScores: testScores.length > 0 ? testScores : null,
+            educationHistory,
+            testScores,
           };
         }
       }
 
-      // Fetch application documents
+      /* ---------------------------
+         Documents
+      --------------------------- */
       let documents: ApplicationDocument[] = [];
-      
-      // Try application_documents first
-      const { data: appDocsData } = await supabase
+
+      const { data: appDocs } = await supabase
         .from("application_documents")
         .select(`
           id,
@@ -242,12 +229,12 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         `)
         .eq("application_id", applicationId);
 
-      if (appDocsData && appDocsData.length > 0) {
-        documents = appDocsData.map((doc) => ({
+      if (appDocs && appDocs.length > 0) {
+        documents = appDocs.map((doc) => ({
           id: doc.id,
           documentType: doc.document_type,
           storagePath: doc.storage_path,
-          fileName: doc.storage_path.split("/").pop() ?? "Unknown",
+          fileName: doc.storage_path?.split("/").pop() ?? "Unknown",
           mimeType: doc.mime_type,
           fileSize: doc.file_size,
           verified: doc.verified ?? false,
@@ -257,39 +244,9 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         }));
       }
 
-      // Also fetch student documents if no application documents found
-      if (documents.length === 0 && appData.student_id) {
-        const { data: studentDocsData } = await supabase
-          .from("student_documents")
-          .select(`
-            id,
-            document_type,
-            storage_path,
-            file_name,
-            mime_type,
-            file_size,
-            verified_status,
-            verification_notes,
-            created_at
-          `)
-          .eq("student_id", appData.student_id);
-
-        if (studentDocsData && studentDocsData.length > 0) {
-          documents = studentDocsData.map((doc) => ({
-            id: doc.id,
-            documentType: doc.document_type,
-            storagePath: doc.storage_path,
-            fileName: doc.file_name,
-            mimeType: doc.mime_type,
-            fileSize: doc.file_size,
-            verified: doc.verified_status === "verified",
-            verificationNotes: doc.verification_notes ?? null,
-            uploadedAt: doc.created_at ?? "",
-            publicUrl: getPublicUrl(doc.storage_path),
-          }));
-        }
-      }
-
+      /* ---------------------------
+         Final Assembly
+      --------------------------- */
       const extended: ExtendedApplication = {
         id: appData.id,
         appNumber: appData.app_number ?? "—",
@@ -316,17 +273,38 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
       setExtendedApplication(extended);
     } catch (err) {
-      console.error("Failed to fetch extended application:", err);
-      setError(err instanceof Error ? err.message : "Failed to load application details");
+      console.error("Failed to fetch application:", err);
+      setError(err instanceof Error ? err.message : "Failed to load application");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
+  /* ============================
+     Utilities
+  ============================ */
+
   const clearApplication = useCallback(() => {
     setExtendedApplication(null);
     setError(null);
   }, []);
+
+  const updateLocalStatus = useCallback(
+    (newStatus: string, timelineEvent?: TimelineEvent) => {
+      setExtendedApplication((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: newStatus,
+          updatedAt: new Date().toISOString(),
+          timelineJson: timelineEvent
+            ? [...(prev.timelineJson ?? []), timelineEvent]
+            : prev.timelineJson,
+        };
+      });
+    },
+    []
+  );
 
   return {
     extendedApplication,
@@ -334,5 +312,6 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     error,
     fetchExtendedApplication,
     clearApplication,
+    updateLocalStatus,
   };
 }
