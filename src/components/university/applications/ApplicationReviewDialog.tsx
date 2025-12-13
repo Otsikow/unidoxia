@@ -380,11 +380,12 @@ export const ApplicationReviewDialog = ({
       const { error } = await supabase.from("document_requests").insert({
         student_id: application.studentId,
         tenant_id: tenantId,
+        document_type: documentRequestType,
         request_type: documentRequestType,
         notes: documentRequestNotes || null,
         status: "pending",
         requested_at: new Date().toISOString(),
-      } as any);
+      });
 
       if (error) throw error;
 
