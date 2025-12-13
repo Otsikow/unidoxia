@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface MessagingUnavailableProps {
-  reason: string;
+  reason?: string;
   title?: string;
   redirectHref?: string;
   redirectLabel?: string;
@@ -12,7 +12,7 @@ interface MessagingUnavailableProps {
 }
 
 export function MessagingUnavailable({
-  reason,
+  reason = "Messaging is temporarily unavailable. Please try again later.",
   title = "Messaging is temporarily unavailable",
   redirectHref = "/",
   redirectLabel = "Go home",
