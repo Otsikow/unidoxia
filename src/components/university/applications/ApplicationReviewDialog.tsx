@@ -264,29 +264,50 @@ export function ApplicationReviewDialog(props: Props) {
       actor: "University",
     };
 
-    const { error } = await supabase
+    const updatedTimeline = [...(application.timelineJson ?? []), newEvent];
+
+    // Use .select() to verify the update actually persisted (RLS may silently block)
+    const { data, error } = await supabase
       .from("applications")
       .update({
         status: selectedStatus,
-        timeline_json: [...(application.timelineJson ?? []), newEvent],
+        timeline_json: updatedTimeline,
         updated_at: new Date().toISOString(),
       })
-      .eq("id", application.id);
+      .eq("id", application.id)
+      .select("id, status")
+      .single();
 
     setUpdatingStatus(false);
     setConfirmStatus(false);
 
     if (error) {
+      console.error("Status update error:", error);
       toast({
         title: "Failed",
-        description: "Status update failed",
+        description: error.message || "Status update failed. You may not have permission to update this application.",
         variant: "destructive",
       });
       return;
     }
 
+    // Verify the update actually persisted
+    if (!data || data.status !== selectedStatus) {
+      console.error("Status update did not persist:", { expected: selectedStatus, actual: data?.status });
+      toast({
+        title: "Failed",
+        description: "Status update could not be saved. Please try again or contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Update succeeded - notify parent and show success message
     onStatusUpdate?.(application.id, selectedStatus);
-    toast({ title: "Updated", description: "Application status updated" });
+    toast({ 
+      title: "Status Updated", 
+      description: `Application status changed to ${APPLICATION_STATUSES.find(s => s.value === selectedStatus)?.label || selectedStatus}. The student and agent (if any) will be notified.` 
+    });
   }, [application, onStatusUpdate, selectedStatus, toast]);
 
   // Use the local selectedStatus for display to reflect immediate updates
