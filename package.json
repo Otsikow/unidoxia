@@ -8,7 +8,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "test": "vitest",
+    "test": "vitest run --passWithNoTests",
     "preview": "vite preview",
     "postbuild": "node scripts/generate-sitemap.cjs"
   },

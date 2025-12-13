@@ -229,16 +229,29 @@ export function ApplicationReviewDialog(props: Props) {
     if (!application) return;
 
     setSavingNotes(true);
-    const { error } = await supabase
-      .from("applications")
-      .update({ internal_notes: internalNotes })
-      .eq("id", application.id);
+    const { data, error } = await supabase
+      .rpc("update_application_review", {
+        p_application_id: application.id,
+        p_new_status: null,
+        p_internal_notes: internalNotes,
+        p_append_timeline_event: null,
+      })
+      .single();
     setSavingNotes(false);
 
     if (error) {
       toast({
         title: "Failed",
-        description: "Could not save notes",
+        description: error.message || "Could not save notes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data) {
+      toast({
+        title: "Failed",
+        description: "Could not save notes. You may not have permission to update this application.",
         variant: "destructive",
       });
       return;
@@ -264,20 +277,14 @@ export function ApplicationReviewDialog(props: Props) {
       actor: "University",
     };
 
-    const updatedTimeline = [...(application.timelineJson ?? []), newEvent];
-
-    // Use .select() to verify the update actually persisted (RLS may silently block)
-    // Use maybeSingle() instead of single() to avoid error when no rows returned
     const { data, error } = await supabase
-      .from("applications")
-      .update({
-        status: selectedStatus,
-        timeline_json: updatedTimeline,
-        updated_at: new Date().toISOString(),
+      .rpc("update_application_review", {
+        p_application_id: application.id,
+        p_new_status: selectedStatus,
+        p_internal_notes: null,
+        p_append_timeline_event: newEvent as any,
       })
-      .eq("id", application.id)
-      .select("id, status")
-      .maybeSingle();
+      .single();
 
     setUpdatingStatus(false);
     setConfirmStatus(false);
@@ -292,23 +299,10 @@ export function ApplicationReviewDialog(props: Props) {
       return;
     }
 
-    // Verify the update actually persisted (maybeSingle returns null if no rows updated)
     if (!data) {
-      console.error("Status update did not persist: no rows returned", { applicationId: application.id, selectedStatus });
       toast({
         title: "Failed",
         description: "Status update could not be saved. You may not have permission to update this application.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Verify the status was actually updated
-    if (data.status !== selectedStatus) {
-      console.error("Status update did not persist:", { expected: selectedStatus, actual: data.status });
-      toast({
-        title: "Failed",
-        description: "Status update could not be saved. Please try again or contact support.",
         variant: "destructive",
       });
       return;
