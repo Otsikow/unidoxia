@@ -1,84 +1,115 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { cn } from "@/lib/utils";
 
 interface TypewriterTextProps {
   prefix: string;
   highlight: string;
+  /** Additional rotating phrases to cycle through after the main highlight */
+  phrases?: string[];
   suffix?: string;
   typingSpeed?: number;
+  deletingSpeed?: number;
+  pauseDuration?: number;
   startDelay?: number;
   className?: string;
   highlightClassName?: string;
+  /** Enable looping through phrases */
+  loop?: boolean;
 }
 
 export function TypewriterText({
   prefix,
   highlight,
+  phrases = [],
   suffix = "",
-  typingSpeed = 100,
+  typingSpeed = 80,
+  deletingSpeed = 40,
+  pauseDuration = 2500,
   startDelay = 400,
   className = "",
   highlightClassName = "text-primary",
+  loop = true,
 }: TypewriterTextProps) {
-  const [displayedText, setDisplayedText] = useState("");
+  // Combine highlight with additional phrases
+  const allPhrases = [highlight, ...phrases];
+  
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+  const [displayedHighlight, setDisplayedHighlight] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isDone, setIsDone] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
 
-  // Full text to type
-  const fullText = `${prefix} ${highlight}${suffix ? ` ${suffix}` : ""}`;
-  const highlightStart = prefix.length + 1; // +1 for space
-  const highlightEnd = highlightStart + highlight.length;
+  const currentPhrase = allPhrases[currentPhraseIndex];
 
+  // Start typing after initial delay
   useEffect(() => {
-    // Reset state
-    setDisplayedText("");
-    setIsTyping(false);
-    setIsDone(false);
-
-    // Start typing after delay
     const startTimer = setTimeout(() => {
+      setHasStarted(true);
       setIsTyping(true);
     }, startDelay);
-
     return () => clearTimeout(startTimer);
-  }, [prefix, highlight, suffix, startDelay]);
+  }, [startDelay]);
+
+  const tick = useCallback(() => {
+    if (!hasStarted || isPaused) return;
+
+    if (isTyping && !isDeleting) {
+      // Typing forward
+      if (displayedHighlight.length < currentPhrase.length) {
+        setDisplayedHighlight(currentPhrase.slice(0, displayedHighlight.length + 1));
+      } else {
+        // Finished typing this phrase
+        if (loop && allPhrases.length > 1) {
+          setIsPaused(true);
+          setTimeout(() => {
+            setIsPaused(false);
+            setIsDeleting(true);
+          }, pauseDuration);
+        }
+      }
+    } else if (isDeleting) {
+      // Deleting
+      if (displayedHighlight.length > 0) {
+        setDisplayedHighlight(currentPhrase.slice(0, displayedHighlight.length - 1));
+      } else {
+        // Finished deleting, move to next phrase
+        setIsDeleting(false);
+        setCurrentPhraseIndex((prev) => (prev + 1) % allPhrases.length);
+      }
+    }
+  }, [hasStarted, isTyping, isDeleting, isPaused, displayedHighlight, currentPhrase, loop, allPhrases.length, pauseDuration]);
 
   useEffect(() => {
-    if (!isTyping || isDone) return;
+    if (!hasStarted) return;
+    
+    const speed = isDeleting ? deletingSpeed : typingSpeed;
+    const timer = setTimeout(tick, speed);
+    return () => clearTimeout(timer);
+  }, [tick, hasStarted, isDeleting, typingSpeed, deletingSpeed]);
 
-    if (displayedText.length < fullText.length) {
-      const timer = setTimeout(() => {
-        setDisplayedText(fullText.slice(0, displayedText.length + 1));
-      }, typingSpeed);
-      return () => clearTimeout(timer);
-    } else {
-      setIsDone(true);
-    }
-  }, [isTyping, displayedText, fullText, typingSpeed, isDone]);
-
-  // Build the rendered text with proper highlighting
-  const renderText = () => {
-    const chars = displayedText.split("");
-    return chars.map((char, index) => {
-      const isHighlighted = index >= highlightStart && index < highlightEnd;
-      return (
-        <span
-          key={index}
-          className={isHighlighted ? highlightClassName : undefined}
-        >
-          {char}
-        </span>
-      );
-    });
-  };
+  const isFullyTyped = displayedHighlight.length === currentPhrase.length && !isDeleting;
+  const showCursor = hasStarted;
 
   return (
     <h2 className={className}>
-      <span className="typing-animation-container">
-        {renderText()}
-        <span
-          className={isDone ? "typing-cursor-fade" : "typing-cursor-active"}
-          aria-hidden="true"
-        />
+      <span className="inline-flex flex-wrap items-baseline justify-center gap-x-2">
+        <span>{prefix}</span>
+        <span className="inline-flex items-baseline">
+          <span className={cn("typewriter-text", highlightClassName)}>
+            {displayedHighlight}
+          </span>
+          {showCursor && (
+            <span
+              className={cn(
+                "typewriter-cursor",
+                isFullyTyped && !loop && "typewriter-cursor--fade"
+              )}
+              aria-hidden="true"
+            />
+          )}
+        </span>
+        {suffix && <span>{suffix}</span>}
       </span>
     </h2>
   );
