@@ -377,14 +377,21 @@ export const ApplicationReviewDialog = ({
 
     setIsSendingRequest(true);
     try {
+      // Convert request type to snake_case for document_type field
+      const documentTypeValue = documentRequestType
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/[^a-z0-9_]/g, "");
+
       const { error } = await supabase.from("document_requests").insert({
         student_id: application.studentId,
         tenant_id: tenantId,
+        document_type: documentTypeValue,
         request_type: documentRequestType,
         notes: documentRequestNotes || null,
         status: "pending",
         requested_at: new Date().toISOString(),
-      } as any);
+      });
 
       if (error) throw error;
 

@@ -17,6 +17,7 @@ interface UseExtendedApplicationReturn {
   error: string | null;
   fetchExtendedApplication: (applicationId: string) => Promise<void>;
   clearApplication: () => void;
+  updateLocalStatus: (newStatus: string, timelineEvent?: TimelineEvent) => void;
 }
 
 const getPublicUrl = (storagePath: string | null): string | null => {
@@ -108,7 +109,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
       const program = appData.programs as any;
 
-      // Fetch student details with profile
+      // Fetch student details with profile fallback
       let studentDetails: StudentDetails | null = null;
       if (appData.student_id) {
         const { data: studentData, error: studentError } = await supabase
@@ -125,19 +126,28 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             passport_number,
             current_country,
             education_history,
-            test_scores
+            test_scores,
+            profile:profiles!students_profile_id_fkey (
+              full_name,
+              email,
+              phone
+            )
           `)
           .eq("id", appData.student_id)
           .single();
 
         if (!studentError && studentData) {
+          const profile = studentData.profile as any;
+          // Use legal_name, then preferred_name, then profile.full_name as fallback
+          const displayName = studentData.legal_name ?? studentData.preferred_name ?? profile?.full_name ?? "Unknown";
+          
           studentDetails = {
             id: studentData.id,
             profileId: studentData.profile_id,
-            legalName: studentData.legal_name ?? "Unknown",
+            legalName: displayName,
             preferredName: studentData.preferred_name ?? null,
-            email: studentData.contact_email ?? null,
-            phone: studentData.contact_phone ?? null,
+            email: studentData.contact_email ?? profile?.email ?? null,
+            phone: studentData.contact_phone ?? profile?.phone ?? null,
             nationality: studentData.nationality ?? null,
             dateOfBirth: studentData.date_of_birth ?? null,
             passportNumber: studentData.passport_number ?? null,
@@ -252,11 +262,28 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     setError(null);
   }, []);
 
+  // Update local status immediately after a status change
+  const updateLocalStatus = useCallback((newStatus: string, timelineEvent?: TimelineEvent) => {
+    setExtendedApplication((prev) => {
+      if (!prev) return prev;
+      const updatedTimeline = timelineEvent 
+        ? [...(prev.timelineJson ?? []), timelineEvent]
+        : prev.timelineJson;
+      return {
+        ...prev,
+        status: newStatus,
+        updatedAt: new Date().toISOString(),
+        timelineJson: updatedTimeline,
+      };
+    });
+  }, []);
+
   return {
     extendedApplication,
     isLoading,
     error,
     fetchExtendedApplication,
     clearApplication,
+    updateLocalStatus,
   };
 }

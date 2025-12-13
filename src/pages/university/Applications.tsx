@@ -57,6 +57,7 @@ const ApplicationsPage = () => {
     isLoading: isLoadingExtended,
     fetchExtendedApplication,
     clearApplication,
+    updateLocalStatus,
   } = useExtendedApplication();
 
   const applications = useMemo(
@@ -92,10 +93,17 @@ const ApplicationsPage = () => {
     }
   }, [clearApplication]);
 
-  const handleStatusUpdate = useCallback(() => {
+  const handleStatusUpdate = useCallback((applicationId: string, newStatus: string) => {
+    // Update local state immediately for instant UI feedback
+    updateLocalStatus(newStatus, {
+      id: crypto.randomUUID(),
+      action: `Status changed to ${newStatus}`,
+      timestamp: new Date().toISOString(),
+      actor: "University",
+    });
     // Refetch dashboard data to update the applications list
     void refetch();
-  }, [refetch]);
+  }, [refetch, updateLocalStatus]);
 
   const handleNotesUpdate = useCallback(() => {
     // Could add optimistic update here if needed

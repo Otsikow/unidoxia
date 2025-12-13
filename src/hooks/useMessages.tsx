@@ -971,8 +971,43 @@ export function useMessages() {
 
   const getOrCreateConversation = useCallback(
     async (otherUserId: string) => {
-      const otherProfile = findDirectoryProfileById(otherUserId);
-      if (!otherProfile) return null;
+      // Try to find profile in local directory first
+      let otherProfile = findDirectoryProfileById(otherUserId);
+      
+      // If not found locally, try to fetch from database
+      if (!otherProfile) {
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from("profiles")
+            .select("id, full_name, email, avatar_url, role, tenant_id")
+            .eq("id", otherUserId)
+            .single();
+          
+          if (!profileError && profileData) {
+            otherProfile = {
+              id: profileData.id,
+              full_name: profileData.full_name,
+              email: profileData.email,
+              avatar_url: profileData.avatar_url,
+              role: profileData.role as DirectoryProfile["role"],
+              tenant_id: profileData.tenant_id,
+            };
+            // Register in directory for future use
+            registerDirectoryProfile(otherProfile);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch profile for messaging:", err);
+        }
+      }
+      
+      if (!otherProfile) {
+        toast({
+          title: "Unable to start conversation",
+          description: "Could not find the user profile. Please try again.",
+          variant: "destructive",
+        });
+        return null;
+      }
 
       if (allowedContacts && !allowedContacts.has(otherUserId)) {
         toast({
