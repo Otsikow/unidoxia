@@ -28,6 +28,19 @@ import { useToast } from "@/hooks/use-toast";
 import { searchDirectoryProfiles, type DirectoryProfile } from "@/lib/messaging/directory";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
 
+// Role-based dashboard redirects
+const roleRedirects: Record<string, string> = {
+  admin: "/admin/dashboard",
+  staff: "/dashboard/tasks",
+  partner: "/university/overview",
+  agent: "/dashboard/leads",
+  counselor: "/dashboard/tasks",
+  verifier: "/dashboard/tasks",
+  finance: "/dashboard/payments",
+  school_rep: "/dashboard/tasks",
+  student: "/student/dashboard",
+};
+
 interface Contact {
   profile_id: string;
   full_name: string;
@@ -46,7 +59,7 @@ const getInitials = (name: string) =>
     .slice(0, 2);
 
 export default function MessagesDashboard() {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const { getUserPresence, isUserOnline } = usePresence();
 
@@ -62,7 +75,17 @@ export default function MessagesDashboard() {
     startTyping,
     stopTyping,
     getOrCreateConversation,
+    fetchConversations,
   } = useMessages();
+
+  // Combined loading state - wait for auth before showing messaging
+  const isLoading = authLoading || loading;
+
+  // Get the appropriate dashboard redirect based on user role
+  const dashboardRedirect = useMemo(() => {
+    const role = profile?.role ?? "student";
+    return roleRedirects[role] ?? "/student/dashboard";
+  }, [profile?.role]);
 
   const [showNewChatDialog, setShowNewChatDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -191,12 +214,41 @@ export default function MessagesDashboard() {
     }
   };
 
-  if (error) {
+  // Handle retry
+  const handleRetry = useCallback(() => {
+    void fetchConversations();
+  }, [fetchConversations]);
+
+  // Show loading state while auth or messages are loading
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-10rem)] bg-background">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <MessageSquare className="h-6 w-6" />
+              Messages
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Loading your conversations...
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state only if not loading and there's an actual error
+  if (error && !isLoading) {
     return (
       <MessagingUnavailable
         reason={error}
-        redirectHref="/student/dashboard"
+        redirectHref={dashboardRedirect}
         redirectLabel="Return to dashboard"
+        onRetry={handleRetry}
       />
     );
   }
@@ -243,7 +295,7 @@ export default function MessagesDashboard() {
             conversation={currentConversation}
             messages={messages}
             typingUsers={typingUsers}
-            loading={loading}
+            loading={isLoading}
             onSendMessage={handleSendMessage}
             onStartTyping={handleStartTyping}
             onStopTyping={handleStopTyping}
@@ -260,7 +312,7 @@ export default function MessagesDashboard() {
               conversation={currentConversation}
               messages={messages}
               typingUsers={typingUsers}
-              loading={loading}
+              loading={isLoading}
               onSendMessage={handleSendMessage}
               onStartTyping={handleStartTyping}
               onStopTyping={handleStopTyping}

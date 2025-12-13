@@ -187,7 +187,21 @@ export function useMessages() {
       .from("conversation_participants")
       .select("conversation_id,last_read_at")
       .eq("user_id", user.id);
-    if (membershipError) throw membershipError;
+    
+    if (membershipError) {
+      // Check if this is an RLS policy recursion or permission issue
+      // In which case, treat it as "no conversations" rather than a hard error
+      if (
+        membershipError.code === "42501" || // insufficient_privilege
+        membershipError.code === "42P01" || // undefined_table
+        membershipError.message?.includes("infinite recursion") ||
+        membershipError.message?.includes("policy")
+      ) {
+        console.warn("Permission or policy issue fetching conversations:", membershipError);
+        return [];
+      }
+      throw membershipError;
+    }
 
     const conversationIds = (memberships ?? []).map((m) => m.conversation_id).filter(Boolean) as string[];
     conversationIdsRef.current = new Set(conversationIds);
@@ -223,7 +237,19 @@ export function useMessages() {
       .in("id", conversationIds)
       .order("last_message_at", { ascending: false, nullsFirst: false })
       .order("updated_at", { ascending: false, nullsFirst: false });
-    if (convError) throw convError;
+    
+    if (convError) {
+      // Handle permission/policy errors gracefully
+      if (
+        convError.code === "42501" ||
+        convError.code === "42P01" ||
+        convError.message?.includes("policy")
+      ) {
+        console.warn("Permission or policy issue fetching conversation details:", convError);
+        return [];
+      }
+      throw convError;
+    }
 
     const conversationsRaw = (convRows ?? []) as unknown as Conversation[];
 
@@ -304,17 +330,22 @@ export function useMessages() {
   const ensureRealtimeSubscriptions = useCallback(() => {
     if (!user?.id) return;
 
-    // Clean up existing channels (if any)
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
-      realtimeChannelRef.current = null;
-    }
-    if (typingChannelRef.current) {
-      supabase.removeChannel(typingChannelRef.current);
-      typingChannelRef.current = null;
+    try {
+      // Clean up existing channels (if any)
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+        realtimeChannelRef.current = null;
+      }
+      if (typingChannelRef.current) {
+        supabase.removeChannel(typingChannelRef.current);
+        typingChannelRef.current = null;
+      }
+    } catch (cleanupErr) {
+      console.warn("Error cleaning up realtime channels:", cleanupErr);
     }
 
-    const messagesChannel = supabase
+    try {
+      const messagesChannel = supabase
       .channel(`conversation-messages-${user.id}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "conversation_messages" }, async (payload) => {
         const row = payload.new as any;
@@ -425,8 +456,12 @@ export function useMessages() {
       })
       .subscribe();
 
-    realtimeChannelRef.current = messagesChannel;
-    typingChannelRef.current = typingChannel;
+      realtimeChannelRef.current = messagesChannel;
+      typingChannelRef.current = typingChannel;
+    } catch (subscriptionErr) {
+      console.warn("Error setting up realtime subscriptions:", subscriptionErr);
+      // Don't throw - realtime is a nice-to-have, not critical for basic messaging
+    }
   }, [currentConversation, user?.id]);
 
   // Bootstrap: DB messaging (preferred) or mock fallback.
@@ -456,6 +491,15 @@ export function useMessages() {
           return;
         }
 
+        // Skip database fetch if no authenticated user
+        if (!user?.id) {
+          if (cancelled) return;
+          conversationsRef.current = [];
+          setConversations([]);
+          setCurrentConversationState(null);
+          return;
+        }
+
         const convs = await fetchConversationsFromDb();
         if (cancelled) return;
         conversationsRef.current = convs;
@@ -469,7 +513,25 @@ export function useMessages() {
       } catch (err) {
         if (cancelled) return;
         console.error("Messaging bootstrap failed:", err);
-        setError("Messaging is temporarily unavailable. Please try again.");
+        
+        // Provide more specific error messages based on error type
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        
+        // Check for common issues
+        if (errorMessage.includes("JWT") || errorMessage.includes("token")) {
+          setError("Your session has expired. Please refresh the page or log in again.");
+        } else if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+          setError("Unable to connect to the messaging service. Please check your internet connection.");
+        } else if (errorMessage.includes("permission") || errorMessage.includes("policy")) {
+          // RLS or permission issue - just show empty state instead of error
+          console.warn("Permission issue loading conversations, showing empty state:", err);
+          conversationsRef.current = [];
+          setConversations([]);
+          setCurrentConversationState(null);
+          return;
+        } else {
+          setError("Messaging is temporarily unavailable. Please try again.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -487,6 +549,7 @@ export function useMessages() {
     resolvedProfile,
     tenantId,
     usingMockMessaging,
+    user?.id,
   ]);
 
   useEffect(() => {
@@ -1014,6 +1077,14 @@ export function useMessages() {
         });
         return;
       }
+
+      // Skip database fetch if no authenticated user
+      if (!user?.id) {
+        conversationsRef.current = [];
+        setConversations([]);
+        return;
+      }
+
       const convs = await fetchConversationsFromDb();
       conversationsRef.current = convs;
       setConversations(convs);
@@ -1021,7 +1092,17 @@ export function useMessages() {
       ensureRealtimeSubscriptions();
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
-      setError("Messaging is temporarily unavailable. Please try again.");
+      
+      // Provide more specific error messages
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      if (errorMessage.includes("JWT") || errorMessage.includes("token")) {
+        setError("Your session has expired. Please refresh the page or log in again.");
+      } else if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+        setError("Unable to connect to the messaging service. Please check your internet connection.");
+      } else {
+        setError("Messaging is temporarily unavailable. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
