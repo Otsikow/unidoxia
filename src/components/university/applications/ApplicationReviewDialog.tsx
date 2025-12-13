@@ -26,6 +26,11 @@ import {
   ExternalLink,
   ChevronRight,
   X,
+  MapPin,
+  CreditCard,
+  Users,
+  Award,
+  BookOpen,
 } from "lucide-react";
 
 import {
@@ -91,6 +96,22 @@ export interface ApplicationDocument {
   publicUrl: string | null;
 }
 
+export interface Address {
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+export interface Guardian {
+  name?: string;
+  relationship?: string;
+  email?: string;
+  phone?: string;
+}
+
 export interface StudentDetails {
   id: string;
   profileId: string;
@@ -101,7 +122,13 @@ export interface StudentDetails {
   nationality: string | null;
   dateOfBirth: string | null;
   passportNumber: string | null;
+  passportExpiry: string | null;
   currentCountry: string | null;
+  address: Address | null;
+  guardian: Guardian | null;
+  finances: Record<string, unknown> | null;
+  visaHistory: Record<string, unknown>[] | null;
+  avatarUrl: string | null;
   educationHistory: EducationRecord[] | null;
   testScores: TestScore[] | null;
 }
@@ -115,6 +142,8 @@ export interface EducationRecord {
   endDate: string;
   gpa: string;
   gradeScale: string;
+  transcriptUrl?: string | null;
+  certificateUrl?: string | null;
 }
 
 export interface TestScore {
@@ -122,6 +151,7 @@ export interface TestScore {
   totalScore: number;
   testDate: string;
   subscores?: Record<string, number>;
+  reportUrl?: string | null;
 }
 
 export interface TimelineEvent {
@@ -240,14 +270,54 @@ const getDocumentTypeLabel = (type: string) => {
     passport: "Passport Copy",
     ielts: "IELTS Score Report",
     toefl: "TOEFL Score Report",
+    duolingo: "Duolingo English Test",
+    pte: "PTE Academic",
     sop: "Statement of Purpose",
     cv: "CV/Resume",
     recommendation: "Recommendation Letter",
+    lor: "Letter of Recommendation",
     financial: "Financial Documents",
+    bank_statement: "Bank Statement",
+    sponsor_letter: "Sponsor Letter",
     photo: "Passport Photo",
+    portfolio: "Portfolio",
+    certificate: "Certificate",
+    waec: "WAEC Result",
+    neco: "NECO Result",
     other: "Other Document",
   };
   return labels[type.toLowerCase()] ?? type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+const getDocumentCategory = (type: string): string => {
+  const typeLC = type.toLowerCase();
+  
+  // Identity Documents
+  if (["passport", "photo", "id_card", "birth_certificate"].includes(typeLC)) {
+    return "Identity Documents";
+  }
+  
+  // Academic Documents
+  if (["transcript", "certificate", "waec", "neco", "degree", "diploma", "grade_sheet", "marksheet"].includes(typeLC)) {
+    return "Academic Documents";
+  }
+  
+  // English Proficiency
+  if (["ielts", "toefl", "duolingo", "pte", "cambridge", "english_test"].includes(typeLC)) {
+    return "English Proficiency";
+  }
+  
+  // Application Materials
+  if (["sop", "cv", "resume", "recommendation", "lor", "personal_statement", "portfolio"].includes(typeLC)) {
+    return "Application Materials";
+  }
+  
+  // Financial Documents
+  if (["financial", "bank_statement", "sponsor_letter", "scholarship", "funding", "affidavit"].includes(typeLC)) {
+    return "Financial Documents";
+  }
+  
+  return "Other Documents";
 };
 
 export const ApplicationReviewDialog = ({
@@ -676,19 +746,80 @@ export const ApplicationReviewDialog = ({
                     </div>
                   </section>
 
-                  {/* Quick Stats */}
+                  {/* Application Readiness */}
                   <section className="space-y-3">
-                    <h3 className="text-sm font-semibold text-foreground">Documents Status</h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <h3 className="text-sm font-semibold text-foreground">Application Readiness</h3>
+                    <div className="grid grid-cols-3 gap-3">
                       <div className={withUniversitySurfaceSubtle("rounded-xl p-4 text-center")}>
                         <p className="text-2xl font-semibold text-foreground">{application.documents.length}</p>
-                        <p className="text-xs text-muted-foreground">Total Documents</p>
+                        <p className="text-xs text-muted-foreground">Documents</p>
                       </div>
                       <div className={withUniversitySurfaceSubtle("rounded-xl p-4 text-center")}>
                         <p className="text-2xl font-semibold text-success">
                           {application.documents.filter((d) => d.verified).length}
                         </p>
                         <p className="text-xs text-muted-foreground">Verified</p>
+                      </div>
+                      <div className={withUniversitySurfaceSubtle("rounded-xl p-4 text-center")}>
+                        <p className="text-2xl font-semibold text-warning">
+                          {application.documents.filter((d) => !d.verified).length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Pending</p>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Quick Checklist */}
+                  <section className="space-y-3">
+                    <h3 className="text-sm font-semibold text-foreground">Review Checklist</h3>
+                    <div className={withUniversitySurfaceTint("rounded-xl p-4 space-y-2")}>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Student profile complete</span>
+                        {student ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-destructive" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Education history provided</span>
+                        {student?.educationHistory && student.educationHistory.length > 0 ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-warning" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Test scores available</span>
+                        {student?.testScores && student.testScores.length > 0 ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-warning" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Documents uploaded</span>
+                        {application.documents.length > 0 ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-destructive" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Statement of Purpose</span>
+                        {application.notes ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-warning" />
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Passport details</span>
+                        {student?.passportNumber ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : (
+                          <AlertCircle className="h-4 w-4 text-warning" />
+                        )}
                       </div>
                     </div>
                   </section>
@@ -706,7 +837,7 @@ export const ApplicationReviewDialog = ({
                             <div className="flex items-center gap-2">
                               <User className="h-4 w-4 text-muted-foreground" />
                               <div>
-                                <p className="text-xs text-muted-foreground">Full Name</p>
+                                <p className="text-xs text-muted-foreground">Full Name (Legal)</p>
                                 <p className="text-sm font-medium text-foreground">{student.legalName}</p>
                               </div>
                             </div>
@@ -748,17 +879,102 @@ export const ApplicationReviewDialog = ({
                               </div>
                             </div>
                           </div>
-                          {student.currentCountry && (
-                            <div className="flex items-center gap-2">
-                              <Globe className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="text-xs text-muted-foreground">Current Location</p>
-                                <p className="text-sm text-foreground">{student.currentCountry}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </section>
+
+                      {/* Passport & Travel */}
+                      <section className="space-y-3">
+                        <h3 className="text-sm font-semibold text-foreground">Passport & Travel</h3>
+                        <div className={withUniversitySurfaceTint("rounded-xl p-4")}>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center gap-2">
+                              <CreditCard className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Passport Number</p>
+                                <p className="text-sm text-foreground font-mono">
+                                  {student.passportNumber ?? "—"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Passport Expiry</p>
+                                <p className="text-sm text-foreground">{formatDate(student.passportExpiry)}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 col-span-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Current Location</p>
+                                <p className="text-sm text-foreground">{student.currentCountry ?? "—"}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </section>
+
+                      {/* Address */}
+                      {student.address && (
+                        <section className="space-y-3">
+                          <h3 className="text-sm font-semibold text-foreground">Address</h3>
+                          <div className={withUniversitySurfaceTint("rounded-xl p-4")}>
+                            <div className="flex items-start gap-3">
+                              <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                              <div className="text-sm text-foreground">
+                                {student.address.line1 && <p>{student.address.line1}</p>}
+                                {student.address.line2 && <p>{student.address.line2}</p>}
+                                <p>
+                                  {[student.address.city, student.address.state, student.address.postalCode]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </p>
+                                {student.address.country && <p>{student.address.country}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        </section>
+                      )}
+
+                      {/* Guardian/Emergency Contact */}
+                      {student.guardian && (student.guardian.name || student.guardian.email || student.guardian.phone) && (
+                        <section className="space-y-3">
+                          <h3 className="text-sm font-semibold text-foreground">Guardian / Emergency Contact</h3>
+                          <div className={withUniversitySurfaceTint("rounded-xl p-4")}>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                  <p className="text-xs text-muted-foreground">Name</p>
+                                  <p className="text-sm text-foreground">{student.guardian.name ?? "—"}</p>
+                                </div>
+                              </div>
+                              <div>
+                                <p className="text-xs text-muted-foreground">Relationship</p>
+                                <p className="text-sm text-foreground">{student.guardian.relationship ?? "—"}</p>
+                              </div>
+                              {student.guardian.email && (
+                                <div className="flex items-center gap-2">
+                                  <Mail className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">Email</p>
+                                    <p className="text-sm text-foreground">{student.guardian.email}</p>
+                                  </div>
+                                </div>
+                              )}
+                              {student.guardian.phone && (
+                                <div className="flex items-center gap-2">
+                                  <Phone className="h-4 w-4 text-muted-foreground" />
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">Phone</p>
+                                    <p className="text-sm text-foreground">{student.guardian.phone}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </section>
+                      )}
 
                       {/* Education History */}
                       {student.educationHistory && student.educationHistory.length > 0 && (
@@ -777,11 +993,48 @@ export const ApplicationReviewDialog = ({
                                   <div className="flex-1">
                                     <p className="font-medium text-foreground">{edu.institutionName}</p>
                                     <p className="text-sm text-muted-foreground">{edu.level}</p>
-                                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                                      <span>{edu.country}</span>
-                                      <span>{edu.startDate} — {edu.endDate}</span>
-                                      {edu.gpa && <span>GPA: {edu.gpa}/{edu.gradeScale}</span>}
+                                    <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                      <span className="flex items-center gap-1">
+                                        <Globe className="h-3 w-3" />
+                                        {edu.country}
+                                      </span>
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="h-3 w-3" />
+                                        {formatDate(edu.startDate)} — {formatDate(edu.endDate)}
+                                      </span>
+                                      {edu.gpa && (
+                                        <span className="flex items-center gap-1">
+                                          <Award className="h-3 w-3" />
+                                          GPA: {edu.gpa}/{edu.gradeScale}
+                                        </span>
+                                      )}
                                     </div>
+                                    {(edu.transcriptUrl || edu.certificateUrl) && (
+                                      <div className="flex gap-2 mt-3">
+                                        {edu.transcriptUrl && (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => window.open(edu.transcriptUrl!, "_blank")}
+                                            className="gap-1.5 text-xs h-7"
+                                          >
+                                            <FileText className="h-3 w-3" />
+                                            Transcript
+                                          </Button>
+                                        )}
+                                        {edu.certificateUrl && (
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => window.open(edu.certificateUrl!, "_blank")}
+                                            className="gap-1.5 text-xs h-7"
+                                          >
+                                            <FileCheck className="h-3 w-3" />
+                                            Certificate
+                                          </Button>
+                                        )}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -794,38 +1047,85 @@ export const ApplicationReviewDialog = ({
                       {student.testScores && student.testScores.length > 0 && (
                         <section className="space-y-3">
                           <h3 className="text-sm font-semibold text-foreground">Test Scores</h3>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {student.testScores.map((score, index) => (
                               <div
                                 key={index}
                                 className={withUniversitySurfaceSubtle("rounded-xl p-4")}
                               >
-                                <div className="flex items-center justify-between">
-                                  <p className="font-medium text-foreground">{score.testType}</p>
-                                  <Badge variant="secondary">{score.totalScore}</Badge>
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Taken: {formatDate(score.testDate)}
-                                </p>
-                                {score.subscores && (
-                                  <div className="mt-2 flex flex-wrap gap-2">
-                                    {Object.entries(score.subscores).map(([key, value]) => (
-                                      <span key={key} className="text-xs text-muted-foreground">
-                                        {key}: {value}
-                                      </span>
-                                    ))}
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <div className="p-2 rounded-lg bg-primary/10">
+                                      <BookOpen className="h-4 w-4 text-primary" />
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-foreground">{score.testType}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        Taken: {formatDate(score.testDate)}
+                                      </p>
+                                    </div>
                                   </div>
+                                  <Badge variant="secondary" className="text-lg font-semibold">
+                                    {score.totalScore}
+                                  </Badge>
+                                </div>
+                                {score.subscores && Object.keys(score.subscores).length > 0 && (
+                                  <div className="mt-3 pt-3 border-t border-border">
+                                    <p className="text-xs text-muted-foreground mb-2">Section Scores</p>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {Object.entries(score.subscores).map(([key, value]) => (
+                                        <div key={key} className="flex justify-between text-sm">
+                                          <span className="text-muted-foreground capitalize">{key}</span>
+                                          <span className="font-medium text-foreground">{value}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {score.reportUrl && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => window.open(score.reportUrl!, "_blank")}
+                                    className="gap-1.5 text-xs h-7 mt-3 w-full"
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    View Score Report
+                                  </Button>
                                 )}
                               </div>
                             ))}
                           </div>
                         </section>
                       )}
+
+                      {/* No Education/Test Data Message */}
+                      {(!student.educationHistory || student.educationHistory.length === 0) && 
+                       (!student.testScores || student.testScores.length === 0) && (
+                        <div className={withUniversitySurfaceSubtle("rounded-xl p-6 text-center")}>
+                          <GraduationCap className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
+                          <p className="text-sm text-muted-foreground">
+                            No education history or test scores have been provided yet.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowDocumentRequest(true)}
+                            className="mt-3 gap-2"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            Request Academic Documents
+                          </Button>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p className="text-sm">Student details not available</p>
+                      <p className="text-xs mt-1 text-muted-foreground/70">
+                        The student profile may not be complete or accessible.
+                      </p>
                     </div>
                   )}
                 </TabsContent>
@@ -833,7 +1133,12 @@ export const ApplicationReviewDialog = ({
                 {/* Documents Tab */}
                 <TabsContent value="documents" className="mt-0 space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-foreground">Submitted Documents</h3>
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">Submitted Documents</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {application.documents.filter((d) => d.verified).length} of {application.documents.length} verified
+                      </p>
+                    </div>
                     <Button
                       variant="outline"
                       size="sm"
@@ -846,77 +1151,112 @@ export const ApplicationReviewDialog = ({
                   </div>
 
                   {application.documents.length > 0 ? (
-                    <div className="space-y-3">
-                      {application.documents.map((doc) => (
-                        <div
-                          key={doc.id}
-                          className={cn(
-                            withUniversitySurfaceTint("rounded-xl p-4"),
-                            doc.verified && "border-success/30"
-                          )}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className={cn(
-                              "p-2 rounded-lg",
-                              doc.verified ? "bg-success/10" : "bg-muted"
-                            )}>
-                              <FileText className={cn(
-                                "h-5 w-5",
-                                doc.verified ? "text-success" : "text-muted-foreground"
-                              )} />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-foreground truncate">
-                                  {getDocumentTypeLabel(doc.documentType)}
-                                </p>
-                                {doc.verified && (
-                                  <Badge variant="outline" className="border-success/30 text-success text-xs">
-                                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    Verified
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-0.5">
-                                {doc.fileName} • {formatFileSize(doc.fileSize)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Uploaded: {formatDate(doc.uploadedAt)}
-                              </p>
-                              {doc.verificationNotes && (
-                                <p className="text-xs text-muted-foreground mt-1 italic">
-                                  Note: {doc.verificationNotes}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handlePreviewDocument(doc)}
-                                disabled={!doc.publicUrl}
-                                title="Preview"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleDownloadDocument(doc)}
-                                disabled={!doc.publicUrl}
-                                title="Download"
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
+                    <div className="space-y-4">
+                      {/* Group documents by category */}
+                      {(() => {
+                        const documentCategories: Record<string, ApplicationDocument[]> = {};
+                        application.documents.forEach((doc) => {
+                          const category = getDocumentCategory(doc.documentType);
+                          if (!documentCategories[category]) {
+                            documentCategories[category] = [];
+                          }
+                          documentCategories[category].push(doc);
+                        });
+
+                        return Object.entries(documentCategories).map(([category, docs]) => (
+                          <div key={category} className="space-y-2">
+                            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                              {category}
+                            </h4>
+                            <div className="space-y-2">
+                              {docs.map((doc) => (
+                                <div
+                                  key={doc.id}
+                                  className={cn(
+                                    withUniversitySurfaceTint("rounded-xl p-4 border"),
+                                    doc.verified ? "border-success/30" : "border-transparent"
+                                  )}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className={cn(
+                                      "p-2 rounded-lg shrink-0",
+                                      doc.verified ? "bg-success/10" : "bg-muted"
+                                    )}>
+                                      <FileText className={cn(
+                                        "h-5 w-5",
+                                        doc.verified ? "text-success" : "text-muted-foreground"
+                                      )} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="font-medium text-foreground">
+                                          {getDocumentTypeLabel(doc.documentType)}
+                                        </p>
+                                        {doc.verified ? (
+                                          <Badge variant="outline" className="border-success/30 text-success text-xs">
+                                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                                            Verified
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline" className="border-warning/30 text-warning text-xs">
+                                            <Clock className="h-3 w-3 mr-1" />
+                                            Pending Review
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground mt-1 truncate" title={doc.fileName}>
+                                        {doc.fileName}
+                                      </p>
+                                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                        <span>{formatFileSize(doc.fileSize)}</span>
+                                        <span>•</span>
+                                        <span>Uploaded {formatDate(doc.uploadedAt)}</span>
+                                      </div>
+                                      {doc.verificationNotes && (
+                                        <div className="mt-2 p-2 bg-muted/50 rounded-lg">
+                                          <p className="text-xs text-muted-foreground">
+                                            <span className="font-medium">Review Note:</span> {doc.verificationNotes}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handlePreviewDocument(doc)}
+                                        disabled={!doc.publicUrl}
+                                        title="Preview document"
+                                        className="h-8 w-8"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handleDownloadDocument(doc)}
+                                        disabled={!doc.publicUrl}
+                                        title="Download document"
+                                        className="h-8 w-8"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ));
+                      })()}
                     </div>
                   ) : (
                     <div className="text-center py-12 text-muted-foreground">
                       <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                       <p className="text-sm">No documents submitted yet</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">
+                        Request documents from the student to review their application.
+                      </p>
                       <Button
                         variant="outline"
                         size="sm"
