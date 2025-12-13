@@ -895,3 +895,69 @@ All colors MUST be HSL.
     transform: translateY(-0.2rem);
   }
 }
+
+/* Typewriter Animation Styles */
+.typewriter-text {
+  display: inline;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary)) 0%,
+    hsl(217 91% 50%) 50%,
+    hsl(var(--primary)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: typewriter-shimmer 3s ease-in-out infinite;
+}
+
+.dark .typewriter-text {
+  background: linear-gradient(
+    135deg,
+    hsl(0 0% 100%) 0%,
+    hsl(217 91% 80%) 50%,
+    hsl(0 0% 100%) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: typewriter-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes typewriter-shimmer {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  margin-left: 2px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+  animation: typewriter-blink 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+  box-shadow: 0 0 8px hsl(var(--primary) / 0.5);
+}
+
+.dark .typewriter-cursor {
+  background: hsl(0 0% 100%);
+  box-shadow: 0 0 12px hsl(0 0% 100% / 0.6);
+}
+
+@keyframes typewriter-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+}

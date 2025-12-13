@@ -174,11 +174,14 @@ const Index = () => {
           <TypewriterText
             prefix={heroTitleParts.prefix}
             highlight={heroTitleParts.highlight}
+            phrases={["Your Future", "Your Dreams", "Success"]}
             suffix={heroTitleParts.suffix}
             className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
-            highlightClassName="text-primary"
-            typingSpeed={80}
-            startDelay={600}
+            typingSpeed={90}
+            deletingSpeed={45}
+            pauseDuration={2200}
+            startDelay={500}
+            loop={true}
           />
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
