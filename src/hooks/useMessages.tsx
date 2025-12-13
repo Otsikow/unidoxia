@@ -971,10 +971,46 @@ export function useMessages() {
 
   const getOrCreateConversation = useCallback(
     async (otherUserId: string) => {
-      const otherProfile = findDirectoryProfileById(otherUserId);
-      if (!otherProfile) return null;
+      let otherProfile = findDirectoryProfileById(otherUserId);
+      
+      // If profile not found in local directory, try fetching from database
+      if (!otherProfile) {
+        try {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("id, full_name, email, avatar_url, role, tenant_id")
+            .eq("id", otherUserId)
+            .single();
+          
+          if (profileData) {
+            otherProfile = {
+              id: profileData.id,
+              full_name: profileData.full_name ?? "Unknown User",
+              email: profileData.email ?? "",
+              avatar_url: profileData.avatar_url ?? null,
+              role: profileData.role as DirectoryProfile["role"],
+              tenant_id: profileData.tenant_id ?? DEFAULT_TENANT_ID,
+            };
+            // Register it for future lookups
+            registerDirectoryProfile(otherProfile);
+          }
+        } catch (err) {
+          console.warn("Could not fetch profile for messaging:", err);
+        }
+      }
+      
+      if (!otherProfile) {
+        toast({
+          title: "Unable to message",
+          description: "Could not find the recipient's profile.",
+          variant: "destructive",
+        });
+        return null;
+      }
 
-      if (allowedContacts && !allowedContacts.has(otherUserId)) {
+      // Only apply allowedContacts restriction for mock messaging
+      // Real messaging uses the RPC function which has proper authorization checks
+      if (usingMockMessaging && allowedContacts && !allowedContacts.has(otherUserId)) {
         toast({
           title: "Messaging restricted",
           description: "You can only start conversations with contacts linked to your account.",
