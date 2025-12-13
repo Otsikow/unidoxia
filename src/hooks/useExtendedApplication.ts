@@ -63,6 +63,31 @@ const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
   }));
 };
 
+const mapEducationRecordsFromDB = (records: any[]): EducationRecord[] => {
+  return records.map((rec) => ({
+    id: rec.id,
+    level: rec.level ?? "",
+    institutionName: rec.institution_name ?? "",
+    country: rec.country ?? "",
+    startDate: rec.start_date ?? "",
+    endDate: rec.end_date ?? "",
+    gpa: rec.gpa?.toString() ?? "",
+    gradeScale: rec.grade_scale ?? "4.0",
+    transcriptUrl: rec.transcript_url ?? null,
+    certificateUrl: rec.certificate_url ?? null,
+  }));
+};
+
+const mapTestScoresFromDB = (scores: any[]): TestScore[] => {
+  return scores.map((score) => ({
+    testType: score.test_type ?? "",
+    totalScore: parseFloat(score.total_score) ?? 0,
+    testDate: score.test_date ?? "",
+    subscores: score.subscores_json ?? undefined,
+    reportUrl: score.report_url ?? null,
+  }));
+};
+
 export function useExtendedApplication(): UseExtendedApplicationReturn {
   const [extendedApplication, setExtendedApplication] = useState<ExtendedApplication | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -111,6 +136,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       // Fetch student details with profile
       let studentDetails: StudentDetails | null = null;
       if (appData.student_id) {
+        // Fetch student with profile data
         const { data: studentData, error: studentError } = await supabase
           .from("students")
           .select(`
@@ -123,27 +149,77 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             nationality,
             date_of_birth,
             passport_number,
+            passport_expiry,
             current_country,
+            address,
             education_history,
-            test_scores
+            test_scores,
+            guardian,
+            finances_json,
+            visa_history_json,
+            profile:profiles (
+              id,
+              full_name,
+              email,
+              phone,
+              avatar_url
+            )
           `)
           .eq("id", appData.student_id)
           .single();
 
         if (!studentError && studentData) {
+          const profile = studentData.profile as any;
+          
+          // Fetch education records from the education_records table
+          let educationRecords: EducationRecord[] = [];
+          const { data: eduData } = await supabase
+            .from("education_records")
+            .select("*")
+            .eq("student_id", appData.student_id)
+            .order("start_date", { ascending: false });
+          
+          if (eduData && eduData.length > 0) {
+            educationRecords = mapEducationRecordsFromDB(eduData);
+          } else if (studentData.education_history) {
+            // Fallback to JSONB field if no separate records exist
+            educationRecords = parseEducationHistory(studentData.education_history) ?? [];
+          }
+
+          // Fetch test scores from the test_scores table
+          let testScores: TestScore[] = [];
+          const { data: testData } = await supabase
+            .from("test_scores")
+            .select("*")
+            .eq("student_id", appData.student_id)
+            .order("test_date", { ascending: false });
+          
+          if (testData && testData.length > 0) {
+            testScores = mapTestScoresFromDB(testData);
+          } else if (studentData.test_scores) {
+            // Fallback to JSONB field if no separate records exist
+            testScores = parseTestScores(studentData.test_scores) ?? [];
+          }
+
           studentDetails = {
             id: studentData.id,
             profileId: studentData.profile_id,
-            legalName: studentData.legal_name ?? "Unknown",
+            legalName: studentData.legal_name ?? profile?.full_name ?? "Unknown",
             preferredName: studentData.preferred_name ?? null,
-            email: studentData.contact_email ?? null,
-            phone: studentData.contact_phone ?? null,
+            email: studentData.contact_email ?? profile?.email ?? null,
+            phone: studentData.contact_phone ?? profile?.phone ?? null,
             nationality: studentData.nationality ?? null,
             dateOfBirth: studentData.date_of_birth ?? null,
             passportNumber: studentData.passport_number ?? null,
+            passportExpiry: studentData.passport_expiry ?? null,
             currentCountry: studentData.current_country ?? null,
-            educationHistory: parseEducationHistory(studentData.education_history),
-            testScores: parseTestScores(studentData.test_scores),
+            address: studentData.address as any ?? null,
+            guardian: studentData.guardian as any ?? null,
+            finances: studentData.finances_json as any ?? null,
+            visaHistory: studentData.visa_history_json as any ?? null,
+            avatarUrl: profile?.avatar_url ?? null,
+            educationHistory: educationRecords.length > 0 ? educationRecords : null,
+            testScores: testScores.length > 0 ? testScores : null,
           };
         }
       }
