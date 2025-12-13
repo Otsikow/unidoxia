@@ -1,16 +1,65 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import MessagesDashboard from "@/components/messages/MessagesDashboard";
 import { withUniversityCardStyles } from "@/components/university/common/cardStyles";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function UniversityMessagesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isResolvingContact, setIsResolvingContact] = useState(false);
   
-  // Get contact parameter from URL (used when navigating from application review)
+  // Get contact or applicationId parameter from URL (used when navigating from application review)
   const contactId = useMemo(() => searchParams.get("contact"), [searchParams]);
+  const applicationId = useMemo(() => searchParams.get("applicationId"), [searchParams]);
 
-  // Clear contact parameter from URL after it's been read
-  // This is handled by the MessagesDashboard which will start the conversation
+  // Resolve applicationId to a student's profile_id
+  useEffect(() => {
+    const resolveApplicationContact = async () => {
+      if (!applicationId || isResolvingContact) return;
+      
+      setIsResolvingContact(true);
+      try {
+        // Look up the application to get the student_id
+        const { data: appData, error: appError } = await supabase
+          .from("applications")
+          .select("student_id")
+          .eq("id", applicationId)
+          .single();
+        
+        if (appError || !appData?.student_id) {
+          console.error("Failed to find application:", appError);
+          return;
+        }
+        
+        // Look up the student to get their profile_id
+        const { data: studentData, error: studentError } = await supabase
+          .from("students")
+          .select("profile_id")
+          .eq("id", appData.student_id)
+          .single();
+        
+        if (studentError || !studentData?.profile_id) {
+          console.error("Failed to find student profile:", studentError);
+          return;
+        }
+        
+        // Store the profile ID in session storage so MessagesDashboard can pick it up
+        sessionStorage.setItem("messaging_start_contact", studentData.profile_id);
+      } catch (error) {
+        console.error("Error resolving application contact:", error);
+      } finally {
+        // Clear the applicationId from URL
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete("applicationId");
+        setSearchParams(newParams, { replace: true });
+        setIsResolvingContact(false);
+      }
+    };
+    
+    void resolveApplicationContact();
+  }, [applicationId, isResolvingContact, searchParams, setSearchParams]);
+
+  // Handle direct contact parameter (legacy/direct contact ID)
   useEffect(() => {
     if (contactId) {
       // Store the contact ID in session storage so MessagesDashboard can pick it up
