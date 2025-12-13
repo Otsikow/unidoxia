@@ -516,21 +516,38 @@ export function useMessages() {
         
         // Provide more specific error messages based on error type
         const errorMessage = err instanceof Error ? err.message : String(err);
+        const errorCode = (err as any)?.code;
         
-        // Check for common issues
-        if (errorMessage.includes("JWT") || errorMessage.includes("token")) {
-          setError("Your session has expired. Please refresh the page or log in again.");
-        } else if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
-          setError("Unable to connect to the messaging service. Please check your internet connection.");
-        } else if (errorMessage.includes("permission") || errorMessage.includes("policy")) {
+        // Check for common issues that should show empty state instead of error
+        const isPermissionIssue = 
+          errorCode === "42501" || // insufficient_privilege
+          errorCode === "42P01" || // undefined_table
+          errorCode === "PGRST116" || // Not found (no rows)
+          errorMessage.includes("permission") || 
+          errorMessage.includes("policy") ||
+          errorMessage.includes("infinite recursion") ||
+          errorMessage.includes("RLS") ||
+          errorMessage.includes("row-level security");
+        
+        if (isPermissionIssue) {
           // RLS or permission issue - just show empty state instead of error
           console.warn("Permission issue loading conversations, showing empty state:", err);
           conversationsRef.current = [];
           setConversations([]);
           setCurrentConversationState(null);
+          // Don't set error - user simply has no conversations yet
           return;
+        }
+        
+        // Check for auth issues
+        if (errorMessage.includes("JWT") || errorMessage.includes("token") || errorMessage.includes("auth")) {
+          setError("Your session has expired. Please refresh the page or log in again.");
+        } else if (errorMessage.includes("network") || errorMessage.includes("fetch") || errorMessage.includes("Failed to fetch")) {
+          setError("Unable to connect to the messaging service. Please check your internet connection.");
         } else {
-          setError("Messaging is temporarily unavailable. Please try again.");
+          // For unknown errors, show a user-friendly message but log the details
+          console.error("Unexpected messaging error:", { message: errorMessage, code: errorCode, error: err });
+          setError("Unable to load messages. Please try again.");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -1095,13 +1112,33 @@ export function useMessages() {
       
       // Provide more specific error messages
       const errorMessage = err instanceof Error ? err.message : String(err);
+      const errorCode = (err as any)?.code;
       
-      if (errorMessage.includes("JWT") || errorMessage.includes("token")) {
+      // Check for permission issues that should show empty state
+      const isPermissionIssue = 
+        errorCode === "42501" || 
+        errorCode === "42P01" || 
+        errorCode === "PGRST116" ||
+        errorMessage.includes("permission") || 
+        errorMessage.includes("policy") ||
+        errorMessage.includes("infinite recursion") ||
+        errorMessage.includes("RLS");
+      
+      if (isPermissionIssue) {
+        console.warn("Permission issue fetching conversations, showing empty state:", err);
+        conversationsRef.current = [];
+        setConversations([]);
+        // Don't set error for permission issues
+        return;
+      }
+      
+      if (errorMessage.includes("JWT") || errorMessage.includes("token") || errorMessage.includes("auth")) {
         setError("Your session has expired. Please refresh the page or log in again.");
-      } else if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
+      } else if (errorMessage.includes("network") || errorMessage.includes("fetch") || errorMessage.includes("Failed to fetch")) {
         setError("Unable to connect to the messaging service. Please check your internet connection.");
       } else {
-        setError("Messaging is temporarily unavailable. Please try again.");
+        console.error("Unexpected error fetching conversations:", { message: errorMessage, code: errorCode, error: err });
+        setError("Unable to load messages. Please try again.");
       }
     } finally {
       setLoading(false);
