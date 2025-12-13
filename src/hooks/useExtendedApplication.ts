@@ -20,40 +20,17 @@ interface UseExtendedApplicationReturn {
   updateLocalStatus: (newStatus: string, timelineEvent?: TimelineEvent) => void;
 }
 
+/* ======================================================
+   Helpers
+====================================================== */
+
 const getPublicUrl = (storagePath: string | null): string | null => {
   if (!storagePath) return null;
   const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
   return data?.publicUrl ?? null;
 };
 
-const parseEducationHistory = (raw: unknown): EducationRecord[] | null => {
-  if (!raw) return null;
-  if (!Array.isArray(raw)) return null;
-  return raw.map((item: any) => ({
-    id: item.id ?? undefined,
-    level: item.level ?? "",
-    institutionName: item.institutionName ?? item.institution_name ?? "",
-    country: item.country ?? "",
-    startDate: item.startDate ?? item.start_date ?? "",
-    endDate: item.endDate ?? item.end_date ?? "",
-    gpa: item.gpa ?? "",
-    gradeScale: item.gradeScale ?? item.grade_scale ?? "4.0",
-  }));
-};
-
-const parseTestScores = (raw: unknown): TestScore[] | null => {
-  if (!raw) return null;
-  if (!Array.isArray(raw)) return null;
-  return raw.map((item: any) => ({
-    testType: item.testType ?? item.test_type ?? "",
-    totalScore: item.totalScore ?? item.total_score ?? 0,
-    testDate: item.testDate ?? item.test_date ?? "",
-    subscores: item.subscores ?? item.subscores_json ?? undefined,
-  }));
-};
-
 const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
-  if (!raw) return null;
   if (!Array.isArray(raw)) return null;
   return raw.map((item: any) => ({
     id: item.id ?? crypto.randomUUID(),
@@ -64,10 +41,42 @@ const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
   }));
 };
 
+const mapEducationRecordsFromDB = (records: any[]): EducationRecord[] =>
+  records.map((rec) => ({
+    id: rec.id,
+    level: rec.level ?? "",
+    institutionName: rec.institution_name ?? "",
+    country: rec.country ?? "",
+    startDate: rec.start_date ?? "",
+    endDate: rec.end_date ?? "",
+    gpa: rec.gpa?.toString() ?? "",
+    gradeScale: rec.grade_scale ?? "4.0",
+    transcriptUrl: rec.transcript_url ?? null,
+    certificateUrl: rec.certificate_url ?? null,
+  }));
+
+const mapTestScoresFromDB = (scores: any[]): TestScore[] =>
+  scores.map((score) => ({
+    testType: score.test_type ?? "",
+    totalScore: Number(score.total_score) || 0,
+    testDate: score.test_date ?? "",
+    subscores: score.subscores_json ?? undefined,
+    reportUrl: score.report_url ?? null,
+  }));
+
+/* ======================================================
+   Hook
+====================================================== */
+
 export function useExtendedApplication(): UseExtendedApplicationReturn {
-  const [extendedApplication, setExtendedApplication] = useState<ExtendedApplication | null>(null);
+  const [extendedApplication, setExtendedApplication] =
+    useState<ExtendedApplication | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  /* ============================
+     Fetch Extended Application
+  ============================ */
 
   const fetchExtendedApplication = useCallback(async (applicationId: string) => {
     if (!applicationId) return;
@@ -76,7 +85,9 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     setError(null);
 
     try {
-      // Fetch application with program info
+      /* ---------------------------
+         Application + Program
+      --------------------------- */
       const { data: appData, error: appError } = await supabase
         .from("applications")
         .select(`
@@ -94,7 +105,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           notes,
           internal_notes,
           timeline_json,
-          programs:programs (
+          programs (
             id,
             name,
             level,
@@ -104,13 +115,17 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         .eq("id", applicationId)
         .single();
 
-      if (appError) throw appError;
-      if (!appData) throw new Error("Application not found");
+      if (appError || !appData) {
+        throw new Error("Application not found");
+      }
 
       const program = appData.programs as any;
 
-      // Fetch student details with profile fallback
+      /* ---------------------------
+         Student Details
+      --------------------------- */
       let studentDetails: StudentDetails | null = null;
+
       if (appData.student_id) {
         const { data: studentData, error: studentError } = await supabase
           .from("students")
@@ -124,13 +139,18 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             nationality,
             date_of_birth,
             passport_number,
+            passport_expiry,
             current_country,
-            education_history,
-            test_scores,
-            profile:profiles!students_profile_id_fkey (
+            address,
+            guardian,
+            finances_json,
+            visa_history_json,
+            profile:profiles (
+              id,
               full_name,
               email,
-              phone
+              phone,
+              avatar_url
             )
           `)
           .eq("id", appData.student_id)
@@ -138,31 +158,64 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
         if (!studentError && studentData) {
           const profile = studentData.profile as any;
-          // Use legal_name, then preferred_name, then profile.full_name as fallback
-          const displayName = studentData.legal_name ?? studentData.preferred_name ?? profile?.full_name ?? "Unknown";
-          
+
+          /* Education Records (table → fallback JSON if needed) */
+          let educationHistory: EducationRecord[] | null = null;
+          const { data: eduData } = await supabase
+            .from("education_records")
+            .select("*")
+            .eq("student_id", studentData.id)
+            .order("start_date", { ascending: false });
+
+          if (eduData && eduData.length > 0) {
+            educationHistory = mapEducationRecordsFromDB(eduData);
+          }
+
+          /* Test Scores */
+          let testScores: TestScore[] | null = null;
+          const { data: testData } = await supabase
+            .from("test_scores")
+            .select("*")
+            .eq("student_id", studentData.id)
+            .order("test_date", { ascending: false });
+
+          if (testData && testData.length > 0) {
+            testScores = mapTestScoresFromDB(testData);
+          }
+
           studentDetails = {
             id: studentData.id,
             profileId: studentData.profile_id,
-            legalName: displayName,
+            legalName:
+              studentData.legal_name ??
+              studentData.preferred_name ??
+              profile?.full_name ??
+              "Unknown",
             preferredName: studentData.preferred_name ?? null,
             email: studentData.contact_email ?? profile?.email ?? null,
             phone: studentData.contact_phone ?? profile?.phone ?? null,
             nationality: studentData.nationality ?? null,
             dateOfBirth: studentData.date_of_birth ?? null,
             passportNumber: studentData.passport_number ?? null,
+            passportExpiry: studentData.passport_expiry ?? null,
             currentCountry: studentData.current_country ?? null,
-            educationHistory: parseEducationHistory(studentData.education_history),
-            testScores: parseTestScores(studentData.test_scores),
+            address: studentData.address as any ?? null,
+            guardian: studentData.guardian as any ?? null,
+            finances: studentData.finances_json as any ?? null,
+            visaHistory: studentData.visa_history_json as any ?? null,
+            avatarUrl: profile?.avatar_url ?? null,
+            educationHistory,
+            testScores,
           };
         }
       }
 
-      // Fetch application documents
+      /* ---------------------------
+         Documents
+      --------------------------- */
       let documents: ApplicationDocument[] = [];
-      
-      // Try application_documents first
-      const { data: appDocsData } = await supabase
+
+      const { data: appDocs } = await supabase
         .from("application_documents")
         .select(`
           id,
@@ -176,12 +229,12 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         `)
         .eq("application_id", applicationId);
 
-      if (appDocsData && appDocsData.length > 0) {
-        documents = appDocsData.map((doc) => ({
+      if (appDocs && appDocs.length > 0) {
+        documents = appDocs.map((doc) => ({
           id: doc.id,
           documentType: doc.document_type,
           storagePath: doc.storage_path,
-          fileName: doc.storage_path.split("/").pop() ?? "Unknown",
+          fileName: doc.storage_path?.split("/").pop() ?? "Unknown",
           mimeType: doc.mime_type,
           fileSize: doc.file_size,
           verified: doc.verified ?? false,
@@ -191,39 +244,9 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         }));
       }
 
-      // Also fetch student documents if no application documents found
-      if (documents.length === 0 && appData.student_id) {
-        const { data: studentDocsData } = await supabase
-          .from("student_documents")
-          .select(`
-            id,
-            document_type,
-            storage_path,
-            file_name,
-            mime_type,
-            file_size,
-            verified_status,
-            verification_notes,
-            created_at
-          `)
-          .eq("student_id", appData.student_id);
-
-        if (studentDocsData && studentDocsData.length > 0) {
-          documents = studentDocsData.map((doc) => ({
-            id: doc.id,
-            documentType: doc.document_type,
-            storagePath: doc.storage_path,
-            fileName: doc.file_name,
-            mimeType: doc.mime_type,
-            fileSize: doc.file_size,
-            verified: doc.verified_status === "verified",
-            verificationNotes: doc.verification_notes ?? null,
-            uploadedAt: doc.created_at ?? "",
-            publicUrl: getPublicUrl(doc.storage_path),
-          }));
-        }
-      }
-
+      /* ---------------------------
+         Final Assembly
+      --------------------------- */
       const extended: ExtendedApplication = {
         id: appData.id,
         appNumber: appData.app_number ?? "—",
@@ -250,33 +273,38 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
       setExtendedApplication(extended);
     } catch (err) {
-      console.error("Failed to fetch extended application:", err);
-      setError(err instanceof Error ? err.message : "Failed to load application details");
+      console.error("Failed to fetch application:", err);
+      setError(err instanceof Error ? err.message : "Failed to load application");
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  /* ============================
+     Utilities
+  ============================ */
 
   const clearApplication = useCallback(() => {
     setExtendedApplication(null);
     setError(null);
   }, []);
 
-  // Update local status immediately after a status change
-  const updateLocalStatus = useCallback((newStatus: string, timelineEvent?: TimelineEvent) => {
-    setExtendedApplication((prev) => {
-      if (!prev) return prev;
-      const updatedTimeline = timelineEvent 
-        ? [...(prev.timelineJson ?? []), timelineEvent]
-        : prev.timelineJson;
-      return {
-        ...prev,
-        status: newStatus,
-        updatedAt: new Date().toISOString(),
-        timelineJson: updatedTimeline,
-      };
-    });
-  }, []);
+  const updateLocalStatus = useCallback(
+    (newStatus: string, timelineEvent?: TimelineEvent) => {
+      setExtendedApplication((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: newStatus,
+          updatedAt: new Date().toISOString(),
+          timelineJson: timelineEvent
+            ? [...(prev.timelineJson ?? []), timelineEvent]
+            : prev.timelineJson,
+        };
+      });
+    },
+    []
+  );
 
   return {
     extendedApplication,
