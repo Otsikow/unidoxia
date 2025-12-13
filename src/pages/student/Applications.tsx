@@ -267,7 +267,7 @@ export default function Applications() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         <div className="flex min-h-[50vh] items-center justify-center">
           <LoadingState message="Loading your applications..." size="lg" />
         </div>
@@ -277,8 +277,8 @@ export default function Applications() {
 
   if (hasError) {
     return (
-      <div className="container mx-auto py-8 space-y-6">
-        <BackButton variant="ghost" size="sm" wrapperClassName="mb-4" fallback="/dashboard" />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6">
+        <BackButton variant="ghost" size="sm" wrapperClassName="mb-2 sm:mb-4" fallback="/dashboard" />
         <ErrorDisplay
           error={currentError}
           onRetry={() => retry(fetchApplications)}
@@ -289,99 +289,99 @@ export default function Applications() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <BackButton variant="ghost" size="sm" wrapperClassName="mb-4" fallback="/dashboard" />
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6">
+      <BackButton variant="ghost" size="sm" wrapperClassName="mb-2 sm:mb-4" fallback="/dashboard" />
 
       {/* Header and Filters */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 flex-wrap animate-fade-in">
-        <div className="min-w-0 space-y-1.5">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight break-words">
-            My Applications
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Track and manage your university applications
-          </p>
+      <div className="space-y-4 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">
+              My Applications
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Track and manage your university applications
+            </p>
+          </div>
+
+          <Button asChild className="w-full sm:w-auto">
+            <Link to="/courses?view=programs">
+              <Plus className="mr-2 h-4 w-4" />
+              New Application
+            </Link>
+          </Button>
         </div>
 
-        <div className="w-full lg:flex-1 lg:max-w-3xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
-            <div className="col-span-1 md:col-span-2">
-              <input
-                className="w-full border rounded-md h-9 px-3 text-sm"
-                placeholder="Search program or university..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <div>
-              <select
-                className="w-full border rounded-md h-9 text-sm px-2"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">All Statuses</option>
-                <option value="draft">Draft</option>
-                <option value="submitted">Submitted</option>
-                <option value="screening">Screening</option>
-                <option value="conditional_offer">Conditional Offer</option>
-                <option value="unconditional_offer">Unconditional Offer</option>
-                <option value="cas_loa">CAS/LOA</option>
-                <option value="visa">Visa</option>
-                <option value="enrolled">Enrolled</option>
-                <option value="withdrawn">Withdrawn</option>
-              </select>
-            </div>
-            <div>
-              <select
-                className="w-full border rounded-md h-9 text-sm px-2"
-                value={countryFilter}
-                onChange={(e) => setCountryFilter(e.target.value)}
-              >
-                <option value="all">All Countries</option>
-                {allCountries.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="sm:col-span-2">
+            <input
+              className="w-full border rounded-md h-9 px-3 text-sm bg-background"
+              placeholder="Search program or university..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div>
+            <select
+              className="w-full border rounded-md h-9 text-sm px-2 bg-background"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="draft">Draft</option>
+              <option value="submitted">Submitted</option>
+              <option value="screening">Screening</option>
+              <option value="conditional_offer">Conditional Offer</option>
+              <option value="unconditional_offer">Unconditional Offer</option>
+              <option value="cas_loa">CAS/LOA</option>
+              <option value="visa">Visa</option>
+              <option value="enrolled">Enrolled</option>
+              <option value="withdrawn">Withdrawn</option>
+            </select>
+          </div>
+          <div>
+            <select
+              className="w-full border rounded-md h-9 text-sm px-2 bg-background"
+              value={countryFilter}
+              onChange={(e) => setCountryFilter(e.target.value)}
+            >
+              <option value="all">All Countries</option>
+              {allCountries.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
-
-        <Button asChild>
-          <Link to="/courses?view=programs">
-            <Plus className="mr-2 h-4 w-4" />
-            New Application
-          </Link>
-        </Button>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <Card className="min-w-0">
+          <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Total Applications</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{applications.length + drafts.length}</div>
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold">{applications.length + drafts.length}</div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Submitted</CardTitle>
+        <Card className="min-w-0">
+          <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Submitted</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {applications.filter((a) => a.submitted_at).length}
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+        <Card className="min-w-0">
+          <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">In Progress</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {
                 applications.filter(
                   (a) => a.status === 'draft' || a.status === 'screening'
@@ -390,12 +390,12 @@ export default function Applications() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Offers</CardTitle>
+        <Card className="min-w-0">
+          <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+            <CardTitle className="text-xs sm:text-sm font-medium truncate">Offers</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+          <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+            <div className="text-xl sm:text-2xl font-bold">
               {
                 applications.filter(
                   (a) =>
@@ -411,13 +411,13 @@ export default function Applications() {
       {/* Applications List */}
       {drafts.length > 0 && (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" /> Draft Applications
+          <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5" /> Draft Applications
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
+            <div className="space-y-3 sm:space-y-4">
               {filteredDrafts.length === 0 && (
                 <p className="text-sm text-muted-foreground">
                   No drafts match your current filters.
@@ -426,60 +426,62 @@ export default function Applications() {
 
               {filteredDrafts.map((draft) => (
                 <Card key={draft.id} className="bg-muted/40">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between gap-4 flex-col sm:flex-row">
-                      <div className="space-y-3 flex-1">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                      <div className="space-y-3 flex-1 min-w-0">
                         <div>
-                          <h3 className="font-semibold text-lg flex items-center gap-2">
-                            <GraduationCap className="h-5 w-5 text-primary" />
-                            {draft.program?.name || 'New Application Draft'}
+                          <h3 className="font-semibold text-base sm:text-lg flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                            <span className="truncate">{draft.program?.name || 'New Application Draft'}</span>
                           </h3>
                           {draft.program ? (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground">
                               {draft.program.level} • {draft.program.discipline}
                             </p>
                           ) : (
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs sm:text-sm text-muted-foreground">
                               Continue where you left off to choose a program.
                             </p>
                           )}
                         </div>
 
                         {draft.program?.university && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4" />
-                            {draft.program.university.name}
-                            {draft.program.university.city
-                              ? ` • ${draft.program.university.city}`
-                              : ''}
-                            {draft.program.university.country
-                              ? `, ${draft.program.university.country}`
-                              : ''}
+                          <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 mt-0.5" />
+                            <span className="break-words">
+                              {draft.program.university.name}
+                              {draft.program.university.city
+                                ? ` • ${draft.program.university.city}`
+                                : ''}
+                              {draft.program.university.country
+                                ? `, ${draft.program.university.country}`
+                                : ''}
+                            </span>
                           </div>
                         )}
 
-                        <div className="flex items-center flex-wrap gap-4 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <Timer className="h-4 w-4" />
+                            <Timer className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span>
                               {draft.last_step
-                                ? `Progress: Step ${draft.last_step} of 5`
-                                : 'Progress: Not started'}
+                                ? `Step ${draft.last_step}/5`
+                                : 'Not started'}
                             </span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
+                            <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span>
-                              Last saved {formatDistanceToNow(new Date(draft.updated_at), { addSuffix: true })}
+                              {formatDistanceToNow(new Date(draft.updated_at), { addSuffix: true })}
                             </span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto">
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-3 pt-3 sm:pt-0 border-t sm:border-t-0">
                         <StatusBadge status="draft" />
-                        <Button asChild>
-                          <Link to="/student/applications/new">Continue Application</Link>
+                        <Button asChild size="sm" className="sm:w-auto">
+                          <Link to="/student/applications/new">Continue</Link>
                         </Button>
                       </div>
                     </div>
@@ -492,21 +494,21 @@ export default function Applications() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" /> All Applications
+        <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5" /> All Applications
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6">
           {applications.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No applications yet</h3>
-              <p className="text-muted-foreground mb-4">
+            <div className="text-center py-8 sm:py-12">
+              <FileText className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold mb-2">No applications yet</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4 px-4">
                 Start your journey by browsing programs and submitting your first
                 application
               </p>
-              <Button asChild>
+              <Button asChild size="sm" className="sm:size-default">
                 <Link to="/courses?view=programs">
                   <Plus className="mr-2 h-4 w-4" />
                   Browse Courses
@@ -514,57 +516,61 @@ export default function Applications() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {filtered.map((app) => (
                 <Card key={app.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-3 flex-1">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                      <div className="space-y-3 flex-1 min-w-0">
                         <div>
-                          <h3 className="font-semibold text-lg flex items-center gap-2">
-                            <GraduationCap className="h-5 w-5 text-primary" />
-                            {app.program.name}
+                          <h3 className="font-semibold text-base sm:text-lg flex items-center gap-2">
+                            <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                            <span className="truncate">{app.program.name}</span>
                           </h3>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground">
                             {app.program.level} • {app.program.discipline}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4" />
-                          {app.program.university.name} •{' '}
-                          {app.program.university.city}, {app.program.university.country}
+                        <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 mt-0.5" />
+                          <span className="break-words">
+                            {app.program.university.name} •{' '}
+                            {app.program.university.city}, {app.program.university.country}
+                          </span>
                         </div>
 
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                           <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                             <span>
                               Intake: {getIntakeLabel(app.intake_month, app.intake_year)}
                             </span>
                           </div>
                           <div>Applied: {new Date(app.created_at).toLocaleDateString()}</div>
                           <div className="flex items-center gap-1 text-muted-foreground">
-                            <Timer className="h-4 w-4" /> {etaFor(app.status)}
+                            <Timer className="h-3 w-3 sm:h-4 sm:w-4" /> {etaFor(app.status)}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex flex-col items-end gap-3">
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-3 pt-2 sm:pt-0 border-t sm:border-t-0">
                         <StatusBadge status={app.status} />
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/student/applications/${app.id}`}>View Details</Link>
-                        </Button>
-                        {app.status === 'draft' && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => cancelDraft(app.id)}
-                            className="text-destructive"
-                          >
-                            <XCircle className="h-4 w-4 mr-1" /> Cancel
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`/student/applications/${app.id}`}>View Details</Link>
                           </Button>
-                        )}
+                          {app.status === 'draft' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => cancelDraft(app.id)}
+                              className="text-destructive"
+                            >
+                              <XCircle className="h-4 w-4 mr-1" /> Cancel
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
