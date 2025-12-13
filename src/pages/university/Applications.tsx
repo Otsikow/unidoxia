@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { FileStack, Sparkles, BadgeCheck, Eye, Copy, ArrowUpRight } from "lucide-react";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { FileStack, Sparkles, BadgeCheck, Eye, Copy, Loader2 } from "lucide-react";
 
 import {
   Card,
@@ -25,13 +25,8 @@ import {
   withUniversitySurfaceTint,
 } from "@/components/university/common/cardStyles";
 import { useUniversityDashboard } from "@/components/university/layout/UniversityDashboardLayout";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { ApplicationReviewDialog } from "@/components/university/applications/ApplicationReviewDialog";
+import { useExtendedApplication } from "@/hooks/useExtendedApplication";
 import { useToast } from "@/hooks/use-toast";
 
 const formatDate = (value: string | null) => {
@@ -57,35 +52,54 @@ const titleCase = (value: string) =>
 const ApplicationsPage = () => {
   const { data, isRefetching, refetch } = useUniversityDashboard();
   const { toast } = useToast();
+  const {
+    extendedApplication,
+    isLoading: isLoadingExtended,
+    fetchExtendedApplication,
+    clearApplication,
+  } = useExtendedApplication();
 
   const applications = useMemo(
     () => data?.applications ?? [],
     [data?.applications],
   );
-  const documentRequests = useMemo(
-    () => data?.documentRequests ?? [],
-    [data?.documentRequests],
-  );
+
+  const universityId = data?.university?.id ?? undefined;
+  const tenantId = data?.university?.tenant_id ?? undefined;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
-  const selectedApplication = useMemo(
-    () =>
-      selectedApplicationId
-        ? applications.find((app) => app.id === selectedApplicationId) ?? null
-        : null,
-    [applications, selectedApplicationId],
-  );
+  // Fetch extended application when selected
+  useEffect(() => {
+    if (selectedApplicationId && isReviewOpen) {
+      void fetchExtendedApplication(selectedApplicationId);
+    }
+  }, [selectedApplicationId, isReviewOpen, fetchExtendedApplication]);
 
-  const selectedStudentRequests = useMemo(() => {
-    const studentId = selectedApplication?.studentId ?? null;
-    if (!studentId) return [];
-    return documentRequests
-      .filter((req) => req.studentId === studentId)
-      .slice(0, 6);
-  }, [documentRequests, selectedApplication?.studentId]);
+  const handleOpenReview = useCallback((applicationId: string) => {
+    setSelectedApplicationId(applicationId);
+    setIsReviewOpen(true);
+  }, []);
+
+  const handleCloseReview = useCallback((open: boolean) => {
+    if (!open) {
+      setIsReviewOpen(false);
+      setSelectedApplicationId(null);
+      clearApplication();
+    }
+  }, [clearApplication]);
+
+  const handleStatusUpdate = useCallback(() => {
+    // Refetch dashboard data to update the applications list
+    void refetch();
+  }, [refetch]);
+
+  const handleNotesUpdate = useCallback(() => {
+    // Could add optimistic update here if needed
+  }, []);
 
   const handleCopy = async (label: string, value: string) => {
     try {
@@ -321,10 +335,15 @@ const ApplicationsPage = () => {
                           variant="ghost"
                           size="sm"
                           className="gap-2 text-primary hover:text-primary"
-                          onClick={() => setSelectedApplicationId(app.id)}
+                          onClick={() => handleOpenReview(app.id)}
+                          disabled={selectedApplicationId === app.id && isLoadingExtended}
                         >
-                          <Eye className="h-4 w-4" />
-                          View
+                          {selectedApplicationId === app.id && isLoadingExtended ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                          Review
                         </Button>
                       </td>
                       <td className="py-3 text-right text-sm text-muted-foreground">
@@ -339,130 +358,16 @@ const ApplicationsPage = () => {
         </CardContent>
       </Card>
 
-      <div className="text-xs text-muted-foreground">
-        Tip: Use the back button in the header to return to the previous page.
-      </div>
-
-      <Dialog
-        open={Boolean(selectedApplicationId)}
-        onOpenChange={(open) => setSelectedApplicationId(open ? selectedApplicationId : null)}
-      >
-        <DialogContent className="max-w-3xl">
-          {selectedApplication ? (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex flex-col gap-1">
-                  <span className="text-base font-semibold text-foreground">
-                    {selectedApplication.programName}
-                  </span>
-                  <span className="text-sm font-normal text-muted-foreground">
-                    {selectedApplication.studentName} • {selectedApplication.programLevel}
-                  </span>
-                </DialogTitle>
-                <DialogDescription className="text-xs">
-                  Application {selectedApplication.appNumber} • Submitted{" "}
-                  {formatDate(selectedApplication.createdAt)}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge status={selectedApplication.status} />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => void handleCopy("Application number", selectedApplication.appNumber)}
-                  >
-                    <Copy className="h-4 w-4" />
-                    Copy application #
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => void handleCopy("Application ID", selectedApplication.id)}
-                  >
-                    <Copy className="h-4 w-4" />
-                    Copy ID
-                  </Button>
-                </div>
-
-                <div className={withUniversitySurfaceTint("rounded-2xl border border-border/60 bg-muted/40 p-4")}>
-                  <div className="flex flex-col gap-1">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                      Student
-                    </p>
-                    <p className="text-sm font-medium text-foreground">{selectedApplication.studentName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Nationality: {selectedApplication.studentNationality ?? "—"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => window.open("/university/offers", "_self")}
-                  >
-                    Go to Offers &amp; CAS
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="gap-2"
-                    onClick={() => window.open("/university/documents", "_self")}
-                  >
-                    View document requests
-                    <ArrowUpRight className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Related document requests
-                  </p>
-                  {selectedStudentRequests.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No document requests found for this student yet.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {selectedStudentRequests.map((req) => (
-                        <div
-                          key={req.id}
-                          className="flex flex-col gap-2 rounded-xl border border-border/60 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-foreground">
-                              {req.requestType}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Status: {req.status} • Requested {formatDate(req.requestedAt)}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {req.documentUrl ? (
-                              <Button variant="outline" size="sm" asChild>
-                                <a href={req.documentUrl} target="_blank" rel="noreferrer">
-                                  View
-                                </a>
-                              </Button>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">No file yet</span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      <ApplicationReviewDialog
+        application={extendedApplication}
+        open={isReviewOpen}
+        onOpenChange={handleCloseReview}
+        onStatusUpdate={handleStatusUpdate}
+        onNotesUpdate={handleNotesUpdate}
+        universityId={universityId}
+        tenantId={tenantId}
+        isLoading={isLoadingExtended}
+      />
     </div>
   );
 };
