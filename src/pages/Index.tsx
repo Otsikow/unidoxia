@@ -45,6 +45,37 @@ const Index = () => {
     t
   } = useTranslation();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
+
+  // Defer the hero background video so it doesn't block initial paint/network,
+  // and respect low-bandwidth + reduced motion preferences.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const prefersReducedMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const conn = (navigator as any).connection;
+    const saveData = Boolean(conn?.saveData);
+    const effectiveType = String(conn?.effectiveType ?? "");
+    const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
+
+    if (prefersReducedMotion || saveData || isSlowConnection) {
+      setShouldLoadHeroVideo(false);
+      return;
+    }
+
+    const enable = () => setShouldLoadHeroVideo(true);
+
+    if ("requestIdleCallback" in window) {
+      const id = (window as any).requestIdleCallback(enable, { timeout: 2000 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+
+    const timeoutId = window.setTimeout(enable, 1200);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
   // HERO CTAs
   const heroCtas = useMemo(() => [{
@@ -144,10 +175,28 @@ const Index = () => {
 
       {/* HERO VIDEO SECTION */}
       <section className="hero-video-container">
-        {/* Background Video */}
-        <video className="hero-video" autoPlay loop muted playsInline poster="/videos/hero-poster.jpg">
-          <source src="/videos/hero-video.mp4" type="video/mp4" />
-        </video>
+        {/* Background video (deferred) */}
+        {shouldLoadHeroVideo ? (
+          <video
+            className="hero-video"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            poster={studentsStudyingGroup}
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
+        ) : (
+          <img
+            src={studentsStudyingGroup}
+            alt=""
+            className="hero-video"
+            decoding="async"
+            aria-hidden="true"
+          />
+        )}
 
         {/* Dark Overlay */}
         <div className="hero-video-overlay" />
@@ -155,7 +204,12 @@ const Index = () => {
         {/* Content */}
         <div className="hero-content">
           {/* Logo at top */}
-          <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-8 h-24 w-auto sm:h-32 md:h-40 opacity-50 drop-shadow-2xl brightness-0 invert" />
+          <img
+            src={unidoxiaLogo}
+            alt="UniDoxia logo"
+            decoding="async"
+            className="hero-logo mb-8 h-24 w-auto sm:h-32 md:h-40 opacity-50 drop-shadow-2xl brightness-0 invert"
+          />
 
           {/* Main Text */}
           <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white drop-shadow-lg">

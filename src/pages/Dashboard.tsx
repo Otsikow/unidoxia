@@ -1,12 +1,15 @@
+import { Suspense, lazy } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
 import { LoadingState } from '@/components/LoadingState';
-import StudentDashboard from '@/pages/dashboards/StudentDashboard';
-import AgentDashboard from '@/pages/dashboards/AgentDashboard';
-import StaffDashboard from '@/pages/dashboards/StaffDashboard';
 import { EmptyState } from '@/components/EmptyState';
 import { LogIn, HelpCircle } from 'lucide-react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+
+// NOTE: Keep dashboards lazy to avoid pulling them into the initial bundle.
+const StudentDashboard = lazy(() => import('@/pages/dashboards/StudentDashboard'));
+const AgentDashboard = lazy(() => import('@/pages/dashboards/AgentDashboard'));
+const StaffDashboard = lazy(() => import('@/pages/dashboards/StaffDashboard'));
 
 const ROLE_PRIORITY: AppRole[] = ['admin', 'staff', 'partner', 'agent', 'student'];
 
@@ -101,14 +104,49 @@ const Dashboard = () => {
 
   const resolvedRole = ROLE_PRIORITY.find((role) => roles.includes(role));
 
-  if (resolvedRole === 'student') return <StudentDashboard />;
-  if (resolvedRole === 'agent') return <AgentDashboard />;
+  if (resolvedRole === 'student')
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <LoadingState message="Loading your dashboard..." size="lg" />
+          </div>
+        }
+      >
+        <StudentDashboard />
+      </Suspense>
+    );
+
+  if (resolvedRole === 'agent')
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <LoadingState message="Loading your dashboard..." size="lg" />
+          </div>
+        }
+      >
+        <AgentDashboard />
+      </Suspense>
+    );
+
   if (resolvedRole === 'partner') {
     const params = new URLSearchParams(location.search);
     const target = getUniversityRouteForPartnerView(params.get('view'));
     return <Navigate to={target} replace />;
   }
-  if (resolvedRole === 'staff' || resolvedRole === 'admin') return <StaffDashboard />;
+  if (resolvedRole === 'staff' || resolvedRole === 'admin')
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <LoadingState message="Loading your dashboard..." size="lg" />
+          </div>
+        }
+      >
+        <StaffDashboard />
+      </Suspense>
+    );
 
   const fallbackDescription = roles.length === 0
     ? "We couldn't find any roles associated with your account. Please contact support for assistance."

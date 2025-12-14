@@ -31,6 +31,24 @@ const Login = () => {
     setEmail((prev) => (prev ? prev : emailParam));
   }, [location.search]);
 
+  // Prefetch the dashboard route chunk while the user is on the login screen.
+  // This reduces perceived latency right after successful sign-in.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const prefetch = () => {
+      void import('@/pages/Dashboard').catch(() => {});
+    };
+
+    if ('requestIdleCallback' in window) {
+      const id = (window as any).requestIdleCallback(prefetch, { timeout: 1500 });
+      return () => (window as any).cancelIdleCallback?.(id);
+    }
+
+    const timeoutId = window.setTimeout(prefetch, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get('role');
