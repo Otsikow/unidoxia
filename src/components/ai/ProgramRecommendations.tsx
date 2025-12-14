@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 import {
   GraduationCap,
   MapPin,
@@ -27,7 +28,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useAIRecommendations, StudentProfile } from '@/hooks/useAIRecommendations';
-import { Link } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 type VisaEligibilityResult = {
   eligibility: 'High' | 'Medium' | 'Low';
@@ -49,9 +51,18 @@ interface ProgramRecommendationsProps {
 
 export default function ProgramRecommendations({ onProgramSelect }: ProgramRecommendationsProps) {
   const { recommendations, loading, error, generateRecommendations, getVisaEligibility } = useAIRecommendations();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { profile: authProfile } = useAuth();
   const [showFilters, setShowFilters] = useState(false);
   const [visaResults, setVisaResults] = useState<Record<string, VisaEligibilityResult>>({});
   const [selectedTab, setSelectedTab] = useState('recommendations');
+  const [applyLoadingId, setApplyLoadingId] = useState<string | null>(null);
+  const [detailsLoadingId, setDetailsLoadingId] = useState<string | null>(null);
+
+  const studentIdFromUrl = searchParams.get('studentId') || searchParams.get('student');
+  const isAgentOrStaff =
+    authProfile?.role === 'agent' || authProfile?.role === 'staff' || authProfile?.role === 'admin';
 
   // Filter states
   const [filters, setFilters] = useState<Filters>({
@@ -287,6 +298,48 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     
     const result = await getVisaEligibility(country, profile);
     setVisaResults(prev => ({ ...prev, [country]: result }));
+  };
+
+  const handleApplyNow = async (programId: string) => {
+    // If a parent wants to override behaviour (e.g. open a modal), prefer that.
+    if (onProgramSelect) {
+      onProgramSelect(programId);
+      return;
+    }
+
+    setApplyLoadingId(programId);
+    try {
+      const params = new URLSearchParams({ program: programId });
+      if (studentIdFromUrl) params.set('studentId', studentIdFromUrl);
+
+      const baseUrl = isAgentOrStaff ? '/dashboard/applications/new' : '/student/applications/new';
+      navigate(`${baseUrl}?${params.toString()}`);
+    } finally {
+      setApplyLoadingId(null);
+    }
+  };
+
+  const handleViewDetails = async (programId: string) => {
+    setDetailsLoadingId(programId);
+    try {
+      const { data, error: lookupError } = await supabase
+        .from('programs')
+        .select('university_id')
+        .eq('id', programId)
+        .maybeSingle();
+
+      if (lookupError) throw lookupError;
+      if (!data?.university_id) return;
+
+      const params = new URLSearchParams({ program: programId });
+      if (studentIdFromUrl) params.set('studentId', studentIdFromUrl);
+
+      navigate(`/universities/${data.university_id}?${params.toString()}`);
+    } catch (err) {
+      console.error('Failed to open program details:', err);
+    } finally {
+      setDetailsLoadingId(null);
+    }
   };
 
   const getMatchColor = (score: number) => {
@@ -689,25 +742,33 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
 
                       <div className="flex flex-row lg:flex-col gap-2 w-full lg:w-auto lg:min-w-[140px]">
                         <Button
-                          onClick={() => onProgramSelect?.(program.id)}
+                          onClick={() => void handleApplyNow(program.id)}
                           className="flex-1 lg:w-full"
                           size="sm"
+                          disabled={applyLoadingId === program.id}
                         >
-                          Apply Now
+                          {applyLoadingId === program.id ? 'Opening…' : 'Apply Now'}
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={() => checkVisaEligibility(program.university.country)}
+                          onClick={async () => {
+                            await checkVisaEligibility(program.university.country);
+                            setSelectedTab('visa');
+                          }}
                           className="flex-1 lg:w-full"
                           size="sm"
                         >
                           <Shield className="h-3.5 w-3.5 sm:mr-2" />
                           <span className="hidden sm:inline">Check Visa</span>
                         </Button>
-                        <Button variant="ghost" size="sm" asChild className="flex-1 lg:w-full">
-                          <Link to={`/courses?view=programs&program=${program.id}`}>
-                            View Details
-                          </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="flex-1 lg:w-full"
+                          onClick={() => void handleViewDetails(program.id)}
+                          disabled={detailsLoadingId === program.id}
+                        >
+                          {detailsLoadingId === program.id ? 'Opening…' : 'View Details'}
                         </Button>
                       </div>
                     </div>
