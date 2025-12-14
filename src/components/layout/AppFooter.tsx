@@ -14,11 +14,32 @@ import {
   FileText,
   Newspaper,
   HelpCircle,
+  Linkedin,
+  Facebook,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+
+function WhatsAppIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Minimal WhatsApp-like mark (bubble + handset) */}
+      <path d="M7.6 20.3l.7-2.6a7.8 7.8 0 1 1 3.7 1h0a7.8 7.8 0 0 1-3.9-1.1l-2.5.7z" />
+      <path d="M10.3 9.6c.2-.5.4-.6.8-.6h.5c.2 0 .4 0 .6.4l.7 1.7c.1.3.1.5 0 .6l-.4.5c-.2.2-.3.4-.1.7.2.3.9 1.4 2.1 2.2 1.5 1 1.8.8 2.1.7l.7-.9c.2-.3.4-.3.7-.2l1.7.8c.3.1.5.2.5.5 0 .3-.2 1-.8 1.6-.5.5-1.1.6-1.5.6-.3 0-.7 0-1.2-.2-1.4-.4-3.2-1.5-4.6-3.1-1.2-1.3-2.1-2.8-2.3-4-.1-.5 0-.9.2-1.3z" />
+    </svg>
+  );
+}
 
 export function AppFooter() {
   const year = new Date().getFullYear();
@@ -74,6 +95,54 @@ export function AppFooter() {
               <a href="mailto:info@unidoxia.com" className="hover:underline">
                 info@unidoxia.com
               </a>
+            </div>
+
+            <div className="pt-2">
+              <p className="text-sm font-medium">
+                {t("layout.footer.followUs", { defaultValue: "Follow UniDoxia" })}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("layout.footer.followUsSubtitle", {
+                  defaultValue: "Follow us on LinkedIn, Facebook, and our WhatsApp channel.",
+                })}
+              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <a
+                    href="https://www.linkedin.com/company/110137778/admin/dashboard/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("layout.footer.social.linkedin", { defaultValue: "Follow us on LinkedIn" })}
+                    title={t("layout.footer.social.linkedinShort", { defaultValue: "LinkedIn" })}
+                  >
+                    <Linkedin className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <a
+                    href="https://www.facebook.com/profile.php?id=61584297605909"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("layout.footer.social.facebook", { defaultValue: "Follow us on Facebook" })}
+                    title={t("layout.footer.social.facebookShort", { defaultValue: "Facebook" })}
+                  >
+                    <Facebook className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <a
+                    href="https://whatsapp.com/channel/0029Vawx2lA2kNFjQrxOc640"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("layout.footer.social.whatsapp", {
+                      defaultValue: "Follow the UniDoxia.com channel on WhatsApp",
+                    })}
+                    title={t("layout.footer.social.whatsappShort", { defaultValue: "WhatsApp" })}
+                  >
+                    <WhatsAppIcon className="h-4 w-4" />
+                  </a>
+                </Button>
+              </div>
             </div>
           </div>
 
