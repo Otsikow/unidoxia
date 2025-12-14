@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
-import BackButton from "@/components/BackButton";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
 // Import destination images
+import ukImage from "@/assets/university-oxford.jpg";
 import usaImage from "@/assets/destinations/usa.jpeg";
+import canadaImage from "@/assets/university-toronto.jpg";
+import australiaImage from "@/assets/university-melbourne.jpg";
 import germanyImage from "@/assets/destinations/germany.jpeg";
 import irelandImage from "@/assets/destinations/ireland.jpeg";
 
@@ -20,7 +22,7 @@ const countries = [
     shortName: "UK",
     flag: "🇬🇧",
     landmark: "Big Ben",
-    landmarkImage: "https://images.unsplash.com/photo-1529655683826-aba9b3e77383?w=400&h=300&fit=crop",
+    landmarkImage: ukImage,
     color: "from-blue-600 to-red-600",
     bgColor: "bg-blue-500/10",
     borderColor: "border-blue-500/30",
@@ -46,7 +48,7 @@ const countries = [
     shortName: "Canada",
     flag: "🇨🇦",
     landmark: "CN Tower",
-    landmarkImage: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f?w=400&h=300&fit=crop",
+    landmarkImage: canadaImage,
     color: "from-red-600 to-red-700",
     bgColor: "bg-red-500/10",
     borderColor: "border-red-500/30",
@@ -59,7 +61,7 @@ const countries = [
     shortName: "Australia",
     flag: "🇦🇺",
     landmark: "Sydney Opera House",
-    landmarkImage: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=400&h=300&fit=crop",
+    landmarkImage: australiaImage,
     color: "from-blue-600 to-yellow-500",
     bgColor: "bg-yellow-500/10",
     borderColor: "border-yellow-500/30",
@@ -215,10 +217,6 @@ export default function OnboardingDestinations() {
           showContent ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="container mx-auto max-w-4xl">
-          <BackButton fallback="/onboarding/success-stories" />
-        </div>
-
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-3 animate-fade-in-up">
             Choose Where Your Future <span className="text-primary">Begins</span>

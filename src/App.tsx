@@ -550,11 +550,46 @@ const App = () => {
                         <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
 
                         {/* Onboarding */}
-                        <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
-                        <Route path="/onboarding/visa-requirements" element={<OnboardingVisaRequirements />} />
-                        <Route path="/onboarding/success-stories" element={<OnboardingStudentSuccess />} />
-                        <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
-                        <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />
+                        <Route
+                          path="/onboarding/welcome"
+                          element={
+                            <PublicLayout fullBleed>
+                              <OnboardingWelcome />
+                            </PublicLayout>
+                          }
+                        />
+                        <Route
+                          path="/onboarding/visa-requirements"
+                          element={
+                            <PublicLayout fullBleed>
+                              <OnboardingVisaRequirements />
+                            </PublicLayout>
+                          }
+                        />
+                        <Route
+                          path="/onboarding/success-stories"
+                          element={
+                            <PublicLayout fullBleed>
+                              <OnboardingStudentSuccess />
+                            </PublicLayout>
+                          }
+                        />
+                        <Route
+                          path="/onboarding/destinations"
+                          element={
+                            <PublicLayout fullBleed>
+                              <OnboardingDestinations />
+                            </PublicLayout>
+                          }
+                        />
+                        <Route
+                          path="/onboarding/visa-support"
+                          element={
+                            <PublicLayout fullBleed>
+                              <OnboardingVisaSupport />
+                            </PublicLayout>
+                          }
+                        />
 
                         {/* AGENT ONBOARDING (PUBLIC — OPTION C) */}
                         <Route

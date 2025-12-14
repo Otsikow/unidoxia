@@ -10,20 +10,23 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+import professionalConsultant from "@/assets/professional-consultant.png";
+import studentWorkStudy from "@/assets/student-work-study.png";
+
 /* -------------------------- STATIC DATA -------------------------- */
 
 const portraits = [
   {
     name: "Kwame Boateng",
     title: "Agency Director, Accra",
-    image:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+    image: studentWorkStudy,
+    objectClassName: "object-cover object-right",
   },
   {
     name: "Lerato Moyo",
     title: "Lead Recruiter, Nairobi",
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
+    image: professionalConsultant,
+    objectClassName: "object-cover object-center",
   },
 ];
 
@@ -54,7 +57,7 @@ const quickBenefits = [
 /* -------------------------- UI ICON ORB -------------------------- */
 
 const IconOrb = ({ icon: Icon }: { icon: typeof Globe2 }) => (
-  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-primary/30 shadow-lg shadow-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-primary/25 shadow-lg shadow-primary/10 border border-primary/20 flex items-center justify-center text-primary">
     <Icon className="h-5 w-5" />
   </div>
 );
@@ -127,12 +130,12 @@ const AgentOnboardingWelcome = () => {
   /* ===================================================================== */
 
   return (
-    <div className="relative min-h-screen bg-white text-slate-900 overflow-hidden">
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
       {/* Gradient background */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute top-10 right-10 w-80 h-80 rounded-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-100 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-gradient-to-tr from-sky-50 via-primary/5 to-white blur-3xl" />
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/10 blur-3xl" />
+        <div className="absolute top-10 right-10 w-80 h-80 rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-transparent blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-gradient-to-tr from-primary/10 via-primary/5 to-transparent blur-3xl" />
       </div>
 
       <div className="container mx-auto px-4 md:px-8 py-14 md:py-20 relative">
@@ -140,7 +143,7 @@ const AgentOnboardingWelcome = () => {
           {/* LEFT PANEL */}
           <div className="flex-1 space-y-8">
             <div className="inline-flex items-center gap-3 rounded-full bg-primary/5 px-4 py-2 shadow-sm shadow-primary/10 border border-primary/10">
-              <Badge variant="outline" className="bg-white text-primary border-primary/30">
+              <Badge variant="outline" className="bg-background/80 text-primary border-primary/30">
                 Premium Onboarding
               </Badge>
               <span className="text-sm text-muted-foreground">
@@ -149,10 +152,10 @@ const AgentOnboardingWelcome = () => {
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900">
+              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">
                 Welcome to UniDoxia Agent Portal
               </h1>
-              <p className="text-lg text-slate-600 max-w-2xl">
+              <p className="text-lg text-muted-foreground max-w-2xl">
                 Grow your recruitment business with verified programs, high commissions,
                 and a powerful dashboard. Deliver a premium experience to students while
                 keeping every intake on track.
@@ -160,10 +163,10 @@ const AgentOnboardingWelcome = () => {
             </div>
 
             {/* ACTION BUTTONS */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button
                 size="lg"
-                className="gap-2 bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90"
+                className="gap-2 shadow-lg shadow-primary/20"
                 asChild
               >
                 <Link to={earningsHref}>
@@ -175,7 +178,7 @@ const AgentOnboardingWelcome = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="gap-2 border-slate-300 bg-white text-slate-900 hover:bg-white/90 hover:border-slate-400 shadow-sm"
+                className="gap-2 shadow-sm"
                 asChild
               >
                 <Link to="/auth/login">
@@ -189,7 +192,7 @@ const AgentOnboardingWelcome = () => {
                 <Button
                   size="lg"
                   variant="secondary"
-                  className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
+                  className="gap-2 bg-foreground text-background hover:bg-foreground/90"
                   onClick={markOnboarded}
                   disabled={markingOnboarded}
                 >
@@ -206,10 +209,10 @@ const AgentOnboardingWelcome = () => {
                 { label: "Top destinations", value: "18" },
                 { label: "Agent satisfaction", value: "4.9/5" },
               ].map((item) => (
-                <Card key={item.label} className="bg-white/80 backdrop-blur border-slate-200 shadow-sm">
+                <Card key={item.label} className="bg-card/70 backdrop-blur border-border/60 shadow-sm">
                   <CardContent className="py-4 px-5">
-                    <p className="text-sm text-slate-500">{item.label}</p>
-                    <p className="text-2xl font-semibold text-slate-900">{item.value}</p>
+                    <p className="text-sm text-muted-foreground">{item.label}</p>
+                    <p className="text-2xl font-semibold">{item.value}</p>
                   </CardContent>
                 </Card>
               ))}
@@ -228,8 +231,8 @@ const AgentOnboardingWelcome = () => {
               <IconOrb icon={MapPin} />
             </div>
 
-            <Card className="relative overflow-hidden bg-white/80 border border-slate-200 shadow-2xl shadow-primary/10">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-indigo-50" />
+            <Card className="relative overflow-hidden bg-card/70 border border-border/60 shadow-2xl shadow-primary/10">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-transparent" />
               <CardContent className="relative p-6 md:p-8">
                 <div className="flex flex-col gap-5">
                   <div className="inline-flex items-center gap-2 text-sm text-primary font-medium bg-primary/5 rounded-full px-3 py-1 self-start">
@@ -241,12 +244,12 @@ const AgentOnboardingWelcome = () => {
                     {portraits.map((portrait) => (
                       <div
                         key={portrait.name}
-                        className="relative rounded-3xl overflow-hidden border border-white/60 shadow-xl shadow-primary/15 bg-white"
+                        className="relative rounded-3xl overflow-hidden border border-border/60 shadow-xl shadow-primary/15 bg-card"
                       >
                         <img
                           src={portrait.image}
                           alt={portrait.name}
-                          className="h-64 w-full object-cover"
+                          className={`h-64 w-full ${portrait.objectClassName}`}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/65 via-slate-900/20 to-transparent" />
 
@@ -260,7 +263,7 @@ const AgentOnboardingWelcome = () => {
                           </div>
                         </div>
 
-                        <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/80 text-primary text-xs font-medium rounded-full px-3 py-1 shadow-sm">
+                        <div className="absolute top-4 right-4 flex items-center gap-2 bg-background/80 text-primary text-xs font-medium rounded-full px-3 py-1 shadow-sm border border-border/50">
                           <CheckCircle2 className="h-4 w-4" />
                           Verified Agent
                         </div>
@@ -270,25 +273,25 @@ const AgentOnboardingWelcome = () => {
 
                   {/* Feature mini section */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-                    <div className="sm:col-span-2 rounded-2xl border border-primary/15 bg-white/80 shadow-inner shadow-primary/5 p-4 flex items-center gap-4">
+                    <div className="sm:col-span-2 rounded-2xl border border-primary/15 bg-card/70 shadow-inner shadow-primary/5 p-4 flex items-center gap-4">
                       <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-indigo-100 flex items-center justify-center text-primary">
                         <GraduationCap className="h-6 w-6" />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-semibold text-slate-900">Education-first storytelling</p>
-                        <p className="text-sm text-slate-600">
+                        <p className="font-semibold">Education-first storytelling</p>
+                        <p className="text-sm text-muted-foreground">
                           Showcasing global programs with compliance-ready media kits.
                         </p>
                       </div>
                     </div>
 
-                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-indigo-50 p-4 shadow-sm sm:col-span-3">
-                      <p className="text-sm text-slate-500">Featured destinations</p>
+                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-background to-transparent p-4 shadow-sm sm:col-span-3">
+                      <p className="text-sm text-muted-foreground">Featured destinations</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {["UK", "Canada", "USA", "Australia", "Ireland", "Germany"].map((country) => (
                           <span
                             key={country}
-                            className="text-xs font-medium text-primary bg-white/80 border border-primary/20 rounded-full px-3 py-1"
+                            className="text-xs font-medium text-primary bg-background/70 border border-primary/20 rounded-full px-3 py-1"
                           >
                             {country}
                           </span>
@@ -307,16 +310,16 @@ const AgentOnboardingWelcome = () => {
           {featureHighlights.map((feature) => (
             <Card
               key={feature.title}
-              className="h-full bg-white/90 border-slate-200 shadow-sm hover:shadow-lg transition-shadow"
+              className="h-full bg-card/70 border-border/60 shadow-sm hover:shadow-lg transition-shadow"
             >
               <CardContent className="p-6 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
                     <SparkleGlyph />
                   </div>
-                  <p className="font-semibold text-lg text-slate-900">{feature.title}</p>
+                  <p className="font-semibold text-lg">{feature.title}</p>
                 </div>
-                <p className="text-sm text-slate-600">{feature.description}</p>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
               </CardContent>
             </Card>
           ))}
@@ -327,7 +330,7 @@ const AgentOnboardingWelcome = () => {
           {quickBenefits.map((benefit) => (
             <div
               key={benefit}
-              className="inline-flex items-center gap-2 rounded-full bg-white border border-primary/15 px-4 py-2 shadow-sm text-sm text-slate-700"
+              className="inline-flex items-center gap-2 rounded-full bg-card/70 border border-primary/15 px-4 py-2 shadow-sm text-sm text-muted-foreground"
             >
               <CheckCircle2 className="h-4 w-4 text-primary" />
               {benefit}
