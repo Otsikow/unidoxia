@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import BackButton from "@/components/BackButton";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 import { FileCheck, CheckCircle2, ArrowRight } from "lucide-react";
 
@@ -42,10 +41,6 @@ export default function OnboardingVisaRequirements() {
       <div className={`relative z-10 min-h-screen flex flex-col px-4 py-6 sm:py-10 transition-opacity duration-700 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}>
-        <div className="container mx-auto max-w-5xl">
-          <BackButton fallback="/onboarding/welcome" />
-        </div>
-
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="relative w-full max-w-5xl">
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 shadow-lg">

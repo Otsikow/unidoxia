@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, FileCheck, CheckCircle2 } from "lucide-react";
-import BackButton from "@/components/BackButton";
 
 // Country passport stamp data
 const passportStamps = [
@@ -193,11 +192,6 @@ export default function OnboardingVisaSupport() {
 
       {/* Main content */}
       <div className={`relative z-10 min-h-screen flex flex-col px-4 py-6 sm:py-8 transition-all duration-500 ${showContent ? "opacity-100" : "opacity-0"}`}>
-        {/* Back button */}
-        <div className="container mx-auto max-w-4xl">
-          <BackButton fallback="/onboarding/destinations" />
-        </div>
-
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
           {/* Passport icon */}

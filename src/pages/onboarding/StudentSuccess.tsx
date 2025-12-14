@@ -4,7 +4,6 @@ import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Quote, GraduationCap, Plane, FileCheck, Award } from "lucide-react";
-import BackButton from "@/components/BackButton";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
 // Success story data representing African students
@@ -348,11 +347,6 @@ export default function OnboardingStudentSuccess() {
           showContent ? "opacity-100" : "opacity-0"
         }`}
       >
-        {/* Back button */}
-        <div className="container mx-auto max-w-5xl">
-          <BackButton fallback="/onboarding/visa-requirements" />
-        </div>
-
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-5xl">
           {/* Title */}

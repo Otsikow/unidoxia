@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import BackButton from '@/components/BackButton';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -552,8 +551,6 @@ export default function StudentOnboarding() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto py-6 md:py-8 px-4 max-w-4xl space-y-6 md:space-y-8">
-        <BackButton variant="ghost" size="sm" fallback="/dashboard" />
-
         <div className="space-y-2 animate-fade-in">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-center">
             <span className="sr-only">{fullWelcomeText}</span>

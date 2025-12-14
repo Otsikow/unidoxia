@@ -7,13 +7,20 @@ import { Sparkles, MapPin, Plane } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
+import ukImage from "@/assets/university-oxford.jpg";
+import usaImage from "@/assets/university-harvard.jpg";
+import canadaImage from "@/assets/university-toronto.jpg";
+import australiaImage from "@/assets/university-melbourne.jpg";
+import germanyImage from "@/assets/destinations/germany.jpeg";
+import irelandImage from "@/assets/destinations/ireland.jpeg";
+
 // Destination data with landmark images and flags
 const destinations = [
   {
     id: "uk",
     name: "UK",
     flag: "🇬🇧",
-    image: "https://images.unsplash.com/photo-1529655683826-aba9b3e77383?w=300&h=200&fit=crop",
+    image: ukImage,
     landmark: "London",
     universities: "150+",
   },
@@ -21,7 +28,7 @@ const destinations = [
     id: "usa",
     name: "USA",
     flag: "🇺🇸",
-    image: "https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=300&h=200&fit=crop",
+    image: usaImage,
     landmark: "New York",
     universities: "200+",
   },
@@ -29,7 +36,7 @@ const destinations = [
     id: "canada",
     name: "Canada",
     flag: "🇨🇦",
-    image: "https://images.unsplash.com/photo-1517090504586-fde19ea6066f?w=300&h=200&fit=crop",
+    image: canadaImage,
     landmark: "Toronto",
     universities: "100+",
   },
@@ -37,7 +44,7 @@ const destinations = [
     id: "australia",
     name: "Australia",
     flag: "🇦🇺",
-    image: "https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=300&h=200&fit=crop",
+    image: australiaImage,
     landmark: "Sydney",
     universities: "45+",
   },
@@ -45,7 +52,7 @@ const destinations = [
     id: "germany",
     name: "Germany",
     flag: "🇩🇪",
-    image: "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=300&h=200&fit=crop",
+    image: germanyImage,
     landmark: "Berlin",
     universities: "80+",
   },
@@ -53,7 +60,7 @@ const destinations = [
     id: "ireland",
     name: "Ireland",
     flag: "🇮🇪",
-    image: "https://images.unsplash.com/photo-1590089415225-401ed6f9db8e?w=300&h=200&fit=crop",
+    image: irelandImage,
     landmark: "Dublin",
     universities: "35+",
   },
