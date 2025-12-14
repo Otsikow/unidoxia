@@ -3036,21 +3036,6 @@ export type Database = {
           id: string
         }[]
       }
-      update_application_review: {
-        Args: {
-          p_application_id: string
-          p_append_timeline_event?: Json
-          p_internal_notes?: string | null
-          p_new_status?: Database["public"]["Enums"]["application_status"] | null
-        }
-        Returns: {
-          id: string
-          internal_notes: string | null
-          status: Database["public"]["Enums"]["application_status"]
-          timeline_json: Json | null
-          updated_at: string
-        }[]
-      }
     }
     Enums: {
       app_role:
@@ -3073,7 +3058,6 @@ export type Database = {
         | "visa"
         | "enrolled"
         | "withdrawn"
-        | "rejected"
         | "deferred"
       commission_status: "pending" | "approved" | "paid" | "clawback"
       document_type:
