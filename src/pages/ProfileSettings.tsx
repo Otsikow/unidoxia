@@ -77,19 +77,19 @@ export default function ProfileSettings() {
           .from('agents')
           .select('*')
           .eq('profile_id', profile.id)
-          .single();
+          .maybeSingle();
         
         if (error) throw error;
-        return { type: 'agent', data };
+        return { type: 'agent', data: data ?? null };
       } else if (profile.role === 'student') {
         const { data, error } = await supabase
           .from('students')
           .select('*')
           .eq('profile_id', profile.id)
-          .single();
+          .maybeSingle();
         
         if (error) throw error;
-        return { type: 'student', data };
+        return { type: 'student', data: data ?? null };
       }
 
       return null;

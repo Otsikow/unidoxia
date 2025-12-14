@@ -345,6 +345,7 @@ const AgentPayments = lazyWithErrorHandling(() =>
 const AgentCommissions = lazyWithErrorHandling(() =>
   import("./pages/agent/Commissions")
 );
+const AgentSettingsPage = lazyWithErrorHandling(() => import("./pages/agent/Settings"));
 const StudentDetailsPage = lazyWithErrorHandling(() =>
   import("./pages/agent/StudentDetailsPage")
 );
@@ -704,6 +705,7 @@ const App = () => {
 
                         {/* Agent Student Details */}
                         <Route path="/agent/students/:studentId" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><StudentDetailsPage /></ProtectedRoute>} />
+                        <Route path="/agent/settings" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentSettingsPage /></ProtectedRoute>} />
 
                         {/* General Settings */}
                         <Route path="/profile/settings" element={<ProtectedRoute><UniversityProfileSettings /></ProtectedRoute>} />

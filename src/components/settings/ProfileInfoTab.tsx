@@ -64,13 +64,13 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       phone: profile.phone || '',
       country: profile.country || '',
     });
-    if (roleData?.type === 'agent' && roleData.data) {
+    if (profile.role === 'agent' && roleData?.type === 'agent' && roleData.data) {
       setAgentData({
         company_name: roleData.data.company_name || '',
         verification_document_url: roleData.data.verification_document_url || '',
       });
     }
-  }, [profile.country, profile.full_name, profile.phone, roleData]);
+  }, [profile.country, profile.full_name, profile.phone, profile.role, roleData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -193,15 +193,18 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
 
       if (error) throw error;
 
-      if (roleData?.type === 'agent' && roleData.data?.id) {
+      if (profile.role === 'agent') {
         const { error: agentError } = await supabase
           .from('agents')
-          .update({
-            company_name: agentData.company_name || null,
-            verification_document_url: agentData.verification_document_url || null,
-          })
-          .eq('id', roleData.data.id)
-          .eq('profile_id', profile.id);
+          .upsert(
+            {
+              tenant_id: profile.tenant_id,
+              profile_id: profile.id,
+              company_name: agentData.company_name || null,
+              verification_document_url: agentData.verification_document_url || null,
+            },
+            { onConflict: 'profile_id' }
+          );
 
         if (agentError) throw agentError;
       }
@@ -212,7 +215,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
         country: data?.country ?? formData.country,
       });
 
-      if (roleData?.type === 'agent' && roleData.data?.id) {
+      if (profile.role === 'agent') {
         setAgentData({
           company_name: agentData.company_name,
           verification_document_url: agentData.verification_document_url,
@@ -222,13 +225,13 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       await Promise.all([
         refreshProfile(),
         queryClient.invalidateQueries({
-        queryKey: ['roleData', profile?.id],
-      }),
-      queryClient.invalidateQueries({ queryKey: ['agent-profile-completion', profile?.id] }),
-      profile?.role === 'student'
-        ? queryClient.invalidateQueries({
-            queryKey: studentRecordQueryKey(user?.id),
-          })
+          queryKey: ['roleData', profile?.id],
+        }),
+        queryClient.invalidateQueries({ queryKey: ['agent-profile-completion', profile?.id] }),
+        profile?.role === 'student'
+          ? queryClient.invalidateQueries({
+              queryKey: studentRecordQueryKey(user?.id),
+            })
           : Promise.resolve(),
       ]);
 
@@ -379,7 +382,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
           </div>
 
           {/* Role-specific information */}
-          {roleData?.type === 'agent' && roleData.data && (
+          {profile.role === 'agent' && (
             <div className="border-t pt-4">
               <h3 className="font-semibold mb-3">Agent Information</h3>
               <div className="grid gap-4">
@@ -412,7 +415,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
                 <div className="grid gap-2">
                   <Label>Verification Status</Label>
                   <Input
-                    value={roleData.data.verification_status || 'pending'}
+                    value={roleData?.type === 'agent' ? (roleData.data?.verification_status || 'pending') : 'pending'}
                     disabled
                     className="bg-muted capitalize"
                   />
