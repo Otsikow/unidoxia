@@ -30,11 +30,11 @@ export async function fetchMessagingContacts(
     // First try using the database function (more accurate and efficient)
     try {
       const { data: contacts, error: rpcError } = await supabase.rpc(
-        'get_messaging_contacts',
+        'get_messaging_contacts' as any,
         {
           p_search: query || null,
           p_limit: limit || 50,
-        } as any
+        }
       );
 
       if (!rpcError && contacts && Array.isArray(contacts)) {

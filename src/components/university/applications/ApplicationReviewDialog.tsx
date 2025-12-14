@@ -230,7 +230,7 @@ export function ApplicationReviewDialog(props: Props) {
 
     setSavingNotes(true);
     const { data, error } = await supabase
-      .rpc("update_application_review", {
+      .rpc("update_application_review" as any, {
         p_application_id: application.id,
         p_new_status: null,
         p_internal_notes: internalNotes,
@@ -278,7 +278,7 @@ export function ApplicationReviewDialog(props: Props) {
     };
 
     const { data, error } = await supabase
-      .rpc("update_application_review", {
+      .rpc("update_application_review" as any, {
         p_application_id: application.id,
         p_new_status: selectedStatus,
         p_internal_notes: null,

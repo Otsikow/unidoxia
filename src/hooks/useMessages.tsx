@@ -11,6 +11,9 @@ import type {
   MessageAttachment,
   SendMessagePayload,
 } from "@/types/messaging";
+
+// Re-export types for consumers
+export type { Conversation, Message, TypingIndicator, MessageAttachment, SendMessagePayload } from "@/types/messaging";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
 import {
   registerDirectoryProfile,
@@ -165,7 +168,12 @@ export function useMessages() {
       .in("id", ids)
       .order("updated_at", { ascending: false });
 
-    return sortConversations((convs ?? []) as Conversation[]);
+    // Map DB results to Conversation type with required fields
+    const mapped = (convs ?? []).map((c: any) => ({
+      ...c,
+      title: c.title ?? null,
+    })) as Conversation[];
+    return sortConversations(mapped);
   }, [user?.id]);
 
   /* ======================================================
@@ -263,13 +271,13 @@ export function useMessages() {
 
       if (usingMockMessaging) return;
 
-      const { error } = await supabase.from("conversation_messages").insert({
+      const { error } = await supabase.from("conversation_messages").insert([{
         conversation_id: conversationId,
         sender_id: currentUserId,
         content,
-        attachments,
+        attachments: attachments as any,
         message_type: payload.messageType ?? "text",
-      });
+      }]);
 
       if (error) {
         toast({
@@ -344,6 +352,7 @@ export function useMessages() {
         const conv: Conversation = {
           id,
           tenant_id: tenantId,
+          title: null,
           type: "direct",
           is_group: false,
           created_at: ts,
@@ -396,6 +405,30 @@ export function useMessages() {
     ],
   );
 
+  // Stub functions for missing features
+  const startTyping = useCallback((_conversationId: string) => {
+    // TODO: Implement typing indicator
+  }, []);
+
+  const stopTyping = useCallback((_conversationId: string) => {
+    // TODO: Implement typing indicator
+  }, []);
+
+  const fetchConversations = useCallback(async () => {
+    if (usingMockMessaging) return;
+    const convs = await fetchConversationsFromDb();
+    conversationsRef.current = convs;
+    setConversations(convs);
+  }, [fetchConversationsFromDb, usingMockMessaging]);
+
+  const markConversationAsRead = useCallback(async (_conversationId: string) => {
+    // TODO: Implement read receipts
+  }, []);
+
+  const removeConversation = useCallback(async (_conversationId: string) => {
+    // TODO: Implement conversation removal
+  }, []);
+
   return {
     conversations,
     currentConversation,
@@ -406,5 +439,10 @@ export function useMessages() {
     error,
     sendMessage,
     getOrCreateConversation,
+    startTyping,
+    stopTyping,
+    fetchConversations,
+    markConversationAsRead,
+    removeConversation,
   };
 }
