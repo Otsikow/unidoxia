@@ -148,10 +148,11 @@ export const queryClient = new QueryClient({
    ========================================================================== */
 
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
 // Auth login is imported eagerly to avoid chunk loading issues that prevent
 // the sign-in form from rendering when users click the call-to-action.
 import Login from "./pages/auth/Login";
+
+const Dashboard = lazyWithErrorHandling(() => import("./pages/Dashboard"));
 
 const OnboardingWelcome = lazyWithErrorHandling(() =>
   import("./pages/onboarding/Welcome")
