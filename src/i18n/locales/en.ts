@@ -344,23 +344,23 @@ const en = {
           ctas: {
             students: {
               badge: "Students",
-              title: "Launch your global application",
+              title: "Apply to universities abroad with ease",
               description:
-                "Create a profile, upload documents once, and send polished applications to top universities in minutes.",
+                "Create your profile once, upload your documents, and apply to multiple universities in the UK, Europe, Canada, the USA, and Australia from one platform.",
               action: "Start Application",
             },
             agents: {
               badge: "Agents",
-              title: "Serve students with smart tools",
+              title: "Recruit students and earn commissions",
               description:
-                "Access dashboards, collaborate in real time, and track every milestone while growing your agency brand.",
+                "Manage your students, submit applications, track progress, and work directly with universities — all from one dashboard.",
               action: "Join as Agent",
             },
             universities: {
               badge: "Universities",
-              title: "Scale partnerships that convert",
+              title: "Connect with qualified international students",
               description:
-                "Connect with qualified applicants, get market insights, and collaborate with vetted advisors worldwide.",
+                "Receive ready-to-review applications, communicate with students and agents, and grow enrolments from Africa through a trusted recruitment network.",
               action: "Partner with Us",
             },
           },
