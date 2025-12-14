@@ -22,24 +22,37 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { tenantStudentsQueryKey } from "@/hooks/useTenantStudents";
 
-const inviteStudentSchema = z.object({
-  fullName: z
-    .string()
-    .min(2, "Please provide at least 2 characters.")
-    .max(200, "Name cannot exceed 200 characters."),
-  email: z.string().email("Enter a valid email address."),
-  phone: z
-    .string()
-    .optional()
-    .refine(
-      (value) => !value || value.trim().length >= 6,
-      "If provided, phone number should contain at least 6 characters.",
-    ),
-});
+const inviteStudentSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(2, "Please provide at least 2 characters.")
+      .max(200, "Name cannot exceed 200 characters."),
+    email: z.string().email("Enter a valid email address."),
+    phone: z
+      .string()
+      .optional()
+      .refine(
+        (value) => !value || value.trim().length >= 6,
+        "If provided, phone number should contain at least 6 characters.",
+      ),
+    sendWhatsApp: z.boolean().default(false),
+  })
+  .superRefine((values, ctx) => {
+    if (values.sendWhatsApp && !values.phone?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["phone"],
+        message: "WhatsApp number is required when sending via WhatsApp.",
+      });
+    }
+  });
 
 type InviteStudentFormValues = z.infer<typeof inviteStudentSchema>;
 
@@ -126,7 +139,7 @@ export function InviteStudentDialog({
   open,
   onOpenChange,
   title = "Invite a student",
-  description = "Send an invite to connect a student to your dashboard. They\u2019ll receive an email with instructions to activate their account.",
+  description = "Send an invite to connect a student to your dashboard. They\u2019ll receive an email with instructions to activate their account. Optionally, also send the activation link via WhatsApp.",
   triggerLabel = "Invite Student",
   onSuccess,
 }: InviteStudentDialogProps) {
@@ -137,6 +150,8 @@ export function InviteStudentDialog({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<InviteStudentFormValues>({
     resolver: zodResolver(inviteStudentSchema),
@@ -144,13 +159,23 @@ export function InviteStudentDialog({
       fullName: "",
       email: "",
       phone: "",
+      sendWhatsApp: false,
     },
   });
+
+  const sendWhatsApp = watch("sendWhatsApp");
 
   const canInvite = useMemo(() => {
     if (!tenantId) return false;
     return Boolean(agentProfileId || counselorProfileId);
   }, [agentProfileId, counselorProfileId, tenantId]);
+
+  const buildWhatsAppUrl = (phoneNumber: string, message: string) => {
+    const digitsOnly = phoneNumber.replace(/[^\d]/g, "");
+    const cleaned = digitsOnly.startsWith("00") ? digitsOnly.slice(2) : digitsOnly;
+    const base = `https://wa.me/${cleaned}`;
+    return `${base}?text=${encodeURIComponent(message)}`;
+  };
 
   const closeDialog = () => {
     onOpenChange(false);
@@ -188,6 +213,7 @@ export function InviteStudentDialog({
         tenantId: string;
         agentProfileId?: string;
         counselorProfileId?: string;
+        includeActionLink?: boolean;
       } = {
         fullName: values.fullName.trim(),
         email: values.email.trim().toLowerCase(),
@@ -196,6 +222,10 @@ export function InviteStudentDialog({
 
       if (values.phone?.trim()) {
         payload.phone = values.phone.trim();
+      }
+
+      if (values.sendWhatsApp) {
+        payload.includeActionLink = true;
       }
 
       if (agentProfileId) {
@@ -221,6 +251,7 @@ export function InviteStudentDialog({
         success?: boolean;
         studentId?: string;
         inviteType?: string;
+        actionLink?: string;
         error?: string;
       }>("invite-student", {
         body: payload,
@@ -245,9 +276,27 @@ export function InviteStudentDialog({
         throw new Error("The student invite could not be completed.");
       }
 
+      const actionLink = data?.actionLink;
+      const shouldOfferWhatsApp = Boolean(values.sendWhatsApp && payload.phone && actionLink);
+      const whatsAppMessage = shouldOfferWhatsApp
+        ? `Hi ${values.fullName.trim()}! You\u2019ve been invited to UniDoxia. Activate your account here: ${actionLink}`
+        : null;
+      const whatsAppUrl =
+        shouldOfferWhatsApp && whatsAppMessage ? buildWhatsAppUrl(payload.phone!, whatsAppMessage) : null;
+
       toast({
         title: "Student invited",
-        description: `${values.fullName} will receive an email with next steps.`,
+        description: values.sendWhatsApp
+          ? `${values.fullName} will receive an email. You can also send the activation link via WhatsApp.`
+          : `${values.fullName} will receive an email with next steps.`,
+        action: whatsAppUrl ? (
+          <ToastAction
+            altText="Open WhatsApp"
+            onClick={() => window.open(whatsAppUrl, "_blank", "noopener,noreferrer")}
+          >
+            Open WhatsApp
+          </ToastAction>
+        ) : undefined,
       });
 
       closeDialog();
@@ -295,9 +344,31 @@ export function InviteStudentDialog({
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
 
+          <div className="flex items-start gap-3 rounded-md border bg-muted/20 p-3">
+            <Checkbox
+              id="sendWhatsApp"
+              checked={sendWhatsApp}
+              onCheckedChange={(checked) => setValue("sendWhatsApp", Boolean(checked))}
+              disabled={isSubmitting}
+            />
+            <div className="space-y-1 leading-tight">
+              <Label htmlFor="sendWhatsApp" className="cursor-pointer">
+                Also send via WhatsApp
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                We\u2019ll generate an activation link you can send on WhatsApp.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone number (optional)</Label>
-            <Input id="phone" autoComplete="tel" {...register("phone")} />
+            <Label htmlFor="phone">WhatsApp number {sendWhatsApp ? "" : "(optional)"}</Label>
+            <Input
+              id="phone"
+              autoComplete="tel"
+              placeholder={sendWhatsApp ? "e.g. +447700900123" : undefined}
+              {...register("phone")}
+            />
             {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
           </div>
 
