@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -56,7 +56,25 @@ const inviteStudentSchema = z
 
 type InviteStudentFormValues = z.infer<typeof inviteStudentSchema>;
 
-const extractInviteErrorMessage = async (error: unknown): Promise<string> => {
+type InviteErrorDetails = {
+  message: string;
+  status?: number;
+  code?: string;
+  retryAfterSeconds?: number;
+};
+
+const parseRetryAfterSeconds = (message: string): number | undefined => {
+  const match = message.match(/after\s+(\d+)\s+seconds?/i);
+  if (!match) return undefined;
+  const value = Number(match[1]);
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+};
+
+const isRateLimitMessage = (message: string) =>
+  /for security purposes, you can only request this after/i.test(message) ||
+  /too many requests/i.test(message);
+
+const extractInviteErrorDetails = async (error: unknown): Promise<InviteErrorDetails> => {
   const parseResponseError = async (response: Response) => {
     const statusDetails = `${response.status || ""} ${response.statusText || ""}`.trim();
 
@@ -77,7 +95,7 @@ const extractInviteErrorMessage = async (error: unknown): Promise<string> => {
           : undefined) ?? (typeof parsedBody === "string" ? parsedBody : undefined);
 
       if (candidateMessage) {
-        return statusDetails ? `${candidateMessage} (${statusDetails})` : candidateMessage;
+        return candidateMessage;
       }
     } catch {
       // Ignore JSON parse errors and fall back to the plain text body.
@@ -86,7 +104,7 @@ const extractInviteErrorMessage = async (error: unknown): Promise<string> => {
     try {
       const text = await response.clone().text();
       if (text) {
-        return statusDetails ? `${text} (${statusDetails})` : text;
+        return text;
       }
     } catch {
       // Ignore body parsing failures and fall through to the default message.
@@ -102,20 +120,93 @@ const extractInviteErrorMessage = async (error: unknown): Promise<string> => {
 
     if (response instanceof Response) {
       const responseMessage = await parseResponseError(response);
-      if (responseMessage) return responseMessage;
+
+      let code: string | undefined;
+      let retryAfterSeconds: number | undefined;
+
+      try {
+        const parsedBody = await response.clone().json();
+        if (parsedBody && typeof parsedBody === "object") {
+          const anyBody = parsedBody as any;
+          if (typeof anyBody.code === "string") code = anyBody.code;
+          if (typeof anyBody.retryAfterSeconds === "number") retryAfterSeconds = anyBody.retryAfterSeconds;
+        }
+      } catch {
+        // ignore
+      }
+
+      const retryAfterHeader = response.headers.get("Retry-After");
+      if (!retryAfterSeconds && retryAfterHeader) {
+        const asNum = Number(retryAfterHeader);
+        if (Number.isFinite(asNum) && asNum > 0) retryAfterSeconds = asNum;
+      }
+
+      if (!retryAfterSeconds && responseMessage) retryAfterSeconds = parseRetryAfterSeconds(responseMessage);
+
+      return {
+        message: responseMessage || error.message,
+        status: response.status,
+        code,
+        retryAfterSeconds,
+      };
     }
 
-    return error.message;
+    return { message: error.message };
   }
 
   if (error instanceof FunctionsFetchError) {
-    return error.message ||
-      "Unable to reach the invite service. Please check your connection and try again.";
+    return {
+      message:
+        error.message ||
+        "Unable to reach the invite service. Please check your internet connection and try again.",
+    };
   }
 
-  if (error instanceof Error) return error.message;
+  if (error instanceof Error) return { message: error.message };
 
-  return "Unexpected error while inviting the student.";
+  return { message: "Unexpected error while inviting the student." };
+};
+
+const formatInviteErrorForUser = (details: InviteErrorDetails): { title: string; description: string } => {
+  const message = details.message?.trim() || "Failed to send invitation.";
+
+  const isRateLimited =
+    details.status === 429 || details.code === "rate_limited" || isRateLimitMessage(message);
+
+  if (isRateLimited) {
+    const seconds = details.retryAfterSeconds ?? parseRetryAfterSeconds(message);
+    const waitPart = seconds ? ` Please wait ${seconds} seconds and try again.` : " Please wait a moment and try again.";
+    return {
+      title: "Please wait before retrying",
+      description: `You're sending invitations too quickly.${waitPart} Tip: avoid clicking “Send invite” multiple times.`,
+    };
+  }
+
+  if (details.status === 401) {
+    return {
+      title: "Session expired",
+      description: "Please sign in again and retry sending the invitation.",
+    };
+  }
+
+  if (details.status === 409) {
+    return {
+      title: "Invitation blocked",
+      description: `${message} Try using a different email address, or contact support if you believe this is a mistake.`,
+    };
+  }
+
+  if (details.status && details.status >= 500) {
+    return {
+      title: "Failed to send invitation",
+      description: `${message} Please try again in a moment. If the problem persists, refresh the page and contact support.`,
+    };
+  }
+
+  return {
+    title: "Unable to invite student",
+    description: `${message} Please double-check the form and try again.`,
+  };
 };
 
 export interface InviteStudentDialogProps {
@@ -145,6 +236,8 @@ export function InviteStudentDialog({
 }: InviteStudentDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [cooldownUntilMs, setCooldownUntilMs] = useState<number>(0);
+  const [nowMs, setNowMs] = useState<number>(() => Date.now());
 
   const {
     register,
@@ -165,6 +258,18 @@ export function InviteStudentDialog({
 
   const sendWhatsApp = watch("sendWhatsApp");
 
+  const cooldownSecondsLeft = useMemo(() => {
+    if (!cooldownUntilMs) return 0;
+    const diff = Math.ceil((cooldownUntilMs - nowMs) / 1000);
+    return diff > 0 ? diff : 0;
+  }, [cooldownUntilMs, nowMs]);
+
+  useEffect(() => {
+    if (cooldownSecondsLeft <= 0) return;
+    const id = window.setInterval(() => setNowMs(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [cooldownSecondsLeft]);
+
   const canInvite = useMemo(() => {
     if (!tenantId) return false;
     return Boolean(agentProfileId || counselorProfileId);
@@ -180,6 +285,7 @@ export function InviteStudentDialog({
   const closeDialog = () => {
     onOpenChange(false);
     reset();
+    setCooldownUntilMs(0);
   };
 
   const invalidateQueries = (currentTenantId: string) => {
@@ -200,6 +306,15 @@ export function InviteStudentDialog({
       toast({
         title: "Invite unavailable",
         description: "We couldn\u2019t verify the required staff or agent details. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (cooldownSecondsLeft > 0) {
+      toast({
+        title: "Please wait",
+        description: `Try again in ${cooldownSecondsLeft} seconds.`,
         variant: "destructive",
       });
       return;
@@ -305,11 +420,31 @@ export function InviteStudentDialog({
 
       onSuccess?.();
     } catch (error) {
-      const message = await extractInviteErrorMessage(error);
+      const details = await extractInviteErrorDetails(error);
+      const formatted = formatInviteErrorForUser(details);
+
+      // Cooldown for rate limiting (avoid repeated 429/GoTrue rate limit errors).
+      const rateLimited =
+        details.status === 429 ||
+        details.code === "rate_limited" ||
+        isRateLimitMessage(details.message || "");
+      if (rateLimited) {
+        const seconds = details.retryAfterSeconds ?? parseRetryAfterSeconds(details.message) ?? 40;
+        setCooldownUntilMs(Date.now() + seconds * 1000);
+      }
+
+      // Developer-friendly logging with stack trace + context.
+      console.error("Invite student failed", {
+        status: details.status,
+        code: details.code,
+        retryAfterSeconds: details.retryAfterSeconds,
+        message: details.message,
+        error,
+      });
 
       toast({
-        title: "Unable to invite student",
-        description: message,
+        title: formatted.title,
+        description: formatted.description,
         variant: "destructive",
       });
     }
@@ -381,12 +516,14 @@ export function InviteStudentDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || cooldownSecondsLeft > 0}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending
                 </>
+              ) : cooldownSecondsLeft > 0 ? (
+                `Try again in ${cooldownSecondsLeft}s`
               ) : (
                 "Send invite"
               )}

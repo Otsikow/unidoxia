@@ -185,6 +185,7 @@ const LegalTerms = lazyWithErrorHandling(() => import("./pages/LegalTerms"));
 const Feedback = lazyWithErrorHandling(() => import("./pages/Feedback"));
 const Signup = lazyWithErrorHandling(() => import("./pages/auth/Signup"));
 const VerifyEmail = lazyWithErrorHandling(() => import("./pages/auth/VerifyEmail"));
+const AuthCallback = lazyWithErrorHandling(() => import("./pages/auth/Callback"));
 const ForgotPassword = lazyWithErrorHandling(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithErrorHandling(() => import("./pages/auth/ResetPassword"));
 const UniversitySearch = lazyWithErrorHandling(() => import("./pages/UniversitySearch"));
@@ -568,6 +569,7 @@ const App = () => {
                         <Route path="/auth/signup" element={<PublicLayout><Signup /></PublicLayout>} />
                         <Route path="/signup" element={<LegacySignupRedirect />} />
                         <Route path="/verify-email" element={<PublicLayout><VerifyEmail /></PublicLayout>} />
+                        <Route path="/auth/callback" element={<PublicLayout><AuthCallback /></PublicLayout>} />
                         <Route path="/auth/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
                         <Route path="/auth/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
 

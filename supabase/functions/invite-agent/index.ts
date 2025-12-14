@@ -16,6 +16,13 @@ interface InviteAgentRequest {
   tenantId: string;
 }
 
+type HttpErrorPayload = {
+  status: number;
+  message: string;
+  code?: string;
+  retryAfterSeconds?: number;
+};
+
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split(".");
@@ -73,6 +80,104 @@ function normalizeEmail(email: string): string {
 
 function isValidUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
+
+function parseRetryAfterSeconds(message: string): number | undefined {
+  const match = message.match(/after\s+(\d+)\s+seconds?/i);
+  if (!match) return undefined;
+  const value = Number(match[1]);
+  return Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+function toHttpErrorPayload(error: unknown): HttpErrorPayload {
+  const defaultPayload: HttpErrorPayload = {
+    status: 500,
+    message: "Unexpected error while inviting the agent.",
+  };
+
+  if (!error) return defaultPayload;
+
+  if (typeof error === "string") {
+    return { ...defaultPayload, message: error };
+  }
+
+  if (error instanceof Error) {
+    const message = error.message || defaultPayload.message;
+    const anyErr = error as any;
+    const statusCandidate = Number(anyErr?.status ?? anyErr?.statusCode);
+    const code = typeof anyErr?.code === "string" ? anyErr.code : undefined;
+
+    const isRateLimited =
+      statusCandidate === 429 ||
+      /for security purposes, you can only request this after/i.test(message) ||
+      /too many requests/i.test(message);
+
+    if (isRateLimited) {
+      const retryAfterSeconds = parseRetryAfterSeconds(message);
+      return {
+        status: 429,
+        message,
+        code: code ?? "rate_limited",
+        retryAfterSeconds,
+      };
+    }
+
+    if (Number.isFinite(statusCandidate) && statusCandidate >= 400 && statusCandidate <= 599) {
+      return {
+        status: statusCandidate,
+        message,
+        code,
+      };
+    }
+
+    return {
+      status: 500,
+      message,
+      code,
+    };
+  }
+
+  if (typeof error === "object") {
+    const anyErr = error as any;
+    const message =
+      (typeof anyErr?.message === "string" && anyErr.message) ||
+      (typeof anyErr?.error === "string" && anyErr.error) ||
+      defaultPayload.message;
+
+    const statusCandidate = Number(anyErr?.status ?? anyErr?.statusCode);
+    const code = typeof anyErr?.code === "string" ? anyErr.code : undefined;
+
+    const isRateLimited =
+      statusCandidate === 429 ||
+      /for security purposes, you can only request this after/i.test(message) ||
+      /too many requests/i.test(message);
+
+    if (isRateLimited) {
+      const retryAfterSeconds = parseRetryAfterSeconds(message);
+      return {
+        status: 429,
+        message,
+        code: code ?? "rate_limited",
+        retryAfterSeconds,
+      };
+    }
+
+    if (Number.isFinite(statusCandidate) && statusCandidate >= 400 && statusCandidate <= 599) {
+      return {
+        status: statusCandidate,
+        message,
+        code,
+      };
+    }
+
+    return {
+      status: 500,
+      message,
+      code,
+    };
+  }
+
+  return defaultPayload;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -325,16 +430,49 @@ serve(async (req: Request): Promise<Response> => {
       },
     );
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unexpected error";
-    console.error("Error inviting agent", {
-      errorMessage: message,
-      errorStack: error instanceof Error ? error.stack : null,
-      errorCause: error instanceof Error && error.cause ? error.cause : null,
-    });
+    const payload = toHttpErrorPayload(error);
 
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const logBase = {
+      status: payload.status,
+      errorMessage: payload.message,
+      errorCode: payload.code ?? null,
+      retryAfterSeconds: payload.retryAfterSeconds ?? null,
+      errorStack: error instanceof Error ? error.stack : null,
+      errorCause: error instanceof Error && (error as Error).cause ? (error as Error).cause : null,
+    };
+
+    if (payload.status >= 500) {
+      console.error("Error inviting agent", logBase);
+    } else {
+      console.warn("Invite agent request failed", logBase);
+    }
+
+    const headers: Record<string, string> = {
+      ...corsHeaders,
+      "Content-Type": "application/json",
+    };
+
+    if (payload.status === 429) {
+      const retryAfter =
+        payload.retryAfterSeconds ??
+        (typeof Deno.env.get("INVITE_RATE_LIMIT_RETRY_AFTER_SECONDS") === "string"
+          ? Number(Deno.env.get("INVITE_RATE_LIMIT_RETRY_AFTER_SECONDS"))
+          : undefined);
+      if (retryAfter && Number.isFinite(retryAfter) && retryAfter > 0) {
+        headers["Retry-After"] = String(Math.ceil(retryAfter));
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        error: payload.message,
+        code: payload.code,
+        retryAfterSeconds: payload.retryAfterSeconds,
+      }),
+      {
+        status: payload.status,
+        headers,
+      },
+    );
   }
 });
