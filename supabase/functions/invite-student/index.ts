@@ -15,6 +15,7 @@ interface InviteStudentRequest {
   agentProfileId?: string;
   counselorProfileId?: string;
   tenantId: string;
+  includeActionLink?: boolean;
 }
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
@@ -104,6 +105,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const { fullName, email, phone, agentProfileId, counselorProfileId, tenantId } = body;
+    const includeActionLink = Boolean(body.includeActionLink);
 
     if (!agentProfileId && !counselorProfileId) {
       return new Response(JSON.stringify({ error: "An agent or staff owner is required" }), {
@@ -180,6 +182,7 @@ serve(async (req: Request): Promise<Response> => {
 
     let userId: string | undefined = existingProfile?.id;
     let inviteType: "invite" | "magic_link" = "invite";
+    let actionLink: string | undefined = undefined;
 
     if (existingProfile) {
       const { error: magicLinkError } = await retry<{ data: unknown; error: Error | null }>(() =>
@@ -226,6 +229,37 @@ serve(async (req: Request): Promise<Response> => {
       }
 
       userId = inviteData.user?.id;
+    }
+
+    if (includeActionLink) {
+      const { data: linkData, error: linkError } = await retry<{
+        data: unknown;
+        error: Error | null;
+      }>(() =>
+        supabaseAdmin.auth.admin.generateLink({
+          type: "magiclink",
+          email: normalizedEmail,
+          options: {
+            redirectTo,
+            shouldCreateUser: false,
+            data: {
+              full_name: fullName,
+              role: "student",
+              tenant_id: tenantId,
+              phone: phone ?? undefined,
+            },
+          },
+        }),
+      );
+
+      if (linkError) {
+        console.error("Error generating action link", linkError);
+      } else {
+        const candidate = (linkData as any)?.properties?.action_link;
+        if (typeof candidate === "string" && candidate.trim().length > 0) {
+          actionLink = candidate;
+        }
+      }
     }
 
     if (!userId) {
@@ -394,6 +428,7 @@ serve(async (req: Request): Promise<Response> => {
         success: true,
         studentId: studentRecord.id,
         inviteType,
+        actionLink,
       }),
       {
         status: 200,
