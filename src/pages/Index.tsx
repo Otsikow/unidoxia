@@ -45,12 +45,8 @@ const Index = () => {
     t
   } = useTranslation();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
-
-  // Defer the hero background video so it doesn't block initial paint/network,
-  // and respect low-bandwidth + reduced motion preferences.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const [shouldLoadHeroVideo] = useState(() => {
+    if (typeof window === "undefined") return false;
 
     const prefersReducedMotion =
       typeof window.matchMedia === "function" &&
@@ -61,21 +57,8 @@ const Index = () => {
     const effectiveType = String(conn?.effectiveType ?? "");
     const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
 
-    if (prefersReducedMotion || saveData || isSlowConnection) {
-      setShouldLoadHeroVideo(false);
-      return;
-    }
-
-    const enable = () => setShouldLoadHeroVideo(true);
-
-    if ("requestIdleCallback" in window) {
-      const id = (window as any).requestIdleCallback(enable, { timeout: 2000 });
-      return () => (window as any).cancelIdleCallback?.(id);
-    }
-
-    const timeoutId = window.setTimeout(enable, 1200);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
+    return !(prefersReducedMotion || saveData || isSlowConnection);
+  });
 
   // HERO CTAs
   const heroCtas = useMemo(() => [{
@@ -175,7 +158,7 @@ const Index = () => {
 
       {/* HERO VIDEO SECTION */}
       <section className="hero-video-container">
-        {/* Background video (deferred) */}
+        {/* Background video */}
         {shouldLoadHeroVideo ? (
           <video
             className="hero-video"
@@ -183,20 +166,11 @@ const Index = () => {
             loop
             muted
             playsInline
-            preload="metadata"
-            poster={studentsStudyingGroup}
+            preload="auto"
           >
             <source src="/videos/hero-video.mp4" type="video/mp4" />
           </video>
-        ) : (
-          <img
-            src={studentsStudyingGroup}
-            alt=""
-            className="hero-video"
-            decoding="async"
-            aria-hidden="true"
-          />
-        )}
+        ) : null}
 
         {/* Dark Overlay */}
         <div className="hero-video-overlay" />

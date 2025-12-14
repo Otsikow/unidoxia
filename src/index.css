@@ -601,6 +601,7 @@ All colors MUST be HSL.
     width: 100%;
     min-height: 100vh;
     overflow: hidden;
+    background: hsl(0 0% 0%);
   }
 
   .hero-video {
