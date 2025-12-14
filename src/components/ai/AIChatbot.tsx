@@ -72,6 +72,7 @@ interface ZoeErrorState {
 }
 
 const STORAGE_KEY = "zoe-chat-session-id";
+const LAUNCHER_DISMISSED_KEY = "zoe-chat-launcher-dismissed";
 const CHAT_UPLOAD_BUCKET = "chat-uploads";
 const { url: SUPABASE_URL, functionsUrl: SUPABASE_FUNCTIONS_URL } =
   getSupabaseBrowserConfig();
@@ -215,6 +216,7 @@ export default function ZoeChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isLauncherDismissed, setIsLauncherDismissed] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -244,6 +246,13 @@ export default function ZoeChatbot() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    setIsLauncherDismissed(
+      window.sessionStorage.getItem(LAUNCHER_DISMISSED_KEY) === "1",
+    );
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     let stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
       stored = crypto.randomUUID();
@@ -257,6 +266,8 @@ export default function ZoeChatbot() {
 
     const handler = (event: Event) => {
       const customEvent = event as CustomEvent<{ prompt?: string }>;
+      window.sessionStorage.removeItem(LAUNCHER_DISMISSED_KEY);
+      setIsLauncherDismissed(false);
       setIsOpen(true);
       if (customEvent.detail?.prompt) {
         setInput(customEvent.detail.prompt);
@@ -832,18 +843,46 @@ export default function ZoeChatbot() {
   }, [input, isLoading, sendMessage]);
 
   if (!isOpen) {
+    if (isLauncherDismissed) return null;
+
     return (
-      <Button
-        onClick={() => {
-          setIsExpanded(false);
-          setIsOpen(true);
-        }}
-        className="fixed bottom-4 right-4 flex h-12 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold shadow-xl transition hover:translate-y-[-2px] hover:shadow-2xl md:bottom-6 md:right-6 md:h-14 md:px-6 md:text-base"
-        aria-label="Chat with Zoe"
-      >
-        <Sparkles className="h-5 w-5" />
-        Chat
-      </Button>
+      <div className="fixed bottom-4 right-4 z-50 md:bottom-6 md:right-6">
+        <div className="group relative">
+          <Button
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.sessionStorage.removeItem(LAUNCHER_DISMISSED_KEY);
+              }
+              setIsLauncherDismissed(false);
+              setIsExpanded(false);
+              setIsOpen(true);
+            }}
+            className="flex h-12 items-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold shadow-xl transition hover:translate-y-[-2px] hover:shadow-2xl md:h-14 md:px-6 md:text-base"
+            aria-label="Chat with Zoe"
+          >
+            <Sparkles className="h-5 w-5" />
+            Chat
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (typeof window !== "undefined") {
+                window.sessionStorage.setItem(LAUNCHER_DISMISSED_KEY, "1");
+              }
+              setIsLauncherDismissed(true);
+            }}
+            className="absolute -right-2 -top-2 h-7 w-7 rounded-full shadow-sm opacity-100 transition-opacity hover:opacity-100 focus-visible:opacity-100 md:opacity-0 md:group-hover:opacity-100"
+            aria-label="Dismiss chat button"
+          >
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
     );
   }
 
