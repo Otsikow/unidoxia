@@ -1074,7 +1074,7 @@ export default function UniversityDashboard() {
                       <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="draft">Draft</SelectItem>
                       <SelectItem value="submitted">Submitted</SelectItem>
-                      <SelectItem value="screening">Screening</SelectItem>
+                      <SelectItem value="screening">Under Review</SelectItem>
                       <SelectItem value="conditional_offer">Conditional Offer</SelectItem>
                       <SelectItem value="unconditional_offer">Unconditional Offer</SelectItem>
                       <SelectItem value="cas_loa">CAS/LOA</SelectItem>

@@ -28,6 +28,8 @@ import { useUniversityDashboard } from "@/components/university/layout/Universit
 import { ApplicationReviewDialog } from "@/components/university/applications/ApplicationReviewDialog";
 import { useExtendedApplication } from "@/hooks/useExtendedApplication";
 import { useToast } from "@/hooks/use-toast";
+import BackButton from "@/components/BackButton";
+import { getApplicationStatusLabel } from "@/lib/applicationStatus";
 
 const formatDate = (value: string | null) => {
   if (!value) return "—";
@@ -55,6 +57,7 @@ const ApplicationsPage = () => {
   const {
     extendedApplication,
     isLoading: isLoadingExtended,
+    error: extendedError,
     fetchExtendedApplication,
     clearApplication,
     updateLocalStatus,
@@ -172,6 +175,7 @@ const ApplicationsPage = () => {
 
   return (
     <div className="space-y-6">
+      <BackButton variant="ghost" size="sm" fallback="/university" />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">Applications</h1>
@@ -268,7 +272,7 @@ const ApplicationsPage = () => {
                 <SelectItem value="all">All statuses</SelectItem>
                 {availableStatuses.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {titleCase(status)}
+                  {getApplicationStatusLabel(status)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -363,7 +367,7 @@ const ApplicationsPage = () => {
                         </Button>
                       </td>
                       <td className="py-3 text-right text-sm text-muted-foreground">
-                        {formatDate(app.createdAt)}
+                        {formatDate(app.submittedAt ?? app.createdAt)}
                       </td>
                     </tr>
                   ))}
@@ -383,6 +387,12 @@ const ApplicationsPage = () => {
         universityId={universityId}
         tenantId={tenantId}
         isLoading={isLoadingExtended}
+        error={extendedError}
+        onRetryLoad={
+          selectedApplicationId
+            ? () => void fetchExtendedApplication(selectedApplicationId)
+            : undefined
+        }
       />
     </div>
   );

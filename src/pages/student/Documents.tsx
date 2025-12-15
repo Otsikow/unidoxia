@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +26,19 @@ interface Document {
   created_at: string;
 }
 
+interface DocumentRequest {
+  id: string;
+  request_type: string | null;
+  document_type: string;
+  status: string | null;
+  notes: string | null;
+  requested_at: string | null;
+  created_at: string | null;
+  submitted_at: string | null;
+  storage_path: string | null;
+  document_url: string | null;
+}
+
 const DOCUMENT_TYPES = [
   'passport',
   'transcript',
@@ -48,9 +61,21 @@ export default function Documents() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [requests, setRequests] = useState<DocumentRequest[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestUploadingId, setRequestUploadingId] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>('');
+  const requestFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  const pendingRequests = useMemo(
+    () =>
+      requests.filter(
+        (r) => (r.status ?? 'pending').toLowerCase() !== 'received',
+      ),
+    [requests],
+  );
 
   const loadDocumentsForStudent = useCallback(
     async (id: string) => {
@@ -74,6 +99,35 @@ export default function Documents() {
       }
     },
     [toast]
+  );
+
+  const loadDocumentRequestsForStudent = useCallback(
+    async (id: string) => {
+      try {
+        setRequestsLoading(true);
+        const { data, error } = await supabase
+          .from('document_requests')
+          .select(
+            'id, request_type, document_type, status, notes, requested_at, created_at, submitted_at, storage_path, document_url',
+          )
+          .eq('student_id', id)
+          .order('requested_at', { ascending: false });
+
+        if (error) throw error;
+        setRequests((data ?? []) as DocumentRequest[]);
+      } catch (error) {
+        logError(error, 'Documents.loadDocumentRequestsForStudent');
+        toast(
+          formatErrorForToast(
+            error,
+            'Failed to load requested documents',
+          ),
+        );
+      } finally {
+        setRequestsLoading(false);
+      }
+    },
+    [toast],
   );
 
   useEffect(() => {
@@ -100,7 +154,15 @@ export default function Documents() {
 
     setStudentId(studentRecord.id);
     loadDocumentsForStudent(studentRecord.id);
-  }, [studentRecord, studentRecordLoading, studentRecordError, loadDocumentsForStudent, toast]);
+    loadDocumentRequestsForStudent(studentRecord.id);
+  }, [
+    studentRecord,
+    studentRecordLoading,
+    studentRecordError,
+    loadDocumentsForStudent,
+    loadDocumentRequestsForStudent,
+    toast,
+  ]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) setSelectedFile(e.target.files[0]);
@@ -186,6 +248,91 @@ export default function Documents() {
     }
   };
 
+  const handleRequestUpload = async (request: DocumentRequest, file: File) => {
+    if (!studentId) return;
+
+    setRequestUploadingId(request.id);
+    try {
+      const { preparedFile, sanitizedFileName, detectedMimeType } =
+        await validateFileUpload(file, {
+          allowedMimeTypes: [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/jpg',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          ],
+          allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+          maxSizeBytes: 10 * 1024 * 1024,
+        });
+
+      const timestamp = Date.now();
+      const storagePath = `${studentId}/document-requests/${request.id}/${timestamp}-${sanitizedFileName.replace(
+        /\s+/g,
+        '-',
+      )}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('student-documents')
+        .upload(storagePath, preparedFile, {
+          cacheControl: '3600',
+          upsert: true,
+          contentType: detectedMimeType,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('student-documents')
+        .getPublicUrl(storagePath);
+
+      const publicUrl = publicUrlData?.publicUrl ?? null;
+
+      const { error: updateError } = await supabase
+        .from('document_requests')
+        .update({
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+          storage_path: storagePath,
+          document_url: publicUrl,
+        } as any)
+        .eq('id', request.id);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: 'Document submitted',
+        description: 'Your requested document has been uploaded.',
+      });
+
+      await loadDocumentRequestsForStudent(studentId);
+    } catch (error) {
+      logError(error, 'Documents.handleRequestUpload');
+      toast(formatErrorForToast(error, 'Failed to upload requested document'));
+    } finally {
+      setRequestUploadingId(null);
+    }
+  };
+
+  const handleRequestFileChange = (
+    request: DocumentRequest,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    void handleRequestUpload(request, file);
+  };
+
+  const formatRequestType = (request: DocumentRequest) => {
+    const raw = request.request_type ?? request.document_type ?? 'document';
+    return raw
+      .split('_')
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
+  };
+
   const handleDownload = async (doc: Document) => {
     try {
       const { data, error } = await supabase.storage
@@ -263,6 +410,85 @@ export default function Documents() {
           Upload and manage your application documents
         </p>
       </div>
+
+      <Card className="overflow-hidden">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2">
+              <FileText className="h-5 w-5" /> Requested Documents ({pendingRequests.length})
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => studentId && loadDocumentRequestsForStudent(studentId)}
+              disabled={requestsLoading}
+            >
+              {requestsLoading ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </CardTitle>
+          <CardDescription>
+            If a university requests additional documents, upload them here to complete your application.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {requestsLoading ? (
+            <div className="text-sm text-muted-foreground">Loading requests...</div>
+          ) : pendingRequests.length === 0 ? (
+            <div className="text-sm text-muted-foreground">
+              No pending document requests.
+            </div>
+          ) : (
+            pendingRequests.map((req) => (
+              <div
+                key={req.id}
+                className="flex flex-col gap-3 border rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="space-y-1">
+                  <div className="font-medium">{formatRequestType(req)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Requested{' '}
+                    {(req.requested_at ?? req.created_at)
+                      ? new Date(req.requested_at ?? req.created_at!).toLocaleDateString()
+                      : '—'}
+                  </div>
+                  {req.notes ? (
+                    <div className="text-sm text-muted-foreground">
+                      Note: {req.notes}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col gap-2 sm:items-end">
+                  <Badge variant="secondary" className="w-fit">
+                    {(req.status ?? 'pending').toUpperCase()}
+                  </Badge>
+
+                  <input
+                    ref={(el) => {
+                      requestFileInputRefs.current[req.id] = el;
+                    }}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    className="hidden"
+                    onChange={(e) => handleRequestFileChange(req, e)}
+                  />
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => requestFileInputRefs.current[req.id]?.click()}
+                    disabled={requestUploadingId === req.id}
+                    className="w-full sm:w-auto"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    {requestUploadingId === req.id ? 'Uploading...' : 'Upload'}
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="overflow-hidden">
         <CardHeader>

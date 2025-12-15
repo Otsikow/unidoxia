@@ -40,8 +40,8 @@ import {
 const STORAGE_BUCKET = "student-documents";
 const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
-type DocumentStatus = "pending" | "received" | "overdue" | string;
-type StatusFilterValue = "all" | "pending" | "received" | "overdue";
+type DocumentStatus = "pending" | "submitted" | "approved" | "rejected" | string;
+type StatusFilterValue = "all" | "pending" | "submitted" | "approved" | "rejected";
 type DocumentRequestRow =
   Database["public"]["Tables"]["document_requests"]["Row"] & {
     university_id?: string | null;
@@ -62,8 +62,9 @@ interface DocumentRequestItem {
 const statusOptions: { value: StatusFilterValue; label: string }[] = [
   { value: "all", label: "All statuses" },
   { value: "pending", label: "Pending" },
-  { value: "received", label: "Received" },
-  { value: "overdue", label: "Overdue" },
+  { value: "submitted", label: "Uploaded" },
+  { value: "approved", label: "Verified" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 const formatStatus = (status: string) =>
@@ -81,10 +82,12 @@ const formatDate = (value: string | null) => {
 
 const getStatusBadgeClasses = (status: string) => {
   switch (status) {
-    case "received":
+    case "approved":
       return "border-success/30 bg-success/10 text-success";
-    case "overdue":
-      return "border-red-500/40 bg-red-500/10 text-red-200";
+    case "submitted":
+      return "border-primary/30 bg-primary/10 text-primary";
+    case "rejected":
+      return "border-destructive/30 bg-destructive/10 text-destructive";
     case "pending":
     default:
       return "border-warning/30 bg-warning/10 text-warning";
@@ -130,8 +133,8 @@ const buildDocumentRequestItem = (
     id: raw.id,
     studentId: raw.student_id ?? null,
     studentName,
-    requestType: raw.request_type
-      ? formatStatus(raw.request_type.toLowerCase())
+    requestType: raw.request_type || raw.document_type
+      ? formatStatus((raw.request_type ?? raw.document_type).toLowerCase())
       : "Document",
     status,
     requestedAt: raw.requested_at ?? raw.created_at ?? null,
@@ -300,9 +303,17 @@ const UniversityDocumentRequestsPage = () => {
     setUploadingId(requestId);
 
     try {
+      const request = documentRequests.find((r) => r.id === requestId);
+      if (!request?.studentId) {
+        throw new Error(
+          "Missing student context for this request. This request may be mislinked—please refresh or contact support."
+        );
+      }
+
       const sanitizedName = file.name.replace(/\s+/g, "-");
       const timestamp = Date.now();
-      const storagePath = `document-requests/${requestId}/${timestamp}-${sanitizedName}`;
+      // Store under {student_id}/... so student-documents bucket policies can authorize access.
+      const storagePath = `${request.studentId}/document-requests/${requestId}/${timestamp}-${sanitizedName}`;
 
       const { error: uploadError } = await supabase.storage
         .from(STORAGE_BUCKET)
@@ -324,7 +335,8 @@ const UniversityDocumentRequestsPage = () => {
       const updates: Database["public"]["Tables"]["document_requests"]["Update"] & {
         university_id?: string | null;
       } = {
-        status: "received",
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
       };
 
       if (publicUrl) {
@@ -345,7 +357,7 @@ const UniversityDocumentRequestsPage = () => {
 
       toast({
         title: "Document uploaded",
-        description: "The requested document has been marked as received.",
+        description: "The requested document has been marked as uploaded.",
       });
 
       await fetchRequests({ showLoader: false });
