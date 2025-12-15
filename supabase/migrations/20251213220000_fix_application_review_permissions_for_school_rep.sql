@@ -156,3 +156,7 @@ CREATE POLICY "applications_partner_update"
 COMMENT ON FUNCTION public.update_application_review(UUID, public.application_status, TEXT, JSONB) IS
   'Authorized application review update for university partners (partner + school_rep) and staff/admin (status + internal_notes + timeline event).';
 
+-- Ensure PostgREST picks up the new/updated function immediately.
+-- Without this, clients can hit "Could not find the function ... in the schema cache".
+NOTIFY pgrst, 'reload config';
+
