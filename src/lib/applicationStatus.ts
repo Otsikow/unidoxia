@@ -13,7 +13,6 @@ export const APPLICATION_STATUS_OPTIONS: ReadonlyArray<{
   { value: "cas_loa", label: "CAS / LOA Issued" },
   { value: "visa", label: "Visa Stage" },
   { value: "enrolled", label: "Enrolled" },
-  { value: "rejected", label: "Rejected" },
   { value: "withdrawn", label: "Withdrawn" },
   // Intentionally omitted from university review UI for now:
   // { value: "draft", label: "Draft" },

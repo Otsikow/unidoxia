@@ -3057,7 +3057,6 @@ export type Database = {
         | "cas_loa"
         | "visa"
         | "enrolled"
-        | "rejected"
         | "withdrawn"
         | "deferred"
       commission_status: "pending" | "approved" | "paid" | "clawback"
