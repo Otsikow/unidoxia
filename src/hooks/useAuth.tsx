@@ -370,6 +370,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } as Profile;
   };
 
+  /**
+   * Calls the server-side ensure_user_profile RPC to self-heal malformed accounts.
+   * This handles cases where:
+   * - Profile exists in auth.users but not in profiles table
+   * - User roles entry is missing
+   * - Partner is on shared tenant (needs isolation)
+   * - Partner's university record is missing
+   */
+  const ensureUserProfileRPC = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('ensure_user_profile', {
+        p_user_id: userId,
+      });
+      
+      if (error) {
+        console.error('ensure_user_profile RPC failed:', error);
+        return { success: false, error };
+      }
+      
+      console.log('ensure_user_profile result:', data);
+      return { success: data?.success === true, data };
+    } catch (err) {
+      console.error('ensure_user_profile exception:', err);
+      return { success: false, error: err };
+    }
+  };
+
   const fetchProfile = async (userId: string, currentUser: User | null = user) => {
     try {
       // CRITICAL: Always fetch profile by user_id (auth.uid()) to ensure isolation
@@ -384,11 +411,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         console.error('Error fetching profile:', error);
 
-        // If profile not found, create and retry
+        // If profile not found, try server-side self-healing first
         if (error.code === 'PGRST116') {
-          console.log('Profile not found, creating new one...');
-          await createProfileForUser(userId);
+          console.log('Profile not found, attempting server-side self-healing...');
+          
+          // Try the server-side RPC first (more robust)
+          const rpcResult = await ensureUserProfileRPC(userId);
+          
+          if (!rpcResult.success) {
+            console.log('Server-side repair failed, trying client-side creation...');
+            await createProfileForUser(userId);
+          }
 
+          // Retry fetching the profile
           const { data: retryData, error: retryError } = await supabase
             .from('profiles')
             .select('*')
@@ -396,7 +431,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .single();
 
           if (retryError) {
-            console.error('Retry failed creating profile:', retryError);
+            console.error('Retry failed after profile repair attempt:', retryError);
             setProfile(null);
           } else {
             // SECURITY CHECK: Verify the returned profile ID matches the requested user ID
@@ -408,6 +443,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               setProfile(null);
               return;
             }
+            console.log('Profile successfully repaired/created:', retryData.email);
             setProfile(retryData);
           }
         } else {

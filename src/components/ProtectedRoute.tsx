@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
@@ -5,6 +6,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import BackButton from '@/components/BackButton';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,15 +14,55 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { user, profile, loading: authLoading, signOut, refreshProfile } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles();
   const location = useLocation();
+  const [isRepairing, setIsRepairing] = useState(false);
+  const [repairError, setRepairError] = useState<string | null>(null);
   const loading = authLoading || rolesLoading;
 
   const isStudent = profile?.role === "student" || user?.user_metadata?.role === "student";
   const isAgent = profile?.role === "agent" || user?.user_metadata?.role === "agent";
   const isStudentOnboardingRoute = location.pathname.startsWith("/student/onboarding");
   const isAgentOnboardingRoute = location.pathname.startsWith("/agents/onboarding");
+
+  /**
+   * Attempts to repair the user's account using the server-side ensure_user_profile RPC.
+   * This handles malformed accounts where profile/roles/university records are missing.
+   */
+  const handleRepairAccount = async () => {
+    if (!user?.id) return;
+    
+    setIsRepairing(true);
+    setRepairError(null);
+    
+    try {
+      const { data, error } = await supabase.rpc('ensure_user_profile', {
+        p_user_id: user.id,
+      });
+      
+      if (error) {
+        console.error('Account repair failed:', error);
+        setRepairError(error.message || 'Failed to repair account');
+        return;
+      }
+      
+      if (data?.success) {
+        console.log('Account repaired successfully:', data);
+        // Refresh the profile to pick up the repaired state
+        await refreshProfile();
+        // Force a page reload to re-initialize auth state
+        window.location.reload();
+      } else {
+        setRepairError(data?.error || 'Repair did not succeed');
+      }
+    } catch (err) {
+      console.error('Account repair exception:', err);
+      setRepairError(err instanceof Error ? err.message : 'Unexpected error during repair');
+    } finally {
+      setIsRepairing(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -36,7 +78,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
 
   // If a user has an active session but the app cannot load the associated profile,
   // sending them to /auth/login creates a redirect loop (login auto-redirects signed-in users).
-  // Instead, provide a clear recovery path: sign out, then go to login or reset password.
+  // Instead, provide a clear recovery path: try repair first, then sign out options.
   if (!profile) {
     const email = user.email ?? "";
     const resetTarget = email
@@ -59,7 +101,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
             </div>
             <CardTitle className="text-2xl font-bold">Profile not found</CardTitle>
             <CardDescription>
-              We couldn't load your account profile. To continue, reset your password or return to the login page.
+              We couldn't load your account profile. Try repairing your account, or sign out and try again.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -68,14 +110,39 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
                 Signed in as <span className="font-medium text-foreground">{email}</span>
               </p>
             ) : null}
+            
+            {repairError && (
+              <p className="text-sm text-destructive text-center bg-destructive/10 p-2 rounded">
+                {repairError}
+              </p>
+            )}
+            
             <Button
+              className="w-full"
+              onClick={handleRepairAccount}
+              disabled={isRepairing}
+            >
+              {isRepairing ? 'Repairing account...' : 'Repair my account'}
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+            
+            <Button
+              variant="outline"
               className="w-full"
               onClick={() => void signOut({ redirectTo: resetTarget })}
             >
               Reset password
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               className="w-full"
               onClick={() => void signOut({ redirectTo: "/auth/login" })}
             >

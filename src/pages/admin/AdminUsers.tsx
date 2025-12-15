@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { AccountInspector } from "@/components/admin/AccountInspector";
 
 interface RoleSummary {
   role: string;
@@ -84,6 +85,9 @@ const AdminUsers = () => {
           Ask Zoe for analysis
         </Button>
       </div>
+
+      {/* Account Inspector - Diagnose and repair malformed accounts */}
+      <AccountInspector />
 
       <Card>
         <CardHeader className="p-4 sm:p-6">
