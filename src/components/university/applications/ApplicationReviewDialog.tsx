@@ -824,7 +824,7 @@ export function ApplicationReviewDialog({
                   </TabsList>
                 </div>
 
-                <ScrollArea className="flex-1 mt-4">
+                <ScrollArea className="flex-1 min-h-0 mt-4 pr-2 sm:pr-4">
                   {/* Overview Tab */}
                   <TabsContent value="overview" className="m-0 space-y-6">
                     {/* Status Update Card */}
