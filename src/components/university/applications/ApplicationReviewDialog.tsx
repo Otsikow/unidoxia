@@ -229,6 +229,11 @@ type RpcErrorLike = {
   code?: string | null;
 };
 
+const firstRow = <T,>(data: T | T[] | null | undefined): T | null => {
+  if (!data) return null;
+  return Array.isArray(data) ? (data[0] ?? null) : data;
+};
+
 const formatSupabaseError = (error: RpcErrorLike) =>
   [
     error.message?.trim(),
@@ -455,12 +460,38 @@ export function ApplicationReviewDialog({
 
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      const fallback = await supabase
+      // Preflight: if we can't even see the row, RLS will also block the update.
+      const preflight = await supabase
         .from("applications")
-        .update({ internal_notes: internalNotes })
-        .eq("id", application.id);
+        .select("id")
+        .eq("id", application.id)
+        .limit(1);
 
-      error = fallback.error;
+      if (preflight.error) {
+        error = preflight.error;
+      } else if (!preflight.data || preflight.data.length === 0) {
+        error = {
+          code: "42501",
+          message:
+            "Update blocked. This application may not exist, or you may not have permission to access it.",
+        };
+      } else {
+        const fallback = await supabase
+          .from("applications")
+          .update({ internal_notes: internalNotes })
+          .eq("id", application.id)
+          .select("id")
+          .limit(1);
+
+        error = fallback.error;
+        if (!error && (!fallback.data || fallback.data.length === 0)) {
+          error = {
+            code: "42501",
+            message:
+              "Update blocked by row-level security. You don't have permission to update this application.",
+          };
+        }
+      }
     }
 
     setSavingNotes(false);
@@ -505,15 +536,39 @@ export function ApplicationReviewDialog({
 
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      const fallback = await supabase
+      // Preflight: if we can't see the row, RLS will also prevent returning/updating it.
+      const preflight = await supabase
         .from("applications")
-        .update({ status: selectedStatus, updated_at: new Date().toISOString() })
+        .select("id")
         .eq("id", application.id)
-        .select()
-        .single();
+        .limit(1);
 
-      data = fallback.data;
-      error = fallback.error;
+      if (preflight.error) {
+        error = preflight.error;
+      } else if (!preflight.data || preflight.data.length === 0) {
+        error = {
+          code: "42501",
+          message:
+            "Update blocked. This application may not exist, or you may not have permission to access it.",
+        };
+      } else {
+        const fallback = await supabase
+          .from("applications")
+          .update({ status: selectedStatus, updated_at: new Date().toISOString() })
+          .eq("id", application.id)
+          .select("id,status,updated_at")
+          .limit(1);
+
+        data = firstRow(fallback.data);
+        error = fallback.error;
+        if (!error && (!fallback.data || fallback.data.length === 0)) {
+          error = {
+            code: "42501",
+            message:
+              "Update blocked by row-level security. You don't have permission to update this application.",
+          };
+        }
+      }
     }
 
     setUpdatingStatus(false);
@@ -528,7 +583,8 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    const finalStatus = String(data?.status ?? selectedStatus);
+    const row = firstRow<any>(data as any);
+    const finalStatus = String(row?.status ?? selectedStatus);
     console.log("[ApplicationReview] Status updated successfully:", finalStatus);
     onStatusUpdate?.(application.id, finalStatus);
 
