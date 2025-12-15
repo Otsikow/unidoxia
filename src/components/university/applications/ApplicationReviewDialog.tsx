@@ -202,6 +202,17 @@ const REQUIRED_DOCUMENT_TYPES = [
 ];
 
 /* ======================================================
+   Error helpers
+====================================================== */
+
+type RpcErrorLike = {
+  message?: string;
+  details?: string | null;
+  hint?: string | null;
+  code?: string | null;
+};
+
+/* ======================================================
    RPC detection helper
 ====================================================== */
 
@@ -214,19 +225,88 @@ const isUpdateApplicationReviewRpcMissing = (error: unknown) => {
     e?.code === "42P01" ||
     e?.code === "42703" ||
     msg.includes("could not find the function") ||
-    msg.includes("schema cache")
+    msg.includes("schema cache") ||
+    msg.includes("function") // Broader catch for function-related errors
   );
 };
 
-/* ======================================================
-   Error helpers
-====================================================== */
+/**
+ * Provides user-actionable error messages for common update failures
+ */
+const getUserFriendlyUpdateError = (
+  error: RpcErrorLike,
+  context: { applicationId: string; attemptedStatus?: string }
+): { title: string; description: string } => {
+  const msg = (error.message ?? "").toLowerCase();
+  const code = error.code ?? "";
 
-type RpcErrorLike = {
-  message?: string;
-  details?: string | null;
-  hint?: string | null;
-  code?: string | null;
+  // RLS blocked the update (0 rows returned)
+  if (code === "PGRST116" || msg.includes("0 rows") || msg.includes("no rows")) {
+    return {
+      title: "Update not permitted",
+      description:
+        `You don't have permission to update this application. ` +
+        `This may be because the application belongs to a different university or your session has expired. ` +
+        `Please refresh the page and try again. If the problem persists, contact support. ` +
+        `(Application: ${context.applicationId})`,
+    };
+  }
+
+  // Permission denied from RPC or RLS
+  if (code === "42501" || msg.includes("permission") || msg.includes("not authorized")) {
+    return {
+      title: "Permission denied",
+      description:
+        `Your account doesn't have permission to update application status. ` +
+        `Only university partners with access to this application can make changes. ` +
+        `(Application: ${context.applicationId})`,
+    };
+  }
+
+  // Invalid status enum
+  if (code === "22P02" || msg.includes("enum") || msg.includes("invalid input")) {
+    return {
+      title: "Invalid status",
+      description:
+        `The status "${context.attemptedStatus ?? "selected"}" is not valid. ` +
+        `Please select a different status and try again.`,
+    };
+  }
+
+  // Application not found
+  if (code === "P0002" || msg.includes("not found")) {
+    return {
+      title: "Application not found",
+      description:
+        `The application could not be found. It may have been deleted or moved. ` +
+        `Please close this dialog and refresh the applications list. ` +
+        `(Application: ${context.applicationId})`,
+    };
+  }
+
+  // RPC function missing
+  if (
+    code === "PGRST202" ||
+    code === "PGRST204" ||
+    msg.includes("function") ||
+    msg.includes("schema cache")
+  ) {
+    return {
+      title: "Backend configuration issue",
+      description:
+        `The server needs to be reconfigured. Please try again in a few moments. ` +
+        `If this persists, contact your system administrator. ` +
+        `(Code: ${code || "RPC_MISSING"})`,
+    };
+  }
+
+  // Generic fallback
+  return {
+    title: "Update failed",
+    description:
+      `Unable to update the application status. ` +
+      `(Application: ${context.applicationId}, Error: ${error.message ?? "Unknown"})`,
+  };
 };
 
 const formatSupabaseError = (error: RpcErrorLike) =>
@@ -446,28 +526,50 @@ export function ApplicationReviewDialog({
     setSavingNotes(true);
     console.log("[ApplicationReview] Saving notes for application:", application.id);
 
-    let { error } = await supabase.rpc("update_application_review" as any, {
-      p_application_id: application.id,
-      p_new_status: null,
-      p_internal_notes: internalNotes,
-      p_append_timeline_event: null,
-    });
+    let error: RpcErrorLike | null = null;
 
+    // Try RPC first
+    try {
+      const rpcResult = await supabase.rpc("update_application_review" as any, {
+        p_application_id: application.id,
+        p_new_status: null,
+        p_internal_notes: internalNotes,
+        p_append_timeline_event: null,
+      });
+
+      if (rpcResult.error) {
+        error = rpcResult.error;
+      }
+    } catch (rpcErr) {
+      error = rpcErr as RpcErrorLike;
+    }
+
+    // Fallback to direct update if RPC is unavailable
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
-      console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      const fallback = await supabase
-        .from("applications")
-        .update({ internal_notes: internalNotes })
-        .eq("id", application.id);
+      console.log("[ApplicationReview] RPC missing for notes, falling back to direct update");
+      error = null;
 
-      error = fallback.error;
+      const { data: updateResult, error: updateError } = await supabase
+        .from("applications")
+        .update({ internal_notes: internalNotes, updated_at: new Date().toISOString() })
+        .eq("id", application.id)
+        .select("id");
+
+      if (updateError) {
+        error = updateError;
+      } else if (!updateResult || updateResult.length === 0) {
+        error = {
+          message: "Notes update blocked. You may not have permission to modify this application.",
+          code: "PGRST116",
+        };
+      }
     }
 
     setSavingNotes(false);
 
     if (error) {
       console.error("[ApplicationReview] Notes update failed:", error);
-      const explained = explainUpdateError(error, {
+      const explained = getUserFriendlyUpdateError(error, {
         applicationId: application.id,
       });
       toast({ ...explained, variant: "destructive" });
@@ -487,7 +589,16 @@ export function ApplicationReviewDialog({
     if (!application?.id || !selectedStatus) return;
 
     setUpdatingStatus(true);
-    console.log("[ApplicationReview] Updating status:", { applicationId: application.id, newStatus: selectedStatus });
+    
+    // Log comprehensive debug info
+    console.log("[ApplicationReview] Updating status:", {
+      applicationId: application.id,
+      currentStatus: application.status,
+      newStatus: selectedStatus,
+      newStatusLabel: getApplicationStatusLabel(selectedStatus),
+      universityId,
+      tenantId,
+    });
 
     const timelineEvent = {
       id: crypto.randomUUID(),
@@ -496,47 +607,128 @@ export function ApplicationReviewDialog({
       actor: "University",
     };
 
-    let { data, error } = await supabase.rpc("update_application_review" as any, {
-      p_application_id: application.id,
-      p_new_status: selectedStatus,
-      p_internal_notes: null,
-      p_append_timeline_event: timelineEvent,
-    });
+    let data: { status?: string } | null = null;
+    let error: RpcErrorLike | null = null;
 
+    // ============================================================
+    // Step 1: Try RPC first (preferred - uses SECURITY DEFINER)
+    // ============================================================
+    try {
+      console.log("[ApplicationReview] Attempting RPC update_application_review...");
+      const rpcResult = await supabase.rpc("update_application_review" as any, {
+        p_application_id: application.id,
+        p_new_status: selectedStatus,
+        p_internal_notes: null,
+        p_append_timeline_event: timelineEvent,
+      });
+
+      if (rpcResult.error) {
+        console.warn("[ApplicationReview] RPC error:", rpcResult.error);
+        error = rpcResult.error;
+      } else if (rpcResult.data) {
+        // RPC returns a table, so data might be an array or single object
+        const result = Array.isArray(rpcResult.data) ? rpcResult.data[0] : rpcResult.data;
+        if (result) {
+          data = result;
+          console.log("[ApplicationReview] RPC succeeded:", data);
+        } else {
+          // RPC returned no data - treat as error
+          error = { message: "RPC returned no data", code: "NO_DATA" };
+          console.warn("[ApplicationReview] RPC returned no data");
+        }
+      }
+    } catch (rpcErr) {
+      console.error("[ApplicationReview] RPC exception:", rpcErr);
+      error = rpcErr as RpcErrorLike;
+    }
+
+    // ============================================================
+    // Step 2: Fallback to direct update if RPC failed (missing/error)
+    // ============================================================
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
-      console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      const fallback = await supabase
-        .from("applications")
-        .update({ status: selectedStatus, updated_at: new Date().toISOString() })
-        .eq("id", application.id)
-        .select()
-        .single();
+      console.log("[ApplicationReview] RPC unavailable, falling back to direct update...");
+      error = null; // Reset error for fallback attempt
 
-      data = fallback.data;
-      error = fallback.error;
+      // First, verify we can read the application (preflight check)
+      const { data: preflightData, error: preflightError } = await supabase
+        .from("applications")
+        .select("id, status, program_id")
+        .eq("id", application.id)
+        .maybeSingle();
+
+      if (preflightError) {
+        console.error("[ApplicationReview] Preflight read failed:", preflightError);
+        error = preflightError;
+      } else if (!preflightData) {
+        console.error("[ApplicationReview] Application not visible to user (RLS or deleted)");
+        error = {
+          message: "Application not accessible. This may be due to permission restrictions.",
+          code: "PGRST116",
+        };
+      } else {
+        // Preflight passed - attempt the update WITHOUT .single()
+        console.log("[ApplicationReview] Preflight passed, updating...", {
+          currentDbStatus: preflightData.status,
+          programId: preflightData.program_id,
+        });
+
+        const { data: updateResult, error: updateError } = await supabase
+          .from("applications")
+          .update({
+            status: selectedStatus,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", application.id)
+          .select("id, status, updated_at");
+
+        if (updateError) {
+          console.error("[ApplicationReview] Direct update error:", updateError);
+          error = updateError;
+        } else if (!updateResult || updateResult.length === 0) {
+          // Update returned 0 rows - RLS blocked the update
+          console.error("[ApplicationReview] Update returned 0 rows (RLS blocked)");
+          error = {
+            message: "Update blocked by row-level security. You may not have permission to modify this application.",
+            code: "PGRST116",
+          };
+        } else {
+          // Success!
+          data = updateResult[0];
+          console.log("[ApplicationReview] Direct update succeeded:", data);
+        }
+      }
     }
 
     setUpdatingStatus(false);
     setConfirmStatus(false);
 
+    // ============================================================
+    // Step 3: Handle final result
+    // ============================================================
     if (error) {
-      console.error("[ApplicationReview] Status update failed:", error);
-      const explained = explainUpdateError(error, {
+      console.error("[ApplicationReview] Final status update failed:", error);
+      const explained = getUserFriendlyUpdateError(error, {
         applicationId: application.id,
+        attemptedStatus: selectedStatus,
       });
       toast({ ...explained, variant: "destructive" });
       return;
     }
 
     const finalStatus = String(data?.status ?? selectedStatus);
-    console.log("[ApplicationReview] Status updated successfully:", finalStatus);
+    console.log("[ApplicationReview] Status updated successfully:", {
+      finalStatus,
+      label: getApplicationStatusLabel(finalStatus),
+    });
+
+    // Update parent component state
     onStatusUpdate?.(application.id, finalStatus);
 
     toast({
       title: "Status updated",
       description: `Application status changed to ${getApplicationStatusLabel(finalStatus)}`,
     });
-  }, [application, selectedStatus, onStatusUpdate, toast]);
+  }, [application, selectedStatus, onStatusUpdate, toast, universityId, tenantId]);
 
   /* ===========================
      Request Document
