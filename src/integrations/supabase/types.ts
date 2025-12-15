@@ -3058,6 +3058,7 @@ export type Database = {
         | "visa"
         | "enrolled"
         | "withdrawn"
+        | "rejected"
         | "deferred"
       commission_status: "pending" | "approved" | "paid" | "clawback"
       document_type:
@@ -3238,6 +3239,7 @@ export const Constants = {
         "visa",
         "enrolled",
         "withdrawn",
+        "rejected",
         "deferred",
       ],
       commission_status: ["pending", "approved", "paid", "clawback"],
