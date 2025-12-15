@@ -93,13 +93,25 @@ const ApplicationsPage = () => {
     }
   }, [clearApplication]);
 
-  const handleStatusUpdate = useCallback((applicationId: string, newStatus: string) => {
+  const handleStatusUpdate = useCallback(async (applicationId: string, newStatus: string) => {
+    console.log("[Applications] Status update received:", { applicationId, newStatus });
+    
     // Update local state immediately for instant UI feedback
-    // Note: Timeline event is already added to DB by the dialog, so we only update status here
     updateLocalStatus(newStatus);
-    // Refetch dashboard data to update the applications list
-    void refetch();
-  }, [refetch, updateLocalStatus]);
+    
+    // Refetch dashboard data to ensure consistency with server state
+    try {
+      await refetch();
+      console.log("[Applications] Dashboard data refreshed after status update");
+    } catch (error) {
+      console.error("[Applications] Failed to refresh dashboard data:", error);
+      toast({
+        title: "Refresh failed",
+        description: "Status was saved, but the list may not reflect the change. Try refreshing.",
+        variant: "destructive",
+      });
+    }
+  }, [refetch, updateLocalStatus, toast]);
 
   const handleNotesUpdate = useCallback(() => {
     // Could add optimistic update here if needed
