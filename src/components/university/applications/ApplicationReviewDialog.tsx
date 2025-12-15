@@ -52,6 +52,19 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+const isUpdateApplicationReviewRpcMissing = (error: unknown) => {
+  const anyErr = error as { code?: string; message?: string } | null;
+  const code = anyErr?.code ?? "";
+  if (code === "PGRST202" || code === "PGRST204" || code === "42P01" || code === "42703") return true;
+
+  const message = (anyErr?.message ?? "").toLowerCase();
+  return (
+    message.includes("could not find the function public.update_application_review") ||
+    (message.includes("could not find the function") && message.includes("update_application_review")) ||
+    message.includes("schema cache")
+  );
+};
+
 /* ======================================================
    Types (re-exported for hooks)
 ====================================================== */
@@ -229,7 +242,7 @@ export function ApplicationReviewDialog(props: Props) {
     if (!application) return;
 
     setSavingNotes(true);
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .rpc("update_application_review" as any, {
         p_application_id: application.id,
         p_new_status: null,
@@ -237,13 +250,28 @@ export function ApplicationReviewDialog(props: Props) {
         p_append_timeline_event: null,
       })
       .single();
+
+    // Fallback for environments where the SECURITY DEFINER RPC hasn't been deployed yet.
+    // (PostgREST returns "Could not find the function ... in the schema cache")
+    if (error && isUpdateApplicationReviewRpcMissing(error)) {
+      const fallback = await supabase
+        .from("applications")
+        .update({ internal_notes: internalNotes })
+        .eq("id", application.id)
+        .select("id, internal_notes")
+        .single();
+
+      data = fallback.data as any;
+      error = fallback.error;
+    }
     setSavingNotes(false);
 
     if (error) {
       // Provide more helpful error messages based on the error type
       let description = "Could not save notes";
       if (error.message?.includes("Could not find the function")) {
-        description = "The notes feature is temporarily unavailable. Please contact support if this persists.";
+        description =
+          "Notes updates are not available in this environment yet. Please deploy the latest database migrations (RPC: public.update_application_review).";
       } else if (error.message) {
         description = error.message;
       }
@@ -284,7 +312,7 @@ export function ApplicationReviewDialog(props: Props) {
       actor: "University",
     };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .rpc("update_application_review" as any, {
         p_application_id: application.id,
         p_new_status: selectedStatus,
@@ -292,6 +320,35 @@ export function ApplicationReviewDialog(props: Props) {
         p_append_timeline_event: newEvent as any,
       })
       .single();
+
+    // Fallback for environments where the SECURITY DEFINER RPC hasn't been deployed yet.
+    if (error && isUpdateApplicationReviewRpcMissing(error)) {
+      const current = await supabase
+        .from("applications")
+        .select("timeline_json")
+        .eq("id", application.id)
+        .single();
+
+      if (!current.error) {
+        const existing = (current.data as any)?.timeline_json;
+        const nextTimeline =
+          existing == null
+            ? [newEvent]
+            : Array.isArray(existing)
+              ? [...existing, newEvent]
+              : [newEvent];
+
+        const fallback = await supabase
+          .from("applications")
+          .update({ status: selectedStatus as any, timeline_json: nextTimeline })
+          .eq("id", application.id)
+          .select("id, status, internal_notes, timeline_json, updated_at")
+          .single();
+
+        data = fallback.data as any;
+        error = fallback.error;
+      }
+    }
 
     setUpdatingStatus(false);
     setConfirmStatus(false);
@@ -301,7 +358,8 @@ export function ApplicationReviewDialog(props: Props) {
       // Provide more helpful error messages based on the error type
       let description = "Status update failed. You may not have permission to update this application.";
       if (error.message?.includes("Could not find the function")) {
-        description = "The status update feature is temporarily unavailable. Please contact support if this persists.";
+        description =
+          "Status updates are not available in this environment yet. Please deploy the latest database migrations (RPC: public.update_application_review).";
       } else if (error.message) {
         description = error.message;
       }
