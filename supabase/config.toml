@@ -15,13 +15,7 @@ verify_jwt = true
 [functions.generate-blog-image]
 verify_jwt = true
 
-[auth.rate_limit]
-enabled = true
-# Limit repeated authentication attempts to mitigate brute-force attacks
-attempts = 5
-interval_seconds = 60
-
-[auth.security.breached_passwords]
-enabled = true
-# Reject passwords that appear in Have I Been Pwned with at least a medium confidence score
-threshold = 1
+# Note: Rate limiting and breached password checks are configured in Supabase Dashboard
+# The following settings have been removed as they are not supported in supabase/config.toml:
+# - auth.rate_limit (use Dashboard → Authentication → Rate Limits)
+# - auth.security.breached_passwords (use Dashboard → Authentication → Security)

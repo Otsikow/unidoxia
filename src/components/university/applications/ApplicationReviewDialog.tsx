@@ -240,9 +240,16 @@ export function ApplicationReviewDialog(props: Props) {
     setSavingNotes(false);
 
     if (error) {
+      // Provide more helpful error messages based on the error type
+      let description = "Could not save notes";
+      if (error.message?.includes("Could not find the function")) {
+        description = "The notes feature is temporarily unavailable. Please contact support if this persists.";
+      } else if (error.message) {
+        description = error.message;
+      }
       toast({
         title: "Failed",
-        description: error.message || "Could not save notes",
+        description,
         variant: "destructive",
       });
       return;
@@ -291,9 +298,16 @@ export function ApplicationReviewDialog(props: Props) {
 
     if (error) {
       console.error("Status update error:", error);
+      // Provide more helpful error messages based on the error type
+      let description = "Status update failed. You may not have permission to update this application.";
+      if (error.message?.includes("Could not find the function")) {
+        description = "The status update feature is temporarily unavailable. Please contact support if this persists.";
+      } else if (error.message) {
+        description = error.message;
+      }
       toast({
         title: "Failed",
-        description: error.message || "Status update failed. You may not have permission to update this application.",
+        description,
         variant: "destructive",
       });
       return;
