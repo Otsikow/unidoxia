@@ -51,6 +51,12 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  APPLICATION_STATUS_OPTIONS,
+  getApplicationStatusLabel,
+  isApplicationStatus,
+  type ApplicationStatus,
+} from "@/lib/applicationStatus";
 
 /* ======================================================
    Types (re-exported for hooks)
@@ -155,20 +161,88 @@ interface Props {
 }
 
 /* ======================================================
-   Constants
+  Error helpers
 ====================================================== */
 
-const APPLICATION_STATUSES = [
-  { value: "submitted", label: "Submitted" },
-  { value: "screening", label: "Under Review" },
-  { value: "conditional_offer", label: "Conditional Offer" },
-  { value: "unconditional_offer", label: "Unconditional Offer" },
-  { value: "cas_loa", label: "CAS / LOA Issued" },
-  { value: "visa", label: "Visa Stage" },
-  { value: "enrolled", label: "Enrolled" },
-  { value: "rejected", label: "Rejected" },
-  { value: "withdrawn", label: "Withdrawn" },
-];
+type RpcErrorLike = {
+  message?: string;
+  details?: string | null;
+  hint?: string | null;
+  code?: string | null;
+};
+
+const formatSupabaseError = (error: RpcErrorLike) => {
+  const parts = [
+    error.message?.trim(),
+    error.details?.trim(),
+    error.hint?.trim(),
+    error.code ? `(code: ${error.code})` : null,
+  ].filter(Boolean);
+  return parts.join(" ");
+};
+
+const explainUpdateError = (error: RpcErrorLike, context: { applicationId: string }) => {
+  const message = error.message ?? "";
+  const code = error.code ?? "";
+
+  // PostgREST uses "function not found" for missing OR non-executable functions (privileges).
+  if (message.includes("Could not find the function")) {
+    return {
+      title: "Backend misconfigured",
+      description:
+        `Missing/unexposed RPC: public.update_application_review. ` +
+        `This is a database deployment/permission issue (not a UI bug). ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Fix: apply latest Supabase migrations and reload PostgREST schema cache (NOTIFY pgrst, 'reload config'). ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  if (code === "28000" || message.includes("Not authenticated")) {
+    return {
+      title: "Session expired",
+      description:
+        `You are not authenticated. Please sign in again and retry. ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  if (code === "42501" || message.toLowerCase().includes("not authorized") || message.toLowerCase().includes("permission")) {
+    return {
+      title: "Permission denied",
+      description:
+        `You do not have permission to update this application (RLS/authorization). ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  if (code === "P0002" || message.toLowerCase().includes("application not found")) {
+    return {
+      title: "Application not found",
+      description:
+        `No application exists for this ID (or it is not visible under current RLS). ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  if (code === "22P02" || message.toLowerCase().includes("invalid input") || message.toLowerCase().includes("enum")) {
+    return {
+      title: "Invalid status value",
+      description:
+        `The selected status is not accepted by the database enum. ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  return {
+    title: "Update failed",
+    description: `Application ID: ${context.applicationId}. Raw: ${formatSupabaseError(error)}`,
+  };
+};
 
 /* ======================================================
    Helpers
@@ -208,25 +282,37 @@ export function ApplicationReviewDialog(props: Props) {
   const [internalNotes, setInternalNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
 
-  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (application) {
       setInternalNotes(application.internalNotes ?? "");
-      setSelectedStatus(application.status ?? null);
+      setSelectedStatus(
+        application.status && isApplicationStatus(application.status)
+          ? application.status
+          : null,
+      );
       setActiveTab("overview");
     }
   }, [application]);
 
   const statusLabel = useMemo(() => {
     if (!selectedStatus) return "Select status";
-    return APPLICATION_STATUSES.find((s) => s.value === selectedStatus)?.label ?? selectedStatus;
+    return getApplicationStatusLabel(selectedStatus);
   }, [selectedStatus]);
 
   const saveNotes = useCallback(async () => {
     if (!application) return;
+    if (!application.id) {
+      toast({
+        title: "Failed",
+        description: "Missing application ID; cannot save notes.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setSavingNotes(true);
     const { data, error } = await supabase
@@ -240,16 +326,15 @@ export function ApplicationReviewDialog(props: Props) {
     setSavingNotes(false);
 
     if (error) {
-      // Provide more helpful error messages based on the error type
-      let description = "Could not save notes";
-      if (error.message?.includes("Could not find the function")) {
-        description = "The notes feature is temporarily unavailable. Please contact support if this persists.";
-      } else if (error.message) {
-        description = error.message;
-      }
+      console.error("Application notes update failed", {
+        applicationId: application.id,
+        internalNotesLength: internalNotes?.length ?? 0,
+        supabaseError: error,
+      });
+      const explained = explainUpdateError(error as any, { applicationId: application.id });
       toast({
-        title: "Failed",
-        description,
+        title: explained.title,
+        description: explained.description,
         variant: "destructive",
       });
       return;
@@ -258,7 +343,9 @@ export function ApplicationReviewDialog(props: Props) {
     if (!data) {
       toast({
         title: "Failed",
-        description: "Could not save notes. You may not have permission to update this application.",
+        description:
+          `No row returned from update. This usually indicates RLS blocked the update. ` +
+          `Application ID: ${application.id}.`,
         variant: "destructive",
       });
       return;
@@ -274,9 +361,18 @@ export function ApplicationReviewDialog(props: Props) {
       setConfirmStatus(false);
       return;
     }
+    if (!application.id) {
+      toast({
+        title: "Failed",
+        description: "Missing application ID; cannot update status.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setUpdatingStatus(true);
 
+    const oldStatus = application.status ?? "unknown";
     const newEvent: TimelineEvent = {
       id: crypto.randomUUID(),
       action: `Status changed to ${selectedStatus}`,
@@ -297,17 +393,16 @@ export function ApplicationReviewDialog(props: Props) {
     setConfirmStatus(false);
 
     if (error) {
-      console.error("Status update error:", error);
-      // Provide more helpful error messages based on the error type
-      let description = "Status update failed. You may not have permission to update this application.";
-      if (error.message?.includes("Could not find the function")) {
-        description = "The status update feature is temporarily unavailable. Please contact support if this persists.";
-      } else if (error.message) {
-        description = error.message;
-      }
+      console.error("Application status update failed", {
+        applicationId: application.id,
+        oldStatus,
+        newStatus: selectedStatus,
+        supabaseError: error,
+      });
+      const explained = explainUpdateError(error as any, { applicationId: application.id });
       toast({
-        title: "Failed",
-        description,
+        title: explained.title,
+        description: explained.description,
         variant: "destructive",
       });
       return;
@@ -316,17 +411,21 @@ export function ApplicationReviewDialog(props: Props) {
     if (!data) {
       toast({
         title: "Failed",
-        description: "Status update could not be saved. You may not have permission to update this application.",
+        description:
+          `No row returned from update. This usually indicates RLS blocked the update. ` +
+          `Application ID: ${application.id}.`,
         variant: "destructive",
       });
       return;
     }
 
     // Update succeeded - notify parent and show success message
-    onStatusUpdate?.(application.id, selectedStatus);
+    onStatusUpdate?.(application.id, String(data.status ?? selectedStatus));
     toast({ 
       title: "Status Updated", 
-      description: `Application status changed to ${APPLICATION_STATUSES.find(s => s.value === selectedStatus)?.label || selectedStatus}. The student and agent (if any) will be notified.` 
+      description:
+        `Application status changed from ${oldStatus} → ${String(data.status ?? selectedStatus)}. ` +
+        `The student and agent (if any) will be notified.`
     });
   }, [application, onStatusUpdate, selectedStatus, toast]);
 
@@ -452,14 +551,19 @@ export function ApplicationReviewDialog(props: Props) {
                 <div className="md:col-span-2">
                   <p className="mb-1 text-xs text-muted-foreground">Status</p>
                   <Select
-                    value={selectedStatus ?? application.status}
-                    onValueChange={(v) => setSelectedStatus(v)}
+                    value={
+                      selectedStatus ??
+                      (application.status && isApplicationStatus(application.status)
+                        ? application.status
+                        : undefined)
+                    }
+                    onValueChange={(v) => setSelectedStatus(v as ApplicationStatus)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
-                      {APPLICATION_STATUSES.map((s) => (
+                      {APPLICATION_STATUS_OPTIONS.map((s) => (
                         <SelectItem key={s.value} value={s.value}>
                           {s.label}
                         </SelectItem>
