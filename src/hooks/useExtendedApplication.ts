@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type {
   ExtendedApplication,
@@ -19,6 +19,8 @@ interface UseExtendedApplicationReturn {
   fetchExtendedApplication: (applicationId: string) => Promise<void>;
   clearApplication: () => void;
   updateLocalStatus: (newStatus: string, timelineEvent?: TimelineEvent) => void;
+  updateLocalNotes: (notes: string) => void;
+  refetchApplication: () => Promise<void>;
 }
 
 /* ======================================================
@@ -377,12 +379,40 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     []
   );
 
+  const updateLocalNotes = useCallback((notes: string) => {
+    setExtendedApplication((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        internalNotes: notes,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
+  // Store the current application ID for refetching
+  const currentApplicationIdRef = useRef<string | null>(null);
+
+  // Update the ref when fetching
+  const fetchExtendedApplicationWithRef = useCallback(async (applicationId: string) => {
+    currentApplicationIdRef.current = applicationId;
+    return fetchExtendedApplication(applicationId);
+  }, [fetchExtendedApplication]);
+
+  const refetchApplication = useCallback(async () => {
+    if (currentApplicationIdRef.current) {
+      return fetchExtendedApplication(currentApplicationIdRef.current);
+    }
+  }, [fetchExtendedApplication]);
+
   return {
     extendedApplication,
     isLoading,
     error,
-    fetchExtendedApplication,
+    fetchExtendedApplication: fetchExtendedApplicationWithRef,
     clearApplication,
     updateLocalStatus,
+    updateLocalNotes,
+    refetchApplication,
   };
 }

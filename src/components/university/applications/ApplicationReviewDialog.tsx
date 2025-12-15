@@ -181,6 +181,7 @@ export interface ApplicationReviewDialogProps {
   isLoading?: boolean;
   onStatusUpdate?: (applicationId: string, newStatus: string) => void;
   onNotesUpdate?: (applicationId: string, notes: string) => void;
+  onRefetch?: () => Promise<void>;
   universityId?: string;
   tenantId?: string;
 }
@@ -364,6 +365,7 @@ export function ApplicationReviewDialog({
   isLoading = false,
   onStatusUpdate,
   onNotesUpdate,
+  onRefetch,
   universityId,
   tenantId,
 }: ApplicationReviewDialogProps) {
@@ -457,7 +459,10 @@ export function ApplicationReviewDialog({
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
       const fallback = await supabase
         .from("applications")
-        .update({ internal_notes: internalNotes })
+        .update({ 
+          internal_notes: internalNotes,
+          updated_at: new Date().toISOString()
+        })
         .eq("id", application.id);
 
       error = fallback.error;
@@ -475,9 +480,22 @@ export function ApplicationReviewDialog({
     }
 
     console.log("[ApplicationReview] Notes saved successfully");
+    
+    // Call the notes update callback to update local state
     onNotesUpdate?.(application.id, internalNotes);
+    
+    // Refetch to ensure we have the latest data from server
+    if (onRefetch) {
+      try {
+        await onRefetch();
+        console.log("[ApplicationReview] Application refetched after notes save");
+      } catch (refetchError) {
+        console.warn("[ApplicationReview] Failed to refetch after notes save:", refetchError);
+      }
+    }
+    
     toast({ title: "Saved", description: "Internal notes updated" });
-  }, [application, internalNotes, onNotesUpdate, toast]);
+  }, [application, internalNotes, onNotesUpdate, onRefetch, toast]);
 
   /* ===========================
      Confirm Status Change
@@ -505,9 +523,18 @@ export function ApplicationReviewDialog({
 
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
+      
+      // Get the current timeline and append the new event
+      const currentTimeline = application.timelineJson ?? [];
+      const updatedTimeline = [...currentTimeline, timelineEvent];
+      
       const fallback = await supabase
         .from("applications")
-        .update({ status: selectedStatus, updated_at: new Date().toISOString() })
+        .update({ 
+          status: selectedStatus, 
+          updated_at: new Date().toISOString(),
+          timeline_json: updatedTimeline
+        })
         .eq("id", application.id)
         .select()
         .single();
@@ -530,13 +557,25 @@ export function ApplicationReviewDialog({
 
     const finalStatus = String(data?.status ?? selectedStatus);
     console.log("[ApplicationReview] Status updated successfully:", finalStatus);
+    
+    // Call the status update callback
     onStatusUpdate?.(application.id, finalStatus);
+    
+    // Refetch to ensure we have the latest data from server
+    if (onRefetch) {
+      try {
+        await onRefetch();
+        console.log("[ApplicationReview] Application refetched after status update");
+      } catch (refetchError) {
+        console.warn("[ApplicationReview] Failed to refetch after status update:", refetchError);
+      }
+    }
 
     toast({
       title: "Status updated",
       description: `Application status changed to ${getApplicationStatusLabel(finalStatus)}`,
     });
-  }, [application, selectedStatus, onStatusUpdate, toast]);
+  }, [application, selectedStatus, onStatusUpdate, onRefetch, toast]);
 
   /* ===========================
      Request Document
@@ -697,10 +736,10 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-4xl h-[90vh] max-h-[90vh] overflow-hidden !flex !flex-col p-0">
           {/* Header */}
-          <DialogHeader className="flex-shrink-0">
-            <div className="flex items-start justify-between gap-4">
+          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
+            <div className="flex items-start justify-between gap-4 pr-8">
               <div className="space-y-1">
                 <DialogTitle className="text-xl">
                   {application?.programName ?? "Application Details"}
@@ -721,11 +760,11 @@ export function ApplicationReviewDialog({
 
           {/* Loading State */}
           {isLoading ? (
-            <div className="flex-1 flex items-center justify-center py-12">
+            <div className="flex-1 flex items-center justify-center py-12 px-6">
               <LoadingState message="Loading application details..." />
             </div>
           ) : !application ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-12 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center py-12 px-6 text-center">
               <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-lg font-medium">Application not found</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -740,12 +779,12 @@ export function ApplicationReviewDialog({
               </Button>
             </div>
           ) : (
-            <>
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-6">
               {/* Tabs */}
               <Tabs
                 value={activeTab}
                 onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-                className="flex-1 flex flex-col overflow-hidden"
+                className="flex-1 flex flex-col min-h-0 overflow-hidden"
               >
                 <TabsList className="flex-shrink-0 grid w-full grid-cols-5">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -765,9 +804,9 @@ export function ApplicationReviewDialog({
                   </TabsTrigger>
                 </TabsList>
 
-                <ScrollArea className="flex-1 mt-4">
+                <ScrollArea className="flex-1 mt-4 min-h-0">
                   {/* Overview Tab */}
-                  <TabsContent value="overview" className="m-0 space-y-6">
+                  <TabsContent value="overview" className="m-0 space-y-6 pb-4">
                     {/* Status Update Card */}
                     <Card>
                       <CardHeader className="pb-3">
@@ -924,7 +963,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Student Tab */}
-                  <TabsContent value="student" className="m-0 space-y-6">
+                  <TabsContent value="student" className="m-0 space-y-6 pb-4">
                     {!application.student ? (
                       <Card>
                         <CardContent className="py-8 text-center">
@@ -1153,7 +1192,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Documents Tab */}
-                  <TabsContent value="documents" className="m-0 space-y-6">
+                  <TabsContent value="documents" className="m-0 space-y-6 pb-4">
                     {/* Uploaded Documents */}
                     <Card>
                       <CardHeader className="pb-3">
@@ -1324,7 +1363,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Notes Tab */}
-                  <TabsContent value="notes" className="m-0 space-y-6">
+                  <TabsContent value="notes" className="m-0 space-y-6 pb-4">
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base">Internal Notes</CardTitle>
@@ -1379,7 +1418,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Messages Tab */}
-                  <TabsContent value="messages" className="m-0 space-y-6">
+                  <TabsContent value="messages" className="m-0 space-y-6 pb-4">
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
@@ -1440,14 +1479,16 @@ export function ApplicationReviewDialog({
                   </TabsContent>
                 </ScrollArea>
               </Tabs>
+            </div>
+          )}
 
-              {/* Footer */}
-              <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
-                  Close
-                </Button>
-              </DialogFooter>
-            </>
+          {/* Footer - Always visible */}
+          {!isLoading && application && (
+            <DialogFooter className="flex-shrink-0 px-6 py-4 border-t bg-background">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            </DialogFooter>
           )}
         </DialogContent>
       </Dialog>
