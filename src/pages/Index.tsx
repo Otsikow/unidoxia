@@ -21,6 +21,9 @@ import studentsStudyingGroup from "@/assets/students-studying-group.png";
 import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
+import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
+import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
+import connectAgentImage from "@/assets/features/connect-agent.jpeg";
 
 // ==========================================
 // LAZY LOAD BELOW-THE-FOLD COMPONENTS
@@ -73,8 +76,9 @@ const Index = () => {
       return () => (window as any).cancelIdleCallback?.(id);
     }
 
-    const timeoutId = window.setTimeout(enable, 1200);
-    return () => window.clearTimeout(timeoutId);
+    const w = window as Window & typeof globalThis;
+    const timeoutId = w.setTimeout(enable, 1200);
+    return () => w.clearTimeout(timeoutId);
   }, []);
 
   // HERO CTAs
@@ -110,15 +114,18 @@ const Index = () => {
   const features = useMemo(() => [{
     key: "applyEasily" as const,
     icon: FileCheck,
-    color: "from-blue-500 to-cyan-500"
+    color: "from-blue-500 to-cyan-500",
+    image: applyEasilyImage
   }, {
     key: "trackRealtime" as const,
     icon: Clock,
-    color: "from-purple-500 to-pink-500"
+    color: "from-purple-500 to-pink-500",
+    image: trackRealTimeImage
   }, {
     key: "connectAgents" as const,
     icon: Users,
-    color: "from-orange-500 to-red-500"
+    color: "from-orange-500 to-red-500",
+    image: connectAgentImage
   }].map(feature => ({
     ...feature,
     title: t(`pages.index.features.cards.${feature.key}.title`),
@@ -313,9 +320,18 @@ const Index = () => {
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {features.map(f => <Card key={f.key} className="relative overflow-hidden group hover:shadow-2xl">
+          {features.map(f => <Card key={f.key} className="relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
+              {/* Feature Image */}
+              <div className="w-full h-48 overflow-hidden">
+                <img 
+                  src={f.image} 
+                  alt={f.title} 
+                  className="w-full h-full object-cover rounded-t-xl"
+                  loading="lazy"
+                />
+              </div>
               <CardContent className="p-8">
-                <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${f.color} mb-6`}>
+                <div className={`inline-flex p-4 rounded-2xl bg-gradient-to-br ${f.color} mb-6 shadow-lg`}>
                   <f.icon className="h-8 w-8 text-white" />
                 </div>
 
