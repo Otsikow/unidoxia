@@ -69,7 +69,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   APPLICATION_STATUS_OPTIONS,
   getApplicationStatusLabel,
-  isApplicationStatus,
+  isApplicationStatusOption,
   type ApplicationStatus,
 } from "@/lib/applicationStatus";
 
@@ -245,8 +245,19 @@ const explainUpdateError = (
 ) => {
   const msg = error.message ?? "";
   const code = error.code ?? "";
+  const msgLower = msg.toLowerCase();
 
-  if (msg.includes("Could not find the function")) {
+  if (code === "28000" || msgLower.includes("not authenticated")) {
+    return {
+      title: "Session expired",
+      description:
+        `You are not authenticated. Please sign in again and retry. ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  if (msg.includes("Could not find the function") || msgLower.includes("schema cache")) {
     return {
       title: "Backend misconfigured",
       description:
@@ -257,7 +268,7 @@ const explainUpdateError = (
     };
   }
 
-  if (code === "42501" || msg.toLowerCase().includes("permission")) {
+  if (code === "42501" || msgLower.includes("permission") || msgLower.includes("not authorized")) {
     return {
       title: "Permission denied",
       description:
@@ -267,7 +278,17 @@ const explainUpdateError = (
     };
   }
 
-  if (code === "22P02" || msg.toLowerCase().includes("enum")) {
+  if (code === "P0002" || msgLower.includes("application not found")) {
+    return {
+      title: "Application not found",
+      description:
+        `The application record could not be found (or you no longer have access). ` +
+        `Application ID: ${context.applicationId}. ` +
+        `Raw: ${formatSupabaseError(error)}`,
+    };
+  }
+
+  if (code === "22P02" || msgLower.includes("enum")) {
     return {
       title: "Invalid status",
       description:
@@ -281,6 +302,16 @@ const explainUpdateError = (
     title: "Update failed",
     description: `Application ID: ${context.applicationId}. Raw: ${formatSupabaseError(error)}`,
   };
+};
+
+/* ======================================================
+   RPC response helpers
+====================================================== */
+
+const pickSingleRow = <T extends Record<string, any>>(data: unknown): T | null => {
+  if (Array.isArray(data)) return (data[0] as T) ?? null;
+  if (data && typeof data === "object") return data as T;
+  return null;
 };
 
 /* ======================================================
@@ -396,7 +427,7 @@ export function ApplicationReviewDialog({
     if (!application) return;
     setInternalNotes(application.internalNotes ?? "");
     setSelectedStatus(
-      isApplicationStatus(application.status) ? application.status : null
+      isApplicationStatusOption(application.status) ? application.status : null
     );
     setActiveTab("overview");
     setDocumentUrls({});
@@ -446,7 +477,7 @@ export function ApplicationReviewDialog({
     setSavingNotes(true);
     console.log("[ApplicationReview] Saving notes for application:", application.id);
 
-    let { error } = await supabase.rpc("update_application_review" as any, {
+    let { data, error } = await supabase.rpc("update_application_review" as any, {
       p_application_id: application.id,
       p_new_status: null,
       p_internal_notes: internalNotes,
@@ -457,9 +488,12 @@ export function ApplicationReviewDialog({
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
       const fallback = await supabase
         .from("applications")
-        .update({ internal_notes: internalNotes })
-        .eq("id", application.id);
+        .update({ internal_notes: internalNotes, updated_at: new Date().toISOString() })
+        .eq("id", application.id)
+        .select("id, internal_notes, updated_at")
+        .single();
 
+      data = fallback.data;
       error = fallback.error;
     }
 
@@ -471,6 +505,20 @@ export function ApplicationReviewDialog({
         applicationId: application.id,
       });
       toast({ ...explained, variant: "destructive" });
+      return;
+    }
+
+    // Defensive: never treat "0 rows updated" as success.
+    const row = pickSingleRow<{ id?: string }>(data);
+    if (!row?.id) {
+      console.error("[ApplicationReview] Notes update returned no row:", { applicationId: application.id, data });
+      toast({
+        title: "Update failed",
+        description:
+          `No row returned from notes update. This usually indicates RLS blocked the update. ` +
+          `Application ID: ${application.id}.`,
+        variant: "destructive",
+      });
       return;
     }
 
@@ -486,8 +534,13 @@ export function ApplicationReviewDialog({
   const confirmStatusChange = useCallback(async () => {
     if (!application?.id || !selectedStatus) return;
 
+    const previousStatus = application.status;
     setUpdatingStatus(true);
-    console.log("[ApplicationReview] Updating status:", { applicationId: application.id, newStatus: selectedStatus });
+    console.log("[ApplicationReview] Updating status:", {
+      applicationId: application.id,
+      fromStatus: previousStatus,
+      toStatus: selectedStatus,
+    });
 
     const timelineEvent = {
       id: crypto.randomUUID(),
@@ -509,7 +562,7 @@ export function ApplicationReviewDialog({
         .from("applications")
         .update({ status: selectedStatus, updated_at: new Date().toISOString() })
         .eq("id", application.id)
-        .select()
+        .select("id, status, updated_at")
         .single();
 
       data = fallback.data;
@@ -521,6 +574,8 @@ export function ApplicationReviewDialog({
 
     if (error) {
       console.error("[ApplicationReview] Status update failed:", error);
+      // Revert the selection so the UI doesn't show a status that wasn't persisted.
+      setSelectedStatus(isApplicationStatusOption(previousStatus) ? previousStatus : null);
       const explained = explainUpdateError(error, {
         applicationId: application.id,
       });
@@ -528,7 +583,21 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    const finalStatus = String(data?.status ?? selectedStatus);
+    const row = pickSingleRow<{ id?: string; status?: unknown }>(data);
+    if (!row?.id) {
+      console.error("[ApplicationReview] Status update returned no row:", { applicationId: application.id, data });
+      setSelectedStatus(isApplicationStatusOption(previousStatus) ? previousStatus : null);
+      toast({
+        title: "Update failed",
+        description:
+          `No row returned from status update. This usually indicates RLS blocked the update. ` +
+          `Application ID: ${application.id}.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const finalStatus = String(row.status ?? selectedStatus);
     console.log("[ApplicationReview] Status updated successfully:", finalStatus);
     onStatusUpdate?.(application.id, finalStatus);
 
@@ -669,7 +738,9 @@ export function ApplicationReviewDialog({
      Computed values
   ============================ */
 
-  const displayStatus = selectedStatus ?? application?.status ?? "unknown";
+  // Always display the persisted status from the record.
+  // (Avoids showing a status that the user merely selected but failed to save.)
+  const displayStatus = application?.status ?? "unknown";
 
   const missingDocuments = useMemo(() => {
     if (!application?.documents) return REQUIRED_DOCUMENT_TYPES;
