@@ -181,6 +181,8 @@ export interface ApplicationReviewDialogProps {
   isLoading?: boolean;
   onStatusUpdate?: (applicationId: string, newStatus: string) => void;
   onNotesUpdate?: (applicationId: string, notes: string) => void;
+  onApplicationPatch?: (patch: Partial<ExtendedApplication> & { id: string }) => void;
+  onAfterSaveRefetch?: (applicationId: string) => void | Promise<void>;
   universityId?: string;
   tenantId?: string;
 }
@@ -320,6 +322,17 @@ const formatDocumentType = (type: string | null) => {
     .join(" ");
 };
 
+const coerceTimelineEvents = (raw: unknown): TimelineEvent[] | null => {
+  if (!Array.isArray(raw)) return null;
+  return raw.map((item: any) => ({
+    id: item?.id ?? crypto.randomUUID(),
+    action: String(item?.action ?? ""),
+    timestamp: String(item?.timestamp ?? ""),
+    actor: item?.actor ? String(item.actor) : undefined,
+    details: item?.details ? String(item.details) : undefined,
+  }));
+};
+
 /* ======================================================
    Signed URL helper
 ====================================================== */
@@ -364,6 +377,8 @@ export function ApplicationReviewDialog({
   isLoading = false,
   onStatusUpdate,
   onNotesUpdate,
+  onApplicationPatch,
+  onAfterSaveRefetch,
   universityId,
   tenantId,
 }: ApplicationReviewDialogProps) {
@@ -406,26 +421,37 @@ export function ApplicationReviewDialog({
   useEffect(() => {
     if (!application?.documents?.length || !open) return;
 
+    let cancelled = false;
+
     const loadSignedUrls = async () => {
       setLoadingUrls(true);
-      const urls: Record<string, string> = {};
 
-      for (const doc of application.documents) {
-        if (doc.storagePath) {
-          const signedUrl = await getSignedUrl(doc.storagePath);
-          if (signedUrl) {
-            urls[doc.id] = signedUrl;
-          }
-        } else if (doc.publicUrl) {
-          urls[doc.id] = doc.publicUrl;
-        }
+      try {
+        const entries = await Promise.all(
+          application.documents.map(async (doc) => {
+            if (doc.storagePath) {
+              const signedUrl = await getSignedUrl(doc.storagePath);
+              return signedUrl ? ([doc.id, signedUrl] as const) : null;
+            }
+            if (doc.publicUrl) {
+              return [doc.id, doc.publicUrl] as const;
+            }
+            return null;
+          }),
+        );
+
+        if (cancelled) return;
+        const urls = Object.fromEntries(entries.filter(Boolean) as Array<readonly [string, string]>);
+        setDocumentUrls(urls);
+      } finally {
+        if (!cancelled) setLoadingUrls(false);
       }
-
-      setDocumentUrls(urls);
-      setLoadingUrls(false);
     };
 
     void loadSignedUrls();
+    return () => {
+      cancelled = true;
+    };
   }, [application?.documents, open]);
 
   const statusLabel = useMemo(
@@ -457,7 +483,7 @@ export function ApplicationReviewDialog({
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
       const fallback = await supabase
         .from("applications")
-        .update({ internal_notes: internalNotes })
+        .update({ internal_notes: internalNotes, updated_at: new Date().toISOString() })
         .eq("id", application.id);
 
       error = fallback.error;
@@ -474,10 +500,39 @@ export function ApplicationReviewDialog({
       return;
     }
 
+    // Always refetch authoritative server state (ensures persistence across reopen)
+    const { data: refreshed, error: refreshError } = await supabase
+      .from("applications")
+      .select("id,status,internal_notes,updated_at,timeline_json")
+      .eq("id", application.id)
+      .single();
+
+    if (refreshError) {
+      console.warn("[ApplicationReview] Notes saved but refetch failed:", refreshError);
+    } else if (refreshed?.id) {
+      onApplicationPatch?.({
+        id: refreshed.id,
+        status: String(refreshed.status ?? application.status),
+        internalNotes: refreshed.internal_notes ?? null,
+        updatedAt: refreshed.updated_at ?? null,
+        timelineJson: coerceTimelineEvents(refreshed.timeline_json),
+      });
+      onNotesUpdate?.(refreshed.id, refreshed.internal_notes ?? "");
+    } else {
+      // Fallback: at least keep local notes in sync
+      onApplicationPatch?.({
+        id: application.id,
+        internalNotes,
+        updatedAt: new Date().toISOString(),
+      });
+      onNotesUpdate?.(application.id, internalNotes);
+    }
+
+    await Promise.resolve(onAfterSaveRefetch?.(application.id));
+
     console.log("[ApplicationReview] Notes saved successfully");
-    onNotesUpdate?.(application.id, internalNotes);
     toast({ title: "Saved", description: "Internal notes updated" });
-  }, [application, internalNotes, onNotesUpdate, toast]);
+  }, [application, internalNotes, onAfterSaveRefetch, onApplicationPatch, onNotesUpdate, toast]);
 
   /* ===========================
      Confirm Status Change
@@ -496,7 +551,7 @@ export function ApplicationReviewDialog({
       actor: "University",
     };
 
-    let { data, error } = await supabase.rpc("update_application_review" as any, {
+    let { error } = await supabase.rpc("update_application_review" as any, {
       p_application_id: application.id,
       p_new_status: selectedStatus,
       p_internal_notes: null,
@@ -505,14 +560,27 @@ export function ApplicationReviewDialog({
 
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      const fallback = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from("applications")
-        .update({ status: selectedStatus, updated_at: new Date().toISOString() })
+        .select("timeline_json")
         .eq("id", application.id)
-        .select()
         .single();
 
-      data = fallback.data;
+      const existingTimeline = Array.isArray(existing?.timeline_json) ? existing?.timeline_json : [];
+      const nextTimeline = [...existingTimeline, timelineEvent] as any[];
+
+      const fallback = await supabase
+        .from("applications")
+        .update({
+          status: selectedStatus,
+          timeline_json: nextTimeline,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", application.id);
+
+      if (existingError) {
+        console.warn("[ApplicationReview] Timeline prefetch failed for fallback update:", existingError);
+      }
       error = fallback.error;
     }
 
@@ -528,15 +596,50 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    const finalStatus = String(data?.status ?? selectedStatus);
+    // Always refetch authoritative server state (status + timeline + updated_at)
+    const { data: refreshed, error: refreshError } = await supabase
+      .from("applications")
+      .select("id,status,internal_notes,updated_at,timeline_json")
+      .eq("id", application.id)
+      .single();
+
+    const finalStatus = String(refreshed?.status ?? selectedStatus);
     console.log("[ApplicationReview] Status updated successfully:", finalStatus);
-    onStatusUpdate?.(application.id, finalStatus);
+
+    if (refreshError) {
+      console.warn("[ApplicationReview] Status saved but refetch failed:", refreshError);
+      onApplicationPatch?.({
+        id: application.id,
+        status: finalStatus,
+        updatedAt: new Date().toISOString(),
+        timelineJson: [...(application.timelineJson ?? []), timelineEvent],
+      });
+      onStatusUpdate?.(application.id, finalStatus);
+    } else if (refreshed?.id) {
+      onApplicationPatch?.({
+        id: refreshed.id,
+        status: String(refreshed.status ?? finalStatus),
+        internalNotes: refreshed.internal_notes ?? null,
+        updatedAt: refreshed.updated_at ?? null,
+        timelineJson: coerceTimelineEvents(refreshed.timeline_json),
+      });
+      onStatusUpdate?.(refreshed.id, finalStatus);
+    }
+
+    await Promise.resolve(onAfterSaveRefetch?.(application.id));
 
     toast({
       title: "Status updated",
       description: `Application status changed to ${getApplicationStatusLabel(finalStatus)}`,
     });
-  }, [application, selectedStatus, onStatusUpdate, toast]);
+  }, [
+    application,
+    selectedStatus,
+    onAfterSaveRefetch,
+    onApplicationPatch,
+    onStatusUpdate,
+    toast,
+  ]);
 
   /* ===========================
      Request Document
