@@ -19,6 +19,7 @@ interface UseExtendedApplicationReturn {
   fetchExtendedApplication: (applicationId: string) => Promise<void>;
   clearApplication: () => void;
   updateLocalStatus: (newStatus: string, timelineEvent?: TimelineEvent) => void;
+  patchLocalApplication: (patch: Partial<ExtendedApplication> & { id: string }) => void;
 }
 
 /* ======================================================
@@ -377,6 +378,17 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     []
   );
 
+  const patchLocalApplication = useCallback(
+    (patch: Partial<ExtendedApplication> & { id: string }) => {
+      setExtendedApplication((prev) => {
+        if (!prev) return prev;
+        if (prev.id !== patch.id) return prev;
+        return { ...prev, ...patch };
+      });
+    },
+    [],
+  );
+
   return {
     extendedApplication,
     isLoading,
@@ -384,5 +396,6 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     fetchExtendedApplication,
     clearApplication,
     updateLocalStatus,
+    patchLocalApplication,
   };
 }

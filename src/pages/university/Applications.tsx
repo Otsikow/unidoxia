@@ -57,7 +57,7 @@ const ApplicationsPage = () => {
     isLoading: isLoadingExtended,
     fetchExtendedApplication,
     clearApplication,
-    updateLocalStatus,
+    patchLocalApplication,
   } = useExtendedApplication();
 
   const applications = useMemo(
@@ -96,9 +96,6 @@ const ApplicationsPage = () => {
   const handleStatusUpdate = useCallback(async (applicationId: string, newStatus: string) => {
     console.log("[Applications] Status update received:", { applicationId, newStatus });
     
-    // Update local state immediately for instant UI feedback
-    updateLocalStatus(newStatus);
-    
     // Refetch dashboard data to ensure consistency with server state
     try {
       await refetch();
@@ -111,11 +108,15 @@ const ApplicationsPage = () => {
         variant: "destructive",
       });
     }
-  }, [refetch, updateLocalStatus, toast]);
+  }, [refetch, toast]);
 
-  const handleNotesUpdate = useCallback(() => {
-    // Could add optimistic update here if needed
-  }, []);
+  const handleNotesUpdate = useCallback(async (_applicationId: string, _notes: string) => {
+    try {
+      await refetch();
+    } catch {
+      // ignore - dialog already patched local view; list may be stale until next refresh
+    }
+  }, [refetch]);
 
   const handleCopy = async (label: string, value: string) => {
     try {
@@ -380,6 +381,8 @@ const ApplicationsPage = () => {
         onOpenChange={handleCloseReview}
         onStatusUpdate={handleStatusUpdate}
         onNotesUpdate={handleNotesUpdate}
+        onApplicationPatch={patchLocalApplication}
+        onAfterSaveRefetch={(_applicationId) => refetch()}
         universityId={universityId}
         tenantId={tenantId}
         isLoading={isLoadingExtended}
