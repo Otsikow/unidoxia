@@ -10,6 +10,7 @@ import type {
 } from "@/components/university/applications/ApplicationReviewDialog";
 
 const STORAGE_BUCKET = "student-documents";
+const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
 
 interface UseExtendedApplicationReturn {
   extendedApplication: ExtendedApplication | null;
@@ -26,8 +27,22 @@ interface UseExtendedApplicationReturn {
 
 const getPublicUrl = (storagePath: string | null): string | null => {
   if (!storagePath) return null;
-  const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(storagePath);
-  return data?.publicUrl ?? null;
+  
+  // Try application-documents bucket first (most common for application docs)
+  const { data: appData } = supabase.storage
+    .from(APPLICATION_DOCUMENTS_BUCKET)
+    .getPublicUrl(storagePath);
+  
+  if (appData?.publicUrl) {
+    return appData.publicUrl;
+  }
+  
+  // Fallback to student-documents bucket
+  const { data: studentData } = supabase.storage
+    .from(STORAGE_BUCKET)
+    .getPublicUrl(storagePath);
+  
+  return studentData?.publicUrl ?? null;
 };
 
 const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
@@ -79,8 +94,12 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
   ============================ */
 
   const fetchExtendedApplication = useCallback(async (applicationId: string) => {
-    if (!applicationId) return;
+    if (!applicationId) {
+      console.warn("[useExtendedApplication] No application ID provided");
+      return;
+    }
 
+    console.log("[useExtendedApplication] Fetching application:", applicationId);
     setIsLoading(true);
     setError(null);
 
@@ -115,9 +134,21 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         .eq("id", applicationId)
         .single();
 
-      if (appError || !appData) {
-        throw new Error("Application not found");
+      if (appError) {
+        console.error("[useExtendedApplication] Application fetch error:", appError);
+        const errorMessage = appError.code === "PGRST116" 
+          ? "Application not found. It may have been deleted or you may not have permission to view it."
+          : appError.code === "42501"
+            ? "Permission denied. You may not have access to view this application."
+            : `Failed to load application: ${appError.message}`;
+        throw new Error(errorMessage);
       }
+
+      if (!appData) {
+        throw new Error("Application not found. It may have been deleted or you may not have permission to view it.");
+      }
+
+      console.log("[useExtendedApplication] Application loaded:", { id: appData.id, status: appData.status });
 
       const program = appData.programs as any;
 
@@ -127,6 +158,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       let studentDetails: StudentDetails | null = null;
 
       if (appData.student_id) {
+        console.log("[useExtendedApplication] Fetching student:", appData.student_id);
         const { data: studentData, error: studentError } = await supabase
           .from("students")
           .select(`
@@ -156,7 +188,13 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           .eq("id", appData.student_id)
           .single();
 
+        if (studentError) {
+          console.warn("[useExtendedApplication] Student fetch warning:", studentError);
+          // Don't throw - student data is optional, we can still show the application
+        }
+
         if (!studentError && studentData) {
+          console.log("[useExtendedApplication] Student loaded:", studentData.id);
           const profile = studentData.profile as any;
 
           /* Education Records (table → fallback JSON if needed) */
@@ -215,7 +253,8 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       --------------------------- */
       let documents: ApplicationDocument[] = [];
 
-      const { data: appDocs } = await supabase
+      console.log("[useExtendedApplication] Fetching documents for application:", applicationId);
+      const { data: appDocs, error: docsError } = await supabase
         .from("application_documents")
         .select(`
           id,
@@ -229,7 +268,13 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         `)
         .eq("application_id", applicationId);
 
+      if (docsError) {
+        console.warn("[useExtendedApplication] Documents fetch warning:", docsError);
+        // Don't throw - documents are optional, we can still show the application
+      }
+
       if (appDocs && appDocs.length > 0) {
+        console.log("[useExtendedApplication] Documents loaded:", appDocs.length);
         documents = appDocs.map((doc) => ({
           id: doc.id,
           documentType: doc.document_type,
@@ -242,6 +287,8 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           uploadedAt: doc.uploaded_at ?? "",
           publicUrl: getPublicUrl(doc.storage_path),
         }));
+      } else {
+        console.log("[useExtendedApplication] No documents found for application");
       }
 
       /* ---------------------------
@@ -271,10 +318,34 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         documents,
       };
 
+      console.log("[useExtendedApplication] Application fully loaded:", {
+        id: extended.id,
+        status: extended.status,
+        studentName: extended.studentName,
+        documentsCount: extended.documents.length,
+      });
+      
       setExtendedApplication(extended);
     } catch (err) {
-      console.error("Failed to fetch application:", err);
-      setError(err instanceof Error ? err.message : "Failed to load application");
+      const error = err as Error & { code?: string; details?: string };
+      console.error("[useExtendedApplication] Failed to fetch application:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        stack: error.stack,
+      });
+      
+      // Provide user-friendly error messages
+      let userMessage = error.message;
+      if (error.code === "42501" || error.message?.toLowerCase().includes("permission")) {
+        userMessage = "You don't have permission to view this application. Please contact your administrator.";
+      } else if (error.code === "PGRST116" || error.message?.toLowerCase().includes("not found")) {
+        userMessage = "Application not found. It may have been deleted or moved.";
+      } else if (error.message?.toLowerCase().includes("network")) {
+        userMessage = "Network error. Please check your connection and try again.";
+      }
+      
+      setError(userMessage);
     } finally {
       setIsLoading(false);
     }
