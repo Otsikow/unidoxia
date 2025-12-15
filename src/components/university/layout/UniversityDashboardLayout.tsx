@@ -944,7 +944,9 @@ export const UniversityDashboardLayout = ({
       isLoading,
       isRefetching: isFetching,
       error: error ? (error as Error).message : null,
-      refetch: async () => void queryRefetch(),
+      refetch: async () => {
+        await queryRefetch();
+      },
     }),
     [data, isLoading, isFetching, error, queryRefetch],
   );
