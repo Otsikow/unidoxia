@@ -150,28 +150,48 @@ export default function ApplicationsTab() {
 
   const handleStatusUpdate = async (
     applicationId: string,
+    oldStatus: string,
     newStatus: Database['public']['Enums']['application_status'],
   ) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('applications')
         .update({ status: newStatus })
-        .eq('id', applicationId);
+        .eq('id', applicationId)
+        .select('id,status')
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        toast({
+          title: 'Permission denied',
+          description:
+            `No row returned from update. This usually indicates RLS blocked the update. ` +
+            `Application ID: ${applicationId}.`,
+          variant: 'destructive',
+        });
+        return;
+      }
 
       toast({
         title: 'Success',
-        description: 'Application status updated successfully',
+        description: `Application status changed from ${oldStatus} → ${newStatus}.`,
       });
 
       // Refresh the applications
       fetchApplications();
-    } catch (error) {
-      console.error('Error updating status:', error);
+    } catch (error: any) {
+      console.error('Error updating application status:', {
+        applicationId,
+        oldStatus,
+        newStatus,
+        error,
+      });
       toast({
         title: 'Error',
-        description: 'Failed to update application status',
+        description:
+          `Failed to update application status. ` +
+          `${error?.message ? `Raw: ${error.message}` : ''}`,
         variant: 'destructive',
       });
     }
@@ -314,6 +334,7 @@ export default function ApplicationsTab() {
                         onValueChange={(value) =>
                           handleStatusUpdate(
                             app.id,
+                            app.status,
                             value as Database['public']['Enums']['application_status'],
                           )
                         }
