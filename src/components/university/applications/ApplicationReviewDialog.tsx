@@ -51,6 +51,8 @@ import {
 import { StatusBadge } from "@/components/StatusBadge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { PostgrestError } from "@supabase/supabase-js";
+import { dbLogger } from "@/lib/databaseLogger";
 
 /* ======================================================
    Types (re-exported for hooks)
@@ -193,6 +195,81 @@ const formatFileSize = (bytes: number) => {
   return `${size.toFixed(size >= 10 || unit === 0 ? 0 : 1)} ${units[unit]}`;
 };
 
+const isValidApplicationStatus = (value: string) =>
+  APPLICATION_STATUSES.some((status) => status.value === value);
+
+const formatApplicationReviewRpcError = (
+  error: PostgrestError,
+  context: {
+    applicationId: string;
+    oldStatus?: string | null;
+    newStatus?: string | null;
+    operation: "status_update" | "notes_update";
+  },
+) => {
+  const message = error.message || "Unknown error";
+  const code = typeof error.code === "string" ? error.code : undefined;
+  const details = typeof error.details === "string" ? error.details : undefined;
+  const hint = typeof (error as any).hint === "string" ? (error as any).hint : undefined;
+
+  // PostgREST missing RPC/function schema cache error (the screenshot case)
+  if (message.includes("Could not find the function")) {
+    return {
+      title: "Backend not deployed",
+      description:
+        "Database RPC `public.update_application_review` is missing or PostgREST schema cache is stale. " +
+        "Apply the Supabase migration/script that creates the function, then reload PostgREST schema cache. " +
+        `Supabase: ${message}${code ? ` (code ${code})` : ""}`,
+    };
+  }
+
+  if (code === "42501") {
+    return {
+      title: "Access denied",
+      description:
+        `You don’t have permission to update this application. ` +
+        `Supabase: ${message}${details ? ` • ${details}` : ""}${code ? ` (code ${code})` : ""}`,
+    };
+  }
+
+  if (code === "28000") {
+    return {
+      title: "Not authenticated",
+      description:
+        `Your session is missing or expired. Please sign in again. ` +
+        `Supabase: ${message}${code ? ` (code ${code})` : ""}`,
+    };
+  }
+
+  // Raised in the RPC when application id doesn't exist
+  if (code === "P0002") {
+    return {
+      title: "Application not found",
+      description:
+        `This application no longer exists or you cannot access it. ` +
+        `Supabase: ${message}${code ? ` (code ${code})` : ""}`,
+    };
+  }
+
+  // Common Postgres enum / invalid input errors
+  if (code === "22P02" || message.includes("invalid input value for enum")) {
+    return {
+      title: "Invalid status value",
+      description:
+        `The selected status value is not accepted by the database. ` +
+        `Supabase: ${message}${details ? ` • ${details}` : ""}${hint ? ` • ${hint}` : ""}${code ? ` (code ${code})` : ""}`,
+    };
+  }
+
+  // Default: surface verbatim error payload
+  return {
+    title: "Failed",
+    description:
+      `Operation failed (${context.operation}). ` +
+      `Supabase: ${message}${details ? ` • ${details}` : ""}${hint ? ` • ${hint}` : ""}${code ? ` (code ${code})` : ""}`,
+  };
+};
+
 /* ======================================================
    Component
 ====================================================== */
@@ -229,27 +306,33 @@ export function ApplicationReviewDialog(props: Props) {
     if (!application) return;
 
     setSavingNotes(true);
+    const rpcParams = {
+      p_application_id: application.id,
+      p_new_status: null,
+      p_internal_notes: internalNotes,
+      p_append_timeline_event: null,
+    };
+
     const { data, error } = await supabase
-      .rpc("update_application_review" as any, {
-        p_application_id: application.id,
-        p_new_status: null,
-        p_internal_notes: internalNotes,
-        p_append_timeline_event: null,
-      })
+      .rpc("update_application_review" as any, rpcParams)
       .single();
     setSavingNotes(false);
 
     if (error) {
-      // Provide more helpful error messages based on the error type
-      let description = "Could not save notes";
-      if (error.message?.includes("Could not find the function")) {
-        description = "The notes feature is temporarily unavailable. Please contact support if this persists.";
-      } else if (error.message) {
-        description = error.message;
-      }
+      dbLogger.error("Application review RPC failed (notes)", error, {
+        applicationId: application.id,
+        operation: "notes_update",
+        params: rpcParams,
+      });
+      const { title, description } = formatApplicationReviewRpcError(error, {
+        applicationId: application.id,
+        oldStatus: application.status,
+        newStatus: null,
+        operation: "notes_update",
+      });
       toast({
-        title: "Failed",
-        description,
+        title,
+        description: description || "Could not save notes.",
         variant: "destructive",
       });
       return;
@@ -275,6 +358,16 @@ export function ApplicationReviewDialog(props: Props) {
       return;
     }
 
+    if (!isValidApplicationStatus(selectedStatus)) {
+      toast({
+        title: "Invalid status",
+        description:
+          `Refusing to update: "${selectedStatus}" is not a recognized application status.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setUpdatingStatus(true);
 
     const newEvent: TimelineEvent = {
@@ -284,30 +377,40 @@ export function ApplicationReviewDialog(props: Props) {
       actor: "University",
     };
 
+    const rpcParams = {
+      p_application_id: application.id,
+      p_new_status: selectedStatus,
+      p_internal_notes: null,
+      p_append_timeline_event: newEvent as any,
+    };
+
     const { data, error } = await supabase
-      .rpc("update_application_review" as any, {
-        p_application_id: application.id,
-        p_new_status: selectedStatus,
-        p_internal_notes: null,
-        p_append_timeline_event: newEvent as any,
-      })
+      .rpc("update_application_review" as any, rpcParams)
       .single();
 
     setUpdatingStatus(false);
     setConfirmStatus(false);
 
     if (error) {
-      console.error("Status update error:", error);
-      // Provide more helpful error messages based on the error type
-      let description = "Status update failed. You may not have permission to update this application.";
-      if (error.message?.includes("Could not find the function")) {
-        description = "The status update feature is temporarily unavailable. Please contact support if this persists.";
-      } else if (error.message) {
-        description = error.message;
-      }
+      dbLogger.error("Application review RPC failed (status)", error, {
+        applicationId: application.id,
+        operation: "status_update",
+        oldStatus: application.status,
+        newStatus: selectedStatus,
+        params: rpcParams,
+      });
+
+      const { title, description } = formatApplicationReviewRpcError(error, {
+        applicationId: application.id,
+        oldStatus: application.status,
+        newStatus: selectedStatus,
+        operation: "status_update",
+      });
       toast({
-        title: "Failed",
-        description,
+        title,
+        description:
+          description ||
+          "Status update failed. You may not have permission to update this application.",
         variant: "destructive",
       });
       return;
@@ -322,11 +425,13 @@ export function ApplicationReviewDialog(props: Props) {
       return;
     }
 
+    const persistedStatus = (data as any)?.status ?? selectedStatus;
+
     // Update succeeded - notify parent and show success message
-    onStatusUpdate?.(application.id, selectedStatus);
+    onStatusUpdate?.(application.id, persistedStatus);
     toast({ 
       title: "Status Updated", 
-      description: `Application status changed to ${APPLICATION_STATUSES.find(s => s.value === selectedStatus)?.label || selectedStatus}. The student and agent (if any) will be notified.` 
+      description: `Application status changed to ${APPLICATION_STATUSES.find(s => s.value === persistedStatus)?.label || persistedStatus}. The student and agent (if any) will be notified.` 
     });
   }, [application, onStatusUpdate, selectedStatus, toast]);
 
