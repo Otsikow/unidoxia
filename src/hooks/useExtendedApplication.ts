@@ -19,6 +19,7 @@ interface UseExtendedApplicationReturn {
   fetchExtendedApplication: (applicationId: string) => Promise<void>;
   clearApplication: () => void;
   updateLocalStatus: (newStatus: string, timelineEvent?: TimelineEvent) => void;
+  updateLocalNotes: (notes: string) => void;
 }
 
 /* ======================================================
@@ -377,6 +378,17 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     []
   );
 
+  const updateLocalNotes = useCallback((notes: string) => {
+    setExtendedApplication((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        internalNotes: notes,
+        updatedAt: new Date().toISOString(),
+      };
+    });
+  }, []);
+
   return {
     extendedApplication,
     isLoading,
@@ -384,5 +396,6 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     fetchExtendedApplication,
     clearApplication,
     updateLocalStatus,
+    updateLocalNotes,
   };
 }
