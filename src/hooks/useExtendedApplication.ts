@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type {
   ExtendedApplication,
   ApplicationDocument,
+  DocumentRequest,
   StudentDetails,
   EducationRecord,
   TestScore,
@@ -116,6 +117,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           created_at,
           submitted_at,
           updated_at,
+          tenant_id,
           program_id,
           student_id,
           agent_id,
@@ -292,6 +294,53 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       }
 
       /* ---------------------------
+         Document Requests (optional)
+      --------------------------- */
+      let documentRequests: DocumentRequest[] = [];
+
+      try {
+        const docReqSelect =
+          "id, application_id, student_id, document_type, status, notes, requested_at, created_at, submitted_at, document_url, uploaded_file_url, file_url, storage_path";
+
+        const { data: reqRows, error: reqError } = await supabase
+          .from("document_requests")
+          .select(docReqSelect)
+          // Prefer application_id linkage when present
+          // @ts-expect-error - application_id may not exist in older schema types
+          .eq("application_id", applicationId)
+          .order("requested_at", { ascending: false });
+
+        if (reqError) {
+          const msg = (reqError.message ?? "").toLowerCase();
+          const isMissingColumn =
+            reqError.code === "42703" || msg.includes("application_id");
+
+          if (!isMissingColumn) {
+            console.warn("[useExtendedApplication] Document requests fetch warning:", reqError);
+          } else {
+            console.warn(
+              "[useExtendedApplication] document_requests.application_id missing; apply migrations to enable per-application requests."
+            );
+          }
+        } else if (Array.isArray(reqRows)) {
+          documentRequests = reqRows.map((r: any) => ({
+            id: r.id,
+            applicationId: (r as any).application_id ?? null,
+            studentId: r.student_id,
+            documentType: r.document_type ?? r.request_type ?? "document",
+            status: (r.status ?? "pending").toString(),
+            notes: r.notes ?? null,
+            requestedAt: r.requested_at ?? r.created_at ?? null,
+            submittedAt: r.submitted_at ?? null,
+            documentUrl: r.document_url ?? r.uploaded_file_url ?? r.file_url ?? null,
+            storagePath: r.storage_path ?? null,
+          }));
+        }
+      } catch (error) {
+        console.warn("[useExtendedApplication] Document requests fetch warning:", error);
+      }
+
+      /* ---------------------------
          Final Assembly
       --------------------------- */
       const extended: ExtendedApplication = {
@@ -316,6 +365,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         timelineJson: parseTimelineJson(appData.timeline_json),
         student: studentDetails,
         documents,
+        documentRequests,
       };
 
       console.log("[useExtendedApplication] Application fully loaded:", {

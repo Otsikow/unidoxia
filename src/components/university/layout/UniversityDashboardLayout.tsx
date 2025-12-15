@@ -101,6 +101,7 @@ export interface UniversityApplication {
   appNumber: string;
   status: string;
   createdAt: string;
+  submittedAt: string | null;
   programId: string;
   programName: string;
   programLevel: string;
@@ -420,19 +421,38 @@ export const fetchUniversityDashboardData = async (
   // -----------------------------------------------------
   // PARALLEL FETCH: document requests + agents
   // -----------------------------------------------------
-  const [documentRequestsRes, agentsRes] = await Promise.all([
-    supabase
-      .from("document_requests")
-      .select(
-        "id, student_id, request_type, status, requested_at, created_at, document_url, uploaded_file_url, file_url"
-      )
-      .eq("tenant_id", tenantId)
-      .order("created_at", { ascending: false }),
+  const documentRequestColumns =
+    "id, student_id, application_id, document_type, request_type, status, requested_at, created_at, submitted_at, notes, document_url, uploaded_file_url, file_url, storage_path";
 
-    supabase
-      .from("agents")
-      .select(
-        `
+  let documentRequestsRes = await supabase
+    .from("document_requests")
+    .select(documentRequestColumns)
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false });
+
+  if (documentRequestsRes.error) {
+    const msg = (documentRequestsRes.error.message ?? "").toLowerCase();
+    const missingApplicationId =
+      documentRequestsRes.error.code === "42703" || msg.includes("application_id");
+
+    if (missingApplicationId) {
+      console.warn(
+        "[UniversityDashboard] document_requests.application_id missing; apply migrations to enable per-application requests."
+      );
+      documentRequestsRes = await supabase
+        .from("document_requests")
+        .select(
+          "id, student_id, document_type, request_type, status, requested_at, created_at, submitted_at, notes, document_url, uploaded_file_url, file_url, storage_path"
+        )
+        .eq("tenant_id", tenantId)
+        .order("created_at", { ascending: false });
+    }
+  }
+
+  const agentsRes = await supabase
+    .from("agents")
+    .select(
+      `
         id,
         company_name,
         profile:profiles!inner (
@@ -440,9 +460,8 @@ export const fetchUniversityDashboardData = async (
           email
         )
       `
-      )
-      .eq("tenant_id", tenantId),
-  ]);
+    )
+    .eq("tenant_id", tenantId);
 
   if (documentRequestsRes.error) throw documentRequestsRes.error;
   if (agentsRes.error) throw agentsRes.error;
@@ -457,7 +476,7 @@ export const fetchUniversityDashboardData = async (
       .from("applications")
       // IMPORTANT: do not filter by applications.tenant_id; filter by program ownership instead.
       // Some historical rows may have been written under the submitter tenant.
-      .select("id, app_number, status, created_at, program_id, student_id, agent_id")
+      .select("id, app_number, status, created_at, submitted_at, program_id, student_id, agent_id")
       .in("program_id", programIds)
       .order("created_at", { ascending: false });
 
@@ -523,6 +542,7 @@ export const fetchUniversityDashboardData = async (
         appNumber: app.app_number ?? "—",
         status: app.status ?? "unknown",
         createdAt: app.created_at,
+        submittedAt: (app as any).submitted_at ?? null,
         programId: app.program_id,
         programName: program?.name ?? "Unknown Course",
         programLevel: program?.level ?? "—",
@@ -544,10 +564,10 @@ export const fetchUniversityDashboardData = async (
       studentId: req.student_id ?? null,
       studentName: "Student",
       status: normalizeStatus(req.status),
-      requestType: titleCase(req.request_type ?? "Document"),
+      requestType: titleCase((req as any).document_type ?? req.request_type ?? "Document"),
       requestedAt: req.requested_at ?? req.created_at,
       documentUrl:
-        req.document_url ?? req.uploaded_file_url ?? req.file_url ?? null,
+        (req as any).document_url ?? (req as any).uploaded_file_url ?? (req as any).file_url ?? null,
     }));
 
   // Fetch associated students for document requests
@@ -683,7 +703,7 @@ const buildMetrics = (
       : 0;
 
   const pendingDocuments = documentRequests.filter(
-    (r) => normalizeStatus(r.status) !== "received",
+    (r) => normalizeStatus(r.status) !== "approved",
   ).length;
 
   const receivedDocuments = documentRequests.length - pendingDocuments;

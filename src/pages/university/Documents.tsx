@@ -30,14 +30,19 @@ import { cn } from "@/lib/utils";
 const statusFilters = [
   { value: "all", label: "All statuses" },
   { value: "pending", label: "Pending" },
-  { value: "received", label: "Received" },
+  { value: "submitted", label: "Uploaded" },
+  { value: "approved", label: "Verified" },
 ];
 
-const formatStatus = (status: string) =>
-  status
+const formatStatus = (status: string) => {
+  const normalized = status.toLowerCase();
+  if (normalized === "submitted") return "Uploaded";
+  if (normalized === "approved") return "Verified";
+  return status
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+};
 
 const formatDate = (value: string | null) => {
   if (!value) return "—";
@@ -58,7 +63,7 @@ const DocumentsPage = () => {
   const tenantId = data?.university?.tenant_id ?? null;
 
   const pendingCount = documentRequests.filter(
-    (request) => request.status.toLowerCase() !== "received",
+    (request) => request.status.toLowerCase() !== "approved",
   ).length;
   const receivedCount = documentRequests.length - pendingCount;
 
@@ -80,8 +85,8 @@ const DocumentsPage = () => {
       tone: "warning" as const,
     },
     {
-      key: "received",
-      label: "Received",
+      key: "approved",
+      label: "Verified",
       description: "Ready for compliance review",
       count: receivedCount,
       icon: CheckCircle2,
@@ -103,7 +108,7 @@ const DocumentsPage = () => {
     });
   }, [documentRequests, searchTerm, statusFilter]);
 
-  const handleMarkReceived = async (requestId: string) => {
+  const handleMarkVerified = async (requestId: string) => {
     // ISOLATION CHECK: Verify tenant context
     if (!tenantId) {
       toast({
@@ -119,7 +124,7 @@ const DocumentsPage = () => {
       // ISOLATION: Update must be scoped by tenant_id to prevent cross-tenant modifications
       const { error } = await supabase
         .from("document_requests")
-        .update({ status: "received" })
+        .update({ status: "approved", reviewed_at: new Date().toISOString(), reviewed_by: (await supabase.auth.getUser()).data.user?.id ?? null } as any)
         .eq("id", requestId)
         .eq("tenant_id", tenantId);
 
@@ -128,8 +133,8 @@ const DocumentsPage = () => {
       }
 
       toast({
-        title: "Document received",
-        description: "The request has been marked as complete.",
+        title: "Document verified",
+        description: "The request has been marked as verified.",
       });
 
       await refetch();
@@ -287,7 +292,7 @@ const DocumentsPage = () => {
                         <Badge
                           variant="outline"
                           className={
-                            request.status === "received"
+                            request.status === "approved"
                               ? "border-success/30 bg-success/10 text-success"
                               : "border-amber-500/50 bg-warning/10 text-warning"
                           }
@@ -314,12 +319,12 @@ const DocumentsPage = () => {
                               </a>
                             </Button>
                           ) : null}
-                          {request.status !== "received" ? (
+                          {request.status !== "approved" ? (
                             <Button
                               variant="outline"
                               size="sm"
                               className="border-success/30 text-success hover:bg-success/10"
-                              onClick={() => void handleMarkReceived(request.id)}
+                              onClick={() => void handleMarkVerified(request.id)}
                               disabled={updatingId === request.id}
                             >
                               {updatingId === request.id ? (
@@ -328,7 +333,7 @@ const DocumentsPage = () => {
                                   Updating
                                 </>
                               ) : (
-                                "Mark received"
+                                "Mark verified"
                               )}
                             </Button>
                           ) : null}
