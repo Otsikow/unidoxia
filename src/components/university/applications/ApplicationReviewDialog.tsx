@@ -22,7 +22,7 @@ import {
   RefreshCw,
   Eye,
   Flag,
-  Passport,
+  IdCard,
   Home,
   BookOpen,
   Award,
@@ -564,14 +564,12 @@ export function ApplicationReviewDialog({
     setRequestingDocument(true);
     console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, type: documentRequestType });
 
-    const { error } = await supabase.from("document_requests").insert({
-      tenant_id: tenantId,
+    const { error } = await supabase.from("document_requests").insert([{
       student_id: application.student.id,
-      request_type: documentRequestType,
+      document_type: documentRequestType,
       status: "pending",
       notes: documentRequestNote || null,
-      application_id: application.id,
-    });
+    }] as any);
 
     setRequestingDocument(false);
 
@@ -632,15 +630,17 @@ export function ApplicationReviewDialog({
       }
 
       // Send the message
-      const { error: msgError } = await supabase.from("conversation_messages").insert({
+      const { data: userData } = await supabase.auth.getUser();
+      const { error: msgError } = await supabase.from("conversation_messages").insert([{
         conversation_id: conversationId,
+        sender_id: userData?.user?.id,
         content: messageContent.trim(),
         message_type: "text",
         metadata: {
           application_id: application.id,
           context: "application_review",
         },
-      });
+      }] as any);
 
       if (msgError) {
         throw msgError;
@@ -1022,7 +1022,7 @@ export function ApplicationReviewDialog({
                         <Card>
                           <CardHeader className="pb-3">
                             <CardTitle className="text-base flex items-center gap-2">
-                              <Passport className="h-4 w-4" />
+                              <IdCard className="h-4 w-4" />
                               Passport Details
                             </CardTitle>
                           </CardHeader>
