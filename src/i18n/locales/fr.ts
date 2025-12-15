@@ -93,6 +93,16 @@ const fr = {
       aboutDescription:
         "Nous connectons les étudiants internationaux aux universités de renommée mondiale grâce à des agents vérifiés et une gestion transparente des candidatures.",
       contactEmailLabel: "Nous écrire",
+      followUs: "Suivez UniDoxia",
+      followUsSubtitle: "Suivez-nous sur LinkedIn, Facebook et notre canal WhatsApp.",
+      social: {
+        linkedin: "Suivez-nous sur LinkedIn",
+        linkedinShort: "LinkedIn",
+        facebook: "Suivez-nous sur Facebook",
+        facebookShort: "Facebook",
+        whatsapp: "Suivez le canal UniDoxia.com sur WhatsApp",
+        whatsappShort: "WhatsApp",
+      },
       headings: {
         platform: "Plateforme",
         support: "Support",
