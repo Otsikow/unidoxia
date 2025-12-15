@@ -45,8 +45,9 @@ const Login = () => {
       return () => (window as any).cancelIdleCallback?.(id);
     }
 
-    const timeoutId = window.setTimeout(prefetch, 300);
-    return () => window.clearTimeout(timeoutId);
+    const w = window as Window & typeof globalThis;
+    const timeoutId = w.setTimeout(prefetch, 300);
+    return () => w.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
