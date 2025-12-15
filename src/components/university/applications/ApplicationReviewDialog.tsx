@@ -753,23 +753,23 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
           {/* Header */}
           <DialogHeader className="flex-shrink-0">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <DialogTitle className="text-xl">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+              <div className="space-y-1 min-w-0 flex-1">
+                <DialogTitle className="text-lg sm:text-xl truncate">
                   {application?.programName ?? "Application Details"}
                 </DialogTitle>
-                <DialogDescription className="flex items-center gap-2 text-sm">
-                  <span>{application?.studentName ?? "Unknown Student"}</span>
+                <DialogDescription className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+                  <span className="truncate max-w-[150px] sm:max-w-none">{application?.studentName ?? "Unknown Student"}</span>
                   <span>•</span>
                   <span className="font-mono text-xs">
                     {application?.appNumber ?? "—"}
                   </span>
                 </DialogDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 <StatusBadge status={displayStatus} />
               </div>
             </div>
@@ -803,46 +803,49 @@ export function ApplicationReviewDialog({
                 onValueChange={(v) => setActiveTab(v as typeof activeTab)}
                 className="flex-1 flex flex-col overflow-hidden"
               >
-                <TabsList className="flex-shrink-0 grid w-full grid-cols-5">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="student">Student</TabsTrigger>
-                  <TabsTrigger value="documents">
-                    Documents
-                    {missingDocuments.length > 0 && (
-                      <Badge variant="destructive" className="ml-2 h-5 w-5 p-0 text-xs">
-                        {missingDocuments.length}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="notes">Notes</TabsTrigger>
-                  <TabsTrigger value="messages">
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Message
-                  </TabsTrigger>
-                </TabsList>
+                <div className="flex-shrink-0 overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
+                  <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1">
+                    <TabsTrigger value="overview" className="text-xs sm:text-sm px-2 sm:px-3">Overview</TabsTrigger>
+                    <TabsTrigger value="student" className="text-xs sm:text-sm px-2 sm:px-3">Student</TabsTrigger>
+                    <TabsTrigger value="documents" className="text-xs sm:text-sm px-2 sm:px-3 whitespace-nowrap">
+                      Docs
+                      {missingDocuments.length > 0 && (
+                        <Badge variant="destructive" className="ml-1 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 p-0 text-[10px] sm:text-xs">
+                          {missingDocuments.length}
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="notes" className="text-xs sm:text-sm px-2 sm:px-3">Notes</TabsTrigger>
+                    <TabsTrigger value="messages" className="text-xs sm:text-sm px-2 sm:px-3">
+                      <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden sm:inline">Message</span>
+                      <span className="sm:hidden">Msg</span>
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
                 <ScrollArea className="flex-1 mt-4">
                   {/* Overview Tab */}
                   <TabsContent value="overview" className="m-0 space-y-6">
                     {/* Status Update Card */}
                     <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Update Status</CardTitle>
-                        <CardDescription>
+                      <CardHeader className="pb-3 px-3 sm:px-6">
+                        <CardTitle className="text-sm sm:text-base">Update Status</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
                           Change the application status to progress the review
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="flex items-end gap-3">
+                      <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
+                        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
                           <div className="flex-1 space-y-2">
-                            <Label htmlFor="status-select">New Status</Label>
+                            <Label htmlFor="status-select" className="text-xs sm:text-sm">New Status</Label>
                             <Select
                               value={selectedStatus ?? ""}
                               onValueChange={(v) =>
                                 setSelectedStatus(v as ApplicationStatus)
                               }
                             >
-                              <SelectTrigger id="status-select">
+                              <SelectTrigger id="status-select" className="h-9 sm:h-10 text-sm">
                                 <SelectValue placeholder="Select new status" />
                               </SelectTrigger>
                               <SelectContent>
@@ -861,6 +864,7 @@ export function ApplicationReviewDialog({
                               selectedStatus === application.status ||
                               updatingStatus
                             }
+                            className="w-full sm:w-auto h-9 sm:h-10 text-sm"
                           >
                             {updatingStatus && (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -878,32 +882,32 @@ export function ApplicationReviewDialog({
                     </Card>
 
                     {/* Application Details */}
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
                       <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
+                        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                          <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                             <GraduationCap className="h-4 w-4" />
                             Program
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Course</span>
-                            <span className="font-medium">{application.programName}</span>
+                        <CardContent className="space-y-2 text-xs sm:text-sm px-3 sm:px-6">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Course</span>
+                            <span className="font-medium text-right truncate max-w-[60%]">{application.programName}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Level</span>
-                            <span>{application.programLevel}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Level</span>
+                            <span className="text-right">{application.programLevel}</span>
                           </div>
                           {application.programDiscipline && (
-                            <div className="flex justify-between">
-                              <span className="text-muted-foreground">Discipline</span>
-                              <span>{application.programDiscipline}</span>
+                            <div className="flex justify-between gap-2">
+                              <span className="text-muted-foreground flex-shrink-0">Discipline</span>
+                              <span className="text-right truncate max-w-[60%]">{application.programDiscipline}</span>
                             </div>
                           )}
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Intake</span>
-                            <span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Intake</span>
+                            <span className="text-right">
                               {new Date(
                                 application.intakeYear,
                                 application.intakeMonth - 1
@@ -917,24 +921,24 @@ export function ApplicationReviewDialog({
                       </Card>
 
                       <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
+                        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                          <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                             <Calendar className="h-4 w-4" />
                             Timeline
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Created</span>
-                            <span>{formatDate(application.createdAt)}</span>
+                        <CardContent className="space-y-2 text-xs sm:text-sm px-3 sm:px-6">
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Created</span>
+                            <span className="text-right">{formatDate(application.createdAt)}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Submitted</span>
-                            <span>{formatDate(application.submittedAt)}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Submitted</span>
+                            <span className="text-right">{formatDate(application.submittedAt)}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Last Updated</span>
-                            <span>{formatDate(application.updatedAt, true)}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Updated</span>
+                            <span className="text-right">{formatDate(application.updatedAt, true)}</span>
                           </div>
                         </CardContent>
                       </Card>
@@ -943,30 +947,30 @@ export function ApplicationReviewDialog({
                     {/* Timeline Events */}
                     {timeline.length > 0 && (
                       <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center gap-2">
+                        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                          <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                             <Clock className="h-4 w-4" />
                             Activity Timeline
                           </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
+                        <CardContent className="px-3 sm:px-6">
+                          <div className="space-y-3 sm:space-y-4">
                             {timeline.map((event, idx) => (
-                              <div key={event.id} className="flex gap-3">
+                              <div key={event.id} className="flex gap-2 sm:gap-3">
                                 <div className="relative flex flex-col items-center">
                                   <div className="h-2 w-2 rounded-full bg-primary mt-2" />
                                   {idx !== timeline.length - 1 && (
                                     <div className="w-px flex-1 bg-border mt-1" />
                                   )}
                                 </div>
-                                <div className="flex-1 pb-4">
-                                  <p className="text-sm font-medium">{event.action}</p>
-                                  <p className="text-xs text-muted-foreground">
+                                <div className="flex-1 pb-3 sm:pb-4 min-w-0">
+                                  <p className="text-xs sm:text-sm font-medium break-words">{event.action}</p>
+                                  <p className="text-[10px] sm:text-xs text-muted-foreground">
                                     {formatDate(event.timestamp, true)}
                                     {event.actor && ` • ${event.actor}`}
                                   </p>
                                   {event.details && (
-                                    <p className="text-xs text-muted-foreground mt-1">
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 break-words">
                                       {event.details}
                                     </p>
                                   )}
@@ -1380,24 +1384,24 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Notes Tab */}
-                  <TabsContent value="notes" className="m-0 space-y-6">
+                  <TabsContent value="notes" className="m-0 space-y-4 sm:space-y-6">
                     <Card>
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Internal Notes</CardTitle>
-                        <CardDescription>
+                      <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                        <CardTitle className="text-sm sm:text-base">Internal Notes</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm">
                           Private notes visible only to university staff
                         </CardDescription>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
                         <Textarea
                           placeholder="Add internal notes about this application..."
                           value={internalNotes}
                           onChange={(e) => setInternalNotes(e.target.value)}
-                          rows={6}
-                          className="resize-none"
+                          rows={5}
+                          className="resize-none text-sm min-h-[120px] sm:min-h-[150px]"
                         />
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-muted-foreground">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground order-2 sm:order-1">
                             Last saved: {formatDate(application.updatedAt, true)}
                           </p>
                           <Button
@@ -1406,6 +1410,7 @@ export function ApplicationReviewDialog({
                               savingNotes ||
                               internalNotes === (application.internalNotes ?? "")
                             }
+                            className="w-full sm:w-auto h-9 sm:h-10 text-sm order-1 sm:order-2"
                           >
                             {savingNotes && (
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -1419,14 +1424,14 @@ export function ApplicationReviewDialog({
                     {/* Student Notes (read-only) */}
                     {application.notes && (
                       <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base">Student Notes</CardTitle>
-                          <CardDescription>
+                        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                          <CardTitle className="text-sm sm:text-base">Student Notes</CardTitle>
+                          <CardDescription className="text-xs sm:text-sm">
                             Notes submitted by the student with their application
                           </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                          <p className="text-sm whitespace-pre-wrap">
+                        <CardContent className="px-3 sm:px-6">
+                          <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">
                             {application.notes}
                           </p>
                         </CardContent>
@@ -1498,8 +1503,8 @@ export function ApplicationReviewDialog({
               </Tabs>
 
               {/* Footer */}
-              <DialogFooter className="flex-shrink-0 mt-4 pt-4 border-t">
-                <Button variant="outline" onClick={() => onOpenChange(false)}>
+              <DialogFooter className="flex-shrink-0 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t">
+                <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto h-9 sm:h-10">
                   Close
                 </Button>
               </DialogFooter>

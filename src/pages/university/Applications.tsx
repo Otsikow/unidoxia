@@ -58,6 +58,7 @@ const ApplicationsPage = () => {
     fetchExtendedApplication,
     clearApplication,
     updateLocalStatus,
+    updateLocalNotes,
   } = useExtendedApplication();
 
   const applications = useMemo(
@@ -113,9 +114,11 @@ const ApplicationsPage = () => {
     }
   }, [refetch, updateLocalStatus, toast]);
 
-  const handleNotesUpdate = useCallback(() => {
-    // Could add optimistic update here if needed
-  }, []);
+  const handleNotesUpdate = useCallback((applicationId: string, notes: string) => {
+    console.log("[Applications] Notes update received:", { applicationId, notes: notes.substring(0, 50) + "..." });
+    // Update local state immediately for instant UI feedback
+    updateLocalNotes(notes);
+  }, [updateLocalNotes]);
 
   const handleCopy = async (label: string, value: string) => {
     try {
