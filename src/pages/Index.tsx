@@ -37,10 +37,20 @@ const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"
 const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
 const ContactForm = lazy(() => import("@/components/ContactForm").then(m => ({ default: m.ContactForm })));
 
-// Lightweight loading placeholder for lazy sections
+// Lightweight skeleton placeholder for lazy sections
 const SectionLoader = () => (
-  <div className="flex items-center justify-center py-20">
-    <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+  <div className="container mx-auto px-4 py-20">
+    <div className="space-y-8">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-8 w-64 bg-muted animate-pulse rounded" />
+        <div className="h-4 w-96 bg-muted animate-pulse rounded" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-64 bg-muted animate-pulse rounded-xl" />
+        ))}
+      </div>
+    </div>
   </div>
 );
 const Index = () => {

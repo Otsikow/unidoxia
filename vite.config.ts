@@ -25,6 +25,14 @@ export default defineConfig(({ mode }) => ({
     target: "esnext",
     // Increase chunk size warning limit
     chunkSizeWarningLimit: 1000,
+    // Enable CSS code splitting
+    cssCodeSplit: true,
+    // Minification settings for better compression
+    minify: "esbuild",
+    // Enable CSS minification
+    cssMinify: true,
+    // Report compressed size for better bundle analysis
+    reportCompressedSize: false, // Disable for faster builds
     rollupOptions: {
       output: {
         // Manual chunk splitting for optimal caching and parallel loading
@@ -73,10 +81,10 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    // Minification settings
-    minify: "esbuild",
-    // CSS code splitting
-    cssCodeSplit: true,
+    // Preload directives for critical chunks
+    modulePreload: {
+      polyfill: true,
+    },
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
