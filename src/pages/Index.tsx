@@ -300,7 +300,6 @@ const Index = () => {
                 <Card className="group flex h-full flex-col overflow-hidden rounded-3xl border border-primary/10 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl">
                   <div className="relative h-48 overflow-hidden sm:h-56">
                     <img src={cta.image} alt={cta.title} className="h-full w-full object-cover transition group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-90 group-hover:opacity-80" />
 
                     <Badge className="absolute left-4 top-4 bg-background/90 text-foreground">
                       {cta.badge}
