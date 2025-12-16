@@ -1050,6 +1050,53 @@ export const UniversityDashboardLayout = ({
     );
   }
 
+  // Guard: University user without tenant_id cannot update applications
+  const isUniversityRole = ['university', 'partner', 'school_rep'].includes(profile.role?.toLowerCase() ?? '');
+  if (isUniversityRole && !profile.tenant_id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-lg text-center flex flex-col items-center gap-6">
+          <div className="p-4 bg-destructive/10 rounded-full">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+          </div>
+
+          <h1 className="text-2xl font-semibold">Account Not Linked</h1>
+
+          <p className="text-muted-foreground">
+            Your university partner account is not linked to an institution. 
+            This prevents you from viewing and managing applications.
+          </p>
+
+          <Alert variant="destructive" className="text-left">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Action Required</AlertTitle>
+            <AlertDescription>
+              Please contact the platform administrator to have your account 
+              linked to your university. Provide them with your account email: 
+              <span className="font-medium"> {profile.email}</span>
+            </AlertDescription>
+          </Alert>
+
+          <div className="flex gap-4 mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh Page
+            </Button>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-3">
+            User ID: {profile.id?.slice(0, 8)}... | Role: {profile.role}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
