@@ -273,7 +273,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ? currentUser.user_metadata.university_name
         : profileData.full_name) ?? 'University Partner';
 
-    const { data: newTenant, error: tenantCreationError } = await supabase
+    // Create isolated tenant - using let so we can reassign on retry
+    let isolatedTenant: { id: string; slug: string; name: string } | null = null;
+
+    const { data: firstAttemptTenant, error: tenantCreationError } = await supabase
       .from('tenants')
       .insert({
         name: tenantName,
@@ -284,11 +287,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select('id, slug, name')
       .single();
 
-    if (tenantCreationError || !newTenant?.id) {
+    if (tenantCreationError || !firstAttemptTenant?.id) {
       console.error('CRITICAL: Failed to create isolated tenant for partner profile:', tenantCreationError);
-      // Instead of returning the old profile (which would keep shared data), 
+      // Instead of returning the old profile (which would keep shared data),
       // we need to retry with a different approach or fail explicitly
-      
+
       // Try one more time with a fully unique slug
       const retrySlug = `uni-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
       const { data: retryTenant, error: retryError } = await supabase
@@ -314,7 +317,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       // Use the retry tenant
-      Object.assign(newTenant || {}, retryTenant);
+      isolatedTenant = retryTenant;
+    } else {
+      isolatedTenant = firstAttemptTenant;
+    }
+
+    // At this point, isolatedTenant is guaranteed to be non-null (we return early if both attempts fail)
+    if (!isolatedTenant) {
+      console.error('CRITICAL: No isolated tenant available after creation attempts');
+      return {
+        ...profileData,
+        _isolationFailed: true,
+      } as Profile;
     }
 
     const universityName =
@@ -324,7 +338,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     // Create a fresh university for this new isolated tenant using the safe RPC function
     const { data: newUniversityId, error: universityCreationError } = await supabase.rpc('get_or_create_university', {
-      p_tenant_id: newTenant!.id,
+      p_tenant_id: isolatedTenant.id,
       p_name: universityName,
       p_country: currentUser?.user_metadata?.country || 'Unknown',
       p_contact_name: profileData.full_name,
@@ -342,7 +356,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Update the profile to use the new isolated tenant
     const { data: updatedProfile, error: profileUpdateError } = await supabase
       .from('profiles')
-      .update({ tenant_id: newTenant!.id })
+      .update({ tenant_id: isolatedTenant.id })
       .eq('id', profileData.id)
       .select('*')
       .single();
@@ -359,14 +373,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     console.log('Partner profile successfully migrated to isolated tenant:', {
       profileId: profileData.id,
-      newTenantId: newTenant!.id,
-      newTenantSlug: newTenant!.slug,
+      newTenantId: isolatedTenant.id,
+      newTenantSlug: isolatedTenant.slug,
       universityCreated: !universityCreationError,
     });
 
     return {
       ...updatedProfile,
-      tenant_id: newTenant!.id,
+      tenant_id: isolatedTenant.id,
     } as Profile;
   };
 
@@ -485,27 +499,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
         }
 
-        const profileWithVerification = await ensurePartnerEmailVerification(
-          normalizedProfile,
-          currentUser,
-        );
+        // Post-process the profile (verification and isolation)
+        // Wrap in try-catch to preserve profile even if post-processing fails
+        let finalProfile = normalizedProfile;
 
-        const profileWithIsolation = await ensurePartnerTenantIsolation(
-          profileWithVerification,
-          currentUser,
-        );
+        try {
+          const profileWithVerification = await ensurePartnerEmailVerification(
+            normalizedProfile,
+            currentUser,
+          );
+          finalProfile = profileWithVerification;
+
+          const profileWithIsolation = await ensurePartnerTenantIsolation(
+            profileWithVerification,
+            currentUser,
+          );
+          finalProfile = profileWithIsolation;
+        } catch (postProcessError) {
+          // Post-processing failed, but we still have a valid profile
+          // Log the error and continue with what we have
+          console.error('Error in profile post-processing (using base profile):', postProcessError);
+          // Continue with the last successfully processed profile
+        }
 
         // Final security check: ensure the profile we're setting belongs to this user
-        if (profileWithIsolation.id !== userId) {
+        if (finalProfile.id !== userId) {
           console.error('CRITICAL SECURITY ERROR: Post-processing profile ID mismatch!', {
             requested: userId,
-            returned: profileWithIsolation.id,
+            returned: finalProfile.id,
           });
           setProfile(null);
           return;
         }
 
-        setProfile(profileWithIsolation);
+        setProfile(finalProfile);
       }
     } catch (err) {
       console.error('Unexpected error fetching profile:', err);
