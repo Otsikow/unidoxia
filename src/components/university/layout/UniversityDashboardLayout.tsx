@@ -468,40 +468,70 @@ export const fetchUniversityDashboardData = async (
       ...new Set(rows.map((r) => r.student_id).filter(Boolean)),
     ] as string[];
 
-    // Fetch students with profile fallback for name
+    // Fetch students using security definer function for reliable access
     let studentsMap = new Map<
       string,
       { id: string; legal_name: string | null; nationality: string | null; profile_name: string | null }
     >();
 
     if (studentIds.length > 0) {
-      const { data: stuData, error: stuErr } = await supabase
-        .from("students")
-        .select(`
-          id, 
-          legal_name, 
-          preferred_name,
-          nationality,
-          profile:profiles!students_profile_id_fkey (
-            full_name,
-            email
-          )
-        `)
-        .in("id", studentIds);
-
-      if (stuErr) throw stuErr;
-
-      studentsMap = new Map(
-        stuData?.map((s) => [
-          s.id,
-          {
-            id: s.id,
-            legal_name: s.legal_name ?? s.preferred_name ?? (s.profile as any)?.full_name ?? null,
-            nationality: s.nationality,
-            profile_name: (s.profile as any)?.full_name ?? null,
-          },
-        ]) ?? []
+      // Try the security definer function first (most reliable)
+      const { data: rpcData, error: rpcErr } = await supabase.rpc(
+        "get_students_for_university_applications",
+        { p_student_ids: studentIds }
       );
+
+      if (!rpcErr && rpcData && rpcData.length > 0) {
+        // Use RPC data
+        studentsMap = new Map(
+          rpcData.map((s: any) => [
+            s.id,
+            {
+              id: s.id,
+              legal_name: s.legal_name ?? s.preferred_name ?? s.profile_name ?? null,
+              nationality: s.nationality,
+              profile_name: s.profile_name ?? null,
+            },
+          ])
+        );
+      } else {
+        // Fallback to direct query if RPC not available or fails
+        console.log(
+          "[UniversityDashboard] RPC not available or failed, trying direct query:",
+          rpcErr?.message
+        );
+        
+        const { data: stuData, error: stuErr } = await supabase
+          .from("students")
+          .select(`
+            id, 
+            legal_name, 
+            preferred_name,
+            nationality,
+            profile:profiles!students_profile_id_fkey (
+              full_name,
+              email
+            )
+          `)
+          .in("id", studentIds);
+
+        if (stuErr) {
+          console.warn("[UniversityDashboard] Student fetch warning:", stuErr);
+          // Don't throw - continue with unknown students
+        } else {
+          studentsMap = new Map(
+            stuData?.map((s) => [
+              s.id,
+              {
+                id: s.id,
+                legal_name: s.legal_name ?? s.preferred_name ?? (s.profile as any)?.full_name ?? null,
+                nationality: s.nationality,
+                profile_name: (s.profile as any)?.full_name ?? null,
+              },
+            ]) ?? []
+          );
+        }
+      }
     }
 
     const programMap = new Map(
