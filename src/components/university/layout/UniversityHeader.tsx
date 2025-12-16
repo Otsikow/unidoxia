@@ -5,6 +5,7 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  Home,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
@@ -162,6 +163,15 @@ export const UniversityHeader = ({
           ) : (
             <PanelLeftClose className="h-5 w-5" />
           )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/")}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Go to home"
+        >
+          <Home className="h-5 w-5" />
         </Button>
         {showBack ? (
           <BackButton

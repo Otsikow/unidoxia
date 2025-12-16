@@ -1,7 +1,7 @@
 "use client";
 
 import { type ComponentType, type SVGProps, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import {
   Gauge,
   Handshake,
   ScrollText,
+  Home,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -218,6 +219,7 @@ const AdminLayout = () => {
   const { profile, signOut } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { loading: rolesLoading, hasRole } = useUserRoles();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -374,18 +376,27 @@ const AdminLayout = () => {
       <div className="flex w-full min-w-0 flex-col">
         {/* Top Header Bar with Notification Bell */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
-          {location.pathname !== "/admin/dashboard" && location.pathname !== "/admin" ? (
-            <BackButton
+          <div className="flex items-center gap-2">
+            <Button
               variant="ghost"
-              size="sm"
-              showHistoryMenu={false}
-              fallback="/admin/dashboard"
-              className="h-9 px-2"
-              label="Back"
-            />
-          ) : (
-            <span />
-          )}
+              size="icon"
+              onClick={() => navigate("/")}
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              aria-label="Go to home"
+            >
+              <Home className="h-5 w-5" />
+            </Button>
+            {location.pathname !== "/admin/dashboard" && location.pathname !== "/admin" ? (
+              <BackButton
+                variant="ghost"
+                size="sm"
+                showHistoryMenu={false}
+                fallback="/admin/dashboard"
+                className="h-9 px-2"
+                label="Back"
+              />
+            ) : null}
+          </div>
           <NotificationBell notificationsUrl="/admin/notifications" maxItems={7} />
         </header>
         <main className="flex-1 bg-background">
