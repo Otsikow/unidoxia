@@ -255,20 +255,43 @@ const explainUpdateError = (
     return {
       title: "Backend misconfigured",
       description:
-        `RPC public.update_application_review is missing or not executable. ` +
-        `Deploy migrations and reload PostgREST schema. ` +
-        `Application ID: ${context.applicationId}. ` +
-        `Raw: ${formatSupabaseError(error)}`,
+        `The update function is missing. Please contact support or refresh the page. ` +
+        `Application ID: ${context.applicationId}.`,
     };
   }
 
   if (code === "42501" || msg.toLowerCase().includes("permission")) {
+    // Check for specific permission issues
+    if (msg.includes("not associated with a university") || msg.includes("tenant not found")) {
+      return {
+        title: "Account not linked to university",
+        description:
+          `Your account is not properly linked to a university. ` +
+          `Please contact support to verify your account configuration.`,
+      };
+    }
+    if (msg.includes("different university") || msg.includes("tenant mismatch")) {
+      return {
+        title: "Permission denied",
+        description:
+          `This application belongs to a different university. ` +
+          `You can only update applications to your own university's programs.`,
+      };
+    }
+    if (msg.includes("role")) {
+      return {
+        title: "Role permission denied",
+        description:
+          `Your account role does not have permission to update applications. ` +
+          `Only university partners and staff can update internal notes.`,
+      };
+    }
     return {
       title: "Permission denied",
       description:
-        `RLS or role permissions blocked this update. ` +
-        `Application ID: ${context.applicationId}. ` +
-        `Raw: ${formatSupabaseError(error)}`,
+        `You don't have permission to update this application. ` +
+        `This may be due to account configuration. Please try refreshing the page or contact support. ` +
+        `(Error: ${code})`,
     };
   }
 
@@ -276,15 +299,21 @@ const explainUpdateError = (
     return {
       title: "Invalid status",
       description:
-        `Status value not accepted by database enum. ` +
-        `Application ID: ${context.applicationId}. ` +
-        `Raw: ${formatSupabaseError(error)}`,
+        `The selected status is not valid. Please select a different status.`,
+    };
+  }
+
+  if (code === "P0002" || msg.toLowerCase().includes("not found")) {
+    return {
+      title: "Application not found",
+      description:
+        `This application may have been deleted or moved. Please refresh the page and try again.`,
     };
   }
 
   return {
     title: "Update failed",
-    description: `Application ID: ${context.applicationId}. Raw: ${formatSupabaseError(error)}`,
+    description: `An unexpected error occurred. Please try again or contact support. (Error: ${code || 'unknown'})`,
   };
 };
 
@@ -378,6 +407,7 @@ export function ApplicationReviewDialog({
   const [activeTab, setActiveTab] = useState<"overview" | "student" | "documents" | "notes" | "messages">("overview");
   const [internalNotes, setInternalNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSavedAt, setNotesSavedAt] = useState<Date | null>(null);
 
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
@@ -417,6 +447,7 @@ export function ApplicationReviewDialog({
     setDocumentUrls({});
     setMessages([]);
     setConversationId(null);
+    setNotesSavedAt(null);
   }, [application]);
 
   // Load messages when switching to messages tab
@@ -571,9 +602,9 @@ export function ApplicationReviewDialog({
       } else {
         const fallback = await supabase
           .from("applications")
-          .update({ internal_notes: internalNotes })
+          .update({ internal_notes: internalNotes, updated_at: new Date().toISOString() })
           .eq("id", application.id)
-          .select("id, internal_notes")
+          .select("id, internal_notes, updated_at")
           .limit(1);
 
         data = fallback.data;
@@ -595,7 +626,11 @@ export function ApplicationReviewDialog({
       const explained = explainUpdateError(error, {
         applicationId: application.id,
       });
-      toast({ ...explained, variant: "destructive" });
+      toast({ 
+        ...explained, 
+        variant: "destructive",
+        duration: 10000, // Show error longer so user can read it
+      });
       return;
     }
 
@@ -611,13 +646,20 @@ export function ApplicationReviewDialog({
       return;
     }
 
+    const savedAt = new Date();
+    setNotesSavedAt(savedAt);
+    
     console.log("[ApplicationReview] Notes saved successfully:", {
       applicationId: application.id,
       notesLength: internalNotes.length,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at ?? savedAt.toISOString()
     });
+    
     onNotesUpdate?.(application.id, internalNotes);
-    toast({ title: "Saved", description: "Internal notes updated" });
+    toast({ 
+      title: "Notes saved", 
+      description: `Internal notes updated successfully at ${savedAt.toLocaleTimeString()}`,
+    });
   }, [application, internalNotes, onNotesUpdate, toast]);
 
   /* ===========================
@@ -1569,11 +1611,26 @@ export function ApplicationReviewDialog({
                           onChange={(e) => setInternalNotes(e.target.value)}
                           rows={5}
                           className="resize-none text-sm min-h-[120px] sm:min-h-[150px]"
+                          disabled={savingNotes}
                         />
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
-                          <p className="text-[10px] sm:text-xs text-muted-foreground order-2 sm:order-1">
-                            Last saved: {formatDate(application.updatedAt, true)}
-                          </p>
+                          <div className="order-2 sm:order-1 space-y-0.5">
+                            {notesSavedAt ? (
+                              <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Saved at {notesSavedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                              </p>
+                            ) : (
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                Last saved: {formatDate(application.updatedAt, true)}
+                              </p>
+                            )}
+                            {internalNotes !== (application.internalNotes ?? "") && !savingNotes && (
+                              <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400">
+                                You have unsaved changes
+                              </p>
+                            )}
+                          </div>
                           <Button
                             onClick={saveNotes}
                             disabled={
@@ -1582,10 +1639,14 @@ export function ApplicationReviewDialog({
                             }
                             className="w-full sm:w-auto h-9 sm:h-10 text-sm order-1 sm:order-2"
                           >
-                            {savingNotes && (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            {savingNotes ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              "Save Notes"
                             )}
-                            Save Notes
                           </Button>
                         </div>
                       </CardContent>
