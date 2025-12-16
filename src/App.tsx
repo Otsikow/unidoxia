@@ -1,8 +1,9 @@
 "use client";
 
-import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
+import { lazy, Suspense, ComponentType, useEffect, useState, memo } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createOptimizedQueryClient } from "@/lib/queryConfig";
 
 // UI & Global Providers
 import { Toaster } from "@/components/ui/toaster";
@@ -13,7 +14,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { NavigationHistoryProvider } from "@/hooks/useNavigationHistory";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LoadingState } from "@/components/LoadingState";
+import { PageSkeleton } from "@/components/performance/SkeletonLoaders";
 
 // UI Elements
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -122,26 +123,10 @@ const lazyWithErrorHandling = <T extends ComponentType<any>>(
   });
 
 /* ==========================================================================
-   REACT QUERY CONFIG
+   REACT QUERY CONFIG - Optimized for performance
    ========================================================================== */
 
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: (attempt, error) => {
-        if (error && typeof error === "object" && "status" in error) {
-          const status = (error as any).status;
-          if (status >= 400 && status < 500) return false;
-        }
-        return attempt < 3;
-      },
-      retryDelay: (i) => Math.min(1000 * 2 ** i, 30000),
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-    },
-    mutations: { retry: false },
-  },
-});
+export const queryClient = createOptimizedQueryClient();
 
 /* ==========================================================================
    LAZY IMPORTS — PUBLIC
@@ -496,22 +481,29 @@ const RoutePrefetcher = () => {
    MAIN APP
    ========================================================================== */
 
-const App = () => {
-  const { t } = useTranslation();
+// Main app loading skeleton - instant visual feedback
+const AppLoadingSkeleton = memo(() => (
+  <div className="min-h-screen">
+    <PageSkeleton />
+  </div>
+));
+
+const App = memo(function App() {
   const [shouldRenderChatbot, setShouldRenderChatbot] = useState(false);
 
   useEffect(() => {
     preloadCommonRoutes();
 
-    let timeoutId: any;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const loadChatbot = () => setShouldRenderChatbot(true);
 
+    // Defer chatbot loading until after main content is interactive
     if (document.readyState === "complete") {
-      timeoutId = setTimeout(loadChatbot, 1500);
+      timeoutId = setTimeout(loadChatbot, 2000);
     } else {
       const handleLoad = () => {
-        timeoutId = setTimeout(loadChatbot, 1000);
+        timeoutId = setTimeout(loadChatbot, 1500);
       };
       window.addEventListener("load", handleLoad, { once: true });
       return () => {
@@ -532,13 +524,7 @@ const App = () => {
           <ErrorBoundary>
             <AuthProvider>
               <NavigationHistoryProvider>
-                <Suspense
-                  fallback={
-                    <div className="min-h-screen flex items-center justify-center">
-                      <LoadingState message={t("app.loading")} size="lg" />
-                    </div>
-                  }
-                >
+                <Suspense fallback={<AppLoadingSkeleton />}>
                   <div className="min-h-screen flex flex-col">
                     <div className="flex-1">
                       <Routes>
@@ -732,6 +718,6 @@ const App = () => {
       </TooltipProvider>
     </QueryClientProvider>
   );
-};
+});
 
 export default App;

@@ -31,30 +31,32 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Core React runtime - rarely changes
           "vendor-react": ["react", "react-dom", "react-router-dom"],
-          // UI framework - Radix primitives
-          "vendor-radix": [
+          // UI framework - Radix primitives (split into two chunks for parallel loading)
+          "vendor-radix-core": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-tooltip",
+            "@radix-ui/react-slot",
+          ],
+          "vendor-radix-extra": [
             "@radix-ui/react-accordion",
             "@radix-ui/react-alert-dialog",
             "@radix-ui/react-avatar",
             "@radix-ui/react-checkbox",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
             "@radix-ui/react-label",
-            "@radix-ui/react-popover",
             "@radix-ui/react-progress",
             "@radix-ui/react-scroll-area",
-            "@radix-ui/react-select",
             "@radix-ui/react-separator",
-            "@radix-ui/react-slot",
             "@radix-ui/react-switch",
-            "@radix-ui/react-tabs",
             "@radix-ui/react-toast",
             "@radix-ui/react-toggle",
-            "@radix-ui/react-tooltip",
           ],
           // Data fetching and state management
           "vendor-query": ["@tanstack/react-query", "@supabase/supabase-js"],
-          // Animation library - loaded when needed
+          // Animation library - loaded when needed (defer loading)
           "vendor-animation": ["framer-motion"],
           // Charts - only loaded on dashboard/analytics pages
           "vendor-charts": ["recharts"],
@@ -68,15 +70,28 @@ export default defineConfig(({ mode }) => ({
           ],
           // i18n - loaded at startup but cached
           "vendor-i18n": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
-          // Utilities
+          // Utilities - split for better caching
           "vendor-utils": ["date-fns", "clsx", "tailwind-merge", "zod"],
+        },
+        // Optimize chunk file names for better caching
+        chunkFileNames: (chunkInfo) => {
+          // Use content hash for vendor chunks (long cache)
+          if (chunkInfo.name?.startsWith("vendor-")) {
+            return "assets/[name]-[hash].js";
+          }
+          // Use content hash for app chunks
+          return "assets/[name]-[hash].js";
         },
       },
     },
-    // Minification settings
-    minify: "esbuild",
+    // Minification settings - use terser for better compression in production
+    minify: mode === "production" ? "esbuild" : false,
     // CSS code splitting
     cssCodeSplit: true,
+    // Reduce CSS size
+    cssMinify: true,
+    // Report compressed size
+    reportCompressedSize: true,
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
@@ -91,8 +106,21 @@ export default defineConfig(({ mode }) => ({
       // lodash individual modules don't have default exports
       "recharts",
       "lodash-es",
+      // Pre-bundle commonly used utilities
+      "date-fns",
+      "clsx",
+      "zod",
     ],
     // Exclude heavy libraries from pre-bundling - let them be split
     exclude: ["@tiptap/react", "@tiptap/starter-kit"],
+  },
+  // Performance optimizations
+  esbuild: {
+    // Drop console and debugger in production
+    drop: mode === "production" ? ["console", "debugger"] : [],
+    // Minify identifiers for smaller bundles
+    minifyIdentifiers: mode === "production",
+    minifySyntax: mode === "production",
+    minifyWhitespace: mode === "production",
   },
 }));

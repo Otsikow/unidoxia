@@ -1,19 +1,22 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense, useCallback, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator, Loader2 } from "lucide-react";
+import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
+import { HeroVideo } from "@/components/performance/HeroVideo";
+import { LandingSectionSkeleton, FeatureCardSkeleton, TestimonialSkeleton } from "@/components/performance/SkeletonLoaders";
+import { OptimizedImage } from "@/components/performance/OptimizedImage";
 
 // Static assets - these are URL references, not heavy JS
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
@@ -37,49 +40,31 @@ const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"
 const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
 const ContactForm = lazy(() => import("@/components/ContactForm").then(m => ({ default: m.ContactForm })));
 
-// Lightweight loading placeholder for lazy sections
-const SectionLoader = () => (
-  <div className="flex items-center justify-center py-20">
-    <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+// Performance-optimized skeleton loaders (no spinners - instant visual feedback)
+const SectionLoader = memo(() => (
+  <LandingSectionSkeleton height="py-16" />
+));
+
+const FeatureSectionLoader = memo(() => (
+  <div className="container mx-auto px-4 py-20">
+    <div className="grid md:grid-cols-3 gap-8">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <FeatureCardSkeleton key={i} />
+      ))}
+    </div>
   </div>
-);
-const Index = () => {
+));
+
+const TestimonialLoader = memo(() => (
+  <div className="container mx-auto px-4 py-20">
+    <TestimonialSkeleton />
+  </div>
+));
+const Index = memo(function Index() {
   const {
     t
   } = useTranslation();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
-
-  // Defer the hero background video so it doesn't block initial paint/network,
-  // and respect low-bandwidth + reduced motion preferences.
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const prefersReducedMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    const conn = (navigator as any).connection;
-    const saveData = Boolean(conn?.saveData);
-    const effectiveType = String(conn?.effectiveType ?? "");
-    const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
-
-    if (prefersReducedMotion || saveData || isSlowConnection) {
-      setShouldLoadHeroVideo(false);
-      return;
-    }
-
-    const enable = () => setShouldLoadHeroVideo(true);
-
-    if ("requestIdleCallback" in window) {
-      const id = (window as any).requestIdleCallback(enable, { timeout: 2000 });
-      return () => (window as any).cancelIdleCallback?.(id);
-    }
-
-    const w = window as Window & typeof globalThis;
-    const timeoutId = w.setTimeout(enable, 1200);
-    return () => w.clearTimeout(timeoutId);
-  }, []);
 
   // HERO CTAs
   const heroCtas = useMemo(() => [{
@@ -147,8 +132,8 @@ const Index = () => {
     const interval = setInterval(() => setCurrentTestimonial(prev => (prev + 1) % (testimonialCount || 1)), 5000);
     return () => clearInterval(interval);
   }, [testimonialCount]);
-  const nextTestimonial = () => setCurrentTestimonial(prev => (prev + 1) % testimonialCount);
-  const prevTestimonial = () => setCurrentTestimonial(prev => prev === 0 ? testimonialCount - 1 : prev - 1);
+  const nextTestimonial = useCallback(() => setCurrentTestimonial(prev => (prev + 1) % testimonialCount), [testimonialCount]);
+  const prevTestimonial = useCallback(() => setCurrentTestimonial(prev => prev === 0 ? testimonialCount - 1 : prev - 1), [testimonialCount]);
 
   // FAQ
   const faqs = useMemo(() => t("pages.index.faq.sections", {
@@ -180,41 +165,23 @@ const Index = () => {
 
       <LandingHeader />
 
-      {/* HERO VIDEO SECTION */}
-      <section className="hero-video-container">
-        {/* Background video (deferred) */}
-        {shouldLoadHeroVideo ? (
-          <video
-            className="hero-video"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={studentsStudyingGroup}
-          >
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
-        ) : (
-          <img
-            src={studentsStudyingGroup}
-            alt=""
-            className="hero-video"
-            decoding="async"
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Dark Overlay */}
-        <div className="hero-video-overlay" />
-
-        {/* Content */}
-        <div className="hero-content">
+      {/* HERO VIDEO SECTION - Optimized for instant playback */}
+      <HeroVideo
+        videoSrc="/videos/hero-video.mp4"
+        posterSrc={studentsStudyingGroup}
+        fallbackImageSrc={studentsStudyingGroup}
+        loadDelay={0}
+      />
+      {/* Hero Content Overlay */}
+      <section className="hero-video-container" style={{ position: 'absolute', top: 0, left: 0, right: 0, minHeight: '100vh', pointerEvents: 'none' }}>
+        <div className="hero-content" style={{ pointerEvents: 'auto' }}>
           {/* Logo at top */}
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"
             decoding="async"
+            loading="eager"
+            fetchPriority="high"
             className="hero-logo mb-8 h-24 w-auto sm:h-32 md:h-40 opacity-50 drop-shadow-2xl brightness-0 invert"
           />
 
@@ -453,5 +420,5 @@ const Index = () => {
         </div>
       </footer>
     </div>;
-};
+});
 export default Index;
