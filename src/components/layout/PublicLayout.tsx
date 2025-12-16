@@ -17,17 +17,7 @@ export const PublicLayout = ({ children, contentClassName }: PublicLayoutProps) 
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <main className={cn("flex-1 w-full", contentClassName)}>
         <div className="page-shell py-6 sm:py-10 lg:py-12">
-          {showBack ? (
-            <div className="mb-4">
-              <BackButton
-                variant="ghost"
-                size="sm"
-                showHistoryMenu={false}
-                fallback="/"
-                wrapperClassName="inline-flex"
-              />
-            </div>
-          ) : null}
+          {/* BackButton removed in favor of GlobalBackButton */}
           {children}
         </div>
       </main>

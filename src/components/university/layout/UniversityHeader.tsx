@@ -163,16 +163,7 @@ export const UniversityHeader = ({
             <PanelLeftClose className="h-5 w-5" />
           )}
         </Button>
-        {showBack ? (
-          <BackButton
-            variant="ghost"
-            size="sm"
-            showHistoryMenu={false}
-            fallback="/university"
-            className="h-8 px-2"
-            label="Back"
-          />
-        ) : null}
+        {/* BackButton removed in favor of GlobalBackButton */}
         <div>
           <p className="text-xs uppercase tracking-[0.4rem] text-muted-foreground">
             UniDoxia

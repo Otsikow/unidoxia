@@ -64,15 +64,7 @@ function SidebarToolbar() {
           className="h-7 w-7 sm:h-8 sm:w-8"
           aria-label={state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
         />
-        {showBack ? (
-          <BackButton
-            variant="ghost"
-            size="sm"
-            showHistoryMenu={false}
-            fallback="/dashboard"
-            className="h-7 px-2"
-          />
-        ) : null}
+        {/* BackButton removed in favor of GlobalBackButton */}
         <span className="hidden text-xs sm:text-sm font-medium text-muted-foreground md:inline">
           {state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
         </span>

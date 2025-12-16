@@ -10,6 +10,7 @@ import { logVisaCalculatorCardClick } from "@/lib/analytics";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator, Loader2 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { AnimatedStackedCards, CardData } from "@/components/landing/AnimatedStackedCards";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
@@ -370,39 +371,15 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20 text-center">
         <h2 className="text-4xl font-bold mb-12">{testimonialsHeading}</h2>
 
-        <Card className="max-w-3xl mx-auto border-2 shadow-xl">
-          <CardContent className="p-10">
-            <Quote className="h-10 w-10 text-primary/20 mb-6 mx-auto" />
-
-            <p className="italic text-xl mb-6">
-              "{testimonials[currentTestimonial].quote}"
-            </p>
-
-            <div className="flex justify-center gap-1 mb-6">
-              {Array.from({
-              length: testimonials[currentTestimonial].rating
-            }).map((_, i) => <Star key={i} className="h-5 w-5 fill-primary text-primary" />)}
-            </div>
-
-            <div className="text-lg font-bold">
-              {testimonials[currentTestimonial].name}
-            </div>
-            <div className="text-muted-foreground">
-              {testimonials[currentTestimonial].role} —{" "}
-              {testimonials[currentTestimonial].country}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-center gap-4 mt-8">
-          <Button variant="ghost" size="icon" onClick={prevTestimonial}>
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-
-          <Button variant="ghost" size="icon" onClick={nextTestimonial}>
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-        </div>
+        <AnimatedStackedCards 
+          cards={testimonials.map((item, index) => ({
+            id: `testimonial-${index}`,
+            username: item.name,
+            timestamp: item.country,
+            content: item.quote,
+            linkText: `Read ${item.role}'s story`
+          }))}
+        />
       </section>
 
       {/* FAQ */}
