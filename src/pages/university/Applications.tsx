@@ -71,6 +71,8 @@ const ApplicationsPage = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState<"all" | "new">("all");
+  const [activeCard, setActiveCard] = useState<"total" | "new" | "offers" | null>(null);
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
@@ -145,9 +147,16 @@ const ApplicationsPage = () => {
   const filteredApplications = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     return applications.filter((app) => {
-      const matchesStatus =
-        statusFilter === "all" ||
-        app.status.toLowerCase() === statusFilter.toLowerCase();
+      let matchesStatus: boolean;
+      if (statusFilter === "all") {
+        matchesStatus = true;
+      } else if (statusFilter === "offers") {
+        matchesStatus = ["conditional_offer", "unconditional_offer"].includes(
+          app.status.toLowerCase()
+        );
+      } else {
+        matchesStatus = app.status.toLowerCase() === statusFilter.toLowerCase();
+      }
 
       const matchesSearch =
         term.length === 0 ||
@@ -155,9 +164,41 @@ const ApplicationsPage = () => {
         app.studentName.toLowerCase().includes(term) ||
         app.programName.toLowerCase().includes(term);
 
-      return matchesStatus && matchesSearch;
+      const matchesDate =
+        dateFilter === "all" || isWithinLastDays(app.createdAt, 7);
+
+      return matchesStatus && matchesSearch && matchesDate;
     });
-  }, [applications, searchTerm, statusFilter]);
+  }, [applications, searchTerm, statusFilter, dateFilter]);
+
+  const handleCardClick = useCallback((card: "total" | "new" | "offers") => {
+    // If clicking the same card, deselect it
+    if (activeCard === card) {
+      setActiveCard(null);
+      setStatusFilter("all");
+      setDateFilter("all");
+      return;
+    }
+
+    setActiveCard(card);
+    setSearchTerm("");
+
+    switch (card) {
+      case "total":
+        setStatusFilter("all");
+        setDateFilter("all");
+        break;
+      case "new":
+        setStatusFilter("all");
+        setDateFilter("new");
+        break;
+      case "offers":
+        setDateFilter("all");
+        // Filter by offer statuses - we need to handle this specially
+        setStatusFilter("offers");
+        break;
+    }
+  }, [activeCard]);
 
   const metrics = useMemo(() => {
     const total = applications.length;
@@ -193,7 +234,13 @@ const ApplicationsPage = () => {
       </div>
 
       <section className="grid gap-3 md:grid-cols-3">
-        <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}> 
+        <Card 
+          className={withUniversityCardStyles(`rounded-2xl text-card-foreground cursor-pointer transition-all hover:ring-2 hover:ring-primary/50 ${activeCard === "total" ? "ring-2 ring-primary" : ""}`)}
+          onClick={() => handleCardClick("total")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleCardClick("total")}
+        > 
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total applications
@@ -207,7 +254,13 @@ const ApplicationsPage = () => {
           </CardContent>
         </Card>
 
-        <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}> 
+        <Card 
+          className={withUniversityCardStyles(`rounded-2xl text-card-foreground cursor-pointer transition-all hover:ring-2 hover:ring-primary/50 ${activeCard === "new" ? "ring-2 ring-primary" : ""}`)}
+          onClick={() => handleCardClick("new")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleCardClick("new")}
+        > 
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               New (7 days)
@@ -223,7 +276,13 @@ const ApplicationsPage = () => {
           </CardContent>
         </Card>
 
-        <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}> 
+        <Card 
+          className={withUniversityCardStyles(`rounded-2xl text-card-foreground cursor-pointer transition-all hover:ring-2 hover:ring-primary/50 ${activeCard === "offers" ? "ring-2 ring-primary" : ""}`)}
+          onClick={() => handleCardClick("offers")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleCardClick("offers")}
+        > 
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Offers issued
@@ -263,7 +322,11 @@ const ApplicationsPage = () => {
               className="text-sm"
             />
 
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={(value) => {
+              setStatusFilter(value);
+              setActiveCard(null);
+              setDateFilter("all");
+            }}>
               <SelectTrigger className="text-sm">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
