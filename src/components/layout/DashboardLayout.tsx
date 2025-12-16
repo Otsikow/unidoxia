@@ -1,13 +1,15 @@
 import { ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppFooter } from "@/components/layout/AppFooter";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import BackButton from "@/components/BackButton";
+import { Home } from "lucide-react";
 
 const formatRoleLabel = (role?: string | null) =>
   role ? role.replace(/_/g, " ") : "User";
@@ -46,6 +48,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 function SidebarToolbar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const { primaryRole } = useUserRoles();
 
@@ -64,6 +67,15 @@ function SidebarToolbar() {
           className="h-7 w-7 sm:h-8 sm:w-8"
           aria-label={state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
         />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/")}
+          className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
+          aria-label="Go to home"
+        >
+          <Home className="h-4 w-4" />
+        </Button>
         {showBack ? (
           <BackButton
             variant="ghost"
