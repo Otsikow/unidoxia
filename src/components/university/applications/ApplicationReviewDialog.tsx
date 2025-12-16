@@ -250,6 +250,11 @@ const explainUpdateError = (
 ) => {
   const msg = error.message ?? "";
   const code = error.code ?? "";
+  const details = error.details ?? "";
+  const hint = error.hint ?? "";
+
+  // Log detailed error for debugging
+  console.error("[ApplicationReview] Update error details:", { code, msg, details, hint, applicationId: context.applicationId });
 
   if (msg.includes("Could not find the function")) {
     return {
@@ -261,7 +266,15 @@ const explainUpdateError = (
   }
 
   if (code === "42501" || msg.toLowerCase().includes("permission")) {
-    // Check for specific permission issues
+    // Check for specific permission issues from the RPC error messages
+    if (msg.includes("tenant_id is NULL") || msg.includes("not linked to university")) {
+      return {
+        title: "Account not linked to university",
+        description:
+          `Your account is not properly linked to a university (tenant_id is missing). ` +
+          `Please contact support to verify your account configuration.`,
+      };
+    }
     if (msg.includes("not associated with a university") || msg.includes("tenant not found")) {
       return {
         title: "Account not linked to university",
@@ -270,12 +283,20 @@ const explainUpdateError = (
           `Please contact support to verify your account configuration.`,
       };
     }
-    if (msg.includes("different university") || msg.includes("tenant mismatch")) {
+    if (msg.includes("different university") || msg.includes("app tenant")) {
       return {
         title: "Permission denied",
         description:
           `This application belongs to a different university. ` +
           `You can only update applications to your own university's programs.`,
+      };
+    }
+    if (msg.includes("app tenant is NULL") || msg.includes("not properly configured")) {
+      return {
+        title: "Application configuration issue",
+        description:
+          `This application's program or university is not properly configured. ` +
+          `Please contact support to resolve this issue.`,
       };
     }
     if (msg.includes("role")) {
@@ -284,6 +305,13 @@ const explainUpdateError = (
         description:
           `Your account role does not have permission to update applications. ` +
           `Only university partners and staff can update internal notes.`,
+      };
+    }
+    // If the message contains useful details, show them
+    if (msg.length > 20 && !msg.includes("permission denied")) {
+      return {
+        title: "Permission denied",
+        description: msg,
       };
     }
     return {
@@ -308,6 +336,14 @@ const explainUpdateError = (
       title: "Application not found",
       description:
         `This application may have been deleted or moved. Please refresh the page and try again.`,
+    };
+  }
+
+  // If there's a message, show it
+  if (msg.length > 10) {
+    return {
+      title: "Update failed",
+      description: msg,
     };
   }
 
