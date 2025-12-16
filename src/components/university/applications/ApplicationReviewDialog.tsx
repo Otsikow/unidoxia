@@ -741,12 +741,25 @@ export function ApplicationReviewDialog({
     setUpdatingStatus(true);
     console.log("[ApplicationReview] Updating status:", { applicationId: application.id, newStatus: selectedStatus });
 
+    // First, run diagnostics to help debug any issues
+    try {
+      const diagResult = await supabase.rpc("diagnose_app_update_issue" as any, {
+        p_app_id: application.id,
+      });
+      if (diagResult.data) {
+        console.log("[ApplicationReview] Diagnostics:", diagResult.data);
+      }
+    } catch (diagError) {
+      console.log("[ApplicationReview] Diagnostics function not available:", diagError);
+    }
+
     let data: any = null;
     let error: any = null;
 
     // APPROACH 1: Try the dedicated university_update_application_status RPC first
-    // This is the most reliable method with explicit authorization
+    // This is the most reliable method with explicit authorization and SECURITY DEFINER
     try {
+      console.log("[ApplicationReview] Trying university_update_application_status RPC...");
       const rpcResult = await supabase.rpc("university_update_application_status" as any, {
         p_application_id: application.id,
         p_status: selectedStatus,
@@ -754,6 +767,7 @@ export function ApplicationReviewDialog({
       });
       
       if (!rpcResult.error) {
+        // This RPC returns JSONB directly with {id, status, updated_at}
         data = rpcResult.data;
         error = null;
         console.log("[ApplicationReview] university_update_application_status succeeded:", data);
