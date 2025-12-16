@@ -391,6 +391,16 @@ export function ApplicationReviewDialog({
   // Messaging state
   const [messageContent, setMessageContent] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Array<{
+    id: string;
+    content: string;
+    senderId: string;
+    senderName: string;
+    createdAt: string;
+    isOwn: boolean;
+  }>>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   // Document signed URLs
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
@@ -405,7 +415,90 @@ export function ApplicationReviewDialog({
     );
     setActiveTab("overview");
     setDocumentUrls({});
+    setMessages([]);
+    setConversationId(null);
   }, [application]);
+
+  // Load messages when switching to messages tab
+  const loadMessages = useCallback(async () => {
+    if (!application?.student?.profileId || !tenantId) return;
+
+    setLoadingMessages(true);
+    console.log("[ApplicationReview] Loading messages for student:", application.student.profileId);
+
+    try {
+      // Get the current user
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id;
+      if (!currentUserId) return;
+
+      // Get or create conversation to find the conversation ID
+      const { data: convId, error: convError } = await supabase.rpc(
+        "get_or_create_conversation",
+        {
+          p_user_id: null,
+          p_other_user_id: application.student.profileId,
+          p_tenant_id: tenantId,
+        }
+      );
+
+      if (convError) {
+        console.error("[ApplicationReview] Error getting conversation:", convError);
+        setLoadingMessages(false);
+        return;
+      }
+
+      if (!convId) {
+        setLoadingMessages(false);
+        return;
+      }
+
+      setConversationId(convId);
+
+      // Fetch messages from the conversation
+      const { data: messagesData, error: msgError } = await supabase
+        .from("conversation_messages")
+        .select(`
+          id,
+          content,
+          sender_id,
+          created_at,
+          sender:profiles!sender_id(full_name)
+        `)
+        .eq("conversation_id", convId)
+        .order("created_at", { ascending: true })
+        .limit(50);
+
+      if (msgError) {
+        console.error("[ApplicationReview] Error fetching messages:", msgError);
+        setLoadingMessages(false);
+        return;
+      }
+
+      const formattedMessages = (messagesData ?? []).map((msg: any) => ({
+        id: msg.id,
+        content: msg.content,
+        senderId: msg.sender_id,
+        senderName: msg.sender?.full_name ?? "Unknown",
+        createdAt: msg.created_at,
+        isOwn: msg.sender_id === currentUserId,
+      }));
+
+      setMessages(formattedMessages);
+      console.log("[ApplicationReview] Loaded messages:", formattedMessages.length);
+    } catch (error) {
+      console.error("[ApplicationReview] Error loading messages:", error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, [application?.student?.profileId, tenantId]);
+
+  // Load messages when switching to messages tab
+  useEffect(() => {
+    if (activeTab === "messages" && open && application?.student?.profileId) {
+      void loadMessages();
+    }
+  }, [activeTab, open, application?.student?.profileId, loadMessages]);
 
   // Load signed URLs for documents
   useEffect(() => {
@@ -451,7 +544,7 @@ export function ApplicationReviewDialog({
     setSavingNotes(true);
     console.log("[ApplicationReview] Saving notes for application:", application.id);
 
-    let { error } = await supabase.rpc("update_application_review" as any, {
+    let { data, error } = await supabase.rpc("update_application_review" as any, {
       p_application_id: application.id,
       p_new_status: null,
       p_internal_notes: internalNotes,
@@ -480,9 +573,10 @@ export function ApplicationReviewDialog({
           .from("applications")
           .update({ internal_notes: internalNotes })
           .eq("id", application.id)
-          .select("id")
+          .select("id, internal_notes")
           .limit(1);
 
+        data = fallback.data;
         error = fallback.error;
         if (!error && (!fallback.data || fallback.data.length === 0)) {
           error = {
@@ -505,7 +599,23 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    console.log("[ApplicationReview] Notes saved successfully");
+    // Verify we got data back from the update
+    const row = firstRow<any>(data as any);
+    if (!row) {
+      console.error("[ApplicationReview] Notes update returned no data - update may not have persisted");
+      toast({
+        title: "Save may not have completed",
+        description: "The notes update completed but could not be verified. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log("[ApplicationReview] Notes saved successfully:", {
+      applicationId: application.id,
+      notesLength: internalNotes.length,
+      updatedAt: row.updated_at
+    });
     onNotesUpdate?.(application.id, internalNotes);
     toast({ title: "Saved", description: "Internal notes updated" });
   }, [application, internalNotes, onNotesUpdate, toast]);
@@ -583,9 +693,30 @@ export function ApplicationReviewDialog({
       return;
     }
 
+    // Verify we got data back from the update
     const row = firstRow<any>(data as any);
-    const finalStatus = String(row?.status ?? selectedStatus);
-    console.log("[ApplicationReview] Status updated successfully:", finalStatus);
+    if (!row) {
+      console.error("[ApplicationReview] Status update returned no data - update may not have persisted");
+      toast({
+        title: "Update may not have saved",
+        description: "The status update completed but could not be verified. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const finalStatus = String(row.status);
+    console.log("[ApplicationReview] Status updated successfully:", {
+      requestedStatus: selectedStatus,
+      savedStatus: finalStatus,
+      updatedAt: row.updated_at
+    });
+
+    // Verify the saved status matches what we requested
+    if (finalStatus !== selectedStatus) {
+      console.warn("[ApplicationReview] Status mismatch:", { requested: selectedStatus, saved: finalStatus });
+    }
+
     onStatusUpdate?.(application.id, finalStatus);
 
     toast({
@@ -620,8 +751,14 @@ export function ApplicationReviewDialog({
     setRequestingDocument(true);
     console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, type: documentRequestType });
 
+    // Get current user for requested_by field
+    const { data: userData } = await supabase.auth.getUser();
+
     const { error } = await supabase.from("document_requests").insert([{
+      tenant_id: tenantId,
       student_id: application.student.id,
+      application_id: application.id,
+      requested_by: userData?.user?.id,
       document_type: documentRequestType,
       status: "pending",
       notes: documentRequestNote || null,
@@ -667,42 +804,74 @@ export function ApplicationReviewDialog({
     console.log("[ApplicationReview] Sending message to student:", application.student.profileId);
 
     try {
-      // Get or create conversation with student
-      const { data: conversationId, error: convError } = await supabase.rpc(
-        "get_or_create_conversation",
-        {
-          p_user_id: null, // Current user
-          p_other_user_id: application.student.profileId,
-          p_tenant_id: tenantId,
-        }
-      );
-
-      if (convError) {
-        throw convError;
+      // Get current user first
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id;
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
       }
 
-      if (!conversationId) {
-        throw new Error("Failed to create conversation");
+      // Use existing conversationId if available, otherwise get/create one
+      let activeConversationId = conversationId;
+      if (!activeConversationId) {
+        const { data: convId, error: convError } = await supabase.rpc(
+          "get_or_create_conversation",
+          {
+            p_user_id: null, // Current user
+            p_other_user_id: application.student.profileId,
+            p_tenant_id: tenantId,
+          }
+        );
+
+        if (convError) {
+          throw convError;
+        }
+
+        if (!convId) {
+          throw new Error("Failed to create conversation");
+        }
+
+        activeConversationId = convId;
+        setConversationId(convId);
       }
 
       // Send the message
-      const { data: userData } = await supabase.auth.getUser();
-      const { error: msgError } = await supabase.from("conversation_messages").insert([{
-        conversation_id: conversationId,
-        sender_id: userData?.user?.id,
-        content: messageContent.trim(),
-        message_type: "text",
-        metadata: {
-          application_id: application.id,
-          context: "application_review",
-        },
-      }] as any);
+      const { data: msgData, error: msgError } = await supabase
+        .from("conversation_messages")
+        .insert([{
+          conversation_id: activeConversationId,
+          sender_id: currentUserId,
+          content: messageContent.trim(),
+          message_type: "text",
+          metadata: {
+            application_id: application.id,
+            context: "application_review",
+          },
+        }] as any)
+        .select("id, content, sender_id, created_at")
+        .single();
 
       if (msgError) {
         throw msgError;
       }
 
-      console.log("[ApplicationReview] Message sent successfully");
+      console.log("[ApplicationReview] Message sent successfully:", msgData?.id);
+
+      // Add the message to local state immediately for instant UI update
+      if (msgData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: msgData.id,
+            content: msgData.content,
+            senderId: msgData.sender_id,
+            senderName: "You",
+            createdAt: msgData.created_at,
+            isOwn: true,
+          },
+        ]);
+      }
+
       toast({
         title: "Message sent",
         description: "Your message has been sent to the student.",
@@ -719,7 +888,7 @@ export function ApplicationReviewDialog({
     } finally {
       setSendingMessage(false);
     }
-  }, [application, messageContent, tenantId, toast]);
+  }, [application, messageContent, conversationId, tenantId, toast]);
 
   /* ===========================
      Computed values
@@ -1440,18 +1609,39 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Messages Tab */}
-                  <TabsContent value="messages" className="m-0 space-y-6">
+                  <TabsContent value="messages" className="m-0 space-y-4">
+                    {/* Message History */}
                     <Card>
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4" />
-                          Message Student
-                        </CardTitle>
-                        <CardDescription>
-                          Send a message to {application.student?.legalName ?? "the student"}
-                        </CardDescription>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <MessageSquare className="h-4 w-4" />
+                              Conversation with {application.student?.legalName ?? "Student"}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {messages.length > 0
+                                ? `${messages.length} message${messages.length !== 1 ? "s" : ""}`
+                                : "No messages yet"}
+                            </CardDescription>
+                          </div>
+                          {application.student?.profileId && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => void loadMessages()}
+                              disabled={loadingMessages}
+                            >
+                              {loadingMessages ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent>
                         {!application.student?.profileId ? (
                           <div className="text-center py-6 text-muted-foreground">
                             <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -1460,35 +1650,78 @@ export function ApplicationReviewDialog({
                               Student profile is not available for messaging
                             </p>
                           </div>
+                        ) : loadingMessages ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : messages.length === 0 ? (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No messages yet</p>
+                            <p className="text-xs mt-1">
+                              Send a message to start the conversation
+                            </p>
+                          </div>
                         ) : (
-                          <>
-                            <Textarea
-                              placeholder="Type your message..."
-                              value={messageContent}
-                              onChange={(e) => setMessageContent(e.target.value)}
-                              rows={4}
-                              className="resize-none"
-                            />
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs text-muted-foreground">
-                                Messages are sent to the student's inbox
-                              </p>
-                              <Button
-                                onClick={handleSendMessage}
-                                disabled={!messageContent.trim() || sendingMessage}
+                          <div className="space-y-3 max-h-60 overflow-y-auto">
+                            {messages.map((msg) => (
+                              <div
+                                key={msg.id}
+                                className={`flex flex-col ${msg.isOwn ? "items-end" : "items-start"}`}
                               >
-                                {sendingMessage ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  <Send className="h-4 w-4 mr-2" />
-                                )}
-                                Send Message
-                              </Button>
-                            </div>
-                          </>
+                                <div
+                                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                    msg.isOwn
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted"
+                                  }`}
+                                >
+                                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-1 px-1">
+                                  {msg.isOwn ? "You" : msg.senderName} • {formatDate(msg.createdAt, true)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Send Message */}
+                    {application.student?.profileId && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">New Message</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <Textarea
+                            placeholder="Type your message..."
+                            value={messageContent}
+                            onChange={(e) => setMessageContent(e.target.value)}
+                            rows={3}
+                            className="resize-none text-sm"
+                          />
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-muted-foreground">
+                              Messages are sent to the student's inbox
+                            </p>
+                            <Button
+                              onClick={handleSendMessage}
+                              disabled={!messageContent.trim() || sendingMessage}
+                              size="sm"
+                            >
+                              {sendingMessage ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                              )}
+                              Send
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
                     <Button
                       variant="outline"
