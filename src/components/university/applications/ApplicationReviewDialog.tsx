@@ -915,7 +915,34 @@ export function ApplicationReviewDialog({
   ============================ */
 
   const handleRequestDocument = useCallback(async () => {
-    if (!application?.id || !application.student?.id || !documentRequestType) {
+    // Debug logging to diagnose "Missing information" error
+    console.log("[ApplicationReview] handleRequestDocument called:", {
+      applicationId: application?.id,
+      studentId: application?.student?.id,
+      documentRequestType,
+      tenantId,
+    });
+
+    // More specific validation with targeted error messages
+    if (!application?.id) {
+      toast({
+        title: "Application not loaded",
+        description: "Please wait for the application to load and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!application.student?.id) {
+      toast({
+        title: "Student data unavailable",
+        description: "Student information is not available for this application.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!documentRequestType || documentRequestType.trim() === "") {
       toast({
         title: "Missing information",
         description: "Please select a document type to request.",
@@ -927,14 +954,14 @@ export function ApplicationReviewDialog({
     if (!tenantId) {
       toast({
         title: "Missing tenant context",
-        description: "Unable to verify your university profile.",
+        description: "Unable to verify your university profile. Please refresh the page.",
         variant: "destructive",
       });
       return;
     }
 
     setRequestingDocument(true);
-    console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, type: documentRequestType });
+    console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, studentId: application.student.id, type: documentRequestType, tenantId });
 
     // Get current user for requested_by field
     const { data: userData } = await supabase.auth.getUser();
@@ -1699,7 +1726,10 @@ export function ApplicationReviewDialog({
                           <Label htmlFor="doc-type">Document Type</Label>
                           <Select
                             value={documentRequestType}
-                            onValueChange={setDocumentRequestType}
+                            onValueChange={(value) => {
+                              console.log("[ApplicationReview] Document type selected:", value);
+                              setDocumentRequestType(value);
+                            }}
                           >
                             <SelectTrigger id="doc-type">
                               <SelectValue placeholder="Select document type" />
