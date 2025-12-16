@@ -45,7 +45,7 @@ type ApplicationRow = Database['public']['Tables']['applications']['Row'];
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001';
 const LEGACY_DRAFT_STORAGE_KEY = 'application_draft';
-const APPLICATION_DOCUMENT_TYPES = ['transcript', 'passport', 'ielts', 'sop'] as const;
+const APPLICATION_DOCUMENT_TYPES = ['passport_photo', 'transcript', 'passport', 'ielts', 'sop'] as const;
 type ApplicationDocumentType = (typeof APPLICATION_DOCUMENT_TYPES)[number];
 
 type StudentDocumentMetadata = {
@@ -59,6 +59,7 @@ type StudentDocumentMetadata = {
 };
 
 const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
+  passport_photo: ['passport_photo'],
   transcript: ['transcript', 'degree_certificate'],
   passport: ['passport'],
   ielts: ['english_test'],
@@ -200,6 +201,7 @@ const mergeLegacyFormData = (
 const sanitizeFormDataForDraft = (data: ApplicationFormData): ApplicationFormData => ({
   ...data,
   documents: {
+    passport_photo: null,
     transcript: null,
     passport: null,
     ielts: null,
@@ -272,6 +274,7 @@ export default function NewApplication() {
       intakeMonth: 1,
     },
     documents: {
+      passport_photo: null,
       transcript: null,
       passport: null,
       ielts: null,

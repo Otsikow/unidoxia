@@ -27,6 +27,7 @@ interface Document {
 }
 
 const DOCUMENT_TYPES = [
+  'passport_photo',
   'passport',
   'transcript',
   'degree_certificate',

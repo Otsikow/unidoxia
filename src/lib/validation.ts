@@ -164,6 +164,7 @@ export const applicationSchema = z.object({
 
 export const documentUploadSchema = z.object({
   documentType: z.enum([
+    'passport_photo',
     'passport',
     'transcript',
     'degree_certificate',
