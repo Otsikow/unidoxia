@@ -753,7 +753,7 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
           {/* Header */}
           <DialogHeader className="flex-shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -824,9 +824,9 @@ export function ApplicationReviewDialog({
                   </TabsList>
                 </div>
 
-                <ScrollArea className="flex-1 min-h-0 mt-4 pr-2 sm:pr-4">
+                <ScrollArea className="flex-1 h-0 min-h-0 mt-4">
                   {/* Overview Tab */}
-                  <TabsContent value="overview" className="m-0 space-y-6">
+                  <TabsContent value="overview" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
                     {/* Status Update Card */}
                     <Card>
                       <CardHeader className="pb-3 px-3 sm:px-6">
@@ -984,7 +984,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Student Tab */}
-                  <TabsContent value="student" className="m-0 space-y-6">
+                  <TabsContent value="student" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
                     {!application.student ? (
                       <Card>
                         <CardContent className="py-8 text-center">
@@ -1213,7 +1213,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Documents Tab */}
-                  <TabsContent value="documents" className="m-0 space-y-6">
+                  <TabsContent value="documents" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
                     {/* Uploaded Documents */}
                     <Card>
                       <CardHeader className="pb-3">
@@ -1384,7 +1384,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Notes Tab */}
-                  <TabsContent value="notes" className="m-0 space-y-4 sm:space-y-6">
+                  <TabsContent value="notes" className="m-0 space-y-4 sm:space-y-6 pr-3 sm:pr-4 pb-4">
                     <Card>
                       <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
                         <CardTitle className="text-sm sm:text-base">Internal Notes</CardTitle>
@@ -1440,7 +1440,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Messages Tab */}
-                  <TabsContent value="messages" className="m-0 space-y-6">
+                  <TabsContent value="messages" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
                     <Card>
                       <CardHeader className="pb-3">
                         <CardTitle className="text-base flex items-center gap-2">
