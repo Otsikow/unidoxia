@@ -611,13 +611,28 @@ export function ApplicationReviewDialog({
     setSavingNotes(true);
     console.log("[ApplicationReview] Saving notes for application:", application.id);
 
-    let { data, error } = await supabase.rpc("update_application_review" as any, {
+    // Try the text version of the RPC first (handles enum conversion internally)
+    let { data, error } = await supabase.rpc("update_application_review_text" as any, {
       p_application_id: application.id,
       p_new_status: null,
       p_internal_notes: internalNotes,
       p_append_timeline_event: null,
     });
 
+    // If text version doesn't exist, try the original enum version
+    if (error && isUpdateApplicationReviewRpcMissing(error)) {
+      console.log("[ApplicationReview] Text RPC missing, trying enum version");
+      const enumResult = await supabase.rpc("update_application_review" as any, {
+        p_application_id: application.id,
+        p_new_status: null,
+        p_internal_notes: internalNotes,
+        p_append_timeline_event: null,
+      });
+      data = enumResult.data;
+      error = enumResult.error;
+    }
+
+    // If both RPCs fail/missing, fall back to direct update
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
       // Preflight: if we can't even see the row, RLS will also block the update.
@@ -715,13 +730,28 @@ export function ApplicationReviewDialog({
       actor: "University",
     };
 
-    let { data, error } = await supabase.rpc("update_application_review" as any, {
+    // Try the text version of the RPC first (handles enum conversion internally)
+    let { data, error } = await supabase.rpc("update_application_review_text" as any, {
       p_application_id: application.id,
-      p_new_status: selectedStatus,
+      p_new_status: selectedStatus, // Pass as text string
       p_internal_notes: null,
       p_append_timeline_event: timelineEvent,
     });
 
+    // If text version doesn't exist, try the original enum version
+    if (error && isUpdateApplicationReviewRpcMissing(error)) {
+      console.log("[ApplicationReview] Text RPC missing, trying enum version");
+      const enumResult = await supabase.rpc("update_application_review" as any, {
+        p_application_id: application.id,
+        p_new_status: selectedStatus,
+        p_internal_notes: null,
+        p_append_timeline_event: timelineEvent,
+      });
+      data = enumResult.data;
+      error = enumResult.error;
+    }
+
+    // If both RPCs fail/missing, fall back to direct update
     if (error && isUpdateApplicationReviewRpcMissing(error)) {
       console.log("[ApplicationReview] RPC missing, falling back to direct update");
       // Preflight: if we can't see the row, RLS will also prevent returning/updating it.
@@ -767,7 +797,7 @@ export function ApplicationReviewDialog({
       const explained = explainUpdateError(error, {
         applicationId: application.id,
       });
-      toast({ ...explained, variant: "destructive" });
+      toast({ ...explained, variant: "destructive", duration: 10000 });
       return;
     }
 
