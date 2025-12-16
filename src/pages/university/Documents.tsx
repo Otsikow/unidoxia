@@ -217,25 +217,19 @@ const DocumentsPage = () => {
       </div>
 
       <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}>
-        <CardHeader className="space-y-4 lg:flex lg:items-center lg:justify-between lg:space-y-0">
-          <div>
-            <CardTitle className="text-base font-semibold text-card-foreground">
-              Requests queue
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              {filteredRequests.length} of {documentRequests.length} requests
-              displayed
-            </CardDescription>
-          </div>
-          <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            <Input
-              placeholder="Search by student or request type"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              className="text-sm"
-            />
+        <CardHeader className="space-y-6 pb-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-lg font-semibold text-card-foreground">
+                Requests queue
+              </CardTitle>
+              <CardDescription className="text-sm text-muted-foreground">
+                {filteredRequests.length} of {documentRequests.length} requests
+                displayed
+              </CardDescription>
+            </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="text-sm">
+              <SelectTrigger className="w-full border-border/50 bg-muted/30 text-sm sm:w-44">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -246,6 +240,14 @@ const DocumentsPage = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="relative">
+            <Input
+              placeholder="Search by student or request type..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="h-12 border-border/50 bg-muted/30 pl-4 text-base placeholder:text-muted-foreground/60 focus-visible:ring-primary/30"
+            />
           </div>
         </CardHeader>
         <CardContent>
