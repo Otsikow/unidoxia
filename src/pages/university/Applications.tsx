@@ -395,9 +395,13 @@ const ApplicationsPage = () => {
                       </td>
                       <td className="py-3">
                         <div className="flex flex-col">
-                          <span className="text-foreground">{app.studentName}</span>
+                          <span className={app.studentName === "Unknown Student" ? "text-muted-foreground italic" : "text-foreground"}>
+                            {app.studentName}
+                          </span>
                           <span className="text-xs text-muted-foreground">
-                            {app.studentNationality ?? "—"}
+                            {app.studentNationality && app.studentNationality !== "Unknown" 
+                              ? app.studentNationality 
+                              : "Nationality not provided"}
                           </span>
                         </div>
                       </td>
