@@ -31,7 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// ScrollArea removed - using native overflow-y-auto for single scroll container
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -922,7 +922,7 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogContent className="!grid-rows-[auto_1fr] w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
           {/* Header */}
           <DialogHeader className="flex-shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -970,7 +970,7 @@ export function ApplicationReviewDialog({
               <Tabs
                 value={activeTab}
                 onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-                className="flex-1 flex flex-col overflow-hidden"
+                className="flex-1 flex flex-col min-h-0 overflow-hidden"
               >
                 <div className="flex-shrink-0 overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
                   <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1">
@@ -993,7 +993,8 @@ export function ApplicationReviewDialog({
                   </TabsList>
                 </div>
 
-                <ScrollArea className="flex-1 min-h-0 mt-4 pr-2 sm:pr-4">
+                {/* Single scroll container for all tab content */}
+                <div className="flex-1 min-h-0 mt-4 overflow-y-auto pr-2 sm:pr-4">
                   {/* Overview Tab */}
                   <TabsContent value="overview" className="m-0 space-y-6">
                     {/* Status Update Card */}
@@ -1663,7 +1664,7 @@ export function ApplicationReviewDialog({
                             </p>
                           </div>
                         ) : (
-                          <div className="space-y-3 max-h-60 overflow-y-auto">
+                          <div className="space-y-3">
                             {messages.map((msg) => (
                               <div
                                 key={msg.id}
@@ -1732,7 +1733,7 @@ export function ApplicationReviewDialog({
                       Open Full Messages
                     </Button>
                   </TabsContent>
-                </ScrollArea>
+                </div>
               </Tabs>
 
               {/* Footer */}
