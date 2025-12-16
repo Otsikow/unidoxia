@@ -451,7 +451,7 @@ export function ApplicationReviewDialog({
 
   // Document request state
   const [requestingDocument, setRequestingDocument] = useState(false);
-  const [documentRequestType, setDocumentRequestType] = useState("");
+  const [documentRequestType, setDocumentRequestType] = useState<string | null>(null);
   const [documentRequestNote, setDocumentRequestNote] = useState("");
 
   // Messaging state
@@ -920,6 +920,8 @@ export function ApplicationReviewDialog({
       applicationId: application?.id,
       studentId: application?.student?.id,
       documentRequestType,
+      documentRequestTypeIsNull: documentRequestType === null,
+      documentRequestTypeIsEmpty: documentRequestType === "",
       tenantId,
     });
 
@@ -942,7 +944,13 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    if (!documentRequestType || documentRequestType.trim() === "") {
+    // Validate document type: must be a non-null, non-empty string
+    const trimmedDocType = documentRequestType?.trim();
+    if (!trimmedDocType) {
+      console.warn("[ApplicationReview] Document type validation failed:", {
+        raw: documentRequestType,
+        trimmed: trimmedDocType,
+      });
       toast({
         title: "Missing information",
         description: "Please select a document type to request.",
@@ -961,20 +969,30 @@ export function ApplicationReviewDialog({
     }
 
     setRequestingDocument(true);
-    console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, studentId: application.student.id, type: documentRequestType, tenantId });
+    console.log("[ApplicationReview] Requesting document:", { 
+      applicationId: application.id, 
+      studentId: application.student.id, 
+      type: trimmedDocType, 
+      tenantId 
+    });
 
     // Get current user for requested_by field
     const { data: userData } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("document_requests").insert([{
+    // Prepare the payload with validated values
+    const payload = {
       tenant_id: tenantId,
       student_id: application.student.id,
       application_id: application.id,
       requested_by: userData?.user?.id,
-      document_type: documentRequestType,
+      document_type: trimmedDocType, // Use the validated trimmed value
       status: "pending",
-      notes: documentRequestNote || null,
-    }] as any);
+      notes: documentRequestNote?.trim() || null,
+    };
+
+    console.log("[ApplicationReview] Sending document request payload:", payload);
+
+    const { error } = await supabase.from("document_requests").insert([payload] as any);
 
     setRequestingDocument(false);
 
@@ -988,13 +1006,14 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    console.log("[ApplicationReview] Document request created successfully");
+    console.log("[ApplicationReview] Document request created successfully for:", trimmedDocType);
     toast({
       title: "Document requested",
-      description: `A request for ${formatDocumentType(documentRequestType)} has been sent to the student.`,
+      description: `A request for ${formatDocumentType(trimmedDocType)} has been sent to the student.`,
     });
 
-    setDocumentRequestType("");
+    // Reset form state after successful submission
+    setDocumentRequestType(null);
     setDocumentRequestNote("");
   }, [application, documentRequestType, documentRequestNote, tenantId, toast]);
 
@@ -1725,10 +1744,13 @@ export function ApplicationReviewDialog({
                         <div className="space-y-2">
                           <Label htmlFor="doc-type">Document Type</Label>
                           <Select
-                            value={documentRequestType}
-                            onValueChange={(value) => {
+                            value={documentRequestType ?? undefined}
+                            onValueChange={(value: string) => {
                               console.log("[ApplicationReview] Document type selected:", value);
-                              setDocumentRequestType(value);
+                              // Ensure we store the actual value, not empty string
+                              if (value && value.trim() !== "") {
+                                setDocumentRequestType(value);
+                              }
                             }}
                           >
                             <SelectTrigger id="doc-type">
@@ -1756,13 +1778,17 @@ export function ApplicationReviewDialog({
                         </div>
                         <Button
                           onClick={handleRequestDocument}
-                          disabled={!documentRequestType || requestingDocument}
+                          disabled={!documentRequestType?.trim() || requestingDocument}
                           className="w-full"
                         >
-                          {requestingDocument && (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          {requestingDocument ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Sending...
+                            </>
+                          ) : (
+                            "Send Request"
                           )}
-                          Send Request
                         </Button>
                       </CardContent>
                     </Card>
