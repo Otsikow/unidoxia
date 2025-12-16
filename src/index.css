@@ -195,11 +195,9 @@ All colors MUST be HSL.
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
   }
 
-  * {
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
-  }
+  /* PERFORMANCE: Removed global * transitions - major performance killer!
+     Only add transitions to specific interactive elements that need them.
+     Use .transition-smooth or .transition-quick utility classes instead. */
 }
 
 @layer components {
