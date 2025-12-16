@@ -416,6 +416,9 @@ const UniversityFeaturedShowcase = lazyWithErrorHandling(() =>
 const UniversityProfileSettings = lazyWithErrorHandling(() =>
   import("./pages/university/Profile")
 );
+const UniversityNotifications = lazyWithErrorHandling(() =>
+  import("./pages/university/Notifications")
+);
 
 /* ==========================================================================
    AI Chatbot — Deferred
@@ -702,6 +705,7 @@ const App = () => {
                           <Route path="programs" element={<UniversityPrograms />} />
                           <Route path="featured" element={<UniversityFeaturedShowcase />} />
                           <Route path="profile" element={<UniversityProfileSettings />} />
+                          <Route path="notifications" element={<UniversityNotifications />} />
                         </Route>
 
                         {/* Agent Student Details */}

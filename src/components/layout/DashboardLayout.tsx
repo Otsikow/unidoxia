@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import BackButton from "@/components/BackButton";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const formatRoleLabel = (role?: string | null) =>
   role ? role.replace(/_/g, " ") : "User";
@@ -97,16 +98,22 @@ function SidebarToolbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 rounded-md sm:rounded-lg border bg-muted/40 px-2 sm:px-3 py-1.5 sm:py-2">
-          <div className="space-y-0.5 text-left hidden sm:block">
-            <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              Theme
-            </p>
-            <p className="text-[10px] sm:text-xs text-muted-foreground hidden md:block">
-              Toggle light or dark mode
-            </p>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <NotificationBell
+            notificationsUrl="/student/notifications"
+            maxItems={5}
+          />
+          <div className="flex items-center gap-2 sm:gap-3 rounded-md sm:rounded-lg border bg-muted/40 px-2 sm:px-3 py-1.5 sm:py-2">
+            <div className="space-y-0.5 text-left hidden sm:block">
+              <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                Theme
+              </p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground hidden md:block">
+                Toggle light or dark mode
+              </p>
+            </div>
+            <ThemeToggle />
           </div>
-          <ThemeToggle />
         </div>
       </div>
     </div>

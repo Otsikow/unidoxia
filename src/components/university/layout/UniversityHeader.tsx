@@ -1,7 +1,6 @@
 import {
   Menu,
   RefreshCcw,
-  Bell,
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
@@ -29,6 +28,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { useUniversityBranding } from "@/hooks/useUniversityBranding";
 import BackButton from "@/components/BackButton";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 interface UniversityHeaderProps {
   onRefresh?: () => void;
@@ -195,13 +195,10 @@ export const UniversityHeader = ({
           <RefreshCcw className={cn("h-5 w-5", refreshing && "animate-spin")} />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <Bell className="h-5 w-5" />
-        </Button>
+        <NotificationBell
+          notificationsUrl="/university/notifications"
+          maxItems={5}
+        />
 
         <ThemeToggle />
 
