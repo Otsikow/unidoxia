@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { type KeyboardEvent, useCallback, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -143,6 +143,18 @@ const AnalyticsPage = () => {
   const { toast } = useToast();
 
   const [selectedRange, setSelectedRange] = useState<DateRangeValue>("6m");
+  const applicationsSectionRef = useRef<HTMLDivElement | null>(null);
+  const offersSectionRef = useRef<HTMLDivElement | null>(null);
+  const statusSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const sectionRefs = useMemo(
+    () => ({
+      applications: applicationsSectionRef,
+      offers: offersSectionRef,
+      status: statusSectionRef,
+    }),
+    [applicationsSectionRef, offersSectionRef, statusSectionRef],
+  );
 
   const applications = data?.applications ?? [];
 
@@ -344,13 +356,43 @@ const AnalyticsPage = () => {
 
   const currentRangeLabel = RANGE_LABELS[selectedRange];
 
-  const summaryCards = [
+  type SummaryCardTarget = keyof typeof sectionRefs;
+
+  const handleCardNavigation = useCallback(
+    (targetSection: SummaryCardTarget) => {
+      const sectionRef = sectionRefs[targetSection]?.current;
+      if (sectionRef) {
+        sectionRef.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    },
+    [sectionRefs],
+  );
+
+  const handleCardKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>, targetSection: SummaryCardTarget) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleCardNavigation(targetSection);
+      }
+    },
+    [handleCardNavigation],
+  );
+
+  const summaryCards: Array<{
+    id: string;
+    label: string;
+    value: string;
+    icon: typeof Users;
+    accent: string;
+    targetSection: SummaryCardTarget;
+  }> = [
     {
       id: "applicants",
       label: "Total Applicants",
       value: formatNumber(rangeMetrics.totalApplicants),
       icon: Users,
       accent: "border-primary/30 bg-primary/10 text-primary",
+      targetSection: "applications",
     },
     {
       id: "offers",
@@ -358,6 +400,7 @@ const AnalyticsPage = () => {
       value: formatNumber(rangeMetrics.offersSent),
       icon: MailCheck,
       accent: "border-info/30 bg-info/10 text-info",
+      targetSection: "offers",
     },
     {
       id: "cas",
@@ -365,6 +408,7 @@ const AnalyticsPage = () => {
       value: formatNumber(rangeMetrics.casIssued),
       icon: Stamp,
       accent: "border-success/30 bg-success/10 text-success",
+      targetSection: "status",
     },
     {
       id: "conversion",
@@ -372,6 +416,7 @@ const AnalyticsPage = () => {
       value: `${rangeMetrics.conversionRate}%`,
       icon: TrendingUp,
       accent: "border-warning/30 bg-warning/10 text-warning",
+      targetSection: "status",
     },
   ];
 
@@ -426,7 +471,15 @@ const AnalyticsPage = () => {
         {summaryCards.map((card) => (
           <Card
             key={card.id}
-            className={cn(UNIVERSITY_CARD_GRADIENT, "rounded-2xl")}
+            role="button"
+            tabIndex={0}
+            aria-label={`View insights for ${card.label}`}
+            onClick={() => handleCardNavigation(card.targetSection)}
+            onKeyDown={(event) => handleCardKeyDown(event, card.targetSection)}
+            className={cn(
+              UNIVERSITY_CARD_GRADIENT,
+              "rounded-2xl cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+            )}
           >
             <CardContent className="flex items-start justify-between gap-4 p-6">
               <div className="space-y-2">
@@ -452,7 +505,10 @@ const AnalyticsPage = () => {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}>
+        <Card
+          ref={applicationsSectionRef}
+          className={withUniversityCardStyles("rounded-2xl text-card-foreground")}
+        >
           <CardHeader>
             <CardTitle className="text-base font-semibold text-card-foreground">
               Applications Over Time
@@ -512,7 +568,10 @@ const AnalyticsPage = () => {
           </CardContent>
         </Card>
 
-        <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}>
+        <Card
+          ref={offersSectionRef}
+          className={withUniversityCardStyles("rounded-2xl text-card-foreground")}
+        >
           <CardHeader>
             <CardTitle className="text-base font-semibold text-card-foreground">
               Offers by Country
@@ -572,7 +631,10 @@ const AnalyticsPage = () => {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        <Card className={withUniversityCardStyles("rounded-2xl text-card-foreground")}>
+        <Card
+          ref={statusSectionRef}
+          className={withUniversityCardStyles("rounded-2xl text-card-foreground")}
+        >
           <CardHeader>
             <CardTitle className="text-base font-semibold text-card-foreground">
               Application Status Distribution
