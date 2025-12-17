@@ -45,6 +45,12 @@ import {
   parseUniversityProfileDetails,
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
+import {
+  buildMissingRpcError,
+  isRpcMissingError,
+  isRpcUnavailable,
+  markRpcMissing,
+} from "@/lib/supabaseRpc";
 
 // ----------------------
 // TYPE DEFINITIONS
@@ -342,79 +348,59 @@ export const fetchUniversityDashboardData = async (
     const profileDetails = mergeUniversityProfileDetails(
       emptyUniversityProfileDetails,
       {
-      ...parsedDetails,
-      media: {
-        ...parsedDetails.media,
-        heroImageUrl:
-          parsedDetails.media.heroImageUrl ??
-          uniData.featured_image_url ??
-          null,
+        ...parsedDetails,
+        media: {
+          ...parsedDetails.media,
+          heroImageUrl:
+            parsedDetails.media.heroImageUrl ??
+            uniData.featured_image_url ??
+            null,
+        },
+        social: {
+          ...parsedDetails.social,
+          website: parsedDetails.social.website ?? uniData.website ?? null,
+        },
       },
-      social: {
-        ...parsedDetails.social,
-        website: parsedDetails.social.website ?? uniData.website ?? null,
-      },
-    },
-  );
+    );
 
-  // -----------------------------------------------------
-  // PROGRAM FETCH (with image_url fallback)
-  // -----------------------------------------------------
+    // -----------------------------------------------------
+    // PROGRAM FETCH
+    // -----------------------------------------------------
 
-  const programColumns = [
-    "id",
-    "name",
-    "level",
-    "discipline",
-    "duration_months",
-    "tuition_amount",
-    "tuition_currency",
-    "intake_months",
-    "entry_requirements",
-    "ielts_overall",
-    "toefl_overall",
-    "seats_available",
-    "description",
-    "app_fee",
-    "image_url",
-    "active",
-  ] as const;
+    const programColumns = [
+      "id",
+      "name",
+      "level",
+      "discipline",
+      "duration_months",
+      "tuition_amount",
+      "tuition_currency",
+      "intake_months",
+      "entry_requirements",
+      "ielts_overall",
+      "toefl_overall",
+      "seats_available",
+      "description",
+      "app_fee",
+      "active",
+    ] as const;
 
-  const selectPrograms = (columns: readonly string[]) =>
-    supabase
+    const { data: programRows, error: programError } = await supabase
       .from("programs")
-      .select(columns.join(", "))
+      .select(programColumns.join(", "))
       .eq("university_id", uniData.id)
       .order("name");
 
-  const fetchProgramsWithFallback = async (): Promise<UniversityProgram[]> => {
-    const response = await selectPrograms(programColumns);
+    if (programError) throw programError;
 
-    if (!response.error && response.data) {
-      return response.data as unknown as UniversityProgram[];
-    }
-
-    const err = response.error;
-    const missingColumn =
-      err.code === "42703" || err.message.toLowerCase().includes("image_url");
-
-    if (!missingColumn) throw err;
-
-    console.warn("programs.image_url missing – refetching without image_url");
-
-    const fallbackCols = programColumns.filter((c) => c !== "image_url");
-    const fallback = await selectPrograms(fallbackCols);
-
-    if (fallback.error) throw fallback.error;
-
-    return (fallback.data ?? []).map((p: any) => ({
-      ...p,
-      image_url: null,
-    })) as UniversityProgram[];
-  };
-
-  const programs = await fetchProgramsWithFallback();
-  const isolatedPrograms = programs; // Already filtered by university_id
+    const programs = (programRows ?? []).map(
+      (program) =>
+        ({
+          ...program,
+          image_url: (program as any).image_url ?? null,
+        }) as UniversityProgram,
+    );
+    const isolatedPrograms = programs; // Already filtered by university_id
 
   // Collect program IDs for application mapping
   const programIds = isolatedPrograms.map((p) => p.id);
@@ -485,13 +471,17 @@ export const fetchUniversityDashboardData = async (
 
     if (studentIds.length > 0) {
       // Try the security definer function first (most reliable)
-      const { data: rpcData, error: rpcErr } = await supabase.rpc(
-        "get_students_for_university_applications" as any,
-        { p_student_ids: studentIds }
-      );
+      const rpcName = "get_students_for_university_applications";
+      const rpcResult = isRpcUnavailable(rpcName)
+        ? { data: null, error: buildMissingRpcError(rpcName) }
+        : await supabase.rpc(rpcName as any, { p_student_ids: studentIds });
 
-      const rpcDataArray = rpcData as any[] | null;
-      if (!rpcErr && rpcDataArray && rpcDataArray.length > 0) {
+      if (isRpcMissingError(rpcResult.error)) {
+        markRpcMissing(rpcName, rpcResult.error);
+      }
+
+      const rpcDataArray = rpcResult.data as any[] | null;
+      if (!rpcResult.error && rpcDataArray && rpcDataArray.length > 0) {
         // Use RPC data
         studentsMap = new Map(
           rpcDataArray.map((s: any) => [
@@ -510,10 +500,10 @@ export const fetchUniversityDashboardData = async (
         // Fallback to direct query if RPC not available or fails
         console.log(
           "[UniversityDashboard] RPC not available or failed, trying direct query:",
-          rpcErr?.message
+          rpcResult.error?.message
         );
         
-        const { data: stuData, error: stuErr } = await supabase
+        const studentQuery = supabase
           .from("students")
           .select(`
             id, 
@@ -527,7 +517,10 @@ export const fetchUniversityDashboardData = async (
               email
             )
           `)
-          .in("id", studentIds);
+          .in("id", studentIds)
+          .eq("tenant_id", tenantId);
+
+        const { data: stuData, error: stuErr } = await studentQuery;
 
         if (stuErr) {
           console.warn("[UniversityDashboard] Student fetch warning:", stuErr);
@@ -601,20 +594,26 @@ export const fetchUniversityDashboardData = async (
 
       const hydratedStudents = await Promise.all(
         appsMissingStudentDetails.map(async (app) => {
-          const { data: rpcData, error: rpcError } = await supabase.rpc(
-            "get_student_details_for_application" as any,
-            { p_application_id: app.id },
-          );
+          const rpcName = "get_student_details_for_application";
+          const rpcResult = isRpcUnavailable(rpcName)
+            ? { data: null, error: buildMissingRpcError(rpcName) }
+            : await supabase.rpc(rpcName as any, {
+                p_application_id: app.id,
+              });
 
-          if (rpcError) {
+          if (isRpcMissingError(rpcResult.error)) {
+            markRpcMissing(rpcName, rpcResult.error);
+          }
+
+          if (rpcResult.error) {
             console.warn(
               "[UniversityDashboard] Failed to hydrate student via RPC",
-              { applicationId: app.id, error: rpcError.message },
+              { applicationId: app.id, error: rpcResult.error.message },
             );
             return null;
           }
 
-          const rpcRow = (rpcData as any[] | null)?.[0];
+          const rpcRow = (rpcResult.data as any[] | null)?.[0];
           if (!rpcRow) return null;
 
           return {
@@ -683,10 +682,11 @@ export const fetchUniversityDashboardData = async (
     ] as string[];
 
     if (docStudentIds.length > 0) {
-      const { data: docStudents, error: docErr } = await supabase
-        .from("students")
-        .select("id, legal_name, preferred_name")
-        .in("id", docStudentIds);
+          const { data: docStudents, error: docErr } = await supabase
+            .from("students")
+            .select("id, legal_name, preferred_name")
+            .in("id", docStudentIds)
+            .eq("tenant_id", tenantId);
 
       if (docErr) throw docErr;
 

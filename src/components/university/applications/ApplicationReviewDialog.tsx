@@ -72,6 +72,12 @@ import {
   isApplicationStatus,
   type ApplicationStatus,
 } from "@/lib/applicationStatus";
+import {
+  buildMissingRpcError,
+  isRpcMissingError,
+  isRpcUnavailable,
+  markRpcMissing,
+} from "@/lib/supabaseRpc";
 
 /* ======================================================
    Type Definitions (exported for useExtendedApplication)
@@ -205,18 +211,8 @@ const REQUIRED_DOCUMENT_TYPES = [
    RPC detection helper
 ====================================================== */
 
-const isUpdateApplicationReviewRpcMissing = (error: unknown) => {
-  const e = error as { code?: string; message?: string } | null;
-  const msg = (e?.message ?? "").toLowerCase();
-  return (
-    e?.code === "PGRST202" ||
-    e?.code === "PGRST204" ||
-    e?.code === "42P01" ||
-    e?.code === "42703" ||
-    msg.includes("could not find the function") ||
-    msg.includes("schema cache")
-  );
-};
+const isUpdateApplicationReviewRpcMissing = (error: unknown) =>
+  isRpcMissingError(error as { code?: string | null; message?: string | null });
 
 /* ======================================================
    Error helpers
@@ -351,6 +347,25 @@ const explainUpdateError = (
     title: "Update failed",
     description: `An unexpected error occurred. Please try again or contact support. (Error: ${code || 'unknown'})`,
   };
+};
+
+const rpcMissingResult = (rpcName: string) => ({
+  data: null,
+  error: buildMissingRpcError(rpcName),
+});
+
+const callRpcWithCache = async <T,>(
+  rpcName: string,
+  params: Record<string, unknown>,
+) => {
+  if (isRpcUnavailable(rpcName)) return rpcMissingResult(rpcName);
+
+  const result = await supabase.rpc(rpcName as any, params);
+  if (isUpdateApplicationReviewRpcMissing(result.error)) {
+    markRpcMissing(rpcName, result.error);
+  }
+
+  return result as { data: T | null; error: RpcErrorLike | null };
 };
 
 /* ======================================================
@@ -615,12 +630,15 @@ export function ApplicationReviewDialog({
     let error: any = null;
 
     // APPROACH 1: Try the text version of the RPC first (handles enum conversion internally)
-    const textRpcResult = await supabase.rpc("update_application_review_text" as any, {
-      p_application_id: application.id,
-      p_new_status: null,
-      p_internal_notes: internalNotes,
-      p_append_timeline_event: null,
-    });
+    const textRpcResult = await callRpcWithCache(
+      "update_application_review_text",
+      {
+        p_application_id: application.id,
+        p_new_status: null,
+        p_internal_notes: internalNotes,
+        p_append_timeline_event: null,
+      },
+    );
 
     if (!textRpcResult.error) {
       data = textRpcResult.data;
@@ -634,12 +652,15 @@ export function ApplicationReviewDialog({
     // APPROACH 2: Try enum version if text version is missing
     if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
       console.log("[ApplicationReview] Text RPC missing, trying enum version");
-      const enumResult = await supabase.rpc("update_application_review" as any, {
-        p_application_id: application.id,
-        p_new_status: null,
-        p_internal_notes: internalNotes,
-        p_append_timeline_event: null,
-      });
+      const enumResult = await callRpcWithCache(
+        "update_application_review",
+        {
+          p_application_id: application.id,
+          p_new_status: null,
+          p_internal_notes: internalNotes,
+          p_append_timeline_event: null,
+        },
+      );
       
       if (!enumResult.error) {
         data = enumResult.data;
@@ -743,10 +764,13 @@ export function ApplicationReviewDialog({
 
     // First, run diagnostics to help debug any issues
     try {
-      const diagResult = await supabase.rpc("diagnose_app_update_issue" as any, {
-        p_app_id: application.id,
-      });
-      if (diagResult.data) {
+      const diagResult = await callRpcWithCache(
+        "diagnose_app_update_issue",
+        {
+          p_app_id: application.id,
+        },
+      );
+      if (!diagResult.error && diagResult.data) {
         console.log("[ApplicationReview] Diagnostics:", diagResult.data);
       }
     } catch (diagError) {
@@ -760,11 +784,14 @@ export function ApplicationReviewDialog({
     // This is the most reliable method with explicit authorization and SECURITY DEFINER
     try {
       console.log("[ApplicationReview] Trying university_update_application_status RPC...");
-      const rpcResult = await supabase.rpc("university_update_application_status" as any, {
-        p_application_id: application.id,
-        p_status: selectedStatus,
-        p_notes: null,
-      });
+      const rpcResult = await callRpcWithCache(
+        "university_update_application_status",
+        {
+          p_application_id: application.id,
+          p_status: selectedStatus,
+          p_notes: null,
+        },
+      );
       
       if (!rpcResult.error) {
         // This RPC returns JSONB directly with {id, status, updated_at}
@@ -792,12 +819,15 @@ export function ApplicationReviewDialog({
         actor: "University",
       };
 
-      const textRpcResult = await supabase.rpc("update_application_review_text" as any, {
-        p_application_id: application.id,
-        p_new_status: selectedStatus,
-        p_internal_notes: null,
-        p_append_timeline_event: timelineEvent,
-      });
+      const textRpcResult = await callRpcWithCache(
+        "update_application_review_text",
+        {
+          p_application_id: application.id,
+          p_new_status: selectedStatus,
+          p_internal_notes: null,
+          p_append_timeline_event: timelineEvent,
+        },
+      );
 
       if (!textRpcResult.error) {
         data = textRpcResult.data;
@@ -812,7 +842,7 @@ export function ApplicationReviewDialog({
     // APPROACH 3: Try enum version of update_application_review
     if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
       console.log("[ApplicationReview] Trying enum version of update_application_review");
-      const enumResult = await supabase.rpc("update_application_review" as any, {
+      const enumResult = await callRpcWithCache("update_application_review", {
         p_application_id: application.id,
         p_new_status: selectedStatus,
         p_internal_notes: null,
