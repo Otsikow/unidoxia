@@ -2914,6 +2914,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_manage_university_application: {
+        Args: { p_application_id: string; p_user_id: string }
+        Returns: boolean
+      }
       create_notification: {
         Args: {
           p_action_url?: string
@@ -2965,12 +2969,50 @@ export type Database = {
           name: string
         }[]
       }
+      get_student_details_for_application: {
+        Args: { p_application_id: string }
+        Returns: {
+          address: Json
+          contact_email: string
+          contact_phone: string
+          current_country: string
+          date_of_birth: string
+          finances_json: Json
+          guardian: Json
+          legal_name: string
+          nationality: string
+          passport_expiry: string
+          passport_number: string
+          preferred_name: string
+          profile_avatar_url: string
+          profile_email: string
+          profile_full_name: string
+          profile_id: string
+          profile_phone: string
+          student_id: string
+          visa_history_json: Json
+        }[]
+      }
       get_students_by_tenant: {
         Args: { p_tenant_id: string }
         Returns: {
           application_count: number
           student: Json
           student_id: string
+        }[]
+      }
+      get_students_for_university_applications: {
+        Args: { p_student_ids: string[] }
+        Returns: {
+          current_country: string
+          date_of_birth: string
+          id: string
+          legal_name: string
+          nationality: string
+          preferred_name: string
+          profile_avatar_url: string
+          profile_email: string
+          profile_name: string
         }[]
       }
       get_unread_count: {
