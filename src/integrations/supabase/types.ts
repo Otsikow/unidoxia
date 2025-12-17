@@ -2993,6 +2993,10 @@ export type Database = {
           visa_history_json: Json
         }[]
       }
+      get_student_document_signed_url: {
+        Args: { p_document_id: string; p_expires_in?: number }
+        Returns: string
+      }
       get_students_by_tenant: {
         Args: { p_tenant_id: string }
         Returns: {
