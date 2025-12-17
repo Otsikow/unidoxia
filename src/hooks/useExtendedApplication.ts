@@ -296,6 +296,53 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             testScores,
           };
         }
+
+        // Final fallback: hydrate student basics via security definer RPC if still missing
+        if (!studentDetails) {
+          console.log(
+            "[useExtendedApplication] Student not found via primary queries, attempting fallback RPC hydration",
+          );
+
+          const { data: fallbackData, error: fallbackError } = await supabase.rpc(
+            "get_students_for_university_applications" as any,
+            { p_student_ids: [appData.student_id] },
+          );
+
+          if (fallbackError) {
+            console.warn(
+              "[useExtendedApplication] Fallback student RPC failed:",
+              fallbackError.message,
+            );
+          }
+
+          const fallbackRow = (fallbackData as any[] | null)?.[0];
+          if (fallbackRow) {
+            studentDetails = {
+              id: fallbackRow.id ?? appData.student_id,
+              profileId: null,
+              legalName:
+                fallbackRow.legal_name ??
+                fallbackRow.preferred_name ??
+                fallbackRow.profile_name ??
+                "Student",
+              preferredName: fallbackRow.preferred_name ?? null,
+              email: fallbackRow.profile_email ?? null,
+              phone: null,
+              nationality: fallbackRow.nationality ?? null,
+              dateOfBirth: null,
+              passportNumber: null,
+              passportExpiry: null,
+              currentCountry: null,
+              address: null,
+              guardian: null,
+              finances: null,
+              visaHistory: null,
+              avatarUrl: null,
+              educationHistory: null,
+              testScores: null,
+            };
+          }
+        }
       }
 
       /* ---------------------------

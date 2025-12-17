@@ -581,6 +581,84 @@ export const fetchUniversityDashboardData = async (
         agentId: (app as any).agent_id ?? null,
       };
     });
+
+    // Fallback hydration for student details when the initial fetch missed data
+    const appsMissingStudentDetails = applications.filter(
+      (app) =>
+        app.studentId &&
+        (app.studentName === "Unknown Student" ||
+          !app.studentNationality ||
+          app.studentNationality === "Unknown" ||
+          !app.studentDateOfBirth ||
+          !app.studentCurrentCountry),
+    );
+
+    if (appsMissingStudentDetails.length > 0) {
+      console.log(
+        "[UniversityDashboard] Hydrating student details via application-level RPC",
+        appsMissingStudentDetails.map((app) => app.id),
+      );
+
+      const hydratedStudents = await Promise.all(
+        appsMissingStudentDetails.map(async (app) => {
+          const { data: rpcData, error: rpcError } = await supabase.rpc(
+            "get_student_details_for_application" as any,
+            { p_application_id: app.id },
+          );
+
+          if (rpcError) {
+            console.warn(
+              "[UniversityDashboard] Failed to hydrate student via RPC",
+              { applicationId: app.id, error: rpcError.message },
+            );
+            return null;
+          }
+
+          const rpcRow = (rpcData as any[] | null)?.[0];
+          if (!rpcRow) return null;
+
+          return {
+            applicationId: app.id,
+            studentId: rpcRow.student_id ?? app.studentId,
+            studentName:
+              rpcRow.legal_name ??
+              rpcRow.preferred_name ??
+              rpcRow.profile_full_name ??
+              app.studentName,
+            nationality: rpcRow.nationality ?? app.studentNationality ?? "Unknown",
+            dateOfBirth: rpcRow.date_of_birth ?? app.studentDateOfBirth ?? null,
+            currentCountry:
+              rpcRow.current_country ?? app.studentCurrentCountry ?? null,
+          };
+        }),
+      );
+
+      const hydrationMap = new Map(
+        hydratedStudents
+          .filter(Boolean)
+          .map((entry) => [
+            (entry as any).applicationId,
+            entry as Exclude<typeof hydratedStudents[number], null>,
+          ]),
+      );
+
+      if (hydrationMap.size > 0) {
+        applications = applications.map((app) => {
+          const hydrated = hydrationMap.get(app.id);
+          if (!hydrated) return app;
+
+          return {
+            ...app,
+            studentId: hydrated.studentId ?? app.studentId,
+            studentName: hydrated.studentName ?? app.studentName,
+            studentNationality: hydrated.nationality ?? app.studentNationality,
+            studentDateOfBirth: hydrated.dateOfBirth ?? app.studentDateOfBirth,
+            studentCurrentCountry:
+              hydrated.currentCountry ?? app.studentCurrentCountry,
+          };
+        });
+      }
+    }
   }
 
   // -----------------------------------------------------
