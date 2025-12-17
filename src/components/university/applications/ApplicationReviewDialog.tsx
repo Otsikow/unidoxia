@@ -916,9 +916,11 @@ export function ApplicationReviewDialog({
 
   const handleRequestDocument = useCallback(async () => {
     // Debug logging to diagnose "Missing information" error
+    const resolvedStudentId = application?.student?.id ?? application?.studentId ?? null;
     console.log("[ApplicationReview] handleRequestDocument called:", {
       applicationId: application?.id,
       studentId: application?.student?.id,
+      resolvedStudentId,
       documentRequestType,
       tenantId,
     });
@@ -933,10 +935,11 @@ export function ApplicationReviewDialog({
       return;
     }
 
-    if (!application.student?.id) {
+    if (!resolvedStudentId) {
       toast({
-        title: "Student data unavailable",
-        description: "Student information is not available for this application.",
+        title: "Student link missing",
+        description:
+          "This application is missing a linked student record (student_id). Please refresh and try again, or contact support if the issue persists.",
         variant: "destructive",
       });
       return;
@@ -961,20 +964,56 @@ export function ApplicationReviewDialog({
     }
 
     setRequestingDocument(true);
-    console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, studentId: application.student.id, type: documentRequestType, tenantId });
+    console.log("[ApplicationReview] Requesting document:", {
+      applicationId: application.id,
+      studentId: resolvedStudentId,
+      type: documentRequestType,
+      tenantId,
+    });
 
     // Get current user for requested_by field
     const { data: userData } = await supabase.auth.getUser();
 
-    const { error } = await supabase.from("document_requests").insert([{
+    // NOTE: The schema has evolved over time:
+    // - `application_id` may or may not exist on `document_requests` depending on migration state.
+    // - `request_type` is used by some UI/notification logic; `document_type` is required by the table.
+    // We attempt the most complete insert first, then gracefully fall back for older schemas.
+    const basePayload: Record<string, any> = {
       tenant_id: tenantId,
-      student_id: application.student.id,
-      application_id: application.id,
-      requested_by: userData?.user?.id,
+      student_id: resolvedStudentId,
+      requested_by: userData?.user?.id ?? null,
       document_type: documentRequestType,
+      request_type: documentRequestType,
       status: "pending",
       notes: documentRequestNote || null,
-    }] as any);
+    };
+
+    let error: any = null;
+    const primaryAttempt = await supabase.from("document_requests").insert([
+      {
+        ...basePayload,
+        application_id: application.id,
+      },
+    ] as any);
+
+    if (primaryAttempt.error) {
+      const msg = String(primaryAttempt.error.message ?? "");
+      const code = String(primaryAttempt.error.code ?? "");
+
+      // If the column doesn't exist (older schema), retry without it.
+      if (code === "42703" || msg.toLowerCase().includes("application_id")) {
+        console.warn(
+          "[ApplicationReview] document_requests.application_id not available; retrying insert without application_id",
+          { code, msg }
+        );
+        const fallbackAttempt = await supabase.from("document_requests").insert([
+          basePayload,
+        ] as any);
+        error = fallbackAttempt.error;
+      } else {
+        error = primaryAttempt.error;
+      }
+    }
 
     setRequestingDocument(false);
 
