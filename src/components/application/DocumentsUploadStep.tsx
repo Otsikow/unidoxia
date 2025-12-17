@@ -6,6 +6,7 @@ import { FileText, Upload, CheckCircle2, X, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface Documents {
+  passport_photo: File | null;
   transcript: File | null;
   passport: File | null;
   ielts: File | null;
@@ -33,6 +34,12 @@ interface DocumentsUploadStepProps {
 }
 
 const DOCUMENT_TYPES = [
+  {
+    key: 'passport_photo' as keyof Documents,
+    label: 'Passport Photo',
+    description: 'A recent passport-style photo of yourself',
+    required: true,
+  },
   {
     key: 'transcript' as keyof Documents,
     label: 'Academic Transcript',

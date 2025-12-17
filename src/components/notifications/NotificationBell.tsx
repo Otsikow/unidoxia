@@ -64,7 +64,14 @@ export function NotificationBell({
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Trigger bell animation
+  const triggerBellAnimation = useCallback(() => {
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 1000);
+  }, []);
 
   const fetchNotifications = useCallback(async () => {
     if (!user?.id) return;
@@ -138,6 +145,8 @@ export function NotificationBell({
               setUnreadCount((prev) => prev + 1);
               // Play notification sound
               playNotificationSound();
+              // Trigger bell animation
+              triggerBellAnimation();
               // Show browser notification if permitted
               showBrowserNotification(newNotification);
             }
@@ -351,7 +360,7 @@ export function NotificationBell({
           className={cn("relative", className)}
           aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         >
-          <Bell className="h-5 w-5" />
+          <Bell className={cn("h-5 w-5 transition-transform", isAnimating && "animate-bell-shake")} />
           {unreadCount > 0 && (
             <Badge
               variant="destructive"
