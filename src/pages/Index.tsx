@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-import { Users, FileCheck, Clock, Sparkles, Calculator } from "lucide-react";
+import { Users, FileCheck, Clock, Sparkles, Calculator, ShieldCheck, HandCoins, BadgeCheck } from "lucide-react";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
@@ -29,6 +29,12 @@ import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
 import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
+import oxfordImage from "@/assets/university-oxford.jpg";
+import torontoImage from "@/assets/university-toronto.jpg";
+import germanyImage from "@/assets/destinations/germany.jpeg";
+import professionalConsultant from "@/assets/professional-consultant.png";
+import studentWelcome from "@/assets/student-welcome.png";
+import agentStudentConsulting from "@/assets/agent-student-consulting.png";
 
 /* ---------- Lazy Loaded Sections ---------- */
 const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
@@ -184,6 +190,63 @@ const Index = () => {
   const contactSubtitle = t("pages.index.contact.subtitle");
   const footerText = t("layout.footer.copyright", { year: new Date().getFullYear() });
 
+  const studentStories = [
+    {
+      name: "Anika (India → UK)",
+      outcome: "Accepted to Imperial College London",
+      highlight: "Visa approved in 14 days with UniDoxia support.",
+    },
+    {
+      name: "Luis (Mexico → Canada)",
+      outcome: "Secured study permit",
+      highlight: "Guided by advisors to finalize funding and GIC on time.",
+    },
+    {
+      name: "Sara (Nigeria → Germany)",
+      outcome: "Enrolled in Data Science MSc",
+      highlight: "Got university shortlist, documents checked, and arrival tips.",
+    },
+  ];
+
+  const trustedDestinations = [
+    {
+      name: "United Kingdom",
+      image: oxfordImage,
+      detail: "Top choices like Oxford, Imperial, and UCL with CAS guidance.",
+    },
+    {
+      name: "Canada",
+      image: torontoImage,
+      detail: "Transparent visa prep, proof of funds, and SDS-friendly checklists.",
+    },
+    {
+      name: "Europe",
+      image: germanyImage,
+      detail: "Public and private universities with APS, blocked accounts, and visa coaching.",
+    },
+  ];
+
+  const advisors = [
+    {
+      name: "Maya Thompson",
+      role: "Lead Admissions Advisor",
+      image: professionalConsultant,
+      focus: "Former UK university admissions officer guiding offer letters and CAS steps.",
+    },
+    {
+      name: "David Chen",
+      role: "Visa & Compliance",
+      image: agentStudentConsulting,
+      focus: "Specializes in Canada SDS, biometrics scheduling, and document accuracy checks.",
+    },
+    {
+      name: "Amina Yusuf",
+      role: "Student Success Coach",
+      image: studentWelcome,
+      focus: "Supports pre-departure, housing, and arrival plans across Europe.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO
@@ -281,6 +344,144 @@ const Index = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </section>
+
+      {/* ---------- TRUST: STUDENT STORIES ---------- */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+          <Badge variant="outline" className="bg-primary/5 text-primary">Trusted Results</Badge>
+          <h2 className="text-3xl md:text-4xl font-bold">Student stories you can verify</h2>
+          <p className="text-muted-foreground">
+            See what real learners achieved with UniDoxia before you commit.
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {studentStories.map(story => (
+            <Card key={story.name} className="h-full shadow-sm">
+              <CardContent className="p-7 space-y-4">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">{story.name}</span>
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold leading-tight">{story.outcome}</h3>
+                <p className="text-muted-foreground">{story.highlight}</p>
+                <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 dark:bg-green-950/40 rounded-full px-3 py-1 w-fit">
+                  <ShieldCheck className="h-4 w-4" />
+                  Verified guidance included
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- TRUST: DESTINATIONS ---------- */}
+      <section className="bg-muted/40 py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+            <Badge variant="secondary">Destinations</Badge>
+            <h2 className="text-3xl md:text-4xl font-bold">Popular study destinations we support</h2>
+            <p className="text-muted-foreground">
+              Navigate country-specific requirements with localized checklists and alumni insights.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {trustedDestinations.map(destination => (
+              <Card key={destination.name} className="overflow-hidden border-0 shadow-lg">
+                <div className="relative h-48">
+                  <img
+                    src={destination.image}
+                    alt={destination.name}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="text-xl font-semibold drop-shadow-lg">{destination.name}</h3>
+                  </div>
+                </div>
+                <CardContent className="p-6 text-muted-foreground">
+                  {destination.detail}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- TRUST: MEET YOUR ADVISORS ---------- */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
+          <Badge variant="outline" className="bg-primary/5 text-primary">Meet your advisors</Badge>
+          <h2 className="text-3xl md:text-4xl font-bold">Real experts guiding every step</h2>
+          <p className="text-muted-foreground">
+            Get transparent, human support—no hidden agents or unverifiable promises.
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-3">
+          {advisors.map(advisor => (
+            <Card key={advisor.name} className="h-full">
+              <CardContent className="p-7 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-full overflow-hidden border">
+                    <img src={advisor.image} alt={advisor.name} className="h-full w-full object-cover" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold leading-tight">{advisor.name}</h3>
+                    <p className="text-sm text-primary font-medium">{advisor.role}</p>
+                  </div>
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed">{advisor.focus}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- TRUST: SAFETY & TRANSPARENCY ---------- */}
+      <section className="container mx-auto px-4 pb-20">
+        <div className="rounded-3xl border bg-card shadow-lg p-10 md:p-14 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            <div>
+              <Badge variant="secondary" className="mb-3">Safety & Transparency</Badge>
+              <h2 className="text-2xl md:text-3xl font-bold">How we keep your journey scam-free</h2>
+              <p className="text-muted-foreground mt-2">
+                Understand our process before you pay anything. We document fees, payouts, and responsibilities upfront.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-green-700 bg-green-50 dark:bg-green-950/40 px-4 py-2 rounded-full w-fit">
+              <ShieldCheck className="h-5 w-5" />
+              Transparent by design
+            </div>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="flex gap-3 p-4 rounded-2xl bg-muted/50">
+              <BadgeCheck className="h-6 w-6 text-primary mt-1" />
+              <div>
+                <h3 className="font-semibold">How fees work</h3>
+                <p className="text-muted-foreground text-sm">Clear pricing before you start, with no surprise add-ons.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 p-4 rounded-2xl bg-muted/50">
+              <HandCoins className="h-6 w-6 text-primary mt-1" />
+              <div>
+                <h3 className="font-semibold">How UniDoxia is paid</h3>
+                <p className="text-muted-foreground text-sm">We disclose partner incentives and success fees in writing.</p>
+              </div>
+            </div>
+            <div className="flex gap-3 p-4 rounded-2xl bg-muted/50">
+              <ShieldCheck className="h-6 w-6 text-primary mt-1" />
+              <div>
+                <h3 className="font-semibold">Honesty & anti-scam commitment</h3>
+                <p className="text-muted-foreground text-sm">Document verification, no ghost agents, and verifiable progress updates.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
