@@ -350,58 +350,58 @@ const en = {
             suffix: "",
           },
           description:
-            "Connect with top universities, track applications in real-time, and receive expert guidance from verified agents.",
+            "We help you find universities that actually accept you, guide you step by step until you receive an offer, and provide real human support.",
           ctas: {
             students: {
-              badge: "Students",
-              title: "Apply to universities abroad with ease",
+              badge: "For You",
+              title: "Start your study abroad journey today",
               description:
-                "Create your profile once, upload your documents, and apply to multiple universities in the UK, Europe, Canada, the USA, and Australia from one platform.",
+                "We guide you through applying to multiple universities in the UK, Europe, Canada, the USA, and Australia with clear guidance and no hidden fees.",
               action: "Start Application",
             },
             agents: {
               badge: "Agents",
               title: "Recruit students and earn commissions",
               description:
-                "Manage your students, submit applications, track progress, and work directly with universities — all from one dashboard.",
+                "We support you in managing your students, submitting applications, and working directly with universities.",
               action: "Join as Agent",
             },
             universities: {
               badge: "Universities",
               title: "Connect with qualified international students",
               description:
-                "Receive ready-to-review applications, communicate with students and agents, and grow enrolments from Africa through a trusted recruitment network.",
+                "We help you receive ready-to-review applications and grow enrolments from Africa through a trusted recruitment network.",
               action: "Partner with Us",
             },
           },
         },
         features: {
-          heading: "Why Choose UniDoxia?",
+          heading: "Why Start Your Journey With Us?",
           cards: {
             applyEasily: {
               title: "Apply Easily",
               description:
-                "Streamlined application process with step-by-step guidance. Submit applications to multiple universities effortlessly.",
+                "We guide you step by step until you receive an offer. Fewer rejections, just clear guidance.",
             },
             trackRealtime: {
-              title: "Track in Real-Time",
-              description: "Monitor your application status 24/7 with live updates and instant notifications.",
+              title: "Always Know Where You Stand",
+              description: "We support you with live updates and instant notifications, so you never feel lost.",
             },
             connectAgents: {
-              title: "Connect with Verified Agents",
-              description: "Access certified education agents who provide personalized support throughout your journey.",
+              title: "Real Human Support",
+              description: "Get clear guidance from experts who treat you like a person, not a file.",
             },
           },
         },
         aiDocumentChecker: {
           badge: "AI Document Checker",
-          heading: "Let AI review every document in seconds",
+          heading: "We check your documents instantly",
           description:
-            "Automatically review and approve passports, WAEC/NECO results, transcripts, recommendation letters, and bank statements without manual back-and-forth.",
-          tagline: "This saves you HOURS.",
+            "We help you get your documents right the first time, so you face fewer rejections.",
+          tagline: "This gives you visa confidence.",
           approvals: {
             heading: "Automatically review & approve",
-            description: "Every required file is scored, classified, and approved before it reaches your desk.",
+            description: "We guide you to perfection before you submit.",
             items: [
               "Passport",
               "WAEC/NECO",
@@ -411,8 +411,8 @@ const en = {
             ],
           },
           detections: {
-            heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            heading: "Instant feedback",
+            description: "We help you fix issues before they delay your visa or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -421,13 +421,13 @@ const en = {
             ],
           },
           riskMonitoring: {
-            heading: "AI detects fake tutors & fake agents",
-            description: "AI flags suspicious behaviour:",
+            heading: "We protect you from bad advice",
+            description: "We ensure every application is compliant:",
             items: [
-              "Same passport used for multiple accounts",
-              "Students buying fabricated bank statements",
-              "Uploading fake WAEC results",
-              "Agents sending unrealistic profiles",
+              "Unique identity verification",
+              "Verified financial documents",
+              "Authentic academic results",
+              "Realistic student profiles",
             ],
             footnote: "This protects your reputation.",
           },
@@ -439,32 +439,32 @@ const en = {
         },
         aiSearch: {
           badge: "AI-Powered University & Scholarship Search",
-          heading: "Find the right course with real-time intelligence",
+          heading: "We help you find universities that actually accept students like you",
           description:
-            "Ask anything about universities, courses, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
+            "Ask anything about universities, courses, or funding worldwide. We guide you to the best options tailored to your goals.",
           subheading:
-            "Sign up to unlock tailored AI recommendations across admissions, scholarships, and visas.",
+            "Start now to get clear guidance on admissions, scholarships, and visas.",
           ctaLabel: "Get Started",
           stats: [
-            { value: "12k+", label: "AI insights generated for global applicants" },
-            { value: "84%", label: "Students matched to at least three best-fit courses" },
-            { value: "50+", label: "Countries covered with verified admissions data" },
+            { value: "12k+", label: "Insights generated for applicants like you" },
+            { value: "84%", label: "Matches to best-fit courses" },
+            { value: "50+", label: "Countries with verified admissions data" },
           ],
           panel: {
             title: "Preview Zoe Intelligence",
-            subtitle: "Choose a focus area to explore the insights you'll unlock.",
+            subtitle: "Choose a focus area to explore the clear guidance you'll unlock.",
             previewLabel: "Sample",
-            highlightsHeading: "What the AI prepares for you",
+            highlightsHeading: "How we guide you",
           },
-          zoeAlt: "Portrait of Zoe, the Bridge intelligence guide",
-          zoeCaption: "Meet Zoe – the friendly face guiding every insight and recommendation.",
+          zoeAlt: "Portrait of Zoe, your guide",
+          zoeCaption: "Meet Zoe – she guides every insight and recommendation.",
           focusAreas: [
             {
               key: "stem",
               label: "STEM",
               headline: "Tailored pathways for technical innovators",
               description:
-                "Spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
+                "We spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
               highlights: [
                 "Scholarships that prioritise STEM majors and research output",
                 "Industry-aligned curricula with internships and co-op rotations",
@@ -476,7 +476,7 @@ const en = {
               label: "Scholarships",
               headline: "Funding opportunities matched to your profile",
               description:
-                "Identify grants, bursaries, and assistantships you can realistically secure.",
+                "We help you identify grants, bursaries, and assistantships you can realistically secure.",
               highlights: [
                 "Curated list of merit and need-based awards with deadlines",
                 "Eligibility insights that map to your academic background",
@@ -487,7 +487,7 @@ const en = {
               key: "visa",
               label: "Visa friendly",
               headline: "Study routes with smooth immigration journeys",
-              description: "Compare countries and institutions with favourable visa pathways.",
+              description: "We help you compare countries and institutions with favourable visa pathways.",
               highlights: [
                 "Post-study work options and stay-back durations summarised",
                 "Documentation checklists tailored to your nationality",
@@ -497,9 +497,9 @@ const en = {
             {
               key: "undergraduate",
               label: "Undergraduate",
-              headline: "Undergraduate journeys built for first-time applicants",
+              headline: "Journeys built for first-time applicants",
               description:
-                "Understand entry requirements, prerequisites, and support services.",
+                "We help you understand entry requirements, prerequisites, and support services.",
               highlights: [
                 "Step-by-step timeline from transcript evaluation to offer acceptance",
                 "Guidance on choosing majors, minors, and foundation years",
@@ -510,7 +510,7 @@ const en = {
               key: "postgraduate",
               label: "Postgraduate",
               headline: "Master's and doctoral courses curated for your goals",
-              description: "Compare research supervisors, cohort sizes, and funding models.",
+              description: "We help you compare research supervisors, cohort sizes, and funding models.",
               highlights: [
                 "Faculty highlights with current research themes",
                 "Assistantship and fellowship availability with stipends",
@@ -522,7 +522,7 @@ const en = {
               label: "Co-op & Internships",
               headline: "Work-integrated learning with global employers",
               description:
-                "Surface courses that blend study with hands-on professional experience.",
+                "We surface courses that blend study with hands-on professional experience.",
               highlights: [
                 "Placement rates and employer partnerships across regions",
                 "Visa considerations for paid placements and work terms",
@@ -533,34 +533,34 @@ const en = {
         },
         zoeMultiRole: {
           badge: "Meet Zoe",
-          heading: "AI chat assistant — but smarter",
+          heading: "Your personal guide",
           description:
-            "Zoe switches between students, agents, and university teams to provide context-aware answers the moment you need them.",
-          note: "Zoe is multi-role. Very few competitors do this.",
-          highlightsHeading: "What Zoe handles for you",
+            "Zoe adapts to provide the exact support you need, the moment you need it.",
+          note: "Zoe supports everyone involved.",
+          highlightsHeading: "How Zoe supports you",
           highlights: [
-            "Answers every study-abroad question with region-aware visa and policy context.",
-            "Guides you through the entire UniDoxia app so timelines, dashboards, and automations stay on track.",
-            "Reads uploaded documents to recommend schools, scholarships, and next steps instantly.",
+            "Answers every study-abroad question with clear guidance on visas and policies.",
+            "Guides you step by step so timelines and next steps stay on track.",
+            "Reviews your documents to recommend schools, scholarships, and next steps instantly.",
           ],
           roles: [
             {
               key: "students",
-              title: "Students & families",
+              title: "For You & Your Family",
               description:
-                "Zoe is a study-abroad counsellor that walks every applicant through the full UniDoxia experience.",
+                "Zoe walks you through the full experience step by step.",
               capabilities: [
                 "Answers any study-abroad question instantly in plain language.",
-                "Guides you through every task inside the UniDoxia app so nothing is missed.",
+                "Guides you through every task so nothing is missed.",
                 "Reviews uploaded transcripts, essays, and proof of funds to suggest best-fit schools.",
                 "Shares personalised counselling recommendations informed by your goals.",
               ],
             },
             {
               key: "agents",
-              title: "Agents & counsellors",
+              title: "For Agents",
               description:
-                "Training, coaching, and on-demand answers are built into the same workspace that powers your agency.",
+                "Training, coaching, and on-demand answers are built right in.",
               capabilities: [
                 "Delivers bite-sized training refreshers for new advisors and support staff.",
                 "Turns shared student documents into quick school shortlists you can review with clients.",
@@ -570,11 +570,11 @@ const en = {
             },
             {
               key: "universities",
-              title: "Universities & partners",
+              title: "For Universities",
               description:
-                "Zoe lives inside the university dashboard to keep recruitment, compliance, and service teams aligned.",
+                "Zoe keeps recruitment, compliance, and service teams aligned.",
               capabilities: [
-                "Surfaces partner health alerts and suggested actions directly in the dashboard.",
+                "Surfaces partner health alerts and suggested actions directly.",
                 "Summarises applicant pipelines by region with notes about policy differences.",
                 "Provides training snippets for staff onboarding so teams can self-serve answers.",
                 "Escalates issues that need human attention so you can focus on strategic relationships.",
@@ -582,128 +582,128 @@ const en = {
             },
           ],
         },
-      journeyRibbon: {
-        items: {
-          discover: {
-            stage: "Explore Global Partners",
-            metricValue: "200+",
-            metricLabel: "Partner Universities",
-            description:
-              "AI-matched course recommendations surface the best-fit universities the moment you sign up.",
-            ctaLabel: "Start Application",
-          },
-          plan: {
-            stage: "Build Your Roadmap",
-            metricValue: "5000+",
-            metricLabel: "Personalized plans created",
-            description:
-              "Task checklists and smart reminders keep thousands of students organized from transcripts to statements.",
-            ctaLabel: "",
-          },
-          collaborate: {
-            stage: "Collaborate with Advisors",
-            metricValue: "24h",
-            metricLabel: "Average agent response",
-            description:
-              "Verified advisors co-edit documents, answer questions, and align timelines in real time across every channel.",
-            ctaLabel: "Meet Your Agent",
-          },
-          submit: {
-            stage: "Streamline Applications",
-            metricValue: "95%",
-            metricLabel: "Success Rate",
-            description:
-              "Centralized submissions with proactive nudges help applications move forward without missing a single deadline.",
-            ctaLabel: "",
-          },
-          celebrate: {
-            stage: "Launch Your Journey",
-            metricValue: "50+",
-            metricLabel: "Countries represented",
-            description:
-              "Visa-ready checklists and pre-departure prep launch students to campuses across the globe with confidence.",
-            ctaLabel: "",
-          },
-        },
-      },
-      storyboard: {
-        heading: "How UniDoxia Simplifies Every Step",
-        subheading:
-          "Follow the storyboard to see exactly how our platform and people guide your application from idea to arrival.",
-        stepLabel: "Step {{number}}",
-        steps: {
-          discover: {
-            title: "Discover Your Best-Fit Courses",
-            description:
-              "Tell us your goals and academics, and UniDoxia instantly curates universities, courses, and scholarships that match.",
-            support:
-              "Smart filters and AI-powered recommendations remove the guesswork so you can shortlist confident choices in minutes.",
-            imageAlt: "Student reviewing university courses on a campus tour",
-          },
-          plan: {
-            title: "Build a Personalized Application Plan",
-            description:
-              "Upload transcripts, test scores, and statements with guided checklists that break everything into manageable tasks.",
-            support: "Auto-reminders and document tips keep you organized and ahead of every deadline.",
-            imageAlt: "Student planning application tasks on a laptop outdoors",
-          },
-          collaborate: {
-            title: "Collaborate with Your Expert Agent",
-            description:
-              "Work side-by-side with a verified UniDoxia advisor to polish documents, align on timelines, and stay interview ready.",
-            support:
-              "Shared workspaces, annotated feedback, and instant messaging keep every decision transparent and stress-free.",
-            imageAlt: "Student connecting with an education agent using a mobile phone",
-          },
-          track: {
-            title: "Submit & Track Without Stress",
-            description:
-              "Apply to multiple universities at once and follow every review, request, and offer from one simple timeline.",
-            support: "Live status indicators and proactive nudges flag the next action so nothing slips through the cracks.",
-            imageAlt: "Student checking application progress while walking on campus",
-          },
-          celebrate: {
-            title: "Celebrate & Prepare for Departure",
-            description:
-              "Accept your offer, finalize visa steps, and access pre-departure resources tailored to your destination.",
-            support:
-              "Visa checklists, housing guidance, and enrollment confirmations keep you on track right up to takeoff.",
-            imageAlt: "Student celebrating visa approval with documents in hand",
+        journeyRibbon: {
+          items: {
+            discover: {
+              stage: "Explore Global Partners",
+              metricValue: "200+",
+              metricLabel: "Partner Universities",
+              description:
+                "We help you find the right match the moment you start.",
+              ctaLabel: "Start Application",
+            },
+            plan: {
+              stage: "Build Your Roadmap",
+              metricValue: "5000+",
+              metricLabel: "Personalized plans created",
+              description:
+                "We support you with checklists that keep you organized from transcripts to statements.",
+              ctaLabel: "",
+            },
+            collaborate: {
+              stage: "Collaborate with Advisors",
+              metricValue: "24h",
+              metricLabel: "Average agent response",
+              description:
+                "Real human support to answer your questions and polish your documents.",
+              ctaLabel: "Meet Your Agent",
+            },
+            submit: {
+              stage: "Streamline Applications",
+              metricValue: "95%",
+              metricLabel: "Success Rate",
+              description:
+                "We guide you so you never miss a deadline. Fewer rejections, more offers.",
+              ctaLabel: "",
+            },
+            celebrate: {
+              stage: "Launch Your Journey",
+              metricValue: "50+",
+              metricLabel: "Countries represented",
+              description:
+                "We give you visa confidence and help you prepare for departure.",
+              ctaLabel: "",
+            },
           },
         },
-      },
-      featuredUniversities: {
-        heading: "Featured Universities",
-        description:
-          "Institutions that consistently deliver an exceptional onboarding experience for UniDoxia students.",
-        network: {
-          label: "Featured Universities",
-          summary: "{{count}} institutions selected by our partnerships team",
-        },
-        badges: {
-          topPick: "Top pick",
-          priority: "Priority #{{position}}",
-        },
-        actions: {
-          visitSite: "Visit site",
-          scrollLeft: "Scroll featured universities left",
-          scrollRight: "Scroll featured universities right",
-        },
-        fallback: {
-          summary:
-            "Dedicated partners that consistently welcome UniDoxia students with tailored support.",
-          highlight: "Dedicated student success partner",
-          notice: {
-            error: "We're showing highlighted partners while we reconnect to the featured list.",
-            updating: "We're showing highlighted partners while our featured list updates.",
+        storyboard: {
+          heading: "How We Guide You Step by Step",
+          subheading:
+            "Follow the storyboard to see exactly how we guide you from idea to arrival.",
+          stepLabel: "Step {{number}}",
+          steps: {
+            discover: {
+              title: "Discover Your Best-Fit Courses",
+              description:
+                "Tell us your goals and academics, and we help you find universities that actually accept you.",
+              support:
+                "We remove the guesswork so you can shortlist confident choices in minutes.",
+              imageAlt: "Student reviewing university courses on a campus tour",
+            },
+            plan: {
+              title: "Build a Personalized Application Plan",
+              description:
+                "Upload transcripts, test scores, and statements with guided checklists.",
+              support: "We give you clear guidance on every task to keep you ahead of every deadline.",
+              imageAlt: "Student planning application tasks on a laptop outdoors",
+            },
+            collaborate: {
+              title: "Get Real Human Support",
+              description:
+                "Work side-by-side with a verified advisor to polish documents, align on timelines, and stay interview ready.",
+              support:
+                "We support you with expert advice to polish your documents.",
+              imageAlt: "Student connecting with an education agent using a mobile phone",
+            },
+            track: {
+              title: "We Guide You Step by Step",
+              description:
+                "We help you track every step until you receive an offer.",
+              support: "We support you with proactive nudges so nothing slips through the cracks.",
+              imageAlt: "Student checking application progress while walking on campus",
+            },
+            celebrate: {
+              title: "Celebrate & Prepare for Departure",
+              description:
+                "Accept your offer, finalize visa steps, and access pre-departure resources tailored to your destination.",
+              support:
+                "We give you visa confidence and help you prepare for departure.",
+              imageAlt: "Student celebrating visa approval with documents in hand",
+            },
           },
         },
-        partnerCta: {
-          heading: "Become a partner",
-          description: "Showcase your institution to thousands of motivated students worldwide.",
-          action: "Join the network",
+        featuredUniversities: {
+          heading: "Featured Universities",
+          description:
+            "Institutions that consistently deliver an exceptional onboarding experience for you.",
+          network: {
+            label: "Featured Universities",
+            summary: "{{count}} institutions selected by our partnerships team",
+          },
+          badges: {
+            topPick: "Top pick",
+            priority: "Priority #{{position}}",
+          },
+          actions: {
+            visitSite: "Visit site",
+            scrollLeft: "Scroll featured universities left",
+            scrollRight: "Scroll featured universities right",
+          },
+          fallback: {
+            summary:
+              "Dedicated partners that consistently welcome you with tailored support.",
+            highlight: "Dedicated student success partner",
+            notice: {
+              error: "We're showing highlighted partners while we reconnect to the featured list.",
+              updating: "We're showing highlighted partners while our featured list updates.",
+            },
+          },
+          partnerCta: {
+            heading: "Become a partner",
+            description: "Showcase your institution to thousands of motivated students worldwide.",
+            action: "Join the network",
+          },
         },
-      },
         visa: {
           badge: "Feature Spotlight",
           title: "Understand your visa eligibility before you apply",
@@ -715,7 +715,7 @@ const en = {
           badge: "AI Fee Calculator",
           title: "Get a complete financial picture instantly",
           description:
-            "Zoe AI breaks down tuition, housing, everyday living, and hidden expenses so you always know how much to budget before applying.",
+            "We help you understand all costs so you have no hidden fees to worry about.",
           formTitle: "Projected annual costs",
           confidenceLabel: "AI confidence: {{value}}%",
           calculatingLabel: "Calculating...",
@@ -723,7 +723,7 @@ const en = {
           highlights: [
             "Tuition, accommodation, living, insurance, transportation, visa, and miscellaneous costs in one view.",
             "Instant totals update as you tweak assumptions for countries, scholarships, or currency shifts.",
-            "Share-ready breakdown designed for students, parents, or sponsors.",
+            "Share-ready breakdown designed for you, your parents, or sponsors.",
             "See annual and monthly budgets without spreadsheets.",
           ],
           insights: {
@@ -759,8 +759,8 @@ const en = {
             suffix: "",
           },
           description:
-            "Zoe Intelligence watches every funnel and flags the moves that change revenue so you never have to chase agents for updates.",
-          ceoPromise: "This keeps you in your CEO position—not chasing agents.",
+            "We support you by watching every funnel and flagging the moves that change revenue so you never have to chase agents for updates.",
+          ceoPromise: "We help you focus on growth, not chasing updates.",
           insightsTitle: "You get automated insights on:",
           insights: [
             "Applications this week",
@@ -817,7 +817,7 @@ const en = {
               role: "Master's Student at MIT",
               country: "USA",
               quote:
-                "UniDoxia made my dream of studying at MIT a reality. The platform was intuitive, and my agent was incredibly supportive.",
+                "UniDoxia made my dream of studying at MIT a reality. The clear guidance was intuitive, and my agent was incredibly supportive.",
               rating: 5,
             },
             {
@@ -887,14 +887,14 @@ const en = {
               audience: "Students",
               items: [
                 {
-                  question: "How does UniDoxia help me apply to universities?",
+                  question: "How do you guide me?",
                   answer:
-                    "UniDoxia connects you with verified agents who guide you through every stage — from selecting universities to submitting documents.",
+                    "We guide you step by step and connect you with verified agents who support you through every stage — from selecting universities to submitting documents.",
                 },
                 {
-                  question: "Is there a fee to use the platform?",
+                  question: "Are there any hidden fees?",
                   answer:
-                    "Creating an account and exploring universities is free. Agents may charge consulting fees, clearly shown before commitment.",
+                    "No hidden fees. Creating an account and exploring universities is free. Agents may charge consulting fees, clearly shown before commitment.",
                 },
                 {
                   question: "What documents do I need to apply?",
@@ -917,7 +917,7 @@ const en = {
                     "Universities gain access to dashboards showing applicant pipelines, conversion metrics, and regional interest so you can plan recruitment campaigns with confidence.",
                 },
                 {
-                  question: "Can we manage offers directly on the platform?",
+                  question: "Can we manage offers directly?",
                   answer:
                     "Yes. Admissions teams can issue conditional or unconditional offers, request missing documents, and communicate with students and agents from a single workspace.",
                 },
@@ -927,7 +927,7 @@ const en = {
               audience: "Agents",
               items: [
                 {
-                  question: "What support do agents receive on UniDoxia?",
+                  question: "What support do agents receive?",
                   answer:
                     "Agents receive a dedicated CRM, marketing collateral, and on-demand training to help match students with suitable courses quickly.",
                 },
