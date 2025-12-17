@@ -836,6 +836,46 @@ const en = {
                 "From finding the right course to visa approval, UniDoxia supported me every step of the way. Outstanding service!",
               rating: 5,
             },
+            {
+              name: "Aisha Thompson",
+              role: "MSc Data Science at Teesside University",
+              country: "UK",
+              quote:
+                "My agent tailored every step for Teesside's requirements and kept me calm during visa processing. UniDoxia turned a stressful process into a smooth journey.",
+              rating: 5,
+            },
+            {
+              name: "Daniel Wong",
+              role: "MBA Candidate at University of Toronto",
+              country: "Canada",
+              quote:
+                "UniDoxia aligned my application timeline with Canada's intake dates and coached me for the interview. The support felt personalized from start to finish.",
+              rating: 5,
+            },
+            {
+              name: "Chloe Nguyen",
+              role: "Master of Engineering at Monash University",
+              country: "Australia",
+              quote:
+                "From course selection to GTE preparation, UniDoxia guided me with clear checklists and reminders. I always knew what was next and felt fully prepared.",
+              rating: 5,
+            },
+            {
+              name: "Lukas Müller",
+              role: "Robotics Student at TU Munich",
+              country: "Germany",
+              quote:
+                "The team helped me navigate APS requirements and secured a spot at TUM. UniDoxia's detailed feedback made my SOP and documents stand out.",
+              rating: 5,
+            },
+            {
+              name: "Priya Sharma",
+              role: "Master's Student at National University of Singapore",
+              country: "Singapore",
+              quote:
+                "UniDoxia matched me with an agent who knew NUS inside out. Their scholarship tips and document checks saved me weeks of research and revisions.",
+              rating: 5,
+            },
           ],
         },
         faq: {
