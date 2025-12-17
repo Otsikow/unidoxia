@@ -3040,6 +3040,10 @@ export type Database = {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
       }
+      is_conversation_participant: {
+        Args: { p_conversation_id: string; p_user_id?: string }
+        Returns: boolean
+      }
       is_student_owner: {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
