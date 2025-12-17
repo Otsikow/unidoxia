@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-import { Users, FileCheck, Clock, Sparkles, Calculator } from "lucide-react";
+import { Users, FileCheck, Clock, Sparkles, Calculator, Check, Minus } from "lucide-react";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
@@ -34,6 +34,7 @@ import connectAgentImage from "@/assets/features/connect-agent.jpeg";
 const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
 const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
 const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"));
+const WhoUniDoxiaIsForSection = lazy(() => import("@/components/landing/WhoUniDoxiaIsForSection"));
 const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
 const ContactForm = lazy(() =>
   import("@/components/ContactForm").then(m => ({ default: m.ContactForm }))
@@ -117,7 +118,11 @@ const Index = () => {
   const heroCtas = useMemo(
     () =>
       [
-        { key: "students", href: "/auth/signup?role=student", image: studentsStudyingGroup },
+        {
+          key: "students",
+          href: `/onboarding?next=${encodeURIComponent("/auth/signup?role=student")}`,
+          image: studentsStudyingGroup,
+        },
         {
           key: "agents",
           href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
@@ -224,12 +229,28 @@ const Index = () => {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"
-            className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-50 brightness-0 invert"
+            className="hero-logo mb-6 h-20 sm:h-24 md:h-32 opacity-90 brightness-0 invert"
           />
 
-          <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
-            Apply <span className="opacity-70">•</span> Get Your Visa <span className="opacity-70">•</span> Study Abroad
+          <h1 className="hero-text text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 max-w-5xl mx-auto leading-tight drop-shadow-lg">
+            UniDoxia: Get accepted into global universities — without guesswork or hidden fees.
           </h1>
+
+          <p className="hero-text text-xl sm:text-2xl text-white/95 text-center mb-10 max-w-3xl mx-auto font-medium drop-shadow-md">
+            From Africa to the world — we personally guide your study abroad journey.
+          </p>
+
+          <div className="hero-text">
+            <Button
+              asChild
+              size="lg"
+              className="text-lg px-10 py-7 rounded-full bg-primary hover:bg-primary/90 transition-all transform hover:scale-105 shadow-xl shadow-primary/25 border-none"
+            >
+              <Link to="/auth/signup?role=student">
+                Start Your Study Journey
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -238,11 +259,43 @@ const Index = () => {
         <TypewriterText
           prefix={heroTitleParts.prefix}
           highlight={heroTitleParts.highlight}
-          phrases={["Your Future", "Your Dreams", "Success"]}
+          phrases={["Your Journey", "Visa Confidence", "Offer Accepted"]}
           suffix={heroTitleParts.suffix}
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
         />
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{heroDescription}</p>
+      </section>
+
+      {/* ---------- WHY UNIDOXIA ---------- */}
+      <section className="pb-20 container mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center mb-12">Why UniDoxia?</h2>
+        
+        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6 mb-12">
+          {/* Big platforms */}
+          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+            <span className="text-lg font-semibold mb-2 text-muted-foreground">Big platforms</span>
+            <Minus className="w-5 h-5 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">volume driven.</p>
+          </div>
+
+          {/* Local agents */}
+          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+            <span className="text-lg font-semibold mb-2 text-muted-foreground">Local agents</span>
+            <Minus className="w-5 h-5 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">inconsistent.</p>
+          </div>
+
+          {/* UniDoxia */}
+          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm relative">
+            <span className="text-lg font-bold mb-2 text-primary">UniDoxia</span>
+            <Check className="w-6 h-6 text-primary mb-2" />
+            <p className="font-medium">guided, transparent, student-focused.</p>
+          </div>
+        </div>
+
+        <p className="text-center text-xl font-medium text-foreground/80 max-w-2xl mx-auto">
+          “You’re not a number here. We guide you until you arrive.”
+        </p>
       </section>
 
       <StudyProgramSearch />
@@ -285,6 +338,7 @@ const Index = () => {
       </section>
 
       {/* ---------- LAZY SECTIONS ---------- */}
+      <Suspense fallback={<SectionLoader />}><WhoUniDoxiaIsForSection /></Suspense>
       <Suspense fallback={<SectionLoader />}><AIFeeCalculator /></Suspense>
       <Suspense fallback={<SectionLoader />}><ZoeExperienceSection /></Suspense>
       <Suspense fallback={<SectionLoader />}><FeaturedUniversitiesSection /></Suspense>
