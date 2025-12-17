@@ -87,6 +87,21 @@ export default function ApplicationDetails() {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const downloadDoc = async (doc: AppDocument) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('application-documents')
+        .createSignedUrl(doc.storage_path, 3600);
+      
+      if (error) throw error;
+      if (data?.signedUrl) {
+         window.open(data.signedUrl, '_blank');
+      }
+    } catch (e) {
+      toast({ title: 'Error', description: 'Could not download document', variant: 'destructive' });
+    }
+  };
+
   const [app, setApp] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -473,6 +488,7 @@ export default function ApplicationDetails() {
                       <TableHead>File</TableHead>
                       <TableHead>Verified</TableHead>
                       <TableHead>Uploaded</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -491,6 +507,12 @@ export default function ApplicationDetails() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm">{new Date(d.uploaded_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => downloadDoc(d)}>
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only">Download</span>
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
