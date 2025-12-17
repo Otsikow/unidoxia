@@ -112,6 +112,7 @@ export interface UniversityApplication {
   studentCurrentCountry?: string | null;
   documentsCount?: number;
   lastDocumentUploadedAt?: string | null;
+  documentSummaries?: { type: string; uploadedAt: string }[];
   agentId?: string | null;
 }
 
@@ -712,18 +713,19 @@ export const fetchUniversityDashboardData = async (
     if (applicationIds.length > 0) {
       const { data: documentRows, error: documentsError } = await supabase
         .from("application_documents")
-        .select("application_id, uploaded_at")
+        .select("application_id, document_type, uploaded_at")
         .in("application_id", applicationIds);
 
       if (documentsError) {
         console.warn("[UniversityDashboard] Document summary fetch failed", documentsError);
       }
 
-      const docSummary = new Map<string, { count: number; lastUploaded: string | null }>();
+      const docSummary = new Map<string, { count: number; lastUploaded: string | null; summaries: { type: string; uploadedAt: string }[] }>();
       for (const row of documentRows ?? []) {
         const current = docSummary.get(row.application_id) ?? {
           count: 0,
           lastUploaded: null as string | null,
+          summaries: [],
         };
 
         const uploadedAt = row.uploaded_at ?? null;
@@ -734,6 +736,13 @@ export const fetchUniversityDashboardData = async (
         docSummary.set(row.application_id, {
           count: current.count + 1,
           lastUploaded: nextLastUploaded,
+          summaries: [
+            ...current.summaries,
+            {
+              type: row.document_type ?? "unknown",
+              uploadedAt: row.uploaded_at ?? "",
+            },
+          ],
         });
       }
 
@@ -743,6 +752,7 @@ export const fetchUniversityDashboardData = async (
           ...app,
           documentsCount: summary?.count ?? 0,
           lastDocumentUploadedAt: summary?.lastUploaded ?? null,
+          documentSummaries: summary?.summaries ?? [],
         };
       });
     }
