@@ -8,12 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users, FileCheck, Clock, Star, Quote, ChevronLeft, ChevronRight, Sparkles, Calculator, Loader2 } from "lucide-react";
+import { Users, FileCheck, Clock, Sparkles, Calculator, Loader2 } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
+import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarquee";
 
 // Static assets - these are URL references, not heavy JS
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
@@ -56,7 +57,6 @@ const Index = () => {
   const {
     t
   } = useTranslation();
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
 
   // Defer the hero background video so it doesn't block initial paint/network,
@@ -93,7 +93,7 @@ const Index = () => {
   // HERO CTAs
   const heroCtas = useMemo(() => [{
     key: "students" as const,
-    href: "/onboarding/welcome",
+    href: "/auth/signup?role=student",
     image: studentsStudyingGroup
   }, {
     key: "agents" as const,
@@ -141,24 +141,6 @@ const Index = () => {
     description: t(`pages.index.features.cards.${feature.key}.description`)
   })), [t]);
 
-  // TESTIMONIALS
-  const testimonials = useMemo(() => t("pages.index.testimonials.items", {
-    returnObjects: true
-  }) as Array<{
-    name: string;
-    role: string;
-    country: string;
-    quote: string;
-    rating: number;
-  }>, [t]);
-  const testimonialCount = testimonials.length;
-  useEffect(() => {
-    const interval = setInterval(() => setCurrentTestimonial(prev => (prev + 1) % (testimonialCount || 1)), 5000);
-    return () => clearInterval(interval);
-  }, [testimonialCount]);
-  const nextTestimonial = () => setCurrentTestimonial(prev => (prev + 1) % testimonialCount);
-  const prevTestimonial = () => setCurrentTestimonial(prev => prev === 0 ? testimonialCount - 1 : prev - 1);
-
   // FAQ
   const faqs = useMemo(() => t("pages.index.faq.sections", {
     returnObjects: true
@@ -176,7 +158,6 @@ const Index = () => {
   const visaTitle = t("pages.index.visa.title");
   const visaDescription = t("pages.index.visa.description");
   const visaButtonLabel = t("pages.index.visa.cta");
-  const testimonialsHeading = t("pages.index.testimonials.heading");
   const faqHeading = t("pages.index.faq.heading");
   const faqSubtitle = t("pages.index.faq.subtitle");
   const contactHeading = t("pages.index.contact.heading");
@@ -365,44 +346,8 @@ const Index = () => {
         <StoryboardSection />
       </Suspense>
 
-      {/* TESTIMONIALS */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h2 className="text-4xl font-bold mb-12">{testimonialsHeading}</h2>
-
-        <Card className="max-w-3xl mx-auto border-2 shadow-xl">
-          <CardContent className="p-10">
-            <Quote className="h-10 w-10 text-primary/20 mb-6 mx-auto" />
-
-            <p className="italic text-xl mb-6">
-              "{testimonials[currentTestimonial].quote}"
-            </p>
-
-            <div className="flex justify-center gap-1 mb-6">
-              {Array.from({
-              length: testimonials[currentTestimonial].rating
-            }).map((_, i) => <Star key={i} className="h-5 w-5 fill-primary text-primary" />)}
-            </div>
-
-            <div className="text-lg font-bold">
-              {testimonials[currentTestimonial].name}
-            </div>
-            <div className="text-muted-foreground">
-              {testimonials[currentTestimonial].role} —{" "}
-              {testimonials[currentTestimonial].country}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-center gap-4 mt-8">
-          <Button variant="ghost" size="icon" onClick={prevTestimonial}>
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-
-          <Button variant="ghost" size="icon" onClick={nextTestimonial}>
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-        </div>
-      </section>
+      {/* SUCCESS STORIES (CONVERSION-FOCUSED) */}
+      <SuccessStoriesMarquee />
 
       {/* FAQ */}
       <section className="container mx-auto px-4 py-20">

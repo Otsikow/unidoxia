@@ -23,7 +23,6 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
 
   const isStudent = profile?.role === "student" || user?.user_metadata?.role === "student";
   const isAgent = profile?.role === "agent" || user?.user_metadata?.role === "agent";
-  const isStudentOnboardingRoute = location.pathname.startsWith("/student/onboarding");
   const isAgentOnboardingRoute = location.pathname.startsWith("/agents/onboarding");
 
   /**
@@ -157,10 +156,6 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (!user.email_confirmed_at) {
     return <Navigate to="/verify-email" replace state={{ from: location.pathname }} />;
-  }
-
-  if (isStudent && profile && profile.onboarded === false && !isStudentOnboardingRoute) {
-    return <Navigate to="/student/onboarding" replace state={{ from: location.pathname }} />;
   }
 
   if (isAgent && profile && profile.onboarded === false && !isAgentOnboardingRoute) {

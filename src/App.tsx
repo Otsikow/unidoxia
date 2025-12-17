@@ -164,21 +164,7 @@ import Login from "./pages/auth/Login";
 
 const Dashboard = lazyWithErrorHandling(() => import("./pages/Dashboard"));
 
-const OnboardingWelcome = lazyWithErrorHandling(() =>
-  import("./pages/onboarding/Welcome")
-);
-const OnboardingVisaRequirements = lazyWithErrorHandling(() =>
-  import("./pages/onboarding/VisaRequirements")
-);
-const OnboardingStudentSuccess = lazyWithErrorHandling(() =>
-  import("./pages/onboarding/StudentSuccess")
-);
-const OnboardingDestinations = lazyWithErrorHandling(() =>
-  import("./pages/onboarding/Destinations")
-);
-const OnboardingVisaSupport = lazyWithErrorHandling(() =>
-  import("./pages/onboarding/VisaSupport")
-);
+// Student onboarding flow removed (kept agent onboarding).
 
 // AGENT ONBOARDING ROUTES (OPTION C)
 const AgentOnboardingWelcome = lazyWithErrorHandling(() =>
@@ -230,9 +216,7 @@ const StudentLayout = lazyWithErrorHandling(() =>
 const StudentProfile = lazyWithErrorHandling(() =>
   import("./pages/student/StudentProfile")
 );
-const StudentOnboarding = lazyWithErrorHandling(() =>
-  import("./pages/student/StudentOnboarding")
-);
+// Student onboarding page removed (no longer routed).
 const Documents = lazyWithErrorHandling(() => import("./pages/student/Documents"));
 const Applications = lazyWithErrorHandling(() =>
   import("./pages/student/Applications")
@@ -564,12 +548,7 @@ const App = () => {
 
                         <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
 
-                        {/* Onboarding */}
-                        <Route path="/onboarding/welcome" element={<OnboardingWelcome />} />
-                        <Route path="/onboarding/visa-requirements" element={<OnboardingVisaRequirements />} />
-                        <Route path="/onboarding/success-stories" element={<OnboardingStudentSuccess />} />
-                        <Route path="/onboarding/destinations" element={<OnboardingDestinations />} />
-                        <Route path="/onboarding/visa-support" element={<OnboardingVisaSupport />} />
+                        {/* Student onboarding flow removed */}
 
                         {/* AGENT ONBOARDING (PUBLIC — OPTION C) */}
                         <Route
@@ -656,7 +635,6 @@ const App = () => {
                         <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>
                           <Route index element={<Navigate to="/student/dashboard" replace />} />
                           <Route path="dashboard" element={<StudentProfile />} />
-                          <Route path="onboarding" element={<StudentOnboarding />} />
                           <Route path="profile" element={<StudentProfile />} />
                           <Route path="documents" element={<Documents />} />
                           <Route path="applications" element={<Applications />} />
