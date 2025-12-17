@@ -196,7 +196,6 @@ export interface ApplicationReviewDialogProps {
 ====================================================== */
 
 const STORAGE_BUCKET = "student-documents";
-const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
 
 const REQUIRED_DOCUMENT_TYPES = [
   "transcript",
@@ -412,30 +411,17 @@ const formatDocumentType = (type: string | null) => {
 const getSignedUrl = async (storagePath: string | null): Promise<string | null> => {
   if (!storagePath) return null;
 
-  // Try application-documents bucket first
-  const { data: appData, error: appError } = await supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .createSignedUrl(storagePath, 3600); // 1 hour expiry
-
-  if (!appError && appData?.signedUrl) {
-    return appData.signedUrl;
-  }
-
-  // Fallback to student-documents bucket
+  // Use student-documents bucket (where documents are actually stored)
   const { data: studentData, error: studentError } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .createSignedUrl(storagePath, 3600);
+    .createSignedUrl(storagePath, 3600); // 1 hour expiry
 
   if (!studentError && studentData?.signedUrl) {
     return studentData.signedUrl;
   }
 
-  // Last resort: try public URL
-  const { data: publicData } = supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .getPublicUrl(storagePath);
-
-  return publicData?.publicUrl ?? null;
+  console.error("Failed to get signed URL:", studentError);
+  return null;
 };
 
 /* ======================================================

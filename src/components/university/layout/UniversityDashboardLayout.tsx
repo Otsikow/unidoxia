@@ -73,6 +73,11 @@ export interface UniversityRecord {
   description?: string | null;
   featured_image_url?: string | null;
   submission_config_json?: unknown;
+  featured_listing_expires_at?: string | null;
+  featured_listing_status?: FeaturedListingStatus | null;
+  featured_summary?: string | null;
+  featured_highlight?: string | null;
+  featured_priority?: number | null;
 }
 
 export interface UniversityProgram {
@@ -90,7 +95,7 @@ export interface UniversityProgram {
   seats_available: number | null;
   description: string | null;
   app_fee: number | null;
-  image_url: string | null;
+  image_url?: string | null;
   active: boolean | null;
 }
 
