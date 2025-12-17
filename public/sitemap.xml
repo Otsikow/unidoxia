@@ -1,102 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
-    <url>
-      <loc>https://www.unidoxia.com/</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>1.0</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/contact</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/faq</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/blog</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/legal/privacy</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/legal/terms</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/auth/login</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/auth/signup</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/search</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/courses</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/universities</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/partnership</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/visa-calculator</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
-    <url>
-      <loc>https://www.unidoxia.com/feedback</loc>
-      <lastmod>2025-12-16T22:18:30.307Z</lastmod>
-      <changefreq>weekly</changefreq>
-      <priority>0.8</priority>
-    </url>
-  
+
+  <url>
+    <loc>https://www.unidoxia.com/</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/contact</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/faq</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/blog</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/legal/privacy</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/legal/terms</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/auth/login</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/auth/signup</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/search</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/courses</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/universities</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/partnership</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/visa-calculator</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.unidoxia.com/feedback</loc>
+    <lastmod>2025-12-16T22:18:30.307Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
 </urlset>
