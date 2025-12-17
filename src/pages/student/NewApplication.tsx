@@ -393,7 +393,7 @@ export default function NewApplication() {
           variant: 'destructive',
         });
         if (actingAsStudent) {
-          navigate('/student/onboarding');
+          navigate('/student/profile');
         }
         return;
       }

@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 export default function StudentProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signOut, user } = useAuth();
+  const { signOut, user, profile } = useAuth();
   const queryClient = useQueryClient();
   const {
     hasError,
@@ -162,6 +162,39 @@ export default function StudentProfile() {
     void signOut({ redirectTo: '/' });
   }, [signOut]);
 
+  const DEFAULT_TENANT_ID =
+    import.meta.env.VITE_DEFAULT_TENANT_ID ?? '00000000-0000-0000-0000-000000000001';
+  const [creatingProfile, setCreatingProfile] = useState(false);
+
+  const createStudentProfile = useCallback(async () => {
+    if (!user?.id) return;
+    setCreatingProfile(true);
+    try {
+      const tenantId = profile?.tenant_id ?? DEFAULT_TENANT_ID;
+      const { error } = await supabase.from('students').insert({
+        tenant_id: tenantId,
+        profile_id: user.id,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: studentRecordQueryKey(user.id) });
+      await refetchStudentRecord();
+
+      toast({
+        title: 'Profile created',
+        description: 'Your student profile is ready. Please complete your details below.',
+      });
+    } catch (error) {
+      logError(error, 'StudentProfile.createStudentProfile');
+      toast(formatErrorForToast(error, 'Failed to create student profile'));
+    } finally {
+      setCreatingProfile(false);
+    }
+  }, [DEFAULT_TENANT_ID, profile?.tenant_id, queryClient, refetchStudentRecord, toast, user?.id]);
+
   // Handle URL hash for tab selection
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
@@ -187,9 +220,8 @@ export default function StudentProfile() {
       if (!hasRedirectedRef.current) {
         toast({
           title: 'Profile Setup Required',
-          description: 'Please complete your student profile to continue',
+          description: 'We need to create your student profile before you can continue.',
         });
-        navigate('/student/onboarding');
         hasRedirectedRef.current = true;
       }
       return;
@@ -259,12 +291,12 @@ export default function StudentProfile() {
             <div className="space-y-2">
               <h2 className="text-2xl font-bold">Profile Not Found</h2>
               <p className="text-muted-foreground">
-                We couldn't find your student profile. You may need to complete onboarding first.
+                We couldn't find your student profile yet. Create it now to continue.
               </p>
             </div>
             <div className="flex gap-3 justify-center pt-2">
-              <Button onClick={() => navigate('/student/onboarding')}>
-                Complete Onboarding
+              <Button onClick={createStudentProfile} disabled={creatingProfile}>
+                {creatingProfile ? 'Creating...' : 'Create profile'}
               </Button>
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 Go to Dashboard

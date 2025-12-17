@@ -267,7 +267,7 @@ export default function ApplicationTrackingSystem() {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="hover-scale">
-                <Link to="/student/onboarding">Complete Profile</Link>
+                <Link to="/student/profile">Complete Profile</Link>
               </Button>
             </div>
           </div>

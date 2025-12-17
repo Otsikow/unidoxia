@@ -77,7 +77,7 @@ export default function Blog() {
       headline: "International Student Playbook",
       description:
         "Step-by-step guidance to shortlist universities, prepare documents, and stay on top of deadlines.",
-      cta: { label: "Explore admissions checklist", href: "/student/onboarding" },
+      cta: { label: "Explore admissions checklist", href: "/auth/signup?role=student" },
       resources: [
         {
           title: "Scholarship strategy workbook",

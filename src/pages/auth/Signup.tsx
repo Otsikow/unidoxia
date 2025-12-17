@@ -325,14 +325,15 @@ const Signup = () => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get("role");
 
-    const onboardingRole = roleParam === "agent" || roleParam === "university" ? roleParam : null;
+    // Student onboarding flow has been removed; keep agent onboarding only.
+    const onboardingRole = roleParam === "agent" ? roleParam : null;
 
     if (onboardingRole && !authLoading && !user && typeof window !== "undefined") {
       const hasSeen = hasSeenOnboarding(onboardingRole as OnboardingRole);
       if (!hasSeen) {
         markOnboardingSeen(onboardingRole as OnboardingRole);
         navigate(
-          `${onboardingRole === "agent" ? "/agents/onboarding" : "/onboarding/welcome"}?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`,
+          `/agents/onboarding?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`,
         );
         return;
       }
