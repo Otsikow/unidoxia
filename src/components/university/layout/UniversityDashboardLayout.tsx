@@ -108,6 +108,8 @@ export interface UniversityApplication {
   studentId: string | null;
   studentName: string;
   studentNationality: string | null;
+  studentDateOfBirth?: string | null;
+  studentCurrentCountry?: string | null;
   agentId?: string | null;
 }
 
@@ -471,7 +473,14 @@ export const fetchUniversityDashboardData = async (
     // Fetch students using security definer function for reliable access
     let studentsMap = new Map<
       string,
-      { id: string; legal_name: string | null; nationality: string | null; profile_name: string | null }
+      {
+        id: string;
+        legal_name: string | null;
+        nationality: string | null;
+        date_of_birth?: string | null;
+        current_country?: string | null;
+        profile_name: string | null;
+      }
     >();
 
     if (studentIds.length > 0) {
@@ -491,6 +500,8 @@ export const fetchUniversityDashboardData = async (
               id: s.id,
               legal_name: s.legal_name ?? s.preferred_name ?? s.profile_name ?? null,
               nationality: s.nationality,
+              date_of_birth: s.date_of_birth ?? null,
+              current_country: s.current_country ?? null,
               profile_name: s.profile_name ?? null,
             },
           ])
@@ -509,6 +520,8 @@ export const fetchUniversityDashboardData = async (
             legal_name, 
             preferred_name,
             nationality,
+            date_of_birth,
+            current_country,
             profile:profiles!students_profile_id_fkey (
               full_name,
               email
@@ -527,6 +540,8 @@ export const fetchUniversityDashboardData = async (
                 id: s.id,
                 legal_name: s.legal_name ?? s.preferred_name ?? (s.profile as any)?.full_name ?? null,
                 nationality: s.nationality,
+                date_of_birth: (s as any).date_of_birth ?? null,
+                current_country: (s as any).current_country ?? null,
                 profile_name: (s.profile as any)?.full_name ?? null,
               },
             ]) ?? []
@@ -561,6 +576,8 @@ export const fetchUniversityDashboardData = async (
         studentId: app.student_id ?? null,
         studentName,
         studentNationality: student?.nationality ?? "Unknown",
+        studentDateOfBirth: student?.date_of_birth ?? null,
+        studentCurrentCountry: student?.current_country ?? null,
         agentId: (app as any).agent_id ?? null,
       };
     });

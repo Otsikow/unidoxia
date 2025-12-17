@@ -399,9 +399,17 @@ const ApplicationsPage = () => {
                             {app.studentName}
                           </span>
                           <span className="text-xs text-muted-foreground">
-                            {app.studentNationality && app.studentNationality !== "Unknown" 
-                              ? app.studentNationality 
-                              : "Nationality not provided"}
+                            {(() => {
+                              const parts: string[] = [];
+                              if (app.studentNationality && app.studentNationality !== "Unknown") {
+                                parts.push(app.studentNationality);
+                              }
+                              const dob = formatDate(app.studentDateOfBirth ?? null);
+                              if (dob !== "—") {
+                                parts.push(`DOB ${dob}`);
+                              }
+                              return parts.length > 0 ? parts.join(" • ") : "Nationality not provided";
+                            })()}
                           </span>
                         </div>
                       </td>

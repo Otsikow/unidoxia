@@ -69,6 +69,10 @@ const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
+const isValidUuidString = (value: string | null | undefined) =>
+  typeof value === 'string' &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+
 const isMissingColumnError = (error: PostgrestError | null, column: string) => {
   if (!error) return false;
 
@@ -872,6 +876,116 @@ export default function NewApplication() {
 
     setSubmitting(true);
     try {
+      // Persist the student particulars captured in this application so universities
+      // can reliably review identity + background from the application record.
+      const syncStudentProfile = async () => {
+        const personal = formDataRef.current.personalInfo;
+        const legalName = personal.fullName?.trim() ?? '';
+        const contactEmail = personal.email?.trim() ?? '';
+        const contactPhone = personal.phone?.trim() ?? '';
+        const nationality = personal.nationality?.trim() ?? '';
+        const passportNumber = personal.passportNumber?.trim() ?? '';
+        const currentCountry = personal.currentCountry?.trim() ?? '';
+        const dateOfBirth = personal.dateOfBirth?.trim() ?? '';
+        const addressText = personal.address?.trim() ?? '';
+
+        const educationRecords = (formDataRef.current.educationHistory ?? []).map((rec) => ({
+          id: rec.id,
+          level: normalizeEducationLevel(rec.level),
+          institutionName: rec.institutionName?.trim() ?? '',
+          country: rec.country?.trim() ?? '',
+          startDate: rec.startDate,
+          endDate: rec.endDate,
+          gpa: rec.gpa,
+          gradeScale: rec.gradeScale,
+        }));
+
+        const rpcResult = await supabase.rpc(
+          'sync_student_profile_from_application_submit' as any,
+          {
+            p_student_id: studentId,
+            p_legal_name: legalName || null,
+            p_contact_email: contactEmail || null,
+            p_contact_phone: contactPhone || null,
+            p_date_of_birth: dateOfBirth || null,
+            p_nationality: nationality || null,
+            p_passport_number: passportNumber || null,
+            p_current_country: currentCountry || null,
+            p_address: addressText ? ({ street: addressText } as any) : null,
+            p_education_records: educationRecords as any,
+          },
+        );
+
+        // If RPC exists and succeeded, we're done.
+        if (!rpcResult.error) return;
+
+        // If RPC is missing, fall back to direct updates (works for student-owned records).
+        const msg = (rpcResult.error.message ?? '').toLowerCase();
+        const code = rpcResult.error.code ?? '';
+        const isMissingRpc =
+          code === 'PGRST202' ||
+          code === 'PGRST204' ||
+          code === '42P01' ||
+          msg.includes('could not find the function') ||
+          msg.includes('schema cache');
+
+        if (!isMissingRpc) {
+          // Permission or other error: don't block submission, but log for diagnosis.
+          console.warn('[NewApplication] Student sync RPC failed:', rpcResult.error);
+          return;
+        }
+
+        const updateStudent: Record<string, unknown> = {};
+        if (legalName) updateStudent.legal_name = legalName;
+        if (contactEmail) updateStudent.contact_email = contactEmail;
+        if (contactPhone) updateStudent.contact_phone = contactPhone;
+        if (nationality) updateStudent.nationality = nationality;
+        if (passportNumber) updateStudent.passport_number = passportNumber;
+        if (currentCountry) updateStudent.current_country = currentCountry;
+        if (dateOfBirth) updateStudent.date_of_birth = dateOfBirth;
+        if (addressText) updateStudent.address = { street: addressText };
+
+        if (Object.keys(updateStudent).length > 0) {
+          const { error: stuErr } = await supabase
+            .from('students')
+            .update(updateStudent as never)
+            .eq('id', studentId);
+          if (stuErr) {
+            console.warn('[NewApplication] Student update fallback failed:', stuErr);
+          }
+        }
+
+        const eduRows = educationRecords
+          .filter((r) => r.institutionName && r.country && r.startDate)
+          .map((r) => ({
+            id: isValidUuidString(r.id) ? r.id : undefined,
+            student_id: studentId,
+            level: r.level,
+            institution_name: r.institutionName,
+            country: r.country,
+            start_date: r.startDate,
+            end_date: r.endDate || null,
+            grade_scale: r.gradeScale || null,
+            gpa:
+              typeof r.gpa === 'string' && r.gpa.trim().length > 0
+                ? Number(r.gpa)
+                : null,
+          }));
+
+        if (eduRows.length > 0) {
+          const { error: eduErr } = await supabase
+            .from('education_records')
+            .upsert(eduRows as never, { onConflict: 'id' })
+            .select('id')
+            .limit(1);
+          if (eduErr) {
+            console.warn('[NewApplication] Education upsert fallback failed:', eduErr);
+          }
+        }
+      };
+
+      await syncStudentProfile();
+
       // Ensure the application is stored under the program/university tenant (not the submitter's tenant).
       // This is critical for university dashboards to see applications instantly and consistently.
       const { data: programMeta, error: programMetaError } = await supabase
