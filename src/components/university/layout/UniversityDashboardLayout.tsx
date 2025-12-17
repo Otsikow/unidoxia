@@ -468,40 +468,70 @@ export const fetchUniversityDashboardData = async (
       ...new Set(rows.map((r) => r.student_id).filter(Boolean)),
     ] as string[];
 
-    // Fetch students with profile fallback for name
+    // Fetch students using security definer function for reliable access
     let studentsMap = new Map<
       string,
       { id: string; legal_name: string | null; nationality: string | null; profile_name: string | null }
     >();
 
     if (studentIds.length > 0) {
-      const { data: stuData, error: stuErr } = await supabase
-        .from("students")
-        .select(`
-          id, 
-          legal_name, 
-          preferred_name,
-          nationality,
-          profile:profiles!students_profile_id_fkey (
-            full_name,
-            email
-          )
-        `)
-        .in("id", studentIds);
-
-      if (stuErr) throw stuErr;
-
-      studentsMap = new Map(
-        stuData?.map((s) => [
-          s.id,
-          {
-            id: s.id,
-            legal_name: s.legal_name ?? s.preferred_name ?? (s.profile as any)?.full_name ?? null,
-            nationality: s.nationality,
-            profile_name: (s.profile as any)?.full_name ?? null,
-          },
-        ]) ?? []
+      // Try the security definer function first (most reliable)
+      const { data: rpcData, error: rpcErr } = await supabase.rpc(
+        "get_students_for_university_applications",
+        { p_student_ids: studentIds }
       );
+
+      if (!rpcErr && rpcData && rpcData.length > 0) {
+        // Use RPC data
+        studentsMap = new Map(
+          rpcData.map((s: any) => [
+            s.id,
+            {
+              id: s.id,
+              legal_name: s.legal_name ?? s.preferred_name ?? s.profile_name ?? null,
+              nationality: s.nationality,
+              profile_name: s.profile_name ?? null,
+            },
+          ])
+        );
+      } else {
+        // Fallback to direct query if RPC not available or fails
+        console.log(
+          "[UniversityDashboard] RPC not available or failed, trying direct query:",
+          rpcErr?.message
+        );
+        
+        const { data: stuData, error: stuErr } = await supabase
+          .from("students")
+          .select(`
+            id, 
+            legal_name, 
+            preferred_name,
+            nationality,
+            profile:profiles!students_profile_id_fkey (
+              full_name,
+              email
+            )
+          `)
+          .in("id", studentIds);
+
+        if (stuErr) {
+          console.warn("[UniversityDashboard] Student fetch warning:", stuErr);
+          // Don't throw - continue with unknown students
+        } else {
+          studentsMap = new Map(
+            stuData?.map((s) => [
+              s.id,
+              {
+                id: s.id,
+                legal_name: s.legal_name ?? s.preferred_name ?? (s.profile as any)?.full_name ?? null,
+                nationality: s.nationality,
+                profile_name: (s.profile as any)?.full_name ?? null,
+              },
+            ]) ?? []
+          );
+        }
+      }
     }
 
     const programMap = new Map(
@@ -1016,6 +1046,53 @@ export const UniversityDashboardLayout = ({
           title="No partner profile found"
           description="Sign in with your university partner credentials."
         />
+      </div>
+    );
+  }
+
+  // Guard: University user without tenant_id cannot update applications
+  const isUniversityRole = ['university', 'partner', 'school_rep'].includes(profile.role?.toLowerCase() ?? '');
+  if (isUniversityRole && !profile.tenant_id) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-6">
+        <div className="max-w-lg text-center flex flex-col items-center gap-6">
+          <div className="p-4 bg-destructive/10 rounded-full">
+            <AlertCircle className="h-12 w-12 text-destructive" />
+          </div>
+
+          <h1 className="text-2xl font-semibold">Account Not Linked</h1>
+
+          <p className="text-muted-foreground">
+            Your university partner account is not linked to an institution. 
+            This prevents you from viewing and managing applications.
+          </p>
+
+          <Alert variant="destructive" className="text-left">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Action Required</AlertTitle>
+            <AlertDescription>
+              Please contact the platform administrator to have your account 
+              linked to your university. Provide them with your account email: 
+              <span className="font-medium"> {profile.email}</span>
+            </AlertDescription>
+          </Alert>
+
+          <div className="flex gap-4 mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh Page
+            </Button>
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-3">
+            User ID: {profile.id?.slice(0, 8)}... | Role: {profile.role}
+          </p>
+        </div>
       </div>
     );
   }

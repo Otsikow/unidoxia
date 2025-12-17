@@ -13,7 +13,8 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { NavigationHistoryProvider } from "@/hooks/useNavigationHistory";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { LoadingState } from "@/components/LoadingState";
+import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 
 // UI Elements
 import { AlertCircle, RefreshCw } from "lucide-react";
@@ -133,13 +134,22 @@ export const queryClient = new QueryClient({
           const status = (error as any).status;
           if (status >= 400 && status < 500) return false;
         }
-        return attempt < 3;
+        return attempt < 2; // Reduced from 3 to 2 for faster failures
       },
-      retryDelay: (i) => Math.min(1000 * 2 ** i, 30000),
-      staleTime: 5 * 60 * 1000,
+      retryDelay: (i) => Math.min(500 * 2 ** i, 15000), // Faster retry timing
+      staleTime: 5 * 60 * 1000, // 5 minutes - good balance
+      gcTime: 10 * 60 * 1000, // 10 minutes garbage collection
       refetchOnWindowFocus: false,
+      refetchOnMount: false, // Don't refetch if data is fresh
+      refetchOnReconnect: "always",
+      // Structural sharing for better performance
+      structuralSharing: true,
     },
-    mutations: { retry: false },
+    mutations: { 
+      retry: false,
+      // Network mode for better offline handling
+      networkMode: "online",
+    },
   },
 });
 
@@ -537,8 +547,10 @@ const App = () => {
               <NavigationHistoryProvider>
                 <Suspense
                   fallback={
-                    <div className="min-h-screen flex items-center justify-center">
-                      <LoadingState message={t("app.loading")} size="lg" />
+                    <div className="min-h-screen flex items-center justify-center p-6">
+                      <div className="w-full max-w-7xl">
+                        <DashboardSkeleton />
+                      </div>
                     </div>
                   }
                 >
@@ -733,6 +745,7 @@ const App = () => {
             </AuthProvider>
           </ErrorBoundary>
         </BrowserRouter>
+        <PerformanceMonitor />
       </TooltipProvider>
     </QueryClientProvider>
   );

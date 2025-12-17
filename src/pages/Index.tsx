@@ -32,15 +32,24 @@ import connectAgentImage from "@/assets/features/connect-agent.jpeg";
 
 const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
 const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
-const AIDocumentCheckerSection = lazy(() => import("@/components/landing/AIDocumentCheckerSection"));
 const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"));
 const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
 const ContactForm = lazy(() => import("@/components/ContactForm").then(m => ({ default: m.ContactForm })));
 
-// Lightweight loading placeholder for lazy sections
+// Lightweight skeleton placeholder for lazy sections
 const SectionLoader = () => (
-  <div className="flex items-center justify-center py-20">
-    <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
+  <div className="container mx-auto px-4 py-20">
+    <div className="space-y-8">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-8 w-64 bg-muted animate-pulse rounded" />
+        <div className="h-4 w-96 bg-muted animate-pulse rounded" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-64 bg-muted animate-pulse rounded-xl" />
+        ))}
+      </div>
+    </div>
   </div>
 );
 const Index = () => {
@@ -291,7 +300,6 @@ const Index = () => {
                 <Card className="group flex h-full flex-col overflow-hidden rounded-3xl border border-primary/10 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl">
                   <div className="relative h-48 overflow-hidden sm:h-56">
                     <img src={cta.image} alt={cta.title} className="h-full w-full object-cover transition group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-90 group-hover:opacity-80" />
 
                     <Badge className="absolute left-4 top-4 bg-background/90 text-foreground">
                       {cta.badge}
@@ -343,10 +351,6 @@ const Index = () => {
       </section>
 
       {/* AI Sections - Lazy loaded */}
-      <Suspense fallback={<SectionLoader />}>
-        <AIDocumentCheckerSection />
-      </Suspense>
-
       <Suspense fallback={<SectionLoader />}>
         <AIFeeCalculator />
       </Suspense>

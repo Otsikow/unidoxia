@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, LogOut, Settings } from "lucide-react";
+import { Bell, Home, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -39,6 +39,15 @@ export function PartnerHeader() {
     <header className="sticky top-0 z-30 flex h-20 w-full items-center justify-between border-b border-slate-200/70 bg-white/80 px-4 backdrop-blur transition-colors dark:border-slate-900/70 dark:bg-slate-950/75 md:px-8">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="rounded-lg border border-slate-200/70 bg-white/70 text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900" />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/")}
+          className="rounded-lg border border-slate-200/70 bg-white/70 text-slate-600 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-900 dark:border-slate-800 dark:bg-slate-900/80 dark:text-slate-200 dark:hover:border-slate-700 dark:hover:bg-slate-900"
+          aria-label="Go to home"
+        >
+          <Home className="h-4 w-4" />
+        </Button>
         {showBack ? (
           <BackButton
             variant="ghost"

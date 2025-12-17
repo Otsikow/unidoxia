@@ -14,9 +14,10 @@ export const APPLICATION_STATUS_OPTIONS: ReadonlyArray<{
   { value: "visa", label: "Visa Stage" },
   { value: "enrolled", label: "Enrolled" },
   { value: "withdrawn", label: "Withdrawn" },
+  { value: "rejected", label: "Rejected" },
+  { value: "deferred", label: "Deferred" },
   // Intentionally omitted from university review UI for now:
   // { value: "draft", label: "Draft" },
-  // { value: "deferred", label: "Deferred" },
 ] as const;
 
 const APPLICATION_STATUS_VALUES = new Set<string>(

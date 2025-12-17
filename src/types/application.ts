@@ -26,6 +26,7 @@ export interface ApplicationFormData {
     intakeId?: string;
   };
   documents: {
+    passport_photo: File | null;
     transcript: File | null;
     passport: File | null;
     ielts: File | null;

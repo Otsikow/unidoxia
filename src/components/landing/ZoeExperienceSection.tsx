@@ -494,7 +494,7 @@ export function ZoeExperienceSection() {
               <h3 className="text-3xl font-semibold tracking-tight text-foreground">{multiHeading}</h3>
               <p className="text-base text-muted-foreground">{multiDescription}</p>
             </div>
-            <Button asChild variant="outline" className="self-start rounded-2xl md:self-auto">
+            <Button asChild variant="outline" size="lg" className="w-full shrink-0 rounded-2xl border-primary/30 px-6 text-foreground hover:border-primary hover:bg-primary/10 sm:w-auto md:self-auto">
               <Link to="/auth/signup?feature=ai-search">Explore Zoe for your team</Link>
             </Button>
           </div>
