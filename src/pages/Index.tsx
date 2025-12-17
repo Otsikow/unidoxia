@@ -57,10 +57,11 @@ const Index = () => {
     t
   } = useTranslation();
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
+  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const [showHeroPosterFallback, setShowHeroPosterFallback] = useState(false);
 
-  // Defer the hero background video so it doesn't block initial paint/network,
-  // and respect low-bandwidth + reduced motion preferences.
+  // Prefer video immediately, but respect reduced motion + low-bandwidth.
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -74,21 +75,23 @@ const Index = () => {
     const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
 
     if (prefersReducedMotion || saveData || isSlowConnection) {
-      setShouldLoadHeroVideo(false);
+      setShouldRenderHeroVideo(false);
       return;
     }
+  }, []);
 
-    const enable = () => setShouldLoadHeroVideo(true);
+  // If the video isn't ready quickly, show an image fallback after a tiny delay.
+  // This avoids a flash of the image when the video loads fast.
+  useEffect(() => {
+    if (!shouldRenderHeroVideo) return;
 
-    if ("requestIdleCallback" in window) {
-      const id = (window as any).requestIdleCallback(enable, { timeout: 2000 });
-      return () => (window as any).cancelIdleCallback?.(id);
-    }
+    setHeroVideoReady(false);
+    setShowHeroPosterFallback(false);
 
     const w = window as Window & typeof globalThis;
-    const timeoutId = w.setTimeout(enable, 1200);
+    const timeoutId = w.setTimeout(() => setShowHeroPosterFallback(true), 180);
     return () => w.clearTimeout(timeoutId);
-  }, []);
+  }, [shouldRenderHeroVideo]);
 
   // HERO CTAs
   const heroCtas = useMemo(() => [{
@@ -187,28 +190,47 @@ const Index = () => {
   return <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO title="UniDoxia - Your Path to International Education" description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support." keywords="study abroad, university applications, international education, AI tools, visa calculator" />
 
-      <LandingHeader />
-
       {/* HERO VIDEO SECTION */}
       <section className="hero-video-container">
-        {/* Background video (deferred) */}
-        {shouldLoadHeroVideo ? (
-          <video
-            className="hero-video"
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster={studentsStudyingGroup}
-          >
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
+        <LandingHeader />
+
+        {/* Background media */}
+        {shouldRenderHeroVideo ? (
+          <>
+            <video
+              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              onLoadedData={() => {
+                setHeroVideoReady(true);
+                setShowHeroPosterFallback(false);
+              }}
+              onCanPlay={() => {
+                setHeroVideoReady(true);
+                setShowHeroPosterFallback(false);
+              }}
+            >
+              <source src="/videos/hero-video.mp4" type="video/mp4" />
+            </video>
+
+            {showHeroPosterFallback && !heroVideoReady ? (
+              <img
+                src={studentsStudyingGroup}
+                alt=""
+                className="hero-poster"
+                decoding="async"
+                aria-hidden="true"
+              />
+            ) : null}
+          </>
         ) : (
           <img
             src={studentsStudyingGroup}
             alt=""
-            className="hero-video"
+            className="hero-video is-ready"
             decoding="async"
             aria-hidden="true"
           />
@@ -299,7 +321,13 @@ const Index = () => {
             {heroCtas.map(cta => <Link key={cta.key} to={cta.href} className="block h-full">
                 <Card className="group flex h-full flex-col overflow-hidden rounded-3xl border border-primary/10 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl">
                   <div className="relative h-48 overflow-hidden sm:h-56">
-                    <img src={cta.image} alt={cta.title} className="h-full w-full object-cover transition group-hover:scale-105" />
+                    <img
+                      src={cta.image}
+                      alt={cta.title}
+                      className="h-full w-full object-cover transition group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
+                    />
 
                     <Badge className="absolute left-4 top-4 bg-background/90 text-foreground">
                       {cta.badge}
