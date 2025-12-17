@@ -117,7 +117,11 @@ const Index = () => {
   const heroCtas = useMemo(
     () =>
       [
-        { key: "students", href: "/auth/signup?role=student", image: studentsStudyingGroup },
+        {
+          key: "students",
+          href: `/onboarding?next=${encodeURIComponent("/auth/signup?role=student")}`,
+          image: studentsStudyingGroup,
+        },
         {
           key: "agents",
           href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
