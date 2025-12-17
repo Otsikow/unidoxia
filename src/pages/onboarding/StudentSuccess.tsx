@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Quote, GraduationCap, Plane, FileCheck, Award } from "lucide-react";
 import BackButton from "@/components/BackButton";
-import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
+
 
 // Success story data representing African students
 const successStories = [
@@ -421,20 +421,6 @@ export default function OnboardingStudentSuccess() {
           </Link>
         </div>
 
-        <div className="container mx-auto max-w-5xl mt-auto pt-6">
-          <OnboardingProgressNav
-            previousHref="/onboarding/visa-requirements"
-            previousLabel="Back to requirements"
-            nextHref="/onboarding/destinations"
-            nextLabel="Next: Destinations"
-            steps={[
-              { label: "Welcome", href: "/onboarding/welcome" },
-              { label: "Visa requirements", href: "/onboarding/visa-requirements" },
-              { label: "Student success", href: "/onboarding/success-stories", active: true },
-              { label: "Destinations", href: "/onboarding/destinations" },
-            ]}
-          />
-        </div>
       </div>
 
       {/* Custom animations */}

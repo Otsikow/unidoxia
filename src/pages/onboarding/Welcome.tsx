@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MapPin, Plane } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
-import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
+
 
 // Destination data with landmark images and flags
 const destinations = [
@@ -406,17 +406,6 @@ export default function OnboardingWelcome() {
           </div>
         </div>
 
-        <OnboardingProgressNav
-          previousHref="/"
-          previousLabel="Back home"
-          nextHref="/onboarding/visa-requirements"
-          nextLabel="Next: Visa requirements"
-          steps={[
-            { label: "Welcome", href: "/onboarding/welcome", active: true },
-            { label: "Destinations", href: "/onboarding/destinations" },
-            { label: "Faster applications", href: "/onboarding/fast-applications" },
-          ]}
-        />
       </div>
 
       {/* Custom keyframes for animations */}

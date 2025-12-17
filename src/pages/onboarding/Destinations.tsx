@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
-import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
+
 
 // Import destination images
 import usaImage from "@/assets/destinations/usa.jpeg";
@@ -264,20 +264,6 @@ export default function OnboardingDestinations() {
           </Link>
         </div>
 
-        <div className="container mx-auto max-w-4xl mt-auto pt-6">
-          <OnboardingProgressNav
-            previousHref="/onboarding/success-stories"
-            previousLabel="Back to success"
-            nextHref="/onboarding/visa-support"
-            nextLabel="Next: Visa support"
-            steps={[
-              { label: "Welcome", href: "/onboarding/welcome" },
-              { label: "Student success", href: "/onboarding/success-stories" },
-              { label: "Destinations", href: "/onboarding/destinations", active: true },
-              { label: "Visa support", href: "/onboarding/visa-support" },
-            ]}
-          />
-        </div>
       </div>
 
       <style>{`
