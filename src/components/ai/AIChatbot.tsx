@@ -39,6 +39,7 @@ import zoeAvatar from "@/assets/professional-consultant.png";
 import { cn } from "@/lib/utils";
 import ZoeTypingIndicator from "@/components/ai/ZoeTypingIndicator";
 import { generateZoeMockResponse } from "@/lib/zoe/mockResponse";
+import { v4 as uuidv4 } from "uuid";
 
 interface Attachment {
   id: string;
@@ -255,7 +256,10 @@ export default function ZoeChatbot() {
     if (typeof window === "undefined") return;
     let stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
-      stored = crypto.randomUUID();
+      stored =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : uuidv4();
       localStorage.setItem(STORAGE_KEY, stored);
     }
     setSessionId(stored);

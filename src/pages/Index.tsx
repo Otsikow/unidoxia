@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
@@ -61,7 +61,8 @@ const Index = () => {
 
   /* ---------- Hero Video State ---------- */
   const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
-  const [heroVideoReady, setHeroVideoReady] = useState(true);
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
   /* ---------- Motion & Bandwidth Check ---------- */
   useEffect(() => {
@@ -80,6 +81,37 @@ const Index = () => {
       setShouldRenderHeroVideo(false);
     }
   }, []);
+
+  /* ---------- Hero Video Preload & Autoplay ---------- */
+  useEffect(() => {
+    if (!shouldRenderHeroVideo) return;
+
+    const videoEl = heroVideoRef.current;
+    if (!videoEl) return;
+
+    const activateVideo = () => {
+      setHeroVideoReady(true);
+      const playPromise = videoEl.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          /* Autoplay may be blocked; ignore silently */
+        });
+      }
+    };
+
+    if (videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      activateVideo();
+      return;
+    }
+
+    videoEl.addEventListener("canplaythrough", activateVideo, { once: true });
+    videoEl.addEventListener("loadeddata", activateVideo, { once: true });
+
+    return () => {
+      videoEl.removeEventListener("canplaythrough", activateVideo);
+      videoEl.removeEventListener("loadeddata", activateVideo);
+    };
+  }, [shouldRenderHeroVideo]);
 
   /* ---------- Hero CTAs ---------- */
   const heroCtas = useMemo(
@@ -165,17 +197,23 @@ const Index = () => {
         <LandingHeader />
 
         {shouldRenderHeroVideo ? (
-          <video
-            className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            onCanPlay={() => setHeroVideoReady(true)}
-          >
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
+          <>
+            <div
+              className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
+              aria-hidden
+            />
+            <video
+              ref={heroVideoRef}
+              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+            >
+              <source src="/videos/hero-video.mp4" type="video/mp4" />
+            </video>
+          </>
         ) : (
           <div className="hero-fallback" aria-hidden />
         )}
