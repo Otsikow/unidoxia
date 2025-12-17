@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Quote, GraduationCap, Plane, FileCheck, Award } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Star, Quote, GraduationCap, Plane, FileCheck, Award } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
@@ -290,7 +289,6 @@ const BackgroundDecoration = () => (
 export default function OnboardingStudentSuccess() {
   const [showContent, setShowContent] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
@@ -328,10 +326,6 @@ export default function OnboardingStudentSuccess() {
     const rotated = [...successStories.slice(3), ...successStories.slice(0, 3)];
     return [...rotated, ...rotated];
   }, []);
-
-  const handleNext = () => {
-    navigate("/onboarding/destinations");
-  };
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/20">
@@ -393,32 +387,12 @@ export default function OnboardingStudentSuccess() {
           </div>
 
           {/* Success indicators */}
-          <div className="flex items-center justify-center gap-2 mb-6 animate-fade-in" style={{ animationDelay: "0.6s" }}>
+          <div className="flex items-center justify-center gap-2 animate-fade-in" style={{ animationDelay: "0.6s" }}>
             <FileCheck className="w-4 h-4 text-green-500" />
             <span className="text-xs sm:text-sm text-muted-foreground">
               Verified success stories from real students
             </span>
           </div>
-
-          {/* CTA Button */}
-          <div
-            className="w-full max-w-xs animate-fade-in-up"
-            style={{ animationDelay: "0.7s" }}
-          >
-            <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base shadow-lg">
-              Continue to destinations
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Skip option */}
-          <Link
-            to="/onboarding/destinations"
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
-            style={{ animationDelay: "0.8s" }}
-          >
-            Skip for now
-          </Link>
         </div>
 
         <div className="container mx-auto max-w-5xl mt-auto pt-6">
