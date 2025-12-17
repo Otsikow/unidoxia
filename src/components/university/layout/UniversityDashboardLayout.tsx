@@ -279,9 +279,21 @@ export const fetchUniversityDashboardData = async (
     const programs = (programRows ?? []) as UniversityProgram[];
     const programIds = programs.map((p) => p.id);
 
+    /* ---------- DOCUMENT REQUESTS ---------- */
+    // Fetch document requests for this tenant
+    const { data: docRequestRows } = await supabase
+      .from("document_requests")
+      .select("id, student_id, status, document_type, request_type, created_at, requested_at, storage_path")
+      .eq("tenant_id", tenantId)
+      .order("created_at", { ascending: false });
+
+    const rawDocRequests = docRequestRows ?? [];
+
     /* ---------- APPLICATIONS ---------- */
 
     let applications: UniversityApplication[] = [];
+    let documentRequests: UniversityDocumentRequest[] = [];
+    let rows: any[] = [];
 
     if (programIds.length) {
       const { data: appRows } = await supabase
@@ -290,48 +302,56 @@ export const fetchUniversityDashboardData = async (
         .in("program_id", programIds)
         .order("created_at", { ascending: false });
 
-      const rows = appRows ?? [];
+      rows = appRows ?? [];
+    }
 
-      // Build a map of programs for quick lookup
-      const programMap = new Map(programs.map((p) => [p.id, p]));
+    // Combine student IDs from both sources
+    const studentIds = [
+      ...new Set([
+        ...rows.map((r) => r.student_id).filter(Boolean),
+        ...rawDocRequests.map((r) => r.student_id).filter(Boolean)
+      ])
+    ] as string[];
+    
+    let studentMap = new Map<string, {
+      legal_name: string | null;
+      preferred_name: string | null;
+      nationality: string | null;
+      date_of_birth: string | null;
+      current_country: string | null;
+      profile_name: string | null;
+      profile_email: string | null;
+    }>();
 
-      // Fetch student data using the RPC if there are student IDs
-      const studentIds = [...new Set(rows.map((r) => r.student_id).filter(Boolean))] as string[];
-      
-      let studentMap = new Map<string, {
-        legal_name: string | null;
-        preferred_name: string | null;
-        nationality: string | null;
-        date_of_birth: string | null;
-        current_country: string | null;
-        profile_name: string | null;
-        profile_email: string | null;
-      }>();
+    if (studentIds.length > 0) {
+      try {
+        const { data: studentData } = await supabase
+          .rpc("get_students_for_university_applications", { p_student_ids: studentIds });
 
-      if (studentIds.length > 0) {
-        try {
-          const { data: studentData } = await supabase
-            .rpc("get_students_for_university_applications", { p_student_ids: studentIds });
-
-          if (studentData) {
-            for (const s of studentData) {
-              studentMap.set(s.id, {
-                legal_name: s.legal_name,
-                preferred_name: s.preferred_name,
-                nationality: s.nationality,
-                date_of_birth: s.date_of_birth,
-                current_country: s.current_country,
-                profile_name: s.profile_name,
-                profile_email: s.profile_email,
-              });
-            }
+        if (studentData) {
+          for (const s of studentData) {
+            studentMap.set(s.id, {
+              legal_name: s.legal_name,
+              preferred_name: s.preferred_name,
+              nationality: s.nationality,
+              date_of_birth: s.date_of_birth,
+              current_country: s.current_country,
+              profile_name: s.profile_name,
+              profile_email: s.profile_email,
+            });
           }
-        } catch (err) {
-          console.warn("Failed to fetch student data for applications:", err);
         }
+      } catch (err) {
+        console.warn("Failed to fetch student data for applications:", err);
       }
+    }
 
-      applications = rows.map((app) => {
+    // Process Applications
+    if (rows.length > 0) {
+        // Build a map of programs for quick lookup
+        const programMap = new Map(programs.map((p) => [p.id, p]));
+
+        applications = rows.map((app) => {
         const program = programMap.get(app.program_id);
         const student = app.student_id ? studentMap.get(app.student_id) : undefined;
         
@@ -360,7 +380,36 @@ export const fetchUniversityDashboardData = async (
       });
     }
 
+    // Process Document Requests
+    documentRequests = rawDocRequests.map(req => {
+        const student = req.student_id ? studentMap.get(req.student_id) : undefined;
+        const studentName = student?.preferred_name 
+          || student?.legal_name 
+          || student?.profile_name 
+          || "Unknown Student";
+
+        let documentUrl = null;
+        if (req.storage_path) {
+            // Generate a public URL for the document if storage_path exists
+            const { data } = supabase.storage.from('student-documents').getPublicUrl(req.storage_path);
+            documentUrl = data.publicUrl;
+        }
+
+        return {
+            id: req.id,
+            studentId: req.student_id,
+            studentName,
+            status: req.status || "pending",
+            requestType: req.request_type || req.document_type || "Document",
+            requestedAt: req.requested_at || req.created_at,
+            documentUrl
+        };
+    });
+
     /* ---------- METRICS ---------- */
+
+    const pendingDocsCount = documentRequests.filter(d => d.status !== 'received').length;
+    const receivedDocsCount = documentRequests.length - pendingDocsCount;
 
     const metrics: UniversityDashboardMetrics = {
       totalApplications: applications.length,
@@ -390,8 +439,8 @@ export const fetchUniversityDashboardData = async (
       newApplicationsThisWeek: applications.filter((a) =>
         isWithinLastDays(a.createdAt, 7),
       ).length,
-      pendingDocuments: 0,
-      receivedDocuments: 0,
+      pendingDocuments: pendingDocsCount,
+      receivedDocuments: receivedDocsCount,
     };
 
     return {
@@ -399,7 +448,7 @@ export const fetchUniversityDashboardData = async (
       profileDetails,
       programs,
       applications,
-      documentRequests: [],
+      documentRequests,
       agents: [],
       metrics,
       pipeline: [],
@@ -438,6 +487,44 @@ export const UniversityDashboardLayout = ({
     queryFn: () =>
       tenantId ? fetchUniversityDashboardData(tenantId) : buildEmptyDashboardData(),
   });
+
+  // Subscribe to real-time changes
+  useEffect(() => {
+    if (!tenantId) return;
+
+    const channel = supabase
+      .channel('university-dashboard-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'document_requests',
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        () => {
+          void refetch();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'applications',
+        },
+        () => {
+             void refetch();
+        }
+      )
+      .subscribe();
+
+    channelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tenantId, refetch]);
 
   if (loading || isLoading) {
     return (
