@@ -136,6 +136,7 @@ import Login from "./pages/auth/Login";
 const Dashboard = lazyWithErrorHandling(() => import("./pages/Dashboard"));
 const Signup = lazyWithErrorHandling(() => import("./pages/auth/Signup"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
+const ZoeChatbot = lazyWithErrorHandling(() => import("@/components/ai/AIChatbot"));
 
 /* ==========================================================================
    PREFETCH
@@ -202,7 +203,11 @@ const App = memo(function App() {
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                   <RoutePrefetcher />
-                  {shouldRenderChatbot && <ZoeChatbot />}
+                  {shouldRenderChatbot && (
+                    <Suspense fallback={null}>
+                      <ZoeChatbot />
+                    </Suspense>
+                  )}
                 </Suspense>
               </NavigationHistoryProvider>
             </AuthProvider>
