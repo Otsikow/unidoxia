@@ -143,7 +143,7 @@ const fallbackStats: InsightStat[] = [
 
 const fallbackPanelCopy: PanelCopy = {
   title: "Preview Zoe Intelligence",
-  subtitle: "Choose a focus area to explore the insights you'll unlock.",
+  subtitle: "Choose a focus area to explore the insights you'll unlock with zero guesswork.",
   previewLabel: "Sample",
   highlightsHeading: "What the AI prepares for you",
 };
@@ -155,11 +155,11 @@ const fallbackRoles: Array<
     key: "students",
     title: "Students & families",
     description:
-      "Zoe is a study-abroad counsellor that walks every applicant through the full UniDoxia experience.",
+      "Zoe is a study-abroad counsellor that walks you through the full UniDoxia experience.",
     capabilities: [
-      "Answers any study-abroad question instantly in plain language.",
+      "Answers any study-abroad question instantly in plain language so you avoid visa refusals.",
       "Guides you through every task inside the UniDoxia app so nothing is missed.",
-      "Reviews uploaded transcripts, essays, and proof of funds to suggest best-fit schools.",
+      "Reviews uploaded transcripts, essays, and proof of funds to suggest best-fit schools without guesswork.",
       "Shares personalised counselling recommendations informed by your goals.",
     ],
     icon: GraduationCap,
@@ -169,7 +169,7 @@ const fallbackRoles: Array<
     key: "agents",
     title: "Agents & counsellors",
     description:
-      "Training, coaching, and on-demand answers are built into the same workspace that powers your agency.",
+      "Training, coaching, and on-demand answers are built into the same workspace that powers your agency with honest timelines.",
     capabilities: [
       "Delivers bite-sized training refreshers for new advisors and support staff.",
       "Turns shared student documents into quick school shortlists you can review with clients.",
@@ -183,7 +183,7 @@ const fallbackRoles: Array<
     key: "universities",
     title: "Universities & partners",
     description:
-      "Zoe lives inside the university dashboard to keep recruitment, compliance, and service teams aligned.",
+      "Zoe lives inside the university dashboard to keep recruitment, compliance, and service teams aligned without false promises.",
     capabilities: [
       "Surfaces partner health alerts and suggested actions directly in the dashboard.",
       "Summarises applicant pipelines by region with notes about policy differences.",
@@ -196,9 +196,9 @@ const fallbackRoles: Array<
 ];
 
 const fallbackHighlights = [
-  "Answers every study-abroad question, no matter the destination.",
-  "Guides learners, agents, and universities through the entire UniDoxia app.",
-  "Reads shared documents to recommend schools, funding, and next steps.",
+  "Answers every study-abroad question, no matter the destination, so you stay clear of visa refusals.",
+  "Guides learners, agents, and universities through the entire UniDoxia app with direct next steps.",
+  "Reads shared documents to recommend schools, funding, and next steps without guesswork.",
 ];
 
 const parseFocusAreas = (value: unknown): FocusArea[] | null => {

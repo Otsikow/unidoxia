@@ -188,7 +188,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO
         title="UniDoxia - Your Path to International Education"
-        description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support."
+        description="Studying abroad is confusing. We make it clear. Connect with top universities with transparent guidance that shields you from rejections, scams, and visa refusals. No guesswork. No hidden charges. No false promises."
         keywords="study abroad, university applications, international education, AI tools, visa calculator"
       />
 
