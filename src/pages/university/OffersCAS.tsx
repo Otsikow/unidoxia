@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -35,61 +35,6 @@ import { AIOfferLetterChecker } from "@/components/university/offers/AIOfferLett
 type OfferType = "conditional" | "unconditional";
 type RecordStatus = "issued" | "pending";
 
-interface SupabaseProfile {
-  full_name?: string | null;
-}
-
-interface SupabaseStudent {
-  legal_name?: string | null;
-  profiles?: SupabaseProfile | null;
-}
-
-interface SupabaseProgram {
-  id?: string;
-  name?: string | null;
-  university_id?: string | null;
-}
-
-interface SupabaseApplication {
-  id: string;
-  students?: SupabaseStudent | null;
-  programs?: SupabaseProgram | null;
-}
-
-interface OfferRow {
-  id: string;
-  offer_type?: string | null;
-  letter_url?: string | null;
-  created_at?: string | null;
-  application_id: string | null;
-  university_id?: string | null;
-  applications?: SupabaseApplication | null;
-}
-
-interface CasRow {
-  id: string;
-  cas_number?: string | null;
-  file_url?: string | null;
-  issue_date?: string | null;
-  created_at?: string | null;
-  application_id: string | null;
-  university_id?: string | null;
-  applications?: SupabaseApplication | null;
-}
-
-interface CombinedRecord {
-  applicationId: string;
-  universityId: string | null;
-  studentName: string;
-  courseName: string;
-  offerType?: OfferType;
-  offerLetterUrl?: string;
-  offerIssuedAt?: string;
-  casNumber?: string;
-  casLetterUrl?: string;
-  casIssueDate?: string;
-}
-
 interface ProcessedRecord {
   id: string;
   studentName: string;
@@ -121,40 +66,11 @@ const formatDate = (value?: string | null) => {
   return date.toLocaleDateString();
 };
 
-const normalizeOfferType = (value?: string | null): OfferType | undefined => {
-  if (!value) return undefined;
-  const normalized = value.toLowerCase();
-  if (normalized.includes("unconditional")) {
-    return "unconditional";
-  }
-  if (normalized.includes("conditional")) {
-    return "conditional";
-  }
+const normalizeOfferType = (status: string): OfferType | undefined => {
+  if (status === "conditional_offer") return "conditional";
+  if (status === "unconditional_offer") return "unconditional";
+  if (["cas_loa", "visa", "enrolled"].includes(status)) return "unconditional";
   return undefined;
-};
-
-const extractStudentName = (application?: SupabaseApplication | null) => {
-  if (!application) return "Unknown Student";
-  return (
-    application.students?.profiles?.full_name ??
-    application.students?.legal_name ??
-    "Unknown Student"
-  );
-};
-
-const extractCourseName = (application?: SupabaseApplication | null) => {
-  if (!application) return "Unknown Course";
-  return application.programs?.name ?? "Unknown Course";
-};
-
-const resolveUniversityId = (
-  row: { university_id?: string | null; applications?: SupabaseApplication | null },
-) => {
-  return (
-    row.university_id ??
-    row.applications?.programs?.university_id ??
-    null
-  );
 };
 
 const fetchOffersAndCas = async (universityId: string, tenantId: string | null): Promise<ProcessedRecord[]> => {
@@ -162,190 +78,111 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
     return [];
   }
 
-  const offerSelect = `
-    id,
-    offer_type,
-    letter_url,
-    created_at,
-    university_id,
-    application_id,
-    applications (
+  // Fetch applications that have reached at least the offer stage
+  const { data: applications, error } = await supabase
+    .from("applications")
+    .select(`
       id,
+      status,
+      updated_at,
+      created_at,
+      programs!inner (
+        name,
+        university_id
+      ),
       students (
         legal_name,
         profiles (
           full_name
         )
       ),
-      programs (
+      application_documents (
         id,
-        name,
-        university_id
+        storage_path,
+        document_type,
+        created_at
       )
-    )
-  `;
+    `)
+    .eq("programs.university_id", universityId)
+    .in("status", ["conditional_offer", "unconditional_offer", "cas_loa", "visa", "enrolled"])
+    .order("updated_at", { ascending: false });
 
-  const casSelect = `
-    id,
-    cas_number,
-    issue_date,
-    file_url,
-    created_at,
-    university_id,
-    application_id,
-    applications (
-      id,
-      students (
-        legal_name,
-        profiles (
-          full_name
-        )
-      ),
-      programs (
-        id,
-        name,
-        university_id
-      )
-    )
-  `;
+  if (error) {
+    throw error;
+  }
 
-  // ISOLATION: Filter by university_id at the database level for performance and security
-  const fetchCasLetters = async (): Promise<CasRow[]> => {
-    const casQuery = (supabase as any)
-      .from("cas_letters")
-      .select(casSelect)
-      .eq("university_id", universityId)
-      .order("issue_date", { ascending: false, nullsFirst: false })
-      .order("created_at", { ascending: false, nullsFirst: false });
+  // Process records and generate signed URLs
+  const processed = await Promise.all(
+    (applications || []).map(async (app: any) => {
+      const studentName = app.students?.profiles?.full_name || app.students?.legal_name || "Unknown Student";
+      const courseName = app.programs?.name || "Unknown Course";
+      const status = app.status;
+      
+      const isCasIssued = ["cas_loa", "visa", "enrolled"].includes(status);
+      const recordStatus: RecordStatus = isCasIssued ? "issued" : "pending";
+      
+      const offerType = normalizeOfferType(status);
 
-    const casLettersResponse = await casQuery;
+      // Sort docs by date descending
+      const docs = (app.application_documents || []).sort(
+        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
 
-    if (casLettersResponse.error) {
-      const errorCode = (casLettersResponse.error as { code?: string }).code;
-      if (
-        errorCode === "42P01" ||
-        casLettersResponse.error.message?.toLowerCase().includes("cas_letters")
-      ) {
-        const fallbackResponse = await (supabase as any)
-          .from("cas_loa")
-          .select(casSelect)
-          .eq("university_id", universityId)
-          .order("issue_date", { ascending: false, nullsFirst: false })
-          .order("created_at", { ascending: false, nullsFirst: false });
+      let offerLetterUrl: string | undefined;
+      let casLetterUrl: string | undefined;
 
-        if (fallbackResponse.error) {
-          throw fallbackResponse.error;
+      // Heuristic for documents:
+      // The latest document is likely related to the current status.
+      // If status is CAS/Visa, latest doc might be CAS letter.
+      // We look for docs uploaded by university (implied if we are here, but actually app docs can be student uploaded too)
+      // We assume for now the latest doc is the relevant one.
+      
+      if (docs.length > 0) {
+        const latestDoc = docs[0];
+        if (latestDoc.storage_path) {
+           const { data } = supabase.storage
+            .from("application-documents")
+            .getPublicUrl(latestDoc.storage_path);
+           
+           if (isCasIssued) {
+             casLetterUrl = data.publicUrl;
+             // Try to find an older doc that might be the offer letter
+             if (docs.length > 1) {
+                const prevDoc = docs[1];
+                if (prevDoc.storage_path) {
+                  const { data: offerData } = supabase.storage
+                    .from("application-documents")
+                    .getPublicUrl(prevDoc.storage_path);
+                  offerLetterUrl = offerData.publicUrl;
+                }
+             }
+           } else {
+             offerLetterUrl = data.publicUrl;
+           }
         }
-
-        return (fallbackResponse.data ?? []) as unknown as CasRow[];
       }
-      throw casLettersResponse.error;
-    }
-
-    return (casLettersResponse.data ?? []) as unknown as CasRow[];
-  };
-
-  // ISOLATION: Filter by university_id at the database level
-  const [offersResponse, casLetters] = await Promise.all([
-    (supabase as any)
-      .from("offers")
-      .select(offerSelect)
-      .eq("university_id", universityId)
-      .order("created_at", { ascending: false, nullsFirst: false }),
-    fetchCasLetters(),
-  ]);
-
-  if (offersResponse.error) {
-    throw offersResponse.error;
-  }
-
-  const offers = (offersResponse.data ?? []) as unknown as OfferRow[];
-
-  const combinedMap = new Map<string, CombinedRecord>();
-
-  const upsertRecord = (applicationId: string, updates: Partial<CombinedRecord>) => {
-    const existing =
-      combinedMap.get(applicationId) ?? {
-        applicationId,
-        universityId: null,
-        studentName: "Unknown Student",
-        courseName: "Unknown Course",
-      };
-
-    const next: CombinedRecord = {
-      ...existing,
-      ...updates,
-      applicationId,
-      studentName: updates.studentName ?? existing.studentName,
-      courseName: updates.courseName ?? existing.courseName,
-      universityId: updates.universityId ?? existing.universityId,
-    };
-
-    combinedMap.set(applicationId, next);
-  };
-
-  for (const offer of offers) {
-    if (!offer.application_id) continue;
-    const recordUniversityId = resolveUniversityId(offer);
-    if (recordUniversityId !== universityId) continue;
-
-    upsertRecord(offer.application_id, {
-      universityId: recordUniversityId,
-      studentName: extractStudentName(offer.applications),
-      courseName: extractCourseName(offer.applications),
-      offerType: normalizeOfferType(offer.offer_type),
-      offerLetterUrl: offer.letter_url ?? undefined,
-      offerIssuedAt: offer.created_at ?? undefined,
-    });
-  }
-
-  for (const cas of casLetters) {
-    if (!cas.application_id) continue;
-    const recordUniversityId = resolveUniversityId(cas);
-    if (recordUniversityId !== universityId) continue;
-
-    upsertRecord(cas.application_id, {
-      universityId: recordUniversityId,
-      studentName: extractStudentName(cas.applications),
-      courseName: extractCourseName(cas.applications),
-      casNumber: cas.cas_number ?? undefined,
-      casLetterUrl: cas.file_url ?? undefined,
-      casIssueDate: cas.issue_date ?? cas.created_at ?? undefined,
-    });
-  }
-
-  return Array.from(combinedMap.values())
-    .filter((record) => record.universityId === universityId)
-    .map((record): ProcessedRecord => {
-      const hasCasDetails =
-        Boolean(record.casNumber) ||
-        Boolean(record.casLetterUrl) ||
-        Boolean(record.casIssueDate);
 
       return {
-        id: record.applicationId,
-        studentName: record.studentName,
-        courseName: record.courseName,
-        offerType: record.offerType,
-        casNumber: record.casNumber,
-        dateIssued: record.casIssueDate ?? record.offerIssuedAt,
-        status: hasCasDetails ? "issued" : "pending",
-        offerLetterUrl: record.offerLetterUrl,
-        casLetterUrl: record.casLetterUrl,
+        id: app.id,
+        studentName,
+        courseName,
+        offerType,
+        casNumber: undefined, 
+        dateIssued: app.updated_at || app.created_at,
+        status: recordStatus,
+        offerLetterUrl,
+        casLetterUrl,
       };
     })
-    .sort((a, b) => {
-      const aDate = a.dateIssued ?? "";
-      const bDate = b.dateIssued ?? "";
-      return bDate.localeCompare(aDate);
-    });
+  );
+  
+  return processed;
 };
 
 const OffersCASPage = () => {
   const { data } = useUniversityDashboard();
   const { toast } = useToast();
   const universityId = data?.university?.id ?? "";
-  // ISOLATION: Include tenant_id for defense-in-depth data isolation
   const tenantId = data?.university?.tenant_id ?? null;
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -363,6 +200,36 @@ const OffersCASPage = () => {
     staleTime: 1000 * 60 * 5,
   });
 
+  useEffect(() => {
+    if (!universityId) return;
+
+    const channel = supabase
+      .channel("offers-cas-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "applications",
+        },
+        () => void refetch()
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "application_documents",
+        },
+        () => void refetch()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [universityId, refetch]);
+
   // Log errors for debugging
   if (error) {
     console.error("Failed to fetch university offers and CAS records", error);
@@ -379,9 +246,13 @@ const OffersCASPage = () => {
   }, [records, searchTerm]);
 
   const summary = useMemo(() => {
+    // Total offers: All records since we filter by status >= Offer
     const totalOffers = records.length;
+    // CAS Issued: status is "issued"
     const casIssued = records.filter((record) => record.status === "issued").length;
-    const casPending = totalOffers - casIssued;
+    // CAS Pending: status is "pending" (i.e. currently in Offer stage)
+    const casPending = records.filter((record) => record.status === "pending").length;
+    
     return {
       totalOffers,
       casIssued,
