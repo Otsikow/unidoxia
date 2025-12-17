@@ -135,9 +135,10 @@ const getProgramVisual = (program: Program, university: University): string => {
 
 export interface ProgramSearchViewProps {
   variant?: "page" | "embedded";
+  showBackButton?: boolean;
 }
 
-export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) {
+export function ProgramSearchView({ variant = "page", showBackButton = true }: ProgramSearchViewProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { profile } = useAuth();
@@ -169,7 +170,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   };
 
   const showSEO = variant === "page";
-  const showBackButton = variant === "page";
+  const shouldShowBackButton = variant === "page" && showBackButton;
   const containerClasses = cn(
     "p-4 md:p-8",
     variant === "page"
@@ -450,7 +451,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
         />
       )}
       <div className={contentWrapperClasses}>
-        {showBackButton && (
+        {shouldShowBackButton && (
           <BackButton
             variant="ghost"
             size="sm"
