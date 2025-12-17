@@ -403,12 +403,19 @@ const ApplicationsPage = () => {
                               const parts: string[] = [];
                               if (app.studentNationality && app.studentNationality !== "Unknown") {
                                 parts.push(app.studentNationality);
+                              } else if (app.studentCurrentCountry) {
+                                parts.push(`Based in ${app.studentCurrentCountry}`);
                               }
                               const dob = formatDate(app.studentDateOfBirth ?? null);
                               if (dob !== "—") {
                                 parts.push(`DOB ${dob}`);
                               }
-                              return parts.length > 0 ? parts.join(" • ") : "Nationality not provided";
+                              if (typeof app.documentsCount === "number") {
+                                const label = app.documentsCount === 1 ? "document" : "documents";
+                                parts.push(`${app.documentsCount} ${label}`);
+                              }
+
+                              return parts.length > 0 ? parts.join(" • ") : "Student details not provided";
                             })()}
                           </span>
                         </div>

@@ -110,6 +110,8 @@ export interface UniversityApplication {
   studentNationality: string | null;
   studentDateOfBirth?: string | null;
   studentCurrentCountry?: string | null;
+  documentsCount?: number;
+  lastDocumentUploadedAt?: string | null;
   agentId?: string | null;
 }
 
@@ -611,24 +613,67 @@ export const fetchUniversityDashboardData = async (
               "[UniversityDashboard] Failed to hydrate student via RPC",
               { applicationId: app.id, error: rpcError.message },
             );
-            return null;
           }
 
           const rpcRow = (rpcData as any[] | null)?.[0];
-          if (!rpcRow) return null;
+
+          // Fallback to direct student query if the RPC fails or returns nothing.
+          let fallbackStudent: any | null = null;
+          if (!rpcRow && app.studentId) {
+            const { data: fallbackData, error: fallbackError } = await supabase
+              .from("students")
+              .select(
+                `
+                  id,
+                  legal_name,
+                  preferred_name,
+                  nationality,
+                  date_of_birth,
+                  current_country,
+                  profile:profiles(full_name, email)
+                `,
+              )
+              .eq("id", app.studentId)
+              .maybeSingle();
+
+            if (fallbackError) {
+              console.warn(
+                "[UniversityDashboard] Fallback student query failed",
+                {
+                  applicationId: app.id,
+                  studentId: app.studentId,
+                  error: fallbackError.message,
+                },
+              );
+            }
+
+            fallbackStudent = fallbackData ?? null;
+          }
+
+          const hydratedRow = rpcRow ?? fallbackStudent;
+          if (!hydratedRow) return null;
 
           return {
             applicationId: app.id,
-            studentId: rpcRow.student_id ?? app.studentId,
+            studentId: hydratedRow.student_id ?? hydratedRow.id ?? app.studentId,
             studentName:
-              rpcRow.legal_name ??
-              rpcRow.preferred_name ??
-              rpcRow.profile_full_name ??
+              hydratedRow.legal_name ??
+              hydratedRow.preferred_name ??
+              hydratedRow.profile_full_name ??
+              hydratedRow.profile?.full_name ??
               app.studentName,
-            nationality: rpcRow.nationality ?? app.studentNationality ?? "Unknown",
-            dateOfBirth: rpcRow.date_of_birth ?? app.studentDateOfBirth ?? null,
+            nationality:
+              hydratedRow.nationality ?? app.studentNationality ?? "Unknown",
+            dateOfBirth:
+              hydratedRow.date_of_birth ??
+              hydratedRow.dateOfBirth ??
+              app.studentDateOfBirth ??
+              null,
             currentCountry:
-              rpcRow.current_country ?? app.studentCurrentCountry ?? null,
+              hydratedRow.current_country ??
+              hydratedRow.currentCountry ??
+              app.studentCurrentCountry ??
+              null,
           };
         }),
       );
@@ -658,6 +703,48 @@ export const fetchUniversityDashboardData = async (
           };
         });
       }
+    }
+
+    // -----------------------------------------------------
+    // DOCUMENT SUMMARY FOR APPLICATION CARDS
+    // -----------------------------------------------------
+    const applicationIds = applications.map((app) => app.id);
+    if (applicationIds.length > 0) {
+      const { data: documentRows, error: documentsError } = await supabase
+        .from("application_documents")
+        .select("application_id, uploaded_at")
+        .in("application_id", applicationIds);
+
+      if (documentsError) {
+        console.warn("[UniversityDashboard] Document summary fetch failed", documentsError);
+      }
+
+      const docSummary = new Map<string, { count: number; lastUploaded: string | null }>();
+      for (const row of documentRows ?? []) {
+        const current = docSummary.get(row.application_id) ?? {
+          count: 0,
+          lastUploaded: null as string | null,
+        };
+
+        const uploadedAt = row.uploaded_at ?? null;
+        const nextLastUploaded = current.lastUploaded && uploadedAt
+          ? (new Date(uploadedAt) > new Date(current.lastUploaded) ? uploadedAt : current.lastUploaded)
+          : uploadedAt ?? current.lastUploaded;
+
+        docSummary.set(row.application_id, {
+          count: current.count + 1,
+          lastUploaded: nextLastUploaded,
+        });
+      }
+
+      applications = applications.map((app) => {
+        const summary = docSummary.get(app.id);
+        return {
+          ...app,
+          documentsCount: summary?.count ?? 0,
+          lastDocumentUploadedAt: summary?.lastUploaded ?? null,
+        };
+      });
     }
   }
 
