@@ -27,6 +27,8 @@ import {
   BookOpen,
   Award,
   Upload,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -510,6 +512,9 @@ export function ApplicationReviewDialog({
   const [reviewStatusDraft, setReviewStatusDraft] = useState<"pending" | "verified" | "rejected">("pending");
   const [reviewNotesDraft, setReviewNotesDraft] = useState<string>("");
   const [savingReview, setSavingReview] = useState(false);
+
+  // Fullscreen controls
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Document signed URLs
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
@@ -1333,6 +1338,13 @@ export function ApplicationReviewDialog({
     );
   }, [application?.timelineJson]);
 
+  // Reset fullscreen when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setIsFullscreen(false);
+    }
+  }, [open]);
+
   /* ======================================================
      RENDER
   ======================================================= */
@@ -1342,7 +1354,13 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="!grid-rows-[auto_1fr] w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogContent
+          className={`!grid-rows-[auto_1fr] overflow-hidden flex flex-col p-4 sm:p-6 ${
+            isFullscreen
+              ? "w-screen h-screen max-w-[100vw] max-h-screen sm:max-w-[100vw] sm:max-h-screen sm:h-screen rounded-none sm:rounded-none"
+              : "w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh]"
+          }`}
+        >
           {/* Header */}
           <DialogHeader className="flex-shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -1359,6 +1377,21 @@ export function ApplicationReviewDialog({
                 </DialogDescription>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsFullscreen((prev) => !prev)}
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  </span>
+                </Button>
                 <StatusBadge status={displayStatus} />
               </div>
             </div>
