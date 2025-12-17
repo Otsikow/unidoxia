@@ -17,7 +17,6 @@ import {
 } from "@/lib/supabaseRpc";
 
 const STORAGE_BUCKET = "student-documents";
-const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
 
 interface UseExtendedApplicationReturn {
   extendedApplication: ExtendedApplication | null;
@@ -29,29 +28,9 @@ interface UseExtendedApplicationReturn {
   updateLocalNotes: (notes: string) => void;
 }
 
-/* ======================================================
-   Helpers
-====================================================== */
-
-const getPublicUrl = (storagePath: string | null): string | null => {
-  if (!storagePath) return null;
-  
-  // Try application-documents bucket first (most common for application docs)
-  const { data: appData } = supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .getPublicUrl(storagePath);
-  
-  if (appData?.publicUrl) {
-    return appData.publicUrl;
-  }
-  
-  // Fallback to student-documents bucket
-  const { data: studentData } = supabase.storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(storagePath);
-  
-  return studentData?.publicUrl ?? null;
-};
+// NOTE: The "student-documents" bucket is private, so public URLs are not reliable.
+// University partners should use signed URLs for document viewing.
+const getPublicUrl = (_storagePath: string | null): string | null => null;
 
 const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
   if (!Array.isArray(raw)) return null;
@@ -406,10 +385,11 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           fileName: doc.storage_path?.split("/").pop() ?? "Unknown",
           mimeType: doc.mime_type,
           fileSize: doc.file_size,
-          verified: doc.verified ?? false,
+          reviewStatus: (doc.verified ? "verified" : "pending") as any,
           verificationNotes: doc.verification_notes ?? null,
           uploadedAt: doc.uploaded_at ?? "",
           publicUrl: getPublicUrl(doc.storage_path),
+          source: "application_documents" as const,
         }));
       }
 
@@ -444,10 +424,11 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             fileName: doc.file_name ?? doc.storage_path?.split("/").pop() ?? "Unknown",
             mimeType: doc.mime_type,
             fileSize: doc.file_size,
-            verified: doc.verified_status === "verified",
+            reviewStatus: (doc.verified_status ?? "pending") as any,
             verificationNotes: doc.verification_notes ?? null,
             uploadedAt: doc.created_at ?? "",
             publicUrl: getPublicUrl(doc.storage_path),
+            source: "student_documents" as const,
           }));
         }
       }

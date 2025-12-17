@@ -3073,6 +3073,10 @@ export type Database = {
         Args: { p_profile_id: string }
         Returns: boolean
       }
+      partner_review_student_document: {
+        Args: { p_document_id: string; p_notes?: string; p_status: string }
+        Returns: boolean
+      }
       search_agent_contacts: {
         Args: { search_query: string }
         Returns: {

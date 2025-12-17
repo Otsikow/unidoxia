@@ -149,11 +149,12 @@ export interface ApplicationDocument {
   fileName: string;
   mimeType: string | null;
   fileSize: number | null;
-  verified: boolean;
+  reviewStatus: "pending" | "verified" | "rejected";
   verificationNotes: string | null;
   uploadedAt: string;
   publicUrl: string | null;
   signedUrl?: string | null;
+  source: "student_documents" | "application_documents";
 }
 
 export interface ExtendedApplication {
@@ -408,19 +409,24 @@ const formatDocumentType = (type: string | null) => {
    Signed URL helper
 ====================================================== */
 
+const normalizeStoragePath = (storagePath: string): string => {
+  // Some older rows may store a path like "student-documents/<path>".
+  // Supabase storage expects the object path WITHOUT the bucket prefix.
+  return storagePath.replace(/^student-documents\//, "");
+};
+
 const getSignedUrl = async (storagePath: string | null): Promise<string | null> => {
   if (!storagePath) return null;
 
-  // Use student-documents bucket (where documents are actually stored)
-  const { data: studentData, error: studentError } = await supabase.storage
+  const objectPath = normalizeStoragePath(storagePath);
+
+  const { data, error } = await supabase.storage
     .from(STORAGE_BUCKET)
-    .createSignedUrl(storagePath, 3600); // 1 hour expiry
+    .createSignedUrl(objectPath, 3600); // 1 hour expiry
 
-  if (!studentError && studentData?.signedUrl) {
-    return studentData.signedUrl;
-  }
+  if (!error && data?.signedUrl) return data.signedUrl;
 
-  console.error("Failed to get signed URL:", studentError);
+  console.error("Failed to get signed URL:", error);
   return null;
 };
 
@@ -468,6 +474,15 @@ export function ApplicationReviewDialog({
     isOwn: boolean;
   }>>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+
+  // Document review state (local overrides so UI updates immediately)
+  const [reviewOverrides, setReviewOverrides] = useState<
+    Record<string, { status: "pending" | "verified" | "rejected"; notes: string | null }>
+  >({});
+  const [reviewingDocId, setReviewingDocId] = useState<string | null>(null);
+  const [reviewStatusDraft, setReviewStatusDraft] = useState<"pending" | "verified" | "rejected">("pending");
+  const [reviewNotesDraft, setReviewNotesDraft] = useState<string>("");
+  const [savingReview, setSavingReview] = useState(false);
 
   // Document signed URLs
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
@@ -1697,14 +1712,26 @@ export function ApplicationReviewDialog({
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  {doc.verified ? (
-                                    <Badge variant="outline" className="border-success text-success">
-                                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                                      Verified
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline">Pending Review</Badge>
-                                  )}
+                                  {(() => {
+                                    const effectiveStatus =
+                                      reviewOverrides[doc.id]?.status ?? doc.reviewStatus;
+
+                                    if (effectiveStatus === "verified") {
+                                      return (
+                                        <Badge variant="outline" className="border-success text-success">
+                                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                                          Accepted
+                                        </Badge>
+                                      );
+                                    }
+
+                                    if (effectiveStatus === "rejected") {
+                                      return <Badge variant="destructive">Rejected</Badge>;
+                                    }
+
+                                    return <Badge variant="outline">Pending Review</Badge>;
+                                  })()}
+
                                   {documentUrls[doc.id] ? (
                                     <Button variant="ghost" size="sm" asChild>
                                       <a
@@ -1716,23 +1743,20 @@ export function ApplicationReviewDialog({
                                         View
                                       </a>
                                     </Button>
-                                  ) : doc.publicUrl ? (
-                                    <Button variant="ghost" size="sm" asChild>
-                                      <a
-                                        href={doc.publicUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        View
-                                      </a>
-                                    </Button>
                                   ) : (
                                     <Button variant="ghost" size="sm" disabled>
                                       <AlertCircle className="h-4 w-4 mr-1" />
-                                      Unavailable
+                                      Loading
                                     </Button>
                                   )}
+
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openReview(doc)}
+                                  >
+                                    Review
+                                  </Button>
                                 </div>
                               </div>
                             ))}
@@ -1740,6 +1764,55 @@ export function ApplicationReviewDialog({
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Review dialog */}
+                    <Dialog open={!!reviewingDocId} onOpenChange={(o) => !o && setReviewingDocId(null)}>
+                      <DialogContent className="sm:max-w-[560px]">
+                        <DialogHeader>
+                          <DialogTitle>Review document</DialogTitle>
+                          <DialogDescription>
+                            Mark this document as accepted or rejected and add feedback.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Status</Label>
+                            <Select
+                              value={reviewStatusDraft}
+                              onValueChange={(v) => setReviewStatusDraft(v as any)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending review</SelectItem>
+                                <SelectItem value="verified">Accepted</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Feedback</Label>
+                            <Textarea
+                              value={reviewNotesDraft}
+                              onChange={(e) => setReviewNotesDraft(e.target.value)}
+                              placeholder="Add feedback (e.g., resubmit as a clearer PDF, missing pages, etc.)"
+                            />
+                          </div>
+                        </div>
+
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setReviewingDocId(null)} disabled={savingReview}>
+                            Cancel
+                          </Button>
+                          <Button onClick={saveReview} disabled={savingReview}>
+                            {savingReview ? "Saving…" : "Save"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
 
                     {/* Missing Documents */}
                     {missingDocuments.length > 0 && (
