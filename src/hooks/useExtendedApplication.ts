@@ -376,6 +376,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       --------------------------- */
       let documents: ApplicationDocument[] = [];
 
+      // First, try to fetch from application_documents (linked to application)
       console.log("[useExtendedApplication] Fetching documents for application:", applicationId);
       const { data: appDocs, error: docsError } = await supabase
         .from("application_documents")
@@ -397,7 +398,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       }
 
       if (appDocs && appDocs.length > 0) {
-        console.log("[useExtendedApplication] Documents loaded:", appDocs.length);
+        console.log("[useExtendedApplication] Application documents loaded:", appDocs.length);
         documents = appDocs.map((doc) => ({
           id: doc.id,
           documentType: doc.document_type,
@@ -410,7 +411,48 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           uploadedAt: doc.uploaded_at ?? "",
           publicUrl: getPublicUrl(doc.storage_path),
         }));
-      } else {
+      }
+
+      // If no application_documents, fall back to student_documents (linked to student)
+      if (documents.length === 0 && appData.student_id) {
+        console.log("[useExtendedApplication] No application documents, checking student documents for student:", appData.student_id);
+        const { data: studentDocs, error: studentDocsError } = await supabase
+          .from("student_documents")
+          .select(`
+            id,
+            document_type,
+            storage_path,
+            file_name,
+            mime_type,
+            file_size,
+            verified_status,
+            verification_notes,
+            created_at
+          `)
+          .eq("student_id", appData.student_id);
+
+        if (studentDocsError) {
+          console.warn("[useExtendedApplication] Student documents fetch warning:", studentDocsError);
+        }
+
+        if (studentDocs && studentDocs.length > 0) {
+          console.log("[useExtendedApplication] Student documents loaded:", studentDocs.length);
+          documents = studentDocs.map((doc) => ({
+            id: doc.id,
+            documentType: doc.document_type,
+            storagePath: doc.storage_path,
+            fileName: doc.file_name ?? doc.storage_path?.split("/").pop() ?? "Unknown",
+            mimeType: doc.mime_type,
+            fileSize: doc.file_size,
+            verified: doc.verified_status === "verified",
+            verificationNotes: doc.verification_notes ?? null,
+            uploadedAt: doc.created_at ?? "",
+            publicUrl: getPublicUrl(doc.storage_path),
+          }));
+        }
+      }
+
+      if (documents.length === 0) {
         console.log("[useExtendedApplication] No documents found for application");
       }
 

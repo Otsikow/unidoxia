@@ -665,6 +665,13 @@ All colors MUST be HSL.
       radial-gradient(circle at 50% 80%, hsl(var(--primary) / 0.1), transparent 40%),
       linear-gradient(135deg, hsl(220 30% 10% / 0.9), hsl(220 30% 8% / 0.95));
     z-index: 0;
+    opacity: 1;
+    transition: opacity 260ms ease-out, visibility 260ms ease-out;
+  }
+
+  .hero-fallback.is-hidden {
+    opacity: 0;
+    visibility: hidden;
   }
 
   .typing-cursor {

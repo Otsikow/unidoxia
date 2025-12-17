@@ -518,7 +518,7 @@ export function ApplicationReviewDialog({
       const { data: convId, error: convError } = await supabase.rpc(
         "get_or_create_conversation",
         {
-          p_user_id: null,
+          p_user_id: currentUserId,
           p_other_user_id: application.student.profileId,
           p_tenant_id: tenantId,
         }
@@ -1098,7 +1098,7 @@ export function ApplicationReviewDialog({
         const { data: convId, error: convError } = await supabase.rpc(
           "get_or_create_conversation",
           {
-            p_user_id: null, // Current user
+            p_user_id: currentUserId,
             p_other_user_id: application.student.profileId,
             p_tenant_id: tenantId,
           }
