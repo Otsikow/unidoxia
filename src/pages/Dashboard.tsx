@@ -1,10 +1,10 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, memo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRoles, AppRole } from '@/hooks/useUserRoles';
-import { LoadingState } from '@/components/LoadingState';
 import { EmptyState } from '@/components/EmptyState';
 import { LogIn, HelpCircle } from 'lucide-react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { PageSkeleton } from '@/components/performance/SkeletonLoaders';
 
 // NOTE: Keep dashboards lazy to avoid pulling them into the initial bundle.
 const StudentDashboard = lazy(() => import('@/pages/dashboards/StudentDashboard'));
@@ -34,7 +34,14 @@ const getUniversityRouteForPartnerView = (viewParam: string | null) => {
   }
 };
 
-const Dashboard = () => {
+// Skeleton loader for dashboard - instant visual feedback
+const DashboardSkeleton = memo(() => (
+  <div className="min-h-screen">
+    <PageSkeleton />
+  </div>
+));
+
+const Dashboard = memo(function Dashboard() {
   const { user, profile, loading: authLoading, signOut } = useAuth();
   const { roles, loading: rolesLoading, error: rolesError } = useUserRoles();
   const navigate = useNavigate();
@@ -43,11 +50,7 @@ const Dashboard = () => {
   const loading = authLoading || rolesLoading;
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingState message="Loading your dashboard..." size="lg" />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!user) {
@@ -106,26 +109,14 @@ const Dashboard = () => {
 
   if (resolvedRole === 'student')
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <LoadingState message="Loading your dashboard..." size="lg" />
-          </div>
-        }
-      >
+      <Suspense fallback={<DashboardSkeleton />}>
         <StudentDashboard />
       </Suspense>
     );
 
   if (resolvedRole === 'agent')
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <LoadingState message="Loading your dashboard..." size="lg" />
-          </div>
-        }
-      >
+      <Suspense fallback={<DashboardSkeleton />}>
         <AgentDashboard />
       </Suspense>
     );
@@ -137,13 +128,7 @@ const Dashboard = () => {
   }
   if (resolvedRole === 'staff' || resolvedRole === 'admin')
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <LoadingState message="Loading your dashboard..." size="lg" />
-          </div>
-        }
-      >
+      <Suspense fallback={<DashboardSkeleton />}>
         <StaffDashboard />
       </Suspense>
     );
@@ -161,6 +146,6 @@ const Dashboard = () => {
       />
     </div>
   );
-};
+});
 
 export default Dashboard;
