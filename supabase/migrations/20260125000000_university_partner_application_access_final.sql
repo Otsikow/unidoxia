@@ -160,6 +160,9 @@ SET search_path = public
 AS $$
 DECLARE
   v_user_id UUID := auth.uid();
+  v_user_role TEXT;
+  v_user_tenant UUID;
+  v_app_tenant UUID;
   v_status public.application_status;
   v_row RECORD;
 BEGIN
@@ -167,8 +170,34 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated' USING ERRCODE = '28000';
   END IF;
 
+  SELECT public.get_profile_role_text(v_user_id), tenant_id
+  INTO v_user_role, v_user_tenant
+  FROM public.profiles
+  WHERE id = v_user_id;
+
+  IF v_user_role IS NULL THEN
+    RAISE EXCEPTION 'Account profile not found. Please contact support.' USING ERRCODE = '42501';
+  END IF;
+
+  IF NOT public.is_admin_or_staff(v_user_id) AND v_user_tenant IS NULL THEN
+    RAISE EXCEPTION 'Your account is not linked to a university (tenant_id is NULL). Please contact support.' USING ERRCODE = '42501';
+  END IF;
+
   IF NOT public.current_user_can_manage_application(p_application_id) THEN
-    RAISE EXCEPTION 'Permission denied. You cannot update this application.' USING ERRCODE = '42501';
+    SELECT COALESCE(u.tenant_id, a.tenant_id)
+    INTO v_app_tenant
+    FROM public.applications a
+    LEFT JOIN public.programs p ON p.id = a.program_id
+    LEFT JOIN public.universities u ON u.id = p.university_id
+    WHERE a.id = p_application_id;
+
+    IF v_app_tenant IS NULL THEN
+      RAISE EXCEPTION 'Application not found or not linked to a university. App ID: %', p_application_id USING ERRCODE = '42501';
+    ELSIF NOT public.is_admin_or_staff(v_user_id) AND v_user_tenant IS NOT NULL AND v_user_tenant != v_app_tenant THEN
+      RAISE EXCEPTION 'This application belongs to a different university. You can only update applications for your tenant.' USING ERRCODE = '42501';
+    ELSE
+      RAISE EXCEPTION 'Permission denied. You cannot update this application.' USING ERRCODE = '42501';
+    END IF;
   END IF;
 
   BEGIN
@@ -220,6 +249,9 @@ SET search_path = public
 AS $$
 DECLARE
   v_user_id UUID := auth.uid();
+  v_user_role TEXT;
+  v_user_tenant UUID;
+  v_app_tenant UUID;
   v_status public.application_status;
   v_result RECORD;
 BEGIN
@@ -227,8 +259,34 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated' USING ERRCODE = '28000';
   END IF;
 
+  SELECT public.get_profile_role_text(v_user_id), tenant_id
+  INTO v_user_role, v_user_tenant
+  FROM public.profiles
+  WHERE id = v_user_id;
+
+  IF v_user_role IS NULL THEN
+    RAISE EXCEPTION 'Account profile not found. Please contact support.' USING ERRCODE = '42501';
+  END IF;
+
+  IF NOT public.is_admin_or_staff(v_user_id) AND v_user_tenant IS NULL THEN
+    RAISE EXCEPTION 'Your account is not linked to a university (tenant_id is NULL). Please contact support.' USING ERRCODE = '42501';
+  END IF;
+
   IF NOT public.current_user_can_manage_application(p_application_id) THEN
-    RAISE EXCEPTION 'Permission denied. You cannot update this application.' USING ERRCODE = '42501';
+    SELECT COALESCE(u.tenant_id, a.tenant_id)
+    INTO v_app_tenant
+    FROM public.applications a
+    LEFT JOIN public.programs p ON p.id = a.program_id
+    LEFT JOIN public.universities u ON u.id = p.university_id
+    WHERE a.id = p_application_id;
+
+    IF v_app_tenant IS NULL THEN
+      RAISE EXCEPTION 'Application not found or not linked to a university. App ID: %', p_application_id USING ERRCODE = '42501';
+    ELSIF NOT public.is_admin_or_staff(v_user_id) AND v_user_tenant IS NOT NULL AND v_user_tenant != v_app_tenant THEN
+      RAISE EXCEPTION 'This application belongs to a different university. You can only update applications for your tenant.' USING ERRCODE = '42501';
+    ELSE
+      RAISE EXCEPTION 'Permission denied. You cannot update this application.' USING ERRCODE = '42501';
+    END IF;
   END IF;
 
   IF p_new_status IS NOT NULL AND p_new_status != '' THEN
