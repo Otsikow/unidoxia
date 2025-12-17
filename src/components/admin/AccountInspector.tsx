@@ -82,7 +82,7 @@ export const AccountInspector = () => {
     setRepairResult(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('diagnose_user_account', {
+      const { data, error: rpcError } = await supabase.rpc('diagnose_user_account' as any, {
         p_email: email.trim(),
       });
 
@@ -91,7 +91,7 @@ export const AccountInspector = () => {
         return;
       }
 
-      setDiagnosis(data as DiagnosisResult);
+      setDiagnosis(data as unknown as DiagnosisResult);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to diagnose account');
     } finally {
@@ -107,7 +107,7 @@ export const AccountInspector = () => {
     setRepairResult(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('repair_user_account', {
+      const { data, error: rpcError } = await supabase.rpc('repair_user_account' as any, {
         p_email: email.trim(),
       });
 
@@ -116,10 +116,11 @@ export const AccountInspector = () => {
         return;
       }
 
-      setRepairResult(data as RepairResult);
+      const result = data as unknown as RepairResult;
+      setRepairResult(result);
       // Update diagnosis with the "after" state
-      if (data?.after) {
-        setDiagnosis(data.after as DiagnosisResult);
+      if (result?.after) {
+        setDiagnosis(result.after as DiagnosisResult);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to repair account');

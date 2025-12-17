@@ -3,7 +3,7 @@ import type { Database } from "@/integrations/supabase/types";
 export type ApplicationStatus = Database["public"]["Enums"]["application_status"];
 
 export const APPLICATION_STATUS_OPTIONS: ReadonlyArray<{
-  value: ApplicationStatus;
+  value: ApplicationStatus | string;
   label: string;
 }> = [
   { value: "submitted", label: "Submitted" },
@@ -14,7 +14,6 @@ export const APPLICATION_STATUS_OPTIONS: ReadonlyArray<{
   { value: "visa", label: "Visa Stage" },
   { value: "enrolled", label: "Enrolled" },
   { value: "withdrawn", label: "Withdrawn" },
-  { value: "rejected", label: "Rejected" },
   { value: "deferred", label: "Deferred" },
   // Intentionally omitted from university review UI for now:
   // { value: "draft", label: "Draft" },

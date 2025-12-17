@@ -990,13 +990,13 @@ export default function NewApplication() {
             }
 
             // Create document record
-            await supabase.from('application_documents').insert({
+            await supabase.from('application_documents').insert([{
               application_id: createdApplication.id,
-              document_type: docType,
+              document_type: docType as any,
               storage_path: filePath,
               file_size: file.size,
               mime_type: file.type,
-            });
+            }]);
           } catch (error) {
             console.error(`Error processing ${docType}:`, error);
           }
@@ -1033,13 +1033,13 @@ export default function NewApplication() {
               continue;
             }
 
-            await supabase.from('application_documents').insert({
+            await supabase.from('application_documents').insert([{
               application_id: createdApplication.id,
-              document_type: docType,
+              document_type: docType as any,
               storage_path: filePath,
               file_size: studentDocument.file_size,
               mime_type: studentDocument.mime_type,
-            });
+            }]);
           } catch (error) {
             console.error(`Error reusing ${docType}:`, error);
           }

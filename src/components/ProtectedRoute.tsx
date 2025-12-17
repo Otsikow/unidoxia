@@ -37,7 +37,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     setRepairError(null);
     
     try {
-      const { data, error } = await supabase.rpc('ensure_user_profile', {
+      const { data, error } = await supabase.rpc('ensure_user_profile' as any, {
         p_user_id: user.id,
       });
       
@@ -47,14 +47,15 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
         return;
       }
       
-      if (data?.success) {
-        console.log('Account repaired successfully:', data);
+      const result = data as { success?: boolean; error?: string } | null;
+      if (result?.success) {
+        console.log('Account repaired successfully:', result);
         // Refresh the profile to pick up the repaired state
         await refreshProfile();
         // Force a page reload to re-initialize auth state
         window.location.reload();
       } else {
-        setRepairError(data?.error || 'Repair did not succeed');
+        setRepairError(result?.error || 'Repair did not succeed');
       }
     } catch (err) {
       console.error('Account repair exception:', err);
