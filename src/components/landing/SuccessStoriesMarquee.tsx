@@ -139,7 +139,7 @@ export function SuccessStoriesMarquee({ className }: { className?: string }) {
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="text-4xl font-bold">{title}</h2>
           <p className="mt-3 text-lg text-muted-foreground">
-            Real people. Real outcomes. See why thousands start their journey with us.
+            Real students. Real outcomes. See why applicants choose UniDoxia.
           </p>
         </div>
 
@@ -177,14 +177,14 @@ export function SuccessStoriesMarquee({ className }: { className?: string }) {
         <div className="mx-auto mt-10 flex max-w-3xl flex-col items-center gap-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/60 px-4 py-2 text-sm text-muted-foreground">
             <BadgeCheck className="h-4 w-4 text-success" aria-hidden="true" />
-            Verified success stories from people just like you
+            Verified success stories from real students
           </div>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Button asChild size="lg" className="button-border-beam">
-              <Link to="/auth/signup?role=student">Start Your Journey</Link>
+              <Link to="/auth/signup?role=student">Start your application</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/courses?view=programs">Find Your Course</Link>
+              <Link to="/courses?view=programs">Browse programs</Link>
             </Button>
           </div>
         </div>

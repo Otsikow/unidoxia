@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
-import { Compass, ClipboardList, PlaneTakeoff } from "lucide-react";
+import { Compass, ClipboardList, MessageCircle, Radar, PlaneTakeoff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import storyboardDiscover from "@/assets/university-buildings.png";
 import storyboardPlan from "@/assets/university-application.png";
 import storyboardCollaborate from "@/assets/agent-student-consulting.png";
+import storyboardTrack from "@/assets/student-journey-steps.png";
 import storyboardCelebrate from "@/assets/student-airport-travel.png";
 
-type StoryboardStepKey = "startProfile" | "getMatched" | "receiveOffers";
+type StoryboardStepKey = "discover" | "plan" | "collaborate" | "track" | "celebrate";
 
 interface StoryboardStepConfig {
   key: StoryboardStepKey;
@@ -14,9 +16,11 @@ interface StoryboardStepConfig {
 }
 
 const STEP_CONFIG: StoryboardStepConfig[] = [
-  { key: "startProfile", icon: ClipboardList, image: storyboardPlan },
-  { key: "getMatched", icon: Compass, image: storyboardCollaborate },
-  { key: "receiveOffers", icon: PlaneTakeoff, image: storyboardCelebrate },
+  { key: "discover", icon: Compass, image: storyboardDiscover },
+  { key: "plan", icon: ClipboardList, image: storyboardPlan },
+  { key: "collaborate", icon: MessageCircle, image: storyboardCollaborate },
+  { key: "track", icon: Radar, image: storyboardTrack },
+  { key: "celebrate", icon: PlaneTakeoff, image: storyboardCelebrate },
 ];
 
 const StoryboardSection = () => {
@@ -43,7 +47,7 @@ const StoryboardSection = () => {
           <h2 className="text-4xl font-bold">{heading}</h2>
           <p className="text-muted-foreground">{subheading}</p>
         </div>
-        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-5">
           {steps.map((scene, index) => (
             <div key={scene.key} className="group relative">
               {index < steps.length - 1 && (

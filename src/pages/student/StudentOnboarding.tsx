@@ -20,9 +20,6 @@ import {
   School,
   CreditCard,
   ShieldCheck,
-  ClipboardList,
-  Compass,
-  PlaneTakeoff,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -69,68 +66,110 @@ const buildNavigatorSteps = (
   const sopDoc = findDoc('personal_statement');
   const visaDoc = findDoc('financial_document');
   const hasApplications = applications.length > 0;
-  
+  const latestApplication = applications.reduce<ApplicationSummary | null>((latest, current) => {
+    if (!latest) return current;
+    const latestTs = new Date(getRecordTimestamp(latest) ?? 0).getTime();
+    const currentTs = new Date(getRecordTimestamp(current) ?? 0).getTime();
+    return currentTs > latestTs ? current : latest;
+  }, null);
+
   const sortedPayments = [...payments].sort((a, b) => {
     const aTs = new Date(getRecordTimestamp(a) ?? 0).getTime();
     const bTs = new Date(getRecordTimestamp(b) ?? 0).getTime();
     return bTs - aTs;
   });
   const successfulPayment = sortedPayments.find((payment) => payment.status === 'succeeded');
+  const pendingPayment = sortedPayments.find((payment) => payment.status === 'pending');
   const hasPaidFee = Boolean(successfulPayment);
-
-  // Step 1: Start your profile
-  // Sub-tasks: Passport, Transcript, SOP.
-  const step1Complete = Boolean(passportDoc && transcriptDoc && sopDoc);
-  
-  // Step 2: Get matched and supported
-  // Sub-tasks: Applications, Payment.
-  const step2Complete = hasApplications && hasPaidFee;
-
-  // Step 3: Receive offers and visa guidance
-  // Sub-tasks: Visa doc.
-  const step3Complete = Boolean(visaDoc);
+  const hasPaymentAttempt = Boolean(pendingPayment || successfulPayment || sortedPayments.length);
 
   const steps: NavigatorStep[] = [
     {
-      id: 'step-1',
-      title: 'Start your profile',
-      description: 'Create your profile once, upload your documents, and let our AI build your perfect application package.',
-      completed: step1Complete,
-      status: step1Complete ? 'complete' : 'active',
-      aiHint: step1Complete 
-        ? 'Profile ready! AI is matching you to universities.' 
-        : 'AI needs your passport, transcript, and SOP to start matching.',
-      actionLabel: step1Complete ? 'View documents' : 'Complete profile',
+      id: 'passport',
+      title: 'Upload passport',
+      description: 'Add a clear scan so AI can verify your identity before submissions.',
+      completed: Boolean(passportDoc),
+      status: passportDoc ? 'complete' : 'pending',
+      aiHint: passportDoc
+        ? 'Passport synced with admissions bots for quick KYC checks.'
+        : 'AI is waiting for a passport scan to pre-verify your applications.',
+      actionLabel: passportDoc ? 'View documents' : 'Upload passport',
       actionHref: '/student/documents',
-      icon: ClipboardList,
-      lastUpdated: getRecordTimestamp(passportDoc ?? transcriptDoc ?? sopDoc ?? null),
+      icon: IdCard,
+      lastUpdated: getRecordTimestamp(passportDoc ?? null),
     },
     {
-      id: 'step-2',
-      title: 'Get matched and supported',
-      description: 'Get matched with best-fit universities and receive personalized support from verified agents and our AI guide, Zoe.',
-      completed: step2Complete,
-      status: step2Complete ? 'complete' : (step1Complete ? 'active' : 'pending'),
-      aiHint: step2Complete 
-        ? 'Applications submitted. AI is tracking offers.' 
-        : 'Select universities and pay the fee to get full support.',
-      actionLabel: hasApplications ? 'View applications' : 'Find universities',
+      id: 'transcript',
+      title: 'Upload transcript',
+      description: 'Share your latest academic transcript for eligibility checks.',
+      completed: Boolean(transcriptDoc),
+      status: transcriptDoc ? 'complete' : 'pending',
+      aiHint: transcriptDoc
+        ? 'AI matched your grades to partner course requirements.'
+        : 'AI can recommend better-fit schools once a transcript is uploaded.',
+      actionLabel: transcriptDoc ? 'View transcript' : 'Upload transcript',
+      actionHref: '/student/documents',
+      icon: FileText,
+      lastUpdated: getRecordTimestamp(transcriptDoc ?? null),
+    },
+    {
+      id: 'sop',
+      title: 'Complete SOP',
+      description: 'Craft your statement of purpose using the AI writer.',
+      completed: Boolean(sopDoc),
+      status: sopDoc ? 'complete' : 'pending',
+      aiHint: sopDoc
+        ? 'AI stored your SOP so agents can annotate instantly.'
+        : 'AI will coach you through each paragraph once you start writing.',
+      actionLabel: sopDoc ? 'Review SOP' : 'Launch SOP generator',
+      actionHref: '/student/sop',
+      icon: ScrollText,
+      lastUpdated: getRecordTimestamp(sopDoc ?? null),
+    },
+    {
+      id: 'universities',
+      title: 'Select universities',
+      description: 'Choose courses so AI can unlock personalised nudges.',
+      completed: hasApplications,
+      status: hasApplications ? 'complete' : 'pending',
+      aiHint: hasApplications
+        ? 'AI is tracking your submissions for interview or document asks.'
+        : 'AI suggests adding at least one university to activate reminders.',
+      actionLabel: hasApplications ? 'View applications' : 'Select universities',
       actionHref: hasApplications ? '/student/applications' : '/student/applications/new',
-      icon: Compass,
-      lastUpdated: getRecordTimestamp(applications[0] ?? successfulPayment ?? null),
+      icon: School,
+      lastUpdated: getRecordTimestamp(latestApplication ?? null),
     },
     {
-      id: 'step-3',
-      title: 'Receive offers and visa guidance',
-      description: 'Accept your offers, navigate the visa process with confidence, and prepare for your journey abroad.',
-      completed: step3Complete,
-      status: step3Complete ? 'complete' : (step2Complete ? 'active' : 'pending'),
-      aiHint: step3Complete 
-        ? 'Visa documents ready. Good luck!' 
-        : 'Upload financial proofs to unlock visa guidance.',
-      actionLabel: step3Complete ? 'View visa docs' : 'Upload visa docs',
+      id: 'payment',
+      title: 'Pay application fee',
+      description: 'Secure your seat by clearing at least one application fee.',
+      completed: hasPaidFee,
+      status: hasPaidFee ? 'complete' : hasPaymentAttempt ? 'active' : 'pending',
+      aiHint: hasPaidFee
+        ? 'AI filed the receipt with every university workspace.'
+        : hasPaymentAttempt
+        ? 'AI is monitoring the payment gateway—no manual refresh needed.'
+        : hasApplications
+        ? 'AI recommends clearing one fee to keep reviews on track.'
+        : 'Pick universities first and AI will watch your payment timeline.',
+      actionLabel: hasPaidFee ? 'View payments' : 'Go to payments',
+      actionHref: '/student/payments',
+      icon: CreditCard,
+      lastUpdated: getRecordTimestamp(successfulPayment ?? pendingPayment ?? sortedPayments[0] ?? null),
+    },
+    {
+      id: 'visa',
+      title: 'Prepare visa documents',
+      description: 'Upload financial proofs so AI can pre-check visa readiness.',
+      completed: Boolean(visaDoc),
+      status: visaDoc ? 'complete' : 'pending',
+      aiHint: visaDoc
+        ? 'AI marked your finances as visa-ready in the background.'
+        : 'AI will stage your embassy checklist once finances are uploaded.',
+      actionLabel: visaDoc ? 'Review visa docs' : 'Upload visa docs',
       actionHref: '/student/documents',
-      icon: PlaneTakeoff,
+      icon: ShieldCheck,
       lastUpdated: getRecordTimestamp(visaDoc ?? null),
     },
   ];
@@ -340,33 +379,52 @@ export default function StudentOnboarding() {
       // Build checklist
       const items: ChecklistItem[] = [
         {
-          id: 'step-1',
-          title: 'Start your profile',
-          description: 'Create your profile once, upload your documents, and let our AI build your perfect application package.',
+          id: 'personal',
+          title: 'Complete Personal Information',
+          description: 'Add your legal name, contact details, and passport information',
           completed: !!(
-            documentsList.some((d) => d.document_type === 'passport') &&
-            documentsList.some((d) => d.document_type === 'transcript') &&
-            documentsList.some((d) => d.document_type === 'personal_statement')
+            currentStudent?.legal_name &&
+            currentStudent?.contact_email &&
+            currentStudent?.passport_number
           ),
-          icon: ClipboardList,
-          link: '/student/documents',
+          icon: FileText,
+          link: '/student/profile',
         },
         {
-          id: 'step-2',
-          title: 'Get matched and supported',
-          description: 'Get matched with best-fit universities and receive personalized support from verified agents and our AI guide, Zoe.',
-          completed:
-            applicationsList.length > 0 &&
-            paymentsList.some((p) => p.status === 'succeeded'),
-          icon: Compass,
-          link: '/student/applications/new',
+          id: 'education',
+          title: 'Add Education History',
+          description: 'Add at least one education record (high school or university)',
+          completed: educationCount > 0,
+          icon: GraduationCap,
+          link: '/student/profile#education',
         },
         {
-          id: 'step-3',
-          title: 'Receive offers and visa guidance',
-          description: 'Accept your offers, navigate the visa process with confidence, and prepare for your journey abroad.',
-          completed: documentsList.some((d) => d.document_type === 'financial_document'),
-          icon: PlaneTakeoff,
+          id: 'tests',
+          title: 'Add English Test Scores',
+          description: 'Upload your IELTS, TOEFL, or other English test results',
+          completed: testScoresCount > 0,
+          icon: Award,
+          link: '/student/profile#tests',
+        },
+        {
+          id: 'finances',
+          title: 'Complete Financial Information',
+          description: 'Provide details about your finances and sponsorship',
+          completed: !!(
+            currentStudent?.finances_json &&
+            typeof currentStudent.finances_json === 'object' &&
+            currentStudent.finances_json !== null &&
+            Object.keys(currentStudent.finances_json as Record<string, unknown>).length > 0
+          ),
+          icon: DollarSign,
+          link: '/student/profile#finances',
+        },
+        {
+          id: 'documents',
+          title: 'Upload Required Documents',
+          description: 'Upload passport, transcripts, and other key documents',
+          completed: documentsCount >= 2,
+          icon: FileCheck,
           link: '/student/documents',
         },
       ];

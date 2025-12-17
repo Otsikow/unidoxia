@@ -259,7 +259,7 @@ const Index = () => {
         <TypewriterText
           prefix={heroTitleParts.prefix}
           highlight={heroTitleParts.highlight}
-          phrases={["Your Journey", "Visa Confidence", "Offer Accepted"]}
+          phrases={["Your Future", "Your Dreams", "Success"]}
           suffix={heroTitleParts.suffix}
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
         />
