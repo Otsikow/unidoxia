@@ -584,91 +584,61 @@ const en = {
         },
       journeyRibbon: {
         items: {
-          discover: {
-            stage: "Explore Global Partners",
+          startProfile: {
+            stage: "Start your profile",
+            metricValue: "5000+",
+            metricLabel: "Active Profiles",
+            description:
+              "Create your profile once, upload your documents, and let our AI build your perfect application package.",
+            ctaLabel: "Start Profile",
+          },
+          getMatched: {
+            stage: "Get matched and supported",
             metricValue: "200+",
             metricLabel: "Partner Universities",
             description:
-              "AI-matched course recommendations surface the best-fit universities the moment you sign up.",
-            ctaLabel: "Start Application",
+              "Get matched with best-fit universities and receive personalized support from verified agents and our AI guide, Zoe.",
+            ctaLabel: "Get Matched",
           },
-          plan: {
-            stage: "Build Your Roadmap",
-            metricValue: "5000+",
-            metricLabel: "Personalized plans created",
-            description:
-              "Task checklists and smart reminders keep thousands of students organized from transcripts to statements.",
-            ctaLabel: "",
-          },
-          collaborate: {
-            stage: "Collaborate with Advisors",
-            metricValue: "24h",
-            metricLabel: "Average agent response",
-            description:
-              "Verified advisors co-edit documents, answer questions, and align timelines in real time across every channel.",
-            ctaLabel: "Meet Your Agent",
-          },
-          submit: {
-            stage: "Streamline Applications",
+          receiveOffers: {
+            stage: "Receive offers and visa guidance",
             metricValue: "95%",
             metricLabel: "Success Rate",
             description:
-              "Centralized submissions with proactive nudges help applications move forward without missing a single deadline.",
-            ctaLabel: "",
-          },
-          celebrate: {
-            stage: "Launch Your Journey",
-            metricValue: "50+",
-            metricLabel: "Countries represented",
-            description:
-              "Visa-ready checklists and pre-departure prep launch students to campuses across the globe with confidence.",
+              "Accept your offers, navigate the visa process with confidence, and prepare for your journey abroad.",
             ctaLabel: "",
           },
         },
       },
       storyboard: {
-        heading: "How UniDoxia Simplifies Every Step",
+        heading: "How UniDoxia Works",
         subheading:
-          "Follow the storyboard to see exactly how our platform and people guide your application from idea to arrival.",
+          "Your journey to studying abroad in three simple steps.",
         stepLabel: "Step {{number}}",
         steps: {
-          discover: {
-            title: "Discover Your Best-Fit Courses",
+          startProfile: {
+            title: "Start your profile",
             description:
-              "Tell us your goals and academics, and UniDoxia instantly curates universities, courses, and scholarships that match.",
+              "Create your profile once, upload your documents, and let our AI build your perfect application package.",
             support:
-              "Smart filters and AI-powered recommendations remove the guesswork so you can shortlist confident choices in minutes.",
-            imageAlt: "Student reviewing university courses on a campus tour",
+              "Our AI automatically organizes your documents and suggests the best programs for your background.",
+            imageAlt: "Student creating their profile on a laptop",
           },
-          plan: {
-            title: "Build a Personalized Application Plan",
+          getMatched: {
+            title: "Get matched and supported",
             description:
-              "Upload transcripts, test scores, and statements with guided checklists that break everything into manageable tasks.",
-            support: "Auto-reminders and document tips keep you organized and ahead of every deadline.",
-            imageAlt: "Student planning application tasks on a laptop outdoors",
-          },
-          collaborate: {
-            title: "Collaborate with Your Expert Agent",
-            description:
-              "Work side-by-side with a verified UniDoxia advisor to polish documents, align on timelines, and stay interview ready.",
+              "Get matched with best-fit universities and receive personalized support from verified agents and our AI guide, Zoe.",
             support:
-              "Shared workspaces, annotated feedback, and instant messaging keep every decision transparent and stress-free.",
-            imageAlt: "Student connecting with an education agent using a mobile phone",
+              "Verified agents and Zoe guide you through every question, ensuring your applications are perfect.",
+            imageAlt: "Student receiving support from an agent",
           },
-          track: {
-            title: "Submit & Track Without Stress",
+          receiveOffers: {
+            title: "Receive offers and visa guidance",
             description:
-              "Apply to multiple universities at once and follow every review, request, and offer from one simple timeline.",
-            support: "Live status indicators and proactive nudges flag the next action so nothing slips through the cracks.",
-            imageAlt: "Student checking application progress while walking on campus",
-          },
-          celebrate: {
-            title: "Celebrate & Prepare for Departure",
-            description:
-              "Accept your offer, finalize visa steps, and access pre-departure resources tailored to your destination.",
+              "Accept your offers, navigate the visa process with confidence, and prepare for your journey abroad.",
             support:
-              "Visa checklists, housing guidance, and enrollment confirmations keep you on track right up to takeoff.",
-            imageAlt: "Student celebrating visa approval with documents in hand",
+              "From visa checklists to pre-departure briefings, we ensure you land on campus ready to succeed.",
+            imageAlt: "Student celebrating their university offer",
           },
         },
       },
