@@ -3,15 +3,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, FileText, Send, CheckCircle, GraduationCap, Building2 } from "lucide-react";
+import { ArrowRight, Check, FileText, CheckCircle, GraduationCap, Building2, ClipboardList, Compass, PlaneTakeoff } from "lucide-react";
 import BackButton from "@/components/BackButton";
 
 // Application steps data
 const applicationSteps = [
-  { id: 1, label: "Personal Info", icon: FileText, duration: 800 },
-  { id: 2, label: "Documents", icon: FileText, duration: 1200 },
-  { id: 3, label: "Review", icon: CheckCircle, duration: 800 },
-  { id: 4, label: "Submit", icon: Send, duration: 600 },
+  { id: 1, label: "Start your profile", icon: ClipboardList, duration: 1000 },
+  { id: 2, label: "Get matched and supported", icon: Compass, duration: 1200 },
+  { id: 3, label: "Receive offers and visa guidance", icon: PlaneTakeoff, duration: 1200 },
 ];
 
 // University silhouette data with country flags
