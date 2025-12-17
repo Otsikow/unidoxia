@@ -1805,16 +1805,31 @@ export function ApplicationReviewDialog({
                                   })()}
 
                                   {documentUrls[doc.id] ? (
-                                    <Button variant="ghost" size="sm" asChild>
-                                      <a
-                                        href={documentUrls[doc.id]}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <>
+                                      <Button variant="ghost" size="sm" asChild>
+                                        <a
+                                          href={documentUrls[doc.id]}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          View
+                                        </a>
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        asChild
                                       >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        View
-                                      </a>
-                                    </Button>
+                                        <a
+                                          href={documentUrls[doc.id]}
+                                          download={doc.fileName}
+                                        >
+                                          <Download className="h-4 w-4 mr-1" />
+                                          Download
+                                        </a>
+                                      </Button>
+                                    </>
                                   ) : (
                                     <Button variant="ghost" size="sm" disabled>
                                       <AlertCircle className="h-4 w-4 mr-1" />
