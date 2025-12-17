@@ -406,7 +406,7 @@ const formatDocumentType = (type: string | null) => {
 };
 
 /* ======================================================
-   Signed URL helper
+   Signed URL helper via Edge Function
 ====================================================== */
 
 const normalizeStoragePath = (storagePath: string): string => {
@@ -415,19 +415,43 @@ const normalizeStoragePath = (storagePath: string): string => {
   return storagePath.replace(/^student-documents\//, "");
 };
 
-const getSignedUrl = async (storagePath: string | null): Promise<string | null> => {
+const getSignedUrlViaEdge = async (
+  documentId: string,
+  storagePath: string | null
+): Promise<string | null> => {
   if (!storagePath) return null;
 
   const objectPath = normalizeStoragePath(storagePath);
 
-  const { data, error } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .createSignedUrl(objectPath, 3600); // 1 hour expiry
+  try {
+    // Use edge function to generate signed URL (bypasses RLS issues)
+    const { data, error } = await supabase.functions.invoke("get-document-url", {
+      body: { documentId, storagePath: objectPath },
+    });
 
-  if (!error && data?.signedUrl) return data.signedUrl;
+    if (!error && data?.signedUrl) {
+      console.log("[ApplicationReview] Got signed URL via edge function");
+      return data.signedUrl;
+    }
 
-  console.error("Failed to get signed URL:", error);
-  return null;
+    console.error("[ApplicationReview] Edge function error:", error || data?.error);
+
+    // Fallback to direct storage API (may fail due to RLS but worth trying)
+    const { data: directData, error: directError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .createSignedUrl(objectPath, 3600);
+
+    if (!directError && directData?.signedUrl) {
+      console.log("[ApplicationReview] Got signed URL via direct storage API");
+      return directData.signedUrl;
+    }
+
+    console.error("[ApplicationReview] Direct storage error:", directError);
+    return null;
+  } catch (err) {
+    console.error("[ApplicationReview] Failed to get signed URL:", err);
+    return null;
+  }
 };
 
 /* ======================================================
@@ -593,7 +617,7 @@ export function ApplicationReviewDialog({
 
       for (const doc of application.documents) {
         if (doc.storagePath) {
-          const signedUrl = await getSignedUrl(doc.storagePath);
+          const signedUrl = await getSignedUrlViaEdge(doc.id, doc.storagePath);
           if (signedUrl) {
             urls[doc.id] = signedUrl;
           }
