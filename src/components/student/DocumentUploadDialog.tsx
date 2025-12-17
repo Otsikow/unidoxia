@@ -31,6 +31,7 @@ interface DocumentUploadDialogProps {
 }
 
 const DOCUMENT_TYPES = [
+  { value: 'passport_photo', label: 'Passport Photo' },
   { value: 'passport', label: 'Passport' },
   { value: 'transcript', label: 'Transcript' },
   { value: 'ielts', label: 'IELTS' },

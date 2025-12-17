@@ -160,34 +160,82 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
       if (appData.student_id) {
         console.log("[useExtendedApplication] Fetching student:", appData.student_id);
-        const { data: studentData, error: studentError } = await supabase
-          .from("students")
-          .select(`
-            id,
-            profile_id,
-            legal_name,
-            preferred_name,
-            contact_email,
-            contact_phone,
-            nationality,
-            date_of_birth,
-            passport_number,
-            passport_expiry,
-            current_country,
-            address,
-            guardian,
-            finances_json,
-            visa_history_json,
-            profile:profiles (
+        
+        // Try the security definer function first (most reliable for university partners)
+        const { data: rpcStudentData, error: rpcError } = await supabase.rpc(
+          "get_student_details_for_application",
+          { p_application_id: applicationId }
+        );
+
+        let studentData: any = null;
+        let studentError: any = null;
+
+        if (!rpcError && rpcStudentData && rpcStudentData.length > 0) {
+          // Use RPC data - transform to expected format
+          const rpcRow = rpcStudentData[0];
+          studentData = {
+            id: rpcRow.student_id,
+            profile_id: rpcRow.profile_id,
+            legal_name: rpcRow.legal_name,
+            preferred_name: rpcRow.preferred_name,
+            contact_email: rpcRow.contact_email,
+            contact_phone: rpcRow.contact_phone,
+            nationality: rpcRow.nationality,
+            date_of_birth: rpcRow.date_of_birth,
+            passport_number: rpcRow.passport_number,
+            passport_expiry: rpcRow.passport_expiry,
+            current_country: rpcRow.current_country,
+            address: rpcRow.address,
+            guardian: rpcRow.guardian,
+            finances_json: rpcRow.finances_json,
+            visa_history_json: rpcRow.visa_history_json,
+            profile: {
+              full_name: rpcRow.profile_full_name,
+              email: rpcRow.profile_email,
+              phone: rpcRow.profile_phone,
+              avatar_url: rpcRow.profile_avatar_url,
+            },
+          };
+          console.log("[useExtendedApplication] Student loaded via RPC:", studentData.id);
+        } else {
+          // Fallback to direct query
+          console.log(
+            "[useExtendedApplication] RPC not available or failed, trying direct query:",
+            rpcError?.message
+          );
+          
+          const directResult = await supabase
+            .from("students")
+            .select(`
               id,
-              full_name,
-              email,
-              phone,
-              avatar_url
-            )
-          `)
-          .eq("id", appData.student_id)
-          .single();
+              profile_id,
+              legal_name,
+              preferred_name,
+              contact_email,
+              contact_phone,
+              nationality,
+              date_of_birth,
+              passport_number,
+              passport_expiry,
+              current_country,
+              address,
+              guardian,
+              finances_json,
+              visa_history_json,
+              profile:profiles (
+                id,
+                full_name,
+                email,
+                phone,
+                avatar_url
+              )
+            `)
+            .eq("id", appData.student_id)
+            .single();
+
+          studentData = directResult.data;
+          studentError = directResult.error;
+        }
 
         if (studentError) {
           console.warn("[useExtendedApplication] Student fetch warning:", studentError);

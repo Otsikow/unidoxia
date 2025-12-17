@@ -31,7 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// ScrollArea removed - using native overflow-y-auto for single scroll container
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -250,25 +250,76 @@ const explainUpdateError = (
 ) => {
   const msg = error.message ?? "";
   const code = error.code ?? "";
+  const details = error.details ?? "";
+  const hint = error.hint ?? "";
+
+  // Log detailed error for debugging
+  console.error("[ApplicationReview] Update error details:", { code, msg, details, hint, applicationId: context.applicationId });
 
   if (msg.includes("Could not find the function")) {
     return {
       title: "Backend misconfigured",
       description:
-        `RPC public.update_application_review is missing or not executable. ` +
-        `Deploy migrations and reload PostgREST schema. ` +
-        `Application ID: ${context.applicationId}. ` +
-        `Raw: ${formatSupabaseError(error)}`,
+        `The update function is missing. Please contact support or refresh the page. ` +
+        `Application ID: ${context.applicationId}.`,
     };
   }
 
   if (code === "42501" || msg.toLowerCase().includes("permission")) {
+    // Check for specific permission issues from the RPC error messages
+    if (msg.includes("tenant_id is NULL") || msg.includes("not linked to university")) {
+      return {
+        title: "Account not linked to university",
+        description:
+          `Your account is not properly linked to a university (tenant_id is missing). ` +
+          `Please contact support to verify your account configuration.`,
+      };
+    }
+    if (msg.includes("not associated with a university") || msg.includes("tenant not found")) {
+      return {
+        title: "Account not linked to university",
+        description:
+          `Your account is not properly linked to a university. ` +
+          `Please contact support to verify your account configuration.`,
+      };
+    }
+    if (msg.includes("different university") || msg.includes("app tenant")) {
+      return {
+        title: "Permission denied",
+        description:
+          `This application belongs to a different university. ` +
+          `You can only update applications to your own university's programs.`,
+      };
+    }
+    if (msg.includes("app tenant is NULL") || msg.includes("not properly configured")) {
+      return {
+        title: "Application configuration issue",
+        description:
+          `This application's program or university is not properly configured. ` +
+          `Please contact support to resolve this issue.`,
+      };
+    }
+    if (msg.includes("role")) {
+      return {
+        title: "Role permission denied",
+        description:
+          `Your account role does not have permission to update applications. ` +
+          `Only university partners and staff can update internal notes.`,
+      };
+    }
+    // If the message contains useful details, show them
+    if (msg.length > 20 && !msg.includes("permission denied")) {
+      return {
+        title: "Permission denied",
+        description: msg,
+      };
+    }
     return {
       title: "Permission denied",
       description:
-        `RLS or role permissions blocked this update. ` +
-        `Application ID: ${context.applicationId}. ` +
-        `Raw: ${formatSupabaseError(error)}`,
+        `You don't have permission to update this application. ` +
+        `This may be due to account configuration. Please try refreshing the page or contact support. ` +
+        `(Error: ${code})`,
     };
   }
 
@@ -276,15 +327,29 @@ const explainUpdateError = (
     return {
       title: "Invalid status",
       description:
-        `Status value not accepted by database enum. ` +
-        `Application ID: ${context.applicationId}. ` +
-        `Raw: ${formatSupabaseError(error)}`,
+        `The selected status is not valid. Please select a different status.`,
+    };
+  }
+
+  if (code === "P0002" || msg.toLowerCase().includes("not found")) {
+    return {
+      title: "Application not found",
+      description:
+        `This application may have been deleted or moved. Please refresh the page and try again.`,
+    };
+  }
+
+  // If there's a message, show it
+  if (msg.length > 10) {
+    return {
+      title: "Update failed",
+      description: msg,
     };
   }
 
   return {
     title: "Update failed",
-    description: `Application ID: ${context.applicationId}. Raw: ${formatSupabaseError(error)}`,
+    description: `An unexpected error occurred. Please try again or contact support. (Error: ${code || 'unknown'})`,
   };
 };
 
@@ -378,6 +443,7 @@ export function ApplicationReviewDialog({
   const [activeTab, setActiveTab] = useState<"overview" | "student" | "documents" | "notes" | "messages">("overview");
   const [internalNotes, setInternalNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [notesSavedAt, setNotesSavedAt] = useState<Date | null>(null);
 
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
@@ -391,6 +457,16 @@ export function ApplicationReviewDialog({
   // Messaging state
   const [messageContent, setMessageContent] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Array<{
+    id: string;
+    content: string;
+    senderId: string;
+    senderName: string;
+    createdAt: string;
+    isOwn: boolean;
+  }>>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   // Document signed URLs
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
@@ -405,7 +481,91 @@ export function ApplicationReviewDialog({
     );
     setActiveTab("overview");
     setDocumentUrls({});
+    setMessages([]);
+    setConversationId(null);
+    setNotesSavedAt(null);
   }, [application]);
+
+  // Load messages when switching to messages tab
+  const loadMessages = useCallback(async () => {
+    if (!application?.student?.profileId || !tenantId) return;
+
+    setLoadingMessages(true);
+    console.log("[ApplicationReview] Loading messages for student:", application.student.profileId);
+
+    try {
+      // Get the current user
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id;
+      if (!currentUserId) return;
+
+      // Get or create conversation to find the conversation ID
+      const { data: convId, error: convError } = await supabase.rpc(
+        "get_or_create_conversation",
+        {
+          p_user_id: null,
+          p_other_user_id: application.student.profileId,
+          p_tenant_id: tenantId,
+        }
+      );
+
+      if (convError) {
+        console.error("[ApplicationReview] Error getting conversation:", convError);
+        setLoadingMessages(false);
+        return;
+      }
+
+      if (!convId) {
+        setLoadingMessages(false);
+        return;
+      }
+
+      setConversationId(convId);
+
+      // Fetch messages from the conversation
+      const { data: messagesData, error: msgError } = await supabase
+        .from("conversation_messages")
+        .select(`
+          id,
+          content,
+          sender_id,
+          created_at,
+          sender:profiles!sender_id(full_name)
+        `)
+        .eq("conversation_id", convId)
+        .order("created_at", { ascending: true })
+        .limit(50);
+
+      if (msgError) {
+        console.error("[ApplicationReview] Error fetching messages:", msgError);
+        setLoadingMessages(false);
+        return;
+      }
+
+      const formattedMessages = (messagesData ?? []).map((msg: any) => ({
+        id: msg.id,
+        content: msg.content,
+        senderId: msg.sender_id,
+        senderName: msg.sender?.full_name ?? "Unknown",
+        createdAt: msg.created_at,
+        isOwn: msg.sender_id === currentUserId,
+      }));
+
+      setMessages(formattedMessages);
+      console.log("[ApplicationReview] Loaded messages:", formattedMessages.length);
+    } catch (error) {
+      console.error("[ApplicationReview] Error loading messages:", error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, [application?.student?.profileId, tenantId]);
+
+  // Load messages when switching to messages tab
+  useEffect(() => {
+    if (activeTab === "messages" && open && application?.student?.profileId) {
+      void loadMessages();
+    }
+  }, [activeTab, open, application?.student?.profileId, loadMessages]);
 
   // Load signed URLs for documents
   useEffect(() => {
@@ -451,16 +611,49 @@ export function ApplicationReviewDialog({
     setSavingNotes(true);
     console.log("[ApplicationReview] Saving notes for application:", application.id);
 
-    let { error } = await supabase.rpc("update_application_review" as any, {
+    let data: any = null;
+    let error: any = null;
+
+    // APPROACH 1: Try the text version of the RPC first (handles enum conversion internally)
+    const textRpcResult = await supabase.rpc("update_application_review_text" as any, {
       p_application_id: application.id,
       p_new_status: null,
       p_internal_notes: internalNotes,
       p_append_timeline_event: null,
     });
 
-    if (error && isUpdateApplicationReviewRpcMissing(error)) {
-      console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      // Preflight: if we can't even see the row, RLS will also block the update.
+    if (!textRpcResult.error) {
+      data = textRpcResult.data;
+      error = null;
+      console.log("[ApplicationReview] update_application_review_text succeeded for notes");
+    } else if (!isUpdateApplicationReviewRpcMissing(textRpcResult.error)) {
+      error = textRpcResult.error;
+      console.error("[ApplicationReview] update_application_review_text failed:", error);
+    }
+
+    // APPROACH 2: Try enum version if text version is missing
+    if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
+      console.log("[ApplicationReview] Text RPC missing, trying enum version");
+      const enumResult = await supabase.rpc("update_application_review" as any, {
+        p_application_id: application.id,
+        p_new_status: null,
+        p_internal_notes: internalNotes,
+        p_append_timeline_event: null,
+      });
+      
+      if (!enumResult.error) {
+        data = enumResult.data;
+        error = null;
+      } else if (!isUpdateApplicationReviewRpcMissing(enumResult.error)) {
+        error = enumResult.error;
+      }
+    }
+
+    // APPROACH 3: Fall back to direct update
+    if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
+      console.log("[ApplicationReview] RPC missing, falling back to direct update for notes");
+      
+      // Preflight check
       const preflight = await supabase
         .from("applications")
         .select("id")
@@ -478,11 +671,12 @@ export function ApplicationReviewDialog({
       } else {
         const fallback = await supabase
           .from("applications")
-          .update({ internal_notes: internalNotes })
+          .update({ internal_notes: internalNotes, updated_at: new Date().toISOString() })
           .eq("id", application.id)
-          .select("id")
+          .select("id, internal_notes, updated_at")
           .limit(1);
 
+        data = fallback.data;
         error = fallback.error;
         if (!error && (!fallback.data || fallback.data.length === 0)) {
           error = {
@@ -501,13 +695,40 @@ export function ApplicationReviewDialog({
       const explained = explainUpdateError(error, {
         applicationId: application.id,
       });
-      toast({ ...explained, variant: "destructive" });
+      toast({ 
+        ...explained, 
+        variant: "destructive",
+        duration: 10000, // Show error longer so user can read it
+      });
       return;
     }
 
-    console.log("[ApplicationReview] Notes saved successfully");
+    // Verify we got data back from the update
+    const row = firstRow<any>(data as any);
+    if (!row) {
+      console.error("[ApplicationReview] Notes update returned no data - update may not have persisted");
+      toast({
+        title: "Save may not have completed",
+        description: "The notes update completed but could not be verified. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const savedAt = new Date();
+    setNotesSavedAt(savedAt);
+    
+    console.log("[ApplicationReview] Notes saved successfully:", {
+      applicationId: application.id,
+      notesLength: internalNotes.length,
+      updatedAt: row.updated_at ?? savedAt.toISOString()
+    });
+    
     onNotesUpdate?.(application.id, internalNotes);
-    toast({ title: "Saved", description: "Internal notes updated" });
+    toast({ 
+      title: "Notes saved", 
+      description: `Internal notes updated successfully at ${savedAt.toLocaleTimeString()}`,
+    });
   }, [application, internalNotes, onNotesUpdate, toast]);
 
   /* ===========================
@@ -520,23 +741,97 @@ export function ApplicationReviewDialog({
     setUpdatingStatus(true);
     console.log("[ApplicationReview] Updating status:", { applicationId: application.id, newStatus: selectedStatus });
 
-    const timelineEvent = {
-      id: crypto.randomUUID(),
-      action: `Status changed to ${getApplicationStatusLabel(selectedStatus)}`,
-      timestamp: new Date().toISOString(),
-      actor: "University",
-    };
+    // First, run diagnostics to help debug any issues
+    try {
+      const diagResult = await supabase.rpc("diagnose_app_update_issue" as any, {
+        p_app_id: application.id,
+      });
+      if (diagResult.data) {
+        console.log("[ApplicationReview] Diagnostics:", diagResult.data);
+      }
+    } catch (diagError) {
+      console.log("[ApplicationReview] Diagnostics function not available:", diagError);
+    }
 
-    let { data, error } = await supabase.rpc("update_application_review" as any, {
-      p_application_id: application.id,
-      p_new_status: selectedStatus,
-      p_internal_notes: null,
-      p_append_timeline_event: timelineEvent,
-    });
+    let data: any = null;
+    let error: any = null;
 
-    if (error && isUpdateApplicationReviewRpcMissing(error)) {
-      console.log("[ApplicationReview] RPC missing, falling back to direct update");
-      // Preflight: if we can't see the row, RLS will also prevent returning/updating it.
+    // APPROACH 1: Try the dedicated university_update_application_status RPC first
+    // This is the most reliable method with explicit authorization and SECURITY DEFINER
+    try {
+      console.log("[ApplicationReview] Trying university_update_application_status RPC...");
+      const rpcResult = await supabase.rpc("university_update_application_status" as any, {
+        p_application_id: application.id,
+        p_status: selectedStatus,
+        p_notes: null,
+      });
+      
+      if (!rpcResult.error) {
+        // This RPC returns JSONB directly with {id, status, updated_at}
+        data = rpcResult.data;
+        error = null;
+        console.log("[ApplicationReview] university_update_application_status succeeded:", data);
+      } else if (!isUpdateApplicationReviewRpcMissing(rpcResult.error)) {
+        // It's a real error (not just "function not found"), use it
+        error = rpcResult.error;
+        console.error("[ApplicationReview] university_update_application_status failed:", error);
+      } else {
+        // Function not found, try fallbacks
+        console.log("[ApplicationReview] university_update_application_status not found, trying fallbacks");
+      }
+    } catch (e) {
+      console.warn("[ApplicationReview] university_update_application_status exception:", e);
+    }
+
+    // APPROACH 2: Try update_application_review_text if first approach didn't work
+    if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
+      const timelineEvent = {
+        id: crypto.randomUUID(),
+        action: `Status changed to ${getApplicationStatusLabel(selectedStatus)}`,
+        timestamp: new Date().toISOString(),
+        actor: "University",
+      };
+
+      const textRpcResult = await supabase.rpc("update_application_review_text" as any, {
+        p_application_id: application.id,
+        p_new_status: selectedStatus,
+        p_internal_notes: null,
+        p_append_timeline_event: timelineEvent,
+      });
+
+      if (!textRpcResult.error) {
+        data = textRpcResult.data;
+        error = null;
+        console.log("[ApplicationReview] update_application_review_text succeeded");
+      } else if (!isUpdateApplicationReviewRpcMissing(textRpcResult.error)) {
+        error = textRpcResult.error;
+        console.error("[ApplicationReview] update_application_review_text failed:", error);
+      }
+    }
+
+    // APPROACH 3: Try enum version of update_application_review
+    if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
+      console.log("[ApplicationReview] Trying enum version of update_application_review");
+      const enumResult = await supabase.rpc("update_application_review" as any, {
+        p_application_id: application.id,
+        p_new_status: selectedStatus,
+        p_internal_notes: null,
+        p_append_timeline_event: null,
+      });
+      
+      if (!enumResult.error) {
+        data = enumResult.data;
+        error = null;
+      } else if (!isUpdateApplicationReviewRpcMissing(enumResult.error)) {
+        error = enumResult.error;
+      }
+    }
+
+    // APPROACH 4: Direct table update as last resort
+    if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
+      console.log("[ApplicationReview] All RPCs failed/missing, falling back to direct update");
+      
+      // Preflight check
       const preflight = await supabase
         .from("applications")
         .select("id")
@@ -579,13 +874,34 @@ export function ApplicationReviewDialog({
       const explained = explainUpdateError(error, {
         applicationId: application.id,
       });
-      toast({ ...explained, variant: "destructive" });
+      toast({ ...explained, variant: "destructive", duration: 10000 });
       return;
     }
 
+    // Verify we got data back from the update
     const row = firstRow<any>(data as any);
-    const finalStatus = String(row?.status ?? selectedStatus);
-    console.log("[ApplicationReview] Status updated successfully:", finalStatus);
+    if (!row) {
+      console.error("[ApplicationReview] Status update returned no data - update may not have persisted");
+      toast({
+        title: "Update may not have saved",
+        description: "The status update completed but could not be verified. Please refresh and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const finalStatus = String(row.status);
+    console.log("[ApplicationReview] Status updated successfully:", {
+      requestedStatus: selectedStatus,
+      savedStatus: finalStatus,
+      updatedAt: row.updated_at
+    });
+
+    // Verify the saved status matches what we requested
+    if (finalStatus !== selectedStatus) {
+      console.warn("[ApplicationReview] Status mismatch:", { requested: selectedStatus, saved: finalStatus });
+    }
+
     onStatusUpdate?.(application.id, finalStatus);
 
     toast({
@@ -599,7 +915,34 @@ export function ApplicationReviewDialog({
   ============================ */
 
   const handleRequestDocument = useCallback(async () => {
-    if (!application?.id || !application.student?.id || !documentRequestType) {
+    // Debug logging to diagnose "Missing information" error
+    console.log("[ApplicationReview] handleRequestDocument called:", {
+      applicationId: application?.id,
+      studentId: application?.student?.id,
+      documentRequestType,
+      tenantId,
+    });
+
+    // More specific validation with targeted error messages
+    if (!application?.id) {
+      toast({
+        title: "Application not loaded",
+        description: "Please wait for the application to load and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!application.student?.id) {
+      toast({
+        title: "Student data unavailable",
+        description: "Student information is not available for this application.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!documentRequestType || documentRequestType.trim() === "") {
       toast({
         title: "Missing information",
         description: "Please select a document type to request.",
@@ -611,17 +954,23 @@ export function ApplicationReviewDialog({
     if (!tenantId) {
       toast({
         title: "Missing tenant context",
-        description: "Unable to verify your university profile.",
+        description: "Unable to verify your university profile. Please refresh the page.",
         variant: "destructive",
       });
       return;
     }
 
     setRequestingDocument(true);
-    console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, type: documentRequestType });
+    console.log("[ApplicationReview] Requesting document:", { applicationId: application.id, studentId: application.student.id, type: documentRequestType, tenantId });
+
+    // Get current user for requested_by field
+    const { data: userData } = await supabase.auth.getUser();
 
     const { error } = await supabase.from("document_requests").insert([{
+      tenant_id: tenantId,
       student_id: application.student.id,
+      application_id: application.id,
+      requested_by: userData?.user?.id,
       document_type: documentRequestType,
       status: "pending",
       notes: documentRequestNote || null,
@@ -667,42 +1016,74 @@ export function ApplicationReviewDialog({
     console.log("[ApplicationReview] Sending message to student:", application.student.profileId);
 
     try {
-      // Get or create conversation with student
-      const { data: conversationId, error: convError } = await supabase.rpc(
-        "get_or_create_conversation",
-        {
-          p_user_id: null, // Current user
-          p_other_user_id: application.student.profileId,
-          p_tenant_id: tenantId,
-        }
-      );
-
-      if (convError) {
-        throw convError;
+      // Get current user first
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id;
+      if (!currentUserId) {
+        throw new Error("Not authenticated");
       }
 
-      if (!conversationId) {
-        throw new Error("Failed to create conversation");
+      // Use existing conversationId if available, otherwise get/create one
+      let activeConversationId = conversationId;
+      if (!activeConversationId) {
+        const { data: convId, error: convError } = await supabase.rpc(
+          "get_or_create_conversation",
+          {
+            p_user_id: null, // Current user
+            p_other_user_id: application.student.profileId,
+            p_tenant_id: tenantId,
+          }
+        );
+
+        if (convError) {
+          throw convError;
+        }
+
+        if (!convId) {
+          throw new Error("Failed to create conversation");
+        }
+
+        activeConversationId = convId;
+        setConversationId(convId);
       }
 
       // Send the message
-      const { data: userData } = await supabase.auth.getUser();
-      const { error: msgError } = await supabase.from("conversation_messages").insert([{
-        conversation_id: conversationId,
-        sender_id: userData?.user?.id,
-        content: messageContent.trim(),
-        message_type: "text",
-        metadata: {
-          application_id: application.id,
-          context: "application_review",
-        },
-      }] as any);
+      const { data: msgData, error: msgError } = await supabase
+        .from("conversation_messages")
+        .insert([{
+          conversation_id: activeConversationId,
+          sender_id: currentUserId,
+          content: messageContent.trim(),
+          message_type: "text",
+          metadata: {
+            application_id: application.id,
+            context: "application_review",
+          },
+        }] as any)
+        .select("id, content, sender_id, created_at")
+        .single();
 
       if (msgError) {
         throw msgError;
       }
 
-      console.log("[ApplicationReview] Message sent successfully");
+      console.log("[ApplicationReview] Message sent successfully:", msgData?.id);
+
+      // Add the message to local state immediately for instant UI update
+      if (msgData) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: msgData.id,
+            content: msgData.content,
+            senderId: msgData.sender_id,
+            senderName: "You",
+            createdAt: msgData.created_at,
+            isOwn: true,
+          },
+        ]);
+      }
+
       toast({
         title: "Message sent",
         description: "Your message has been sent to the student.",
@@ -719,7 +1100,7 @@ export function ApplicationReviewDialog({
     } finally {
       setSendingMessage(false);
     }
-  }, [application, messageContent, tenantId, toast]);
+  }, [application, messageContent, conversationId, tenantId, toast]);
 
   /* ===========================
      Computed values
@@ -753,7 +1134,7 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogContent className="!grid-rows-[auto_1fr] w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
           {/* Header */}
           <DialogHeader className="flex-shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -801,7 +1182,7 @@ export function ApplicationReviewDialog({
               <Tabs
                 value={activeTab}
                 onValueChange={(v) => setActiveTab(v as typeof activeTab)}
-                className="flex-1 flex flex-col overflow-hidden"
+                className="flex-1 flex flex-col min-h-0 overflow-hidden"
               >
                 <div className="flex-shrink-0 overflow-x-auto -mx-4 sm:-mx-6 px-4 sm:px-6">
                   <TabsList className="inline-flex w-auto min-w-full sm:grid sm:w-full sm:grid-cols-5 gap-1">
@@ -824,9 +1205,10 @@ export function ApplicationReviewDialog({
                   </TabsList>
                 </div>
 
-                <ScrollArea className="flex-1 h-0 min-h-0 mt-4">
+                {/* Single scroll container for all tab content */}
+                <div className="flex-1 min-h-0 mt-4 overflow-y-auto pr-2 sm:pr-4">
                   {/* Overview Tab */}
-                  <TabsContent value="overview" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
+                  <TabsContent value="overview" className="m-0 space-y-6">
                     {/* Status Update Card */}
                     <Card>
                       <CardHeader className="pb-3 px-3 sm:px-6">
@@ -984,7 +1366,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Student Tab */}
-                  <TabsContent value="student" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
+                  <TabsContent value="student" className="m-0 space-y-6">
                     {!application.student ? (
                       <Card>
                         <CardContent className="py-8 text-center">
@@ -1213,7 +1595,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Documents Tab */}
-                  <TabsContent value="documents" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
+                  <TabsContent value="documents" className="m-0 space-y-6">
                     {/* Uploaded Documents */}
                     <Card>
                       <CardHeader className="pb-3">
@@ -1344,7 +1726,10 @@ export function ApplicationReviewDialog({
                           <Label htmlFor="doc-type">Document Type</Label>
                           <Select
                             value={documentRequestType}
-                            onValueChange={setDocumentRequestType}
+                            onValueChange={(value) => {
+                              console.log("[ApplicationReview] Document type selected:", value);
+                              setDocumentRequestType(value);
+                            }}
                           >
                             <SelectTrigger id="doc-type">
                               <SelectValue placeholder="Select document type" />
@@ -1384,7 +1769,7 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Notes Tab */}
-                  <TabsContent value="notes" className="m-0 space-y-4 sm:space-y-6 pr-3 sm:pr-4 pb-4">
+                  <TabsContent value="notes" className="m-0 space-y-4 sm:space-y-6">
                     <Card>
                       <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
                         <CardTitle className="text-sm sm:text-base">Internal Notes</CardTitle>
@@ -1399,11 +1784,26 @@ export function ApplicationReviewDialog({
                           onChange={(e) => setInternalNotes(e.target.value)}
                           rows={5}
                           className="resize-none text-sm min-h-[120px] sm:min-h-[150px]"
+                          disabled={savingNotes}
                         />
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
-                          <p className="text-[10px] sm:text-xs text-muted-foreground order-2 sm:order-1">
-                            Last saved: {formatDate(application.updatedAt, true)}
-                          </p>
+                          <div className="order-2 sm:order-1 space-y-0.5">
+                            {notesSavedAt ? (
+                              <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Saved at {notesSavedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                              </p>
+                            ) : (
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                Last saved: {formatDate(application.updatedAt, true)}
+                              </p>
+                            )}
+                            {internalNotes !== (application.internalNotes ?? "") && !savingNotes && (
+                              <p className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400">
+                                You have unsaved changes
+                              </p>
+                            )}
+                          </div>
                           <Button
                             onClick={saveNotes}
                             disabled={
@@ -1412,10 +1812,14 @@ export function ApplicationReviewDialog({
                             }
                             className="w-full sm:w-auto h-9 sm:h-10 text-sm order-1 sm:order-2"
                           >
-                            {savingNotes && (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            {savingNotes ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Saving...
+                              </>
+                            ) : (
+                              "Save Notes"
                             )}
-                            Save Notes
                           </Button>
                         </div>
                       </CardContent>
@@ -1440,18 +1844,39 @@ export function ApplicationReviewDialog({
                   </TabsContent>
 
                   {/* Messages Tab */}
-                  <TabsContent value="messages" className="m-0 space-y-6 pr-3 sm:pr-4 pb-4">
+                  <TabsContent value="messages" className="m-0 space-y-4">
+                    {/* Message History */}
                     <Card>
                       <CardHeader className="pb-3">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <MessageSquare className="h-4 w-4" />
-                          Message Student
-                        </CardTitle>
-                        <CardDescription>
-                          Send a message to {application.student?.legalName ?? "the student"}
-                        </CardDescription>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <MessageSquare className="h-4 w-4" />
+                              Conversation with {application.student?.legalName ?? "Student"}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {messages.length > 0
+                                ? `${messages.length} message${messages.length !== 1 ? "s" : ""}`
+                                : "No messages yet"}
+                            </CardDescription>
+                          </div>
+                          {application.student?.profileId && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => void loadMessages()}
+                              disabled={loadingMessages}
+                            >
+                              {loadingMessages ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </CardHeader>
-                      <CardContent className="space-y-4">
+                      <CardContent>
                         {!application.student?.profileId ? (
                           <div className="text-center py-6 text-muted-foreground">
                             <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
@@ -1460,35 +1885,78 @@ export function ApplicationReviewDialog({
                               Student profile is not available for messaging
                             </p>
                           </div>
+                        ) : loadingMessages ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : messages.length === 0 ? (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">No messages yet</p>
+                            <p className="text-xs mt-1">
+                              Send a message to start the conversation
+                            </p>
+                          </div>
                         ) : (
-                          <>
-                            <Textarea
-                              placeholder="Type your message..."
-                              value={messageContent}
-                              onChange={(e) => setMessageContent(e.target.value)}
-                              rows={4}
-                              className="resize-none"
-                            />
-                            <div className="flex items-center justify-between">
-                              <p className="text-xs text-muted-foreground">
-                                Messages are sent to the student's inbox
-                              </p>
-                              <Button
-                                onClick={handleSendMessage}
-                                disabled={!messageContent.trim() || sendingMessage}
+                          <div className="space-y-3">
+                            {messages.map((msg) => (
+                              <div
+                                key={msg.id}
+                                className={`flex flex-col ${msg.isOwn ? "items-end" : "items-start"}`}
                               >
-                                {sendingMessage ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  <Send className="h-4 w-4 mr-2" />
-                                )}
-                                Send Message
-                              </Button>
-                            </div>
-                          </>
+                                <div
+                                  className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                                    msg.isOwn
+                                      ? "bg-primary text-primary-foreground"
+                                      : "bg-muted"
+                                  }`}
+                                >
+                                  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground mt-1 px-1">
+                                  {msg.isOwn ? "You" : msg.senderName} • {formatDate(msg.createdAt, true)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Send Message */}
+                    {application.student?.profileId && (
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm">New Message</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <Textarea
+                            placeholder="Type your message..."
+                            value={messageContent}
+                            onChange={(e) => setMessageContent(e.target.value)}
+                            rows={3}
+                            className="resize-none text-sm"
+                          />
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-muted-foreground">
+                              Messages are sent to the student's inbox
+                            </p>
+                            <Button
+                              onClick={handleSendMessage}
+                              disabled={!messageContent.trim() || sendingMessage}
+                              size="sm"
+                            >
+                              {sendingMessage ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Send className="h-4 w-4 mr-2" />
+                              )}
+                              Send
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
                     <Button
                       variant="outline"
@@ -1499,7 +1967,7 @@ export function ApplicationReviewDialog({
                       Open Full Messages
                     </Button>
                   </TabsContent>
-                </ScrollArea>
+                </div>
               </Tabs>
 
               {/* Footer */}

@@ -1,0 +1,55 @@
+# Performance Rules for UniDoxia Development
+
+## Critical Performance Rules - ALWAYS FOLLOW
+
+### 1. CSS Animations
+- ❌ NEVER add global transitions on all elements
+- ✅ Only animate transform and opacity (GPU-accelerated)
+- ✅ Use specific transition utilities (.transition-smooth, .transition-quick)
+- ❌ Avoid animating box-shadow, width, height, top, left
+
+### 2. Component Optimization
+- ✅ Use React.memo for pure components
+- ✅ Use useMemo for expensive computations
+- ✅ Use useCallback for function props
+- ✅ Prefer OptimizedCard and OptimizedButton components
+
+### 3. Data Fetching
+- ✅ Use useOptimizedQuery instead of useQuery
+- ✅ Select only needed fields from Supabase (no select('*'))
+- ✅ Use commonSelects from supabaseOptimizations
+- ✅ Implement pagination for large datasets
+
+### 4. Code Splitting
+- ✅ Lazy load below-the-fold components
+- ✅ Lazy load heavy components (Charts, Editors, Modals)
+- ✅ Use Suspense with Skeleton fallbacks (not spinners)
+
+### 5. Images
+- ✅ Use LazyImage component for optimized loading
+- ✅ Add loading="lazy" for below-the-fold images
+- ✅ Always provide width and height to prevent CLS
+- ✅ Use WebP format when possible
+
+### 6. Icons
+- ✅ Import from src/lib/icons.ts (centralized)
+- ❌ Never use import * from "lucide-react"
+
+### 7. Loading States
+- ✅ Use Skeleton components (DashboardSkeleton, TableSkeleton, etc.)
+- ❌ Avoid using spinners (Loader2) as primary loading state
+
+### 8. Search & Input
+- ✅ Use useDebounce hook for search inputs
+- ✅ Typical delay: 500ms for search, 300ms for filtering
+
+### 9. Performance Testing
+- ✅ Test with Lighthouse (target: 90+ score)
+- ✅ Test on Slow 3G network
+- ✅ Use Performance Monitor (Ctrl/Cmd + Shift + P)
+- ✅ Check bundle size after changes
+
+### 10. Network Optimization
+- ✅ Respect user network conditions (no heavy loads on slow networks)
+- ✅ Respect prefers-reduced-motion
+- ✅ Respect data saver mode
