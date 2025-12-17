@@ -609,6 +609,54 @@ export function ApplicationReviewDialog({
     void loadSignedUrls();
   }, [application?.documents, open]);
 
+  const openReview = (doc: ApplicationDocument) => {
+    setReviewingDocId(doc.id);
+    setReviewStatusDraft((reviewOverrides[doc.id]?.status ?? doc.reviewStatus) as any);
+    setReviewNotesDraft(reviewOverrides[doc.id]?.notes ?? doc.verificationNotes ?? "");
+  };
+
+  const saveReview = async () => {
+    if (!reviewingDocId) return;
+
+    const doc = application?.documents?.find((d) => d.id === reviewingDocId);
+    if (!doc) return;
+
+    if (doc.source !== "student_documents") {
+      toast({
+        title: "Review not available",
+        description: "This document type can't be reviewed yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSavingReview(true);
+    const { error } = await supabase.rpc("partner_review_student_document" as any, {
+      p_document_id: reviewingDocId,
+      p_status: reviewStatusDraft,
+      p_notes: reviewNotesDraft.trim() ? reviewNotesDraft.trim() : null,
+    });
+
+    if (error) {
+      setSavingReview(false);
+      toast({
+        title: "Failed to save review",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setReviewOverrides((prev) => ({
+      ...prev,
+      [reviewingDocId]: { status: reviewStatusDraft, notes: reviewNotesDraft.trim() || null },
+    }));
+
+    setSavingReview(false);
+    setReviewingDocId(null);
+    toast({ title: "Saved", description: "Document review updated." });
+  };
+
   const statusLabel = useMemo(
     () =>
       selectedStatus
