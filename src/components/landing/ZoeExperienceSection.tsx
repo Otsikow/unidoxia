@@ -57,7 +57,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "STEM",
     headline: "Tailored pathways for technical innovators",
     description:
-      "Spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
+      "We spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
     highlights: [
       "Scholarships that prioritise STEM majors and research output",
       "Industry-aligned curricula with internships and co-op rotations",
@@ -69,7 +69,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "Scholarships",
     headline: "Funding opportunities matched to your profile",
     description:
-      "Identify grants, bursaries, and assistantships you can realistically secure.",
+      "We help you identify grants, bursaries, and assistantships you can realistically secure.",
     highlights: [
       "Curated list of merit and need-based awards with deadlines",
       "Eligibility insights that map to your academic background",
@@ -81,7 +81,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "Visa friendly",
     headline: "Study routes with smooth immigration journeys",
     description:
-      "Compare countries and institutions with favourable visa pathways.",
+      "We help you compare countries and institutions with favourable visa pathways.",
     highlights: [
       "Post-study work options and stay-back durations summarised",
       "Documentation checklists tailored to your nationality",
@@ -91,9 +91,9 @@ const fallbackFocusAreas: FocusArea[] = [
   {
     key: "undergraduate",
     label: "Undergraduate",
-    headline: "Undergraduate journeys built for first-time applicants",
+    headline: "Journeys built for first-time applicants",
     description:
-      "Understand entry requirements, prerequisites, and support services.",
+      "We help you understand entry requirements, prerequisites, and support services.",
     highlights: [
       "Step-by-step timeline from transcript evaluation to offer acceptance",
       "Guidance on choosing majors, minors, and foundation years",
@@ -105,7 +105,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "Postgraduate",
     headline: "Master's and doctoral courses curated for your goals",
     description:
-      "Compare research supervisors, cohort sizes, and funding models.",
+      "We help you compare research supervisors, cohort sizes, and funding models.",
     highlights: [
       "Faculty highlights with current research themes",
       "Assistantship and fellowship availability with stipends",
@@ -117,7 +117,7 @@ const fallbackFocusAreas: FocusArea[] = [
     label: "Co-op & Internships",
     headline: "Work-integrated learning with global employers",
     description:
-      "Surface courses that blend study with hands-on professional experience.",
+      "We surface courses that blend study with hands-on professional experience.",
     highlights: [
       "Placement rates and employer partnerships across regions",
       "Visa considerations for paid placements and work terms",
@@ -129,23 +129,23 @@ const fallbackFocusAreas: FocusArea[] = [
 const fallbackStats: InsightStat[] = [
   {
     value: "12k+",
-    label: "AI insights generated for global applicants",
+    label: "Insights generated for applicants like you",
   },
   {
     value: "84%",
-    label: "Students matched to at least three best-fit courses",
+    label: "Matches to best-fit courses",
   },
   {
     value: "50+",
-    label: "Countries covered with verified admissions data",
+    label: "Countries with verified admissions data",
   },
 ];
 
 const fallbackPanelCopy: PanelCopy = {
   title: "Preview Zoe Intelligence",
-  subtitle: "Choose a focus area to explore the insights you'll unlock.",
+  subtitle: "Choose a focus area to explore the clear guidance you'll unlock.",
   previewLabel: "Sample",
-  highlightsHeading: "What the AI prepares for you",
+  highlightsHeading: "How we guide you",
 };
 
 const fallbackRoles: Array<
@@ -153,12 +153,12 @@ const fallbackRoles: Array<
 > = [
   {
     key: "students",
-    title: "Students & families",
+    title: "For You & Your Family",
     description:
-      "Zoe is a study-abroad counsellor that walks every applicant through the full UniDoxia experience.",
+      "Zoe walks you through the full experience step by step.",
     capabilities: [
       "Answers any study-abroad question instantly in plain language.",
-      "Guides you through every task inside the UniDoxia app so nothing is missed.",
+      "Guides you through every task so nothing is missed.",
       "Reviews uploaded transcripts, essays, and proof of funds to suggest best-fit schools.",
       "Shares personalised counselling recommendations informed by your goals.",
     ],
@@ -167,9 +167,9 @@ const fallbackRoles: Array<
   },
   {
     key: "agents",
-    title: "Agents & counsellors",
+    title: "For Agents",
     description:
-      "Training, coaching, and on-demand answers are built into the same workspace that powers your agency.",
+      "Training, coaching, and on-demand answers are built right in.",
     capabilities: [
       "Delivers bite-sized training refreshers for new advisors and support staff.",
       "Turns shared student documents into quick school shortlists you can review with clients.",
@@ -181,11 +181,11 @@ const fallbackRoles: Array<
   },
   {
     key: "universities",
-    title: "Universities & partners",
+    title: "For Universities",
     description:
-      "Zoe lives inside the university dashboard to keep recruitment, compliance, and service teams aligned.",
+      "Zoe keeps recruitment, compliance, and service teams aligned.",
     capabilities: [
-      "Surfaces partner health alerts and suggested actions directly in the dashboard.",
+      "Surfaces partner health alerts and suggested actions directly.",
       "Summarises applicant pipelines by region with notes about policy differences.",
       "Provides training snippets for staff onboarding so teams can self-serve answers.",
       "Escalates issues that need human attention so you can focus on strategic relationships.",
@@ -196,9 +196,9 @@ const fallbackRoles: Array<
 ];
 
 const fallbackHighlights = [
-  "Answers every study-abroad question, no matter the destination.",
-  "Guides learners, agents, and universities through the entire UniDoxia app.",
-  "Reads shared documents to recommend schools, funding, and next steps.",
+  "Answers every study-abroad question with clear guidance on visas and policies.",
+  "Guides you step by step so timelines and next steps stay on track.",
+  "Reviews your documents to recommend schools, scholarships, and next steps instantly.",
 ];
 
 const parseFocusAreas = (value: unknown): FocusArea[] | null => {
