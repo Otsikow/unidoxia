@@ -224,12 +224,28 @@ const Index = () => {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"
-            className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-50 brightness-0 invert"
+            className="hero-logo mb-6 h-20 sm:h-24 md:h-32 opacity-90 brightness-0 invert"
           />
 
-          <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
-            Apply <span className="opacity-70">•</span> Get Your Visa <span className="opacity-70">•</span> Study Abroad
+          <h1 className="hero-text text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 max-w-5xl mx-auto leading-tight drop-shadow-lg">
+            UniDoxia: Get accepted into global universities — without guesswork or hidden fees.
           </h1>
+
+          <p className="hero-text text-xl sm:text-2xl text-white/95 text-center mb-10 max-w-3xl mx-auto font-medium drop-shadow-md">
+            From Africa to the world — we personally guide your study abroad journey.
+          </p>
+
+          <div className="hero-text">
+            <Button
+              asChild
+              size="lg"
+              className="text-lg px-10 py-7 rounded-full bg-primary hover:bg-primary/90 transition-all transform hover:scale-105 shadow-xl shadow-primary/25 border-none"
+            >
+              <Link to="/auth/signup?role=student">
+                Start Your Study Journey
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
