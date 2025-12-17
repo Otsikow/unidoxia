@@ -61,7 +61,7 @@ const Index = () => {
 
   /* ---------- Hero Video State ---------- */
   const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
-  const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const [heroVideoReady, setHeroVideoReady] = useState(true);
 
   /* ---------- Motion & Bandwidth Check ---------- */
   useEffect(() => {
@@ -80,16 +80,6 @@ const Index = () => {
       setShouldRenderHeroVideo(false);
     }
   }, []);
-
-  /* ---------- Video State Reset ---------- */
-  useEffect(() => {
-    if (!shouldRenderHeroVideo) {
-      setHeroVideoReady(false);
-      return;
-    }
-
-    setHeroVideoReady(false);
-  }, [shouldRenderHeroVideo]);
 
   /* ---------- Hero CTAs ---------- */
   const heroCtas = useMemo(
