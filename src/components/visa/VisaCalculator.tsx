@@ -35,7 +35,6 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
-import BackButton from '@/components/BackButton';
 import { useAuth } from '@/hooks/useAuth';
 
 interface VisaRequirements {
@@ -582,18 +581,9 @@ export default function VisaCalculator() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <BackButton
-            variant="ghost"
-            showHistoryMenu={false}
-            className="text-muted-foreground hover:text-foreground"
-            fallback="/"
-            aria-label="Go back"
-          />
-          <div>
-            <h2 className="text-2xl font-bold">Visa Eligibility Calculator</h2>
-            <p className="text-muted-foreground">Check your visa eligibility for different countries</p>
-          </div>
+        <div>
+          <h2 className="text-2xl font-bold">Visa Eligibility Calculator</h2>
+          <p className="text-muted-foreground">Check your visa eligibility for different countries</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleOpenCompare}>
