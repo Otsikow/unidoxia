@@ -8,6 +8,13 @@ import type {
   TestScore,
   TimelineEvent,
 } from "@/components/university/applications/ApplicationReviewDialog";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  buildMissingRpcError,
+  isRpcMissingError,
+  isRpcUnavailable,
+  markRpcMissing,
+} from "@/lib/supabaseRpc";
 
 const STORAGE_BUCKET = "student-documents";
 const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
@@ -89,6 +96,8 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     useState<ExtendedApplication | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { profile } = useAuth();
+  const tenantId = profile?.tenant_id ?? null;
 
   /* ============================
      Fetch Extended Application
@@ -162,18 +171,24 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         console.log("[useExtendedApplication] Fetching student:", appData.student_id);
         
         // Try the security definer function first (most reliable for university partners)
-        const { data: rpcStudentData, error: rpcError } = await supabase.rpc(
-          "get_student_details_for_application" as any,
-          { p_application_id: applicationId }
-        );
+        const rpcName = "get_student_details_for_application";
+        const rpcResult = isRpcUnavailable(rpcName)
+          ? { data: null, error: buildMissingRpcError(rpcName) }
+          : await supabase.rpc(rpcName as any, {
+              p_application_id: applicationId,
+            });
+
+        if (isRpcMissingError(rpcResult.error)) {
+          markRpcMissing(rpcName, rpcResult.error);
+        }
 
         let studentData: any = null;
         let studentError: any = null;
 
-        const rpcStudentArray = rpcStudentData as any[] | null;
-        if (!rpcError && rpcStudentArray && rpcStudentArray.length > 0) {
+        const rpcStudentArray = rpcResult.data as any[] | null;
+        if (!rpcResult.error && rpcStudentArray && rpcStudentArray.length > 0) {
           // Use RPC data - transform to expected format
-          const rpcRow = rpcStudentData[0];
+          const rpcRow = rpcStudentArray[0];
           studentData = {
             id: rpcRow.student_id,
             profile_id: rpcRow.profile_id,
@@ -202,10 +217,10 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           // Fallback to direct query
           console.log(
             "[useExtendedApplication] RPC not available or failed, trying direct query:",
-            rpcError?.message
+            rpcResult.error?.message
           );
           
-          const directResult = await supabase
+          let studentQuery = supabase
             .from("students")
             .select(`
               id,
@@ -231,8 +246,13 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
                 avatar_url
               )
             `)
-            .eq("id", appData.student_id)
-            .single();
+            .eq("id", appData.student_id);
+
+          if (tenantId) {
+            studentQuery = studentQuery.eq("tenant_id", tenantId);
+          }
+
+          const directResult = await studentQuery.single();
 
           studentData = directResult.data;
           studentError = directResult.error;
@@ -303,19 +323,25 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             "[useExtendedApplication] Student not found via primary queries, attempting fallback RPC hydration",
           );
 
-          const { data: fallbackData, error: fallbackError } = await supabase.rpc(
-            "get_students_for_university_applications" as any,
-            { p_student_ids: [appData.student_id] },
-          );
+          const fallbackRpcName = "get_students_for_university_applications";
+          const fallbackResult = isRpcUnavailable(fallbackRpcName)
+            ? { data: null, error: buildMissingRpcError(fallbackRpcName) }
+            : await supabase.rpc(fallbackRpcName as any, {
+                p_student_ids: [appData.student_id],
+              });
 
-          if (fallbackError) {
+          if (isRpcMissingError(fallbackResult.error)) {
+            markRpcMissing(fallbackRpcName, fallbackResult.error);
+          }
+
+          if (fallbackResult.error) {
             console.warn(
               "[useExtendedApplication] Fallback student RPC failed:",
-              fallbackError.message,
+              fallbackResult.error.message,
             );
           }
 
-          const fallbackRow = (fallbackData as any[] | null)?.[0];
+          const fallbackRow = (fallbackResult.data as any[] | null)?.[0];
           if (fallbackRow) {
             studentDetails = {
               id: fallbackRow.id ?? appData.student_id,
