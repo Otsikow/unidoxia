@@ -292,20 +292,72 @@ export const fetchUniversityDashboardData = async (
 
       const rows = appRows ?? [];
 
-      applications = rows.map((app) => ({
-        id: app.id,
-        appNumber: app.app_number ?? "—",
-        status: app.status ?? "unknown",
-        createdAt: app.created_at,
-        programId: app.program_id,
-        programName: "Program",
-        programLevel: "—",
-        programDiscipline: null,
-        studentId: app.student_id,
-        studentName: "Student",
-        studentNationality: "Unknown",
-        agentId: app.agent_id,
-      }));
+      // Build a map of programs for quick lookup
+      const programMap = new Map(programs.map((p) => [p.id, p]));
+
+      // Fetch student data using the RPC if there are student IDs
+      const studentIds = [...new Set(rows.map((r) => r.student_id).filter(Boolean))] as string[];
+      
+      let studentMap = new Map<string, {
+        legal_name: string | null;
+        preferred_name: string | null;
+        nationality: string | null;
+        date_of_birth: string | null;
+        current_country: string | null;
+        profile_name: string | null;
+        profile_email: string | null;
+      }>();
+
+      if (studentIds.length > 0) {
+        try {
+          const { data: studentData } = await supabase
+            .rpc("get_students_for_university_applications", { p_student_ids: studentIds });
+
+          if (studentData) {
+            for (const s of studentData) {
+              studentMap.set(s.id, {
+                legal_name: s.legal_name,
+                preferred_name: s.preferred_name,
+                nationality: s.nationality,
+                date_of_birth: s.date_of_birth,
+                current_country: s.current_country,
+                profile_name: s.profile_name,
+                profile_email: s.profile_email,
+              });
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to fetch student data for applications:", err);
+        }
+      }
+
+      applications = rows.map((app) => {
+        const program = programMap.get(app.program_id);
+        const student = app.student_id ? studentMap.get(app.student_id) : undefined;
+        
+        // Determine best student name: preferred_name > legal_name > profile_name
+        const studentName = student?.preferred_name 
+          || student?.legal_name 
+          || student?.profile_name 
+          || "Unknown Student";
+
+        return {
+          id: app.id,
+          appNumber: app.app_number ?? "—",
+          status: app.status ?? "unknown",
+          createdAt: app.created_at,
+          programId: app.program_id,
+          programName: program?.name ?? "Unknown Program",
+          programLevel: program?.level ?? "—",
+          programDiscipline: program?.discipline ?? null,
+          studentId: app.student_id,
+          studentName,
+          studentNationality: student?.nationality ?? null,
+          studentDateOfBirth: student?.date_of_birth ?? null,
+          studentCurrentCountry: student?.current_country ?? null,
+          agentId: app.agent_id,
+        };
+      });
     }
 
     /* ---------- METRICS ---------- */
