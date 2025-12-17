@@ -8,8 +8,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
-export function ThemeToggle() {
+export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -20,7 +21,12 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" aria-label="Toggle theme" className="rounded-full">
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Toggle theme"
+        className={cn("rounded-full", className)}
+      >
         <Sun className="h-5 w-5" />
       </Button>
     );
@@ -33,7 +39,10 @@ export function ThemeToggle() {
           variant="ghost"
           size="icon"
           aria-label="Toggle theme"
-          className="group relative rounded-full transition-all duration-300 hover:bg-accent hover:scale-110 hover:shadow-md"
+          className={cn(
+            "group relative rounded-full transition-all duration-300 hover:bg-accent hover:scale-110 hover:shadow-md",
+            className,
+          )}
         >
           <Sun className="h-5 w-5 rotate-0 scale-100 transition-all duration-500 ease-in-out dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all duration-500 ease-in-out dark:rotate-0 dark:scale-100" />
