@@ -42,7 +42,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import BackButton from "@/components/BackButton";
 
 /* -------------------------------------------------------------------------- */
-/* Nav Items                                                                  */
+/* ✅ Nav Items with Localization Support                                     */
 /* -------------------------------------------------------------------------- */
 interface NavItem {
   to: string;
@@ -54,40 +54,166 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/admin/dashboard", labelKey: "admin.layout.navigation.dashboard.label", descriptionKey: "admin.layout.navigation.dashboard.description", labelDefault: "Dashboard", descriptionDefault: "Key metrics & insights", icon: Gauge },
-  { to: "/admin/overview", labelKey: "admin.layout.navigation.overview.label", descriptionKey: "admin.layout.navigation.overview.description", labelDefault: "Overview", descriptionDefault: "Executive summary", icon: BarChart3 },
-  { to: "/admin/users", labelKey: "admin.layout.navigation.users.label", descriptionKey: "admin.layout.navigation.users.description", labelDefault: "Users", descriptionDefault: "Administrators & roles", icon: Users },
-  { to: "/admin/admissions", labelKey: "admin.layout.navigation.admissions.label", descriptionKey: "admin.layout.navigation.admissions.description", labelDefault: "Admissions Oversight", descriptionDefault: "Pipeline ownership", icon: ScrollText },
-  { to: "/admin/payments", labelKey: "admin.layout.navigation.payments.label", descriptionKey: "admin.layout.navigation.payments.description", labelDefault: "Payments", descriptionDefault: "Stripe & payouts", icon: CreditCard },
-  { to: "/admin/partners", labelKey: "admin.layout.navigation.partners.label", descriptionKey: "admin.layout.navigation.partners.description", labelDefault: "Partners", descriptionDefault: "Agencies & universities", icon: Handshake },
-  { to: "/admin/universities", labelKey: "admin.layout.navigation.universities.label", descriptionKey: "admin.layout.navigation.universities.description", labelDefault: "Universities", descriptionDefault: "Institution partners", icon: GraduationCap },
-  { to: "/admin/programs", labelKey: "admin.layout.navigation.programs.label", descriptionKey: "admin.layout.navigation.programs.description", labelDefault: "Courses", descriptionDefault: "Catalogue & intakes", icon: BookOpen },
-  { to: "/admin/featured-universities", labelKey: "admin.layout.navigation.featuredUniversities.label", descriptionKey: "admin.layout.navigation.featuredUniversities.description", labelDefault: "Featured Universities", descriptionDefault: "Homepage spotlight", icon: BadgeCheck },
-  { to: "/admin/resources", labelKey: "admin.layout.navigation.resources.label", descriptionKey: "admin.layout.navigation.resources.description", labelDefault: "Resources", descriptionDefault: "Content & assets", icon: Library },
-  { to: "/admin/agents", labelKey: "admin.layout.navigation.agents.label", descriptionKey: "admin.layout.navigation.agents.description", labelDefault: "Agents", descriptionDefault: "Agency performance", icon: Users },
-  { to: "/admin/tools", labelKey: "admin.layout.navigation.tools.label", descriptionKey: "admin.layout.navigation.tools.description", labelDefault: "Tools", descriptionDefault: "Automation & QA", icon: Wrench },
-  { to: "/admin/insights", labelKey: "admin.layout.navigation.insights.label", descriptionKey: "admin.layout.navigation.insights.description", labelDefault: "Insights", descriptionDefault: "AI & analytics", icon: Brain },
-  { to: "/admin/intelligence", labelKey: "admin.layout.navigation.intelligence.label", descriptionKey: "admin.layout.navigation.intelligence.description", labelDefault: "Zoe Intelligence", descriptionDefault: "AI insights console", icon: Sparkles },
-  { to: "/admin/settings", labelKey: "admin.layout.navigation.settings.label", descriptionKey: "admin.layout.navigation.settings.description", labelDefault: "Settings", descriptionDefault: "Tenant configuration", icon: Settings },
-  { to: "/admin/notifications", labelKey: "admin.layout.navigation.notifications.label", descriptionKey: "admin.layout.navigation.notifications.description", labelDefault: "Notifications", descriptionDefault: "System alerts", icon: Bell },
-  { to: "/admin/logs", labelKey: "admin.layout.navigation.logs.label", descriptionKey: "admin.layout.navigation.logs.description", labelDefault: "Logs", descriptionDefault: "Audit trails", icon: ShieldCheck },
-  { to: "/admin/usage-monitoring", labelKey: "admin.layout.navigation.usage.label", descriptionKey: "admin.layout.navigation.usage.description", labelDefault: "Usage Monitoring", descriptionDefault: "Live engagement view", icon: Activity },
+  {
+    to: "/admin/dashboard",
+    labelKey: "admin.layout.navigation.dashboard.label",
+    descriptionKey: "admin.layout.navigation.dashboard.description",
+    labelDefault: "Dashboard",
+    descriptionDefault: "Key metrics & insights",
+    icon: Gauge,
+  },
+  {
+    to: "/admin/overview",
+    labelKey: "admin.layout.navigation.overview.label",
+    descriptionKey: "admin.layout.navigation.overview.description",
+    labelDefault: "Overview",
+    descriptionDefault: "Executive summary",
+    icon: BarChart3,
+  },
+  {
+    to: "/admin/users",
+    labelKey: "admin.layout.navigation.users.label",
+    descriptionKey: "admin.layout.navigation.users.description",
+    labelDefault: "Users",
+    descriptionDefault: "Administrators & roles",
+    icon: Users,
+  },
+  {
+    to: "/admin/admissions",
+    labelKey: "admin.layout.navigation.admissions.label",
+    descriptionKey: "admin.layout.navigation.admissions.description",
+    labelDefault: "Admissions Oversight",
+    descriptionDefault: "Pipeline ownership",
+    icon: ScrollText,
+  },
+  {
+    to: "/admin/payments",
+    labelKey: "admin.layout.navigation.payments.label",
+    descriptionKey: "admin.layout.navigation.payments.description",
+    labelDefault: "Payments",
+    descriptionDefault: "Stripe & payouts",
+    icon: CreditCard,
+  },
+  {
+    to: "/admin/partners",
+    labelKey: "admin.layout.navigation.partners.label",
+    descriptionKey: "admin.layout.navigation.partners.description",
+    labelDefault: "Partners",
+    descriptionDefault: "Agencies & universities",
+    icon: Handshake,
+  },
+  {
+    to: "/admin/universities",
+    labelKey: "admin.layout.navigation.universities.label",
+    descriptionKey: "admin.layout.navigation.universities.description",
+    labelDefault: "Universities",
+    descriptionDefault: "Institution partners",
+    icon: GraduationCap,
+  },
+  {
+    to: "/admin/programs",
+    labelKey: "admin.layout.navigation.programs.label",
+    descriptionKey: "admin.layout.navigation.programs.description",
+    labelDefault: "Courses",
+    descriptionDefault: "Catalogue & intakes",
+    icon: BookOpen,
+  },
+  {
+    to: "/admin/featured-universities",
+    labelKey: "admin.layout.navigation.featuredUniversities.label",
+    descriptionKey: "admin.layout.navigation.featuredUniversities.description",
+    labelDefault: "Featured Universities",
+    descriptionDefault: "Homepage spotlight",
+    icon: BadgeCheck,
+  },
+  {
+    to: "/admin/resources",
+    labelKey: "admin.layout.navigation.resources.label",
+    descriptionKey: "admin.layout.navigation.resources.description",
+    labelDefault: "Resources",
+    descriptionDefault: "Content & assets",
+    icon: Library,
+  },
+  {
+    to: "/admin/agents",
+    labelKey: "admin.layout.navigation.agents.label",
+    descriptionKey: "admin.layout.navigation.agents.description",
+    labelDefault: "Agents",
+    descriptionDefault: "Agency performance",
+    icon: Users,
+  },
+  {
+    to: "/admin/tools",
+    labelKey: "admin.layout.navigation.tools.label",
+    descriptionKey: "admin.layout.navigation.tools.description",
+    labelDefault: "Tools",
+    descriptionDefault: "Automation & QA",
+    icon: Wrench,
+  },
+  {
+    to: "/admin/insights",
+    labelKey: "admin.layout.navigation.insights.label",
+    descriptionKey: "admin.layout.navigation.insights.description",
+    labelDefault: "Insights",
+    descriptionDefault: "AI & analytics",
+    icon: Brain,
+  },
+  {
+    to: "/admin/intelligence",
+    labelKey: "admin.layout.navigation.intelligence.label",
+    descriptionKey: "admin.layout.navigation.intelligence.description",
+    labelDefault: "Zoe Intelligence",
+    descriptionDefault: "AI insights console",
+    icon: Sparkles,
+  },
+  {
+    to: "/admin/settings",
+    labelKey: "admin.layout.navigation.settings.label",
+    descriptionKey: "admin.layout.navigation.settings.description",
+    labelDefault: "Settings",
+    descriptionDefault: "Tenant configuration",
+    icon: Settings,
+  },
+  {
+    to: "/admin/notifications",
+    labelKey: "admin.layout.navigation.notifications.label",
+    descriptionKey: "admin.layout.navigation.notifications.description",
+    labelDefault: "Notifications",
+    descriptionDefault: "System alerts",
+    icon: Bell,
+  },
+  {
+    to: "/admin/logs",
+    labelKey: "admin.layout.navigation.logs.label",
+    descriptionKey: "admin.layout.navigation.logs.description",
+    labelDefault: "Logs",
+    descriptionDefault: "Audit trails",
+    icon: ShieldCheck,
+  },
+  {
+    to: "/admin/usage-monitoring",
+    labelKey: "admin.layout.navigation.usage.label",
+    descriptionKey: "admin.layout.navigation.usage.description",
+    labelDefault: "Usage Monitoring",
+    descriptionDefault: "Live engagement view",
+    icon: Activity,
+  },
 ];
 
 /* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
+/* ✅ Helpers                                                                 */
 /* -------------------------------------------------------------------------- */
 const getInitials = (value: string) =>
   value
     .split(" ")
-    .map((p) => p[0])
+    .map((part) => part[0])
     .filter(Boolean)
     .slice(0, 2)
     .join("")
     .toUpperCase();
 
 /* -------------------------------------------------------------------------- */
-/* Admin Layout                                                               */
+/* ✅ Main Admin Layout                                                       */
 /* -------------------------------------------------------------------------- */
 const AdminLayout = () => {
   const { profile, signOut } = useAuth();
@@ -98,6 +224,9 @@ const AdminLayout = () => {
   const { loading: rolesLoading, hasRole } = useUserRoles();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  /* ---------------------------------------------------------------------- */
+  /* ✅ Role Validation                                                     */
+  /* ---------------------------------------------------------------------- */
   if (rolesLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/20">
@@ -109,8 +238,14 @@ const AdminLayout = () => {
   if (!hasRole("admin")) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-muted/20 p-6 text-center">
-        <Badge variant="destructive">Access Restricted</Badge>
+        <Badge variant="destructive" className="uppercase tracking-wide">
+          Access Restricted
+        </Badge>
         <h1 className="text-2xl font-semibold">Administrator role required</h1>
+        <p className="max-w-md text-sm text-muted-foreground">
+          Your account does not have the necessary permissions to access the Admin Dashboard. Please contact a system
+          administrator if you believe this is an error.
+        </p>
         <Button asChild>
           <NavLink to="/dashboard">Return to dashboard</NavLink>
         </Button>
@@ -118,51 +253,154 @@ const AdminLayout = () => {
     );
   }
 
+  /* ---------------------------------------------------------------------- */
+  /* ✅ Sidebar                                                             */
+  /* ---------------------------------------------------------------------- */
+  const sidebar = (showCollapseButton = true) => (
+    <div
+      className={cn(
+        "flex h-full flex-col border-r bg-card transition-all duration-300",
+        isCollapsed && showCollapseButton ? "w-20" : "w-72"
+      )}
+    >
+      <div className="flex h-14 sm:h-16 items-center gap-2 sm:gap-3 border-b px-3 sm:px-4">
+        <img
+          src={unidoxiaLogo}
+          alt={t("admin.layout.sidebar.logoAlt", { defaultValue: "UniDoxia" })}
+          className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white object-contain p-1 dark:bg-transparent dark:brightness-0 dark:invert"
+        />
+        {(!isCollapsed || !showCollapseButton) && (
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold">
+              {t("admin.layout.sidebar.organization", { defaultValue: "UniDoxia" })}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {t("admin.layout.sidebar.subtitle", { defaultValue: "Admin Control Centre" })}
+            </p>
+          </div>
+        )}
+        {showCollapseButton && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="ml-auto h-8 w-8 sm:h-9 sm:w-9 shrink-0"
+            onClick={() => setIsCollapsed((prev) => !prev)}
+            aria-expanded={!isCollapsed}
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
+        )}
+      </div>
+      <ScrollArea className="flex-1">
+        <nav className="space-y-1 px-2 py-3 sm:py-4">
+          {NAV_ITEMS.map((item) => {
+            const isActive = location.pathname.startsWith(item.to);
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "group block rounded-lg p-2.5 sm:p-3 transition touch-manipulation",
+                  isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                )}
+              >
+                <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {(!isCollapsed || !showCollapseButton) && (
+                    <div className="flex min-w-0 flex-col">
+                      <span className="text-sm font-medium truncate">
+                        {t(item.labelKey, { defaultValue: item.labelDefault })}
+                      </span>
+                      <span className="text-xs text-muted-foreground group-hover:text-muted-foreground/80 truncate hidden sm:block">
+                        {t(item.descriptionKey, { defaultValue: item.descriptionDefault })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </ScrollArea>
+
+      {/* Footer user profile */}
+      <div className="border-t p-3 sm:p-4">
+        <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
+          <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+            <AvatarImage src={profile?.avatar_url ?? undefined} alt={profile?.full_name ?? "Admin"} />
+            <AvatarFallback>{profile?.full_name ? getInitials(profile.full_name) : "AD"}</AvatarFallback>
+          </Avatar>
+          {(!isCollapsed || !showCollapseButton) && (
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">
+                {profile?.full_name ?? t("admin.layout.profile.defaultName", { defaultValue: "Admin" })}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">{profile?.email}</p>
+            </div>
+          )}
+        </div>
+        <Button variant="outline" size="sm" className="mt-2 sm:mt-3 w-full" onClick={() => void signOut()}>
+          <LogOut className="h-4 w-4" />
+          {(!isCollapsed || !showCollapseButton) && <span className="ml-2">{t("common.actions.logout", { defaultValue: "Logout" })}</span>}
+        </Button>
+      </div>
+    </div>
+  );
+
+  /* ---------------------------------------------------------------------- */
+  /* ✅ Mobile Navigation Sheet                                            */
+  /* ---------------------------------------------------------------------- */
+  const mobileNavSheet = isMobile ? (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="icon" className="fixed left-3 top-3 z-50 h-10 w-10 md:hidden shadow-md">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Open navigation</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[280px] p-0">
+        {sidebar(false)}
+      </SheetContent>
+    </Sheet>
+  ) : null;
+
+  /* ---------------------------------------------------------------------- */
+  /* ✅ Layout Wrapper                                                       */
+  /* ---------------------------------------------------------------------- */
   return (
     <div className="flex min-h-screen bg-muted/20">
-      {/* Mobile Nav */}
-      {isMobile && (
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="fixed left-3 top-3 z-50 md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[280px] p-0">
-            {/* Sidebar reused */}
-          </SheetContent>
-        </Sheet>
-      )}
-
-      <div className="flex w-full flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:px-6">
+      {mobileNavSheet}
+      <div className={cn("hidden md:flex shrink-0", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
+      <div className="flex w-full min-w-0 flex-col">
+        {/* Top Header Bar with Notification Bell */}
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => navigate("/")}
-              className="h-9 w-9"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
               aria-label="Go to home"
             >
               <Home className="h-5 w-5" />
             </Button>
-
-            {location.pathname !== "/admin/dashboard" && location.pathname !== "/admin" && (
+            {location.pathname !== "/admin/dashboard" && location.pathname !== "/admin" ? (
               <BackButton
                 variant="ghost"
                 size="sm"
+                showHistoryMenu={false}
                 fallback="/admin/dashboard"
+                className="h-9 px-2"
                 label="Back"
               />
-            )}
+            ) : null}
           </div>
-
           <NotificationBell notificationsUrl="/admin/notifications" maxItems={7} />
         </header>
-
-        <main className="flex-1">
-          <div className="mx-auto max-w-7xl px-4 py-6">
+        <main className="flex-1 bg-background">
+          <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
             <Outlet />
           </div>
         </main>

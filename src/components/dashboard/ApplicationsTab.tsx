@@ -113,14 +113,12 @@ export default function ApplicationsTab() {
 
     // Apply search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (app) =>
-          app.id?.toLowerCase().includes(query) ||
-          app.students?.profiles?.full_name?.toLowerCase().includes(query) ||
-          app.students?.profiles?.email?.toLowerCase().includes(query) ||
-          app.programs?.name?.toLowerCase().includes(query) ||
-          app.programs?.universities?.name?.toLowerCase().includes(query)
+          app.students?.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          app.students?.profiles?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          app.programs?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          app.programs?.universities?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -235,7 +233,7 @@ export default function ApplicationsTab() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by ID, student, course, or university..."
+              placeholder="Search by student, course, or university..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"

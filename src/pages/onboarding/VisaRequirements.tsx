@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import BackButton from "@/components/BackButton";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
-import { FileCheck, CheckCircle2 } from "lucide-react";
+import { FileCheck, CheckCircle2, ArrowRight } from "lucide-react";
 
 const visaCountries = [
   { code: "UK", flag: "🇬🇧", accent: "border-blue-500/40 bg-blue-500/5" },
@@ -23,6 +24,7 @@ const featureChips = [
 ];
 
 export default function OnboardingVisaRequirements() {
+  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -84,14 +86,20 @@ export default function OnboardingVisaRequirements() {
                   ))}
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-4">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <span className="text-lg">💬</span>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <span className="text-lg">💬</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-foreground">Live student success squad</p>
+                      <p className="text-xs text-muted-foreground">Real experts ready to help, 24/7</p>
+                    </div>
                   </div>
-                  <div className="text-left">
-                    <p className="font-semibold text-foreground">Live student success squad</p>
-                    <p className="text-xs text-muted-foreground">Real experts ready to help, 24/7</p>
-                  </div>
+                  <Button className="gap-2" size="lg" onClick={() => navigate("/onboarding/success-stories")}>
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { OnboardingProgressNav } from "@/components/onboarding/OnboardingProgressNav";
 
@@ -183,6 +184,7 @@ const BackgroundDecoration = () => (
 export default function OnboardingDestinations() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [showContent, setShowContent] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
@@ -195,11 +197,13 @@ export default function OnboardingDestinations() {
         ? prev.filter((id) => id !== countryId)
         : [...prev, countryId]
     );
-    // Save selection to localStorage
-    const newSelection = selectedCountries.includes(countryId)
-      ? selectedCountries.filter((id) => id !== countryId)
-      : [...selectedCountries, countryId];
-    localStorage.setItem("onboarding_destinations", JSON.stringify(newSelection));
+  };
+
+  const handleNext = () => {
+    if (selectedCountries.length > 0) {
+      localStorage.setItem("onboarding_destinations", JSON.stringify(selectedCountries));
+    }
+    navigate("/auth/signup?role=student");
   };
 
   return (
@@ -244,6 +248,20 @@ export default function OnboardingDestinations() {
               {selectedCountries.length} destination{selectedCountries.length > 1 ? "s" : ""} selected
             </p>
           )}
+
+          <div className="w-full max-w-xs animate-fade-in-up" style={{ animationDelay: "0.7s" }}>
+            <Button onClick={handleNext} size="lg" className="w-full gap-2 text-base">
+              Next <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+
+          <Link
+            to="/auth/signup?role=student"
+            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
+            style={{ animationDelay: "0.8s" }}
+          >
+            Skip for now
+          </Link>
         </div>
 
         <div className="container mx-auto max-w-4xl mt-auto pt-6">
