@@ -599,19 +599,27 @@ All colors MUST be HSL.
     width: 100%;
     min-height: 100vh;
     overflow: hidden;
+    background: hsl(0 0% 0% / 0.65);
   }
 
   .hero-video {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    width: auto;
-    height: auto;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
     z-index: 0;
+    opacity: 1;
+    transition: opacity 260ms ease-out;
+    will-change: opacity;
+  }
+
+  .hero-video.is-loading {
+    opacity: 0;
+  }
+
+  .hero-video.is-ready {
+    opacity: 1;
   }
 
   .hero-video-overlay {
@@ -755,6 +763,9 @@ All colors MUST be HSL.
     height: 100%;
     object-fit: cover;
     z-index: 0;
+    opacity: 1;
+    transition: opacity 260ms ease-out;
+    will-change: opacity;
   }
 
   /* Graceful fallback when clip-path animations are unavailable */
