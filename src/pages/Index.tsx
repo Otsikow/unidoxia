@@ -62,7 +62,6 @@ const Index = () => {
   /* ---------- Hero Video State ---------- */
   const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
-  const [showHeroPosterFallback, setShowHeroPosterFallback] = useState(false);
 
   /* ---------- Motion & Bandwidth Check ---------- */
   useEffect(() => {
@@ -82,18 +81,14 @@ const Index = () => {
     }
   }, []);
 
-  /* ---------- Poster Fallback Delay ---------- */
+  /* ---------- Video State Reset ---------- */
   useEffect(() => {
-    if (!shouldRenderHeroVideo) return;
+    if (!shouldRenderHeroVideo) {
+      setHeroVideoReady(false);
+      return;
+    }
 
     setHeroVideoReady(false);
-    setShowHeroPosterFallback(false);
-
-    const timeout = window.setTimeout(() => {
-      setShowHeroPosterFallback(true);
-    }, 180);
-
-    return () => window.clearTimeout(timeout);
   }, [shouldRenderHeroVideo]);
 
   /* ---------- Hero CTAs ---------- */
@@ -180,28 +175,19 @@ const Index = () => {
         <LandingHeader />
 
         {shouldRenderHeroVideo ? (
-          <>
-            <video
-              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              onCanPlay={() => {
-                setHeroVideoReady(true);
-                setShowHeroPosterFallback(false);
-              }}
-            >
-              <source src="/videos/hero-video.mp4" type="video/mp4" />
-            </video>
-
-            {showHeroPosterFallback && !heroVideoReady && (
-              <img src={studentsStudyingGroup} alt="" className="hero-poster" aria-hidden />
-            )}
-          </>
+          <video
+            className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            onCanPlay={() => setHeroVideoReady(true)}
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
         ) : (
-          <img src={studentsStudyingGroup} alt="" className="hero-video is-ready" aria-hidden />
+          <div className="hero-fallback" aria-hidden />
         )}
 
         <div className="hero-video-overlay" />
