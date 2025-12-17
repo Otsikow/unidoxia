@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-import { Users, FileCheck, Clock, Sparkles, Calculator } from "lucide-react";
+import { Users, FileCheck, Clock, Sparkles, Calculator, Check, Minus } from "lucide-react";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
@@ -259,6 +259,38 @@ const Index = () => {
           className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
         />
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{heroDescription}</p>
+      </section>
+
+      {/* ---------- WHY UNIDOXIA ---------- */}
+      <section className="pb-20 container mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center mb-12">Why UniDoxia?</h2>
+        
+        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6 mb-12">
+          {/* Big platforms */}
+          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+            <span className="text-lg font-semibold mb-2 text-muted-foreground">Big platforms</span>
+            <Minus className="w-5 h-5 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">volume driven.</p>
+          </div>
+
+          {/* Local agents */}
+          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
+            <span className="text-lg font-semibold mb-2 text-muted-foreground">Local agents</span>
+            <Minus className="w-5 h-5 text-muted-foreground mb-2" />
+            <p className="text-muted-foreground">inconsistent.</p>
+          </div>
+
+          {/* UniDoxia */}
+          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm relative">
+            <span className="text-lg font-bold mb-2 text-primary">UniDoxia</span>
+            <Check className="w-6 h-6 text-primary mb-2" />
+            <p className="font-medium">guided, transparent, student-focused.</p>
+          </div>
+        </div>
+
+        <p className="text-center text-xl font-medium text-foreground/80 max-w-2xl mx-auto">
+          “You’re not a number here. We guide you until you arrive.”
+        </p>
       </section>
 
       <StudyProgramSearch />
