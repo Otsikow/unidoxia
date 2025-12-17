@@ -655,6 +655,18 @@ All colors MUST be HSL.
     animation: heroFadeIn 0.8s ease-out 0.6s forwards;
   }
 
+  .hero-fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.15), transparent 35%),
+      radial-gradient(circle at 80% 10%, hsl(var(--primary) / 0.12), transparent 30%),
+      radial-gradient(circle at 50% 80%, hsl(var(--primary) / 0.1), transparent 40%),
+      linear-gradient(135deg, hsl(220 30% 10% / 0.9), hsl(220 30% 8% / 0.95));
+    z-index: 0;
+  }
+
   .typing-cursor {
     display: inline-block;
     width: 0.18em;
@@ -755,19 +767,6 @@ All colors MUST be HSL.
       transform: translateY(0);
     }
   }
-
-  .hero-poster {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 0;
-    opacity: 1;
-    transition: opacity 260ms ease-out;
-    will-change: opacity;
-  }
-
   /* Graceful fallback when clip-path animations are unavailable */
   @supports not (clip-path: inset(10% 10%)) {
     .button-border-beam::after {
