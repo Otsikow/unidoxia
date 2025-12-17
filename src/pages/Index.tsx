@@ -34,6 +34,7 @@ import connectAgentImage from "@/assets/features/connect-agent.jpeg";
 const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
 const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
 const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"));
+const WhoUniDoxiaIsForSection = lazy(() => import("@/components/landing/WhoUniDoxiaIsForSection"));
 const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
 const ContactForm = lazy(() =>
   import("@/components/ContactForm").then(m => ({ default: m.ContactForm }))
@@ -285,6 +286,7 @@ const Index = () => {
       </section>
 
       {/* ---------- LAZY SECTIONS ---------- */}
+      <Suspense fallback={<SectionLoader />}><WhoUniDoxiaIsForSection /></Suspense>
       <Suspense fallback={<SectionLoader />}><AIFeeCalculator /></Suspense>
       <Suspense fallback={<SectionLoader />}><ZoeExperienceSection /></Suspense>
       <Suspense fallback={<SectionLoader />}><FeaturedUniversitiesSection /></Suspense>
