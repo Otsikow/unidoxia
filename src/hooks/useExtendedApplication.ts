@@ -163,14 +163,15 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         
         // Try the security definer function first (most reliable for university partners)
         const { data: rpcStudentData, error: rpcError } = await supabase.rpc(
-          "get_student_details_for_application",
+          "get_student_details_for_application" as any,
           { p_application_id: applicationId }
         );
 
         let studentData: any = null;
         let studentError: any = null;
 
-        if (!rpcError && rpcStudentData && rpcStudentData.length > 0) {
+        const rpcStudentArray = rpcStudentData as any[] | null;
+        if (!rpcError && rpcStudentArray && rpcStudentArray.length > 0) {
           // Use RPC data - transform to expected format
           const rpcRow = rpcStudentData[0];
           studentData = {

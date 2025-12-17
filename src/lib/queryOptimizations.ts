@@ -72,7 +72,7 @@ export const isQueryStale = (
 /**
  * Selective field fetching helper
  */
-export const selectFields = <T, K extends keyof T>(
+export const selectFields = <T extends object, K extends keyof T>(
   data: T | undefined,
   fields: K[]
 ): Pick<T, K> | undefined => {
@@ -80,7 +80,7 @@ export const selectFields = <T, K extends keyof T>(
   
   const result = {} as Pick<T, K>;
   fields.forEach((field) => {
-    if (field in data) {
+    if (field in (data as object)) {
       result[field] = data[field];
     }
   });

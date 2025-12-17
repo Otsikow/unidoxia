@@ -477,14 +477,15 @@ export const fetchUniversityDashboardData = async (
     if (studentIds.length > 0) {
       // Try the security definer function first (most reliable)
       const { data: rpcData, error: rpcErr } = await supabase.rpc(
-        "get_students_for_university_applications",
+        "get_students_for_university_applications" as any,
         { p_student_ids: studentIds }
       );
 
-      if (!rpcErr && rpcData && rpcData.length > 0) {
+      const rpcDataArray = rpcData as any[] | null;
+      if (!rpcErr && rpcDataArray && rpcDataArray.length > 0) {
         // Use RPC data
         studentsMap = new Map(
-          rpcData.map((s: any) => [
+          rpcDataArray.map((s: any) => [
             s.id,
             {
               id: s.id,

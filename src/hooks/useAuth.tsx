@@ -394,7 +394,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    */
   const ensureUserProfileRPC = async (userId: string) => {
     try {
-      const { data, error } = await supabase.rpc('ensure_user_profile', {
+      const { data, error } = await supabase.rpc('ensure_user_profile' as any, {
         p_user_id: userId,
       });
       
@@ -403,8 +403,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: false, error };
       }
       
-      console.log('ensure_user_profile result:', data);
-      return { success: data?.success === true, data };
+      const result = data as { success?: boolean } | null;
+      console.log('ensure_user_profile result:', result);
+      return { success: result?.success === true, data: result };
     } catch (err) {
       console.error('ensure_user_profile exception:', err);
       return { success: false, error: err };
