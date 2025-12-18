@@ -457,7 +457,13 @@ export default function UniversityDirectory() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card className="border-border/60">
+          <Card 
+            className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40"
+            onClick={() => {
+              const listingSection = document.getElementById('university-listing');
+              listingSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <Building2 className="h-4 w-4 text-primary" />
@@ -477,41 +483,61 @@ export default function UniversityDirectory() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/60">
-            <CardHeader className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <GraduationCap className="h-4 w-4 text-primary" />
-                Available Courses
-              </CardTitle>
-              <CardDescription>Active degree pathways</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-foreground">
-                {formatNumber(summaryMetrics.totalPrograms)}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Across all partner universities
-              </p>
-            </CardContent>
-          </Card>
+          <Link to="/courses" className="block">
+            <Card className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40 h-full">
+              <CardHeader className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <GraduationCap className="h-4 w-4 text-primary" />
+                  Available Courses
+                </CardTitle>
+                <CardDescription>Active degree pathways</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-foreground">
+                  {formatNumber(summaryMetrics.totalPrograms)}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Across all partner universities
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="border-border/60">
-            <CardHeader className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <Award className="h-4 w-4 text-primary" />
-                Top University
-              </CardTitle>
-              <CardDescription>Most courses available</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-bold text-foreground truncate">
-                {summaryMetrics.universityWithMostPrograms?.name || "—"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {summaryMetrics.universityWithMostPrograms?.programCount || 0} courses
-              </p>
-            </CardContent>
-          </Card>
+          {summaryMetrics.universityWithMostPrograms ? (
+            <Link to={`/universities/${summaryMetrics.universityWithMostPrograms.id}`} className="block">
+              <Card className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40 h-full">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                    <Award className="h-4 w-4 text-primary" />
+                    Top University
+                  </CardTitle>
+                  <CardDescription>Most courses available</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg font-bold text-foreground truncate">
+                    {summaryMetrics.universityWithMostPrograms.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {summaryMetrics.universityWithMostPrograms.programCount} courses
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <Card className="border-border/60">
+              <CardHeader className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Award className="h-4 w-4 text-primary" />
+                  Top University
+                </CardTitle>
+                <CardDescription>Most courses available</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg font-bold text-foreground truncate">—</p>
+                <p className="text-sm text-muted-foreground">0 courses</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <Card className="border-border/60">
@@ -622,7 +648,7 @@ export default function UniversityDirectory() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div id="university-listing" className="space-y-4 scroll-mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-2xl font-semibold text-foreground">{totalLabel}</h2>
             <p className="text-sm text-muted-foreground">
