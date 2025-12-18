@@ -20,15 +20,8 @@ import {
   Clock,
   Sparkles,
   Calculator,
-  ShieldCheck,
-  HandCoins,
-  BadgeCheck,
-  Check,
-  Minus,
 } from "lucide-react";
 
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
@@ -38,19 +31,10 @@ import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
-import studentsStudyingGroup from "@/assets/students-studying-group.png";
-import agentsCta from "@/assets/agents-cta.jpeg";
-import destinationsCta from "@/assets/destinations-cta.jpeg";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
 import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
-import oxfordImage from "@/assets/university-oxford.jpg";
-import torontoImage from "@/assets/university-toronto.jpg";
-import germanyImage from "@/assets/destinations/germany.jpeg";
-import professionalConsultant from "@/assets/professional-consultant.png";
-import studentWelcome from "@/assets/student-welcome.png";
-import agentStudentConsulting from "@/assets/agent-student-consulting.png";
 
 /* ---------- Lazy Loaded Sections ---------- */
 const FeaturedUniversitiesSection = lazy(
@@ -61,9 +45,6 @@ const StoryboardSection = lazy(
 );
 const AIFeeCalculator = lazy(
   () => import("@/components/landing/AIFeeCalculator")
-);
-const WhoUniDoxiaIsForSection = lazy(
-  () => import("@/components/landing/WhoUniDoxiaIsForSection")
 );
 const ZoeExperienceSection = lazy(
   () => import("@/components/landing/ZoeExperienceSection")
@@ -82,10 +63,7 @@ const SectionLoader = () => (
       </div>
       <div className="grid gap-6 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-64 bg-muted animate-pulse rounded-xl"
-          />
+          <div key={i} className="h-64 bg-muted animate-pulse rounded-xl" />
         ))}
       </div>
     </div>
@@ -94,6 +72,13 @@ const SectionLoader = () => (
 
 const Index = () => {
   const { t } = useTranslation();
+
+  /* ---------- Footer / Contact ---------- */
+  const contactHeading = t("pages.index.contact.heading");
+  const contactSubtitle = t("pages.index.contact.subtitle");
+  const footerText = t("layout.footer.copyright", {
+    year: new Date().getFullYear(),
+  });
 
   /* ---------- Hero Video State ---------- */
   const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
@@ -105,8 +90,7 @@ const Index = () => {
     if (typeof window === "undefined") return;
 
     const prefersReducedMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     const conn = (navigator as any).connection;
     const saveData = Boolean(conn?.saveData);
@@ -180,9 +164,7 @@ const Index = () => {
       ].map(f => ({
         ...f,
         title: t(`pages.index.features.cards.${f.key}.title`),
-        description: t(
-          `pages.index.features.cards.${f.key}.description`
-        ),
+        description: t(`pages.index.features.cards.${f.key}.description`),
       })),
     [t]
   );
@@ -190,9 +172,7 @@ const Index = () => {
   /* ---------- FAQ ---------- */
   const faqs = useMemo(
     () =>
-      t("pages.index.faq.sections", {
-        returnObjects: true,
-      }) as Array<{
+      t("pages.index.faq.sections", { returnObjects: true }) as Array<{
         audience: string;
         items: { question: string; answer: string }[];
       }>,
@@ -202,28 +182,39 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <SEO
-        title="UniDoxia - Your Path to International Education"
+        title="UniDoxia – Your Path to International Education"
         description="Guided study abroad applications with real human support, verified agents, and AI-powered tools."
       />
 
       {/* ---------- HERO ---------- */}
-      <section className="hero-video-container">
-        <LandingHeader />
-
-        {shouldRenderHeroVideo && (
-          <video
-            ref={heroVideoRef}
-            className={`hero-video ${
-              heroVideoReady ? "is-ready" : "is-loading"
-            }`}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-          >
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
+      <section
+        id="home"
+        className="hero-video-container scroll-mt-20"
+      >
+        {shouldRenderHeroVideo ? (
+          <>
+            <div
+              className={`hero-fallback ${
+                heroVideoReady ? "is-hidden" : ""
+              }`}
+              aria-hidden
+            />
+            <video
+              ref={heroVideoRef}
+              className={`hero-video ${
+                heroVideoReady ? "is-ready" : "is-loading"
+              }`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+            >
+              <source src="/videos/hero-video.mp4" type="video/mp4" />
+            </video>
+          </>
+        ) : (
+          <div className="hero-fallback" aria-hidden />
         )}
 
         <div className="hero-video-overlay" />
@@ -267,7 +258,7 @@ const Index = () => {
         </p>
       </section>
 
-      <StudyProgramSearch />
+      <StudyProgramSearch sectionId="destinations" />
 
       {/* ---------- FEATURES ---------- */}
       <section className="container mx-auto px-4 py-20">
@@ -286,22 +277,30 @@ const Index = () => {
                   <f.icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{f.title}</h3>
-                <p className="text-muted-foreground">
-                  {f.description}
-                </p>
+                <p className="text-muted-foreground">{f.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
       </section>
 
+      {/* ---------- PRICING ---------- */}
+      <section id="pricing" className="scroll-mt-24">
+        <div className="container mx-auto px-4 text-center space-y-2 mb-6">
+          <Badge variant="secondary" className="mx-auto w-fit">
+            Pricing
+          </Badge>
+          <h2 className="text-3xl font-bold">
+            Transparent pricing, no surprises
+          </h2>
+        </div>
+
+        <Suspense fallback={<SectionLoader />}>
+          <AIFeeCalculator />
+        </Suspense>
+      </section>
+
       {/* ---------- LAZY SECTIONS ---------- */}
-      <Suspense fallback={<SectionLoader />}>
-        <WhoUniDoxiaIsForSection />
-      </Suspense>
-      <Suspense fallback={<SectionLoader />}>
-        <AIFeeCalculator />
-      </Suspense>
       <Suspense fallback={<SectionLoader />}>
         <ZoeExperienceSection />
       </Suspense>
@@ -312,7 +311,10 @@ const Index = () => {
         <StoryboardSection />
       </Suspense>
 
-      <SuccessStoriesMarquee />
+      {/* ---------- STORIES ---------- */}
+      <section id="stories" className="scroll-mt-24">
+        <SuccessStoriesMarquee />
+      </section>
 
       {/* ---------- FAQ ---------- */}
       <section className="container mx-auto px-4 py-20">
@@ -324,12 +326,8 @@ const Index = () => {
             <Accordion type="single" collapsible>
               {section.items.map((faq, j) => (
                 <AccordionItem key={j} value={`${i}-${j}`}>
-                  <AccordionTrigger>
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    {faq.answer}
-                  </AccordionContent>
+                  <AccordionTrigger>{faq.question}</AccordionTrigger>
+                  <AccordionContent>{faq.answer}</AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
@@ -337,8 +335,26 @@ const Index = () => {
         ))}
       </section>
 
-      <footer className="border-t py-10 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} UniDoxia. All rights reserved.
+      {/* ---------- CONTACT ---------- */}
+      <section className="container mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-4">
+          {contactHeading}
+        </h2>
+        <p className="text-muted-foreground text-center mb-12">
+          {contactSubtitle}
+        </p>
+
+        <Card className="max-w-2xl mx-auto">
+          <CardContent className="p-8">
+            <Suspense fallback={<SectionLoader />}>
+              <ContactForm />
+            </Suspense>
+          </CardContent>
+        </Card>
+      </section>
+
+      <footer className="border-t py-12 text-center text-sm text-muted-foreground">
+        {footerText}
       </footer>
     </div>
   );
