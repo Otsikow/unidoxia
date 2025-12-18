@@ -102,7 +102,9 @@ const UniversityProfilePage = () => {
   } = useToast();
   const {
     profile,
-    refreshProfile
+    refreshProfile,
+    loading: authLoading,
+    profileLoading
   } = useAuth();
   const tenantId = profile?.tenant_id ?? null;
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -843,6 +845,12 @@ const UniversityProfilePage = () => {
       setIsSubmitting(false);
     }
   };
+  // Include profileLoading to prevent "Partner profile incomplete" flash during auth
+  if (authLoading || profileLoading) {
+    return <div className="flex min-h-[60vh] items-center justify-center">
+        <LoadingState message="Loading your university profile" size="lg" />
+      </div>;
+  }
   if (!tenantId) {
     return <div className="flex min-h-[60vh] items-center justify-center">
         <Alert className="max-w-xl border-destructive/40 bg-destructive/10 text-destructive">

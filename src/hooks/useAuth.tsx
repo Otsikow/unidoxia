@@ -99,6 +99,8 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  /** True while profile is being fetched/repaired after auth state changes */
+  profileLoading: boolean;
   signIn: (
     email: string,
     password: string,
@@ -123,6 +125,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  /** Tracks when profile is being fetched/repaired after auth state changes */
+  const [profileLoading, setProfileLoading] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -934,7 +938,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Fetch profile only if user has changed
       if (currentUserId && currentUserId !== lastUserId) {
-        await fetchProfile(currentUserId, currentUser);
+        // Signal that profile fetching is in progress to prevent "Profile not found" flash
+        // This is critical for universities and other roles during login
+        if (isMounted) setProfileLoading(true);
+        try {
+          await fetchProfile(currentUserId, currentUser);
+        } finally {
+          if (isMounted) setProfileLoading(false);
+        }
         lastUserId = currentUserId;
       } else if (!currentUserId) {
         setProfile(null);
@@ -1162,7 +1173,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) {
+      setProfileLoading(true);
+      try {
+        await fetchProfile(user.id);
+      } finally {
+        setProfileLoading(false);
+      }
+    }
   };
 
   return (
@@ -1172,6 +1190,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         profile,
         loading,
+        profileLoading,
         signIn,
         signUp,
         signOut,
