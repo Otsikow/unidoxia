@@ -43,7 +43,6 @@ type DocumentRequestRow =
   Database["public"]["Tables"]["document_requests"]["Row"];
 type DocumentRequestUpdate =
   Database["public"]["Tables"]["document_requests"]["Update"];
-type StudentRow = Database["public"]["Tables"]["students"]["Row"];
 type RawDocumentRequest = DocumentRequestRow;
 
 interface DocumentRequestItem {
@@ -130,20 +129,25 @@ const DocumentRequestsPage = () => {
           ),
         );
 
-        type StudentNameInfo = Pick<StudentRow, "id" | "legal_name" | "preferred_name">;
+        interface StudentNameInfo {
+          id: string;
+          legal_name: string | null;
+          preferred_name: string | null;
+          profile: { full_name: string } | null;
+        }
         let studentsMap = new Map<string, StudentNameInfo>();
 
         if (studentIds.length > 0) {
           const { data: studentsData, error: studentError } = await supabase
             .from("students")
-            .select("id, legal_name, preferred_name")
+            .select("id, legal_name, preferred_name, profile:profiles(full_name)")
             .in("id", studentIds);
 
           if (studentError) throw studentError;
 
           if (Array.isArray(studentsData)) {
             studentsMap = new Map(
-              studentsData.map((student) => [student.id, student]),
+              studentsData.map((student) => [student.id, student as StudentNameInfo]),
             );
           }
         }
@@ -155,6 +159,7 @@ const DocumentRequestsPage = () => {
           const studentName =
             student?.preferred_name ||
             student?.legal_name ||
+            student?.profile?.full_name ||
             "Unknown student";
           const requestedAt = request.requested_at || request.created_at || null;
 
