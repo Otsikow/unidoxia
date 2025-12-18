@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { FileStack, Sparkles, BadgeCheck, Eye, Copy, Loader2 } from "lucide-react";
+import { FileStack, Sparkles, BadgeCheck, Eye, Copy, Loader2, Stamp, GraduationCap, RefreshCw } from "lucide-react";
 
 import {
   Card,
@@ -49,8 +49,19 @@ const titleCase = (value: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 
+const formatTimeAgo = (date: Date | null) => {
+  if (!date) return "";
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return date.toLocaleDateString();
+};
+
 const ApplicationsPage = () => {
-  const { data, isRefetching, refetch } = useUniversityDashboard();
+  const { data, isRefetching, refetch, lastUpdated } = useUniversityDashboard();
   const { toast } = useToast();
   const {
     extendedApplication,
@@ -72,7 +83,7 @@ const ApplicationsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState<"all" | "new">("all");
-  const [activeCard, setActiveCard] = useState<"total" | "new" | "offers" | null>(null);
+  const [activeCard, setActiveCard] = useState<"total" | "new" | "offers" | "cas" | "enrolled" | null>(null);
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
 
@@ -148,14 +159,20 @@ const ApplicationsPage = () => {
     const term = searchTerm.trim().toLowerCase();
     return applications.filter((app) => {
       let matchesStatus: boolean;
+      const status = app.status.toLowerCase();
+      
       if (statusFilter === "all") {
         matchesStatus = true;
       } else if (statusFilter === "offers") {
-        matchesStatus = ["conditional_offer", "unconditional_offer"].includes(
-          app.status.toLowerCase()
-        );
+        // All applications that have reached at least offer stage
+        matchesStatus = ["conditional_offer", "unconditional_offer", "cas_loa", "visa", "enrolled"].includes(status);
+      } else if (statusFilter === "cas") {
+        // Applications with CAS/LOA issued (including visa and enrolled)
+        matchesStatus = ["cas_loa", "visa", "enrolled"].includes(status);
+      } else if (statusFilter === "enrolled") {
+        matchesStatus = status === "enrolled";
       } else {
-        matchesStatus = app.status.toLowerCase() === statusFilter.toLowerCase();
+        matchesStatus = status === statusFilter.toLowerCase();
       }
 
       const matchesSearch =
@@ -171,7 +188,7 @@ const ApplicationsPage = () => {
     });
   }, [applications, searchTerm, statusFilter, dateFilter]);
 
-  const handleCardClick = useCallback((card: "total" | "new" | "offers") => {
+  const handleCardClick = useCallback((card: "total" | "new" | "offers" | "cas" | "enrolled") => {
     // If clicking the same card, deselect it
     if (activeCard === card) {
       setActiveCard(null);
@@ -182,20 +199,24 @@ const ApplicationsPage = () => {
 
     setActiveCard(card);
     setSearchTerm("");
+    setDateFilter("all");
 
     switch (card) {
       case "total":
         setStatusFilter("all");
-        setDateFilter("all");
         break;
       case "new":
         setStatusFilter("all");
         setDateFilter("new");
         break;
       case "offers":
-        setDateFilter("all");
-        // Filter by offer statuses - we need to handle this specially
         setStatusFilter("offers");
+        break;
+      case "cas":
+        setStatusFilter("cas");
+        break;
+      case "enrolled":
+        setStatusFilter("enrolled");
         break;
     }
   }, [activeCard]);
@@ -205,13 +226,24 @@ const ApplicationsPage = () => {
     const newThisWeek = applications.filter((app) =>
       isWithinLastDays(app.createdAt, 7),
     ).length;
+    // Offers issued includes all applications that reached offer stage or beyond
     const offersIssued = applications.filter((app) =>
-      ["conditional_offer", "unconditional_offer"].includes(
+      ["conditional_offer", "unconditional_offer", "cas_loa", "visa", "enrolled"].includes(
         app.status.toLowerCase(),
       ),
     ).length;
+    // CAS/LOA issued (students who progressed past offer stage)
+    const casIssued = applications.filter((app) =>
+      ["cas_loa", "visa", "enrolled"].includes(
+        app.status.toLowerCase(),
+      ),
+    ).length;
+    // Enrolled students
+    const enrolled = applications.filter((app) =>
+      app.status.toLowerCase() === "enrolled",
+    ).length;
 
-    return { total, newThisWeek, offersIssued };
+    return { total, newThisWeek, offersIssued, casIssued, enrolled };
   }, [applications]);
 
   return (
@@ -223,17 +255,29 @@ const ApplicationsPage = () => {
             Review submitted applications connected to your programs.
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="w-fit"
-          onClick={() => void refetch()}
-          disabled={isRefetching}
-        >
-          {isRefetching ? "Refreshing…" : "Refresh"}
-        </Button>
+        <div className="flex items-center gap-3">
+          {lastUpdated && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              <span>Live • Updated {formatTimeAgo(lastUpdated)}</span>
+            </div>
+          )}
+          <Button
+            variant="outline"
+            className="w-fit gap-2"
+            onClick={() => void refetch()}
+            disabled={isRefetching}
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefetching ? "animate-spin" : ""}`} />
+            {isRefetching ? "Refreshing…" : "Refresh"}
+          </Button>
+        </div>
       </div>
 
-      <section className="grid gap-3 md:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
         <Card 
           className={withUniversityCardStyles(`rounded-2xl text-card-foreground cursor-pointer transition-all hover:ring-2 hover:ring-primary/50 ${activeCard === "total" ? "ring-2 ring-primary" : ""}`)}
           onClick={() => handleCardClick("total")}
@@ -297,6 +341,56 @@ const ApplicationsPage = () => {
             </p>
             <span className={withUniversitySurfaceTint("inline-flex h-10 w-10 items-center justify-center rounded-xl")}> 
               <BadgeCheck className="h-5 w-5 text-success" />
+            </span>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className={withUniversityCardStyles(`rounded-2xl text-card-foreground cursor-pointer transition-all hover:ring-2 hover:ring-cyan-500/50 ${activeCard === "cas" ? "ring-2 ring-cyan-500" : ""}`)}
+          onClick={() => handleCardClick("cas")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleCardClick("cas")}
+        > 
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              CAS/LOA issued
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Confirmation letters sent
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <p className="text-3xl font-semibold text-foreground">
+              {metrics.casIssued}
+            </p>
+            <span className={withUniversitySurfaceTint("inline-flex h-10 w-10 items-center justify-center rounded-xl")}> 
+              <Stamp className="h-5 w-5 text-cyan-500" />
+            </span>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className={withUniversityCardStyles(`rounded-2xl text-card-foreground cursor-pointer transition-all hover:ring-2 hover:ring-emerald-500/50 ${activeCard === "enrolled" ? "ring-2 ring-emerald-500" : ""}`)}
+          onClick={() => handleCardClick("enrolled")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleCardClick("enrolled")}
+        > 
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Enrolled
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Successfully enrolled
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <p className="text-3xl font-semibold text-foreground">
+              {metrics.enrolled}
+            </p>
+            <span className={withUniversitySurfaceTint("inline-flex h-10 w-10 items-center justify-center rounded-xl")}> 
+              <GraduationCap className="h-5 w-5 text-emerald-500" />
             </span>
           </CardContent>
         </Card>

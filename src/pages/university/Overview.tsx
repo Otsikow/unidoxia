@@ -59,8 +59,19 @@ const pipelineIcons: Record<string, ComponentType<{ className?: string }>> = {
   enrolled: GraduationCap,
 };
 
+const formatTimeAgo = (date: Date | null) => {
+  if (!date) return "";
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return date.toLocaleDateString();
+};
+
 const OverviewPage = () => {
-  const { data } = useUniversityDashboard();
+  const { data, lastUpdated, isRefetching } = useUniversityDashboard();
 
   if (!data?.university) {
     return (
@@ -93,6 +104,18 @@ const OverviewPage = () => {
     <div className="space-y-8">
       <Card className={withUniversityCardStyles("overflow-hidden rounded-3xl text-card-foreground shadow-primary/20")}>
         <CardContent className="space-y-6 p-6 lg:p-8">
+          {/* Real-time indicator */}
+          <div className="flex items-center justify-end">
+            {lastUpdated && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="relative flex h-2 w-2">
+                  <span className={`absolute inline-flex h-full w-full rounded-full bg-success ${isRefetching ? 'animate-ping' : 'animate-pulse'} opacity-75`} />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+                </span>
+                <span>Live data • Updated {formatTimeAgo(lastUpdated)}</span>
+              </div>
+            )}
+          </div>
           {heroImage ? (
             <div className="relative overflow-hidden rounded-2xl border border-primary/20">
               <img
@@ -305,36 +328,45 @@ const OverviewPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pipeline.map((stage) => {
-              const Icon = pipelineIcons[stage.key] ?? FileStack;
-              return (
-                <div
-                  key={stage.key}
-                  className={withUniversitySurfaceTint("rounded-xl p-4")}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className={withUniversitySurfaceSubtle("inline-flex h-9 w-9 items-center justify-center rounded-xl")}>
-                        <Icon className="h-4 w-4 text-primary" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {stage.label}
+            {pipeline.length === 0 ? (
+              <StatePlaceholder
+                icon={<FileStack className="h-8 w-8 text-muted-foreground" />}
+                title="No pipeline data yet"
+                description="Pipeline stages will appear here once applications are submitted to your programs."
+                className="bg-transparent"
+              />
+            ) : (
+              pipeline.map((stage) => {
+                const Icon = pipelineIcons[stage.key] ?? FileStack;
+                return (
+                  <div
+                    key={stage.key}
+                    className={withUniversitySurfaceTint("rounded-xl p-4")}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className={withUniversitySurfaceSubtle("inline-flex h-9 w-9 items-center justify-center rounded-xl")}>
+                          <Icon className="h-4 w-4 text-primary" />
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {stage.label}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{stage.description}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-foreground">
+                          {formatNumber(stage.count)}
                         </p>
-                        <p className="text-xs text-muted-foreground">{stage.description}</p>
+                        <p className="text-xs text-muted-foreground">{stage.percentage}% of total</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-foreground">
-                        {formatNumber(stage.count)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{stage.percentage}% of total</p>
-                    </div>
+                    <Progress value={stage.percentage} className="mt-3 h-2 bg-primary/20" />
                   </div>
-                  <Progress value={stage.percentage} className="mt-3 h-2 bg-primary/20" />
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </CardContent>
         </Card>
 
@@ -348,23 +380,32 @@ const OverviewPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {conversion.map((metric) => (
-              <div
-                key={metric.key}
-                className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{metric.label}</p>
-                    <p className="text-xs text-muted-foreground">{metric.description}</p>
+            {conversion.length === 0 ? (
+              <StatePlaceholder
+                icon={<Target className="h-8 w-8 text-muted-foreground" />}
+                title="No conversion data yet"
+                description="Conversion metrics will appear once you have applications progressing through the funnel."
+                className="bg-transparent"
+              />
+            ) : (
+              conversion.map((metric) => (
+                <div
+                  key={metric.key}
+                  className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{metric.label}</p>
+                      <p className="text-xs text-muted-foreground">{metric.description}</p>
+                    </div>
+                    <p className="text-2xl font-semibold text-success">
+                      {metric.value}%
+                    </p>
                   </div>
-                  <p className="text-2xl font-semibold text-success">
-                    {metric.value}%
-                  </p>
+                  <Progress value={metric.value} className="mt-3 h-2 bg-primary/20" />
                 </div>
-                <Progress value={metric.value} className="mt-3 h-2 bg-primary/20" />
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </section>
