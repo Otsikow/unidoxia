@@ -17,6 +17,7 @@ import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
 import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarquee";
+import { CORE_MESSAGE } from "@/lib/brand";
 
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
@@ -188,7 +189,7 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO
         title="UniDoxia - Your Path to International Education"
-        description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support."
+        description={CORE_MESSAGE}
         keywords="study abroad, university applications, international education, AI tools, visa calculator"
       />
 
@@ -221,6 +222,10 @@ const Index = () => {
         <div className="hero-video-overlay" />
 
         <div className="hero-content">
+          <div className="mb-6 inline-flex max-w-3xl items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-center text-sm font-semibold text-white shadow-lg ring-1 ring-white/30 backdrop-blur sm:text-base">
+            <Sparkles className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+            <span className="leading-relaxed">{CORE_MESSAGE}</span>
+          </div>
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"

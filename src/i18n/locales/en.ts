@@ -1,3 +1,5 @@
+import { CORE_MESSAGE, CORE_MESSAGE_CTA } from "@/lib/brand";
+
 const en = {
   common: {
     languageNames: {
@@ -88,8 +90,7 @@ const en = {
     },
     footer: {
       aboutTitle: "UniDoxia",
-      aboutDescription:
-        "Connecting international students with world-class universities through verified agents and transparent application management.",
+      aboutDescription: CORE_MESSAGE,
       contactEmailLabel: "Email us",
       followUs: "Follow UniDoxia",
       followUsSubtitle: "Follow us on LinkedIn, Facebook, and our WhatsApp channel.",
@@ -349,8 +350,7 @@ const en = {
             highlight: "UniDoxia",
             suffix: "",
           },
-          description:
-            "Connect with top universities, track applications in real-time, and receive expert guidance from verified agents.",
+          description: CORE_MESSAGE,
           ctas: {
             students: {
               badge: "Students",
@@ -1022,7 +1022,7 @@ const en = {
       },
     contact: {
       heroTitle: "Contact Us",
-      heroSubtitle: "We typically respond within one business day.",
+      heroSubtitle: `${CORE_MESSAGE_CTA} We're here to respond within one business day.`,
       emailPrompt: "Prefer email?",
       email: "info@unidoxia.com",
       whatsappCta: "Message us on WhatsApp ({{number}})",
