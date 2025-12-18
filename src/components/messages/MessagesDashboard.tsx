@@ -22,11 +22,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Loader2, MessageSquare, Building2, GraduationCap } from "lucide-react";
+import { Search, Loader2, MessageSquare, Building2, GraduationCap, HeadphonesIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { searchDirectoryProfiles, type DirectoryProfile } from "@/lib/messaging/directory";
-import { fetchAppliedUniversityContacts, fetchUniversityApplicants, type AppliedUniversityContact, type UniversityApplicantContact } from "@/lib/messaging/contactsService";
+import { fetchAppliedUniversityContacts, fetchUniversityApplicants, fetchSupportContacts, type AppliedUniversityContact, type UniversityApplicantContact, type SupportContact } from "@/lib/messaging/contactsService";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
 
 // Role-based dashboard redirects
@@ -96,6 +96,8 @@ export default function MessagesDashboard() {
   const [loadingUniversities, setLoadingUniversities] = useState(false);
   const [universityApplicants, setUniversityApplicants] = useState<UniversityApplicantContact[]>([]);
   const [loadingApplicants, setLoadingApplicants] = useState(false);
+  const [supportContacts, setSupportContacts] = useState<SupportContact[]>([]);
+  const [loadingSupportContacts, setLoadingSupportContacts] = useState(false);
 
   const currentConversation = useMemo(
     () =>
@@ -202,6 +204,21 @@ export default function MessagesDashboard() {
     }
   }, [profile?.role]);
 
+  // Fetch UniDoxia support contacts for university users
+  const fetchSupport = useCallback(async () => {
+    if (profile?.role !== "partner" && profile?.role !== "school_rep") return;
+    
+    setLoadingSupportContacts(true);
+    try {
+      const results = await fetchSupportContacts();
+      setSupportContacts(results);
+    } catch (err) {
+      console.error("Error fetching support contacts:", err);
+    } finally {
+      setLoadingSupportContacts(false);
+    }
+  }, [profile?.role]);
+
   const handleNewChatDialogChange = useCallback(
     (open: boolean) => {
       setShowNewChatDialog(open);
@@ -209,14 +226,16 @@ export default function MessagesDashboard() {
         void fetchContacts("");
         void fetchAppliedUniversities();
         void fetchApplicants();
+        void fetchSupport();
       } else {
         setSearchQuery("");
         setContacts([]);
         setAppliedUniversities([]);
         setUniversityApplicants([]);
+        setSupportContacts([]);
       }
     },
-    [fetchContacts, fetchAppliedUniversities, fetchApplicants]
+    [fetchContacts, fetchAppliedUniversities, fetchApplicants, fetchSupport]
   );
 
   const handleNewChat = useCallback(() => {
@@ -233,6 +252,7 @@ export default function MessagesDashboard() {
         setContacts([]);
         setAppliedUniversities([]);
         setUniversityApplicants([]);
+        setSupportContacts([]);
       }
     },
     [getOrCreateConversation, setCurrentConversation]
@@ -248,6 +268,7 @@ export default function MessagesDashboard() {
         setContacts([]);
         setAppliedUniversities([]);
         setUniversityApplicants([]);
+        setSupportContacts([]);
       }
     },
     [getOrCreateConversation, setCurrentConversation]
@@ -263,6 +284,23 @@ export default function MessagesDashboard() {
         setContacts([]);
         setAppliedUniversities([]);
         setUniversityApplicants([]);
+        setSupportContacts([]);
+      }
+    },
+    [getOrCreateConversation, setCurrentConversation]
+  );
+
+  const handleSelectSupportContact = useCallback(
+    async (contact: SupportContact) => {
+      const conversationId = await getOrCreateConversation(contact.profile_id);
+      if (conversationId) {
+        setCurrentConversation(conversationId);
+        setShowNewChatDialog(false);
+        setSearchQuery("");
+        setContacts([]);
+        setAppliedUniversities([]);
+        setUniversityApplicants([]);
+        setSupportContacts([]);
       }
     },
     [getOrCreateConversation, setCurrentConversation]
@@ -467,7 +505,7 @@ export default function MessagesDashboard() {
             <DialogTitle>Start a new conversation</DialogTitle>
             <DialogDescription>
               {isUniversity 
-                ? "Message students who have applied to your programs, or UniDoxia staff."
+                ? "Message students, referring agents, or contact UniDoxia support for assistance."
                 : "Message your agent, UniDoxia staff, or university representatives."}
             </DialogDescription>
           </DialogHeader>
@@ -583,6 +621,63 @@ export default function MessagesDashboard() {
                 {universityApplicants.length > 0 && (
                   <div className="border-b border-border/50 my-3" />
                 )}
+              </div>
+            )}
+
+            {/* UniDoxia Support Section - For university users to contact admin/staff */}
+            {isUniversity && (loadingSupportContacts || supportContacts.length > 0) && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <HeadphonesIcon className="h-4 w-4" />
+                  <span>UniDoxia Support</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Contact our team for assistance with applications, technical issues, or general inquiries.
+                </p>
+                {loadingSupportContacts ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : supportContacts.length > 0 ? (
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {supportContacts.map((contact) => (
+                      <button
+                        key={contact.profile_id}
+                        onClick={() => void handleSelectSupportContact(contact)}
+                        className="w-full rounded-lg p-3 text-left transition-colors hover:bg-accent border border-primary/20 bg-primary/5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={contact.avatar_url || undefined}
+                              alt={contact.full_name}
+                            />
+                            <AvatarFallback className="bg-primary/20">
+                              {getInitials(contact.full_name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold truncate">
+                              {contact.full_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {contact.headline || 'UniDoxia Support'}
+                            </p>
+                          </div>
+                          <Badge variant="default" className="text-xs bg-primary">
+                            {contact.role === 'admin' ? 'Admin' : 'Support'}
+                          </Badge>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-4 text-center text-muted-foreground text-sm">
+                    <p>No support contacts available</p>
+                    <p className="text-xs mt-1">Use the search below to find staff members</p>
+                  </div>
+                )}
+                <div className="border-b border-border/50 my-3" />
               </div>
             )}
 
