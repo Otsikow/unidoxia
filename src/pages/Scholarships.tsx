@@ -38,7 +38,6 @@ import {
   Zap,
 } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
-import BackButton from "@/components/BackButton";
 
 const DEFAULT_FILTERS: ScholarshipSearchFilters = {
   countries: [],
@@ -321,8 +320,6 @@ const ScholarshipsPage = () => {
       
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <BackButton fallback="/" />
-          
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Find Scholarships</h1>
             <p className="text-muted-foreground">

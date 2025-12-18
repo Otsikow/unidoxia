@@ -597,10 +597,34 @@ export function useMessages() {
         p_tenant_id: tenantId,
       });
 
-      if (error || !data) {
+      if (error) {
+        console.error("get_or_create_conversation error:", error);
+        
+        // Provide more helpful error messages based on the error
+        let description = "Please try again.";
+        if (error.message?.includes("messaging not permitted")) {
+          description = "You don't have permission to message this user. Make sure you have an active relationship (e.g., submitted application, linked agent).";
+        } else if (error.message?.includes("not authenticated")) {
+          description = "Please sign in to send messages.";
+        } else if (error.message?.includes("recipient profile not found")) {
+          description = "Could not find the recipient's profile.";
+        } else if (error.message) {
+          description = error.message;
+        }
+        
         toast({
           title: "Unable to start conversation",
-          description: "Please try again.",
+          description,
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      if (!data) {
+        console.error("get_or_create_conversation returned null");
+        toast({
+          title: "Unable to start conversation",
+          description: "No conversation ID returned. Please try again.",
           variant: "destructive",
         });
         return null;

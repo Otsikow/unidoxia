@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -58,6 +58,83 @@ export default function ProgramsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Track if we're ensuring university exists (self-healing mechanism)
+  const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
+  const ensureAttemptedRef = useRef(false);
+
+  /**
+   * Self-healing effect: If the user has a tenant but no university record,
+   * this will create one automatically using the get_or_create_university RPC.
+   * This handles cases where the university record wasn't created during signup
+   * due to race conditions, network issues, or other edge cases.
+   */
+  useEffect(() => {
+    const ensureUniversityExists = async () => {
+      // Only attempt once per page load to avoid infinite loops
+      if (ensureAttemptedRef.current) return;
+      
+      // Conditions for self-healing:
+      // 1. Dashboard data has loaded (not loading)
+      // 2. User has a tenant_id (from profile)
+      // 3. No university found for that tenant
+      // 4. User is authenticated with profile data
+      const profileTenantId = profile?.tenant_id;
+      const hasValidProfile = profile && profileTenantId;
+      const universityMissing = !data?.university?.id;
+      const shouldEnsure = !isLoading && hasValidProfile && universityMissing;
+
+      if (!shouldEnsure) return;
+
+      ensureAttemptedRef.current = true;
+      setIsEnsuringUniversity(true);
+
+      try {
+        console.log("[Programs] University not found for tenant, attempting to create one...", {
+          tenantId: profileTenantId,
+          profileEmail: profile.email,
+        });
+
+        // Use the get_or_create_university RPC which safely handles race conditions
+        const { data: newUniversityId, error: rpcError } = await supabase.rpc(
+          "get_or_create_university",
+          {
+            p_tenant_id: profileTenantId,
+            p_name: profile.full_name ? `${profile.full_name}'s University` : "University",
+            p_country: profile.country || "Unknown",
+            p_contact_name: profile.full_name || null,
+            p_contact_email: profile.email || user?.email || null,
+          }
+        );
+
+        if (rpcError) {
+          console.error("[Programs] Failed to ensure university exists:", rpcError);
+          toast({
+            title: "Account setup incomplete",
+            description: "There was an issue setting up your university profile. Please contact support if this persists.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log("[Programs] University ensured successfully:", newUniversityId);
+
+        // Refetch dashboard data to pick up the new/existing university
+        await refetch();
+
+        toast({
+          title: "University profile ready",
+          description: "Your university profile has been set up. You can now manage courses.",
+        });
+      } catch (err) {
+        console.error("[Programs] Unexpected error ensuring university:", err);
+      } finally {
+        setIsEnsuringUniversity(false);
+      }
+    };
+
+    void ensureUniversityExists();
+  }, [isLoading, profile, data?.university?.id, user?.email, refetch, toast]);
 
   const programs = data?.programs ?? [];
 
@@ -516,6 +593,32 @@ export default function ProgramsPage() {
 
   if (isLoading && !data) {
     return <LoadingState message="Loading courses..." />;
+  }
+
+  // Show loading while ensuring university exists (self-healing)
+  if (isEnsuringUniversity) {
+    return <LoadingState message="Setting up your university profile..." />;
+  }
+
+  // If self-healing was attempted but university still not found, show helpful message
+  if (!isLoading && ensureAttemptedRef.current && !universityId && profile?.tenant_id) {
+    return (
+      <StatePlaceholder
+        title="University profile setup required"
+        description="We couldn't verify your university account. This might be a temporary issue. Please try refreshing the page or contact support if the problem persists."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => {
+              ensureAttemptedRef.current = false;
+              void refetch();
+            }}
+          >
+            Retry setup
+          </Button>
+        }
+      />
+    );
   }
 
   return (
