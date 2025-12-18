@@ -33,7 +33,7 @@ interface Program {
   level: string;
   discipline: string;
   app_fee: number | null;
-  university: University;
+  university: University | null;
 }
 
 interface TimelineItem {
@@ -51,7 +51,7 @@ interface Application {
   intake_month: number;
   created_at: string;
   submitted_at: string | null;
-  program: Program;
+  program: Program | null;
   timeline_json?: TimelineItem[];
 }
 
@@ -460,11 +460,11 @@ export default function ApplicationDetails() {
             <div className="flex items-start gap-3">
               <GraduationCap className="h-6 w-6 text-primary mt-1" />
               <div>
-                <div className="text-xl font-semibold">{app.program.name}</div>
+                <div className="text-xl font-semibold">{app.program?.name ?? 'Application'}</div>
                 <div className="text-sm text-muted-foreground flex items-center gap-2">
                   <MapPin className="h-3.5 w-3.5" />
-                  {app.program.university.name} • {app.program.university.city && `${app.program.university.city}, `}
-                  {app.program.university.country}
+                  {app.program?.university?.name ?? 'University'} • {app.program?.university?.city && `${app.program.university.city}, `}
+                  {app.program?.university?.country ?? 'N/A'}
                 </div>
               </div>
             </div>
@@ -491,7 +491,7 @@ export default function ApplicationDetails() {
             <div className="text-xs text-muted-foreground">Application fee</div>
             <div className="flex items-center gap-2 text-sm">
               <DollarSign className="h-4 w-4" />
-              {app.program.app_fee ? `${app.program.app_fee.toLocaleString()} USD` : 'N/A'}
+              {app.program?.app_fee ? `${app.program.app_fee.toLocaleString()} USD` : 'N/A'}
             </div>
           </div>
           <div className="md:col-span-3">
@@ -522,7 +522,7 @@ export default function ApplicationDetails() {
           </CardHeader>
           <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1 text-sm text-muted-foreground">
-              <div className="font-medium text-foreground">{app.program.university.name}</div>
+              <div className="font-medium text-foreground">{app.program?.university?.name ?? 'University'}</div>
               <div className="flex flex-col gap-1">
                 {universityContact.email ? (
                   <div className="flex items-center gap-2">

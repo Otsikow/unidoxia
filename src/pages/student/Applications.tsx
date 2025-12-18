@@ -38,8 +38,8 @@ interface Application {
       name: string;
       city: string;
       country: string;
-    };
-  };
+    } | null;
+  } | null;
 }
 
 interface ApplicationDraft {
@@ -164,7 +164,7 @@ export default function Applications() {
             ...draftList
               .map((draft) => draft.program?.university?.country)
               .filter((country): country is string => Boolean(country)),
-          ]
+          ].filter(Boolean)
         )
       ).sort();
       setAllCountries(countries);
@@ -203,7 +203,7 @@ export default function Applications() {
 
     const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
     const matchesCountry =
-      countryFilter === 'all' || university?.country === countryFilter;
+      countryFilter === 'all' || !university || university.country === countryFilter;
     const term = searchTerm.toLowerCase();
     const programName = program?.name?.toLowerCase() ?? '';
     const universityName = university?.name?.toLowerCase() ?? '';
@@ -525,18 +525,18 @@ export default function Applications() {
                         <div>
                           <h3 className="font-semibold text-base sm:text-lg flex items-center gap-2">
                             <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                            <span className="truncate">{app.program.name}</span>
+                            <span className="truncate">{app.program?.name ?? 'Application'}</span>
                           </h3>
                           <p className="text-xs sm:text-sm text-muted-foreground">
-                            {app.program.level} • {app.program.discipline}
+                            {app.program?.level ?? 'N/A'} • {app.program?.discipline ?? 'N/A'}
                           </p>
                         </div>
 
                         <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 mt-0.5" />
                           <span className="break-words">
-                            {app.program.university.name} •{' '}
-                            {app.program.university.city}, {app.program.university.country}
+                            {app.program?.university?.name ?? 'University'} •{' '}
+                            {app.program?.university?.city ?? 'N/A'}, {app.program?.university?.country ?? 'N/A'}
                           </span>
                         </div>
 

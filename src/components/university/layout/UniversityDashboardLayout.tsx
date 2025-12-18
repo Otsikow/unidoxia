@@ -5,6 +5,7 @@ import {
   useState,
   useEffect,
   useRef,
+  useCallback,
   ReactNode,
 } from "react";
 
@@ -191,6 +192,7 @@ interface UniversityDashboardContextValue {
   isRefetching: boolean;
   error: Nullable<string>;
   refetch: () => Promise<void>;
+  lastUpdated: Date | null;
 }
 
 export const UniversityDashboardContext =
@@ -245,6 +247,27 @@ export const buildEmptyDashboardData = (): UniversityDashboardData => ({
    DASHBOARD FETCH (CONFLICT-FREE)
 ========================================================= */
 
+const PIPELINE_STAGES = [
+  { key: "submitted", label: "Submitted", description: "Initial applications received", statuses: ["submitted", "draft"] },
+  { key: "screening", label: "Screening", description: "Under review by admissions", statuses: ["screening"] },
+  { key: "offers", label: "Offers Issued", description: "Conditional & unconditional offers", statuses: ["conditional_offer", "unconditional_offer"] },
+  { key: "cas", label: "CAS/LOA Issued", description: "Confirmation of Acceptance", statuses: ["cas_loa", "visa"] },
+  { key: "enrolled", label: "Enrolled", description: "Successfully enrolled students", statuses: ["enrolled"] },
+];
+
+const STATUS_COLORS: Record<string, string> = {
+  draft: "#6b7280",
+  submitted: "#3b82f6",
+  screening: "#8b5cf6",
+  conditional_offer: "#f59e0b",
+  unconditional_offer: "#22c55e",
+  cas_loa: "#06b6d4",
+  visa: "#14b8a6",
+  enrolled: "#10b981",
+  withdrawn: "#ef4444",
+  deferred: "#6366f1",
+};
+
 export const fetchUniversityDashboardData = async (
   tenantId: string,
 ): Promise<UniversityDashboardData> => {
@@ -298,7 +321,7 @@ export const fetchUniversityDashboardData = async (
     if (programIds.length) {
       const { data: appRows } = await supabase
         .from("applications")
-        .select("id, app_number, status, created_at, program_id, student_id, agent_id")
+        .select("id, app_number, status, created_at, updated_at, program_id, student_id, agent_id")
         .in("program_id", programIds)
         .order("created_at", { ascending: false });
 
@@ -410,38 +433,112 @@ export const fetchUniversityDashboardData = async (
 
     const pendingDocsCount = documentRequests.filter(d => d.status !== 'received').length;
     const receivedDocsCount = documentRequests.length - pendingDocsCount;
+    
+    // Count offers (including CAS/LOA/Visa/Enrolled as they also had offers issued)
+    const offersCount = applications.filter((a) =>
+      ["conditional_offer", "unconditional_offer", "cas_loa", "visa", "enrolled"].includes(normalizeStatus(a.status)),
+    ).length;
+    
+    // Count CAS/LOA issued
+    const casCount = applications.filter((a) =>
+      ["cas_loa", "visa", "enrolled"].includes(normalizeStatus(a.status)),
+    ).length;
+    
+    // Count enrolled
+    const enrolledCount = applications.filter(
+      (a) => normalizeStatus(a.status) === "enrolled",
+    ).length;
 
     const metrics: UniversityDashboardMetrics = {
       totalApplications: applications.length,
       totalPrograms: programs.length,
-      totalOffers: applications.filter((a) =>
-        ["conditional_offer", "unconditional_offer"].includes(normalizeStatus(a.status)),
-      ).length,
-      totalCas: applications.filter((a) =>
-        ["cas_loa", "visa"].includes(normalizeStatus(a.status)),
-      ).length,
-      totalEnrolled: applications.filter(
-        (a) => normalizeStatus(a.status) === "enrolled",
-      ).length,
+      totalOffers: offersCount,
+      totalCas: casCount,
+      totalEnrolled: enrolledCount,
       totalAgents: 0,
       acceptanceRate:
         applications.length === 0
           ? 0
-          : Math.round(
-              (applications.filter((a) =>
-                ["conditional_offer", "unconditional_offer"].includes(
-                  normalizeStatus(a.status),
-                ),
-              ).length /
-                applications.length) *
-                100,
-            ),
+          : Math.round((offersCount / applications.length) * 100),
       newApplicationsThisWeek: applications.filter((a) =>
         isWithinLastDays(a.createdAt, 7),
       ).length,
       pendingDocuments: pendingDocsCount,
       receivedDocuments: receivedDocsCount,
     };
+
+    /* ---------- PIPELINE STAGES ---------- */
+    
+    const totalApps = applications.length;
+    const pipeline: PipelineStage[] = PIPELINE_STAGES.map((stage) => {
+      const count = applications.filter((a) =>
+        stage.statuses.includes(normalizeStatus(a.status)),
+      ).length;
+      return {
+        key: stage.key,
+        label: stage.label,
+        description: stage.description,
+        count,
+        percentage: totalApps === 0 ? 0 : Math.round((count / totalApps) * 100),
+      };
+    });
+
+    /* ---------- CONVERSION METRICS ---------- */
+    
+    const submittedCount = applications.filter((a) =>
+      !["draft"].includes(normalizeStatus(a.status)),
+    ).length;
+    
+    const conversion: ConversionMetric[] = [
+      {
+        key: "submission_to_offer",
+        label: "Submission → Offer",
+        value: submittedCount === 0 ? 0 : Math.round((offersCount / submittedCount) * 100),
+        description: "Applications that received an offer",
+      },
+      {
+        key: "offer_to_cas",
+        label: "Offer → CAS/LOA",
+        value: offersCount === 0 ? 0 : Math.round((casCount / offersCount) * 100),
+        description: "Offers that progressed to CAS/LOA",
+      },
+      {
+        key: "cas_to_enrolled",
+        label: "CAS → Enrolled",
+        value: casCount === 0 ? 0 : Math.round((enrolledCount / casCount) * 100),
+        description: "CAS holders who enrolled",
+      },
+    ];
+
+    /* ---------- STATUS SUMMARY ---------- */
+    
+    const statusCounts = new Map<string, number>();
+    for (const app of applications) {
+      const status = normalizeStatus(app.status);
+      statusCounts.set(status, (statusCounts.get(status) ?? 0) + 1);
+    }
+    
+    const statusSummary: ChartDatum[] = Array.from(statusCounts.entries()).map(([status, count]) => ({
+      name: titleCase(status),
+      value: count,
+      color: STATUS_COLORS[status] ?? "#6b7280",
+    }));
+
+    /* ---------- COUNTRY SUMMARY ---------- */
+    
+    const countryCounts = new Map<string, number>();
+    for (const app of applications) {
+      const country = app.studentNationality ?? app.studentCurrentCountry ?? "Unknown";
+      countryCounts.set(country, (countryCounts.get(country) ?? 0) + 1);
+    }
+    
+    const countrySummary: ChartDatum[] = Array.from(countryCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([country, count]) => ({
+        name: country,
+        value: count,
+      }));
 
     return {
       university,
@@ -451,10 +548,10 @@ export const fetchUniversityDashboardData = async (
       documentRequests,
       agents: [],
       metrics,
-      pipeline: [],
-      conversion: [],
-      statusSummary: [],
-      countrySummary: [],
+      pipeline,
+      conversion,
+      statusSummary,
+      countrySummary,
       recentApplications: applications.slice(0, 5),
     };
   } catch (err) {
@@ -472,12 +569,13 @@ export const UniversityDashboardLayout = ({
 }: {
   children: ReactNode;
 }) => {
-  const { profile, loading } = useAuth();
+  const { profile, loading, profileLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const tenantId = profile?.tenant_id ?? null;
 
@@ -486,14 +584,26 @@ export const UniversityDashboardLayout = ({
     enabled: Boolean(tenantId),
     queryFn: () =>
       tenantId ? fetchUniversityDashboardData(tenantId) : buildEmptyDashboardData(),
+    // Reduce stale time for more frequent background refreshes
+    staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: 1000 * 60 * 2, // Auto-refetch every 2 minutes
   });
+
+  // Get program IDs for filtering real-time updates
+  const programIds = useMemo(() => data?.programs?.map(p => p.id) ?? [], [data?.programs]);
 
   // Subscribe to real-time changes
   useEffect(() => {
     if (!tenantId) return;
 
+    const handleRealtimeUpdate = (payload: any) => {
+      console.log("[UniversityDashboard] Real-time update received:", payload);
+      setLastUpdated(new Date());
+      void refetch();
+    };
+
     const channel = supabase
-      .channel('university-dashboard-changes')
+      .channel(`university-dashboard-${tenantId}`)
       .on(
         'postgres_changes',
         {
@@ -502,9 +612,7 @@ export const UniversityDashboardLayout = ({
           table: 'document_requests',
           filter: `tenant_id=eq.${tenantId}`,
         },
-        () => {
-          void refetch();
-        }
+        handleRealtimeUpdate
       )
       .on(
         'postgres_changes',
@@ -513,20 +621,58 @@ export const UniversityDashboardLayout = ({
           schema: 'public',
           table: 'applications',
         },
-        () => {
-             void refetch();
+        (payload) => {
+          // Filter by program_id if we have program IDs
+          const newRecord = payload.new as Record<string, any> | null;
+          const oldRecord = payload.old as Record<string, any> | null;
+          const programId = newRecord?.program_id || oldRecord?.program_id;
+          if (programIds.length === 0 || programIds.includes(programId)) {
+            handleRealtimeUpdate(payload);
+          }
         }
       )
-      .subscribe();
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'application_documents',
+        },
+        handleRealtimeUpdate
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'programs',
+        },
+        (payload) => {
+          // Filter by university programs
+          const universityId = data?.university?.id;
+          const newRecord = payload.new as Record<string, any> | null;
+          const oldRecord = payload.old as Record<string, any> | null;
+          const payloadUniversityId = newRecord?.university_id || oldRecord?.university_id;
+          if (!universityId || payloadUniversityId === universityId) {
+            handleRealtimeUpdate(payload);
+          }
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log("[UniversityDashboard] Real-time subscription active for tenant:", tenantId);
+        }
+      });
 
     channelRef.current = channel;
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tenantId, refetch]);
+  }, [tenantId, refetch, programIds, data?.university?.id]);
 
-  if (loading || isLoading) {
+  // Include profileLoading to prevent "No partner profile" flash during auth
+  if (loading || profileLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Preparing dashboard…" size="lg" />
@@ -563,6 +709,7 @@ export const UniversityDashboardLayout = ({
         isRefetching: isFetching,
         error: error ? (error as Error).message : null,
         refetch: async () => void refetch(),
+        lastUpdated,
       }}
     >
       <div className="flex min-h-screen">

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -28,7 +28,7 @@ import {
 import { useUniversityDashboard } from "@/components/university/layout/UniversityDashboardLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { GraduationCap, Stamp, Clock3, Eye, Download, RefreshCw } from "lucide-react";
+import { GraduationCap, Stamp, Clock3, Eye, Download, RefreshCw, Radio } from "lucide-react";
 import emptyStateIllustration from "@/assets/university-application.png";
 import { AIOfferLetterChecker } from "@/components/university/offers/AIOfferLetterChecker";
 
@@ -179,6 +179,17 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
   return processed;
 };
 
+const formatTimeAgo = (date: Date | null) => {
+  if (!date) return "";
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return date.toLocaleDateString();
+};
+
 const OffersCASPage = () => {
   const { data } = useUniversityDashboard();
   const { toast } = useToast();
@@ -186,6 +197,7 @@ const OffersCASPage = () => {
   const tenantId = data?.university?.tenant_id ?? null;
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const {
     data: records = [],
@@ -197,14 +209,20 @@ const OffersCASPage = () => {
     queryKey: ["university-offers-cas", universityId, tenantId],
     enabled: Boolean(universityId),
     queryFn: () => fetchOffersAndCas(universityId, tenantId),
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: 1000 * 60 * 2, // Auto-refetch every 2 minutes
   });
+
+  const handleRealtimeUpdate = useCallback(() => {
+    setLastUpdated(new Date());
+    void refetch();
+  }, [refetch]);
 
   useEffect(() => {
     if (!universityId) return;
 
     const channel = supabase
-      .channel("offers-cas-changes")
+      .channel(`offers-cas-changes-${universityId}`)
       .on(
         "postgres_changes",
         {
@@ -212,7 +230,10 @@ const OffersCASPage = () => {
           schema: "public",
           table: "applications",
         },
-        () => void refetch()
+        (payload) => {
+          console.log("[OffersCAS] Real-time update:", payload);
+          handleRealtimeUpdate();
+        }
       )
       .on(
         "postgres_changes",
@@ -221,14 +242,21 @@ const OffersCASPage = () => {
           schema: "public",
           table: "application_documents",
         },
-        () => void refetch()
+        (payload) => {
+          console.log("[OffersCAS] Document update:", payload);
+          handleRealtimeUpdate();
+        }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log("[OffersCAS] Real-time subscription active");
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [universityId, refetch]);
+  }, [universityId, handleRealtimeUpdate]);
 
   // Log errors for debugging
   if (error) {
@@ -297,12 +325,25 @@ const OffersCASPage = () => {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Offers &amp; CAS</h1>
-        <p className="text-sm text-muted-foreground">
-          Track offers issued to your applicants and monitor CAS letter progress for
-          upcoming intakes.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Offers &amp; CAS</h1>
+          <p className="text-sm text-muted-foreground">
+            Track offers issued to your applicants and monitor CAS letter progress for
+            upcoming intakes.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {lastUpdated && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+              </span>
+              <span>Live • Updated {formatTimeAgo(lastUpdated)}</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <section className="grid gap-4 md:grid-cols-3">
