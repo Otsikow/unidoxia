@@ -201,6 +201,13 @@ const Index = () => {
           <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
             Apply to Global Universities. Get Accepted. Study Abroad with Confidence.
           </h1>
+
+          <Button asChild size="lg" className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 text-lg">
+            <Link to="/auth/signup">
+              <Sparkles className="mr-2 h-5 w-5" />
+              Start Your Study Journey
+            </Link>
+          </Button>
         </div>
       </section>
 
