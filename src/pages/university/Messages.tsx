@@ -8,9 +8,45 @@ export default function UniversityMessagesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isResolvingContact, setIsResolvingContact] = useState(false);
   
-  // Get contact or applicationId parameter from URL (used when navigating from application review)
+  // Get contact, applicationId, or studentId parameter from URL (used when navigating from various pages)
   const contactId = useMemo(() => searchParams.get("contact"), [searchParams]);
   const applicationId = useMemo(() => searchParams.get("applicationId"), [searchParams]);
+  const studentId = useMemo(() => searchParams.get("studentId"), [searchParams]);
+
+  // Resolve studentId to a student's profile_id
+  useEffect(() => {
+    const resolveStudentContact = async () => {
+      if (!studentId || isResolvingContact) return;
+      
+      setIsResolvingContact(true);
+      try {
+        // Look up the student to get their profile_id
+        const { data: studentData, error: studentError } = await supabase
+          .from("students")
+          .select("profile_id")
+          .eq("id", studentId)
+          .single();
+        
+        if (studentError || !studentData?.profile_id) {
+          console.error("Failed to find student profile:", studentError);
+          return;
+        }
+        
+        // Store the profile ID in session storage so MessagesDashboard can pick it up
+        sessionStorage.setItem("messaging_start_contact", studentData.profile_id);
+      } catch (error) {
+        console.error("Error resolving student contact:", error);
+      } finally {
+        // Clear the studentId from URL
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete("studentId");
+        setSearchParams(newParams, { replace: true });
+        setIsResolvingContact(false);
+      }
+    };
+    
+    void resolveStudentContact();
+  }, [studentId, isResolvingContact, searchParams, setSearchParams]);
 
   // Resolve applicationId to a student's profile_id
   useEffect(() => {
