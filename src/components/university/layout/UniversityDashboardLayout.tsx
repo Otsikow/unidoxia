@@ -623,7 +623,9 @@ export const UniversityDashboardLayout = ({
         },
         (payload) => {
           // Filter by program_id if we have program IDs
-          const programId = payload.new?.program_id || payload.old?.program_id;
+          const newRecord = payload.new as Record<string, any> | null;
+          const oldRecord = payload.old as Record<string, any> | null;
+          const programId = newRecord?.program_id || oldRecord?.program_id;
           if (programIds.length === 0 || programIds.includes(programId)) {
             handleRealtimeUpdate(payload);
           }
@@ -648,7 +650,9 @@ export const UniversityDashboardLayout = ({
         (payload) => {
           // Filter by university programs
           const universityId = data?.university?.id;
-          const payloadUniversityId = payload.new?.university_id || payload.old?.university_id;
+          const newRecord = payload.new as Record<string, any> | null;
+          const oldRecord = payload.old as Record<string, any> | null;
+          const payloadUniversityId = newRecord?.university_id || oldRecord?.university_id;
           if (!universityId || payloadUniversityId === universityId) {
             handleRealtimeUpdate(payload);
           }
