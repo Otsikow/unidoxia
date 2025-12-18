@@ -7,9 +7,20 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-import { Users, FileCheck, Clock, Sparkles, Calculator } from "lucide-react";
+import {
+  Users,
+  FileCheck,
+  Clock,
+  Sparkles,
+  Calculator,
+} from "lucide-react";
 
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
@@ -20,19 +31,24 @@ import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
-import studentsStudyingGroup from "@/assets/students-studying-group.png";
-import agentsCta from "@/assets/agents-cta.jpeg";
-import destinationsCta from "@/assets/destinations-cta.jpeg";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
 import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
 
 /* ---------- Lazy Loaded Sections ---------- */
-const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
-const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
-const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"));
-const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
+const FeaturedUniversitiesSection = lazy(
+  () => import("@/components/landing/FeaturedUniversitiesSection")
+);
+const StoryboardSection = lazy(
+  () => import("@/components/landing/StoryboardSection")
+);
+const AIFeeCalculator = lazy(
+  () => import("@/components/landing/AIFeeCalculator")
+);
+const ZoeExperienceSection = lazy(
+  () => import("@/components/landing/ZoeExperienceSection")
+);
 const ContactForm = lazy(() =>
   import("@/components/ContactForm").then(m => ({ default: m.ContactForm }))
 );
@@ -57,6 +73,13 @@ const SectionLoader = () => (
 const Index = () => {
   const { t } = useTranslation();
 
+  /* ---------- Footer / Contact ---------- */
+  const contactHeading = t("pages.index.contact.heading");
+  const contactSubtitle = t("pages.index.contact.subtitle");
+  const footerText = t("layout.footer.copyright", {
+    year: new Date().getFullYear(),
+  });
+
   /* ---------- Hero Video State ---------- */
   const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
@@ -67,8 +90,7 @@ const Index = () => {
     if (typeof window === "undefined") return;
 
     const prefersReducedMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     const conn = (navigator as any).connection;
     const saveData = Boolean(conn?.saveData);
@@ -80,57 +102,29 @@ const Index = () => {
     }
   }, []);
 
-  /* ---------- Hero Video Preload & Autoplay ---------- */
+  /* ---------- Hero Video Preload ---------- */
   useEffect(() => {
     if (!shouldRenderHeroVideo) return;
+    const video = heroVideoRef.current;
+    if (!video) return;
 
-    const videoEl = heroVideoRef.current;
-    if (!videoEl) return;
-
-    const activateVideo = () => {
+    const activate = () => {
       setHeroVideoReady(true);
-      const playPromise = videoEl.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          /* Autoplay may be blocked; ignore silently */
-        });
-      }
+      video.play().catch(() => {});
     };
 
-    if (videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      activateVideo();
-      return;
+    if (video.readyState >= 2) {
+      activate();
+    } else {
+      video.addEventListener("canplaythrough", activate, { once: true });
+      video.addEventListener("loadeddata", activate, { once: true });
     }
 
-    videoEl.addEventListener("canplaythrough", activateVideo, { once: true });
-    videoEl.addEventListener("loadeddata", activateVideo, { once: true });
-
     return () => {
-      videoEl.removeEventListener("canplaythrough", activateVideo);
-      videoEl.removeEventListener("loadeddata", activateVideo);
+      video.removeEventListener("canplaythrough", activate);
+      video.removeEventListener("loadeddata", activate);
     };
   }, [shouldRenderHeroVideo]);
-
-  /* ---------- Hero CTAs ---------- */
-  const heroCtas = useMemo(
-    () =>
-      [
-        { key: "students", href: "/auth/signup?role=student", image: studentsStudyingGroup },
-        {
-          key: "agents",
-          href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
-          image: agentsCta,
-        },
-        { key: "universities", href: "/partnership", image: destinationsCta },
-      ].map(cta => ({
-        ...cta,
-        badge: t(`pages.index.hero.ctas.${cta.key}.badge`),
-        title: t(`pages.index.hero.ctas.${cta.key}.title`),
-        description: t(`pages.index.hero.ctas.${cta.key}.description`),
-        action: t(`pages.index.hero.ctas.${cta.key}.action`),
-      })),
-    [t]
-  );
 
   /* ---------- Hero Text ---------- */
   const heroTitleParts = useMemo(
@@ -149,9 +143,24 @@ const Index = () => {
   const features = useMemo(
     () =>
       [
-        { key: "applyEasily", icon: FileCheck, color: "from-blue-500 to-cyan-500", image: applyEasilyImage },
-        { key: "trackRealtime", icon: Clock, color: "from-purple-500 to-pink-500", image: trackRealTimeImage },
-        { key: "connectAgents", icon: Users, color: "from-orange-500 to-red-500", image: connectAgentImage },
+        {
+          key: "applyEasily",
+          icon: FileCheck,
+          image: applyEasilyImage,
+          color: "from-blue-500 to-cyan-500",
+        },
+        {
+          key: "trackRealtime",
+          icon: Clock,
+          image: trackRealTimeImage,
+          color: "from-purple-500 to-pink-500",
+        },
+        {
+          key: "connectAgents",
+          icon: Users,
+          image: connectAgentImage,
+          color: "from-orange-500 to-red-500",
+        },
       ].map(f => ({
         ...f,
         title: t(`pages.index.features.cards.${f.key}.title`),
@@ -170,37 +179,31 @@ const Index = () => {
     [t]
   );
 
-  /* ---------- Translations ---------- */
-  const featuresHeading = t("pages.index.features.heading");
-  const visaBadgeLabel = t("pages.index.visa.badge");
-  const visaTitle = t("pages.index.visa.title");
-  const visaDescription = t("pages.index.visa.description");
-  const visaButtonLabel = t("pages.index.visa.cta");
-  const faqHeading = t("pages.index.faq.heading");
-  const faqSubtitle = t("pages.index.faq.subtitle");
-  const contactHeading = t("pages.index.contact.heading");
-  const contactSubtitle = t("pages.index.contact.subtitle");
-  const footerText = t("layout.footer.copyright", { year: new Date().getFullYear() });
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <SEO
-        title="UniDoxia - Your Path to International Education"
-        description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support."
-        keywords="study abroad, university applications, international education, AI tools, visa calculator"
+        title="UniDoxia – Your Path to International Education"
+        description="Guided study abroad applications with real human support, verified agents, and AI-powered tools."
       />
 
       {/* ---------- HERO ---------- */}
-      <section className="hero-video-container scroll-mt-20" id="home">
+      <section
+        id="home"
+        className="hero-video-container scroll-mt-20"
+      >
         {shouldRenderHeroVideo ? (
           <>
             <div
-              className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
+              className={`hero-fallback ${
+                heroVideoReady ? "is-hidden" : ""
+              }`}
               aria-hidden
             />
             <video
               ref={heroVideoRef}
-              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+              className={`hero-video ${
+                heroVideoReady ? "is-ready" : "is-loading"
+              }`}
               autoPlay
               loop
               muted
@@ -216,16 +219,28 @@ const Index = () => {
 
         <div className="hero-video-overlay" />
 
-        <div className="hero-content">
+        <div className="hero-content text-center">
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"
-            className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-50 brightness-0 invert"
+            className="mx-auto mb-6 h-24 brightness-0 invert"
           />
 
-          <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
-            Apply <span className="opacity-70">•</span> Get Your Visa <span className="opacity-70">•</span> Study Abroad
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            UniDoxia: Get accepted into global universities — without
+            guesswork or hidden fees.
           </h1>
+
+          <p className="text-xl text-white/90 mb-10">
+            From Africa to the world — we personally guide your study
+            abroad journey.
+          </p>
+
+          <Button asChild size="lg">
+            <Link to="/auth/signup?role=student">
+              Start Your Study Journey
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -236,107 +251,29 @@ const Index = () => {
           highlight={heroTitleParts.highlight}
           phrases={["Your Future", "Your Dreams", "Success"]}
           suffix={heroTitleParts.suffix}
-          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
+          className="text-4xl font-bold"
         />
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{heroDescription}</p>
-      </section>
-
-      {/* ---------- HOW IT WORKS ---------- */}
-      <section id="how-it-works" className="container mx-auto px-4 py-16 sm:py-20">
-        <div className="max-w-3xl mx-auto text-center space-y-3">
-          <Badge variant="secondary" className="w-fit mx-auto">
-            {t("pages.index.howItWorks.badge")}
-          </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold">
-            {t("pages.index.howItWorks.heading")}
-          </h2>
-          <p className="text-muted-foreground text-lg">
-            {t("pages.index.howItWorks.subtitle")}
-          </p>
-        </div>
-
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {[
-            {
-              key: "startProfile" as const,
-              action: "/auth/signup?role=student",
-            },
-            {
-              key: "uploadDocuments" as const,
-              action: "/student/documents",
-            },
-            {
-              key: "bookGuidanceCall" as const,
-              action: "/contact",
-            },
-          ].map((step, index) => (
-            <Card key={step.key} className="h-full">
-              <CardContent className="p-6 space-y-4 flex flex-col h-full">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs uppercase font-semibold tracking-[0.2em] text-primary/80">
-                      {t("pages.index.howItWorks.stepLabel", { index: index + 1 })}
-                    </p>
-                    <h3 className="text-xl font-semibold">
-                      {t(`pages.index.howItWorks.steps.${step.key}.title`)}
-                    </h3>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {t("pages.index.howItWorks.nextBestStep")}
-                  </Badge>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed flex-1">
-                  {t(`pages.index.howItWorks.steps.${step.key}.description`)}
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-primary">
-                    <Sparkles className="h-4 w-4" />
-                    <span>{t(`pages.index.howItWorks.steps.${step.key}.assurance`)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("pages.index.howItWorks.editable")}
-                  </p>
-                </div>
-                <Button asChild size="lg" className="w-full mt-auto">
-                  <Link to={step.action}>
-                    {t(`pages.index.howItWorks.steps.${step.key}.cta`)}
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+          {heroDescription}
+        </p>
       </section>
 
       <StudyProgramSearch sectionId="destinations" />
 
-      {/* ---------- VISA ---------- */}
-      <section className="py-24 container mx-auto grid lg:grid-cols-2 gap-14 px-4">
-        <div className="space-y-6">
-          <Badge variant="secondary">{visaBadgeLabel}</Badge>
-          <h2 className="text-4xl font-bold">{visaTitle}</h2>
-          <p className="text-muted-foreground">{visaDescription}</p>
-
-          <Button asChild size="lg">
-            <Link to="/visa-calculator" onClick={() => logVisaCalculatorCardClick("cta_button")}>
-              <Calculator className="mr-2 h-5 w-5" />
-              {visaButtonLabel}
-            </Link>
-          </Button>
-        </div>
-
-        <img src={visaEligibilityImage} alt="Visa eligibility" className="rounded-2xl shadow-2xl" />
-      </section>
-
       {/* ---------- FEATURES ---------- */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-4xl font-bold text-center mb-12">{featuresHeading}</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {features.map(f => (
             <Card key={f.key}>
-              <img src={f.image} alt={f.title} className="h-48 w-full object-cover rounded-t-xl" />
+              <img
+                src={f.image}
+                alt={f.title}
+                className="h-48 w-full object-cover rounded-t-xl"
+              />
               <CardContent className="p-8">
-                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} mb-4`}>
+                <div
+                  className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} mb-4`}
+                >
                   <f.icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{f.title}</h3>
@@ -347,36 +284,44 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ---------- LAZY SECTIONS ---------- */}
+      {/* ---------- PRICING ---------- */}
       <section id="pricing" className="scroll-mt-24">
         <div className="container mx-auto px-4 text-center space-y-2 mb-6">
           <Badge variant="secondary" className="mx-auto w-fit">
-            {t("layout.navbar.links.pricing")}
+            Pricing
           </Badge>
-          <h2 className="text-3xl font-bold">Transparent pricing, no surprises</h2>
-          <p className="text-muted-foreground">
-            {t("pages.index.howItWorks.assurances.secure")} • {t("pages.index.howItWorks.assurances.editLater")}
-          </p>
+          <h2 className="text-3xl font-bold">
+            Transparent pricing, no surprises
+          </h2>
         </div>
-        <Suspense fallback={<SectionLoader />}><AIFeeCalculator /></Suspense>
-      </section>
-      <Suspense fallback={<SectionLoader />}><ZoeExperienceSection /></Suspense>
-      <Suspense fallback={<SectionLoader />}><FeaturedUniversitiesSection /></Suspense>
-      <Suspense fallback={<SectionLoader />}><StoryboardSection /></Suspense>
 
+        <Suspense fallback={<SectionLoader />}>
+          <AIFeeCalculator />
+        </Suspense>
+      </section>
+
+      {/* ---------- LAZY SECTIONS ---------- */}
+      <Suspense fallback={<SectionLoader />}>
+        <ZoeExperienceSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <FeaturedUniversitiesSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <StoryboardSection />
+      </Suspense>
+
+      {/* ---------- STORIES ---------- */}
       <section id="stories" className="scroll-mt-24">
         <SuccessStoriesMarquee />
       </section>
 
       {/* ---------- FAQ ---------- */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-4">{faqHeading}</h2>
-        <p className="text-muted-foreground text-center mb-12">{faqSubtitle}</p>
-
         {faqs.map((section, i) => (
           <div key={i} className="max-w-4xl mx-auto mb-12">
             <h3 className="text-xl font-semibold mb-4">
-              {t("pages.index.faq.audienceHeading", { audience: section.audience })}
+              {section.audience}
             </h3>
             <Accordion type="single" collapsible>
               {section.items.map((faq, j) => (
@@ -392,10 +337,11 @@ const Index = () => {
 
       {/* ---------- CONTACT ---------- */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-4">{contactHeading}</h2>
-        <p className="text-muted-foreground text-center mb-4">{contactSubtitle}</p>
-        <p className="text-sm text-muted-foreground text-center mb-12">
-          {t("pages.index.howItWorks.assurances.editLater")} • {t("pages.index.howItWorks.assurances.secure")}
+        <h2 className="text-3xl font-bold text-center mb-4">
+          {contactHeading}
+        </h2>
+        <p className="text-muted-foreground text-center mb-12">
+          {contactSubtitle}
         </p>
 
         <Card className="max-w-2xl mx-auto">
