@@ -53,8 +53,8 @@ interface ProgramTableProps {
   levelOptions: string[];
   onLevelFilterChange: (value: string) => void;
 
-  statusFilter: "all" | "active" | "inactive";
-  onStatusFilterChange: (value: "all" | "active" | "inactive") => void;
+  statusFilter: "all" | "active" | "inactive" | "draft";
+  onStatusFilterChange: (value: "all" | "active" | "inactive" | "draft") => void;
 
   onToggleActive: (programId: string, nextActive: boolean) => void;
   updatingId: string | null;
@@ -92,10 +92,12 @@ export default function ProgramTable({
         levelFilter === "all" ||
         p.level.toLowerCase() === levelFilter.toLowerCase();
 
+      const isDraft = p.is_draft === true;
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "active" && p.active) ||
-        (statusFilter === "inactive" && !p.active);
+        (statusFilter === "draft" && isDraft) ||
+        (statusFilter === "active" && p.active && !isDraft) ||
+        (statusFilter === "inactive" && !p.active && !isDraft);
 
       return matchesSearch && matchesLevel && matchesStatus;
     });
@@ -141,6 +143,7 @@ export default function ProgramTable({
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
+              <SelectItem value="draft">Drafts</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -165,9 +168,20 @@ export default function ProgramTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map((p) => (
+              {filtered.map((p) => {
+                const isDraft = p.is_draft === true;
+                return (
                 <tr key={p.id} className="hover:bg-muted/20">
-                  <td className="px-4 py-3 font-medium">{p.name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <div className="flex items-center gap-2">
+                      {p.name}
+                      {isDraft && (
+                        <Badge variant="outline" className="text-xs text-amber-600 border-amber-500/50 bg-amber-500/10">
+                          Draft
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
                     <Badge variant="secondary">{p.level}</Badge>
                   </td>
@@ -200,7 +214,7 @@ export default function ProgramTable({
                           <Eye className="mr-2 h-4 w-4" /> View
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onEdit(p)}>
-                          <Pencil className="mr-2 h-4 w-4" /> Edit
+                          <Pencil className="mr-2 h-4 w-4" /> {isDraft ? "Continue editing" : "Edit"}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -213,7 +227,8 @@ export default function ProgramTable({
                     </DropdownMenu>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
             </tbody>
           </table>
         </div>

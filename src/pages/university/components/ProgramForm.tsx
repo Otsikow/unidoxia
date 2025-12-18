@@ -25,7 +25,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -90,27 +90,33 @@ export type ProgramFormValues = z.infer<typeof programSchema>;
 interface ProgramFormProps {
   initialValues: ProgramFormValues;
   onSubmit: (values: ProgramFormValues) => Promise<void> | void;
+  onSaveDraft?: (values: Partial<ProgramFormValues>) => Promise<void> | void;
   onCancel: () => void;
   isSubmitting: boolean;
+  isSavingDraft?: boolean;
   submitLabel: string;
   levelOptions: string[];
   tenantId: string | null;
   userId: string | null;
   title?: string;
   description?: string;
+  showSaveDraft?: boolean;
 }
 
 export default function ProgramForm({
   initialValues,
   onSubmit,
+  onSaveDraft,
   onCancel,
   isSubmitting,
+  isSavingDraft = false,
   submitLabel,
   levelOptions,
   tenantId,
   userId,
   title = "Course Details",
   description = "Enter the details for this course.",
+  showSaveDraft = false,
 }: ProgramFormProps) {
   const { toast } = useToast();
   const form = useForm<ProgramFormValues>({
@@ -215,6 +221,14 @@ export default function ProgramForm({
   };
 
   const imageUrl = form.watch("imageUrl");
+
+  const handleSaveDraft = async () => {
+    if (!onSaveDraft) return;
+    
+    // Get current form values without validation (allow partial data)
+    const currentValues = form.getValues();
+    await onSaveDraft(currentValues);
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onCancel()}>
@@ -603,13 +617,41 @@ export default function ProgramForm({
         </ScrollArea>
 
         {/* Actions - Outside scroll area for consistent positioning */}
-        <div className="shrink-0 flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end">
-          <Button type="button" variant="ghost" onClick={onCancel} className="w-full sm:w-auto">
-            Cancel
-          </Button>
-          <Button type="submit" form="program-form" disabled={isSubmitting} className="w-full sm:w-auto">
-            {isSubmitting ? "Saving..." : submitLabel}
-          </Button>
+        <div className="shrink-0 flex flex-col gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-between">
+          {/* Left side - Save Draft button */}
+          <div className="order-last sm:order-first">
+            {showSaveDraft && onSaveDraft && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSaveDraft}
+                disabled={isSubmitting || isSavingDraft}
+                className="w-full sm:w-auto gap-2"
+              >
+                {isSavingDraft ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving draft...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save as draft
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+          
+          {/* Right side - Cancel and Submit buttons */}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row">
+            <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting || isSavingDraft} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+            <Button type="submit" form="program-form" disabled={isSubmitting || isSavingDraft} className="w-full sm:w-auto">
+              {isSubmitting ? "Saving..." : submitLabel}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
