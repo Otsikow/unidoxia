@@ -221,6 +221,44 @@ export async function fetchMessagingContacts(
             }
           });
         }
+
+        // Students can also message universities they have applied to
+        const { data: applications } = await supabase
+          .from('applications')
+          .select(`
+            id,
+            program:programs!inner(
+              university:universities!inner(
+                id,
+                name,
+                tenant_id
+              )
+            )
+          `)
+          .eq('student_id', studentData.id);
+
+        if (applications && applications.length > 0) {
+          // Get unique university tenant IDs
+          const universityTenantIds = new Set<string>();
+          applications.forEach((app: any) => {
+            if (app.program?.university?.tenant_id) {
+              universityTenantIds.add(app.program.university.tenant_id);
+            }
+          });
+
+          if (universityTenantIds.size > 0) {
+            // Fetch university representatives (partner/school_rep) for these universities
+            const { data: universityProfiles } = await supabase
+              .from('profiles')
+              .select('id, full_name, email, avatar_url, role, tenant_id')
+              .in('role', ['partner', 'school_rep'])
+              .in('tenant_id', Array.from(universityTenantIds));
+
+            if (universityProfiles) {
+              universityProfiles.forEach((p: any) => addProfile(p as DirectoryProfile));
+            }
+          }
+        }
       }
 
       // Students can also message staff/admin
@@ -274,6 +312,119 @@ export async function fetchMessagingContactIds(): Promise<string[]> {
     return contacts.map((contact) => contact.id);
   } catch (error) {
     console.error("Error fetching messaging contact IDs:", error);
+    return [];
+  }
+}
+
+export interface AppliedUniversityContact {
+  profile_id: string;
+  full_name: string;
+  email: string;
+  avatar_url: string | null;
+  role: string;
+  university_name: string;
+  university_id: string;
+  application_id: string;
+  application_status: string;
+}
+
+/**
+ * Fetches university contacts for universities where the current student has applications.
+ * Returns contacts grouped with their university and application information.
+ */
+export async function fetchAppliedUniversityContacts(): Promise<AppliedUniversityContact[]> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) return [];
+
+    // Get student record
+    const { data: studentData } = await supabase
+      .from('students')
+      .select('id')
+      .eq('profile_id', userData.user.id)
+      .single();
+
+    if (!studentData) return [];
+
+    // Get applications with university info
+    const { data: applications } = await supabase
+      .from('applications')
+      .select(`
+        id,
+        status,
+        program:programs!inner(
+          university:universities!inner(
+            id,
+            name,
+            tenant_id
+          )
+        )
+      `)
+      .eq('student_id', studentData.id);
+
+    if (!applications || applications.length === 0) return [];
+
+    // Build a map of tenant_id -> university info + application info
+    const universityMap = new Map<string, { 
+      university_id: string; 
+      university_name: string; 
+      application_id: string;
+      application_status: string;
+    }>();
+    
+    applications.forEach((app: any) => {
+      if (app.program?.university?.tenant_id) {
+        const tenantId = app.program.university.tenant_id;
+        // Keep the first/most recent application per university
+        if (!universityMap.has(tenantId)) {
+          universityMap.set(tenantId, {
+            university_id: app.program.university.id,
+            university_name: app.program.university.name,
+            application_id: app.id,
+            application_status: app.status,
+          });
+        }
+      }
+    });
+
+    if (universityMap.size === 0) return [];
+
+    // Fetch university representatives
+    const { data: universityProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, avatar_url, role, tenant_id')
+      .in('role', ['partner', 'school_rep'])
+      .in('tenant_id', Array.from(universityMap.keys()));
+
+    if (!universityProfiles || universityProfiles.length === 0) return [];
+
+    // Map profiles to applied university contacts
+    const contacts: AppliedUniversityContact[] = [];
+    const seenIds = new Set<string>();
+
+    universityProfiles.forEach((profile: any) => {
+      if (seenIds.has(profile.id)) return;
+      seenIds.add(profile.id);
+
+      const uniInfo = universityMap.get(profile.tenant_id);
+      if (uniInfo) {
+        contacts.push({
+          profile_id: profile.id,
+          full_name: profile.full_name,
+          email: profile.email,
+          avatar_url: profile.avatar_url,
+          role: profile.role,
+          university_name: uniInfo.university_name,
+          university_id: uniInfo.university_id,
+          application_id: uniInfo.application_id,
+          application_status: uniInfo.application_status,
+        });
+      }
+    });
+
+    return contacts;
+  } catch (error) {
+    console.error('Error fetching applied university contacts:', error);
     return [];
   }
 }
