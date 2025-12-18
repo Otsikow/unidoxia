@@ -61,11 +61,11 @@ interface ApplicationWithDetails {
       city: string | null;
       country: string | null;
       logo_url: string | null;
-    };
-  };
+    } | null;
+  } | null;
   intake?: {
     app_deadline: string | null;
-  };
+  } | null;
 }
 
 interface RecommendedProgram {
@@ -242,9 +242,11 @@ export default function StudentDashboard() {
           toast(formatErrorForToast(error, 'Failed to load applications'));
           setApplications([]);
         } else {
+          // Keep all applications, even those with null program data
+          // (program may be inactive or inaccessible due to RLS)
           const sanitized = (data ?? []).filter(
             (app): app is ApplicationWithDetails =>
-              Boolean(app?.program && app.program?.university && app.created_at)
+              Boolean(app?.id && app.created_at)
           );
           setApplications(sanitized);
         }
@@ -557,15 +559,15 @@ export default function StudentDashboard() {
                           <TableRow key={app.id} className="hover:bg-muted/50">
                             <TableCell className="font-medium">
                               <Link to={`/student/applications/${app.id}`} className="hover:underline">
-                                <div className="font-semibold truncate">{app.program.name}</div>
+                                <div className="font-semibold truncate">{app.program?.name ?? 'Application'}</div>
                                 <div className="text-xs text-muted-foreground">
-                                  {app.program.level} • {app.program.discipline}
+                                  {app.program?.level ?? 'N/A'} • {app.program?.discipline ?? 'N/A'}
                                 </div>
                               </Link>
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-2">
-                                {app.program.university.logo_url && (
+                                {app.program?.university?.logo_url && (
                                   <img
                                     src={app.program.university.logo_url}
                                     alt={app.program.university.name}
@@ -573,16 +575,16 @@ export default function StudentDashboard() {
                                   />
                                 )}
                                 <div>
-                                  <div className="font-medium text-sm">{app.program.university.name}</div>
+                                  <div className="font-medium text-sm">{app.program?.university?.name ?? 'University'}</div>
                                   <div className="text-xs text-muted-foreground flex items-center gap-1">
                                     <MapPin className="h-3 w-3" />
-                                    {app.program.university.city}, {app.program.university.country}
+                                    {app.program?.university?.city ?? 'N/A'}, {app.program?.university?.country ?? 'N/A'}
                                   </div>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell className="text-right font-semibold">
-                              {formatCurrency(app.program.tuition_amount, app.program.tuition_currency)}
+                              {formatCurrency(app.program?.tuition_amount, app.program?.tuition_currency ?? 'USD')}
                             </TableCell>
                             <TableCell>
                               <StatusBadge status={app.status} />
