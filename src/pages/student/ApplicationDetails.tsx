@@ -82,6 +82,22 @@ interface AppDocument {
   uploaded_at: string;
 }
 
+// Enhanced offer with signed URL for viewing/downloading
+interface OfferWithSignedUrl extends Offer {
+  signedUrl?: string | null;
+  isLoading?: boolean;
+}
+
+// Offer documents from application_documents table (uploaded by university)
+interface OfferDocument {
+  id: string;
+  document_type: string;
+  storage_path: string;
+  mime_type: string;
+  uploaded_at: string;
+  signedUrl?: string | null;
+}
+
 export default function ApplicationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -103,11 +119,102 @@ export default function ApplicationDetails() {
     }
   };
 
+  // Helper to get signed URL for a storage path
+  const getSignedUrl = async (storagePath: string): Promise<string | null> => {
+    try {
+      // Normalize path - remove bucket prefix if present
+      const normalizedPath = storagePath.replace(/^application-documents\//, '');
+      
+      const { data, error } = await supabase.storage
+        .from('application-documents')
+        .createSignedUrl(normalizedPath, 3600); // 1 hour expiry
+      
+      if (error) {
+        console.error('Failed to get signed URL:', error);
+        return null;
+      }
+      return data?.signedUrl ?? null;
+    } catch (e) {
+      console.error('Error getting signed URL:', e);
+      return null;
+    }
+  };
+
+  // Check if a URL is a storage path that needs a signed URL
+  const isStoragePath = (url: string): boolean => {
+    if (!url) return false;
+    // Direct URLs start with http:// or https://
+    // Storage paths are relative paths without protocol
+    return !url.startsWith('http://') && !url.startsWith('https://');
+  };
+
+  // View/Download offer document
+  const viewOfferDocument = async (url: string | undefined, signedUrl: string | null | undefined) => {
+    if (signedUrl) {
+      window.open(signedUrl, '_blank');
+      return;
+    }
+    
+    if (url) {
+      if (isStoragePath(url)) {
+        // Try to get a signed URL
+        const signed = await getSignedUrl(url);
+        if (signed) {
+          window.open(signed, '_blank');
+          return;
+        }
+      } else {
+        // It's a direct URL
+        window.open(url, '_blank');
+        return;
+      }
+    }
+    
+    toast({ title: 'Error', description: 'Could not access document', variant: 'destructive' });
+  };
+
+  // Download offer document with proper handling
+  const downloadOfferDocument = async (url: string | undefined, signedUrl: string | null | undefined, filename?: string) => {
+    try {
+      let downloadUrl = signedUrl;
+      
+      if (!downloadUrl && url) {
+        if (isStoragePath(url)) {
+          downloadUrl = await getSignedUrl(url);
+        } else {
+          downloadUrl = url;
+        }
+      }
+      
+      if (!downloadUrl) {
+        toast({ title: 'Error', description: 'Document not available', variant: 'destructive' });
+        return;
+      }
+      
+      // Fetch and download
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'offer-document.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (e) {
+      console.error('Download error:', e);
+      toast({ title: 'Error', description: 'Could not download document', variant: 'destructive' });
+    }
+  };
+
   const [app, setApp] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
-  const [offers, setOffers] = useState<Offer[]>([]);
+  const [offers, setOffers] = useState<OfferWithSignedUrl[]>([]);
   const [docs, setDocs] = useState<AppDocument[]>([]);
+  const [offerDocs, setOfferDocs] = useState<OfferDocument[]>([]);
+  const [loadingOfferUrls, setLoadingOfferUrls] = useState(false);
 
   const getIntakeLabel = (month: number, year: number) => {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -128,6 +235,40 @@ export default function ApplicationDetails() {
     };
     return map[app.status] || 'Varies by university';
   }, [app]);
+
+  // Load signed URLs for offers that have storage paths
+  const loadOfferSignedUrls = async (offersToProcess: OfferWithSignedUrl[]) => {
+    setLoadingOfferUrls(true);
+    const updatedOffers: OfferWithSignedUrl[] = await Promise.all(
+      offersToProcess.map(async (offer) => {
+        if (offer.letter_url && isStoragePath(offer.letter_url)) {
+          const signedUrl = await getSignedUrl(offer.letter_url);
+          return { ...offer, signedUrl, isLoading: false };
+        }
+        return { ...offer, isLoading: false };
+      })
+    );
+    setOffers(updatedOffers);
+    setLoadingOfferUrls(false);
+  };
+
+  // Load signed URLs for offer documents
+  const loadOfferDocumentUrls = async (docsToProcess: any[]) => {
+    const updatedDocs: OfferDocument[] = await Promise.all(
+      docsToProcess.map(async (doc) => {
+        const signedUrl = await getSignedUrl(doc.storage_path);
+        return {
+          id: doc.id,
+          document_type: doc.document_type,
+          storage_path: doc.storage_path,
+          mime_type: doc.mime_type,
+          uploaded_at: doc.uploaded_at,
+          signedUrl,
+        };
+      })
+    );
+    setOfferDocs(updatedDocs);
+  };
 
   useEffect(() => {
     if (!id || !user) return;
@@ -200,7 +341,14 @@ export default function ApplicationDetails() {
         .eq('application_id', applicationId)
         .order('created_at', { ascending: false });
       if (offerErr) throw offerErr;
-      setOffers(offerData as unknown as Offer[]);
+      
+      // Process offers and get signed URLs if needed
+      const offersWithUrls: OfferWithSignedUrl[] = (offerData || []).map((o: any) => ({
+        ...o,
+        signedUrl: null,
+        isLoading: isStoragePath(o.letter_url),
+      }));
+      setOffers(offersWithUrls);
 
       // Documents linked to this application
       const { data: docData, error: docErr } = await supabase
@@ -210,6 +358,33 @@ export default function ApplicationDetails() {
         .order('uploaded_at', { ascending: false });
       if (docErr) throw docErr;
       setDocs(docData as unknown as AppDocument[]);
+
+      // Filter for offer-related documents from application_documents
+      // These are documents uploaded by universities (e.g., offer letters, CAS letters)
+      const offerRelatedTypes = ['offer_letter', 'conditional_offer', 'unconditional_offer', 'cas', 'cas_letter', 'loa', 'other'];
+      const offerDocuments = (docData || []).filter((d: any) => 
+        offerRelatedTypes.includes(d.document_type?.toLowerCase()) ||
+        d.document_type?.toLowerCase()?.includes('offer') ||
+        d.document_type?.toLowerCase()?.includes('cas')
+      );
+      setOfferDocs(offerDocuments.map((d: any) => ({
+        id: d.id,
+        document_type: d.document_type,
+        storage_path: d.storage_path,
+        mime_type: d.mime_type,
+        uploaded_at: d.uploaded_at,
+        signedUrl: null,
+      })));
+
+      // Load signed URLs for offers with storage paths (async, after initial render)
+      if (offersWithUrls.some(o => isStoragePath(o.letter_url))) {
+        void loadOfferSignedUrls(offersWithUrls);
+      }
+      
+      // Load signed URLs for offer documents
+      if (offerDocuments.length > 0) {
+        void loadOfferDocumentUrls(offerDocuments);
+      }
     } catch (error) {
       logError(error, 'ApplicationDetails.loadAll');
       toast(formatErrorForToast(error, 'Failed to load application details'));
@@ -531,30 +706,113 @@ export default function ApplicationDetails() {
               <CardTitle>Offers</CardTitle>
             </CardHeader>
             <CardContent>
-              {offers.length === 0 ? (
+              {offers.length === 0 && offerDocs.length === 0 ? (
                 <div className="text-sm text-muted-foreground">No offers yet.</div>
               ) : (
-                <div className="space-y-3">
-                  {offers.map((o) => (
-                    <div key={o.id} className="flex items-center justify-between p-3 rounded-md bg-muted/40">
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium capitalize">{o.offer_type.replace('_', ' ')} offer</div>
-                        {o.expiry_date && (
-                          <div className="text-xs text-muted-foreground">Expires {new Date(o.expiry_date).toLocaleDateString()}</div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={o.accepted ? 'secondary' : 'outline'}>{o.accepted ? 'Accepted' : 'Pending'}</Badge>
-                        {o.letter_url && (
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={o.letter_url} target="_blank" rel="noopener noreferrer">
-                              <Download className="mr-2 h-4 w-4" /> Offer Letter
-                            </a>
-                          </Button>
-                        )}
-                      </div>
+                <div className="space-y-4">
+                  {/* Offers from offers table */}
+                  {offers.length > 0 && (
+                    <div className="space-y-3">
+                      {offers.map((o) => (
+                        <div key={o.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border bg-card">
+                          <div className="space-y-1 mb-3 sm:mb-0">
+                            <div className="text-sm font-medium capitalize">{o.offer_type.replace('_', ' ')} Offer</div>
+                            {o.expiry_date && (
+                              <div className="text-xs text-muted-foreground">Expires {new Date(o.expiry_date).toLocaleDateString()}</div>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant={o.accepted ? 'secondary' : 'outline'}>{o.accepted ? 'Accepted' : 'Pending'}</Badge>
+                            {o.letter_url && (
+                              <>
+                                {o.isLoading ? (
+                                  <Button variant="outline" size="sm" disabled>
+                                    <span className="animate-pulse">Loading...</span>
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => viewOfferDocument(o.letter_url, o.signedUrl)}
+                                    >
+                                      <FileText className="mr-2 h-4 w-4" /> View
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      onClick={() => downloadOfferDocument(o.letter_url, o.signedUrl, `${o.offer_type}_offer_letter.pdf`)}
+                                    >
+                                      <Download className="mr-2 h-4 w-4" /> Download
+                                    </Button>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {/* Offer documents from application_documents table */}
+                  {offerDocs.length > 0 && (
+                    <div className="space-y-3">
+                      {offers.length > 0 && (
+                        <div className="text-xs text-muted-foreground uppercase tracking-wide font-medium pt-2">
+                          Additional Documents
+                        </div>
+                      )}
+                      {offerDocs.map((doc) => (
+                        <div key={doc.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border bg-card">
+                          <div className="space-y-1 mb-3 sm:mb-0">
+                            <div className="text-sm font-medium capitalize flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-primary" />
+                              {doc.document_type?.replace(/_/g, ' ') || 'Document'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Uploaded {new Date(doc.uploaded_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            {doc.signedUrl ? (
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => window.open(doc.signedUrl!, '_blank')}
+                                >
+                                  <FileText className="mr-2 h-4 w-4" /> View
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => downloadOfferDocument(doc.storage_path, doc.signedUrl, doc.storage_path.split('/').pop())}
+                                >
+                                  <Download className="mr-2 h-4 w-4" /> Download
+                                </Button>
+                              </>
+                            ) : (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={async () => {
+                                  const url = await getSignedUrl(doc.storage_path);
+                                  if (url) {
+                                    window.open(url, '_blank');
+                                  } else {
+                                    toast({ title: 'Error', description: 'Could not access document', variant: 'destructive' });
+                                  }
+                                }}
+                              >
+                                <FileText className="mr-2 h-4 w-4" /> View Document
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
