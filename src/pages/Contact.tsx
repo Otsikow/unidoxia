@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactForm } from "@/components/ContactForm";
-import BackButton from "@/components/BackButton";
 import professionalConsultant from "@/assets/professional-consultant.png";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -20,8 +19,6 @@ const Contact = () => {
       />
       <section className="container mx-auto px-4 py-12">
         <div className="max-w-5xl mx-auto space-y-6">
-          <BackButton variant="ghost" size="sm" fallback="/" />
-          
           <div className="grid md:grid-cols-2 gap-8 items-center">
               <div className="space-y-4">
                 <h1 className="text-3xl md:text-4xl font-bold">{t("pages.contact.heroTitle")}</h1>

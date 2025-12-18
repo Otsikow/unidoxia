@@ -1,4 +1,3 @@
-import BackButton from "@/components/BackButton";
 import { UniversityPartnershipForm } from "@/components/forms/UniversityPartnershipForm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -123,8 +122,6 @@ const UniversityPartnership = () => {
       />
       <section className="container mx-auto px-4 py-12 lg:py-16">
         <div className="mx-auto max-w-6xl space-y-10">
-          <BackButton variant="ghost" size="sm" fallback="/" />
-
           <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="space-y-6">
               <Badge className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm">
