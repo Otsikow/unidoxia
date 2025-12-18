@@ -544,91 +544,61 @@ const fr = {
         },
         journeyRibbon: {
           items: {
-            discover: {
-              stage: "Découvrir",
-              metricValue: "200+",
-              metricLabel: "Universités partenaires",
+            profile: {
+              stage: "Étape 1",
+              metricValue: "5 min",
+              metricLabel: "pour commencer",
               description:
-                "Les recommandations pilotées par l'IA révèlent immédiatement les universités les plus adaptées dès votre inscription.",
-              ctaLabel: "Commencer la candidature",
+                "Créez votre profil avec votre parcours académique, vos documents et vos préférences d'études – tout en un seul endroit.",
+              ctaLabel: "Créer votre profil",
             },
-            plan: {
-              stage: "Planifier",
-              metricValue: "5000+",
-              metricLabel: "Plans personnalisés créés",
-              description:
-                "Des listes de tâches et des rappels intelligents aident des milliers d'étudiants à rester organisés des relevés jusqu'aux lettres de motivation.",
-              ctaLabel: "",
-            },
-            collaborate: {
-              stage: "Collaborer",
+            matched: {
+              stage: "Étape 2",
               metricValue: "24h",
-              metricLabel: "Délai de réponse moyen des agents",
+              metricLabel: "délai moyen de matching",
               description:
-                "Des conseillers vérifiés co-éditent les documents, répondent aux questions et synchronisent les calendriers en temps réel sur tous les canaux.",
-              ctaLabel: "Rencontrer votre agent",
+                "Soyez mis en relation avec des conseillers vérifiés et des universités qui correspondent à vos objectifs. Recevez un accompagnement personnalisé à chaque étape.",
+              ctaLabel: "Être accompagné",
             },
-            submit: {
-              stage: "Soumettre",
+            offers: {
+              stage: "Étape 3",
               metricValue: "95%",
-              metricLabel: "Taux de réussite",
+              metricLabel: "taux de réussite visa",
               description:
-                "Des soumissions centralisées et des rappels proactifs font avancer les candidatures sans manquer une seule échéance.",
-              ctaLabel: "",
-            },
-            celebrate: {
-              stage: "Célébrer",
-              metricValue: "50+",
-              metricLabel: "Pays représentés",
-              description:
-                "Des check-lists prêtes pour le visa et une préparation au départ permettent aux étudiants de rejoindre les campus du monde entier en toute confiance.",
+                "Recevez des offres d'universités et un accompagnement visa complet. Nous vous accompagnons de l'acceptation à l'arrivée.",
               ctaLabel: "",
             },
           },
         },
         storyboard: {
-          heading: "Comment UniDoxia simplifie chaque étape",
+          heading: "Votre parcours en 3 étapes simples",
           subheading:
-            "Suivez notre storyboard pour découvrir comment notre plateforme et nos équipes accompagnent votre candidature de l'idée à l'arrivée.",
+            "UniDoxia simplifie vos études à l'étranger. Voici comment nous vous accompagnons du début jusqu'au succès.",
           stepLabel: "Étape {{number}}",
           steps: {
-            discover: {
-              title: "Découvrez vos cours idéaux",
+            profile: {
+              title: "Créez votre profil",
               description:
-                "Partagez vos objectifs et vos résultats : UniDoxia sélectionne instantanément des universités, cours et bourses adaptés.",
+                "Créez votre profil avec votre parcours académique, vos résultats de tests et vos préférences d'études. Téléchargez vos documents une seule fois et utilisez-les pour toutes vos candidatures.",
               support:
-                "Des filtres intelligents et des recommandations IA éliminent les tâtonnements pour constituer une short-list en quelques minutes.",
-              imageAlt: "Étudiante examinant des cours universitaires lors d'une visite de campus",
+                "Des check-lists intelligentes et des conseils sur les documents vous aident à créer un profil complet qui plaît aux universités.",
+              imageAlt: "Étudiant créant son profil sur la plateforme UniDoxia",
             },
-            plan: {
-              title: "Construisez un plan de candidature personnalisé",
+            matched: {
+              title: "Soyez accompagné et mis en relation",
               description:
-                "Téléchargez relevés, tests et essais grâce à des check-lists guidées qui découpent tout en tâches gérables.",
-              support: "Des rappels automatiques et des conseils sur les documents vous gardent en avance sur chaque échéance.",
-              imageAlt: "Étudiante planifiant ses tâches de candidature sur un ordinateur portable en plein air",
-            },
-            collaborate: {
-              title: "Collaborez avec votre agent expert",
-              description:
-                "Travaillez avec un conseiller UniDoxia vérifié pour affiner les documents, aligner les délais et rester prêt pour les entretiens.",
+                "Notre IA vous met en relation avec les bonnes universités et des conseillers vérifiés qui comprennent vos objectifs. Bénéficiez d'un accompagnement personnalisé tout au long de votre candidature.",
               support:
-                "Espaces partagés, commentaires annotés et messagerie instantanée offrent une collaboration transparente et sereine.",
-              imageAlt: "Étudiante échangeant avec un agent d'éducation via un smartphone",
+                "Un soutien dédié de conseillers experts qui vous aident à perfectionner vos documents, préparer les entretiens et respecter chaque échéance.",
+              imageAlt: "Étudiant recevant des conseils personnalisés d'un conseiller en éducation",
             },
-            track: {
-              title: "Soumettez et suivez sans stress",
+            offers: {
+              title: "Recevez des offres et un accompagnement visa",
               description:
-                "Postulez auprès de plusieurs universités simultanément et suivez chaque retour, demande et offre sur une chronologie simple.",
-              support: "Des statuts en direct et des rappels proactifs indiquent la prochaine étape pour qu'aucune action ne soit oubliée.",
-              imageAlt: "Étudiante vérifiant l'avancement de sa candidature sur le campus",
-            },
-            celebrate: {
-              title: "Célébrez et préparez votre départ",
-              description:
-                "Acceptez votre offre, finalisez les démarches de visa et accédez aux ressources de pré-départ adaptées à votre destination.",
+                "Recevez des offres d'universités et un accompagnement visa complet. Nous vous guidons à chaque étape, de l'acceptation jusqu'à votre arrivée dans l'université de vos rêves.",
               support:
-                "Check-lists visa, conseils logement et confirmations d'inscription vous accompagnent jusqu'à l'embarquement.",
-              imageAlt: "Étudiante célébrant l'approbation de son visa avec ses documents",
+                "Check-lists visa, préparation aux entretiens et ressources de pré-départ pour que vous soyez prêt à commencer ce nouveau chapitre.",
+              imageAlt: "Étudiant célébrant son acceptation avec ses documents de visa",
             },
           },
         },
