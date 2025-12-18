@@ -280,9 +280,9 @@ const it = {
         title: "Filtri di ricerca",
         subtitle: "Affina la tua ricerca qui sotto",
         fields: {
-          universityName: {
-            label: "Nome università",
-            placeholder: "Cerca università...",
+          courseName: {
+            label: "Nome corso",
+            placeholder: "Cerca corsi...",
           },
           country: {
             label: "Paese",
@@ -304,7 +304,7 @@ const it = {
             placeholder: "Inserisci tariffa max",
           },
           scholarshipsOnly: {
-            label: "Mostra solo università con borse di studio",
+            label: "Mostra solo corsi con borse di studio",
           },
         },
       },
@@ -315,7 +315,7 @@ const it = {
         loading: "Ricerca in corso...",
         found_one: "Trovato {{count}} risultato",
         found_other: "Trovati {{count}} risultati",
-        empty: "Nessuna università trovata. Prova a modificare i filtri.",
+        empty: "Nessun corso trovato. Prova a modificare i filtri.",
         scholarshipBadge_one: "{{count}} borsa di studio",
         scholarshipBadge_other: "{{count}} borse di studio",
         programs: {
@@ -333,6 +333,15 @@ const it = {
         },
         viewDetails: "Vedi dettagli",
         visitWebsite: "Visita sito web",
+      },
+      browseCourses: {
+        title: "Esplora tutti i corsi",
+        subtitle: "Scopri i corsi delle migliori università del mondo",
+        loading: "Caricamento corsi...",
+        loadMore: "Carica altri corsi",
+        noCourses: "Nessun corso disponibile al momento.",
+        viewAll: "Vedi tutti",
+        duration: "{{months}} mesi",
       },
     },
   },

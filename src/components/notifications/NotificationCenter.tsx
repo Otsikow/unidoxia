@@ -471,10 +471,8 @@ export default function NotificationCenter() {
     // Filter by type/status
     if (filter === "unread" && n.read) return false;
     if (filter === "read" && !n.read) return false;
-    // Handle document filter to match both 'document' and 'document_request' types
-    if (filter === "document") {
-      if (n.type !== "document" && n.type !== "document_request") return false;
-    } else if (filter !== "all" && filter !== "unread" && filter !== "read" && n.type !== filter) {
+    // Filter by specific notification type
+    if (filter !== "all" && filter !== "unread" && filter !== "read" && filter !== "document" && n.type !== filter) {
       return false;
     }
     

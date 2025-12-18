@@ -855,9 +855,9 @@ const pt = {
           title: "Filtros de busca",
           subtitle: "Refine sua busca abaixo",
           fields: {
-            universityName: {
-              label: "Nome da universidade",
-              placeholder: "Pesquisar universidades...",
+            courseName: {
+              label: "Nome do curso",
+              placeholder: "Pesquisar cursos...",
             },
             country: {
               label: "País",
@@ -908,6 +908,15 @@ const pt = {
           },
           viewDetails: "Ver detalhes",
           visitWebsite: "Visitar site",
+        },
+        browseCourses: {
+          title: "Explorar todos os cursos",
+          subtitle: "Descubra cursos das melhores universidades do mundo",
+          loading: "Carregando cursos...",
+          loadMore: "Carregar mais cursos",
+          noCourses: "Nenhum curso disponível no momento.",
+          viewAll: "Ver todos",
+          duration: "{{months}} meses",
         },
       },
     contact: {
