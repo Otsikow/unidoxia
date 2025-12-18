@@ -22,11 +22,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Loader2, MessageSquare, Building2 } from "lucide-react";
+import { Search, Loader2, MessageSquare, Building2, GraduationCap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { searchDirectoryProfiles, type DirectoryProfile } from "@/lib/messaging/directory";
-import { fetchAppliedUniversityContacts, type AppliedUniversityContact } from "@/lib/messaging/contactsService";
+import { fetchAppliedUniversityContacts, fetchUniversityApplicants, type AppliedUniversityContact, type UniversityApplicantContact } from "@/lib/messaging/contactsService";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
 
 // Role-based dashboard redirects
@@ -94,6 +94,8 @@ export default function MessagesDashboard() {
   const [loadingContacts, setLoadingContacts] = useState(false);
   const [appliedUniversities, setAppliedUniversities] = useState<AppliedUniversityContact[]>([]);
   const [loadingUniversities, setLoadingUniversities] = useState(false);
+  const [universityApplicants, setUniversityApplicants] = useState<UniversityApplicantContact[]>([]);
+  const [loadingApplicants, setLoadingApplicants] = useState(false);
 
   const currentConversation = useMemo(
     () =>
@@ -185,19 +187,36 @@ export default function MessagesDashboard() {
     }
   }, [profile?.role]);
 
+  // Fetch applicants for university users
+  const fetchApplicants = useCallback(async () => {
+    if (profile?.role !== "partner" && profile?.role !== "school_rep") return;
+    
+    setLoadingApplicants(true);
+    try {
+      const results = await fetchUniversityApplicants();
+      setUniversityApplicants(results);
+    } catch (err) {
+      console.error("Error fetching university applicants:", err);
+    } finally {
+      setLoadingApplicants(false);
+    }
+  }, [profile?.role]);
+
   const handleNewChatDialogChange = useCallback(
     (open: boolean) => {
       setShowNewChatDialog(open);
       if (open) {
         void fetchContacts("");
         void fetchAppliedUniversities();
+        void fetchApplicants();
       } else {
         setSearchQuery("");
         setContacts([]);
         setAppliedUniversities([]);
+        setUniversityApplicants([]);
       }
     },
-    [fetchContacts, fetchAppliedUniversities]
+    [fetchContacts, fetchAppliedUniversities, fetchApplicants]
   );
 
   const handleNewChat = useCallback(() => {
@@ -213,6 +232,7 @@ export default function MessagesDashboard() {
         setSearchQuery("");
         setContacts([]);
         setAppliedUniversities([]);
+        setUniversityApplicants([]);
       }
     },
     [getOrCreateConversation, setCurrentConversation]
@@ -227,6 +247,22 @@ export default function MessagesDashboard() {
         setSearchQuery("");
         setContacts([]);
         setAppliedUniversities([]);
+        setUniversityApplicants([]);
+      }
+    },
+    [getOrCreateConversation, setCurrentConversation]
+  );
+
+  const handleSelectApplicant = useCallback(
+    async (contact: UniversityApplicantContact) => {
+      const conversationId = await getOrCreateConversation(contact.profile_id);
+      if (conversationId) {
+        setCurrentConversation(conversationId);
+        setShowNewChatDialog(false);
+        setSearchQuery("");
+        setContacts([]);
+        setAppliedUniversities([]);
+        setUniversityApplicants([]);
       }
     },
     [getOrCreateConversation, setCurrentConversation]
@@ -267,6 +303,9 @@ export default function MessagesDashboard() {
 
   // Check if we're a student to show university contacts section
   const isStudent = profile?.role === "student";
+  
+  // Check if we're a university user to show applicants section
+  const isUniversity = profile?.role === "partner" || profile?.role === "school_rep";
 
   // Handle retry
   const handleRetry = useCallback(() => {
@@ -427,7 +466,9 @@ export default function MessagesDashboard() {
           <DialogHeader>
             <DialogTitle>Start a new conversation</DialogTitle>
             <DialogDescription>
-              Message your agent, UniDoxia staff, or university representatives.
+              {isUniversity 
+                ? "Message students who have applied to your programs, or UniDoxia staff."
+                : "Message your agent, UniDoxia staff, or university representatives."}
             </DialogDescription>
           </DialogHeader>
 
@@ -486,6 +527,65 @@ export default function MessagesDashboard() {
               </div>
             )}
 
+            {/* University Applicants Section - Only for university users */}
+            {isUniversity && (loadingApplicants || universityApplicants.length > 0) && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <GraduationCap className="h-4 w-4" />
+                  <span>Your Applicants</span>
+                  {universityApplicants.length > 0 && (
+                    <span className="text-xs">({universityApplicants.length})</span>
+                  )}
+                </div>
+                {loadingApplicants ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : universityApplicants.length > 0 ? (
+                  <ScrollArea className="h-64">
+                    <div className="space-y-1">
+                      {universityApplicants.map((applicant) => {
+                        const statusInfo = getApplicationStatusLabel(applicant.application_status);
+                        return (
+                          <button
+                            key={applicant.profile_id}
+                            onClick={() => void handleSelectApplicant(applicant)}
+                            className="w-full rounded-lg p-3 text-left transition-colors hover:bg-accent border border-border/50"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage
+                                  src={applicant.avatar_url || undefined}
+                                  alt={applicant.full_name}
+                                />
+                                <AvatarFallback className="bg-primary/10">
+                                  {getInitials(applicant.full_name)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold truncate">
+                                  {applicant.full_name}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {applicant.program_name}
+                                </p>
+                              </div>
+                              <Badge variant={statusInfo.variant} className="text-xs">
+                                {statusInfo.label}
+                              </Badge>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </ScrollArea>
+                ) : null}
+                {universityApplicants.length > 0 && (
+                  <div className="border-b border-border/50 my-3" />
+                )}
+              </div>
+            )}
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -524,7 +624,9 @@ export default function MessagesDashboard() {
                   <p className="text-sm">
                     {searchQuery
                       ? "No contacts found matching your search"
-                      : "Search for agents, staff, or university contacts"}
+                      : isUniversity 
+                        ? "Search for staff or other contacts"
+                        : "Search for agents, staff, or university contacts"}
                   </p>
                 </div>
               ) : (
