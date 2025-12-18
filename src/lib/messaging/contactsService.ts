@@ -332,6 +332,89 @@ export interface AppliedUniversityContact {
  * Fetches university contacts for universities where the current student has applications.
  * Returns contacts grouped with their university and application information.
  */
+export interface UniversityApplicantContact {
+  profile_id: string;
+  full_name: string;
+  email: string;
+  avatar_url: string | null;
+  role: string;
+  application_id: string;
+  application_status: string;
+  program_name: string;
+  submitted_at: string | null;
+}
+
+/**
+ * Fetches all applicants (students) who have applied to programs at the current university user's institution.
+ * This is used by university users (partner/school_rep) to see all their applicants in the messaging dialog.
+ */
+export async function fetchUniversityApplicants(): Promise<UniversityApplicantContact[]> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) return [];
+
+    // Get current user's profile to get their tenant_id
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('role, tenant_id')
+      .eq('id', userData.user.id)
+      .single();
+
+    if (!profileData || !['partner', 'school_rep'].includes(profileData.role)) {
+      return [];
+    }
+
+    // Get applications to programs at universities in this tenant
+    const { data: applications } = await supabase
+      .from('applications')
+      .select(`
+        id,
+        status,
+        submitted_at,
+        student:students!inner(
+          profile_id,
+          profiles!inner(id, full_name, email, avatar_url, role)
+        ),
+        program:programs!inner(
+          name,
+          university:universities!inner(tenant_id)
+        )
+      `)
+      .eq('program.university.tenant_id', profileData.tenant_id)
+      .not('submitted_at', 'is', null)
+      .order('submitted_at', { ascending: false });
+
+    if (!applications || applications.length === 0) return [];
+
+    // Map applications to contacts, keeping one entry per student with their most recent application
+    const contacts: UniversityApplicantContact[] = [];
+    const seenStudentIds = new Set<string>();
+
+    applications.forEach((app: any) => {
+      const profileId = app.student?.profiles?.id;
+      if (!profileId || seenStudentIds.has(profileId)) return;
+      seenStudentIds.add(profileId);
+
+      contacts.push({
+        profile_id: profileId,
+        full_name: app.student.profiles.full_name,
+        email: app.student.profiles.email,
+        avatar_url: app.student.profiles.avatar_url,
+        role: app.student.profiles.role,
+        application_id: app.id,
+        application_status: app.status,
+        program_name: app.program?.name || 'Unknown Program',
+        submitted_at: app.submitted_at,
+      });
+    });
+
+    return contacts;
+  } catch (error) {
+    console.error('Error fetching university applicants:', error);
+    return [];
+  }
+}
+
 export async function fetchAppliedUniversityContacts(): Promise<AppliedUniversityContact[]> {
   try {
     const { data: userData } = await supabase.auth.getUser();
