@@ -22,10 +22,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Loader2, MessageSquare } from "lucide-react";
+import { Search, Loader2, MessageSquare, Building2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { searchDirectoryProfiles, type DirectoryProfile } from "@/lib/messaging/directory";
+import { fetchAppliedUniversityContacts, type AppliedUniversityContact } from "@/lib/messaging/contactsService";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
 
 // Role-based dashboard redirects
@@ -91,6 +92,8 @@ export default function MessagesDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loadingContacts, setLoadingContacts] = useState(false);
+  const [appliedUniversities, setAppliedUniversities] = useState<AppliedUniversityContact[]>([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
 
   const currentConversation = useMemo(
     () =>
@@ -167,17 +170,34 @@ export default function MessagesDashboard() {
     [profile?.id, profile?.tenant_id, toast]
   );
 
+  // Fetch applied universities for students
+  const fetchAppliedUniversities = useCallback(async () => {
+    if (profile?.role !== "student") return;
+    
+    setLoadingUniversities(true);
+    try {
+      const results = await fetchAppliedUniversityContacts();
+      setAppliedUniversities(results);
+    } catch (err) {
+      console.error("Error fetching applied universities:", err);
+    } finally {
+      setLoadingUniversities(false);
+    }
+  }, [profile?.role]);
+
   const handleNewChatDialogChange = useCallback(
     (open: boolean) => {
       setShowNewChatDialog(open);
       if (open) {
         void fetchContacts("");
+        void fetchAppliedUniversities();
       } else {
         setSearchQuery("");
         setContacts([]);
+        setAppliedUniversities([]);
       }
     },
-    [fetchContacts]
+    [fetchContacts, fetchAppliedUniversities]
   );
 
   const handleNewChat = useCallback(() => {
@@ -192,6 +212,21 @@ export default function MessagesDashboard() {
         setShowNewChatDialog(false);
         setSearchQuery("");
         setContacts([]);
+        setAppliedUniversities([]);
+      }
+    },
+    [getOrCreateConversation, setCurrentConversation]
+  );
+
+  const handleSelectUniversityContact = useCallback(
+    async (contact: AppliedUniversityContact) => {
+      const conversationId = await getOrCreateConversation(contact.profile_id);
+      if (conversationId) {
+        setCurrentConversation(conversationId);
+        setShowNewChatDialog(false);
+        setSearchQuery("");
+        setContacts([]);
+        setAppliedUniversities([]);
       }
     },
     [getOrCreateConversation, setCurrentConversation]
@@ -213,6 +248,25 @@ export default function MessagesDashboard() {
         return { label: contact.role, variant: "outline" as const };
     }
   };
+
+  const getApplicationStatusLabel = (status: string) => {
+    const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      draft: { label: "Draft", variant: "secondary" },
+      submitted: { label: "Submitted", variant: "default" },
+      screening: { label: "In Review", variant: "default" },
+      conditional_offer: { label: "Conditional Offer", variant: "default" },
+      unconditional_offer: { label: "Offer", variant: "default" },
+      cas_loa: { label: "CAS/LOA", variant: "default" },
+      visa: { label: "Visa Stage", variant: "default" },
+      enrolled: { label: "Enrolled", variant: "default" },
+      withdrawn: { label: "Withdrawn", variant: "destructive" },
+      rejected: { label: "Rejected", variant: "destructive" },
+    };
+    return statusMap[status] || { label: status, variant: "outline" as const };
+  };
+
+  // Check if we're a student to show university contacts section
+  const isStudent = profile?.role === "student";
 
   // Handle retry
   const handleRetry = useCallback(() => {
@@ -348,6 +402,60 @@ export default function MessagesDashboard() {
           </DialogHeader>
 
           <div className="space-y-4">
+            {/* Applied Universities Section - Only for students */}
+            {isStudent && (loadingUniversities || appliedUniversities.length > 0) && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Building2 className="h-4 w-4" />
+                  <span>Universities You&apos;ve Applied To</span>
+                </div>
+                {loadingUniversities ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : appliedUniversities.length > 0 ? (
+                  <div className="space-y-1 max-h-48 overflow-y-auto">
+                    {appliedUniversities.map((contact) => {
+                      const statusInfo = getApplicationStatusLabel(contact.application_status);
+                      return (
+                        <button
+                          key={contact.profile_id}
+                          onClick={() => void handleSelectUniversityContact(contact)}
+                          className="w-full rounded-lg p-3 text-left transition-colors hover:bg-accent border border-border/50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage
+                                src={contact.avatar_url || undefined}
+                                alt={contact.full_name}
+                              />
+                              <AvatarFallback className="bg-primary/10">
+                                {getInitials(contact.university_name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold truncate">
+                                {contact.university_name}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                Contact: {contact.full_name}
+                              </p>
+                            </div>
+                            <Badge variant={statusInfo.variant} className="text-xs">
+                              {statusInfo.label}
+                            </Badge>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+                {appliedUniversities.length > 0 && (
+                  <div className="border-b border-border/50 my-3" />
+                )}
+              </div>
+            )}
+
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -376,7 +484,7 @@ export default function MessagesDashboard() {
               </Button>
             </div>
 
-            <ScrollArea className="h-80">
+            <ScrollArea className="h-64">
               {loadingContacts ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
