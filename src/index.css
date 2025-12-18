@@ -610,7 +610,7 @@ All colors MUST be HSL.
     object-fit: cover;
     z-index: 0;
     opacity: 1;
-    transition: opacity 260ms ease-out;
+    transition: opacity 80ms ease-out;
     will-change: opacity;
   }
 
@@ -666,7 +666,7 @@ All colors MUST be HSL.
       linear-gradient(135deg, hsl(220 30% 10% / 0.9), hsl(220 30% 8% / 0.95));
     z-index: 0;
     opacity: 1;
-    transition: opacity 260ms ease-out, visibility 260ms ease-out;
+    transition: opacity 80ms ease-out, visibility 80ms ease-out;
   }
 
   .hero-fallback.is-hidden {

@@ -55,28 +55,25 @@ const Index = () => {
   } = useTranslation();
 
   /* ---------- Hero Video State ---------- */
-  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(true);
-  const [heroVideoReady, setHeroVideoReady] = useState(false);
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
-
-  /* ---------- Motion & Bandwidth Check ---------- */
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(() => {
+    // Check accessibility/bandwidth preferences immediately on mount
+    if (typeof window === "undefined") return true;
     const prefersReducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const conn = (navigator as any).connection;
     const saveData = Boolean(conn?.saveData);
     const effectiveType = String(conn?.effectiveType ?? "");
     const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
-    if (prefersReducedMotion || saveData || isSlowConnection) {
-      setShouldRenderHeroVideo(false);
-    }
-  }, []);
+    return !(prefersReducedMotion || saveData || isSlowConnection);
+  });
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
   /* ---------- Hero Video Preload & Autoplay ---------- */
   useEffect(() => {
     if (!shouldRenderHeroVideo) return;
     const videoEl = heroVideoRef.current;
     if (!videoEl) return;
+
     const activateVideo = () => {
       setHeroVideoReady(true);
       const playPromise = videoEl.play();
@@ -86,19 +83,24 @@ const Index = () => {
         });
       }
     };
-    if (videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+
+    // Start as soon as metadata is loaded (first frame available)
+    // HAVE_METADATA (1) = duration and dimensions known
+    // HAVE_CURRENT_DATA (2) = data for current position available
+    if (videoEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
       activateVideo();
       return;
     }
-    videoEl.addEventListener("canplaythrough", activateVideo, {
-      once: true
-    });
-    videoEl.addEventListener("loadeddata", activateVideo, {
-      once: true
-    });
+
+    // Use loadedmetadata for fastest possible start
+    const handleLoadedMetadata = () => {
+      activateVideo();
+    };
+
+    videoEl.addEventListener("loadedmetadata", handleLoadedMetadata, { once: true });
+
     return () => {
-      videoEl.removeEventListener("canplaythrough", activateVideo);
-      videoEl.removeEventListener("loadeddata", activateVideo);
+      videoEl.removeEventListener("loadedmetadata", handleLoadedMetadata);
     };
   }, [shouldRenderHeroVideo]);
 
@@ -188,7 +190,18 @@ const Index = () => {
 
         {shouldRenderHeroVideo ? <>
             <div className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`} aria-hidden />
-            <video ref={heroVideoRef} className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`} autoPlay loop muted playsInline preload="auto">
+            <video
+              ref={heroVideoRef}
+              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              poster="/videos/hero-poster.jpg"
+              // @ts-expect-error - fetchpriority is valid HTML attribute
+              fetchpriority="high"
+            >
               <source src="/videos/hero-video.mp4" type="video/mp4" />
             </video>
           </> : <div className="hero-fallback" aria-hidden />}
