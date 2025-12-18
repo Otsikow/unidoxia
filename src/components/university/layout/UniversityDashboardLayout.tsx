@@ -272,16 +272,37 @@ export const fetchUniversityDashboardData = async (
   tenantId: string,
 ): Promise<UniversityDashboardData> => {
   try {
-    if (!isValidUuid(tenantId)) return buildEmptyDashboardData();
+    if (!isValidUuid(tenantId)) {
+      console.warn("[UniversityDashboard] Invalid tenant ID:", tenantId);
+      return buildEmptyDashboardData();
+    }
 
-    const { data: uniRows } = await supabase
+    // IMPORTANT: Match the Profile page query to ensure consistency
+    // - Use .order() to get the most recently updated university
+    // - Use .maybeSingle() for cleaner single-row handling
+    // - Always check for errors to avoid silent failures
+    const { data: universityData, error: universityError } = await supabase
       .from("universities")
       .select("*")
       .eq("tenant_id", tenantId)
-      .limit(1);
+      .order("updated_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
 
-    const university = (uniRows?.[0] ?? null) as Nullable<UniversityRecord>;
-    if (!university) return buildEmptyDashboardData();
+    if (universityError) {
+      console.error("[UniversityDashboard] Error fetching university:", universityError);
+      // Don't return empty data for errors - throw so the error state is shown
+      throw universityError;
+    }
+
+    const university = universityData as Nullable<UniversityRecord>;
+    
+    if (!university) {
+      console.log("[UniversityDashboard] No university found for tenant:", tenantId);
+      return buildEmptyDashboardData();
+    }
+
+    console.log("[UniversityDashboard] University loaded:", university.name, "id:", university.id);
 
     const parsed = parseUniversityProfileDetails(
       university.submission_config_json ?? null,
@@ -555,8 +576,10 @@ export const fetchUniversityDashboardData = async (
       recentApplications: applications.slice(0, 5),
     };
   } catch (err) {
-    console.error("University dashboard fetch failed", err);
-    return buildEmptyDashboardData();
+    console.error("[UniversityDashboard] Dashboard fetch failed:", err);
+    // Re-throw the error so react-query can handle it properly
+    // This ensures the error state is shown instead of silently showing empty data
+    throw err;
   }
 };
 
