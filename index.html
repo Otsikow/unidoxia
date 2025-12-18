@@ -16,7 +16,8 @@
     <!-- Performance: Preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="video" href="/videos/hero-video.mp4" type="video/mp4" crossorigin="anonymous" fetchpriority="high">
+    <link rel="preload" as="image" href="/videos/hero-poster.jpg" type="image/jpeg" fetchpriority="high">
+    <link rel="preload" as="video" href="/videos/hero-video.mp4" type="video/mp4" fetchpriority="high">
     
     <link rel="icon" href="/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="/favicon.png">
@@ -30,6 +31,27 @@
     <meta property="og:description" content="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, application tracking, and comprehensive support for international students.">
     <meta name="twitter:description" content="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, application tracking, and comprehensive support for international students.">
     
+    <!-- Performance: Early video prefetch for instant hero video -->
+    <script>
+      // Start video fetch immediately, before React hydrates
+      (function() {
+        if (typeof window === 'undefined') return;
+        var prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        var saveData = conn && conn.saveData;
+        var slowConnection = conn && ['slow-2g', '2g'].indexOf(conn.effectiveType) !== -1;
+        if (prefersReducedMotion || saveData || slowConnection) return;
+        // Create video element early to start buffering
+        var video = document.createElement('video');
+        video.preload = 'auto';
+        video.muted = true;
+        video.src = '/videos/hero-video.mp4';
+        // Fetch the poster image
+        var img = new Image();
+        img.src = '/videos/hero-poster.jpg';
+      })();
+    </script>
+
     <!-- Performance: Inline critical CSS for first paint -->
     <style>
       /* Minimal critical CSS for initial render */

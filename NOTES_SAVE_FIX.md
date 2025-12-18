@@ -1,83 +1,53 @@
-# Fix: "Permission denied" Error When Saving Internal Notes
+# Fix: Internal Notes & Messaging Persistence Issues
 
 ## Problem
 
-University partners receive a "Permission denied (Error: 42501)" error when trying to save internal notes on application cards.
+1. **Internal Notes Not Saving**: University partners receive "Permission denied" errors or notes silently fail to persist.
+2. **Messages Not Persisting**: Messages sent to students disappear after refresh or aren't visible to students.
 
-## Root Cause
+## Root Causes
 
-The database Row Level Security (RLS) policies and/or the `update_application_review` RPC function are either:
-1. Missing from the database
-2. Not properly configured to allow university partners to update applications
+1. **Permissions**: University users often have roles (`university`) that map incorrectly or face RLS policy restrictions.
+2. **Messaging RLS**: Conversation participants might not be correctly added or RLS policies prevent viewing messages.
+3. **Tenant Context**: Mismatches between user tenant and application/conversation tenant can cause lookup failures.
 
-Common issues:
-- User's `tenant_id` in the profiles table is NULL
-- User's role is 'university' which isn't in the `app_role` enum (should be 'partner')
-- The application's program/university isn't properly linked
+## Solution
 
-## Quick Fix
+A comprehensive SQL migration has been created at `supabase/migrations/20260127000000_fix_persistence_issues.sql`.
 
-1. Open your **Supabase Dashboard**
-2. Go to **SQL Editor**
-3. Copy the entire contents of `scripts/fix_notes_save_error.sql`
-4. Paste into the SQL Editor
-5. Click **Run**
-6. Refresh your browser and try saving notes again
+This migration:
+1. **Fixes Permissions**:
+   - Converts `university` roles to `partner`.
+   - Updates `get_user_role` to correctly map roles.
+   - Updates RLS policies for `applications` table.
+   - Recreates `update_application_review` RPC with proper authorization logic.
 
-## What the Fix Does
+2. **Fixes Messaging**:
+   - Updates `get_or_create_conversation` to ensure participants are correctly added/updated.
+   - Updates RLS policies for `conversation_participants` and `conversation_messages` to ensure visibility.
+   - Adds `debug_conversation_access` helper.
 
-1. Creates/updates helper functions (`get_user_role`, `get_user_tenant`, `is_university_partner`)
-2. Converts any 'university' roles to 'partner' (the correct enum value)
-3. Updates RLS policies to allow university partners to update applications to their programs
-4. Creates/updates the `update_application_review` RPC function with proper authorization
+## How to Apply
 
-## Verifying the Fix
+1. **Run the Migration**:
+   Use the Supabase CLI to push the migration:
+   ```bash
+   supabase db push
+   ```
+   
+   OR
 
-After running the SQL script, you can verify it worked by running this query in the SQL Editor:
+   Copy the contents of `supabase/migrations/20260127000000_fix_persistence_issues.sql` and run it in the Supabase SQL Editor.
 
-```sql
--- Check your current user's access (while logged in)
-SELECT * FROM debug_application_update_access('YOUR-APPLICATION-ID-HERE');
-```
+2. **Verify Fix**:
+   - **Notes**: Try saving internal notes on an application.
+   - **Messages**: Send a message from the application review dialog. Refresh the page. Check if it persists.
+   
+   If issues persist, run the debug functions in SQL Editor:
+   ```sql
+   -- Check notes access
+   SELECT * FROM debug_notes_access('APPLICATION_ID');
 
-This will show you:
-- Your user ID and role
-- Whether you're recognized as a university partner
-- Your tenant ID
-- Whether the application's tenant matches yours
-- Whether you should be able to update the application
-
-## Debugging Tenant Issues
-
-If the error persists, check your user's profile:
-
-```sql
--- Find your profile
-SELECT id, email, role, tenant_id 
-FROM profiles 
-WHERE email = 'your-email@example.com';
-
--- Check the application's tenant
-SELECT 
-  a.id as app_id,
-  p.name as program_name,
-  u.name as university_name,
-  u.tenant_id as university_tenant_id
-FROM applications a
-JOIN programs p ON p.id = a.program_id
-JOIN universities u ON u.id = p.university_id
-WHERE a.id = 'YOUR-APPLICATION-ID';
-```
-
-The `tenant_id` from your profile must match the `university_tenant_id` for you to update the application.
-
-## Long-term Solution
-
-Ensure all database migrations are applied to your Supabase project:
-- `20251216200000_fix_internal_notes_rls_complete.sql`
-- `20260117000000_comprehensive_application_update_fix.sql`
-
-You can apply migrations using the Supabase CLI:
-```bash
-supabase db push
-```
+   -- Check conversation access
+   SELECT * FROM debug_conversation_access('YOUR_USER_ID', 'STUDENT_USER_ID');
+   ```

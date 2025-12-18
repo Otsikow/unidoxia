@@ -808,6 +808,20 @@ export type Database = {
             referencedRelation: "conversation_messages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversation_messages_sender_profile_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_messages_sender_profile_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversation_participants: {
@@ -2914,6 +2928,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_manage_university_application: {
+        Args: { p_application_id: string; p_user_id: string }
+        Returns: boolean
+      }
       create_notification: {
         Args: {
           p_action_url?: string
@@ -2965,12 +2983,54 @@ export type Database = {
           name: string
         }[]
       }
+      get_student_details_for_application: {
+        Args: { p_application_id: string }
+        Returns: {
+          address: Json
+          contact_email: string
+          contact_phone: string
+          current_country: string
+          date_of_birth: string
+          finances_json: Json
+          guardian: Json
+          legal_name: string
+          nationality: string
+          passport_expiry: string
+          passport_number: string
+          preferred_name: string
+          profile_avatar_url: string
+          profile_email: string
+          profile_full_name: string
+          profile_id: string
+          profile_phone: string
+          student_id: string
+          visa_history_json: Json
+        }[]
+      }
+      get_student_document_signed_url: {
+        Args: { p_document_id: string; p_expires_in?: number }
+        Returns: string
+      }
       get_students_by_tenant: {
         Args: { p_tenant_id: string }
         Returns: {
           application_count: number
           student: Json
           student_id: string
+        }[]
+      }
+      get_students_for_university_applications: {
+        Args: { p_student_ids: string[] }
+        Returns: {
+          current_country: string
+          date_of_birth: string
+          id: string
+          legal_name: string
+          nationality: string
+          preferred_name: string
+          profile_avatar_url: string
+          profile_email: string
+          profile_name: string
         }[]
       }
       get_unread_count: {
@@ -2996,6 +3056,10 @@ export type Database = {
       }
       is_agent_for_student: {
         Args: { _student_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_conversation_participant: {
+        Args: { p_conversation_id: string; p_user_id?: string }
         Returns: boolean
       }
       is_student_owner: {
@@ -3025,6 +3089,10 @@ export type Database = {
       }
       partner_needs_isolation: {
         Args: { p_profile_id: string }
+        Returns: boolean
+      }
+      partner_review_student_document: {
+        Args: { p_document_id: string; p_notes?: string; p_status: string }
         Returns: boolean
       }
       search_agent_contacts: {

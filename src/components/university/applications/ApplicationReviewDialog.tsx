@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Loader2,
@@ -26,6 +26,9 @@ import {
   Home,
   BookOpen,
   Award,
+  Upload,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -72,6 +75,12 @@ import {
   isApplicationStatus,
   type ApplicationStatus,
 } from "@/lib/applicationStatus";
+import {
+  buildMissingRpcError,
+  isRpcMissingError,
+  isRpcUnavailable,
+  markRpcMissing,
+} from "@/lib/supabaseRpc";
 
 /* ======================================================
    Type Definitions (exported for useExtendedApplication)
@@ -143,11 +152,12 @@ export interface ApplicationDocument {
   fileName: string;
   mimeType: string | null;
   fileSize: number | null;
-  verified: boolean;
+  reviewStatus: "pending" | "verified" | "rejected";
   verificationNotes: string | null;
   uploadedAt: string;
   publicUrl: string | null;
   signedUrl?: string | null;
+  source: "student_documents" | "application_documents";
 }
 
 export interface ExtendedApplication {
@@ -190,7 +200,6 @@ export interface ApplicationReviewDialogProps {
 ====================================================== */
 
 const STORAGE_BUCKET = "student-documents";
-const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
 
 const REQUIRED_DOCUMENT_TYPES = [
   "transcript",
@@ -205,18 +214,8 @@ const REQUIRED_DOCUMENT_TYPES = [
    RPC detection helper
 ====================================================== */
 
-const isUpdateApplicationReviewRpcMissing = (error: unknown) => {
-  const e = error as { code?: string; message?: string } | null;
-  const msg = (e?.message ?? "").toLowerCase();
-  return (
-    e?.code === "PGRST202" ||
-    e?.code === "PGRST204" ||
-    e?.code === "42P01" ||
-    e?.code === "42703" ||
-    msg.includes("could not find the function") ||
-    msg.includes("schema cache")
-  );
-};
+const isUpdateApplicationReviewRpcMissing = (error: unknown) =>
+  isRpcMissingError(error as { code?: string | null; message?: string | null });
 
 /* ======================================================
    Error helpers
@@ -353,6 +352,25 @@ const explainUpdateError = (
   };
 };
 
+const rpcMissingResult = (rpcName: string) => ({
+  data: null,
+  error: buildMissingRpcError(rpcName),
+});
+
+const callRpcWithCache = async <T,>(
+  rpcName: string,
+  params: Record<string, unknown>,
+) => {
+  if (isRpcUnavailable(rpcName)) return rpcMissingResult(rpcName);
+
+  const result = await supabase.rpc(rpcName as any, params);
+  if (isUpdateApplicationReviewRpcMissing(result.error)) {
+    markRpcMissing(rpcName, result.error);
+  }
+
+  return result as { data: T | null; error: RpcErrorLike | null };
+};
+
 /* ======================================================
    Formatting helpers
 ====================================================== */
@@ -391,36 +409,52 @@ const formatDocumentType = (type: string | null) => {
 };
 
 /* ======================================================
-   Signed URL helper
+   Signed URL helper via Edge Function
 ====================================================== */
 
-const getSignedUrl = async (storagePath: string | null): Promise<string | null> => {
+const normalizeStoragePath = (storagePath: string): string => {
+  // Some older rows may store a path like "student-documents/<path>".
+  // Supabase storage expects the object path WITHOUT the bucket prefix.
+  return storagePath.replace(/^student-documents\//, "");
+};
+
+const getSignedUrlViaEdge = async (
+  documentId: string,
+  storagePath: string | null
+): Promise<string | null> => {
   if (!storagePath) return null;
 
-  // Try application-documents bucket first
-  const { data: appData, error: appError } = await supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .createSignedUrl(storagePath, 3600); // 1 hour expiry
+  const objectPath = normalizeStoragePath(storagePath);
 
-  if (!appError && appData?.signedUrl) {
-    return appData.signedUrl;
+  try {
+    // Use edge function to generate signed URL (bypasses RLS issues)
+    const { data, error } = await supabase.functions.invoke("get-document-url", {
+      body: { documentId, storagePath: objectPath },
+    });
+
+    if (!error && data?.signedUrl) {
+      console.log("[ApplicationReview] Got signed URL via edge function");
+      return data.signedUrl;
+    }
+
+    console.error("[ApplicationReview] Edge function error:", error || data?.error);
+
+    // Fallback to direct storage API (may fail due to RLS but worth trying)
+    const { data: directData, error: directError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .createSignedUrl(objectPath, 3600);
+
+    if (!directError && directData?.signedUrl) {
+      console.log("[ApplicationReview] Got signed URL via direct storage API");
+      return directData.signedUrl;
+    }
+
+    console.error("[ApplicationReview] Direct storage error:", directError);
+    return null;
+  } catch (err) {
+    console.error("[ApplicationReview] Failed to get signed URL:", err);
+    return null;
   }
-
-  // Fallback to student-documents bucket
-  const { data: studentData, error: studentError } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .createSignedUrl(storagePath, 3600);
-
-  if (!studentError && studentData?.signedUrl) {
-    return studentData.signedUrl;
-  }
-
-  // Last resort: try public URL
-  const { data: publicData } = supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .getPublicUrl(storagePath);
-
-  return publicData?.publicUrl ?? null;
 };
 
 /* ======================================================
@@ -441,6 +475,7 @@ export function ApplicationReviewDialog({
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<"overview" | "student" | "documents" | "notes" | "messages">("overview");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [internalNotes, setInternalNotes] = useState("");
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesSavedAt, setNotesSavedAt] = useState<Date | null>(null);
@@ -448,6 +483,7 @@ export function ApplicationReviewDialog({
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Document request state
   const [requestingDocument, setRequestingDocument] = useState(false);
@@ -467,6 +503,18 @@ export function ApplicationReviewDialog({
     isOwn: boolean;
   }>>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+
+  // Document review state (local overrides so UI updates immediately)
+  const [reviewOverrides, setReviewOverrides] = useState<
+    Record<string, { status: "pending" | "verified" | "rejected"; notes: string | null }>
+  >({});
+  const [reviewingDocId, setReviewingDocId] = useState<string | null>(null);
+  const [reviewStatusDraft, setReviewStatusDraft] = useState<"pending" | "verified" | "rejected">("pending");
+  const [reviewNotesDraft, setReviewNotesDraft] = useState<string>("");
+  const [savingReview, setSavingReview] = useState(false);
+
+  // Fullscreen controls
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Document signed URLs
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
@@ -503,7 +551,7 @@ export function ApplicationReviewDialog({
       const { data: convId, error: convError } = await supabase.rpc(
         "get_or_create_conversation",
         {
-          p_user_id: null,
+          p_user_id: currentUserId,
           p_other_user_id: application.student.profileId,
           p_tenant_id: tenantId,
         }
@@ -530,7 +578,7 @@ export function ApplicationReviewDialog({
           content,
           sender_id,
           created_at,
-          sender:profiles!sender_id(full_name)
+          sender:profiles!conversation_messages_sender_profile_fkey(full_name)
         `)
         .eq("conversation_id", convId)
         .order("created_at", { ascending: true })
@@ -577,7 +625,7 @@ export function ApplicationReviewDialog({
 
       for (const doc of application.documents) {
         if (doc.storagePath) {
-          const signedUrl = await getSignedUrl(doc.storagePath);
+          const signedUrl = await getSignedUrlViaEdge(doc.id, doc.storagePath);
           if (signedUrl) {
             urls[doc.id] = signedUrl;
           }
@@ -592,6 +640,54 @@ export function ApplicationReviewDialog({
 
     void loadSignedUrls();
   }, [application?.documents, open]);
+
+  const openReview = (doc: ApplicationDocument) => {
+    setReviewingDocId(doc.id);
+    setReviewStatusDraft((reviewOverrides[doc.id]?.status ?? doc.reviewStatus) as any);
+    setReviewNotesDraft(reviewOverrides[doc.id]?.notes ?? doc.verificationNotes ?? "");
+  };
+
+  const saveReview = async () => {
+    if (!reviewingDocId) return;
+
+    const doc = application?.documents?.find((d) => d.id === reviewingDocId);
+    if (!doc) return;
+
+    if (doc.source !== "student_documents") {
+      toast({
+        title: "Review not available",
+        description: "This document type can't be reviewed yet.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSavingReview(true);
+    const { error } = await supabase.rpc("partner_review_student_document" as any, {
+      p_document_id: reviewingDocId,
+      p_status: reviewStatusDraft,
+      p_notes: reviewNotesDraft.trim() ? reviewNotesDraft.trim() : null,
+    });
+
+    if (error) {
+      setSavingReview(false);
+      toast({
+        title: "Failed to save review",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setReviewOverrides((prev) => ({
+      ...prev,
+      [reviewingDocId]: { status: reviewStatusDraft, notes: reviewNotesDraft.trim() || null },
+    }));
+
+    setSavingReview(false);
+    setReviewingDocId(null);
+    toast({ title: "Saved", description: "Document review updated." });
+  };
 
   const statusLabel = useMemo(
     () =>
@@ -615,12 +711,15 @@ export function ApplicationReviewDialog({
     let error: any = null;
 
     // APPROACH 1: Try the text version of the RPC first (handles enum conversion internally)
-    const textRpcResult = await supabase.rpc("update_application_review_text" as any, {
-      p_application_id: application.id,
-      p_new_status: null,
-      p_internal_notes: internalNotes,
-      p_append_timeline_event: null,
-    });
+    const textRpcResult = await callRpcWithCache(
+      "update_application_review_text",
+      {
+        p_application_id: application.id,
+        p_new_status: null,
+        p_internal_notes: internalNotes,
+        p_append_timeline_event: null,
+      },
+    );
 
     if (!textRpcResult.error) {
       data = textRpcResult.data;
@@ -634,12 +733,15 @@ export function ApplicationReviewDialog({
     // APPROACH 2: Try enum version if text version is missing
     if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
       console.log("[ApplicationReview] Text RPC missing, trying enum version");
-      const enumResult = await supabase.rpc("update_application_review" as any, {
-        p_application_id: application.id,
-        p_new_status: null,
-        p_internal_notes: internalNotes,
-        p_append_timeline_event: null,
-      });
+      const enumResult = await callRpcWithCache(
+        "update_application_review",
+        {
+          p_application_id: application.id,
+          p_new_status: null,
+          p_internal_notes: internalNotes,
+          p_append_timeline_event: null,
+        },
+      );
       
       if (!enumResult.error) {
         data = enumResult.data;
@@ -741,12 +843,74 @@ export function ApplicationReviewDialog({
     setUpdatingStatus(true);
     console.log("[ApplicationReview] Updating status:", { applicationId: application.id, newStatus: selectedStatus });
 
+    // Handle file upload if a file is selected
+    if (selectedFile) {
+      try {
+        console.log("[ApplicationReview] Uploading file:", selectedFile.name);
+        const sanitize = (name: string) => name.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const fileName = `${Date.now()}_${sanitize(selectedFile.name)}`;
+        // Use application ID as folder
+        const filePath = `${application.id}/${fileName}`;
+
+        // 1. Upload to Storage
+        const { error: uploadError } = await supabase.storage
+          .from("application-documents")
+          .upload(filePath, selectedFile);
+
+        if (uploadError) {
+          console.error("[ApplicationReview] File upload failed:", uploadError);
+          throw new Error(`File upload failed: ${uploadError.message}`);
+        }
+
+        // 2. Insert into application_documents
+        // We use "other" as document_type or maybe map based on status?
+        // For now "other" is safe.
+        const { error: dbError } = await supabase
+          .from("application_documents")
+          .insert({
+            application_id: application.id,
+            document_type: "other", 
+            storage_path: filePath,
+            mime_type: selectedFile.type,
+            file_size: selectedFile.size,
+            verified: true, // University uploaded it
+            uploaded_at: new Date().toISOString(),
+          } as any);
+
+        if (dbError) {
+           console.error("[ApplicationReview] Document record creation failed:", dbError);
+           // We uploaded the file but failed to create record. 
+           // Technically we should delete the file, but for now just throw.
+           throw new Error(`Failed to record document: ${dbError.message}`);
+        }
+
+        console.log("[ApplicationReview] File uploaded and recorded successfully");
+        toast({
+          title: "Document uploaded",
+          description: "The document has been successfully attached to the application.",
+        });
+
+      } catch (err: any) {
+        setUpdatingStatus(false);
+        setConfirmStatus(false);
+        toast({
+          title: "Upload failed",
+          description: err.message || "Could not upload document.",
+          variant: "destructive",
+        });
+        return; // Abort status update
+      }
+    }
+
     // First, run diagnostics to help debug any issues
     try {
-      const diagResult = await supabase.rpc("diagnose_app_update_issue" as any, {
-        p_app_id: application.id,
-      });
-      if (diagResult.data) {
+      const diagResult = await callRpcWithCache(
+        "diagnose_app_update_issue",
+        {
+          p_app_id: application.id,
+        },
+      );
+      if (!diagResult.error && diagResult.data) {
         console.log("[ApplicationReview] Diagnostics:", diagResult.data);
       }
     } catch (diagError) {
@@ -760,11 +924,14 @@ export function ApplicationReviewDialog({
     // This is the most reliable method with explicit authorization and SECURITY DEFINER
     try {
       console.log("[ApplicationReview] Trying university_update_application_status RPC...");
-      const rpcResult = await supabase.rpc("university_update_application_status" as any, {
-        p_application_id: application.id,
-        p_status: selectedStatus,
-        p_notes: null,
-      });
+      const rpcResult = await callRpcWithCache(
+        "university_update_application_status",
+        {
+          p_application_id: application.id,
+          p_status: selectedStatus,
+          p_notes: null,
+        },
+      );
       
       if (!rpcResult.error) {
         // This RPC returns JSONB directly with {id, status, updated_at}
@@ -792,12 +959,15 @@ export function ApplicationReviewDialog({
         actor: "University",
       };
 
-      const textRpcResult = await supabase.rpc("update_application_review_text" as any, {
-        p_application_id: application.id,
-        p_new_status: selectedStatus,
-        p_internal_notes: null,
-        p_append_timeline_event: timelineEvent,
-      });
+      const textRpcResult = await callRpcWithCache(
+        "update_application_review_text",
+        {
+          p_application_id: application.id,
+          p_new_status: selectedStatus,
+          p_internal_notes: null,
+          p_append_timeline_event: timelineEvent,
+        },
+      );
 
       if (!textRpcResult.error) {
         data = textRpcResult.data;
@@ -812,7 +982,7 @@ export function ApplicationReviewDialog({
     // APPROACH 3: Try enum version of update_application_review
     if (!data && (!error || isUpdateApplicationReviewRpcMissing(error))) {
       console.log("[ApplicationReview] Trying enum version of update_application_review");
-      const enumResult = await supabase.rpc("update_application_review" as any, {
+      const enumResult = await callRpcWithCache("update_application_review", {
         p_application_id: application.id,
         p_new_status: selectedStatus,
         p_internal_notes: null,
@@ -889,6 +1059,10 @@ export function ApplicationReviewDialog({
       });
       return;
     }
+
+    // Clear file selection on success
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setSelectedFile(null);
 
     const finalStatus = String(row.status);
     console.log("[ApplicationReview] Status updated successfully:", {
@@ -1068,7 +1242,7 @@ export function ApplicationReviewDialog({
         const { data: convId, error: convError } = await supabase.rpc(
           "get_or_create_conversation",
           {
-            p_user_id: null, // Current user
+            p_user_id: currentUserId,
             p_other_user_id: application.student.profileId,
             p_tenant_id: tenantId,
           }
@@ -1164,6 +1338,13 @@ export function ApplicationReviewDialog({
     );
   }, [application?.timelineJson]);
 
+  // Reset fullscreen when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setIsFullscreen(false);
+    }
+  }, [open]);
+
   /* ======================================================
      RENDER
   ======================================================= */
@@ -1173,7 +1354,13 @@ export function ApplicationReviewDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="!grid-rows-[auto_1fr] w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6">
+        <DialogContent
+          className={`!grid-rows-[auto_1fr] overflow-hidden flex flex-col p-4 sm:p-6 ${
+            isFullscreen
+              ? "w-screen h-screen max-w-[100vw] max-h-screen sm:max-w-[100vw] sm:max-h-screen sm:h-screen rounded-none sm:rounded-none"
+              : "w-full max-w-[95vw] sm:max-w-[90vw] md:max-w-3xl lg:max-w-4xl h-[95vh] sm:h-[90vh] max-h-[95vh] sm:max-h-[90vh]"
+          }`}
+        >
           {/* Header */}
           <DialogHeader className="flex-shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
@@ -1190,6 +1377,21 @@ export function ApplicationReviewDialog({
                 </DialogDescription>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setIsFullscreen((prev) => !prev)}
+                >
+                  {isFullscreen ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  </span>
+                </Button>
                 <StatusBadge status={displayStatus} />
               </div>
             </div>
@@ -1258,25 +1460,49 @@ export function ApplicationReviewDialog({
                       </CardHeader>
                       <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
                         <div className="flex flex-col sm:flex-row sm:items-end gap-3">
-                          <div className="flex-1 space-y-2">
-                            <Label htmlFor="status-select" className="text-xs sm:text-sm">New Status</Label>
-                            <Select
-                              value={selectedStatus ?? ""}
-                              onValueChange={(v) =>
-                                setSelectedStatus(v as ApplicationStatus)
-                              }
-                            >
-                              <SelectTrigger id="status-select" className="h-9 sm:h-10 text-sm">
-                                <SelectValue placeholder="Select new status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {APPLICATION_STATUS_OPTIONS.map((opt) => (
-                                  <SelectItem key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                          <div className="flex-1 space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="status-select" className="text-xs sm:text-sm">New Status</Label>
+                              <Select
+                                value={selectedStatus ?? ""}
+                                onValueChange={(v) =>
+                                  setSelectedStatus(v as ApplicationStatus)
+                                }
+                              >
+                                <SelectTrigger id="status-select" className="h-9 sm:h-10 text-sm">
+                                  <SelectValue placeholder="Select new status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {APPLICATION_STATUS_OPTIONS.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="status-doc" className="text-xs sm:text-sm">
+                                Attach Document <span className="text-muted-foreground font-normal">(Optional)</span>
+                              </Label>
+                              <Input
+                                ref={fileInputRef}
+                                id="status-doc"
+                                type="file"
+                                className="text-xs sm:text-sm h-9 sm:h-10 cursor-pointer"
+                                onChange={(e) => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    setSelectedFile(e.target.files[0]);
+                                  } else {
+                                    setSelectedFile(null);
+                                  }
+                                }}
+                              />
+                              <p className="text-[10px] sm:text-xs text-muted-foreground">
+                                Upload CAS, Offer Letter, or other relevant documents.
+                              </p>
+                            </div>
                           </div>
                           <Button
                             onClick={() => setConfirmStatus(true)}
@@ -1681,42 +1907,81 @@ export function ApplicationReviewDialog({
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  {doc.verified ? (
-                                    <Badge variant="outline" className="border-success text-success">
-                                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                                      Verified
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline">Pending Review</Badge>
-                                  )}
+                                  {(() => {
+                                    const effectiveStatus =
+                                      reviewOverrides[doc.id]?.status ?? doc.reviewStatus;
+
+                                    if (effectiveStatus === "verified") {
+                                      return (
+                                        <Badge variant="outline" className="border-success text-success">
+                                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                                          Accepted
+                                        </Badge>
+                                      );
+                                    }
+
+                                    if (effectiveStatus === "rejected") {
+                                      return <Badge variant="destructive">Rejected</Badge>;
+                                    }
+
+                                    return <Badge variant="outline">Pending Review</Badge>;
+                                  })()}
+
                                   {documentUrls[doc.id] ? (
-                                    <Button variant="ghost" size="sm" asChild>
-                                      <a
-                                        href={documentUrls[doc.id]}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
+                                    <>
+                                      <Button variant="ghost" size="sm" asChild>
+                                        <a
+                                          href={documentUrls[doc.id]}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                        >
+                                          <Eye className="h-4 w-4 mr-1" />
+                                          View
+                                        </a>
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={async () => {
+                                          try {
+                                            const response = await fetch(documentUrls[doc.id]);
+                                            const blob = await response.blob();
+                                            const url = window.URL.createObjectURL(blob);
+                                            const link = document.createElement("a");
+                                            link.href = url;
+                                            link.download = doc.fileName || "document";
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                            window.URL.revokeObjectURL(url);
+                                          } catch (err) {
+                                            console.error("Download failed:", err);
+                                            toast({
+                                              title: "Download failed",
+                                              description: "Could not download the document.",
+                                              variant: "destructive",
+                                            });
+                                          }
+                                        }}
                                       >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        View
-                                      </a>
-                                    </Button>
-                                  ) : doc.publicUrl ? (
-                                    <Button variant="ghost" size="sm" asChild>
-                                      <a
-                                        href={doc.publicUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        View
-                                      </a>
-                                    </Button>
+                                        <Download className="h-4 w-4 mr-1" />
+                                        Download
+                                      </Button>
+                                    </>
                                   ) : (
                                     <Button variant="ghost" size="sm" disabled>
                                       <AlertCircle className="h-4 w-4 mr-1" />
-                                      Unavailable
+                                      Loading
                                     </Button>
                                   )}
+
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => openReview(doc)}
+                                  >
+                                    Review
+                                  </Button>
                                 </div>
                               </div>
                             ))}
@@ -1724,6 +1989,55 @@ export function ApplicationReviewDialog({
                         )}
                       </CardContent>
                     </Card>
+
+                    {/* Review dialog */}
+                    <Dialog open={!!reviewingDocId} onOpenChange={(o) => !o && setReviewingDocId(null)}>
+                      <DialogContent className="sm:max-w-[560px]">
+                        <DialogHeader>
+                          <DialogTitle>Review document</DialogTitle>
+                          <DialogDescription>
+                            Mark this document as accepted or rejected and add feedback.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Status</Label>
+                            <Select
+                              value={reviewStatusDraft}
+                              onValueChange={(v) => setReviewStatusDraft(v as any)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending review</SelectItem>
+                                <SelectItem value="verified">Accepted</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Feedback</Label>
+                            <Textarea
+                              value={reviewNotesDraft}
+                              onChange={(e) => setReviewNotesDraft(e.target.value)}
+                              placeholder="Add feedback (e.g., resubmit as a clearer PDF, missing pages, etc.)"
+                            />
+                          </div>
+                        </div>
+
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setReviewingDocId(null)} disabled={savingReview}>
+                            Cancel
+                          </Button>
+                          <Button onClick={saveReview} disabled={savingReview}>
+                            {savingReview ? "Saving…" : "Save"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
 
                     {/* Missing Documents */}
                     {missingDocuments.length > 0 && (

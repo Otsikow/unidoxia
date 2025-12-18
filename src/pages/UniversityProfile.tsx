@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BackButton from "@/components/BackButton";
 import {
   GraduationCap,
   MapPin,
@@ -263,12 +262,6 @@ export default function UniversityProfile() {
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-background/30" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="max-w-7xl mx-auto">
-            <BackButton
-              variant="ghost"
-              className="bg-background/50 backdrop-blur-sm"
-              wrapperClassName="mb-4"
-              fallback="/universities"
-            />
             <div className="flex items-end gap-6">
               {/* University Logo */}
               {university.logo_url ? (

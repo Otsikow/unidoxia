@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { useState, useEffect, useRef, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import {
   Building2,
@@ -15,6 +15,9 @@ import {
   Globe,
   Mail,
   Phone,
+  MessageCircle,
+  ArrowRight,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -31,6 +34,7 @@ import { MetricCard } from "@/components/university/panels/MetricCard";
 import { ApplicationSourcesChart } from "@/components/university/panels/ApplicationSourcesChart";
 import { ApplicationStatusChart } from "@/components/university/panels/ApplicationStatusChart";
 import { StatePlaceholder } from "@/components/university/common/StatePlaceholder";
+import { LoadingState } from "@/components/LoadingState";
 import {
   withUniversityCardStyles,
   withUniversitySurfaceSubtle,
@@ -38,6 +42,9 @@ import {
 } from "@/components/university/common/cardStyles";
 import { useUniversityDashboard } from "@/components/university/layout/UniversityDashboardLayout";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -59,8 +66,370 @@ const pipelineIcons: Record<string, ComponentType<{ className?: string }>> = {
   enrolled: GraduationCap,
 };
 
+const formatTimeAgo = (date: Date | null) => {
+  if (!date) return "";
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return "just now";
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return date.toLocaleDateString();
+};
+
+// Document Requests Snapshot Component
+interface DocumentRequestsSnapshotProps {
+  metrics: {
+    pendingDocuments: number;
+    receivedDocuments: number;
+  };
+  documentRequests: Array<{
+    id: string;
+    studentId: string | null;
+    studentName: string;
+    status: string;
+    requestType: string;
+    requestedAt: string | null;
+    documentUrl: string | null;
+  }>;
+  tenantId: string | null;
+  refetch: () => Promise<void>;
+}
+
+const DocumentRequestsSnapshot = ({
+  metrics,
+  documentRequests,
+  tenantId,
+  refetch,
+}: DocumentRequestsSnapshotProps) => {
+  const { toast } = useToast();
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const handleMarkReceived = async (requestId: string) => {
+    if (!tenantId) {
+      toast({
+        title: "Missing account context",
+        description: "Unable to verify your university profile.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setUpdatingId(requestId);
+      const { error } = await supabase
+        .from("document_requests")
+        .update({ status: "received" })
+        .eq("id", requestId)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Document received",
+        description: "The request has been marked as complete.",
+      });
+
+      await refetch();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Unable to update request",
+        description:
+          (error as Error)?.message ??
+          "Please try again or contact your UniDoxia partnership manager.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  return (
+    <Card className={withUniversityCardStyles("lg:col-span-2 rounded-2xl text-card-foreground")}>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          Document Requests Snapshot
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground">
+          Prioritise outstanding uploads to keep applications moving
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Pending Requests - Clickable Card */}
+        <Link
+          to="/university/documents?status=pending"
+          className={withUniversitySurfaceTint(
+            "flex items-center justify-between rounded-xl p-4 bg-muted/50 transition-all hover:bg-muted/70 hover:ring-2 hover:ring-amber-500/30 cursor-pointer group"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-amber-500/30 bg-warning/10">
+              <Inbox className="h-4 w-4 text-warning" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Pending requests</p>
+              <p className="text-xs text-muted-foreground">
+                Awaiting student or agent uploads
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-amber-500/50 bg-warning/10 text-warning"
+            >
+              {formatNumber(metrics.pendingDocuments)}
+            </Badge>
+            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
+        </Link>
+
+        {/* Documents Received - Clickable Card */}
+        <Link
+          to="/university/documents?status=received"
+          className={withUniversitySurfaceTint(
+            "flex items-center justify-between rounded-xl p-4 bg-muted/50 transition-all hover:bg-muted/70 hover:ring-2 hover:ring-success/30 cursor-pointer group"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-success/30 bg-success/10">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Documents received</p>
+              <p className="text-xs text-muted-foreground">
+                Ready for compliance verification
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-success/30 bg-success/10 text-success"
+            >
+              {formatNumber(metrics.receivedDocuments)}
+            </Badge>
+            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
+        </Link>
+
+        {/* Latest Requests Section */}
+        <div className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Latest requests
+          </p>
+          <div className="mt-3 space-y-3">
+            {documentRequests.slice(0, 3).length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                All document requests are up to date.
+              </p>
+            ) : (
+              documentRequests.slice(0, 3).map((request) => (
+                <div
+                  key={request.id}
+                  className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
+                >
+                  <div className="flex flex-col min-w-0 flex-1">
+                    {/* Student Name - Clickable to Message */}
+                    {request.studentId ? (
+                      <Link
+                        to={`/university/messages?studentId=${request.studentId}`}
+                        className="font-medium text-foreground hover:text-primary hover:underline inline-flex items-center gap-1.5 w-fit transition-colors"
+                        title={`Message ${request.studentName}`}
+                      >
+                        <span className="truncate">{request.studentName}</span>
+                        <MessageCircle className="h-3 w-3 flex-shrink-0 opacity-60" />
+                      </Link>
+                    ) : (
+                      <span className="font-medium text-foreground truncate">
+                        {request.studentName}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground truncate">
+                      {request.requestType}
+                    </span>
+                  </div>
+                  
+                  {/* Status Badge - Clickable for Pending */}
+                  {request.status.toLowerCase() !== "received" ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleMarkReceived(request.id)}
+                      disabled={updatingId === request.id}
+                      className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 hover:border-amber-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                      title="Click to mark as received"
+                    >
+                      {updatingId === request.id ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>Updating</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{request.status.toUpperCase()}</span>
+                          <CheckCircle2 className="h-3 w-3 ml-0.5" />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="border-success/30 bg-success/10 text-success text-xs flex-shrink-0"
+                    >
+                      {request.status.toUpperCase()}
+                    </Badge>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-4 w-full justify-between text-primary hover:text-foreground"
+            asChild
+          >
+            <Link to="/university/documents">
+              Review document queue <span aria-hidden>→</span>
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
 const OverviewPage = () => {
-  const { data } = useUniversityDashboard();
+  const { data, lastUpdated, isRefetching, isLoading, refetch } = useUniversityDashboard();
+  const { profile, user } = useAuth();
+  const { toast } = useToast();
+
+  const ensureAttemptsRef = useRef(0);
+  // Track if we're ensuring university exists (self-healing mechanism)
+  const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
+  // Track if self-healing was attempted AND failed (not just attempted)
+  const ensureFailedRef = useRef(false);
+
+  /**
+   * Self-healing effect: If the user has a tenant but no university record,
+   * this will create one automatically using the get_or_create_university RPC.
+   */
+  useEffect(() => {
+    const ensureUniversityExists = async () => {
+      // If we already failed self-healing, don't retry automatically
+      if (ensureFailedRef.current) return;
+
+      // Avoid infinite loops - stop after two attempts
+      if (ensureAttemptsRef.current >= 2) {
+        ensureFailedRef.current = true;
+        return;
+      }
+      
+      // If we're already ensuring or loading, wait
+      if (isEnsuringUniversity) return;
+      
+      // Conditions for self-healing:
+      const profileTenantId = profile?.tenant_id;
+      const hasValidProfile = profile && profileTenantId;
+      const universityMissing = !data?.university?.id;
+      const shouldEnsure = !isLoading && hasValidProfile && universityMissing;
+
+      if (!shouldEnsure) return;
+
+      ensureAttemptsRef.current += 1;
+      setIsEnsuringUniversity(true);
+
+      try {
+        console.log("[Overview] University not found for tenant, attempting to create one...", {
+          tenantId: profileTenantId,
+          profileEmail: profile.email,
+        });
+
+        const { data: newUniversityId, error: rpcError } = await supabase.rpc(
+          "get_or_create_university",
+          {
+            p_tenant_id: profileTenantId,
+            p_name: profile.full_name ? `${profile.full_name}'s University` : "University",
+            p_country: profile.country || "Unknown",
+            p_contact_name: profile.full_name || null,
+            p_contact_email: profile.email || user?.email || null,
+          }
+        );
+
+        if (rpcError) {
+          console.error("[Overview] Failed to ensure university exists:", rpcError);
+          ensureFailedRef.current = true;
+          toast({
+            title: "Account setup incomplete",
+            description: "There was an issue setting up your university profile. Please contact support if this persists.",
+            variant: "destructive",
+          });
+          setIsEnsuringUniversity(false);
+          return;
+        }
+
+        console.log("[Overview] University ensured successfully:", newUniversityId);
+
+        // Refetch dashboard data to pick up the new/existing university
+        const result = await refetch();
+        const hasUniversity = Boolean(result?.data?.university?.id);
+
+        // If the refetch still shows no university, stop the loop and surface guidance
+        if (!hasUniversity && ensureAttemptsRef.current >= 2) {
+          ensureFailedRef.current = true;
+          toast({
+            title: "Setup is taking longer than expected",
+            description: "We couldn't attach your university profile. Please refresh or contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "University profile ready",
+          description: "Your university profile has been set up. Welcome to your dashboard!",
+        });
+        
+      } catch (err) {
+        console.error("[Overview] Unexpected error ensuring university:", err);
+        ensureFailedRef.current = true;
+      } finally {
+        setIsEnsuringUniversity(false);
+      }
+    };
+
+    void ensureUniversityExists();
+  }, [isLoading, profile, data?.university?.id, user?.email, refetch, toast, isEnsuringUniversity]);
+
+  // Show loading while self-healing is in progress
+  if (isEnsuringUniversity) {
+    return <LoadingState message="Setting up your university profile..." />;
+  }
+
+  // If self-healing failed, show actionable message
+  if (!data?.university && ensureFailedRef.current && profile?.tenant_id) {
+    return (
+      <StatePlaceholder
+        icon={<Building2 className="h-10 w-10 text-primary" />}
+        title="University profile setup required"
+        description="We couldn't set up your university profile. Please try again or contact support if the issue persists."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => {
+              ensureFailedRef.current = false;
+              void refetch();
+            }}
+          >
+            Retry setup
+          </Button>
+        }
+      />
+    );
+  }
 
   if (!data?.university) {
     return (
@@ -93,6 +462,18 @@ const OverviewPage = () => {
     <div className="space-y-8">
       <Card className={withUniversityCardStyles("overflow-hidden rounded-3xl text-card-foreground shadow-primary/20")}>
         <CardContent className="space-y-6 p-6 lg:p-8">
+          {/* Real-time indicator */}
+          <div className="flex items-center justify-end">
+            {lastUpdated && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="relative flex h-2 w-2">
+                  <span className={`absolute inline-flex h-full w-full rounded-full bg-success ${isRefetching ? 'animate-ping' : 'animate-pulse'} opacity-75`} />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+                </span>
+                <span>Live data • Updated {formatTimeAgo(lastUpdated)}</span>
+              </div>
+            )}
+          </div>
           {heroImage ? (
             <div className="relative overflow-hidden rounded-2xl border border-primary/20">
               <img
@@ -305,36 +686,45 @@ const OverviewPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pipeline.map((stage) => {
-              const Icon = pipelineIcons[stage.key] ?? FileStack;
-              return (
-                <div
-                  key={stage.key}
-                  className={withUniversitySurfaceTint("rounded-xl p-4")}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <span className={withUniversitySurfaceSubtle("inline-flex h-9 w-9 items-center justify-center rounded-xl")}>
-                        <Icon className="h-4 w-4 text-primary" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">
-                          {stage.label}
+            {pipeline.length === 0 ? (
+              <StatePlaceholder
+                icon={<FileStack className="h-8 w-8 text-muted-foreground" />}
+                title="No pipeline data yet"
+                description="Pipeline stages will appear here once applications are submitted to your programs."
+                className="bg-transparent"
+              />
+            ) : (
+              pipeline.map((stage) => {
+                const Icon = pipelineIcons[stage.key] ?? FileStack;
+                return (
+                  <div
+                    key={stage.key}
+                    className={withUniversitySurfaceTint("rounded-xl p-4")}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span className={withUniversitySurfaceSubtle("inline-flex h-9 w-9 items-center justify-center rounded-xl")}>
+                          <Icon className="h-4 w-4 text-primary" />
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">
+                            {stage.label}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{stage.description}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-semibold text-foreground">
+                          {formatNumber(stage.count)}
                         </p>
-                        <p className="text-xs text-muted-foreground">{stage.description}</p>
+                        <p className="text-xs text-muted-foreground">{stage.percentage}% of total</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-foreground">
-                        {formatNumber(stage.count)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{stage.percentage}% of total</p>
-                    </div>
+                    <Progress value={stage.percentage} className="mt-3 h-2 bg-primary/20" />
                   </div>
-                  <Progress value={stage.percentage} className="mt-3 h-2 bg-primary/20" />
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </CardContent>
         </Card>
 
@@ -348,23 +738,32 @@ const OverviewPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {conversion.map((metric) => (
-              <div
-                key={metric.key}
-                className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{metric.label}</p>
-                    <p className="text-xs text-muted-foreground">{metric.description}</p>
+            {conversion.length === 0 ? (
+              <StatePlaceholder
+                icon={<Target className="h-8 w-8 text-muted-foreground" />}
+                title="No conversion data yet"
+                description="Conversion metrics will appear once you have applications progressing through the funnel."
+                className="bg-transparent"
+              />
+            ) : (
+              conversion.map((metric) => (
+                <div
+                  key={metric.key}
+                  className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{metric.label}</p>
+                      <p className="text-xs text-muted-foreground">{metric.description}</p>
+                    </div>
+                    <p className="text-2xl font-semibold text-success">
+                      {metric.value}%
+                    </p>
                   </div>
-                  <p className="text-2xl font-semibold text-success">
-                    {metric.value}%
-                  </p>
+                  <Progress value={metric.value} className="mt-3 h-2 bg-primary/20" />
                 </div>
-                <Progress value={metric.value} className="mt-3 h-2 bg-primary/20" />
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </section>
@@ -448,90 +847,12 @@ const OverviewPage = () => {
           </CardContent>
         </Card>
 
-        <Card className={withUniversityCardStyles("lg:col-span-2 rounded-2xl text-card-foreground")}>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Document Requests Snapshot
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Prioritise outstanding uploads to keep applications moving
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className={withUniversitySurfaceTint("flex items-center justify-between rounded-xl p-4 bg-muted/50")}>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Pending requests</p>
-                <p className="text-xs text-muted-foreground">
-                  Awaiting student or agent uploads
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-amber-500/50 bg-warning/10 text-warning"
-              >
-                {formatNumber(metrics.pendingDocuments)}
-              </Badge>
-            </div>
-            <div className={withUniversitySurfaceTint("flex items-center justify-between rounded-xl p-4 bg-muted/50")}>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Documents received</p>
-                <p className="text-xs text-muted-foreground">
-                  Ready for compliance verification
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-success/30 bg-success/10 text-success"
-              >
-                {formatNumber(metrics.receivedDocuments)}
-              </Badge>
-            </div>
-            <div className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Latest requests
-              </p>
-              <div className="mt-3 space-y-3">
-                {documentRequests.slice(0, 3).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    All document requests are up to date.
-                  </p>
-                ) : (
-                  documentRequests.slice(0, 3).map((request) => (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium text-foreground">
-                          {request.studentName}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {request.requestType}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="border-border bg-muted/60 text-xs"
-                      >
-                        {request.status.toUpperCase()}
-                      </Badge>
-                    </div>
-                  ))
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-4 w-full justify-between text-primary hover:text-foreground"
-                asChild
-              >
-                <Link to="/university/documents">
-                  Review document queue <span aria-hidden>→</span>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <DocumentRequestsSnapshot
+          metrics={metrics}
+          documentRequests={documentRequests}
+          tenantId={university.tenant_id}
+          refetch={refetch}
+        />
       </section>
     </div>
   );

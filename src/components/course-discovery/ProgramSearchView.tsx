@@ -28,6 +28,7 @@ import BackButton from "@/components/BackButton";
 import ProgramRecommendations from "@/components/ai/ProgramRecommendations";
 import SoPGenerator from "@/components/ai/SoPGenerator";
 import InterviewPractice from "@/components/ai/InterviewPractice";
+import { CourseCard, type Course } from "@/components/student/CourseCard";
 import {
   Search,
   GraduationCap,
@@ -71,6 +72,8 @@ const TAB_TRIGGER_STYLES =
   "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
 const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
+const INITIAL_COURSE_LOAD = 12;
+const COURSE_LOAD_INCREMENT = 12;
 
 interface University {
   id: string;
@@ -133,11 +136,30 @@ const getProgramVisual = (program: Program, university: University): string => {
   return program.image_url || getUniversityVisual(university.name, university.logo_url);
 };
 
+// Helper function to transform course data to CourseCard format
+const transformToCourseCardFormat = (course: Program & { university: University }): Course => {
+  return {
+    id: course.id,
+    university_id: course.university_id,
+    name: course.name,
+    level: course.level,
+    discipline: course.discipline,
+    duration_months: course.duration_months,
+    tuition_currency: course.tuition_currency,
+    tuition_amount: course.tuition_amount,
+    university_name: course.university.name,
+    university_country: course.university.country,
+    university_city: course.university.city || '',
+    university_logo_url: course.university.logo_url || undefined,
+  };
+};
+
 export interface ProgramSearchViewProps {
   variant?: "page" | "embedded";
+  showBackButton?: boolean;
 }
 
-export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) {
+export function ProgramSearchView({ variant = "page", showBackButton = true }: ProgramSearchViewProps) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { profile } = useAuth();
@@ -157,6 +179,13 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
   
+  // All courses listing state
+  const [allCourses, setAllCourses] = useState<(Program & { university: University })[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [courseOffset, setCourseOffset] = useState(0);
+  const [hasMoreCourses, setHasMoreCourses] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
   // Check if user is an agent/staff/admin to determine the correct apply URL
   const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
   
@@ -169,7 +198,7 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
   };
 
   const showSEO = variant === "page";
-  const showBackButton = variant === "page";
+  const shouldShowBackButton = variant === "page" && showBackButton;
   const containerClasses = cn(
     "p-4 md:p-8",
     variant === "page"
@@ -235,6 +264,100 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
     
     loadFilterOptions();
   }, []);
+
+  // Load all courses on mount for browsing
+  const loadAllCourses = useCallback(async (offset: number = 0, append: boolean = false) => {
+    try {
+      if (offset === 0) {
+        setLoadingCourses(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      // Build query with filters
+      let query = supabase
+        .from("programs")
+        .select(`
+          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url,
+          universities!inner (id, name, country, city, logo_url, website, description)
+        `)
+        .or("active.eq.true,active.is.null")
+        .range(offset, offset + COURSE_LOAD_INCREMENT - 1)
+        .order("name");
+
+      // Apply filters if set
+      if (selectedCountry !== "all") {
+        query = query.eq("universities.country", selectedCountry);
+      }
+      if (selectedLevel !== "all") {
+        query = query.eq("level", selectedLevel);
+      }
+      if (selectedDiscipline !== "all") {
+        query = query.eq("discipline", selectedDiscipline);
+      }
+      if (maxFee) {
+        query = query.lte("tuition_amount", parseFloat(maxFee));
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error loading courses:", error);
+        return;
+      }
+
+      const formattedCourses = (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        level: p.level,
+        discipline: p.discipline,
+        tuition_amount: p.tuition_amount,
+        tuition_currency: p.tuition_currency,
+        duration_months: p.duration_months,
+        university_id: p.university_id,
+        image_url: p.image_url ?? null,
+        university: {
+          id: p.universities.id,
+          name: p.universities.name,
+          country: p.universities.country,
+          city: p.universities.city,
+          logo_url: p.universities.logo_url,
+          website: p.universities.website,
+          description: p.universities.description,
+        },
+      }));
+
+      if (append) {
+        setAllCourses((prev) => [...prev, ...formattedCourses]);
+      } else {
+        setAllCourses(formattedCourses);
+      }
+
+      setHasMoreCourses(formattedCourses.length === COURSE_LOAD_INCREMENT);
+      setCourseOffset(offset + formattedCourses.length);
+    } catch (error) {
+      console.error("Error loading courses:", error);
+    } finally {
+      setLoadingCourses(false);
+      setLoadingMore(false);
+    }
+  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
+
+  // Initial load of courses
+  useEffect(() => {
+    loadAllCourses(0, false);
+  }, []);
+
+  // Reload courses when filters change (but only if not actively searching)
+  useEffect(() => {
+    if (!hasSearched) {
+      loadAllCourses(0, false);
+    }
+  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched]);
+
+  const handleLoadMore = () => {
+    loadAllCourses(courseOffset, true);
+  };
 
   const handleSearch = useCallback(async () => {
     setHasSearched(true);
@@ -444,13 +567,13 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
     <div className={containerClasses}>
       {showSEO && (
         <SEO
-          title="Search Universities - UniDoxia"
-          description="Find and compare universities from around the world. Filter by country, program, and more to discover the perfect institution for your study abroad journey."
-          keywords="university search, find universities, study abroad programs, international colleges, student recruitment, find a university"
+          title="Search Courses - UniDoxia"
+          description="Find and compare courses from top universities around the world. Filter by country, level, discipline, and more to discover the perfect program for your study abroad journey."
+          keywords="course search, find courses, study abroad programs, international programs, student recruitment, find a course, university courses"
         />
       )}
       <div className={contentWrapperClasses}>
-        {showBackButton && (
+        {shouldShowBackButton && (
           <BackButton
             variant="ghost"
             size="sm"
@@ -493,15 +616,15 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                      <Label>{t("pages.universitySearch.filters.fields.universityName.label")}</Label>
+                      <Label>{t("pages.universitySearch.filters.fields.courseName.label")}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                          placeholder={t("pages.universitySearch.filters.fields.universityName.placeholder")}
+                          placeholder={t("pages.universitySearch.filters.fields.courseName.placeholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={cn("pl-9", searchTerm && "pr-9")}
-                        aria-label="Search universities and programs"
+                        aria-label="Search courses and programs"
                       />
                       {searchTerm && (
                         <button
@@ -595,18 +718,83 @@ export function ProgramSearchView({ variant = "page" }: ProgramSearchViewProps) 
               </h2>
 
               {!hasSearched ? (
-                <Card>
-                  <CardContent className="py-10 text-center text-muted-foreground space-y-2">
-                    <p>{t("pages.universitySearch.results.quickTip", {
-                      defaultValue: "Use the filters above to quickly narrow down universities by country, level, and fees.",
-                    })}</p>
-                    <p className="text-sm">
-                      {t("pages.universitySearch.results.performanceNote", {
-                        defaultValue: "Results load faster once you start typing or adjust a filter.",
-                      })}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="space-y-6">
+                  {/* Browse All Courses Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-semibold">{t("pages.universitySearch.browseCourses.title")}</h3>
+                        <p className="text-sm text-muted-foreground">{t("pages.universitySearch.browseCourses.subtitle")}</p>
+                      </div>
+                    </div>
+                    
+                    {loadingCourses ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                          <Card key={i} className="overflow-hidden">
+                            <CardContent className="pt-6 pb-4 space-y-4">
+                              <div className="flex items-start gap-3">
+                                <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                  <Skeleton className="h-4 w-3/4" />
+                                  <Skeleton className="h-3 w-1/2" />
+                                </div>
+                              </div>
+                              <Skeleton className="h-6 w-full" />
+                              <div className="flex gap-2">
+                                <Skeleton className="h-5 w-20 rounded-full" />
+                                <Skeleton className="h-5 w-24 rounded-full" />
+                              </div>
+                              <div className="space-y-2">
+                                <Skeleton className="h-4 w-2/3" />
+                                <Skeleton className="h-4 w-1/2" />
+                                <Skeleton className="h-4 w-3/4" />
+                              </div>
+                              <Skeleton className="h-10 w-full rounded-md" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : allCourses.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-12 text-center text-muted-foreground">
+                          {t("pages.universitySearch.browseCourses.noCourses")}
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                          {allCourses.map((course) => (
+                            <CourseCard
+                              key={course.id}
+                              course={transformToCourseCardFormat(course)}
+                            />
+                          ))}
+                        </div>
+                        
+                        {hasMoreCourses && (
+                          <div className="flex justify-center pt-4">
+                            <Button
+                              variant="outline"
+                              onClick={handleLoadMore}
+                              disabled={loadingMore}
+                              className="min-w-[200px]"
+                            >
+                              {loadingMore ? (
+                                <>
+                                  <span className="animate-spin mr-2">⏳</span>
+                                  {t("common.status.loading")}
+                                </>
+                              ) : (
+                                t("pages.universitySearch.browseCourses.loadMore")
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
               ) : loading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (

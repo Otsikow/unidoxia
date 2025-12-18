@@ -591,91 +591,61 @@ const pt = {
         },
         journeyRibbon: {
           items: {
-            discover: {
-              stage: "Descobrir",
-              metricValue: "200+",
-              metricLabel: "Universidades parceiras",
+            profile: {
+              stage: "Etapa 1",
+              metricValue: "5 min",
+              metricLabel: "para começar",
               description:
-                "Recomendações impulsionadas por IA mostram imediatamente as universidades ideais assim que você se cadastra.",
-              ctaLabel: "Iniciar inscrição",
+                "Crie seu perfil com histórico acadêmico, documentos e preferências de estudo – tudo em um só lugar.",
+              ctaLabel: "Criar seu perfil",
             },
-            plan: {
-              stage: "Planejar",
-              metricValue: "5000+",
-              metricLabel: "Planos personalizados criados",
-              description:
-                "Listas de tarefas e lembretes inteligentes mantêm milhares de estudantes organizados do histórico às cartas.",
-              ctaLabel: "",
-            },
-            collaborate: {
-              stage: "Colaborar",
+            matched: {
+              stage: "Etapa 2",
               metricValue: "24h",
-              metricLabel: "Tempo médio de resposta dos agentes",
+              metricLabel: "tempo médio de matching",
               description:
-                "Consultores verificados coeditam documentos, respondem dúvidas e alinham cronogramas em tempo real em todos os canais.",
-              ctaLabel: "Conheça seu agente",
+                "Seja conectado a consultores verificados e universidades que combinam com seus objetivos. Receba orientação personalizada em cada etapa.",
+              ctaLabel: "Ser conectado",
             },
-            submit: {
-              stage: "Enviar",
+            offers: {
+              stage: "Etapa 3",
               metricValue: "95%",
-              metricLabel: "Taxa de sucesso",
+              metricLabel: "taxa de sucesso de visto",
               description:
-                "Envios centralizados e lembretes proativos mantêm as candidaturas avançando sem perder prazos.",
-              ctaLabel: "",
-            },
-            celebrate: {
-              stage: "Celebrar",
-              metricValue: "50+",
-              metricLabel: "Países representados",
-              description:
-                "Checklists prontas para visto e preparação pré-embarque levam estudantes com confiança a campi no mundo todo.",
+                "Receba ofertas de universidades e orientação completa de visto. Acompanhamos você da aceitação até a chegada.",
               ctaLabel: "",
             },
           },
         },
         storyboard: {
-          heading: "Como a UniDoxia simplifica cada etapa",
+          heading: "Sua jornada em 3 etapas simples",
           subheading:
-            "Acompanhe o storyboard para enxergar como nossa plataforma e equipe orientam sua candidatura da ideia à chegada.",
+            "A UniDoxia simplifica seus estudos no exterior. Veja como te acompanhamos do início ao sucesso.",
           stepLabel: "Etapa {{number}}",
           steps: {
-            discover: {
-              title: "Descubra os cursos ideais",
+            profile: {
+              title: "Crie seu perfil",
               description:
-                "Compartilhe objetivos e histórico: a UniDoxia seleciona instantaneamente universidades, cursos e bolsas que combinam com você.",
+                "Crie seu perfil com histórico acadêmico, notas de testes e preferências de estudo. Envie seus documentos uma vez e use-os para todas as candidaturas.",
               support:
-                "Filtros inteligentes e recomendações com IA eliminam a incerteza para montar uma short-list em minutos.",
-              imageAlt: "Estudante analisando cursos universitários durante visita ao campus",
+                "Checklists inteligentes e dicas de documentos ajudam você a criar um perfil completo que as universidades adoram.",
+              imageAlt: "Estudante criando perfil na plataforma UniDoxia",
             },
-            plan: {
-              title: "Monte um plano de candidatura personalizado",
+            matched: {
+              title: "Seja conectado e apoiado",
               description:
-                "Envie históricos, testes e redações com checklists guiadas que dividem tudo em tarefas manejáveis.",
-              support: "Alertas automáticos e dicas de documentos mantêm você adiantado em cada etapa.",
-              imageAlt: "Estudante planejando tarefas de candidatura em um notebook ao ar livre",
-            },
-            collaborate: {
-              title: "Colabore com seu agente especialista",
-              description:
-                "Trabalhe ao lado de um consultor UniDoxia verificado para aprimorar documentos, alinhar prazos e estar pronto para entrevistas.",
+                "Nossa IA conecta você às universidades certas e consultores verificados que entendem seus objetivos. Receba orientação personalizada durante toda a candidatura.",
               support:
-                "Espaços compartilhados, feedback anotado e mensagens instantâneas garantem decisões transparentes e sem estresse.",
-              imageAlt: "Estudante conversando com agente educacional via smartphone",
+                "Apoio dedicado de consultores especialistas que ajudam com documentos, entrevistas e prazos.",
+              imageAlt: "Estudante recebendo orientação personalizada de consultor educacional",
             },
-            track: {
-              title: "Envie e acompanhe sem estresse",
+            offers: {
+              title: "Receba ofertas e orientação de visto",
               description:
-                "Candidate-se a várias universidades simultaneamente e acompanhe cada retorno, pedido e oferta em uma linha do tempo simples.",
-              support: "Indicadores ao vivo e lembretes proativos mostram a próxima ação para que nada seja esquecido.",
-              imageAlt: "Estudante verificando o andamento da candidatura enquanto caminha pelo campus",
-            },
-            celebrate: {
-              title: "Comemore e prepare a partida",
-              description:
-                "Aceite a oferta, finalize o visto e acesse recursos pré-embarque adaptados ao seu destino.",
+                "Receba ofertas de universidades e suporte completo de visto. Orientamos você em cada etapa, da aceitação até a chegada na universidade dos seus sonhos.",
               support:
-                "Checklists de visto, orientações de moradia e confirmações de matrícula acompanham você até o embarque.",
-              imageAlt: "Estudante comemorando a aprovação do visto com documentos em mãos",
+                "Checklists de visto, preparação para entrevistas e recursos pré-embarque garantem que você esteja pronto para esse novo capítulo.",
+              imageAlt: "Estudante comemorando aceitação com documentos de visto",
             },
           },
         },
@@ -885,9 +855,9 @@ const pt = {
           title: "Filtros de busca",
           subtitle: "Refine sua busca abaixo",
           fields: {
-            universityName: {
-              label: "Nome da universidade",
-              placeholder: "Pesquisar universidades...",
+            courseName: {
+              label: "Nome do curso",
+              placeholder: "Pesquisar cursos...",
             },
             country: {
               label: "País",
@@ -938,6 +908,15 @@ const pt = {
           },
           viewDetails: "Ver detalhes",
           visitWebsite: "Visitar site",
+        },
+        browseCourses: {
+          title: "Explorar todos os cursos",
+          subtitle: "Descubra cursos das melhores universidades do mundo",
+          loading: "Carregando cursos...",
+          loadMore: "Carregar mais cursos",
+          noCourses: "Nenhum curso disponível no momento.",
+          viewAll: "Ver todos",
+          duration: "{{months}} meses",
         },
       },
     contact: {

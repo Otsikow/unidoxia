@@ -412,8 +412,8 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={topCountries}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis dataKey="name" tick={{ fill: "hsl(var(--foreground))" }} />
+                  <YAxis tick={{ fill: "hsl(var(--foreground))" }} />
                   <Tooltip />
                   <Bar dataKey="count" fill="#3b82f6" />
                 </BarChart>
@@ -438,7 +438,24 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={(entry) => `${entry.name}: ${entry.applications}`}
+                    label={({ name, applications, cx, cy, midAngle, outerRadius }) => {
+                      const RADIAN = Math.PI / 180;
+                      const radius = outerRadius * 1.35;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                      return (
+                        <text
+                          x={x}
+                          y={y}
+                          fill="hsl(var(--foreground))"
+                          textAnchor={x > cx ? "start" : "end"}
+                          dominantBaseline="central"
+                          style={{ fontSize: '12px' }}
+                        >
+                          {`${name}: ${applications}`}
+                        </text>
+                      );
+                    }}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="applications"

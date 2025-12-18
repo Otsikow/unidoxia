@@ -99,7 +99,7 @@ const statusOptions: { label: string; value: DocumentStatusFilter }[] = [
 ];
 
 export default function PartnerDocumentRequestsPage() {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, loading: authLoading, profileLoading } = useAuth();
   const { toast } = useToast();
 
   const [documentRequests, setDocumentRequests] = useState<DocumentRequestItem[]>([]);
@@ -342,7 +342,8 @@ export default function PartnerDocumentRequestsPage() {
   };
 
   const renderContent = () => {
-    if (authLoading) {
+    // Include profileLoading to prevent "No partner profile found" flash during auth
+    if (authLoading || profileLoading) {
       return (
         <Card className="border border-slate-200 bg-white/80 dark:border-slate-800/60 dark:bg-slate-900/60">
           <CardContent className="py-16">

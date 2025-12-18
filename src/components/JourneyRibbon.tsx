@@ -1,21 +1,19 @@
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Compass, ClipboardList, MessageCircle, Radar, PlaneTakeoff } from "lucide-react";
+import { ChevronRight, UserPlus, Users, Award } from "lucide-react";
 
 interface JourneySegmentConfig {
-  key: "discover" | "plan" | "collaborate" | "submit" | "celebrate";
-  icon: typeof Compass;
+  key: "profile" | "matched" | "offers";
+  icon: typeof UserPlus;
   gradient: string;
   ctaHref?: string;
 }
 
 const SEGMENT_CONFIG: JourneySegmentConfig[] = [
-  { key: "discover", icon: Compass, gradient: "from-primary via-sky-500 to-cyan-500", ctaHref: "/auth/signup?role=student" },
-  { key: "plan", icon: ClipboardList, gradient: "from-blue-600 via-indigo-500 to-purple-500" },
-  { key: "collaborate", icon: MessageCircle, gradient: "from-purple-600 via-fuchsia-500 to-pink-500", ctaHref: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}` },
-  { key: "submit", icon: Radar, gradient: "from-amber-500 via-orange-500 to-rose-500" },
-  { key: "celebrate", icon: PlaneTakeoff, gradient: "from-emerald-500 via-teal-500 to-primary" },
+  { key: "profile", icon: UserPlus, gradient: "from-primary via-sky-500 to-cyan-500", ctaHref: "/auth/signup?role=student" },
+  { key: "matched", icon: Users, gradient: "from-purple-600 via-fuchsia-500 to-pink-500", ctaHref: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}` },
+  { key: "offers", icon: Award, gradient: "from-emerald-500 via-teal-500 to-primary" },
 ];
 
 export const JourneyRibbon = () => {

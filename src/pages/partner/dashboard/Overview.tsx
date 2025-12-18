@@ -604,7 +604,7 @@ const UniversityOverviewCard = ({
 );
 
 const PartnerOverviewPage = () => {
-  const { profile, loading: authLoading } = useAuth();
+  const { profile, loading: authLoading, profileLoading } = useAuth();
 
   const tenantId = profile?.tenant_id ?? null;
 
@@ -628,7 +628,8 @@ const PartnerOverviewPage = () => {
 
   const errorMessage = isError ? getErrorMessage(error) : null;
 
-  if (authLoading) {
+  // Include profileLoading to prevent "Partner profile incomplete" flash during auth
+  if (authLoading || profileLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <LoadingState message="Loading your partner overview..." size="lg" />

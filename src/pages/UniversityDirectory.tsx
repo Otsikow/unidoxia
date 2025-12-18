@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import type { LucideIcon } from "lucide-react";
 
-import BackButton from "@/components/BackButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,57 +75,6 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 const numberFormatter = new Intl.NumberFormat("en-US");
 
 const formatNumber = (value: number) => numberFormatter.format(Math.round(value));
-
-const StatItem = ({
-  icon: Icon,
-  label,
-  value,
-  subValue,
-  href,
-  isPrimary,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-  subValue?: string;
-  href?: string;
-  isPrimary?: boolean;
-}) => {
-  const content = (
-    <>
-      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-        <Icon className={`h-3.5 w-3.5 ${isPrimary ? "text-primary" : ""}`} />
-        {label}
-      </div>
-      <p className={`mt-2 font-semibold text-foreground ${isPrimary ? "text-lg" : "text-sm"}`}>{value}</p>
-      {subValue ? <p className="text-xs text-muted-foreground">{subValue}</p> : null}
-      {isPrimary && href ? (
-        <p className="mt-1 text-xs text-primary font-medium">Click to view →</p>
-      ) : null}
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link
-        to={href}
-        className={`rounded-lg border p-3 transition-all cursor-pointer block ${
-          isPrimary 
-            ? "bg-primary/5 border-primary/20 hover:bg-primary/10 hover:border-primary/40 hover:shadow-md" 
-            : "bg-muted/30 hover:bg-muted/50 hover:border-primary/30"
-        }`}
-      >
-        {content}
-      </Link>
-    );
-  }
-
-  return (
-    <div className="rounded-lg border bg-muted/30 p-3">
-      {content}
-    </div>
-  );
-};
 
 export default function UniversityDirectory() {
   const [universities, setUniversities] = useState<UniversityFromDB[]>([]);
@@ -303,12 +250,12 @@ export default function UniversityDirectory() {
     const highlights = university.profileDetails?.highlights || [];
 
     const cardContent = (
-      <div className="flex flex-col gap-5 p-6">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-start gap-4">
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-start gap-3">
             {/* University Logo */}
             {university.logo_url ? (
-              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl border border-border bg-background p-2">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-background p-1.5">
                 <img
                   src={university.logo_url}
                   alt={`${university.name} logo`}
@@ -316,21 +263,21 @@ export default function UniversityDirectory() {
                 />
               </div>
             ) : (
-              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-xl border border-border bg-muted">
-                <Building2 className="h-8 w-8 text-muted-foreground" />
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-muted">
+                <Building2 className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
-            <div className="flex-1 space-y-1.5">
-              <CardTitle className="text-2xl text-foreground">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base font-semibold text-foreground line-clamp-2">
                 {university.name}
               </CardTitle>
               {tagline ? (
-                <p className="text-sm text-primary font-medium">{tagline}</p>
+                <p className="text-xs text-primary font-medium line-clamp-2">{tagline}</p>
               ) : null}
-              <CardDescription className="flex flex-wrap items-center gap-2">
+              <CardDescription className="flex flex-wrap items-center gap-1 mt-0.5">
                 {locationLabel ? (
-                  <span className="flex items-center gap-1 text-sm">
-                    <MapPin className="h-4 w-4" />
+                  <span className="flex items-center gap-1 text-xs">
+                    <MapPin className="h-3 w-3" />
                     {locationLabel}
                   </span>
                 ) : null}
@@ -338,30 +285,30 @@ export default function UniversityDirectory() {
             </div>
           </div>
           {university.description ? (
-            <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">
+            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">
               {university.description}
             </p>
           ) : null}
         </div>
 
-        {/* Prominent Programs Card */}
+        {/* Compact Programs Card */}
         <Link 
           to={`/universities/${university.id}?tab=programs`}
-          className="block rounded-xl border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-4 transition-all hover:border-primary/40 hover:shadow-lg hover:from-primary/10 hover:to-primary/15 group"
+          className="block rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-2.5 transition-all hover:border-primary/40 hover:shadow-md hover:from-primary/10 hover:to-primary/15 group"
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                <GraduationCap className="h-6 w-6 text-primary" />
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <GraduationCap className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-primary">{formatNumber(university.programCount)}</p>
-                <p className="text-sm font-medium text-muted-foreground">Courses Available</p>
+                <p className="text-lg font-bold text-primary leading-tight">{formatNumber(university.programCount)}</p>
+                <p className="text-xs font-medium text-muted-foreground">Courses Available</p>
               </div>
             </div>
-            <div className="flex items-center gap-1 text-primary font-medium text-sm group-hover:translate-x-1 transition-transform">
+            <div className="flex items-center gap-0.5 text-primary font-medium text-xs group-hover:translate-x-0.5 transition-transform">
               <span>View All</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 12h14"/>
                 <path d="m12 5 7 7-7 7"/>
               </svg>
@@ -369,47 +316,51 @@ export default function UniversityDirectory() {
           </div>
         </Link>
 
-        <div className="grid grid-cols-2 gap-3">
-          <StatItem
-            icon={MapPin}
-            label="Location"
-            value={university.country || "—"}
-            subValue={university.city || undefined}
-          />
-          <StatItem
-            icon={Building2}
-            label="Partner Status"
-            value="Active"
-          />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="rounded-md border bg-muted/30 p-2">
+            <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              <MapPin className="h-2.5 w-2.5" />
+              Location
+            </div>
+            <p className="mt-1 font-medium text-foreground text-xs">{university.country || "—"}</p>
+            {university.city ? <p className="text-[10px] text-muted-foreground">{university.city}</p> : null}
+          </div>
+          <div className="rounded-md border bg-muted/30 p-2">
+            <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              <Building2 className="h-2.5 w-2.5" />
+              Partner Status
+            </div>
+            <p className="mt-1 font-medium text-foreground text-xs">Active</p>
+          </div>
         </div>
 
         {highlights.length > 0 ? (
-          <div className="rounded-lg border bg-background/60 p-4">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-md border bg-background/60 p-2">
+            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
               Highlights
             </p>
-            <ul className="mt-2 space-y-1.5 text-sm text-foreground">
-              {highlights.slice(0, 3).map((highlight, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <TrendingUp className="mt-0.5 h-3.5 w-3.5 text-primary" />
-                  <span>{highlight}</span>
+            <ul className="mt-1 space-y-1 text-xs text-foreground">
+              {highlights.slice(0, 2).map((highlight, index) => (
+                <li key={index} className="flex items-start gap-1.5">
+                  <TrendingUp className="mt-0.5 h-3 w-3 text-primary flex-shrink-0" />
+                  <span className="line-clamp-1">{highlight}</span>
                 </li>
               ))}
             </ul>
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button variant="outline" size="sm" asChild>
+        <div className="flex flex-wrap items-center justify-end gap-1.5 mt-auto">
+          <Button variant="outline" size="sm" className="h-7 text-xs px-2" asChild>
             <Link to={`/universities/${university.id}`}>
-              Explore profile
+              Explore
             </Link>
           </Button>
           {university.website ? (
-            <Button variant="secondary" size="sm" asChild>
+            <Button variant="secondary" size="sm" className="h-7 text-xs px-2" asChild>
               <a href={university.website} target="_blank" rel="noreferrer">
-                Visit website
-                <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                Website
+                <ExternalLink className="ml-1 h-3 w-3" />
               </a>
             </Button>
           ) : null}
@@ -419,9 +370,9 @@ export default function UniversityDirectory() {
 
     if (viewMode === "list") {
       return (
-        <Card className="overflow-hidden border-border/60 transition-all hover:shadow-xl">
+        <Card className="overflow-hidden border-border/60 transition-all hover:shadow-lg">
           <div className="flex flex-col gap-0 md:flex-row">
-            <div className="h-56 w-full md:h-auto md:w-72">
+            <div className="h-40 w-full md:h-auto md:w-48">
               <img
                 src={image}
                 alt={university.name}
@@ -435,15 +386,15 @@ export default function UniversityDirectory() {
     }
 
     return (
-      <Card className="overflow-hidden border-border/60 transition-all hover:shadow-xl">
-        <div className="h-48 w-full">
+      <Card className="overflow-hidden border-border/60 transition-all hover:shadow-lg h-full flex flex-col">
+        <div className="h-32 w-full flex-shrink-0">
           <img
             src={image}
             alt={university.name}
             className="h-full w-full object-cover"
           />
         </div>
-        {cardContent}
+        <div className="flex-1 flex flex-col">{cardContent}</div>
       </Card>
     );
   };
@@ -467,9 +418,11 @@ export default function UniversityDirectory() {
             <Skeleton className="h-40" />
           </div>
           <Skeleton className="h-48" />
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Skeleton className="h-96" />
-            <Skeleton className="h-96" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <Skeleton className="h-80" />
+            <Skeleton className="h-80" />
+            <Skeleton className="h-80" />
+            <Skeleton className="h-80" />
           </div>
         </div>
       </div>
@@ -484,8 +437,6 @@ export default function UniversityDirectory() {
         keywords="university directory, partner universities, college listings, international universities, student recruitment directory, university finder"
       />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
-        <BackButton variant="ghost" size="sm" wrapperClassName="mb-2" fallback="/" />
-
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -506,7 +457,13 @@ export default function UniversityDirectory() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Card className="border-border/60">
+          <Card 
+            className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40"
+            onClick={() => {
+              const listingSection = document.getElementById('university-listing');
+              listingSection?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <Building2 className="h-4 w-4 text-primary" />
@@ -526,41 +483,61 @@ export default function UniversityDirectory() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/60">
-            <CardHeader className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <GraduationCap className="h-4 w-4 text-primary" />
-                Available Courses
-              </CardTitle>
-              <CardDescription>Active degree pathways</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold text-foreground">
-                {formatNumber(summaryMetrics.totalPrograms)}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Across all partner universities
-              </p>
-            </CardContent>
-          </Card>
+          <Link to="/courses" className="block">
+            <Card className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40 h-full">
+              <CardHeader className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <GraduationCap className="h-4 w-4 text-primary" />
+                  Available Courses
+                </CardTitle>
+                <CardDescription>Active degree pathways</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold text-foreground">
+                  {formatNumber(summaryMetrics.totalPrograms)}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Across all partner universities
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
 
-          <Card className="border-border/60">
-            <CardHeader className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <Award className="h-4 w-4 text-primary" />
-                Top University
-              </CardTitle>
-              <CardDescription>Most courses available</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-bold text-foreground truncate">
-                {summaryMetrics.universityWithMostPrograms?.name || "—"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {summaryMetrics.universityWithMostPrograms?.programCount || 0} courses
-              </p>
-            </CardContent>
-          </Card>
+          {summaryMetrics.universityWithMostPrograms ? (
+            <Link to={`/universities/${summaryMetrics.universityWithMostPrograms.id}`} className="block">
+              <Card className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40 h-full">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                    <Award className="h-4 w-4 text-primary" />
+                    Top University
+                  </CardTitle>
+                  <CardDescription>Most courses available</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-lg font-bold text-foreground line-clamp-2">
+                    {summaryMetrics.universityWithMostPrograms.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {summaryMetrics.universityWithMostPrograms.programCount} courses
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          ) : (
+            <Card className="border-border/60">
+              <CardHeader className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                  <Award className="h-4 w-4 text-primary" />
+                  Top University
+                </CardTitle>
+                <CardDescription>Most courses available</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg font-bold text-foreground truncate">—</p>
+                <p className="text-sm text-muted-foreground">0 courses</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         <Card className="border-border/60">
@@ -671,7 +648,7 @@ export default function UniversityDirectory() {
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div id="university-listing" className="space-y-4 scroll-mt-8">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-2xl font-semibold text-foreground">{totalLabel}</h2>
             <p className="text-sm text-muted-foreground">
@@ -697,7 +674,7 @@ export default function UniversityDirectory() {
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sortedUniversities.map((university) => (
                 <div key={university.id}>{renderUniversityCard(university)}</div>
               ))}

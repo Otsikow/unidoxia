@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export default function ProgramsPage() {
 
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "draft">("all");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editProgram, setEditProgram] = useState<any | null>(null);
@@ -56,7 +56,113 @@ export default function ProgramsPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const ensureAttemptsRef = useRef(0);
+  // Track if we're ensuring university exists (self-healing mechanism)
+  const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
+  // Track if self-healing was attempted AND failed (not just attempted)
+  const ensureFailedRef = useRef(false);
+
+  /**
+   * Self-healing effect: If the user has a tenant but no university record,
+   * this will create one automatically using the get_or_create_university RPC.
+   * This handles cases where the university record wasn't created during signup
+   * due to race conditions, network issues, or other edge cases.
+   */
+  useEffect(() => {
+    const ensureUniversityExists = async () => {
+      // If we already failed self-healing, don't retry automatically
+      if (ensureFailedRef.current) return;
+
+      // Avoid infinite loops - stop after two attempts
+      if (ensureAttemptsRef.current >= 2) {
+        ensureFailedRef.current = true;
+        return;
+      }
+      
+      // If we're already ensuring or loading, wait
+      if (isEnsuringUniversity) return;
+      
+      // Conditions for self-healing:
+      // 1. Dashboard data has loaded (not loading)
+      // 2. User has a tenant_id (from profile)
+      // 3. No university found for that tenant
+      // 4. User is authenticated with profile data
+      const profileTenantId = profile?.tenant_id;
+      const hasValidProfile = profile && profileTenantId;
+      const universityMissing = !data?.university?.id;
+      const shouldEnsure = !isLoading && hasValidProfile && universityMissing;
+
+      if (!shouldEnsure) return;
+
+      ensureAttemptsRef.current += 1;
+      setIsEnsuringUniversity(true);
+
+      try {
+        console.log("[Programs] University not found for tenant, attempting to create one...", {
+          tenantId: profileTenantId,
+          profileEmail: profile.email,
+        });
+
+        // Use the get_or_create_university RPC which safely handles race conditions
+        const { data: newUniversityId, error: rpcError } = await supabase.rpc(
+          "get_or_create_university",
+          {
+            p_tenant_id: profileTenantId,
+            p_name: profile.full_name ? `${profile.full_name}'s University` : "University",
+            p_country: profile.country || "Unknown",
+            p_contact_name: profile.full_name || null,
+            p_contact_email: profile.email || user?.email || null,
+          }
+        );
+
+        if (rpcError) {
+          console.error("[Programs] Failed to ensure university exists:", rpcError);
+          ensureFailedRef.current = true;
+          toast({
+            title: "Account setup incomplete",
+            description: "There was an issue setting up your university profile. Please contact support if this persists.",
+            variant: "destructive",
+          });
+          setIsEnsuringUniversity(false);
+          return;
+        }
+
+        console.log("[Programs] University ensured successfully:", newUniversityId);
+
+        // Refetch dashboard data to pick up the new/existing university
+        // Keep loading state until refetch completes
+        const result = await refetch();
+        const hasUniversity = Boolean(result?.data?.university?.id);
+
+        if (!hasUniversity && ensureAttemptsRef.current >= 2) {
+          ensureFailedRef.current = true;
+          toast({
+            title: "Setup is taking longer than expected",
+            description: "We couldn't attach your university profile. Please refresh or contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "University profile ready",
+          description: "Your university profile has been set up. You can now manage courses.",
+        });
+        
+      } catch (err) {
+        console.error("[Programs] Unexpected error ensuring university:", err);
+        ensureFailedRef.current = true;
+      } finally {
+        // Only hide loading AFTER refetch completes successfully or we gave up
+        setIsEnsuringUniversity(false);
+      }
+    };
+
+    void ensureUniversityExists();
+  }, [isLoading, profile, data?.university?.id, user?.email, refetch, toast, isEnsuringUniversity]);
 
   const programs = data?.programs ?? [];
 
@@ -197,6 +303,78 @@ export default function ProgramsPage() {
     }
   };
 
+  /** SAVE DRAFT */
+  const handleSaveDraft = async (values: Partial<ProgramFormValues>) => {
+    if (!tenantId || !universityId) {
+      toast({
+        title: "Missing account information",
+        description: "Could not verify university account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingDraft(true);
+
+    try {
+      const basePayload = {
+        name: values.name?.trim() || "Untitled Draft",
+        level: values.level?.trim() || "Master",
+        discipline: values.discipline?.trim() || "",
+        duration_months: values.durationMonths || 12,
+        tuition_currency: values.tuitionCurrency || "USD",
+        tuition_amount: values.tuitionAmount || 0,
+        app_fee: values.applicationFee ?? null,
+        seats_available: values.seatsAvailable ?? null,
+        ielts_overall: values.ieltsOverall ?? null,
+        toefl_overall: values.toeflOverall ?? null,
+        intake_months: values.intakeMonths?.length ? values.intakeMonths.sort((a, b) => a - b) : [9],
+        entry_requirements: values.entryRequirements
+          ? values.entryRequirements
+              .split(/\r?\n/)
+              .map((l) => l.trim())
+              .filter(Boolean)
+          : [],
+        description: values.description?.trim() || null,
+        active: false, // Drafts are not active by default
+        is_draft: true,
+        tenant_id: tenantId,
+        university_id: universityId,
+      };
+
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
+
+      const { error } = await supabase.from("programs").insert(payloadWithImage);
+
+      if (error) {
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
+            .from("programs")
+            .insert(basePayload);
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
+      }
+
+      toast({ 
+        title: "Draft saved",
+        description: "You can continue editing this course later from your course list."
+      });
+      setCreateOpen(false);
+      // Trigger a background refresh so the list updates without blocking the UI
+      void refetch();
+    } catch (err) {
+      toast({
+        title: "Unable to save draft",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   /** UPDATE PROGRAM */
   const handleUpdate = async (values: ProgramFormValues) => {
     if (!editProgram) return;
@@ -213,6 +391,9 @@ export default function ProgramsPage() {
     setIsSubmitting(true);
 
     try {
+      // When saving/updating a course, mark it as no longer a draft
+      const wasDraft = editProgram.is_draft === true;
+      
       const basePayload = {
         name: values.name.trim(),
         level: values.level.trim(),
@@ -233,6 +414,7 @@ export default function ProgramsPage() {
           : [],
         description: values.description?.trim() || null,
         active: values.active,
+        is_draft: false, // Mark as published when saving
       };
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
@@ -259,7 +441,10 @@ export default function ProgramsPage() {
         }
       }
 
-      toast({ title: "Course updated" });
+      toast({ 
+        title: wasDraft ? "Course published" : "Course updated",
+        description: wasDraft ? "Your draft has been published successfully." : undefined
+      });
       setEditProgram(null);
       await refetch();
     } catch (err) {
@@ -270,6 +455,88 @@ export default function ProgramsPage() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  /** UPDATE DRAFT (Save changes to an existing draft without publishing) */
+  const handleUpdateDraft = async (values: Partial<ProgramFormValues>) => {
+    if (!editProgram) return;
+
+    if (!tenantId || !universityId) {
+      toast({
+        title: "Missing account information",
+        description: "Could not verify university account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingDraft(true);
+
+    try {
+      const basePayload = {
+        name: values.name?.trim() || editProgram.name || "Untitled Draft",
+        level: values.level?.trim() || editProgram.level || "Master",
+        discipline: values.discipline?.trim() || editProgram.discipline || "",
+        duration_months: values.durationMonths || editProgram.duration_months || 12,
+        tuition_currency: values.tuitionCurrency || editProgram.tuition_currency || "USD",
+        tuition_amount: values.tuitionAmount ?? editProgram.tuition_amount ?? 0,
+        app_fee: values.applicationFee ?? editProgram.app_fee ?? null,
+        seats_available: values.seatsAvailable ?? editProgram.seats_available ?? null,
+        ielts_overall: values.ieltsOverall ?? editProgram.ielts_overall ?? null,
+        toefl_overall: values.toeflOverall ?? editProgram.toefl_overall ?? null,
+        intake_months: values.intakeMonths?.length 
+          ? values.intakeMonths.sort((a, b) => a - b) 
+          : editProgram.intake_months ?? [9],
+        entry_requirements: values.entryRequirements
+          ? values.entryRequirements
+              .split(/\r?\n/)
+              .map((l) => l.trim())
+              .filter(Boolean)
+          : editProgram.entry_requirements ?? [],
+        description: values.description?.trim() || editProgram.description || null,
+        active: false, // Drafts stay inactive
+        is_draft: true, // Keep as draft
+      };
+
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl ?? editProgram.image_url };
+
+      const { error } = await supabase
+        .from("programs")
+        .update(payloadWithImage)
+        .eq("id", editProgram.id)
+        .eq("university_id", universityId)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
+            .from("programs")
+            .update(basePayload)
+            .eq("id", editProgram.id)
+            .eq("university_id", universityId)
+            .eq("tenant_id", tenantId);
+
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
+      }
+
+      toast({ 
+        title: "Draft saved",
+        description: "Your changes have been saved."
+      });
+      setEditProgram(null);
+      await refetch();
+    } catch (err) {
+      toast({
+        title: "Unable to save draft",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
@@ -356,6 +623,32 @@ export default function ProgramsPage() {
     return <LoadingState message="Loading courses..." />;
   }
 
+  // Show loading while ensuring university exists (self-healing)
+  if (isEnsuringUniversity) {
+    return <LoadingState message="Setting up your university profile..." />;
+  }
+
+  // If self-healing failed (not just attempted), show helpful message
+  if (!isLoading && !isEnsuringUniversity && ensureFailedRef.current && !universityId && profile?.tenant_id) {
+    return (
+      <StatePlaceholder
+        title="University profile setup required"
+        description="We couldn't verify your university account. This might be a temporary issue. Please try refreshing the page or contact support if the problem persists."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => {
+              ensureFailedRef.current = false;
+              void refetch();
+            }}
+          >
+            Retry setup
+          </Button>
+        }
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -421,14 +714,17 @@ export default function ProgramsPage() {
         <ProgramForm
           initialValues={createInitialValues}
           onSubmit={handleCreate}
+          onSaveDraft={handleSaveDraft}
           onCancel={() => setCreateOpen(false)}
           isSubmitting={isSubmitting}
+          isSavingDraft={isSavingDraft}
           submitLabel="Create course"
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
           title="Create New Course"
           description="Add a new academic course to your catalogue."
+          showSaveDraft={true}
         />
       )}
 
@@ -436,14 +732,20 @@ export default function ProgramsPage() {
         <ProgramForm
           initialValues={editInitialValues}
           onSubmit={handleUpdate}
+          onSaveDraft={editProgram.is_draft ? handleUpdateDraft : undefined}
           onCancel={() => setEditProgram(null)}
           isSubmitting={isSubmitting}
-          submitLabel="Save changes"
+          isSavingDraft={isSavingDraft}
+          submitLabel={editProgram.is_draft ? "Publish course" : "Save changes"}
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
-          title="Edit Course"
-          description="Update the details for this course."
+          title={editProgram.is_draft ? "Complete Draft Course" : "Edit Course"}
+          description={editProgram.is_draft 
+            ? "Complete the details and publish this course, or save your changes as a draft."
+            : "Update the details for this course."
+          }
+          showSaveDraft={editProgram.is_draft === true}
         />
       )}
 

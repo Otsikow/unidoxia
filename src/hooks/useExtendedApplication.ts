@@ -8,9 +8,15 @@ import type {
   TestScore,
   TimelineEvent,
 } from "@/components/university/applications/ApplicationReviewDialog";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  buildMissingRpcError,
+  isRpcMissingError,
+  isRpcUnavailable,
+  markRpcMissing,
+} from "@/lib/supabaseRpc";
 
 const STORAGE_BUCKET = "student-documents";
-const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
 
 interface UseExtendedApplicationReturn {
   extendedApplication: ExtendedApplication | null;
@@ -22,29 +28,9 @@ interface UseExtendedApplicationReturn {
   updateLocalNotes: (notes: string) => void;
 }
 
-/* ======================================================
-   Helpers
-====================================================== */
-
-const getPublicUrl = (storagePath: string | null): string | null => {
-  if (!storagePath) return null;
-  
-  // Try application-documents bucket first (most common for application docs)
-  const { data: appData } = supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .getPublicUrl(storagePath);
-  
-  if (appData?.publicUrl) {
-    return appData.publicUrl;
-  }
-  
-  // Fallback to student-documents bucket
-  const { data: studentData } = supabase.storage
-    .from(STORAGE_BUCKET)
-    .getPublicUrl(storagePath);
-  
-  return studentData?.publicUrl ?? null;
-};
+// NOTE: The "student-documents" bucket is private, so public URLs are not reliable.
+// University partners should use signed URLs for document viewing.
+const getPublicUrl = (_storagePath: string | null): string | null => null;
 
 const parseTimelineJson = (raw: unknown): TimelineEvent[] | null => {
   if (!Array.isArray(raw)) return null;
@@ -89,6 +75,8 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     useState<ExtendedApplication | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { profile } = useAuth();
+  const tenantId = profile?.tenant_id ?? null;
 
   /* ============================
      Fetch Extended Application
@@ -162,18 +150,24 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         console.log("[useExtendedApplication] Fetching student:", appData.student_id);
         
         // Try the security definer function first (most reliable for university partners)
-        const { data: rpcStudentData, error: rpcError } = await supabase.rpc(
-          "get_student_details_for_application" as any,
-          { p_application_id: applicationId }
-        );
+        const rpcName = "get_student_details_for_application";
+        const rpcResult = isRpcUnavailable(rpcName)
+          ? { data: null, error: buildMissingRpcError(rpcName) }
+          : await supabase.rpc(rpcName as any, {
+              p_application_id: applicationId,
+            });
+
+        if (isRpcMissingError(rpcResult.error)) {
+          markRpcMissing(rpcName, rpcResult.error);
+        }
 
         let studentData: any = null;
         let studentError: any = null;
 
-        const rpcStudentArray = rpcStudentData as any[] | null;
-        if (!rpcError && rpcStudentArray && rpcStudentArray.length > 0) {
+        const rpcStudentArray = rpcResult.data as any[] | null;
+        if (!rpcResult.error && rpcStudentArray && rpcStudentArray.length > 0) {
           // Use RPC data - transform to expected format
-          const rpcRow = rpcStudentData[0];
+          const rpcRow = rpcStudentArray[0];
           studentData = {
             id: rpcRow.student_id,
             profile_id: rpcRow.profile_id,
@@ -202,10 +196,10 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           // Fallback to direct query
           console.log(
             "[useExtendedApplication] RPC not available or failed, trying direct query:",
-            rpcError?.message
+            rpcResult.error?.message
           );
           
-          const directResult = await supabase
+          let studentQuery = supabase
             .from("students")
             .select(`
               id,
@@ -231,8 +225,13 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
                 avatar_url
               )
             `)
-            .eq("id", appData.student_id)
-            .single();
+            .eq("id", appData.student_id);
+
+          if (tenantId) {
+            studentQuery = studentQuery.eq("tenant_id", tenantId);
+          }
+
+          const directResult = await studentQuery.single();
 
           studentData = directResult.data;
           studentError = directResult.error;
@@ -303,19 +302,25 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             "[useExtendedApplication] Student not found via primary queries, attempting fallback RPC hydration",
           );
 
-          const { data: fallbackData, error: fallbackError } = await supabase.rpc(
-            "get_students_for_university_applications" as any,
-            { p_student_ids: [appData.student_id] },
-          );
+          const fallbackRpcName = "get_students_for_university_applications";
+          const fallbackResult = isRpcUnavailable(fallbackRpcName)
+            ? { data: null, error: buildMissingRpcError(fallbackRpcName) }
+            : await supabase.rpc(fallbackRpcName as any, {
+                p_student_ids: [appData.student_id],
+              });
 
-          if (fallbackError) {
+          if (isRpcMissingError(fallbackResult.error)) {
+            markRpcMissing(fallbackRpcName, fallbackResult.error);
+          }
+
+          if (fallbackResult.error) {
             console.warn(
               "[useExtendedApplication] Fallback student RPC failed:",
-              fallbackError.message,
+              fallbackResult.error.message,
             );
           }
 
-          const fallbackRow = (fallbackData as any[] | null)?.[0];
+          const fallbackRow = (fallbackResult.data as any[] | null)?.[0];
           if (fallbackRow) {
             studentDetails = {
               id: fallbackRow.id ?? appData.student_id,
@@ -350,6 +355,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       --------------------------- */
       let documents: ApplicationDocument[] = [];
 
+      // First, try to fetch from application_documents (linked to application)
       console.log("[useExtendedApplication] Fetching documents for application:", applicationId);
       const { data: appDocs, error: docsError } = await supabase
         .from("application_documents")
@@ -371,7 +377,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       }
 
       if (appDocs && appDocs.length > 0) {
-        console.log("[useExtendedApplication] Documents loaded:", appDocs.length);
+        console.log("[useExtendedApplication] Application documents loaded:", appDocs.length);
         documents = appDocs.map((doc) => ({
           id: doc.id,
           documentType: doc.document_type,
@@ -379,12 +385,55 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           fileName: doc.storage_path?.split("/").pop() ?? "Unknown",
           mimeType: doc.mime_type,
           fileSize: doc.file_size,
-          verified: doc.verified ?? false,
+          reviewStatus: (doc.verified ? "verified" : "pending") as any,
           verificationNotes: doc.verification_notes ?? null,
           uploadedAt: doc.uploaded_at ?? "",
           publicUrl: getPublicUrl(doc.storage_path),
+          source: "application_documents" as const,
         }));
-      } else {
+      }
+
+      // If no application_documents, fall back to student_documents (linked to student)
+      if (documents.length === 0 && appData.student_id) {
+        console.log("[useExtendedApplication] No application documents, checking student documents for student:", appData.student_id);
+        const { data: studentDocs, error: studentDocsError } = await supabase
+          .from("student_documents")
+          .select(`
+            id,
+            document_type,
+            storage_path,
+            file_name,
+            mime_type,
+            file_size,
+            verified_status,
+            verification_notes,
+            created_at
+          `)
+          .eq("student_id", appData.student_id);
+
+        if (studentDocsError) {
+          console.warn("[useExtendedApplication] Student documents fetch warning:", studentDocsError);
+        }
+
+        if (studentDocs && studentDocs.length > 0) {
+          console.log("[useExtendedApplication] Student documents loaded:", studentDocs.length);
+          documents = studentDocs.map((doc) => ({
+            id: doc.id,
+            documentType: doc.document_type,
+            storagePath: doc.storage_path,
+            fileName: doc.file_name ?? doc.storage_path?.split("/").pop() ?? "Unknown",
+            mimeType: doc.mime_type,
+            fileSize: doc.file_size,
+            reviewStatus: (doc.verified_status ?? "pending") as any,
+            verificationNotes: doc.verification_notes ?? null,
+            uploadedAt: doc.created_at ?? "",
+            publicUrl: getPublicUrl(doc.storage_path),
+            source: "student_documents" as const,
+          }));
+        }
+      }
+
+      if (documents.length === 0) {
         console.log("[useExtendedApplication] No documents found for application");
       }
 

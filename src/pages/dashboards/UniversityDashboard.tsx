@@ -958,7 +958,24 @@ export default function UniversityDashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent, cx, cy, midAngle, outerRadius }) => {
+                        const RADIAN = Math.PI / 180;
+                        const radius = outerRadius * 1.35;
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                        return (
+                          <text
+                            x={x}
+                            y={y}
+                            fill="hsl(var(--foreground))"
+                            textAnchor={x > cx ? "start" : "end"}
+                            dominantBaseline="central"
+                            style={{ fontSize: '12px' }}
+                          >
+                            {`${name}: ${(percent * 100).toFixed(0)}%`}
+                          </text>
+                        );
+                      }}
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
@@ -1001,8 +1018,8 @@ export default function UniversityDashboard() {
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={statusCounts}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--foreground))" }} />
+                    <YAxis tick={{ fill: "hsl(var(--foreground))" }} />
                     <Tooltip />
                     <Bar dataKey="value" fill="#3b82f6">
                       {statusCounts.map((entry, index) => (

@@ -467,98 +467,61 @@ const de = {
       },
       journeyRibbon: {
         items: {
-          discover: {
-            stage: "Entdecken",
-            metricValue: "200+",
-            metricLabel: "Partneruniversitäten",
+          profile: {
+            stage: "Schritt 1",
+            metricValue: "5 Min",
+            metricLabel: "zum Loslegen",
             description:
-              "KI-gestützte Empfehlungen zeigen Ihnen sofort die bestpassenden Hochschulen, sobald Sie sich anmelden.",
-            ctaLabel: "Bewerbung starten",
+              "Erstellen Sie Ihr Profil mit akademischem Hintergrund, Dokumenten und Studienwünschen – alles an einem Ort.",
+            ctaLabel: "Profil starten",
           },
-          plan: {
-            stage: "Planen",
-            metricValue: "5000+",
-            metricLabel: "Personalisierte Pläne erstellt",
-            description:
-              "Checklisten und intelligente Erinnerungen halten tausende Studierende vom Zeugnis bis zum Motivationsschreiben organisiert.",
-            ctaLabel: "",
-          },
-          collaborate: {
-            stage: "Zusammenarbeiten",
+          matched: {
+            stage: "Schritt 2",
             metricValue: "24h",
-            metricLabel: "Durchschnittliche Agentenantwort",
+            metricLabel: "durchschnittliche Matching-Zeit",
             description:
-              "Verifizierte Berater überarbeiten Dokumente, beantworten Fragen und stimmen Zeitpläne in Echtzeit über alle Kanäle ab.",
-            ctaLabel: "Agenten kennenlernen",
+              "Werden Sie mit verifizierten Beratern und Universitäten gematcht, die zu Ihren Zielen passen. Erhalten Sie persönliche Begleitung bei jedem Schritt.",
+            ctaLabel: "Gematcht werden",
           },
-          submit: {
-            stage: "Einreichen",
+          offers: {
+            stage: "Schritt 3",
             metricValue: "95%",
-            metricLabel: "Erfolgsquote",
+            metricLabel: "Visa-Erfolgsquote",
             description:
-              "Zentralisierte Einreichungen mit proaktiven Hinweisen sorgen dafür, dass Bewerbungen ohne Fristversäumnis vorankommen.",
-            ctaLabel: "",
-          },
-          celebrate: {
-            stage: "Feiern",
-            metricValue: "50+",
-            metricLabel: "Vertretene Länder",
-            description:
-              "Visa-Checklisten und Abreisevorbereitung führen Studierende mit Zuversicht an Campus weltweit.",
+              "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie von der Zusage bis zur Ankunft.",
             ctaLabel: "",
           },
         },
       },
       storyboard: {
-        heading: "So vereinfacht UniDoxia jeden Schritt",
+        heading: "Ihr Weg in 3 einfachen Schritten",
         subheading:
-          "Erleben Sie Schritt für Schritt, wie unsere Plattform und unser Team Ihre Bewerbung von der Idee bis zur Ankunft begleiten.",
+          "UniDoxia macht das Auslandsstudium unkompliziert. So begleiten wir Sie von Anfang bis zum Erfolg.",
         stepLabel: "Schritt {{number}}",
         steps: {
-          discover: {
-            title: "Finden Sie Ihre passenden Kurse",
+          profile: {
+            title: "Profil starten",
             description:
-              "Nennen Sie Ihre Ziele und Leistungen – UniDoxia kuratiert sofort Universitäten, Kurse und Stipendien, die zu Ihnen passen.",
+              "Erstellen Sie Ihr Profil mit akademischem Hintergrund, Testergebnissen und Studienwünschen. Laden Sie Ihre Dokumente einmal hoch und nutzen Sie sie für alle Bewerbungen.",
             support:
-              "Intelligente Filter und KI-Empfehlungen nehmen das Rätselraten ab, damit Sie in Minuten eine Shortlist erstellen.",
-            imageAlt:
-              "Studierende überprüft Studienkurse bei einem Campusbesuch",
+              "Intelligente Checklisten und Dokumenttipps helfen Ihnen, ein vollständiges Profil zu erstellen, das Universitäten überzeugt.",
+            imageAlt: "Studierende erstellt ihr Profil auf der UniDoxia-Plattform",
           },
-          plan: {
-            title: "Erstellen Sie einen persönlichen Bewerbungsplan",
+          matched: {
+            title: "Gematcht und unterstützt werden",
             description:
-              "Laden Sie Zeugnisse, Testergebnisse und Texte mit geführten Checklisten hoch, die alles in handliche Aufgaben aufteilen.",
+              "Unsere KI verbindet Sie mit den passenden Universitäten und verifizierten Beratern, die Ihre Ziele verstehen. Erhalten Sie persönliche Begleitung während Ihrer gesamten Bewerbung.",
             support:
-              "Automatische Erinnerungen und Dokumenttipps halten Sie vor jeder Frist auf Kurs.",
-            imageAlt:
-              "Studierende plant Bewerbungsaufgaben im Freien am Laptop",
+              "Engagierte Unterstützung von erfahrenen Beratern, die Ihnen bei Dokumenten, Interviews und Fristen helfen.",
+            imageAlt: "Studierende erhält persönliche Beratung von einem Bildungsberater",
           },
-          collaborate: {
-            title: "Arbeiten Sie mit Ihrem Expert:innen-Agenten zusammen",
+          offers: {
+            title: "Angebote und Visa-Beratung erhalten",
             description:
-              "Arbeiten Sie mit einem verifizierten UniDoxia-Berater zusammen, um Dokumente zu verfeinern, Zeitpläne abzustimmen und interviewbereit zu bleiben.",
+              "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie bei jedem Schritt von der Zusage bis zur Ankunft an Ihrer Traumuniversität.",
             support:
-              "Gemeinsame Arbeitsbereiche, kommentiertes Feedback und Sofortnachrichten sorgen für transparente Entscheidungen.",
-            imageAlt:
-              "Studierende kommuniziert mit einem Bildungsberater über das Smartphone",
-          },
-          track: {
-            title: "Einreichen & verfolgen ohne Stress",
-            description:
-              "Bewerben Sie sich gleichzeitig bei mehreren Universitäten und verfolgen Sie jede Rückmeldung und jedes Angebot auf einer Zeitachse.",
-            support:
-              "Live-Statusanzeigen und proaktive Hinweise zeigen den nächsten Schritt, damit nichts untergeht.",
-            imageAlt:
-              "Studierende verfolgt den Bewerbungsstatus auf dem Campus",
-          },
-          celebrate: {
-            title: "Feiern & Abreise vorbereiten",
-            description:
-              "Nehmen Sie Ihr Angebot an, schließen Sie Visa-Schritte ab und erhalten Sie zielgenaue Vorbereitungsressourcen.",
-            support:
-              "Visa-Checklisten, Wohnungsrat und Einschreibe-Bestätigungen begleiten Sie bis zum Abflug.",
-            imageAlt:
-              "Studierende feiert die Visa-Genehmigung mit Dokumenten in der Hand",
+              "Visa-Checklisten, Interviewvorbereitung und Abreiseressourcen stellen sicher, dass Sie bereit für Ihr neues Kapitel sind.",
+            imageAlt: "Studierende feiert die Zusage mit Visa-Dokumenten",
           },
         },
       },
@@ -774,9 +737,9 @@ const de = {
         title: "Suchfilter",
         subtitle: "Verfeinern Sie Ihre Suche unten",
         fields: {
-          universityName: {
-            label: "Name der Universität",
-            placeholder: "Universitäten suchen...",
+          courseName: {
+            label: "Kursname",
+            placeholder: "Kurse suchen...",
           },
           country: {
             label: "Land",
@@ -827,6 +790,15 @@ const de = {
         },
         viewDetails: "Details ansehen",
         visitWebsite: "Website besuchen",
+      },
+      browseCourses: {
+        title: "Alle Kurse durchsuchen",
+        subtitle: "Entdecken Sie Kurse von Top-Universitäten weltweit",
+        loading: "Kurse werden geladen...",
+        loadMore: "Mehr Kurse laden",
+        noCourses: "Derzeit keine Kurse verfügbar.",
+        viewAll: "Alle anzeigen",
+        duration: "{{months}} Monate",
       },
     },
     contact: {

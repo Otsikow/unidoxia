@@ -988,8 +988,8 @@ const AdminAdmissionsOversight = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={topUniversities}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={70} />
-                    <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }} interval={0} angle={-20} textAnchor="end" height={70} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }} />
                     <Tooltip formatter={(value: number) => [`${value} applications`, "Applications"]} />
                     <Bar dataKey="total" radius={[6, 6, 0, 0]} fill="#6366F1" />
                   </BarChart>

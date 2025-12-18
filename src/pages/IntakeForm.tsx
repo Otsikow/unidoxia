@@ -1,13 +1,10 @@
 import StudentIntakeForm from '@/components/forms/StudentIntakeForm';
-import BackButton from '@/components/BackButton';
 import professionalConsultant from '@/assets/professional-consultant.png';
 
 export default function IntakeForm() {
   return (
     <div className="min-h-screen bg-gradient-subtle py-8">
       <div className="container mx-auto px-4 space-y-6">
-        <BackButton variant="ghost" size="sm" fallback="/" />
-        
         <div className="flex flex-col md:flex-row items-center gap-8 max-w-6xl mx-auto mb-8">
           <div className="flex-1 text-center md:text-left space-y-4 animate-fade-in">
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Student Intake Form</h1>
