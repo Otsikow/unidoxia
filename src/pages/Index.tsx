@@ -19,19 +19,18 @@ import {
   FileCheck,
   Clock,
   Sparkles,
-  Calculator,
 } from "lucide-react";
 
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
 import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarquee";
+import { CORE_MESSAGE } from "@/lib/brand";
 
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
-import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
 import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
@@ -182,15 +181,13 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <SEO
-        title="UniDoxia – Your Path to International Education"
-        description="Guided study abroad applications with real human support, verified agents, and AI-powered tools."
+        title="UniDoxia - Your Path to International Education"
+        description={CORE_MESSAGE}
+        keywords="study abroad, university applications, international education, AI tools, visa calculator"
       />
 
       {/* ---------- HERO ---------- */}
-      <section
-        id="home"
-        className="hero-video-container scroll-mt-20"
-      >
+      <section id="home" className="hero-video-container scroll-mt-20">
         {shouldRenderHeroVideo ? (
           <>
             <div
@@ -219,28 +216,35 @@ const Index = () => {
 
         <div className="hero-video-overlay" />
 
-        <div className="hero-content text-center">
+        <div className="hero-content">
+          <div className="mb-6 inline-flex max-w-3xl items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-center text-sm font-semibold text-white shadow-lg ring-1 ring-white/30 backdrop-blur sm:text-base">
+            <Sparkles className="h-4 w-4 flex-shrink-0" aria-hidden />
+            <span className="leading-relaxed">{CORE_MESSAGE}</span>
+          </div>
+
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"
             className="mx-auto mb-6 h-24 brightness-0 invert"
           />
 
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 text-center">
             UniDoxia: Get accepted into global universities — without
             guesswork or hidden fees.
           </h1>
 
-          <p className="text-xl text-white/90 mb-10">
+          <p className="text-xl text-white/90 mb-10 text-center">
             From Africa to the world — we personally guide your study
             abroad journey.
           </p>
 
-          <Button asChild size="lg">
-            <Link to="/auth/signup?role=student">
-              Start Your Study Journey
-            </Link>
-          </Button>
+          <div className="text-center">
+            <Button asChild size="lg">
+              <Link to="/auth/signup?role=student">
+                Start Your Study Journey
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
