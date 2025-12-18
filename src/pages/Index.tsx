@@ -191,9 +191,7 @@ const Index = () => {
         {shouldRenderHeroVideo ? (
           <>
             <div
-              className={`hero-fallback ${
-                heroVideoReady ? "is-hidden" : ""
-              }`}
+              className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
               aria-hidden
             />
             <video
