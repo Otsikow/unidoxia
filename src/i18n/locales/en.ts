@@ -350,7 +350,7 @@ const en = {
             suffix: "",
           },
           description:
-            "Connect with top universities, track applications in real-time, and receive expert guidance from verified agents.",
+            "We guide African students step-by-step — from course selection to visa approval. No guesswork. No hidden fees.",
           ctas: {
             students: {
               badge: "Students",
