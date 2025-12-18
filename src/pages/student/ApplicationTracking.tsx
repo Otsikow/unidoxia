@@ -62,8 +62,8 @@ interface Application {
         city: string;
         country: string;
         logo_url: string | null;
-      };
-    };
+      } | null;
+    } | null;
     agent_id: string | null;
     intake?: {
       id: string;
@@ -508,11 +508,14 @@ export default function ApplicationTracking() {
   const filtered = applications.filter((a) => {
     const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
     const term = searchTerm.toLowerCase();
+    const programName = a.program?.name?.toLowerCase() ?? '';
+    const universityName = a.program?.university?.name?.toLowerCase() ?? '';
+    const universityCountry = a.program?.university?.country?.toLowerCase() ?? '';
     const matchesSearch =
       !term ||
-      a.program.name.toLowerCase().includes(term) ||
-      a.program.university.name.toLowerCase().includes(term) ||
-      a.program.university.country.toLowerCase().includes(term);
+      programName.includes(term) ||
+      universityName.includes(term) ||
+      universityCountry.includes(term);
     return matchesStatus && matchesSearch;
   });
 
@@ -678,14 +681,14 @@ export default function ApplicationTracking() {
                       <GraduationCap className="h-6 w-6 text-primary mt-1 shrink-0" />
                       <div className="min-w-0 flex-1">
                         <h3 className="font-bold text-xl break-words">
-                          {app.program.name}
+                          {app.program?.name ?? 'Application'}
                         </h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <MapPin className="h-4 w-4 shrink-0" />
                           <span className="break-words">
-                            {app.program.university.name} •{' '}
-                            {app.program.university.city && `${app.program.university.city}, `}
-                            {app.program.university.country}
+                            {app.program?.university?.name ?? 'University'} •{' '}
+                            {app.program?.university?.city && `${app.program.university.city}, `}
+                            {app.program?.university?.country ?? 'N/A'}
                           </span>
                         </div>
                       </div>
