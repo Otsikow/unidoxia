@@ -273,6 +273,36 @@ export default function MessagesDashboard() {
     void fetchConversations();
   }, [fetchConversations]);
 
+  // Auto-populate conversations with available contacts on mount
+  useEffect(() => {
+    if (isLoading || !profile?.id) return;
+    
+    const autoPopulateConversations = async () => {
+      try {
+        // Fetch all contacts the user is allowed to message
+        const { fetchMessagingContacts } = await import('@/lib/messaging/contactsService');
+        const contacts = await fetchMessagingContacts();
+        
+        // Create conversations with each contact (will return existing if already exists)
+        for (const contact of contacts) {
+          try {
+            await getOrCreateConversation(contact.id);
+          } catch (err) {
+            // Silently ignore individual failures - some contacts might not be allowed
+            console.debug('Could not create conversation with:', contact.full_name, err);
+          }
+        }
+        
+        // Refresh conversations list after auto-populating
+        await fetchConversations();
+      } catch (err) {
+        console.error('Error auto-populating conversations:', err);
+      }
+    };
+    
+    void autoPopulateConversations();
+  }, [isLoading, profile?.id, getOrCreateConversation, fetchConversations]);
+
   // Handle starting a conversation from URL parameter (e.g., from application review)
   useEffect(() => {
     if (isLoading) return;
