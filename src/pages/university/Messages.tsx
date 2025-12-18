@@ -83,7 +83,7 @@ export default function UniversityMessagesPage() {
             University Messages
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Message students and referring agents about submitted applications.
+            Message students, referring agents, or contact UniDoxia support.
           </p>
         </div>
       </header>
