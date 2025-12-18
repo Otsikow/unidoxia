@@ -7,9 +7,25 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
-import { Users, FileCheck, Clock, Sparkles, Calculator, Check, Minus } from "lucide-react";
+import {
+  Users,
+  FileCheck,
+  Clock,
+  Sparkles,
+  Calculator,
+  ShieldCheck,
+  HandCoins,
+  BadgeCheck,
+  Check,
+  Minus,
+} from "lucide-react";
 
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
@@ -29,13 +45,29 @@ import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
 import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
+import oxfordImage from "@/assets/university-oxford.jpg";
+import torontoImage from "@/assets/university-toronto.jpg";
+import germanyImage from "@/assets/destinations/germany.jpeg";
+import professionalConsultant from "@/assets/professional-consultant.png";
+import studentWelcome from "@/assets/student-welcome.png";
+import agentStudentConsulting from "@/assets/agent-student-consulting.png";
 
 /* ---------- Lazy Loaded Sections ---------- */
-const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
-const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
-const AIFeeCalculator = lazy(() => import("@/components/landing/AIFeeCalculator"));
-const WhoUniDoxiaIsForSection = lazy(() => import("@/components/landing/WhoUniDoxiaIsForSection"));
-const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
+const FeaturedUniversitiesSection = lazy(
+  () => import("@/components/landing/FeaturedUniversitiesSection")
+);
+const StoryboardSection = lazy(
+  () => import("@/components/landing/StoryboardSection")
+);
+const AIFeeCalculator = lazy(
+  () => import("@/components/landing/AIFeeCalculator")
+);
+const WhoUniDoxiaIsForSection = lazy(
+  () => import("@/components/landing/WhoUniDoxiaIsForSection")
+);
+const ZoeExperienceSection = lazy(
+  () => import("@/components/landing/ZoeExperienceSection")
+);
 const ContactForm = lazy(() =>
   import("@/components/ContactForm").then(m => ({ default: m.ContactForm }))
 );
@@ -50,7 +82,10 @@ const SectionLoader = () => (
       </div>
       <div className="grid gap-6 md:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-64 bg-muted animate-pulse rounded-xl" />
+          <div
+            key={i}
+            className="h-64 bg-muted animate-pulse rounded-xl"
+          />
         ))}
       </div>
     </div>
@@ -83,61 +118,29 @@ const Index = () => {
     }
   }, []);
 
-  /* ---------- Hero Video Preload & Autoplay ---------- */
+  /* ---------- Hero Video Preload ---------- */
   useEffect(() => {
     if (!shouldRenderHeroVideo) return;
+    const video = heroVideoRef.current;
+    if (!video) return;
 
-    const videoEl = heroVideoRef.current;
-    if (!videoEl) return;
-
-    const activateVideo = () => {
+    const activate = () => {
       setHeroVideoReady(true);
-      const playPromise = videoEl.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          /* Autoplay may be blocked; ignore silently */
-        });
-      }
+      video.play().catch(() => {});
     };
 
-    if (videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-      activateVideo();
-      return;
+    if (video.readyState >= 2) {
+      activate();
+    } else {
+      video.addEventListener("canplaythrough", activate, { once: true });
+      video.addEventListener("loadeddata", activate, { once: true });
     }
 
-    videoEl.addEventListener("canplaythrough", activateVideo, { once: true });
-    videoEl.addEventListener("loadeddata", activateVideo, { once: true });
-
     return () => {
-      videoEl.removeEventListener("canplaythrough", activateVideo);
-      videoEl.removeEventListener("loadeddata", activateVideo);
+      video.removeEventListener("canplaythrough", activate);
+      video.removeEventListener("loadeddata", activate);
     };
   }, [shouldRenderHeroVideo]);
-
-  /* ---------- Hero CTAs ---------- */
-  const heroCtas = useMemo(
-    () =>
-      [
-        {
-          key: "students",
-          href: `/onboarding?next=${encodeURIComponent("/auth/signup?role=student")}`,
-          image: studentsStudyingGroup,
-        },
-        {
-          key: "agents",
-          href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
-          image: agentsCta,
-        },
-        { key: "universities", href: "/partnership", image: destinationsCta },
-      ].map(cta => ({
-        ...cta,
-        badge: t(`pages.index.hero.ctas.${cta.key}.badge`),
-        title: t(`pages.index.hero.ctas.${cta.key}.title`),
-        description: t(`pages.index.hero.ctas.${cta.key}.description`),
-        action: t(`pages.index.hero.ctas.${cta.key}.action`),
-      })),
-    [t]
-  );
 
   /* ---------- Hero Text ---------- */
   const heroTitleParts = useMemo(
@@ -156,13 +159,30 @@ const Index = () => {
   const features = useMemo(
     () =>
       [
-        { key: "applyEasily", icon: FileCheck, color: "from-blue-500 to-cyan-500", image: applyEasilyImage },
-        { key: "trackRealtime", icon: Clock, color: "from-purple-500 to-pink-500", image: trackRealTimeImage },
-        { key: "connectAgents", icon: Users, color: "from-orange-500 to-red-500", image: connectAgentImage },
+        {
+          key: "applyEasily",
+          icon: FileCheck,
+          image: applyEasilyImage,
+          color: "from-blue-500 to-cyan-500",
+        },
+        {
+          key: "trackRealtime",
+          icon: Clock,
+          image: trackRealTimeImage,
+          color: "from-purple-500 to-pink-500",
+        },
+        {
+          key: "connectAgents",
+          icon: Users,
+          image: connectAgentImage,
+          color: "from-orange-500 to-red-500",
+        },
       ].map(f => ({
         ...f,
         title: t(`pages.index.features.cards.${f.key}.title`),
-        description: t(`pages.index.features.cards.${f.key}.description`),
+        description: t(
+          `pages.index.features.cards.${f.key}.description`
+        ),
       })),
     [t]
   );
@@ -170,87 +190,66 @@ const Index = () => {
   /* ---------- FAQ ---------- */
   const faqs = useMemo(
     () =>
-      t("pages.index.faq.sections", { returnObjects: true }) as Array<{
+      t("pages.index.faq.sections", {
+        returnObjects: true,
+      }) as Array<{
         audience: string;
         items: { question: string; answer: string }[];
       }>,
     [t]
   );
 
-  /* ---------- Translations ---------- */
-  const featuresHeading = t("pages.index.features.heading");
-  const visaBadgeLabel = t("pages.index.visa.badge");
-  const visaTitle = t("pages.index.visa.title");
-  const visaDescription = t("pages.index.visa.description");
-  const visaButtonLabel = t("pages.index.visa.cta");
-  const faqHeading = t("pages.index.faq.heading");
-  const faqSubtitle = t("pages.index.faq.subtitle");
-  const contactHeading = t("pages.index.contact.heading");
-  const contactSubtitle = t("pages.index.contact.subtitle");
-  const footerText = t("layout.footer.copyright", { year: new Date().getFullYear() });
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <SEO
         title="UniDoxia - Your Path to International Education"
-        description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support."
-        keywords="study abroad, university applications, international education, AI tools, visa calculator"
+        description="Guided study abroad applications with real human support, verified agents, and AI-powered tools."
       />
 
       {/* ---------- HERO ---------- */}
       <section className="hero-video-container">
         <LandingHeader />
 
-        {shouldRenderHeroVideo ? (
-          <>
-            <div
-              className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
-              aria-hidden
-            />
-            <video
-              ref={heroVideoRef}
-              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-            >
-              <source src="/videos/hero-video.mp4" type="video/mp4" />
-            </video>
-          </>
-        ) : (
-          <div className="hero-fallback" aria-hidden />
+        {shouldRenderHeroVideo && (
+          <video
+            ref={heroVideoRef}
+            className={`hero-video ${
+              heroVideoReady ? "is-ready" : "is-loading"
+            }`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
         )}
 
         <div className="hero-video-overlay" />
 
-        <div className="hero-content">
+        <div className="hero-content text-center">
           <img
             src={unidoxiaLogo}
             alt="UniDoxia logo"
-            className="hero-logo mb-6 h-20 sm:h-24 md:h-32 opacity-90 brightness-0 invert"
+            className="mx-auto mb-6 h-24 brightness-0 invert"
           />
 
-          <h1 className="hero-text text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 max-w-5xl mx-auto leading-tight drop-shadow-lg">
-            UniDoxia: Get accepted into global universities — without guesswork or hidden fees.
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            UniDoxia: Get accepted into global universities — without
+            guesswork or hidden fees.
           </h1>
 
-          <p className="hero-text text-xl sm:text-2xl text-white/95 text-center mb-10 max-w-3xl mx-auto font-medium drop-shadow-md">
-            From Africa to the world — we personally guide your study abroad journey.
+          <p className="text-xl text-white/90 mb-10">
+            From Africa to the world — we personally guide your study
+            abroad journey.
           </p>
 
-          <div className="hero-text">
-            <Button
-              asChild
-              size="lg"
-              className="text-lg px-10 py-7 rounded-full bg-primary hover:bg-primary/90 transition-all transform hover:scale-105 shadow-xl shadow-primary/25 border-none"
-            >
-              <Link to="/auth/signup?role=student">
-                Start Your Study Journey
-              </Link>
-            </Button>
-          </div>
+          <Button asChild size="lg">
+            <Link to="/auth/signup?role=student">
+              Start Your Study Journey
+            </Link>
+          </Button>
         </div>
       </section>
 
@@ -261,76 +260,35 @@ const Index = () => {
           highlight={heroTitleParts.highlight}
           phrases={["Your Future", "Your Dreams", "Success"]}
           suffix={heroTitleParts.suffix}
-          className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
+          className="text-4xl font-bold"
         />
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{heroDescription}</p>
-      </section>
-
-      {/* ---------- WHY UNIDOXIA ---------- */}
-      <section className="pb-20 container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-12">Why UniDoxia?</h2>
-        
-        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-6 mb-12">
-          {/* Big platforms */}
-          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
-            <span className="text-lg font-semibold mb-2 text-muted-foreground">Big platforms</span>
-            <Minus className="w-5 h-5 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">volume driven.</p>
-          </div>
-
-          {/* Local agents */}
-          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-muted/30">
-            <span className="text-lg font-semibold mb-2 text-muted-foreground">Local agents</span>
-            <Minus className="w-5 h-5 text-muted-foreground mb-2" />
-            <p className="text-muted-foreground">inconsistent.</p>
-          </div>
-
-          {/* UniDoxia */}
-          <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm relative">
-            <span className="text-lg font-bold mb-2 text-primary">UniDoxia</span>
-            <Check className="w-6 h-6 text-primary mb-2" />
-            <p className="font-medium">guided, transparent, student-focused.</p>
-          </div>
-        </div>
-
-        <p className="text-center text-xl font-medium text-foreground/80 max-w-2xl mx-auto">
-          “You’re not a number here. We guide you until you arrive.”
+        <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+          {heroDescription}
         </p>
       </section>
 
       <StudyProgramSearch />
 
-      {/* ---------- VISA ---------- */}
-      <section className="py-24 container mx-auto grid lg:grid-cols-2 gap-14 px-4">
-        <div className="space-y-6">
-          <Badge variant="secondary">{visaBadgeLabel}</Badge>
-          <h2 className="text-4xl font-bold">{visaTitle}</h2>
-          <p className="text-muted-foreground">{visaDescription}</p>
-
-          <Button asChild size="lg">
-            <Link to="/visa-calculator" onClick={() => logVisaCalculatorCardClick("cta_button")}>
-              <Calculator className="mr-2 h-5 w-5" />
-              {visaButtonLabel}
-            </Link>
-          </Button>
-        </div>
-
-        <img src={visaEligibilityImage} alt="Visa eligibility" className="rounded-2xl shadow-2xl" />
-      </section>
-
       {/* ---------- FEATURES ---------- */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-4xl font-bold text-center mb-12">{featuresHeading}</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {features.map(f => (
             <Card key={f.key}>
-              <img src={f.image} alt={f.title} className="h-48 w-full object-cover rounded-t-xl" />
+              <img
+                src={f.image}
+                alt={f.title}
+                className="h-48 w-full object-cover rounded-t-xl"
+              />
               <CardContent className="p-8">
-                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} mb-4`}>
+                <div
+                  className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} mb-4`}
+                >
                   <f.icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{f.title}</h3>
-                <p className="text-muted-foreground">{f.description}</p>
+                <p className="text-muted-foreground">
+                  {f.description}
+                </p>
               </CardContent>
             </Card>
           ))}
@@ -338,29 +296,40 @@ const Index = () => {
       </section>
 
       {/* ---------- LAZY SECTIONS ---------- */}
-      <Suspense fallback={<SectionLoader />}><WhoUniDoxiaIsForSection /></Suspense>
-      <Suspense fallback={<SectionLoader />}><AIFeeCalculator /></Suspense>
-      <Suspense fallback={<SectionLoader />}><ZoeExperienceSection /></Suspense>
-      <Suspense fallback={<SectionLoader />}><FeaturedUniversitiesSection /></Suspense>
-      <Suspense fallback={<SectionLoader />}><StoryboardSection /></Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <WhoUniDoxiaIsForSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <AIFeeCalculator />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <ZoeExperienceSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <FeaturedUniversitiesSection />
+      </Suspense>
+      <Suspense fallback={<SectionLoader />}>
+        <StoryboardSection />
+      </Suspense>
 
       <SuccessStoriesMarquee />
 
       {/* ---------- FAQ ---------- */}
       <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-4">{faqHeading}</h2>
-        <p className="text-muted-foreground text-center mb-12">{faqSubtitle}</p>
-
         {faqs.map((section, i) => (
           <div key={i} className="max-w-4xl mx-auto mb-12">
             <h3 className="text-xl font-semibold mb-4">
-              {t("pages.index.faq.audienceHeading", { audience: section.audience })}
+              {section.audience}
             </h3>
             <Accordion type="single" collapsible>
               {section.items.map((faq, j) => (
                 <AccordionItem key={j} value={`${i}-${j}`}>
-                  <AccordionTrigger>{faq.question}</AccordionTrigger>
-                  <AccordionContent>{faq.answer}</AccordionContent>
+                  <AccordionTrigger>
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {faq.answer}
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
@@ -368,22 +337,8 @@ const Index = () => {
         ))}
       </section>
 
-      {/* ---------- CONTACT ---------- */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-4">{contactHeading}</h2>
-        <p className="text-muted-foreground text-center mb-12">{contactSubtitle}</p>
-
-        <Card className="max-w-2xl mx-auto">
-          <CardContent className="p-8">
-            <Suspense fallback={<SectionLoader />}>
-              <ContactForm />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
-
-      <footer className="border-t py-12 text-center text-sm text-muted-foreground">
-        {footerText}
+      <footer className="border-t py-10 text-center text-sm text-muted-foreground">
+        © {new Date().getFullYear()} UniDoxia. All rights reserved.
       </footer>
     </div>
   );
