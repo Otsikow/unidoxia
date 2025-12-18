@@ -71,11 +71,11 @@ const en = {
       },
       links: {
         home: "Home",
-        search: "Search",
-        scholarships: "Scholarships",
-        courses: "Courses",
-        blog: "Blog",
-        contact: "Contact",
+        howItWorks: "How It Works",
+        destinations: "Destinations",
+        pricing: "Pricing / Transparency",
+        stories: "Stories",
+        startProfileCta: "Start your profile",
       },
       auth: {
         login: "Log in",
@@ -357,21 +357,53 @@ const en = {
               title: "Apply to universities abroad with ease",
               description:
                 "Create your profile once, upload your documents, and apply to multiple universities in the UK, Europe, Canada, the USA, and Australia from one platform.",
-              action: "Start Application",
+              action: "Start your profile",
             },
             agents: {
               badge: "Agents",
               title: "Recruit students and earn commissions",
               description:
                 "Manage your students, submit applications, track progress, and work directly with universities — all from one dashboard.",
-              action: "Join as Agent",
+              action: "Upload documents",
             },
             universities: {
               badge: "Universities",
               title: "Connect with qualified international students",
               description:
                 "Receive ready-to-review applications, communicate with students and agents, and grow enrolments from Africa through a trusted recruitment network.",
-              action: "Partner with Us",
+              action: "Book guidance call",
+            },
+          },
+        },
+        howItWorks: {
+          badge: "Navigation made simple",
+          heading: "Always know your next best step",
+          subtitle: "We use plain language and a single call-to-action on every screen to keep you moving.",
+          stepLabel: "Step {{index}}",
+          nextBestStep: "Next best step",
+          editable: "You can edit this later and come back anytime.",
+          assurances: {
+            editLater: "You can edit this later",
+            secure: "Your information is secure",
+          },
+          steps: {
+            startProfile: {
+              title: "Start your profile",
+              description: "Tell us where you want to study and what you need help with so we can guide you.",
+              assurance: "We save as you go.",
+              cta: "Start your profile",
+            },
+            uploadDocuments: {
+              title: "Upload documents",
+              description: "Securely add passports, transcripts, and proof of funds without emailing attachments.",
+              assurance: "Your information is secure.",
+              cta: "Upload documents",
+            },
+            bookGuidanceCall: {
+              title: "Book guidance call",
+              description: "Schedule a call with our advisors to confirm requirements and timelines together.",
+              assurance: "We'll prepare you for every milestone.",
+              cta: "Book guidance call",
             },
           },
         },

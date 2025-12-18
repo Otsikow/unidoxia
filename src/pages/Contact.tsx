@@ -5,6 +5,7 @@ import professionalConsultant from "@/assets/professional-consultant.png";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
+import { Badge } from "@/components/ui/badge";
 
 const Contact = () => {
   const { t } = useTranslation();
@@ -57,7 +58,13 @@ const Contact = () => {
 
           <Card>
             <CardHeader>
-                <CardTitle>{t("pages.contact.formTitle")}</CardTitle>
+                <CardTitle className="flex items-center justify-between gap-2">
+                  <span>{t("pages.contact.formTitle")}</span>
+                  <Badge variant="secondary">{t("pages.index.howItWorks.nextBestStep")}</Badge>
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {t("pages.index.howItWorks.assurances.editLater")} • {t("pages.index.howItWorks.assurances.secure")}
+                </p>
             </CardHeader>
             <CardContent>
               <ContactForm />
