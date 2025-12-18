@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Award, Sparkles, Trophy, Star, Medal, Gift, GraduationCap } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 // Country scholarship badge data
 const scholarshipBadges = [
@@ -209,12 +210,20 @@ const AIScanningIndicator = () => (
 
 export default function OnboardingScholarshipDiscovery() {
   const [showContent, setShowContent] = useState(false);
+  const [stepCompletion, setStepCompletion] = useState(0.6);
+  const totalSteps = 4;
   const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!showContent) return;
+    const timer = setTimeout(() => setStepCompletion(1), 250);
+    return () => clearTimeout(timer);
+  }, [showContent]);
 
   // Generate floating badges for confetti effect
   const floatingBadges = useMemo(() => {
@@ -270,6 +279,13 @@ export default function OnboardingScholarshipDiscovery() {
         <div className="container mx-auto max-w-4xl">
           <BackButton fallback="/onboarding/destinations" />
         </div>
+
+        <OnboardingProgress
+          currentStep={4}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Confirm funding options to wrap up"
+        />
 
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
@@ -345,24 +361,6 @@ export default function OnboardingScholarshipDiscovery() {
               Next
               <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
-
-          {/* Skip option */}
-          <Link 
-            to="/auth/signup?role=student" 
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
-            style={{ animationDelay: "1.1s" }}
-          >
-            Skip for now
-          </Link>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="container mx-auto max-w-4xl mt-auto pt-6">
-          <div className="flex justify-center gap-2">
-            <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <div className="w-2 h-2 rounded-full bg-primary" />
           </div>
         </div>
       </div>

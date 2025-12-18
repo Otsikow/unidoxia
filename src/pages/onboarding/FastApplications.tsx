@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, FileText, Send, CheckCircle, GraduationCap, Building2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
@@ -293,6 +293,9 @@ export default function OnboardingFastApplications() {
           {/* Animated Progress Bar */}
           <div className="w-full max-w-md mb-8 sm:mb-10 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
             <AnimatedProgressBar progress={progress} />
+            <p className="mt-2 text-center text-sm text-muted-foreground">
+              You&apos;re {Math.round(progress)}% done with this guided application preview.
+            </p>
           </div>
 
           {/* Feature highlights - mobile visible */}
@@ -315,25 +318,8 @@ export default function OnboardingFastApplications() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-
-          {/* Skip option */}
-          <Link 
-            to="/auth/signup?role=student" 
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
-            style={{ animationDelay: "0.6s" }}
-          >
-            Skip for now
-          </Link>
         </div>
 
-        {/* Progress indicator */}
-        <div className="container mx-auto max-w-4xl mt-auto pt-6">
-          <div className="flex justify-center gap-2">
-            <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <div className="w-2 h-2 rounded-full bg-primary" />
-          </div>
-        </div>
       </div>
 
       {/* Custom animations */}

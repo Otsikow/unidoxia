@@ -1,8 +1,7 @@
 import { ReactNode } from "react";
-import { useLocation } from "react-router-dom";
 import { AppFooter } from "@/components/layout/AppFooter";
 import { cn } from "@/lib/utils";
-import BackButton from "@/components/BackButton";
+import AppNavbar from "@/components/layout/AppNavbar";
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -10,24 +9,11 @@ interface PublicLayoutProps {
 }
 
 export const PublicLayout = ({ children, contentClassName }: PublicLayoutProps) => {
-  const location = useLocation();
-  const showBack = location.pathname !== "/" && location.pathname !== "";
-
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <AppNavbar />
       <main className={cn("flex-1 w-full", contentClassName)}>
         <div className="page-shell py-6 sm:py-10 lg:py-12">
-          {showBack ? (
-            <div className="mb-4">
-              <BackButton
-                variant="ghost"
-                size="sm"
-                showHistoryMenu={false}
-                fallback="/"
-                wrapperClassName="inline-flex"
-              />
-            </div>
-          ) : null}
           {children}
         </div>
       </main>
