@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 
-import BackButton from "@/components/BackButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -484,8 +483,6 @@ export default function UniversityDirectory() {
         keywords="university directory, partner universities, college listings, international universities, student recruitment directory, university finder"
       />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
-        <BackButton variant="ghost" size="sm" wrapperClassName="mb-2" fallback="/" />
-
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
