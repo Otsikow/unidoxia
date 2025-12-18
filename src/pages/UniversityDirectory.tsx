@@ -268,11 +268,11 @@ export default function UniversityDirectory() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-base font-semibold text-foreground line-clamp-1">
+              <CardTitle className="text-base font-semibold text-foreground line-clamp-2">
                 {university.name}
               </CardTitle>
               {tagline ? (
-                <p className="text-xs text-primary font-medium line-clamp-1">{tagline}</p>
+                <p className="text-xs text-primary font-medium line-clamp-2">{tagline}</p>
               ) : null}
               <CardDescription className="flex flex-wrap items-center gap-1 mt-0.5">
                 {locationLabel ? (
@@ -514,7 +514,7 @@ export default function UniversityDirectory() {
                   <CardDescription>Most courses available</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-lg font-bold text-foreground truncate">
+                  <p className="text-lg font-bold text-foreground line-clamp-2">
                     {summaryMetrics.universityWithMostPrograms.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
