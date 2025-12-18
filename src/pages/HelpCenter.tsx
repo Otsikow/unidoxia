@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import BackButton from '@/components/BackButton';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -141,10 +140,8 @@ const HelpCenter = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <section className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          <BackButton variant="ghost" size="sm" fallback="/" />
-
           {/* Header */}
-          <div className="text-center mb-12 mt-6">
+          <div className="text-center mb-12">
             <div className="flex justify-center mb-4">
               <div className="p-3 bg-primary/10 rounded-full">
                 <HelpCircle className="h-12 w-12 text-primary" />
