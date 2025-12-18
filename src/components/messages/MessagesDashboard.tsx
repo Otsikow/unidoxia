@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Loader2, MessageSquare, Building2, GraduationCap, HeadphonesIcon } from "lucide-react";
+import { Search, Loader2, MessageSquare, Building2, GraduationCap, HeadphonesIcon, AlertCircle, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { searchDirectoryProfiles, type DirectoryProfile } from "@/lib/messaging/directory";
@@ -77,7 +77,49 @@ export default function MessagesDashboard() {
     stopTyping,
     getOrCreateConversation,
     fetchConversations,
+    retryPendingMessages,
+    getPendingMessageCount,
   } = useMessages();
+  
+  const [pendingCount, setPendingCount] = useState(0);
+  const [retryingPending, setRetryingPending] = useState(false);
+  
+  // Check for pending messages on mount and after actions
+  useEffect(() => {
+    const count = getPendingMessageCount();
+    setPendingCount(count);
+  }, [getPendingMessageCount, messages]);
+  
+  // Handler to retry pending messages
+  const handleRetryPending = useCallback(async () => {
+    setRetryingPending(true);
+    try {
+      const result = await retryPendingMessages();
+      if (result.success > 0) {
+        toast({
+          title: "Messages sent",
+          description: `Successfully sent ${result.success} pending message${result.success > 1 ? 's' : ''}.`,
+        });
+      }
+      if (result.failed > 0) {
+        toast({
+          title: "Some messages failed",
+          description: `${result.failed} message${result.failed > 1 ? 's' : ''} could not be sent. They will be retried later.`,
+          variant: "destructive",
+        });
+      }
+      setPendingCount(getPendingMessageCount());
+    } catch (err) {
+      console.error("Error retrying pending messages:", err);
+      toast({
+        title: "Error",
+        description: "Failed to retry pending messages.",
+        variant: "destructive",
+      });
+    } finally {
+      setRetryingPending(false);
+    }
+  }, [retryPendingMessages, getPendingMessageCount, toast]);
 
   // Combined loading state - wait for auth before showing messaging
   const isLoading = authLoading || loading;
@@ -445,6 +487,37 @@ export default function MessagesDashboard() {
           </Badge>
         )}
       </div>
+      
+      {/* Pending Messages Banner */}
+      {pendingCount > 0 && (
+        <div className="mb-4 flex items-center justify-between rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+          <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+            <AlertCircle className="h-4 w-4" />
+            <span className="text-sm font-medium">
+              {pendingCount} message{pendingCount > 1 ? 's' : ''} pending delivery
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRetryPending}
+            disabled={retryingPending}
+            className="border-amber-500/30 hover:bg-amber-500/10"
+          >
+            {retryingPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Retry
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex flex-1 gap-4 min-h-0 overflow-hidden">

@@ -27,6 +27,15 @@ import {
 } from "@/lib/messaging/mockService";
 
 /* ======================================================
+   Constants for retry and recovery
+====================================================== */
+
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 1000;
+const MESSAGE_CACHE_KEY = "unidoxia_pending_messages";
+const CONVERSATION_CACHE_KEY = "unidoxia_conversations_cache";
+
+/* ======================================================
    Utilities
 ====================================================== */
 
@@ -34,6 +43,145 @@ const createId = (prefix: string) =>
   typeof crypto !== "undefined" && crypto.randomUUID
     ? crypto.randomUUID()
     : `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+/**
+ * Retry a function with exponential backoff
+ */
+const retryWithBackoff = async <T,>(
+  fn: () => Promise<T>,
+  maxAttempts: number = MAX_RETRY_ATTEMPTS,
+  delayMs: number = RETRY_DELAY_MS
+): Promise<T> => {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`Attempt ${attempt}/${maxAttempts} failed:`, error);
+      
+      if (attempt < maxAttempts) {
+        const delay = delayMs * Math.pow(2, attempt - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+};
+
+/**
+ * Store pending messages in localStorage for recovery
+ */
+const storePendingMessage = (message: {
+  conversationId: string;
+  content: string;
+  attachments?: MessageAttachment[];
+  timestamp: string;
+}) => {
+  try {
+    const pending = JSON.parse(localStorage.getItem(MESSAGE_CACHE_KEY) || "[]");
+    pending.push({ ...message, id: createId("pending") });
+    localStorage.setItem(MESSAGE_CACHE_KEY, JSON.stringify(pending));
+  } catch {
+    // Silently fail if localStorage is not available
+  }
+};
+
+/**
+ * Remove a pending message after successful send
+ */
+const removePendingMessage = (messageId: string) => {
+  try {
+    const pending = JSON.parse(localStorage.getItem(MESSAGE_CACHE_KEY) || "[]");
+    const filtered = pending.filter((m: { id: string }) => m.id !== messageId);
+    localStorage.setItem(MESSAGE_CACHE_KEY, JSON.stringify(filtered));
+  } catch {
+    // Silently fail
+  }
+};
+
+/**
+ * Get all pending messages for recovery
+ */
+const getPendingMessages = (): Array<{
+  id: string;
+  conversationId: string;
+  content: string;
+  attachments?: MessageAttachment[];
+  timestamp: string;
+}> => {
+  try {
+    return JSON.parse(localStorage.getItem(MESSAGE_CACHE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Cache conversations for offline access
+ */
+const cacheConversations = (conversations: Conversation[]) => {
+  try {
+    localStorage.setItem(CONVERSATION_CACHE_KEY, JSON.stringify({
+      data: conversations,
+      timestamp: new Date().toISOString(),
+    }));
+  } catch {
+    // Silently fail
+  }
+};
+
+/**
+ * Get cached conversations
+ */
+const getCachedConversations = (): Conversation[] => {
+  try {
+    const cached = JSON.parse(localStorage.getItem(CONVERSATION_CACHE_KEY) || "{}");
+    // Only use cache if less than 5 minutes old
+    if (cached.data && cached.timestamp) {
+      const age = Date.now() - new Date(cached.timestamp).getTime();
+      if (age < 5 * 60 * 1000) {
+        return cached.data;
+      }
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * Parse database errors into user-friendly messages
+ */
+const parseDbError = (error: { message?: string; code?: string }): string => {
+  const message = error.message?.toLowerCase() || "";
+  
+  if (message.includes("column") && message.includes("does not exist")) {
+    return "Database schema needs updating. Please contact support.";
+  }
+  if (message.includes("messaging not permitted")) {
+    return "You don't have permission to message this user.";
+  }
+  if (message.includes("not authenticated")) {
+    return "Please sign in to send messages.";
+  }
+  if (message.includes("recipient profile not found")) {
+    return "Could not find the recipient.";
+  }
+  if (message.includes("profile not found")) {
+    return "Your profile could not be found.";
+  }
+  if (message.includes("violates row-level security")) {
+    return "You don't have permission for this action.";
+  }
+  if (message.includes("network") || message.includes("fetch")) {
+    return "Network error. Please check your connection.";
+  }
+  
+  return error.message || "An unexpected error occurred.";
+};
 
 const normalizeAttachment = (a: MessageAttachment, i: number): MessageAttachment => ({
   id: a.id ?? createId(`att-${i}`),
@@ -357,7 +505,7 @@ export function useMessages() {
   }, [user?.id, usingMockMessaging, fetchConversationsFromDb]);
 
   /* ======================================================
-     Bootstrap
+     Bootstrap (with cache fallback and pending message retry)
   ======================================================= */
 
   useEffect(() => {
@@ -386,19 +534,77 @@ export function useMessages() {
           return;
         }
 
-        const convs = await fetchConversationsFromDb();
-        if (cancelled) return;
-        conversationsRef.current = convs;
-        setConversations(convs);
+        // Try to load cached conversations while fetching fresh data
+        const cachedConvs = getCachedConversations();
+        if (cachedConvs.length > 0 && !cancelled) {
+          conversationsRef.current = cachedConvs;
+          setConversations(cachedConvs);
+        }
+
+        // Fetch fresh conversations with retry
+        let convs: Conversation[] = [];
+        try {
+          convs = await retryWithBackoff(() => fetchConversationsFromDb(), 2, 500);
+          if (cancelled) return;
+          conversationsRef.current = convs;
+          setConversations(convs);
+          cacheConversations(convs);
+        } catch (fetchError) {
+          console.error("Failed to fetch conversations:", fetchError);
+          // Use cached data if available, otherwise show error
+          if (cachedConvs.length === 0) {
+            setError("Unable to load messages. Please check your connection.");
+          } else {
+            // Use cached conversations
+            convs = cachedConvs;
+          }
+        }
         
         // If there are conversations, load messages for the first one
         if (convs.length > 0) {
           const firstConvId = convs[0].id;
           setCurrentConversationState(firstConvId);
-          const msgs = await fetchMessagesForConversation(firstConvId);
-          messagesRef.current = { [firstConvId]: msgs };
-          setMessagesById({ [firstConvId]: msgs });
-          setMessages(msgs);
+          
+          try {
+            const msgs = await retryWithBackoff(
+              () => fetchMessagesForConversation(firstConvId), 
+              2, 
+              500
+            );
+            messagesRef.current = { [firstConvId]: msgs };
+            setMessagesById({ [firstConvId]: msgs });
+            setMessages(msgs);
+          } catch (msgError) {
+            console.error("Failed to fetch messages:", msgError);
+            // Continue without messages - they'll be fetched when conversation is selected
+          }
+        }
+
+        // Attempt to retry any pending messages from previous sessions
+        const pendingMessages = getPendingMessages();
+        if (pendingMessages.length > 0) {
+          console.log(`Found ${pendingMessages.length} pending messages to retry`);
+          // We'll retry them in background without blocking the UI
+          setTimeout(async () => {
+            for (const pending of pendingMessages) {
+              try {
+                const { error } = await supabase.from("conversation_messages").insert([{
+                  conversation_id: pending.conversationId,
+                  sender_id: currentUserId,
+                  content: pending.content,
+                  attachments: pending.attachments ?? [],
+                  message_type: "text",
+                }]);
+                
+                if (!error) {
+                  removePendingMessage(pending.id);
+                  console.log(`Successfully sent pending message ${pending.id}`);
+                }
+              } catch (e) {
+                console.warn(`Failed to retry pending message ${pending.id}:`, e);
+              }
+            }
+          }, 2000);
         }
       } catch (err) {
         console.error("Messaging bootstrap failed:", err);
@@ -415,7 +621,7 @@ export function useMessages() {
   }, [currentUserId, fetchConversationsFromDb, fetchMessagesForConversation, resolvedProfile, tenantId, usingMockMessaging, user?.id]);
 
   /* ======================================================
-     Send Message
+     Send Message (with retry and recovery)
   ======================================================= */
 
   const sendMessage = useCallback(
@@ -427,8 +633,9 @@ export function useMessages() {
       const createdAt = new Date().toISOString();
       const attachments = (payload.attachments ?? []).map(normalizeAttachment);
 
+      const optimisticId = createId("msg");
       const optimistic: Message = {
-        id: createId("msg"),
+        id: optimisticId,
         conversation_id: conversationId,
         sender_id: currentUserId,
         content: content ?? "",
@@ -446,6 +653,16 @@ export function useMessages() {
         },
       };
 
+      // Store pending message for recovery before attempting send
+      const pendingMessage = {
+        id: optimisticId,
+        conversationId,
+        content: content ?? "",
+        attachments,
+        timestamp: createdAt,
+      };
+      storePendingMessage(pendingMessage);
+
       // Optimistic update
       setMessagesById((prev) => {
         const next = [...(prev[conversationId] ?? []), optimistic];
@@ -460,22 +677,61 @@ export function useMessages() {
         return currentId;
       });
 
-      if (usingMockMessaging) return;
+      if (usingMockMessaging) {
+        removePendingMessage(optimisticId);
+        return;
+      }
 
-      const { data, error } = await supabase.from("conversation_messages").insert([{
-        conversation_id: conversationId,
-        sender_id: currentUserId,
-        content,
-        attachments: attachments as unknown as any[],
-        message_type: payload.messageType ?? "text",
-      }]).select().single();
+      try {
+        // Use retry logic for reliability
+        const data = await retryWithBackoff(async () => {
+          const { data, error } = await supabase.from("conversation_messages").insert([{
+            conversation_id: conversationId,
+            sender_id: currentUserId,
+            content,
+            attachments: attachments as unknown as any[],
+            message_type: payload.messageType ?? "text",
+          }]).select().single();
 
-      if (error) {
+          if (error) {
+            throw error;
+          }
+          return data;
+        });
+
+        // Success - remove from pending
+        removePendingMessage(optimisticId);
+
+        // Replace optimistic message with real one
+        if (data) {
+          setMessagesById((prev) => {
+            const updated = (prev[conversationId] ?? []).map((m) =>
+              m.id === optimistic.id ? { ...optimistic, id: data.id } : m
+            );
+            messagesRef.current = { ...prev, [conversationId]: updated };
+            return messagesRef.current;
+          });
+          setMessages((prev) => prev.map((m) =>
+            m.id === optimistic.id ? { ...optimistic, id: data.id } : m
+          ));
+        }
+
+        // Refresh conversations to update order
+        const convs = await fetchConversationsFromDb();
+        conversationsRef.current = convs;
+        setConversations(convs);
+        cacheConversations(convs);
+
+      } catch (error: any) {
+        console.error("Message send failed after retries:", error);
+        
+        const userMessage = parseDbError(error);
         toast({
           title: "Message failed",
-          description: error.message,
+          description: userMessage,
           variant: "destructive",
         });
+        
         // Remove optimistic message on failure
         setMessagesById((prev) => {
           const filtered = (prev[conversationId] ?? []).filter((m) => m.id !== optimistic.id);
@@ -483,33 +739,15 @@ export function useMessages() {
           return messagesRef.current;
         });
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-        return;
+        
+        // Note: We keep the message in pending storage for potential retry later
       }
-
-      // Replace optimistic message with real one
-      if (data) {
-        setMessagesById((prev) => {
-          const updated = (prev[conversationId] ?? []).map((m) =>
-            m.id === optimistic.id ? { ...optimistic, id: data.id } : m
-          );
-          messagesRef.current = { ...prev, [conversationId]: updated };
-          return messagesRef.current;
-        });
-        setMessages((prev) => prev.map((m) =>
-          m.id === optimistic.id ? { ...optimistic, id: data.id } : m
-        ));
-      }
-
-      // Refresh conversations to update order
-      const convs = await fetchConversationsFromDb();
-      conversationsRef.current = convs;
-      setConversations(convs);
     },
     [currentUserId, resolvedProfile, toast, usingMockMessaging, fetchConversationsFromDb],
   );
 
   /* ======================================================
-     Create / Get Conversation
+     Create / Get Conversation (with retry and recovery)
   ======================================================= */
 
   const getOrCreateConversation = useCallback(
@@ -526,30 +764,45 @@ export function useMessages() {
       let otherProfile = findDirectoryProfileById(otherUserId);
 
       if (!otherProfile) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("id, full_name, email, avatar_url, role, tenant_id")
-          .eq("id", otherUserId)
-          .single();
+        try {
+          const { data, error } = await retryWithBackoff(async () => {
+            const result = await supabase
+              .from("profiles")
+              .select("id, full_name, email, avatar_url, role, tenant_id")
+              .eq("id", otherUserId)
+              .single();
+            
+            if (result.error) throw result.error;
+            return result;
+          });
 
-        if (!data) {
+          if (!data) {
+            toast({
+              title: "Unable to message",
+              description: "Recipient profile not found.",
+              variant: "destructive",
+            });
+            return null;
+          }
+
+          otherProfile = {
+            id: data.id,
+            full_name: data.full_name ?? "User",
+            email: data.email ?? "",
+            avatar_url: data.avatar_url ?? null,
+            role: data.role,
+            tenant_id: data.tenant_id ?? DEFAULT_TENANT_ID,
+          };
+          registerDirectoryProfile(otherProfile);
+        } catch (error: any) {
+          console.error("Failed to fetch recipient profile:", error);
           toast({
             title: "Unable to message",
-            description: "Recipient profile not found.",
+            description: parseDbError(error),
             variant: "destructive",
           });
           return null;
         }
-
-        otherProfile = {
-          id: data.id,
-          full_name: data.full_name ?? "User",
-          email: data.email ?? "",
-          avatar_url: data.avatar_url ?? null,
-          role: data.role,
-          tenant_id: data.tenant_id ?? DEFAULT_TENANT_ID,
-        };
-        registerDirectoryProfile(otherProfile);
       }
 
       const existing = conversationsRef.current.find(
@@ -591,50 +844,45 @@ export function useMessages() {
         return id;
       }
 
-      const { data, error } = await supabase.rpc("get_or_create_conversation", {
-        p_user_id: currentUserId,
-        p_other_user_id: otherUserId,
-        p_tenant_id: tenantId,
-      });
+      try {
+        // Use retry logic for the RPC call
+        const conversationId = await retryWithBackoff(async () => {
+          const { data, error } = await supabase.rpc("get_or_create_conversation", {
+            p_user_id: currentUserId,
+            p_other_user_id: otherUserId,
+            p_tenant_id: tenantId,
+          });
 
-      if (error) {
-        console.error("get_or_create_conversation error:", error);
+          if (error) {
+            console.error("get_or_create_conversation error:", error);
+            throw error;
+          }
+
+          if (!data) {
+            throw new Error("No conversation ID returned");
+          }
+
+          return data as string;
+        });
+
+        const convs = await fetchConversationsFromDb();
+        conversationsRef.current = convs;
+        setConversations(convs);
+        cacheConversations(convs);
+        await setCurrentConversation(conversationId);
+        return conversationId;
+
+      } catch (error: any) {
+        console.error("get_or_create_conversation failed after retries:", error);
         
-        // Provide more helpful error messages based on the error
-        let description = "Please try again.";
-        if (error.message?.includes("messaging not permitted")) {
-          description = "You don't have permission to message this user. Make sure you have an active relationship (e.g., submitted application, linked agent).";
-        } else if (error.message?.includes("not authenticated")) {
-          description = "Please sign in to send messages.";
-        } else if (error.message?.includes("recipient profile not found")) {
-          description = "Could not find the recipient's profile.";
-        } else if (error.message) {
-          description = error.message;
-        }
-        
+        const userMessage = parseDbError(error);
         toast({
           title: "Unable to start conversation",
-          description,
+          description: userMessage,
           variant: "destructive",
         });
         return null;
       }
-
-      if (!data) {
-        console.error("get_or_create_conversation returned null");
-        toast({
-          title: "Unable to start conversation",
-          description: "No conversation ID returned. Please try again.",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const convs = await fetchConversationsFromDb();
-      conversationsRef.current = convs;
-      setConversations(convs);
-      await setCurrentConversation(data as string);
-      return data as string;
     },
     [
       currentUserId,
@@ -658,10 +906,62 @@ export function useMessages() {
 
   const fetchConversations = useCallback(async () => {
     if (usingMockMessaging) return;
-    const convs = await fetchConversationsFromDb();
-    conversationsRef.current = convs;
-    setConversations(convs);
+    try {
+      const convs = await retryWithBackoff(() => fetchConversationsFromDb(), 2, 500);
+      conversationsRef.current = convs;
+      setConversations(convs);
+      cacheConversations(convs);
+    } catch (error) {
+      console.error("Failed to refresh conversations:", error);
+      // Don't throw - keep showing existing conversations
+    }
   }, [fetchConversationsFromDb, usingMockMessaging]);
+
+  /**
+   * Retry sending any pending messages that failed previously
+   */
+  const retryPendingMessages = useCallback(async () => {
+    if (usingMockMessaging || !currentUserId) return { success: 0, failed: 0 };
+    
+    const pendingMessages = getPendingMessages();
+    let success = 0;
+    let failed = 0;
+    
+    for (const pending of pendingMessages) {
+      try {
+        const { error } = await supabase.from("conversation_messages").insert([{
+          conversation_id: pending.conversationId,
+          sender_id: currentUserId,
+          content: pending.content,
+          attachments: pending.attachments ?? [],
+          message_type: "text",
+        }]);
+        
+        if (!error) {
+          removePendingMessage(pending.id);
+          success++;
+        } else {
+          failed++;
+        }
+      } catch {
+        failed++;
+      }
+    }
+    
+    if (success > 0) {
+      // Refresh conversations after sending pending messages
+      await fetchConversations();
+    }
+    
+    return { success, failed };
+  }, [currentUserId, fetchConversations, usingMockMessaging]);
+
+  /**
+   * Get count of pending messages
+   */
+  const getPendingMessageCount = useCallback(() => {
+    return getPendingMessages().length;
+  }, []);
 
   const markConversationAsRead = useCallback(async (conversationId: string) => {
     if (!user?.id || !conversationId) return;
@@ -693,5 +993,8 @@ export function useMessages() {
     fetchConversations,
     markConversationAsRead,
     removeConversation,
+    // Recovery functions
+    retryPendingMessages,
+    getPendingMessageCount,
   };
 }
