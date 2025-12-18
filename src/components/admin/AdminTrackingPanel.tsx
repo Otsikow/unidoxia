@@ -251,7 +251,7 @@ export default function AdminTrackingPanel({ className }: AdminTrackingPanelProp
                     type="category"
                     dataKey="status"
                     width={100}
-                    tick={{ fontSize: 11 }}
+                    tick={{ fontSize: 11, fill: "hsl(var(--foreground))" }}
                     axisLine={false}
                     tickLine={false}
                   />
@@ -349,7 +349,7 @@ export default function AdminTrackingPanel({ className }: AdminTrackingPanelProp
               <ResponsiveContainer width="100%" height={150}>
                 <AreaChart data={velocityQuery.data} margin={{ left: 0, right: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }} axisLine={false} tickLine={false} />
                   <YAxis hide />
                   <Tooltip contentStyle={{ fontSize: 11 }} />
                   <Area

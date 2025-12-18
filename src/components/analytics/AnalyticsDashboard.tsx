@@ -151,8 +151,8 @@ export default function AnalyticsDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={userActivityData}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                  <XAxis dataKey="week" tickLine={false} axisLine={false} />
-                  <YAxis tickLine={false} axisLine={false} />
+                  <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--foreground))" }} />
+                  <YAxis tickLine={false} axisLine={false} tick={{ fill: "hsl(var(--foreground))" }} />
                   <Tooltip cursor={{ strokeDasharray: "4 4" }} />
                   <Legend />
                   <Area type="monotone" dataKey="active" stroke="#2563eb" fill="#2563eb33" strokeWidth={2} />
@@ -210,8 +210,8 @@ export default function AnalyticsDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={applicationTrends}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                  <XAxis dataKey="month" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground))" }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground))" }} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="submitted" fill="#2563eb" radius={[4, 4, 0, 0]} />
@@ -242,8 +242,8 @@ export default function AnalyticsDashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={userActivityData}>
                   <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.3} />
-                  <XAxis dataKey="week" axisLine={false} tickLine={false} />
-                  <YAxis axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
+                  <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fill: "hsl(var(--foreground))" }} />
+                  <YAxis axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(v) => `${v}%`} tick={{ fill: "hsl(var(--foreground))" }} />
                   <Tooltip formatter={(value: number) => `${value}%`} />
                   <Line type="monotone" dataKey="conversion" stroke="#db2777" strokeWidth={2} dot={false} />
                 </LineChart>
@@ -273,7 +273,7 @@ export default function AnalyticsDashboard() {
                 <BarChart data={conversionFunnel} layout="vertical" margin={{ left: 32 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} strokeOpacity={0.2} />
                   <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={110} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={110} tick={{ fill: "hsl(var(--foreground))" }} />
                   <Tooltip formatter={(value: number) => value.toLocaleString()} />
                   <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                     {conversionFunnel.map((entry, index) => (
