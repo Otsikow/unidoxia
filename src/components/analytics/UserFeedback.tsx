@@ -20,7 +20,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
-import BackButton from '@/components/BackButton';
 
 const feedbackSchema = z.object({
   type: z.enum(['general', 'bug', 'feature', 'improvement']),
@@ -181,8 +180,6 @@ export default function UserFeedback() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto py-6 md:py-8 px-4 max-w-4xl space-y-6">
-        <BackButton variant="ghost" size="sm" fallback="/" />
-        
         <div className="space-y-2 animate-fade-in">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight flex items-center gap-2">
             <MessageSquare className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
