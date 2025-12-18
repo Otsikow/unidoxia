@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Quote, GraduationCap, Plane, FileCheck, Award } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 
 // Success story data representing African students
@@ -291,6 +292,8 @@ export default function OnboardingStudentSuccess() {
   const [showContent, setShowContent] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const navigate = useNavigate();
+  const totalSteps = 4;
+  const [stepCompletion, setStepCompletion] = useState(0.5);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
@@ -304,6 +307,11 @@ export default function OnboardingStudentSuccess() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const dynamicStepCompletion = Math.min(1, 0.45 + activeIndex / successStories.length);
+    setStepCompletion((prev) => Math.max(prev, dynamicStepCompletion));
+  }, [activeIndex]);
 
   // Generate floating stars
   const stars = useMemo(
@@ -352,6 +360,13 @@ export default function OnboardingStudentSuccess() {
         <div className="container mx-auto max-w-5xl">
           <BackButton fallback="/onboarding/visa-requirements" />
         </div>
+
+        <OnboardingProgress
+          currentStep={3}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Review success stories to stay motivated"
+        />
 
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-5xl">
@@ -410,15 +425,6 @@ export default function OnboardingStudentSuccess() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-
-          {/* Skip option */}
-          <Link
-            to="/onboarding/destinations"
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
-            style={{ animationDelay: "0.8s" }}
-          >
-            Skip for now
-          </Link>
         </div>
 
       </div>

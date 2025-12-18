@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 
 // Import destination images
@@ -185,6 +186,12 @@ export default function OnboardingDestinations() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [showContent, setShowContent] = useState(false);
   const navigate = useNavigate();
+  const totalSteps = 4;
+
+  const stepCompletion = useMemo(() => {
+    if (selectedCountries.length === 0) return 0.45;
+    return Math.min(1, 0.45 + selectedCountries.length / 4);
+  }, [selectedCountries]);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
@@ -218,6 +225,13 @@ export default function OnboardingDestinations() {
         <div className="container mx-auto max-w-4xl">
           <BackButton fallback="/onboarding/success-stories" />
         </div>
+
+        <OnboardingProgress
+          currentStep={4}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Select destinations to finish onboarding"
+        />
 
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-3 animate-fade-in-up">
@@ -254,14 +268,6 @@ export default function OnboardingDestinations() {
               Next <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
-
-          <Link
-            to="/auth/signup?role=student"
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
-            style={{ animationDelay: "0.8s" }}
-          >
-            Skip for now
-          </Link>
         </div>
 
       </div>

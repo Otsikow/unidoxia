@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 import { FileCheck, CheckCircle2, ArrowRight } from "lucide-react";
 
@@ -26,11 +27,19 @@ const featureChips = [
 export default function OnboardingVisaRequirements() {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  const [stepCompletion, setStepCompletion] = useState(0.5);
+  const totalSteps = 4;
 
   useEffect(() => {
     const timer = setTimeout(() => setIsVisible(true), 150);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const timer = setTimeout(() => setStepCompletion(1), 200);
+    return () => clearTimeout(timer);
+  }, [isVisible]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20 overflow-hidden">
@@ -45,6 +54,13 @@ export default function OnboardingVisaRequirements() {
         <div className="container mx-auto max-w-5xl">
           <BackButton fallback="/onboarding/welcome" />
         </div>
+
+        <OnboardingProgress
+          currentStep={2}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Confirm your visa-readiness steps"
+        />
 
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="relative w-full max-w-5xl">

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MapPin, Plane } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 
 // Destination data with landmark images and flags
@@ -242,11 +243,19 @@ const CentralGlobe = () => (
 
 export default function OnboardingWelcome() {
   const [showContent, setShowContent] = useState(false);
+  const [stepCompletion, setStepCompletion] = useState(0.4);
+  const totalSteps = 4;
 
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 300);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!showContent) return;
+    const timer = setTimeout(() => setStepCompletion(0.9), 250);
+    return () => clearTimeout(timer);
+  }, [showContent]);
 
   // Generate particles
   const particles = useMemo(
@@ -318,6 +327,13 @@ export default function OnboardingWelcome() {
           <CentralGlobe />
         </div>
 
+        <OnboardingProgress
+          currentStep={1}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Start your onboarding in minutes"
+        />
+
         {/* Title */}
         <h1
           className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-3 sm:mb-4 animate-fade-in-up px-2"
@@ -367,7 +383,7 @@ export default function OnboardingWelcome() {
 
         {/* CTA Buttons */}
         <div
-          className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full max-w-xs sm:max-w-md animate-fade-in-up"
+          className="flex flex-col gap-3 sm:gap-4 w-full max-w-xs sm:max-w-md animate-fade-in-up"
           style={{ animationDelay: "0.9s" }}
         >
           <Button asChild size="lg" className="w-full sm:flex-1 gap-2 text-base group">
@@ -375,9 +391,6 @@ export default function OnboardingWelcome() {
               <Sparkles className="w-4 h-4 group-hover:animate-spin" />
               Get Started
             </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="w-full sm:flex-1 text-base">
-            <Link to="/auth/login">Log In</Link>
           </Button>
         </div>
 

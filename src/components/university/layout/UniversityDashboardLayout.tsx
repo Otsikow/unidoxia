@@ -313,7 +313,7 @@ export const fetchUniversityDashboardData = async (
       ])
     ] as string[];
     
-    let studentMap = new Map<string, {
+    const studentMap = new Map<string, {
       legal_name: string | null;
       preferred_name: string | null;
       nationality: string | null;
