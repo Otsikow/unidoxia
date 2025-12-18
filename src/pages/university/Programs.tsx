@@ -59,6 +59,7 @@ export default function ProgramsPage() {
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
+  const ensureAttemptsRef = useRef(0);
   // Track if we're ensuring university exists (self-healing mechanism)
   const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
   // Track if self-healing was attempted AND failed (not just attempted)
@@ -74,6 +75,12 @@ export default function ProgramsPage() {
     const ensureUniversityExists = async () => {
       // If we already failed self-healing, don't retry automatically
       if (ensureFailedRef.current) return;
+
+      // Avoid infinite loops - stop after two attempts
+      if (ensureAttemptsRef.current >= 2) {
+        ensureFailedRef.current = true;
+        return;
+      }
       
       // If we're already ensuring or loading, wait
       if (isEnsuringUniversity) return;
@@ -90,6 +97,7 @@ export default function ProgramsPage() {
 
       if (!shouldEnsure) return;
 
+      ensureAttemptsRef.current += 1;
       setIsEnsuringUniversity(true);
 
       try {
@@ -126,18 +134,29 @@ export default function ProgramsPage() {
 
         // Refetch dashboard data to pick up the new/existing university
         // Keep loading state until refetch completes
-        await refetch();
+        const result = await refetch();
+        const hasUniversity = Boolean(result?.data?.university?.id);
+
+        if (!hasUniversity && ensureAttemptsRef.current >= 2) {
+          ensureFailedRef.current = true;
+          toast({
+            title: "Setup is taking longer than expected",
+            description: "We couldn't attach your university profile. Please refresh or contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
 
         toast({
           title: "University profile ready",
           description: "Your university profile has been set up. You can now manage courses.",
         });
         
-        // Only hide loading AFTER refetch completes successfully
-        setIsEnsuringUniversity(false);
       } catch (err) {
         console.error("[Programs] Unexpected error ensuring university:", err);
         ensureFailedRef.current = true;
+      } finally {
+        // Only hide loading AFTER refetch completes successfully or we gave up
         setIsEnsuringUniversity(false);
       }
     };

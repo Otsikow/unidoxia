@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type QueryObserverResult } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
@@ -191,7 +191,7 @@ interface UniversityDashboardContextValue {
   isLoading: boolean;
   isRefetching: boolean;
   error: Nullable<string>;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<QueryObserverResult<UniversityDashboardData>>;
   lastUpdated: Date | null;
 }
 
@@ -804,7 +804,7 @@ export const UniversityDashboardLayout = ({
         isLoading,
         isRefetching: isFetching,
         error: error ? (error as Error).message : null,
-        refetch: async () => void refetch(),
+        refetch: () => refetch(),
         lastUpdated,
       }}
     >
