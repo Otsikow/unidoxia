@@ -173,9 +173,6 @@ const AgentOnboardingWelcome = lazyWithErrorHandling(() =>
 const OnboardingAgentEarnings = lazyWithErrorHandling(() =>
   import("./pages/onboarding/AgentEarnings")
 );
-const AppOnboarding = lazyWithErrorHandling(() =>
-  import("./pages/onboarding/AppOnboarding")
-);
 
 const Contact = lazyWithErrorHandling(() => import("./pages/Contact"));
 const FAQ = lazyWithErrorHandling(() => import("./pages/FAQ"));
@@ -550,11 +547,6 @@ const App = () => {
                            ============================================================ */}
 
                         <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
-
-                        <Route
-                          path="/onboarding"
-                          element={<PublicLayout><AppOnboarding /></PublicLayout>}
-                        />
 
                         {/* Student onboarding flow removed */}
 

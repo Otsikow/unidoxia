@@ -34,10 +34,9 @@ const STUDY_LEVELS = [
 
 interface StudyProgramSearchProps {
   className?: string;
-  sectionId?: string;
 }
 
-export function StudyProgramSearch({ className, sectionId }: StudyProgramSearchProps) {
+export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDestination, setSelectedDestination] = useState("all");
@@ -80,8 +79,7 @@ export function StudyProgramSearch({ className, sectionId }: StudyProgramSearchP
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={cn("py-12 md:py-16 scroll-mt-24", className)}
-      id={sectionId}
+      className={cn("py-12 md:py-16", className)}
     >
       <div className="container mx-auto px-4">
         <motion.div

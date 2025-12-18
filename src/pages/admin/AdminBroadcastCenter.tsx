@@ -12,7 +12,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { Tables } from "@/integrations/supabase/types";
-import { CORE_MESSAGE, CORE_MESSAGE_CTA } from "@/lib/brand";
 
 const AdminBroadcastCenter = () => {
   const { profile } = useAuth();
@@ -64,16 +63,12 @@ const AdminBroadcastCenter = () => {
         return;
       }
 
-      const trimmedTitle = title.trim();
-      const notificationTitle = trimmedTitle ? `${CORE_MESSAGE} — ${trimmedTitle}` : CORE_MESSAGE;
-      const broadcastBody = message.trim()
-        ? `${CORE_MESSAGE}\n\n${message.trim()}`
-        : CORE_MESSAGE_CTA;
+      const notificationTitle = title.trim() || "Admin broadcast";
       const payload = userRecords.map((user) => ({
         user_id: user.id,
         tenant_id: tenantId,
         title: notificationTitle,
-        content: broadcastBody,
+        content: message.trim(),
         type: "email",
         action_url: referenceLink || null,
         metadata: {
@@ -111,8 +106,7 @@ const AdminBroadcastCenter = () => {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Broadcast Centre</h1>
           <p className="text-sm text-muted-foreground">
-            Deliver coordinated announcements to agents, universities, and students from a single command hub while repeating our promise:
-            <span className="ml-1 font-semibold text-foreground">{CORE_MESSAGE}</span>
+            Deliver coordinated announcements to agents, universities, and students from a single command hub.
           </p>
         </div>
         <Badge variant="outline" className="gap-1">
@@ -125,8 +119,7 @@ const AdminBroadcastCenter = () => {
         <CardHeader>
           <CardTitle>Compose announcement</CardTitle>
           <CardDescription>
-            Set the target audiences, craft the message, and optionally schedule delivery for a later time. Subject lines and CTAs
-            should keep pointing back to: "{CORE_MESSAGE}".
+            Set the target audiences, craft the message, and optionally schedule delivery for a later time.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -135,7 +128,7 @@ const AdminBroadcastCenter = () => {
               <Label htmlFor="broadcast-title">Title</Label>
               <Input
                 id="broadcast-title"
-                placeholder={`${CORE_MESSAGE} — Winter intake onboarding`}
+                placeholder="Winter intake onboarding"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
               />
@@ -151,16 +144,16 @@ const AdminBroadcastCenter = () => {
               </div>
             </div>
           </div>
-            <div className="space-y-2">
-              <Label htmlFor="broadcast-body">Message</Label>
-              <Textarea
-                id="broadcast-body"
-                placeholder={`Open with "${CORE_MESSAGE}" and then share updates, deadlines, or campaign details...`}
-                rows={6}
-                value={message}
-                onChange={(event) => setMessage(event.target.value)}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="broadcast-body">Message</Label>
+            <Textarea
+              id="broadcast-body"
+              placeholder="Share updates, deadlines, or campaign details..."
+              rows={6}
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+            />
+          </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="broadcast-link">Reference link</Label>
