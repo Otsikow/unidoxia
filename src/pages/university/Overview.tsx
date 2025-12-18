@@ -79,6 +79,7 @@ const OverviewPage = () => {
   const { profile, user } = useAuth();
   const { toast } = useToast();
 
+  const ensureAttemptsRef = useRef(0);
   // Track if we're ensuring university exists (self-healing mechanism)
   const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
   // Track if self-healing was attempted AND failed (not just attempted)
@@ -92,6 +93,12 @@ const OverviewPage = () => {
     const ensureUniversityExists = async () => {
       // If we already failed self-healing, don't retry automatically
       if (ensureFailedRef.current) return;
+
+      // Avoid infinite loops - stop after two attempts
+      if (ensureAttemptsRef.current >= 2) {
+        ensureFailedRef.current = true;
+        return;
+      }
       
       // If we're already ensuring or loading, wait
       if (isEnsuringUniversity) return;
@@ -104,6 +111,7 @@ const OverviewPage = () => {
 
       if (!shouldEnsure) return;
 
+      ensureAttemptsRef.current += 1;
       setIsEnsuringUniversity(true);
 
       try {
@@ -138,17 +146,29 @@ const OverviewPage = () => {
         console.log("[Overview] University ensured successfully:", newUniversityId);
 
         // Refetch dashboard data to pick up the new/existing university
-        await refetch();
+        const result = await refetch();
+        const hasUniversity = Boolean(result?.data?.university?.id);
+
+        // If the refetch still shows no university, stop the loop and surface guidance
+        if (!hasUniversity && ensureAttemptsRef.current >= 2) {
+          ensureFailedRef.current = true;
+          toast({
+            title: "Setup is taking longer than expected",
+            description: "We couldn't attach your university profile. Please refresh or contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
 
         toast({
           title: "University profile ready",
           description: "Your university profile has been set up. Welcome to your dashboard!",
         });
         
-        setIsEnsuringUniversity(false);
       } catch (err) {
         console.error("[Overview] Unexpected error ensuring university:", err);
         ensureFailedRef.current = true;
+      } finally {
         setIsEnsuringUniversity(false);
       }
     };
