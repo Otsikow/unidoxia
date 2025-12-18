@@ -323,6 +323,9 @@ export function NotificationBell({
         return DollarSign;
       case "course_recommendation":
         return BookOpen;
+      case "document":
+      case "document_request":
+        return FileText;
       default:
         return Info;
     }
@@ -344,6 +347,9 @@ export function NotificationBell({
         return "text-emerald-500";
       case "course_recommendation":
         return "text-orange-500";
+      case "document":
+      case "document_request":
+        return "text-amber-500";
       default:
         return "text-gray-500";
     }

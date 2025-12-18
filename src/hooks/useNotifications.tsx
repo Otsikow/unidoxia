@@ -43,6 +43,14 @@ const buildToastContent = (notification: Notification) => {
     };
   }
 
+  if (notification.type === 'document' || notification.type === 'document_request') {
+    const requestType = metadata.request_type || metadata.requestType || metadata.document_type || 'Document';
+    return {
+      title: notification.title || 'Document Update',
+      description: notification.content || `A ${requestType} document requires your attention.`,
+    };
+  }
+
   return {
     title: notification.title,
     description: notification.content,

@@ -83,7 +83,7 @@ interface NotificationSettings {
   sound: boolean;
 }
 
-type FilterType = "all" | "unread" | "read" | "application_status" | "message" | "commission" | "course_recommendation";
+type FilterType = "all" | "unread" | "read" | "application_status" | "message" | "commission" | "course_recommendation" | "document";
 
 const STORAGE_KEY = "notification_settings";
 
@@ -435,6 +435,8 @@ export default function NotificationCenter() {
       case "message": return MessageSquare;
       case "commission": return DollarSign;
       case "course_recommendation": return BookOpen;
+      case "document": return FileText;
+      case "document_request": return FileText;
       default: return Info;
     }
   };
@@ -448,6 +450,8 @@ export default function NotificationCenter() {
       case "message": return "text-purple-600 dark:text-purple-400 bg-purple-500/10";
       case "commission": return "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10";
       case "course_recommendation": return "text-orange-600 dark:text-orange-400 bg-orange-500/10";
+      case "document": return "text-amber-600 dark:text-amber-400 bg-amber-500/10";
+      case "document_request": return "text-amber-600 dark:text-amber-400 bg-amber-500/10";
       default: return "text-gray-600 dark:text-gray-400 bg-gray-500/10";
     }
   };
@@ -467,7 +471,12 @@ export default function NotificationCenter() {
     // Filter by type/status
     if (filter === "unread" && n.read) return false;
     if (filter === "read" && !n.read) return false;
-    if (filter !== "all" && filter !== "unread" && filter !== "read" && n.type !== filter) return false;
+    // Handle document filter to match both 'document' and 'document_request' types
+    if (filter === "document") {
+      if (n.type !== "document" && n.type !== "document_request") return false;
+    } else if (filter !== "all" && filter !== "unread" && filter !== "read" && n.type !== filter) {
+      return false;
+    }
     
     // Search filter
     if (searchQuery) {
@@ -667,6 +676,9 @@ export default function NotificationCenter() {
           </TabsTrigger>
           <TabsTrigger className="px-3 text-xs" value="course_recommendation">
             <BookOpen className="mr-1 h-3 w-3" /> Courses
+          </TabsTrigger>
+          <TabsTrigger className="px-3 text-xs" value="document">
+            <FileText className="mr-1 h-3 w-3" /> Documents
           </TabsTrigger>
         </TabsList>
 
