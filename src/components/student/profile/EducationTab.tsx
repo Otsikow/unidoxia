@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import type { ChangeEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,15 +9,21 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, GraduationCap, Pencil, Trash2, Loader2 } from 'lucide-react';
+import { Plus, GraduationCap, Pencil, Trash2, Loader2, Eye, Upload } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
+import { validateFileUpload } from '@/lib/fileUpload';
 import {
   EDUCATION_LEVEL_OPTIONS,
   getEducationLevelLabel,
   normalizeEducationLevel,
 } from '@/lib/education';
+
+const CERTIFICATE_BUCKET = 'student-documents';
+const CERTIFICATE_PREFIX = 'education-certificates';
+const MAX_CERTIFICATE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_CERTIFICATE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
 
 interface EducationTabProps {
   studentId: string;
@@ -31,6 +38,9 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
   const [educationRecords, setEducationRecords] = useState<Tables<'education_records'>[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<Tables<'education_records'> | null>(null);
+  const [certificateFile, setCertificateFile] = useState<File | null>(null);
+  const [existingCertificatePath, setExistingCertificatePath] = useState<string | null>(null);
+  const [viewingCertificatePath, setViewingCertificatePath] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     level: '',
     institution_name: '',
@@ -66,8 +76,38 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
     e.preventDefault();
     setLoading(true);
 
+    let uploadedCertificatePath: string | null = null;
+    const previousCertificatePath = editingRecord?.certificate_url ?? null;
+
     try {
       const normalizedLevel = normalizeEducationLevel(formData.level);
+      let certificatePath = existingCertificatePath ?? null;
+
+      // Handle certificate upload
+      if (certificateFile) {
+        const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(certificateFile, {
+          allowedMimeTypes: ALLOWED_CERTIFICATE_TYPES,
+          allowedExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
+          maxSizeBytes: MAX_CERTIFICATE_SIZE,
+        });
+
+        const extension = sanitizedFileName.split('.').pop()?.toLowerCase() || 'pdf';
+        const safeInstitution = formData.institution_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
+        const filePath = `${studentId}/${CERTIFICATE_PREFIX}/${safeInstitution}-${Date.now()}.${extension}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(CERTIFICATE_BUCKET)
+          .upload(filePath, preparedFile, {
+            cacheControl: '3600',
+            upsert: false,
+            contentType: detectedMimeType
+          });
+
+        if (uploadError) throw uploadError;
+
+        uploadedCertificatePath = filePath;
+        certificatePath = filePath;
+      }
 
       if (editingRecord) {
         const { error } = await supabase
@@ -75,11 +115,23 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
           .update({
             ...formData,
             level: normalizedLevel,
-            gpa: formData.gpa ? parseFloat(formData.gpa) : null
+            gpa: formData.gpa ? parseFloat(formData.gpa) : null,
+            certificate_url: certificatePath
           })
           .eq('id', editingRecord.id);
 
         if (error) throw error;
+
+        // Clean up old certificate if a new one was uploaded
+        if (uploadedCertificatePath && previousCertificatePath && previousCertificatePath !== uploadedCertificatePath) {
+          const { error: removeError } = await supabase.storage
+            .from(CERTIFICATE_BUCKET)
+            .remove([previousCertificatePath]);
+          if (removeError) {
+            console.error('Error removing previous certificate:', removeError);
+          }
+        }
+
         toast({ title: 'Success', description: 'Education record updated' });
       } else {
         const { error } = await supabase
@@ -88,7 +140,8 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
             student_id: studentId,
             ...formData,
             level: normalizedLevel,
-            gpa: formData.gpa ? parseFloat(formData.gpa) : null
+            gpa: formData.gpa ? parseFloat(formData.gpa) : null,
+            certificate_url: certificatePath
           });
 
         if (error) throw error;
@@ -97,6 +150,8 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
 
       setIsDialogOpen(false);
       setEditingRecord(null);
+      setCertificateFile(null);
+      setExistingCertificatePath(null);
       resetForm();
       await fetchEducationRecords();
       
@@ -107,6 +162,16 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
       
       onUpdate?.();
     } catch (error: unknown) {
+      // Clean up uploaded certificate on error
+      if (uploadedCertificatePath) {
+        const { error: cleanupError } = await supabase.storage
+          .from(CERTIFICATE_BUCKET)
+          .remove([uploadedCertificatePath]);
+        if (cleanupError) {
+          console.error('Failed to clean up uploaded certificate after error:', cleanupError);
+        }
+      }
+
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast({
         title: 'Error',
@@ -118,16 +183,27 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (record: Tables<'education_records'>) => {
     if (!confirm('Are you sure you want to delete this education record?')) return;
 
     try {
       const { error } = await supabase
         .from('education_records')
         .delete()
-        .eq('id', id);
+        .eq('id', record.id);
 
       if (error) throw error;
+
+      // Delete certificate from storage if it exists
+      if (record.certificate_url) {
+        const { error: removeError } = await supabase.storage
+          .from(CERTIFICATE_BUCKET)
+          .remove([record.certificate_url]);
+        if (removeError) {
+          console.error('Error removing certificate from storage:', removeError);
+        }
+      }
+
       toast({ title: 'Success', description: 'Education record deleted' });
       await fetchEducationRecords();
       
@@ -157,6 +233,8 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
       grade_scale: '',
       gpa: ''
     });
+    setCertificateFile(null);
+    setExistingCertificatePath(null);
   };
 
   const openEditDialog = (record: Tables<'education_records'>) => {
@@ -170,7 +248,79 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
       grade_scale: record.grade_scale || '',
       gpa: record.gpa?.toString() || ''
     });
+    setCertificateFile(null);
+    setExistingCertificatePath(record.certificate_url || null);
     setIsDialogOpen(true);
+  };
+
+  const handleCertificateChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setCertificateFile(null);
+      return;
+    }
+
+    if (!ALLOWED_CERTIFICATE_TYPES.includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload a PDF or image file (PNG, JPG, JPEG).',
+        variant: 'destructive'
+      });
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_CERTIFICATE_SIZE) {
+      toast({
+        title: 'File too large',
+        description: 'Certificate must be smaller than 10MB.',
+        variant: 'destructive'
+      });
+      event.target.value = '';
+      return;
+    }
+
+    setCertificateFile(file);
+  };
+
+  const viewCertificate = async (path: string) => {
+    if (viewingCertificatePath) return;
+
+    setViewingCertificatePath(path);
+    try {
+      const { data, error } = await supabase.storage
+        .from(CERTIFICATE_BUCKET)
+        .download(path);
+
+      if (error || !data) {
+        throw new Error(error?.message || 'Unable to retrieve certificate');
+      }
+
+      const url = URL.createObjectURL(data);
+      const newWindow = window.open(url, '_blank');
+
+      if (!newWindow) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = path.split('/').pop() || 'certificate';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 60_000);
+    } catch (error) {
+      console.error('Error viewing certificate:', error);
+      toast({
+        title: 'Unable to view certificate',
+        description: error instanceof Error ? error.message : 'Please try again later.',
+        variant: 'destructive'
+      });
+    } finally {
+      setViewingCertificatePath(null);
+    }
   };
 
   if (loading && educationRecords.length === 0) {
@@ -285,6 +435,45 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
                     />
                   </div>
                 </div>
+
+                <div className="space-y-2 pt-4 border-t">
+                  <Label htmlFor="certificate" className="flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    Certificate (Optional)
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Upload your degree certificate, transcript, or academic record
+                  </p>
+                  <Input
+                    id="certificate"
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,application/pdf"
+                    onChange={handleCertificateChange}
+                  />
+                  {certificateFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Selected: {certificateFile.name} ({(certificateFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  )}
+                  {!certificateFile && existingCertificatePath && (
+                    <div className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
+                      <span className="text-muted-foreground">Existing certificate uploaded</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => viewCertificate(existingCertificatePath)}
+                        disabled={viewingCertificatePath !== null}
+                      >
+                        {viewingCertificatePath === existingCertificatePath && (
+                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        )}
+                        <Eye className="mr-1 h-3 w-3" />
+                        View
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
@@ -327,13 +516,13 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
                     <Button size="sm" variant="outline" onClick={() => openEditDialog(record)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(record.id)}>
+                    <Button size="sm" variant="outline" onClick={() => handleDelete(record)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Duration:</span>
@@ -346,6 +535,26 @@ export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
                     </div>
                   )}
                 </div>
+                {record.certificate_url && (
+                  <div className="flex items-center justify-between rounded-lg border px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium">Certificate</p>
+                      <p className="text-xs text-muted-foreground">View the uploaded document</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => viewCertificate(record.certificate_url!)}
+                      disabled={viewingCertificatePath !== null}
+                    >
+                      {viewingCertificatePath === record.certificate_url && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
+                      <Eye className="mr-2 h-4 w-4" />
+                      View
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
