@@ -598,6 +598,7 @@ export const UniversityDashboardLayout = ({
   const location = useLocation();
   const queryClient = useQueryClient();
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const ensureUniversityAttemptedRef = useRef(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const tenantId = profile?.tenant_id ?? null;
@@ -611,6 +612,78 @@ export const UniversityDashboardLayout = ({
     staleTime: 1000 * 30, // 30 seconds
     refetchInterval: 1000 * 60 * 2, // Auto-refetch every 2 minutes
   });
+
+  // Self-healing: automatically create/connect the university profile if it is missing
+  useEffect(() => {
+    const validTenantId = tenantId && isValidUuid(tenantId) ? tenantId : null;
+    const shouldEnsure =
+      !ensureUniversityAttemptedRef.current &&
+      !loading &&
+      !profileLoading &&
+      !isLoading &&
+      !isFetching &&
+      !error &&
+      validTenantId &&
+      !data?.university;
+
+    if (!shouldEnsure) return;
+
+    ensureUniversityAttemptedRef.current = true;
+
+    const ensureUniversity = async () => {
+      try {
+        console.warn("[UniversityDashboard] Missing university profile detected, attempting to create/connect", {
+          tenantId: validTenantId,
+          userId: profile?.id,
+          email: profile?.email,
+        });
+
+        const { error: rpcError } = await supabase.rpc("get_or_create_university", {
+          p_tenant_id: validTenantId,
+          p_name: profile?.full_name ? `${profile.full_name}'s University` : "University Partner",
+          p_country: profile?.country || "Unknown",
+          p_contact_name: profile?.full_name || profile?.email || "University Partner",
+          p_contact_email: profile?.email || null,
+        });
+
+        if (rpcError) {
+          console.error("[UniversityDashboard] Failed to self-heal university profile:", rpcError);
+          toast({
+            title: "Unable to load university profile",
+            description: "We couldn't connect your university automatically. Please refresh or contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log("[UniversityDashboard] University profile ensured successfully. Refreshing dashboard data…");
+        await refetch();
+      } catch (err) {
+        console.error("[UniversityDashboard] Unexpected error ensuring university profile:", err);
+        toast({
+          title: "Connection issue",
+          description: "We couldn't verify your university profile. Please try again shortly.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    void ensureUniversity();
+  }, [
+    data?.university,
+    error,
+    isFetching,
+    isLoading,
+    loading,
+    profile?.country,
+    profile?.email,
+    profile?.full_name,
+    profile?.id,
+    profileLoading,
+    refetch,
+    tenantId,
+    toast,
+  ]);
 
   // Get program IDs for filtering real-time updates
   const programIds = useMemo(() => data?.programs?.map(p => p.id) ?? [], [data?.programs]);
