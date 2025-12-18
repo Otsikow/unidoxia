@@ -578,7 +578,7 @@ export function ApplicationReviewDialog({
           content,
           sender_id,
           created_at,
-          sender:profiles!sender_id(full_name)
+          sender:profiles!conversation_messages_sender_profile_fkey(full_name)
         `)
         .eq("conversation_id", convId)
         .order("created_at", { ascending: true })

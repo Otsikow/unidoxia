@@ -808,6 +808,20 @@ export type Database = {
             referencedRelation: "conversation_messages"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversation_messages_sender_profile_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_messages_sender_profile_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversation_participants: {
