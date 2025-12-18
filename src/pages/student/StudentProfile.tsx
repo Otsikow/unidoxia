@@ -13,7 +13,7 @@ import { FinancesTab } from '@/components/student/profile/FinancesTab';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import type { Tables } from '@/integrations/supabase/types';
-import { Circle, CheckCircle, Loader2, LogOut, ChevronRight } from 'lucide-react';
+import { Circle, CheckCircle, Loader2, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 export default function StudentProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { signOut, user, profile } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const {
     hasError,
@@ -157,10 +157,6 @@ export default function StudentProfile() {
   const handleBackToHome = useCallback(() => {
     navigate('/dashboard');
   }, [navigate]);
-
-  const handleSignOut = useCallback(() => {
-    void signOut({ redirectTo: '/' });
-  }, [signOut]);
 
   const DEFAULT_TENANT_ID =
     import.meta.env.VITE_DEFAULT_TENANT_ID ?? '00000000-0000-0000-0000-000000000001';
@@ -311,41 +307,21 @@ export default function StudentProfile() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto py-6 md:py-8 px-4 space-y-6">
-        <div className="flex items-center justify-between">
-          <BackButton
-            variant="ghost"
-            size="sm"
-            fallback="/dashboard"
-            onClick={(event) => {
-              event.preventDefault();
-              handleBackToHome();
-            }}
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            className="sm:hidden text-destructive hover:bg-destructive/10"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </div>
+        <BackButton
+          variant="ghost"
+          size="sm"
+          fallback="/dashboard"
+          onClick={(event) => {
+            event.preventDefault();
+            handleBackToHome();
+          }}
+        />
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-fade-in">
-          <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">My Profile</h1>
-            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Keep your information up to date to ensure smooth application processing
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={handleSignOut}
-            className="hidden sm:flex text-destructive border-destructive hover:bg-destructive/10"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
+        <div className="space-y-2 animate-fade-in">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">My Profile</h1>
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+            Keep your information up to date to ensure smooth application processing
+          </p>
         </div>
 
           {/* Progress Overview */}
