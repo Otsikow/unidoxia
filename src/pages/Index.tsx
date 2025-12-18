@@ -11,8 +11,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 
 import { Users, FileCheck, Clock, Sparkles, Calculator } from "lucide-react";
 
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
@@ -193,9 +191,7 @@ const Index = () => {
       />
 
       {/* ---------- HERO ---------- */}
-      <section className="hero-video-container">
-        <LandingHeader />
-
+      <section className="hero-video-container scroll-mt-20" id="home">
         {shouldRenderHeroVideo ? (
           <>
             <div
@@ -245,7 +241,74 @@ const Index = () => {
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{heroDescription}</p>
       </section>
 
-      <StudyProgramSearch />
+      {/* ---------- HOW IT WORKS ---------- */}
+      <section id="how-it-works" className="container mx-auto px-4 py-16 sm:py-20">
+        <div className="max-w-3xl mx-auto text-center space-y-3">
+          <Badge variant="secondary" className="w-fit mx-auto">
+            {t("pages.index.howItWorks.badge")}
+          </Badge>
+          <h2 className="text-3xl sm:text-4xl font-bold">
+            {t("pages.index.howItWorks.heading")}
+          </h2>
+          <p className="text-muted-foreground text-lg">
+            {t("pages.index.howItWorks.subtitle")}
+          </p>
+        </div>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {[
+            {
+              key: "startProfile" as const,
+              action: "/auth/signup?role=student",
+            },
+            {
+              key: "uploadDocuments" as const,
+              action: "/student/documents",
+            },
+            {
+              key: "bookGuidanceCall" as const,
+              action: "/contact",
+            },
+          ].map((step, index) => (
+            <Card key={step.key} className="h-full">
+              <CardContent className="p-6 space-y-4 flex flex-col h-full">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs uppercase font-semibold tracking-[0.2em] text-primary/80">
+                      {t("pages.index.howItWorks.stepLabel", { index: index + 1 })}
+                    </p>
+                    <h3 className="text-xl font-semibold">
+                      {t(`pages.index.howItWorks.steps.${step.key}.title`)}
+                    </h3>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {t("pages.index.howItWorks.nextBestStep")}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed flex-1">
+                  {t(`pages.index.howItWorks.steps.${step.key}.description`)}
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-primary">
+                    <Sparkles className="h-4 w-4" />
+                    <span>{t(`pages.index.howItWorks.steps.${step.key}.assurance`)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {t("pages.index.howItWorks.editable")}
+                  </p>
+                </div>
+                <Button asChild size="lg" className="w-full mt-auto">
+                  <Link to={step.action}>
+                    {t(`pages.index.howItWorks.steps.${step.key}.cta`)}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <StudyProgramSearch sectionId="destinations" />
 
       {/* ---------- VISA ---------- */}
       <section className="py-24 container mx-auto grid lg:grid-cols-2 gap-14 px-4">
@@ -285,12 +348,25 @@ const Index = () => {
       </section>
 
       {/* ---------- LAZY SECTIONS ---------- */}
-      <Suspense fallback={<SectionLoader />}><AIFeeCalculator /></Suspense>
+      <section id="pricing" className="scroll-mt-24">
+        <div className="container mx-auto px-4 text-center space-y-2 mb-6">
+          <Badge variant="secondary" className="mx-auto w-fit">
+            {t("layout.navbar.links.pricing")}
+          </Badge>
+          <h2 className="text-3xl font-bold">Transparent pricing, no surprises</h2>
+          <p className="text-muted-foreground">
+            {t("pages.index.howItWorks.assurances.secure")} • {t("pages.index.howItWorks.assurances.editLater")}
+          </p>
+        </div>
+        <Suspense fallback={<SectionLoader />}><AIFeeCalculator /></Suspense>
+      </section>
       <Suspense fallback={<SectionLoader />}><ZoeExperienceSection /></Suspense>
       <Suspense fallback={<SectionLoader />}><FeaturedUniversitiesSection /></Suspense>
       <Suspense fallback={<SectionLoader />}><StoryboardSection /></Suspense>
 
-      <SuccessStoriesMarquee />
+      <section id="stories" className="scroll-mt-24">
+        <SuccessStoriesMarquee />
+      </section>
 
       {/* ---------- FAQ ---------- */}
       <section className="container mx-auto px-4 py-20">
@@ -317,7 +393,10 @@ const Index = () => {
       {/* ---------- CONTACT ---------- */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-3xl font-bold text-center mb-4">{contactHeading}</h2>
-        <p className="text-muted-foreground text-center mb-12">{contactSubtitle}</p>
+        <p className="text-muted-foreground text-center mb-4">{contactSubtitle}</p>
+        <p className="text-sm text-muted-foreground text-center mb-12">
+          {t("pages.index.howItWorks.assurances.editLater")} • {t("pages.index.howItWorks.assurances.secure")}
+        </p>
 
         <Card className="max-w-2xl mx-auto">
           <CardContent className="p-8">

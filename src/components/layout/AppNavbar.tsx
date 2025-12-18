@@ -10,11 +10,10 @@ import {
   LogOut,
   Settings,
   Home as HomeIcon,
-  Search,
-  GraduationCap,
-  Newspaper,
-  MessageCircle,
-  Award,
+  ListChecks,
+  MapPin,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,16 +32,15 @@ import BackButton from "@/components/BackButton";
 
 // ✅ Finalized Navigation Links (merged correctly)
 const navLinks: Array<{
-  id: "home" | "search" | "scholarships" | "courses" | "blog" | "contact";
+  id: "home" | "howItWorks" | "destinations" | "pricing" | "stories";
   to: string;
   icon: LucideIcon;
 }> = [
   { id: "home", to: "/", icon: HomeIcon },
-  { id: "search", to: "/search", icon: Search },
-  { id: "scholarships", to: "/scholarships", icon: Award },
-  { id: "courses", to: "/courses", icon: GraduationCap },
-  { id: "blog", to: "/blog", icon: Newspaper },
-  { id: "contact", to: "/contact", icon: MessageCircle },
+  { id: "howItWorks", to: "/#how-it-works", icon: ListChecks },
+  { id: "destinations", to: "/#destinations", icon: MapPin },
+  { id: "pricing", to: "/#pricing", icon: ShieldCheck },
+  { id: "stories", to: "/#stories", icon: Sparkles },
 ];
 
 const HIDDEN_BACK_BUTTON_PATHS = new Set(["/"]);
@@ -53,6 +51,21 @@ const AppNavbar = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const showBackButton = !HIDDEN_BACK_BUTTON_PATHS.has(location.pathname);
+
+  const handleAnchorNavigation = (event: React.MouseEvent, to: string) => {
+    const [path, hash] = to.split("#");
+    if (hash && (path === "" || path === "/") && location.pathname === "/") {
+      event.preventDefault();
+      const target = document.getElementById(hash);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+        if (typeof target.focus === "function") {
+          target.focus({ preventScroll: true });
+        }
+      }
+    }
+    setMobileOpen(false);
+  };
 
   const getInitials = (name: string) =>
     name
@@ -123,7 +136,7 @@ const AppNavbar = () => {
                         key={link.to}
                         to={link.to}
                         className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-foreground transition hover:bg-accent"
-                        onClick={() => setMobileOpen(false)}
+                        onClick={(e) => handleAnchorNavigation(e, link.to)}
                       >
                         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                           <Icon className="h-5 w-5" />
@@ -212,6 +225,7 @@ const AppNavbar = () => {
                 key={link.to}
                 to={link.to}
                 className="group flex flex-col items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-all duration-300 hover:text-primary"
+                onClick={(e) => handleAnchorNavigation(e, link.to)}
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5" />
@@ -277,10 +291,20 @@ const AppNavbar = () => {
               <Button size="sm" asChild className="hidden lg:inline-flex">
                 <Link to="/auth/signup">{t("common.actions.signup")}</Link>
               </Button>
+              <Button
+                size="sm"
+                asChild
+                className="hidden lg:inline-flex bg-primary/90 hover:bg-primary text-primary-foreground font-semibold"
+              >
+                <Link to="/auth/signup?role=student">{t("layout.navbar.links.startProfileCta")}</Link>
+              </Button>
               <Button variant="ghost" size="sm" asChild className="lg:hidden">
                 <Link to="/auth/login" className="px-2" aria-label={t("common.actions.login")}>
                   {t("common.actions.login")}
                 </Link>
+              </Button>
+              <Button size="sm" asChild className="lg:hidden">
+                <Link to="/auth/signup?role=student">{t("layout.navbar.links.startProfileCta")}</Link>
               </Button>
             </div>
           )}

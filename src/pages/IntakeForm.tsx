@@ -1,8 +1,12 @@
 import StudentIntakeForm from '@/components/forms/StudentIntakeForm';
 import BackButton from '@/components/BackButton';
 import professionalConsultant from '@/assets/professional-consultant.png';
+import { Badge } from '@/components/ui/badge';
+import { useTranslation } from 'react-i18next';
 
 export default function IntakeForm() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-gradient-subtle py-8">
       <div className="container mx-auto px-4 space-y-6">
@@ -13,6 +17,17 @@ export default function IntakeForm() {
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">Student Intake Form</h1>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Complete this form to start your international education journey with personalized guidance and support
+            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <Badge variant="secondary" className="w-fit">
+                {t("pages.index.howItWorks.nextBestStep")}
+              </Badge>
+              <p className="text-sm text-muted-foreground">
+                {t("pages.index.howItWorks.steps.startProfile.title")} → {t("pages.index.howItWorks.steps.uploadDocuments.title")} → {t("pages.index.howItWorks.steps.bookGuidanceCall.title")}
+              </p>
+            </div>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {t("pages.index.howItWorks.assurances.editLater")} • {t("pages.index.howItWorks.assurances.secure")}
             </p>
           </div>
           <div className="hidden md:block flex-shrink-0">

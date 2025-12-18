@@ -103,6 +103,14 @@ export const ContactForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 px-4 py-3 space-y-1">
+        <p className="text-sm font-semibold text-foreground">
+          {t("pages.index.howItWorks.assurances.editLater")}
+        </p>
+        <p className="text-xs text-muted-foreground">
+          {t("pages.index.howItWorks.assurances.secure")}
+        </p>
+      </div>
       <div>
         <Input
           type="text"
