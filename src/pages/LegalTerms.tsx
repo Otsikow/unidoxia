@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import BackButton from '@/components/BackButton';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from "@/components/SEO";
 
@@ -215,8 +214,7 @@ const LegalTerms = () => {
         keywords="terms of service, legal terms, platform agreement, student agreement, university partnership terms"
       />
       <header className="border-b bg-background/60 backdrop-blur">
-        <div className="container mx-auto flex max-w-6xl items-center gap-3 px-4 py-6">
-          <BackButton variant="ghost" size="sm" fallback="/" className="px-0" />
+        <div className="container mx-auto max-w-6xl px-4 py-6">
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wide text-primary">Legal</p>
             <h1 className="text-2xl font-semibold md:text-3xl">Terms of Service</h1>

@@ -8,6 +8,7 @@ export interface DirectoryProfile {
   role: 'student' | 'agent' | 'partner' | 'staff' | 'admin' | 'counselor' | 'verifier' | 'finance' | 'school_rep';
   tenant_id: string;
   headline?: string;
+  contact_type?: 'student' | 'agent' | 'staff' | 'university' | 'support';
 }
 
 export interface StudentContact {
@@ -312,6 +313,96 @@ export async function fetchMessagingContactIds(): Promise<string[]> {
     return contacts.map((contact) => contact.id);
   } catch (error) {
     console.error("Error fetching messaging contact IDs:", error);
+    return [];
+  }
+}
+
+export interface SupportContact {
+  profile_id: string;
+  full_name: string;
+  email: string;
+  avatar_url: string | null;
+  role: string;
+  headline?: string;
+}
+
+/**
+ * Fetches UniDoxia admin/staff contacts that can be messaged for support.
+ * This is primarily used by university partners who need to contact UniDoxia for issues.
+ * The function returns admin/staff from the platform tenant (Bridge Global / UniDoxia).
+ */
+export async function fetchSupportContacts(): Promise<SupportContact[]> {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) return [];
+
+    // Get current user's profile
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('role, tenant_id')
+      .eq('id', userData.user.id)
+      .single();
+
+    if (!profileData) return [];
+
+    // Try using the RPC function which handles cross-tenant logic
+    try {
+      const { data: contacts, error: rpcError } = await supabase.rpc(
+        'get_messaging_contacts' as any,
+        {
+          p_search: null,
+          p_limit: 50,
+        }
+      );
+
+      if (!rpcError && contacts && Array.isArray(contacts)) {
+        // Filter to only support contacts (admin/staff with contact_type = 'support')
+        const supportContacts = contacts
+          .filter((contact: any) => contact.contact_type === 'support')
+          .map((contact: any) => ({
+            profile_id: contact.profile_id,
+            full_name: contact.full_name,
+            email: contact.email,
+            avatar_url: contact.avatar_url,
+            role: contact.role,
+            headline: contact.headline || 'UniDoxia Support',
+          }));
+
+        if (supportContacts.length > 0) {
+          return supportContacts;
+        }
+      }
+    } catch (rpcErr) {
+      console.warn('get_messaging_contacts RPC failed for support contacts:', rpcErr);
+    }
+
+    // Fallback: For university users (partner/school_rep), fetch admin/staff from a different approach
+    // This queries profiles with admin/staff roles that are not in the user's tenant
+    if (['partner', 'school_rep'].includes(profileData.role)) {
+      // Get all admin/staff profiles that might be support contacts
+      // We look for profiles with admin/staff roles that have email domains suggesting they're platform staff
+      const { data: staffProfiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, avatar_url, role, tenant_id')
+        .in('role', ['admin', 'staff', 'counselor'])
+        .neq('tenant_id', profileData.tenant_id)
+        .limit(20);
+
+      if (staffProfiles && staffProfiles.length > 0) {
+        return staffProfiles.map((p: any) => ({
+          profile_id: p.id,
+          full_name: p.full_name,
+          email: p.email,
+          avatar_url: p.avatar_url,
+          role: p.role,
+          headline: 'UniDoxia Support',
+        }));
+      }
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error fetching support contacts:', error);
     return [];
   }
 }
