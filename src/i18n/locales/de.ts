@@ -737,9 +737,9 @@ const de = {
         title: "Suchfilter",
         subtitle: "Verfeinern Sie Ihre Suche unten",
         fields: {
-          universityName: {
-            label: "Name der Universität",
-            placeholder: "Universitäten suchen...",
+          courseName: {
+            label: "Kursname",
+            placeholder: "Kurse suchen...",
           },
           country: {
             label: "Land",
@@ -790,6 +790,15 @@ const de = {
         },
         viewDetails: "Details ansehen",
         visitWebsite: "Website besuchen",
+      },
+      browseCourses: {
+        title: "Alle Kurse durchsuchen",
+        subtitle: "Entdecken Sie Kurse von Top-Universitäten weltweit",
+        loading: "Kurse werden geladen...",
+        loadMore: "Mehr Kurse laden",
+        noCourses: "Derzeit keine Kurse verfügbar.",
+        viewAll: "Alle anzeigen",
+        duration: "{{months}} Monate",
       },
     },
     contact: {

@@ -19,10 +19,8 @@ import {
   registerDirectoryProfile,
   findDirectoryProfileById,
   getDefaultProfileForRole,
-  getPlaceholderIdForRole,
   type DirectoryProfile,
 } from "@/lib/messaging/directory";
-import { getMessagingContactIds } from "@/lib/messaging/relationships";
 import {
   initializeMockMessagingState,
   sortConversations,
@@ -82,15 +80,15 @@ export function useMessages() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingIndicator[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const conversationsRef = useRef<Conversation[]>([]);
   const messagesRef = useRef<Record<string, Message[]>>({});
   const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
-  const typingChannelRef = useRef<RealtimeChannel | null>(null);
 
   /* ======================================================
-     Resolve Current Profile (CRITICAL FIX)
+     Resolve Current Profile
   ======================================================= */
 
   const resolvedProfile = useMemo<DirectoryProfile>(() => {
@@ -132,6 +130,60 @@ export function useMessages() {
   const usingMockMessaging = !isSupabaseConfigured;
 
   /* ======================================================
+     Fetch Messages for a Conversation (DB)
+  ======================================================= */
+
+  const fetchMessagesForConversation = useCallback(async (conversationId: string): Promise<Message[]> => {
+    if (!conversationId || !user?.id) return [];
+
+    const { data, error } = await supabase
+      .from("conversation_messages")
+      .select(`
+        id,
+        conversation_id,
+        sender_id,
+        content,
+        message_type,
+        attachments,
+        metadata,
+        reply_to_id,
+        edited_at,
+        deleted_at,
+        created_at,
+        sender:profiles!conversation_messages_sender_id_fkey(id, full_name, avatar_url)
+      `)
+      .eq("conversation_id", conversationId)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      console.error("Failed to fetch messages:", error);
+      return [];
+    }
+
+    const mapped: Message[] = (data ?? []).map((m: any) => ({
+      id: m.id,
+      conversation_id: m.conversation_id,
+      sender_id: m.sender_id,
+      content: m.content,
+      message_type: m.message_type,
+      attachments: m.attachments ?? [],
+      metadata: m.metadata ?? null,
+      reply_to_id: m.reply_to_id,
+      edited_at: m.edited_at,
+      deleted_at: m.deleted_at,
+      created_at: m.created_at,
+      sender: m.sender ? {
+        id: m.sender.id,
+        full_name: m.sender.full_name,
+        avatar_url: m.sender.avatar_url,
+      } : undefined,
+    }));
+
+    return mapped;
+  }, [user?.id]);
+
+  /* ======================================================
      Fetch Conversations (DB)
   ======================================================= */
 
@@ -166,7 +218,7 @@ export function useMessages() {
       `,
       )
       .in("id", ids)
-      .order("updated_at", { ascending: false });
+      .order("last_message_at", { ascending: false, nullsFirst: false });
 
     // Map DB results to Conversation type with required fields
     const mapped = (convs ?? []).map((c: any) => ({
@@ -175,6 +227,134 @@ export function useMessages() {
     })) as Conversation[];
     return sortConversations(mapped);
   }, [user?.id]);
+
+  /* ======================================================
+     Set Current Conversation & Load Messages
+  ======================================================= */
+
+  const setCurrentConversation = useCallback(async (id: string | null) => {
+    setCurrentConversationState(id);
+    
+    if (!id) {
+      setMessages([]);
+      return;
+    }
+
+    // Check if we already have messages cached
+    if (messagesRef.current[id]?.length) {
+      setMessages(messagesRef.current[id]);
+    }
+
+    if (usingMockMessaging) {
+      setMessages(messagesRef.current[id] ?? []);
+      return;
+    }
+
+    // Fetch messages from database
+    setLoadingMessages(true);
+    try {
+      const msgs = await fetchMessagesForConversation(id);
+      messagesRef.current = { ...messagesRef.current, [id]: msgs };
+      setMessagesById((prev) => ({ ...prev, [id]: msgs }));
+      setMessages(msgs);
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, [fetchMessagesForConversation, usingMockMessaging]);
+
+  /* ======================================================
+     Realtime Subscription for New Messages
+  ======================================================= */
+
+  useEffect(() => {
+    if (usingMockMessaging || !user?.id) return;
+
+    // Subscribe to new messages in conversations the user participates in
+    const channel = supabase
+      .channel(`messages-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "conversation_messages",
+        },
+        async (payload) => {
+          const newMessage = payload.new as any;
+          
+          // Check if user is a participant in this conversation
+          const isParticipant = conversationsRef.current.some(
+            (c) => c.id === newMessage.conversation_id
+          );
+          
+          if (!isParticipant) return;
+
+          // Fetch sender info for the message
+          const { data: senderData } = await supabase
+            .from("profiles")
+            .select("id, full_name, avatar_url")
+            .eq("id", newMessage.sender_id)
+            .single();
+
+          const message: Message = {
+            id: newMessage.id,
+            conversation_id: newMessage.conversation_id,
+            sender_id: newMessage.sender_id,
+            content: newMessage.content,
+            message_type: newMessage.message_type,
+            attachments: newMessage.attachments ?? [],
+            metadata: newMessage.metadata ?? null,
+            reply_to_id: newMessage.reply_to_id,
+            edited_at: newMessage.edited_at,
+            deleted_at: newMessage.deleted_at,
+            created_at: newMessage.created_at,
+            sender: senderData ? {
+              id: senderData.id,
+              full_name: senderData.full_name,
+              avatar_url: senderData.avatar_url,
+            } : undefined,
+          };
+
+          // Update messages cache
+          setMessagesById((prev) => {
+            const existing = prev[newMessage.conversation_id] ?? [];
+            // Avoid duplicates
+            if (existing.some((m) => m.id === message.id)) return prev;
+            const next = [...existing, message];
+            messagesRef.current = { ...prev, [newMessage.conversation_id]: next };
+            return messagesRef.current;
+          });
+
+          // If this is the current conversation, update visible messages
+          setCurrentConversationState((currentId) => {
+            if (currentId === newMessage.conversation_id) {
+              setMessages((prev) => {
+                if (prev.some((m) => m.id === message.id)) return prev;
+                return [...prev, message];
+              });
+            }
+            return currentId;
+          });
+
+          // Refresh conversations to update last_message_at
+          const convs = await fetchConversationsFromDb();
+          conversationsRef.current = convs;
+          setConversations(convs);
+        }
+      )
+      .subscribe();
+
+    realtimeChannelRef.current = channel;
+
+    return () => {
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+        realtimeChannelRef.current = null;
+      }
+    };
+  }, [user?.id, usingMockMessaging, fetchConversationsFromDb]);
 
   /* ======================================================
      Bootstrap
@@ -210,7 +390,16 @@ export function useMessages() {
         if (cancelled) return;
         conversationsRef.current = convs;
         setConversations(convs);
-        setCurrentConversationState(convs[0]?.id ?? null);
+        
+        // If there are conversations, load messages for the first one
+        if (convs.length > 0) {
+          const firstConvId = convs[0].id;
+          setCurrentConversationState(firstConvId);
+          const msgs = await fetchMessagesForConversation(firstConvId);
+          messagesRef.current = { [firstConvId]: msgs };
+          setMessagesById({ [firstConvId]: msgs });
+          setMessages(msgs);
+        }
       } catch (err) {
         console.error("Messaging bootstrap failed:", err);
         setError("Unable to load messages.");
@@ -223,16 +412,11 @@ export function useMessages() {
     return () => {
       cancelled = true;
     };
-  }, [currentUserId, fetchConversationsFromDb, resolvedProfile, tenantId, usingMockMessaging, user?.id]);
+  }, [currentUserId, fetchConversationsFromDb, fetchMessagesForConversation, resolvedProfile, tenantId, usingMockMessaging, user?.id]);
 
   /* ======================================================
-     Messaging Actions
+     Send Message
   ======================================================= */
-
-  const setCurrentConversation = useCallback((id: string | null) => {
-    setCurrentConversationState(id);
-    setMessages(id ? messagesRef.current[id] ?? [] : []);
-  }, []);
 
   const sendMessage = useCallback(
     async (conversationId: string, payload: SendMessagePayload) => {
@@ -262,22 +446,29 @@ export function useMessages() {
         },
       };
 
+      // Optimistic update
       setMessagesById((prev) => {
         const next = [...(prev[conversationId] ?? []), optimistic];
         messagesRef.current = { ...prev, [conversationId]: next };
-        if (currentConversation === conversationId) setMessages(next);
         return messagesRef.current;
+      });
+      
+      setCurrentConversationState((currentId) => {
+        if (currentId === conversationId) {
+          setMessages((prev) => [...prev, optimistic]);
+        }
+        return currentId;
       });
 
       if (usingMockMessaging) return;
 
-      const { error } = await supabase.from("conversation_messages").insert([{
+      const { data, error } = await supabase.from("conversation_messages").insert([{
         conversation_id: conversationId,
         sender_id: currentUserId,
         content,
-        attachments: attachments as any,
+        attachments: attachments as unknown as any[],
         message_type: payload.messageType ?? "text",
-      }]);
+      }]).select().single();
 
       if (error) {
         toast({
@@ -285,13 +476,40 @@ export function useMessages() {
           description: error.message,
           variant: "destructive",
         });
+        // Remove optimistic message on failure
+        setMessagesById((prev) => {
+          const filtered = (prev[conversationId] ?? []).filter((m) => m.id !== optimistic.id);
+          messagesRef.current = { ...prev, [conversationId]: filtered };
+          return messagesRef.current;
+        });
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+        return;
       }
+
+      // Replace optimistic message with real one
+      if (data) {
+        setMessagesById((prev) => {
+          const updated = (prev[conversationId] ?? []).map((m) =>
+            m.id === optimistic.id ? { ...optimistic, id: data.id } : m
+          );
+          messagesRef.current = { ...prev, [conversationId]: updated };
+          return messagesRef.current;
+        });
+        setMessages((prev) => prev.map((m) =>
+          m.id === optimistic.id ? { ...optimistic, id: data.id } : m
+        ));
+      }
+
+      // Refresh conversations to update order
+      const convs = await fetchConversationsFromDb();
+      conversationsRef.current = convs;
+      setConversations(convs);
     },
-    [currentConversation, currentUserId, resolvedProfile, toast, usingMockMessaging],
+    [currentUserId, resolvedProfile, toast, usingMockMessaging, fetchConversationsFromDb],
   );
 
   /* ======================================================
-     Create / Get Conversation (FIXED)
+     Create / Get Conversation
   ======================================================= */
 
   const getOrCreateConversation = useCallback(
@@ -342,7 +560,7 @@ export function useMessages() {
       );
 
       if (existing) {
-        setCurrentConversation(existing.id);
+        await setCurrentConversation(existing.id);
         return existing.id;
       }
 
@@ -369,7 +587,7 @@ export function useMessages() {
           conversationsRef.current = next;
           return next;
         });
-        setCurrentConversation(id);
+        await setCurrentConversation(id);
         return id;
       }
 
@@ -391,7 +609,7 @@ export function useMessages() {
       const convs = await fetchConversationsFromDb();
       conversationsRef.current = convs;
       setConversations(convs);
-      setCurrentConversation(data as string);
+      await setCurrentConversation(data as string);
       return data as string;
     },
     [
@@ -421,9 +639,15 @@ export function useMessages() {
     setConversations(convs);
   }, [fetchConversationsFromDb, usingMockMessaging]);
 
-  const markConversationAsRead = useCallback(async (_conversationId: string) => {
-    // TODO: Implement read receipts
-  }, []);
+  const markConversationAsRead = useCallback(async (conversationId: string) => {
+    if (!user?.id || !conversationId) return;
+    
+    await supabase
+      .from("conversation_participants")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("conversation_id", conversationId)
+      .eq("user_id", user.id);
+  }, [user?.id]);
 
   const removeConversation = useCallback(async (_conversationId: string) => {
     // TODO: Implement conversation removal
@@ -436,6 +660,7 @@ export function useMessages() {
     messages,
     typingUsers,
     loading,
+    loadingMessages,
     error,
     sendMessage,
     getOrCreateConversation,

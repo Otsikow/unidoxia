@@ -701,9 +701,9 @@ const fr = {
         title: "Filtres de recherche",
         subtitle: "Affinez votre recherche ci-dessous",
         fields: {
-          universityName: {
-            label: "Nom de l'université",
-            placeholder: "Rechercher des universités...",
+          courseName: {
+            label: "Nom du cours",
+            placeholder: "Rechercher des cours...",
           },
           country: {
             label: "Pays",
@@ -754,6 +754,15 @@ const fr = {
         },
         viewDetails: "Voir les détails",
         visitWebsite: "Visiter le site",
+      },
+      browseCourses: {
+        title: "Parcourir tous les cours",
+        subtitle: "Explorez les cours des meilleures universités du monde",
+        loading: "Chargement des cours...",
+        loadMore: "Charger plus de cours",
+        noCourses: "Aucun cours disponible pour le moment.",
+        viewAll: "Voir tout",
+        duration: "{{months}} mois",
       },
     },
     contact: {

@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { getErrorMessage, logError, formatErrorForToast } from '@/lib/errorUtils';
 import { isValidUuid } from '@/lib/validation';
+import { getApplicationStatusProgress, getApplicationStatusLabel } from '@/lib/applicationStatus';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -270,6 +271,8 @@ export default function ApplicationDetails() {
   }
 
   const taskProgress = tasks.length === 0 ? 0 : Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100);
+  const statusProgress = getApplicationStatusProgress(app.status);
+  const statusLabel = getApplicationStatusLabel(app.status);
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -320,10 +323,10 @@ export default function ApplicationDetails() {
             <div className="flex items-center justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-muted-foreground">Tasks completion</span>
-                  <span>{taskProgress}%</span>
+                  <span className="text-muted-foreground">Application progress</span>
+                  <span className="text-muted-foreground">{statusLabel}</span>
                 </div>
-                <Progress value={taskProgress} />
+                <Progress value={statusProgress} />
               </div>
               <div className="flex gap-2">
                 {app.status === 'draft' && (
