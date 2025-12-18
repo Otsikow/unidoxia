@@ -206,7 +206,7 @@ const Index = () => {
 
       {/* ---------- WELCOME ---------- */}
       <section className="py-16 text-center">
-        <TypewriterText prefix={heroTitleParts.prefix} highlight={heroTitleParts.highlight} phrases={["Your Future", "Your Dreams", "Success"]} suffix={heroTitleParts.suffix} className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" />
+        <TypewriterText prefix={heroTitleParts.prefix} highlight={heroTitleParts.highlight} phrases={["Your Future", "Your Dreams", "Your Success"]} suffix={heroTitleParts.suffix} className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" />
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{heroDescription}</p>
       </section>
 
