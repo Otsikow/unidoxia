@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Loader2, FileDown, FolderOpen, Clock4, CheckCircle2 } from "lucide-react";
 import {
   Card,
@@ -49,10 +50,23 @@ const formatDate = (value: string | null) => {
 const DocumentsPage = () => {
   const { data, refetch } = useUniversityDashboard();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Read initial status filter from URL parameters
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (statusParam && ["all", "pending", "received"].includes(statusParam)) {
+      setStatusFilter(statusParam);
+      // Clear the URL parameter after applying
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete("status");
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const documentRequests = data?.documentRequests ?? [];
   const tenantId = data?.university?.tenant_id ?? null;

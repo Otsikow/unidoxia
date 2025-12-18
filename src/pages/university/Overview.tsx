@@ -15,6 +15,9 @@ import {
   Globe,
   Mail,
   Phone,
+  MessageCircle,
+  ArrowRight,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -72,6 +75,231 @@ const formatTimeAgo = (date: Date | null) => {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   return date.toLocaleDateString();
+};
+
+// Document Requests Snapshot Component
+interface DocumentRequestsSnapshotProps {
+  metrics: {
+    pendingDocuments: number;
+    receivedDocuments: number;
+  };
+  documentRequests: Array<{
+    id: string;
+    studentId: string | null;
+    studentName: string;
+    status: string;
+    requestType: string;
+    requestedAt: string | null;
+    documentUrl: string | null;
+  }>;
+  tenantId: string | null;
+  refetch: () => Promise<void>;
+}
+
+const DocumentRequestsSnapshot = ({
+  metrics,
+  documentRequests,
+  tenantId,
+  refetch,
+}: DocumentRequestsSnapshotProps) => {
+  const { toast } = useToast();
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const handleMarkReceived = async (requestId: string) => {
+    if (!tenantId) {
+      toast({
+        title: "Missing account context",
+        description: "Unable to verify your university profile.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setUpdatingId(requestId);
+      const { error } = await supabase
+        .from("document_requests")
+        .update({ status: "received" })
+        .eq("id", requestId)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Document received",
+        description: "The request has been marked as complete.",
+      });
+
+      await refetch();
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Unable to update request",
+        description:
+          (error as Error)?.message ??
+          "Please try again or contact your UniDoxia partnership manager.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  return (
+    <Card className={withUniversityCardStyles("lg:col-span-2 rounded-2xl text-card-foreground")}>
+      <CardHeader>
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          Document Requests Snapshot
+        </CardTitle>
+        <CardDescription className="text-xs text-muted-foreground">
+          Prioritise outstanding uploads to keep applications moving
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Pending Requests - Clickable Card */}
+        <Link
+          to="/university/documents?status=pending"
+          className={withUniversitySurfaceTint(
+            "flex items-center justify-between rounded-xl p-4 bg-muted/50 transition-all hover:bg-muted/70 hover:ring-2 hover:ring-amber-500/30 cursor-pointer group"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-amber-500/30 bg-warning/10">
+              <Inbox className="h-4 w-4 text-warning" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Pending requests</p>
+              <p className="text-xs text-muted-foreground">
+                Awaiting student or agent uploads
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-amber-500/50 bg-warning/10 text-warning"
+            >
+              {formatNumber(metrics.pendingDocuments)}
+            </Badge>
+            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
+        </Link>
+
+        {/* Documents Received - Clickable Card */}
+        <Link
+          to="/university/documents?status=received"
+          className={withUniversitySurfaceTint(
+            "flex items-center justify-between rounded-xl p-4 bg-muted/50 transition-all hover:bg-muted/70 hover:ring-2 hover:ring-success/30 cursor-pointer group"
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-success/30 bg-success/10">
+              <CheckCircle2 className="h-4 w-4 text-success" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Documents received</p>
+              <p className="text-xs text-muted-foreground">
+                Ready for compliance verification
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-success/30 bg-success/10 text-success"
+            >
+              {formatNumber(metrics.receivedDocuments)}
+            </Badge>
+            <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+          </div>
+        </Link>
+
+        {/* Latest Requests Section */}
+        <div className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
+            Latest requests
+          </p>
+          <div className="mt-3 space-y-3">
+            {documentRequests.slice(0, 3).length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                All document requests are up to date.
+              </p>
+            ) : (
+              documentRequests.slice(0, 3).map((request) => (
+                <div
+                  key={request.id}
+                  className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
+                >
+                  <div className="flex flex-col min-w-0 flex-1">
+                    {/* Student Name - Clickable to Message */}
+                    {request.studentId ? (
+                      <Link
+                        to={`/university/messages?studentId=${request.studentId}`}
+                        className="font-medium text-foreground hover:text-primary hover:underline inline-flex items-center gap-1.5 w-fit transition-colors"
+                        title={`Message ${request.studentName}`}
+                      >
+                        <span className="truncate">{request.studentName}</span>
+                        <MessageCircle className="h-3 w-3 flex-shrink-0 opacity-60" />
+                      </Link>
+                    ) : (
+                      <span className="font-medium text-foreground truncate">
+                        {request.studentName}
+                      </span>
+                    )}
+                    <span className="text-xs text-muted-foreground truncate">
+                      {request.requestType}
+                    </span>
+                  </div>
+                  
+                  {/* Status Badge - Clickable for Pending */}
+                  {request.status.toLowerCase() !== "received" ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleMarkReceived(request.id)}
+                      disabled={updatingId === request.id}
+                      className="inline-flex items-center gap-1 rounded-full border border-amber-500/50 bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning hover:bg-warning/20 hover:border-amber-500 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                      title="Click to mark as received"
+                    >
+                      {updatingId === request.id ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>Updating</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{request.status.toUpperCase()}</span>
+                          <CheckCircle2 className="h-3 w-3 ml-0.5" />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="border-success/30 bg-success/10 text-success text-xs flex-shrink-0"
+                    >
+                      {request.status.toUpperCase()}
+                    </Badge>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="mt-4 w-full justify-between text-primary hover:text-foreground"
+            asChild
+          >
+            <Link to="/university/documents">
+              Review document queue <span aria-hidden>→</span>
+            </Link>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 
 const OverviewPage = () => {
@@ -599,90 +827,12 @@ const OverviewPage = () => {
           </CardContent>
         </Card>
 
-        <Card className={withUniversityCardStyles("lg:col-span-2 rounded-2xl text-card-foreground")}>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Document Requests Snapshot
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Prioritise outstanding uploads to keep applications moving
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className={withUniversitySurfaceTint("flex items-center justify-between rounded-xl p-4 bg-muted/50")}>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Pending requests</p>
-                <p className="text-xs text-muted-foreground">
-                  Awaiting student or agent uploads
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-amber-500/50 bg-warning/10 text-warning"
-              >
-                {formatNumber(metrics.pendingDocuments)}
-              </Badge>
-            </div>
-            <div className={withUniversitySurfaceTint("flex items-center justify-between rounded-xl p-4 bg-muted/50")}>
-              <div>
-                <p className="text-sm font-semibold text-foreground">Documents received</p>
-                <p className="text-xs text-muted-foreground">
-                  Ready for compliance verification
-                </p>
-              </div>
-              <Badge
-                variant="outline"
-                className="border-success/30 bg-success/10 text-success"
-              >
-                {formatNumber(metrics.receivedDocuments)}
-              </Badge>
-            </div>
-            <div className={withUniversitySurfaceTint("rounded-xl p-4 bg-muted/50")}>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                Latest requests
-              </p>
-              <div className="mt-3 space-y-3">
-                {documentRequests.slice(0, 3).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    All document requests are up to date.
-                  </p>
-                ) : (
-                  documentRequests.slice(0, 3).map((request) => (
-                    <div
-                      key={request.id}
-                      className="flex items-center justify-between gap-3 text-sm text-muted-foreground"
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium text-foreground">
-                          {request.studentName}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {request.requestType}
-                        </span>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="border-border bg-muted/60 text-xs"
-                      >
-                        {request.status.toUpperCase()}
-                      </Badge>
-                    </div>
-                  ))
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mt-4 w-full justify-between text-primary hover:text-foreground"
-                asChild
-              >
-                <Link to="/university/documents">
-                  Review document queue <span aria-hidden>→</span>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <DocumentRequestsSnapshot
+          metrics={metrics}
+          documentRequests={documentRequests}
+          tenantId={university.tenant_id}
+          refetch={refetch}
+        />
       </section>
     </div>
   );
