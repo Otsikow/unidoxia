@@ -34,3 +34,25 @@ export function getApplicationStatusLabel(status: string): string {
   );
 }
 
+/**
+ * Returns a progress percentage (0-100) based on the application's current status.
+ * This reflects how far along the application is in the review/enrollment process.
+ */
+export function getApplicationStatusProgress(status: string): number {
+  const progressMap: Record<string, number> = {
+    draft: 0,
+    submitted: 15,
+    screening: 30,
+    conditional_offer: 50,
+    unconditional_offer: 65,
+    cas_loa: 75,
+    visa: 85,
+    enrolled: 100,
+    // Terminal states
+    withdrawn: 0,
+    deferred: 0,
+    rejected: 0,
+  };
+  return progressMap[status] ?? 0;
+}
+
