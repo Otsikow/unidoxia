@@ -13,7 +13,7 @@ import { FinancesTab } from '@/components/student/profile/FinancesTab';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import type { Tables } from '@/integrations/supabase/types';
-import { Circle, CheckCircle, Loader2, LogOut } from 'lucide-react';
+import { Circle, CheckCircle, Loader2, LogOut, ChevronRight } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
@@ -382,24 +382,41 @@ export default function StudentProfile() {
                 Track what’s left to reach 100% completeness.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {checklist.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.link}
-                  className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted transition-colors"
-                >
-                  {item.completed ? (
-                    <CheckCircle className="h-5 w-5 text-success mt-0.5 flex-shrink-0" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  )}
-                  <div className="space-y-1">
-                    <p className="font-medium leading-tight">{item.title}</p>
-                    <p className="text-sm text-muted-foreground leading-tight">{item.description}</p>
-                  </div>
-                </Link>
-              ))}
+            <CardContent className="space-y-3">
+              {checklist.map((item) => {
+                const handleItemClick = () => {
+                  if (item.id === 'documents') {
+                    navigate('/student/documents');
+                  } else {
+                    setActiveTab(item.id);
+                    // Smooth scroll to tabs section
+                    const tabsElement = document.querySelector('[role="tablist"]');
+                    if (tabsElement) {
+                      tabsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }
+                };
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={handleItemClick}
+                    className="w-full flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-all duration-200 text-left group"
+                  >
+                    {item.completed ? (
+                      <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                    ) : (
+                      <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium leading-tight">{item.title}</p>
+                      <p className="text-sm text-muted-foreground leading-tight mt-0.5">{item.description}</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                  </button>
+                );
+              })}
             </CardContent>
           </Card>
 
