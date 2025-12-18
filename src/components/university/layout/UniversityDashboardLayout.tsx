@@ -116,6 +116,7 @@ export interface UniversityApplication {
   studentCurrentCountry?: string | null;
   documentsCount?: number;
   lastDocumentUploadedAt?: string | null;
+  documentSummaries?: { type: string; uploadedAt: string }[];
   agentId?: string | null;
 }
 
@@ -392,10 +393,10 @@ export const fetchUniversityDashboardData = async (
 
     // Process Applications
     if (rows.length > 0) {
-        // Build a map of programs for quick lookup
-        const programMap = new Map(programs.map((p) => [p.id, p]));
+      // Build a map of programs for quick lookup
+      const programMap = new Map(programs.map((p) => [p.id, p]));
 
-        applications = rows.map((app) => {
+      applications = rows.map((app) => {
         const program = programMap.get(app.program_id);
         const student = app.student_id ? studentMap.get(app.student_id) : undefined;
         
@@ -420,34 +421,90 @@ export const fetchUniversityDashboardData = async (
           studentDateOfBirth: student?.date_of_birth ?? null,
           studentCurrentCountry: student?.current_country ?? null,
           agentId: app.agent_id,
+          // Document fields will be populated below
+          documentsCount: 0,
+          lastDocumentUploadedAt: null,
+          documentSummaries: [],
+        };
+      });
+    }
+
+    // -----------------------------------------------------
+    // DOCUMENT SUMMARY FOR APPLICATION CARDS
+    // -----------------------------------------------------
+    const applicationIds = applications.map((app) => app.id);
+    if (applicationIds.length > 0) {
+      const { data: documentRows, error: documentsError } = await supabase
+        .from("application_documents")
+        .select("application_id, document_type, uploaded_at")
+        .in("application_id", applicationIds);
+
+      if (documentsError) {
+        console.warn("[UniversityDashboard] Document summary fetch failed", documentsError);
+      }
+
+      const docSummary = new Map<string, { count: number; lastUploaded: string | null; summaries: { type: string; uploadedAt: string }[] }>();
+      for (const row of documentRows ?? []) {
+        const current = docSummary.get(row.application_id) ?? {
+          count: 0,
+          lastUploaded: null as string | null,
+          summaries: [],
+        };
+
+        const uploadedAt = row.uploaded_at ?? null;
+        const nextLastUploaded = current.lastUploaded && uploadedAt
+          ? (new Date(uploadedAt) > new Date(current.lastUploaded) ? uploadedAt : current.lastUploaded)
+          : uploadedAt ?? current.lastUploaded;
+
+        docSummary.set(row.application_id, {
+          count: current.count + 1,
+          lastUploaded: nextLastUploaded,
+          summaries: [
+            ...current.summaries,
+            {
+              type: row.document_type ?? "unknown",
+              uploadedAt: row.uploaded_at ?? "",
+            },
+          ],
+        });
+      }
+
+      // Merge document summary data into applications
+      applications = applications.map((app) => {
+        const summary = docSummary.get(app.id);
+        return {
+          ...app,
+          documentsCount: summary?.count ?? 0,
+          lastDocumentUploadedAt: summary?.lastUploaded ?? null,
+          documentSummaries: summary?.summaries ?? [],
         };
       });
     }
 
     // Process Document Requests
     documentRequests = rawDocRequests.map(req => {
-        const student = req.student_id ? studentMap.get(req.student_id) : undefined;
-        const studentName = student?.preferred_name 
-          || student?.legal_name 
-          || student?.profile_name 
-          || "Unknown Student";
+      const student = req.student_id ? studentMap.get(req.student_id) : undefined;
+      const studentName = student?.preferred_name 
+        || student?.legal_name 
+        || student?.profile_name 
+        || "Unknown Student";
 
-        let documentUrl = null;
-        if (req.storage_path) {
-            // Generate a public URL for the document if storage_path exists
-            const { data } = supabase.storage.from('student-documents').getPublicUrl(req.storage_path);
-            documentUrl = data.publicUrl;
-        }
+      let documentUrl = null;
+      if (req.storage_path) {
+        // Generate a public URL for the document if storage_path exists
+        const { data } = supabase.storage.from('student-documents').getPublicUrl(req.storage_path);
+        documentUrl = data.publicUrl;
+      }
 
-        return {
-            id: req.id,
-            studentId: req.student_id,
-            studentName,
-            status: req.status || "pending",
-            requestType: req.request_type || req.document_type || "Document",
-            requestedAt: req.requested_at || req.created_at,
-            documentUrl
-        };
+      return {
+        id: req.id,
+        studentId: req.student_id,
+        studentName,
+        status: req.status || "pending",
+        requestType: req.request_type || req.document_type || "Document",
+        requestedAt: req.requested_at || req.created_at,
+        documentUrl
+      };
     });
 
     /* ---------- METRICS ---------- */
