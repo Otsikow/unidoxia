@@ -48,7 +48,7 @@ export default function ProgramsPage() {
 
   const [search, setSearch] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive" | "draft">("all");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editProgram, setEditProgram] = useState<any | null>(null);
@@ -56,6 +56,7 @@ export default function ProgramsPage() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Track if we're ensuring university exists (self-healing mechanism)
@@ -274,6 +275,78 @@ export default function ProgramsPage() {
     }
   };
 
+  /** SAVE DRAFT */
+  const handleSaveDraft = async (values: Partial<ProgramFormValues>) => {
+    if (!tenantId || !universityId) {
+      toast({
+        title: "Missing account information",
+        description: "Could not verify university account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingDraft(true);
+
+    try {
+      const basePayload = {
+        name: values.name?.trim() || "Untitled Draft",
+        level: values.level?.trim() || "Master",
+        discipline: values.discipline?.trim() || "",
+        duration_months: values.durationMonths || 12,
+        tuition_currency: values.tuitionCurrency || "USD",
+        tuition_amount: values.tuitionAmount || 0,
+        app_fee: values.applicationFee ?? null,
+        seats_available: values.seatsAvailable ?? null,
+        ielts_overall: values.ieltsOverall ?? null,
+        toefl_overall: values.toeflOverall ?? null,
+        intake_months: values.intakeMonths?.length ? values.intakeMonths.sort((a, b) => a - b) : [9],
+        entry_requirements: values.entryRequirements
+          ? values.entryRequirements
+              .split(/\r?\n/)
+              .map((l) => l.trim())
+              .filter(Boolean)
+          : [],
+        description: values.description?.trim() || null,
+        active: false, // Drafts are not active by default
+        is_draft: true,
+        tenant_id: tenantId,
+        university_id: universityId,
+      };
+
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
+
+      const { error } = await supabase.from("programs").insert(payloadWithImage);
+
+      if (error) {
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
+            .from("programs")
+            .insert(basePayload);
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
+      }
+
+      toast({ 
+        title: "Draft saved",
+        description: "You can continue editing this course later from your course list."
+      });
+      setCreateOpen(false);
+      // Trigger a background refresh so the list updates without blocking the UI
+      void refetch();
+    } catch (err) {
+      toast({
+        title: "Unable to save draft",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   /** UPDATE PROGRAM */
   const handleUpdate = async (values: ProgramFormValues) => {
     if (!editProgram) return;
@@ -290,6 +363,9 @@ export default function ProgramsPage() {
     setIsSubmitting(true);
 
     try {
+      // When saving/updating a course, mark it as no longer a draft
+      const wasDraft = editProgram.is_draft === true;
+      
       const basePayload = {
         name: values.name.trim(),
         level: values.level.trim(),
@@ -310,6 +386,7 @@ export default function ProgramsPage() {
           : [],
         description: values.description?.trim() || null,
         active: values.active,
+        is_draft: false, // Mark as published when saving
       };
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
@@ -336,7 +413,10 @@ export default function ProgramsPage() {
         }
       }
 
-      toast({ title: "Course updated" });
+      toast({ 
+        title: wasDraft ? "Course published" : "Course updated",
+        description: wasDraft ? "Your draft has been published successfully." : undefined
+      });
       setEditProgram(null);
       await refetch();
     } catch (err) {
@@ -347,6 +427,88 @@ export default function ProgramsPage() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  /** UPDATE DRAFT (Save changes to an existing draft without publishing) */
+  const handleUpdateDraft = async (values: Partial<ProgramFormValues>) => {
+    if (!editProgram) return;
+
+    if (!tenantId || !universityId) {
+      toast({
+        title: "Missing account information",
+        description: "Could not verify university account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingDraft(true);
+
+    try {
+      const basePayload = {
+        name: values.name?.trim() || editProgram.name || "Untitled Draft",
+        level: values.level?.trim() || editProgram.level || "Master",
+        discipline: values.discipline?.trim() || editProgram.discipline || "",
+        duration_months: values.durationMonths || editProgram.duration_months || 12,
+        tuition_currency: values.tuitionCurrency || editProgram.tuition_currency || "USD",
+        tuition_amount: values.tuitionAmount ?? editProgram.tuition_amount ?? 0,
+        app_fee: values.applicationFee ?? editProgram.app_fee ?? null,
+        seats_available: values.seatsAvailable ?? editProgram.seats_available ?? null,
+        ielts_overall: values.ieltsOverall ?? editProgram.ielts_overall ?? null,
+        toefl_overall: values.toeflOverall ?? editProgram.toefl_overall ?? null,
+        intake_months: values.intakeMonths?.length 
+          ? values.intakeMonths.sort((a, b) => a - b) 
+          : editProgram.intake_months ?? [9],
+        entry_requirements: values.entryRequirements
+          ? values.entryRequirements
+              .split(/\r?\n/)
+              .map((l) => l.trim())
+              .filter(Boolean)
+          : editProgram.entry_requirements ?? [],
+        description: values.description?.trim() || editProgram.description || null,
+        active: false, // Drafts stay inactive
+        is_draft: true, // Keep as draft
+      };
+
+      const payloadWithImage = { ...basePayload, image_url: values.imageUrl ?? editProgram.image_url };
+
+      const { error } = await supabase
+        .from("programs")
+        .update(payloadWithImage)
+        .eq("id", editProgram.id)
+        .eq("university_id", universityId)
+        .eq("tenant_id", tenantId);
+
+      if (error) {
+        if (isMissingColumnError(error)) {
+          const { error: retryError } = await supabase
+            .from("programs")
+            .update(basePayload)
+            .eq("id", editProgram.id)
+            .eq("university_id", universityId)
+            .eq("tenant_id", tenantId);
+
+          if (retryError) throw retryError;
+        } else {
+          throw error;
+        }
+      }
+
+      toast({ 
+        title: "Draft saved",
+        description: "Your changes have been saved."
+      });
+      setEditProgram(null);
+      await refetch();
+    } catch (err) {
+      toast({
+        title: "Unable to save draft",
+        description: (err as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
@@ -524,14 +686,17 @@ export default function ProgramsPage() {
         <ProgramForm
           initialValues={createInitialValues}
           onSubmit={handleCreate}
+          onSaveDraft={handleSaveDraft}
           onCancel={() => setCreateOpen(false)}
           isSubmitting={isSubmitting}
+          isSavingDraft={isSavingDraft}
           submitLabel="Create course"
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
           title="Create New Course"
           description="Add a new academic course to your catalogue."
+          showSaveDraft={true}
         />
       )}
 
@@ -539,14 +704,20 @@ export default function ProgramsPage() {
         <ProgramForm
           initialValues={editInitialValues}
           onSubmit={handleUpdate}
+          onSaveDraft={editProgram.is_draft ? handleUpdateDraft : undefined}
           onCancel={() => setEditProgram(null)}
           isSubmitting={isSubmitting}
-          submitLabel="Save changes"
+          isSavingDraft={isSavingDraft}
+          submitLabel={editProgram.is_draft ? "Publish course" : "Save changes"}
           levelOptions={combinedLevelOptions}
           tenantId={tenantId}
           userId={user?.id ?? null}
-          title="Edit Course"
-          description="Update the details for this course."
+          title={editProgram.is_draft ? "Complete Draft Course" : "Edit Course"}
+          description={editProgram.is_draft 
+            ? "Complete the details and publish this course, or save your changes as a draft."
+            : "Update the details for this course."
+          }
+          showSaveDraft={editProgram.is_draft === true}
         />
       )}
 
