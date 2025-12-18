@@ -538,6 +538,7 @@ const AnalyticsPage = () => {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={12}
+                    tick={{ fill: "hsl(var(--foreground))" }}
                   />
                   <YAxis
                     stroke="hsl(var(--muted-foreground))"
@@ -545,6 +546,7 @@ const AnalyticsPage = () => {
                     axisLine={false}
                     allowDecimals={false}
                     width={40}
+                    tick={{ fill: "hsl(var(--foreground))" }}
                   />
                   <Tooltip
                     contentStyle={{
@@ -601,6 +603,7 @@ const AnalyticsPage = () => {
                     tickLine={false}
                     axisLine={false}
                     tickMargin={12}
+                    tick={{ fill: "hsl(var(--foreground))" }}
                   />
                   <YAxis
                     stroke="hsl(var(--muted-foreground))"
@@ -608,6 +611,7 @@ const AnalyticsPage = () => {
                     axisLine={false}
                     allowDecimals={false}
                     width={40}
+                    tick={{ fill: "hsl(var(--foreground))" }}
                   />
                   <Tooltip
                     cursor={{ fill: "rgba(59, 130, 246, 0.08)" }}

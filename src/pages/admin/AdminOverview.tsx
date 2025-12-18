@@ -152,8 +152,8 @@ const AdminOverview = () => {
       <ResponsiveContainer width="100%" height={260}>
         <LineChart data={trendsQuery.data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="month" stroke="currentColor" className="text-xs text-muted-foreground" />
-          <YAxis stroke="currentColor" className="text-xs text-muted-foreground" allowDecimals={false} />
+          <XAxis dataKey="month" stroke="currentColor" className="text-xs text-muted-foreground" tick={{ fill: "hsl(var(--foreground))" }} />
+          <YAxis stroke="currentColor" className="text-xs text-muted-foreground" allowDecimals={false} tick={{ fill: "hsl(var(--foreground))" }} />
           <Tooltip cursor={{ strokeDasharray: "3 3" }} />
           <Line type="monotone" dataKey="submitted" strokeWidth={2} stroke="hsl(var(--chart-1))"
             name={t("admin.overview.trends.submitted", { defaultValue: "Submitted" })} />
@@ -174,8 +174,8 @@ const AdminOverview = () => {
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={geographyQuery.data}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="country" stroke="currentColor" className="text-xs text-muted-foreground" />
-          <YAxis stroke="currentColor" className="text-xs text-muted-foreground" allowDecimals={false} />
+          <XAxis dataKey="country" stroke="currentColor" className="text-xs text-muted-foreground" tick={{ fill: "hsl(var(--foreground))" }} />
+          <YAxis stroke="currentColor" className="text-xs text-muted-foreground" allowDecimals={false} tick={{ fill: "hsl(var(--foreground))" }} />
           <Tooltip cursor={{ fill: "hsl(var(--muted))" }} />
           <Bar dataKey="applications" fill="hsl(var(--chart-3))" radius={[6, 6, 0, 0]} />
         </BarChart>

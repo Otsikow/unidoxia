@@ -276,8 +276,8 @@ export default function StaffDashboard() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={applicationProgressData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="status" />
-                        <YAxis allowDecimals={false} />
+                        <XAxis dataKey="status" tick={{ fill: "hsl(var(--foreground))" }} />
+                        <YAxis allowDecimals={false} tick={{ fill: "hsl(var(--foreground))" }} />
                         <RechartsTooltip
                           contentStyle={chartTooltipStyles.content}
                           labelStyle={chartTooltipStyles.label}
@@ -301,8 +301,8 @@ export default function StaffDashboard() {
                     <ResponsiveContainer width="100%" height="100%">
                       <RechartsLineChart data={dailyActivityTrendData}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="day" />
-                        <YAxis allowDecimals={false} />
+                        <XAxis dataKey="day" tick={{ fill: "hsl(var(--foreground))" }} />
+                        <YAxis allowDecimals={false} tick={{ fill: "hsl(var(--foreground))" }} />
                         <RechartsTooltip
                           contentStyle={chartTooltipStyles.content}
                           labelStyle={chartTooltipStyles.label}
