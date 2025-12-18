@@ -71,6 +71,8 @@ const TAB_TRIGGER_STYLES =
   "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
 const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
+const INITIAL_COURSE_LOAD = 12;
+const COURSE_LOAD_INCREMENT = 12;
 
 interface University {
   id: string;
@@ -158,6 +160,13 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
   
+  // All courses listing state
+  const [allCourses, setAllCourses] = useState<(Program & { university: University })[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [courseOffset, setCourseOffset] = useState(0);
+  const [hasMoreCourses, setHasMoreCourses] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
   // Check if user is an agent/staff/admin to determine the correct apply URL
   const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
   
@@ -236,6 +245,100 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     
     loadFilterOptions();
   }, []);
+
+  // Load all courses on mount for browsing
+  const loadAllCourses = useCallback(async (offset: number = 0, append: boolean = false) => {
+    try {
+      if (offset === 0) {
+        setLoadingCourses(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      // Build query with filters
+      let query = supabase
+        .from("programs")
+        .select(`
+          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url,
+          universities!inner (id, name, country, city, logo_url, website, description)
+        `)
+        .or("active.eq.true,active.is.null")
+        .range(offset, offset + COURSE_LOAD_INCREMENT - 1)
+        .order("name");
+
+      // Apply filters if set
+      if (selectedCountry !== "all") {
+        query = query.eq("universities.country", selectedCountry);
+      }
+      if (selectedLevel !== "all") {
+        query = query.eq("level", selectedLevel);
+      }
+      if (selectedDiscipline !== "all") {
+        query = query.eq("discipline", selectedDiscipline);
+      }
+      if (maxFee) {
+        query = query.lte("tuition_amount", parseFloat(maxFee));
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("Error loading courses:", error);
+        return;
+      }
+
+      const formattedCourses = (data || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        level: p.level,
+        discipline: p.discipline,
+        tuition_amount: p.tuition_amount,
+        tuition_currency: p.tuition_currency,
+        duration_months: p.duration_months,
+        university_id: p.university_id,
+        image_url: p.image_url ?? null,
+        university: {
+          id: p.universities.id,
+          name: p.universities.name,
+          country: p.universities.country,
+          city: p.universities.city,
+          logo_url: p.universities.logo_url,
+          website: p.universities.website,
+          description: p.universities.description,
+        },
+      }));
+
+      if (append) {
+        setAllCourses((prev) => [...prev, ...formattedCourses]);
+      } else {
+        setAllCourses(formattedCourses);
+      }
+
+      setHasMoreCourses(formattedCourses.length === COURSE_LOAD_INCREMENT);
+      setCourseOffset(offset + formattedCourses.length);
+    } catch (error) {
+      console.error("Error loading courses:", error);
+    } finally {
+      setLoadingCourses(false);
+      setLoadingMore(false);
+    }
+  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
+
+  // Initial load of courses
+  useEffect(() => {
+    loadAllCourses(0, false);
+  }, []);
+
+  // Reload courses when filters change (but only if not actively searching)
+  useEffect(() => {
+    if (!hasSearched) {
+      loadAllCourses(0, false);
+    }
+  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched]);
+
+  const handleLoadMore = () => {
+    loadAllCourses(courseOffset, true);
+  };
 
   const handleSearch = useCallback(async () => {
     setHasSearched(true);
@@ -445,9 +548,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     <div className={containerClasses}>
       {showSEO && (
         <SEO
-          title="Search Universities - UniDoxia"
-          description="Find and compare universities from around the world. Filter by country, program, and more to discover the perfect institution for your study abroad journey."
-          keywords="university search, find universities, study abroad programs, international colleges, student recruitment, find a university"
+          title="Search Courses - UniDoxia"
+          description="Find and compare courses from top universities around the world. Filter by country, level, discipline, and more to discover the perfect program for your study abroad journey."
+          keywords="course search, find courses, study abroad programs, international programs, student recruitment, find a course, university courses"
         />
       )}
       <div className={contentWrapperClasses}>
@@ -494,15 +597,15 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                      <Label>{t("pages.universitySearch.filters.fields.universityName.label")}</Label>
+                      <Label>{t("pages.universitySearch.filters.fields.courseName.label")}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                          placeholder={t("pages.universitySearch.filters.fields.universityName.placeholder")}
+                          placeholder={t("pages.universitySearch.filters.fields.courseName.placeholder")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={cn("pl-9", searchTerm && "pr-9")}
-                        aria-label="Search universities and programs"
+                        aria-label="Search courses and programs"
                       />
                       {searchTerm && (
                         <button
@@ -596,18 +699,120 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
               </h2>
 
               {!hasSearched ? (
-                <Card>
-                  <CardContent className="py-10 text-center text-muted-foreground space-y-2">
-                    <p>{t("pages.universitySearch.results.quickTip", {
-                      defaultValue: "Use the filters above to quickly narrow down universities by country, level, and fees.",
-                    })}</p>
-                    <p className="text-sm">
-                      {t("pages.universitySearch.results.performanceNote", {
-                        defaultValue: "Results load faster once you start typing or adjust a filter.",
-                      })}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="space-y-6">
+                  {/* Browse All Courses Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-semibold">{t("pages.universitySearch.browseCourses.title")}</h3>
+                        <p className="text-sm text-muted-foreground">{t("pages.universitySearch.browseCourses.subtitle")}</p>
+                      </div>
+                    </div>
+                    
+                    {loadingCourses ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                          <Card key={i} className="overflow-hidden">
+                            <Skeleton className="h-40 w-full" />
+                            <CardContent className="p-4 space-y-2">
+                              <Skeleton className="h-5 w-3/4" />
+                              <Skeleton className="h-4 w-1/2" />
+                              <Skeleton className="h-4 w-full" />
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : allCourses.length === 0 ? (
+                      <Card>
+                        <CardContent className="py-12 text-center text-muted-foreground">
+                          {t("pages.universitySearch.browseCourses.noCourses")}
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {allCourses.map((course) => (
+                            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition group">
+                              <div className="relative h-40 bg-muted">
+                                <img
+                                  src={getProgramVisual(course, course.university)}
+                                  alt={course.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = getUniversityVisual(
+                                      course.university.name,
+                                      course.university.logo_url,
+                                    );
+                                  }}
+                                />
+                                <div className="absolute top-2 left-2">
+                                  <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
+                                    {course.level}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <CardContent className="p-4 space-y-3">
+                                <div>
+                                  <h4 className="font-semibold text-base leading-tight line-clamp-2 mb-1">
+                                    {course.name}
+                                  </h4>
+                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {course.university.name}
+                                  </p>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="flex items-center gap-1 text-muted-foreground">
+                                    <DollarSign className="h-3 w-3" />
+                                    {course.tuition_amount?.toLocaleString()} {course.tuition_currency}
+                                  </span>
+                                  <span className="text-muted-foreground">
+                                    {course.duration_months} {t("pages.universitySearch.browseCourses.duration", { months: "" }).replace("{{months}}", "").trim() || "months"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <Badge variant="outline" className="text-xs">{course.discipline}</Badge>
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {course.university.country}
+                                  </span>
+                                </div>
+                                <Button size="sm" className="w-full" asChild>
+                                  <Link to={getApplyUrl(course.id)}>
+                                    {isAgentOrStaff
+                                      ? t("pages.universitySearch.results.programs.submitApplication", { defaultValue: "Submit Application" })
+                                      : t("pages.universitySearch.results.programs.apply")}
+                                  </Link>
+                                </Button>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                        
+                        {hasMoreCourses && (
+                          <div className="flex justify-center pt-4">
+                            <Button
+                              variant="outline"
+                              onClick={handleLoadMore}
+                              disabled={loadingMore}
+                              className="min-w-[200px]"
+                            >
+                              {loadingMore ? (
+                                <>
+                                  <span className="animate-spin mr-2">⏳</span>
+                                  {t("common.status.loading")}
+                                </>
+                              ) : (
+                                t("pages.universitySearch.browseCourses.loadMore")
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
               ) : loading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map((i) => (
