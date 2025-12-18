@@ -952,8 +952,8 @@ const en = {
       },
       universitySearch: {
         hero: {
-          title: "Find Your Perfect University",
-          subtitle: "Search through universities, courses, and scholarships worldwide.",
+          title: "Find Your Perfect Course",
+          subtitle: "Search through courses, programs, and scholarships worldwide.",
         },
         tabs: {
           search: "Search",
@@ -965,9 +965,9 @@ const en = {
           title: "Search Filters",
           subtitle: "Refine your search below",
           fields: {
-            universityName: {
-              label: "University Name",
-              placeholder: "Search universities...",
+            courseName: {
+              label: "Course Name",
+              placeholder: "Search courses...",
             },
             country: {
               label: "Country",
@@ -989,7 +989,7 @@ const en = {
               placeholder: "Enter max fee",
             },
             scholarshipsOnly: {
-              label: "Only show universities with scholarships",
+              label: "Only show courses with scholarships",
             },
           },
         },
@@ -1000,7 +1000,7 @@ const en = {
           loading: "Searching...",
           found_one: "Found {{count}} result",
           found_other: "Found {{count}} results",
-          empty: "No universities found. Try adjusting your filters.",
+          empty: "No courses found. Try adjusting your filters.",
           scholarshipBadge_one: "{{count}} Scholarship",
           scholarshipBadge_other: "{{count}} Scholarships",
           programs: {
@@ -1018,6 +1018,15 @@ const en = {
           },
           viewDetails: "View Details",
           visitWebsite: "Visit Website",
+        },
+        browseCourses: {
+          title: "Browse All Courses",
+          subtitle: "Explore courses from top universities around the world",
+          loading: "Loading courses...",
+          loadMore: "Load More Courses",
+          noCourses: "No courses available at the moment.",
+          viewAll: "View All",
+          duration: "{{months}} months",
         },
       },
     contact: {
