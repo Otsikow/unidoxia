@@ -14,12 +14,13 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, profile, loading: authLoading, signOut, refreshProfile } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading, signOut, refreshProfile } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles();
   const location = useLocation();
   const [isRepairing, setIsRepairing] = useState(false);
   const [repairError, setRepairError] = useState<string | null>(null);
-  const loading = authLoading || rolesLoading;
+  // Include profileLoading to prevent "Profile not found" flash during authentication
+  const loading = authLoading || profileLoading || rolesLoading;
 
   const isStudent = profile?.role === "student" || user?.user_metadata?.role === "student";
   const isAgent = profile?.role === "agent" || user?.user_metadata?.role === "agent";

@@ -472,7 +472,7 @@ export const UniversityDashboardLayout = ({
 }: {
   children: ReactNode;
 }) => {
-  const { profile, loading } = useAuth();
+  const { profile, loading, profileLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -526,7 +526,8 @@ export const UniversityDashboardLayout = ({
     };
   }, [tenantId, refetch]);
 
-  if (loading || isLoading) {
+  // Include profileLoading to prevent "No partner profile" flash during auth
+  if (loading || profileLoading || isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Preparing dashboard…" size="lg" />

@@ -35,12 +35,13 @@ const getUniversityRouteForPartnerView = (viewParam: string | null) => {
 };
 
 const Dashboard = () => {
-  const { user, profile, loading: authLoading, signOut } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading, signOut } = useAuth();
   const { roles, loading: rolesLoading, error: rolesError } = useUserRoles();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const loading = authLoading || rolesLoading;
+  // Include profileLoading to prevent "Profile not found" flash during authentication
+  const loading = authLoading || profileLoading || rolesLoading;
 
   if (loading) {
     return (
