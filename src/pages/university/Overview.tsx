@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { useState, useEffect, useRef, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import {
   Building2,
@@ -31,6 +31,7 @@ import { MetricCard } from "@/components/university/panels/MetricCard";
 import { ApplicationSourcesChart } from "@/components/university/panels/ApplicationSourcesChart";
 import { ApplicationStatusChart } from "@/components/university/panels/ApplicationStatusChart";
 import { StatePlaceholder } from "@/components/university/common/StatePlaceholder";
+import { LoadingState } from "@/components/LoadingState";
 import {
   withUniversityCardStyles,
   withUniversitySurfaceSubtle,
@@ -38,6 +39,9 @@ import {
 } from "@/components/university/common/cardStyles";
 import { useUniversityDashboard } from "@/components/university/layout/UniversityDashboardLayout";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -71,7 +75,113 @@ const formatTimeAgo = (date: Date | null) => {
 };
 
 const OverviewPage = () => {
-  const { data, lastUpdated, isRefetching } = useUniversityDashboard();
+  const { data, lastUpdated, isRefetching, isLoading, refetch } = useUniversityDashboard();
+  const { profile, user } = useAuth();
+  const { toast } = useToast();
+
+  // Track if we're ensuring university exists (self-healing mechanism)
+  const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
+  // Track if self-healing was attempted AND failed (not just attempted)
+  const ensureFailedRef = useRef(false);
+
+  /**
+   * Self-healing effect: If the user has a tenant but no university record,
+   * this will create one automatically using the get_or_create_university RPC.
+   */
+  useEffect(() => {
+    const ensureUniversityExists = async () => {
+      // If we already failed self-healing, don't retry automatically
+      if (ensureFailedRef.current) return;
+      
+      // If we're already ensuring or loading, wait
+      if (isEnsuringUniversity) return;
+      
+      // Conditions for self-healing:
+      const profileTenantId = profile?.tenant_id;
+      const hasValidProfile = profile && profileTenantId;
+      const universityMissing = !data?.university?.id;
+      const shouldEnsure = !isLoading && hasValidProfile && universityMissing;
+
+      if (!shouldEnsure) return;
+
+      setIsEnsuringUniversity(true);
+
+      try {
+        console.log("[Overview] University not found for tenant, attempting to create one...", {
+          tenantId: profileTenantId,
+          profileEmail: profile.email,
+        });
+
+        const { data: newUniversityId, error: rpcError } = await supabase.rpc(
+          "get_or_create_university",
+          {
+            p_tenant_id: profileTenantId,
+            p_name: profile.full_name ? `${profile.full_name}'s University` : "University",
+            p_country: profile.country || "Unknown",
+            p_contact_name: profile.full_name || null,
+            p_contact_email: profile.email || user?.email || null,
+          }
+        );
+
+        if (rpcError) {
+          console.error("[Overview] Failed to ensure university exists:", rpcError);
+          ensureFailedRef.current = true;
+          toast({
+            title: "Account setup incomplete",
+            description: "There was an issue setting up your university profile. Please contact support if this persists.",
+            variant: "destructive",
+          });
+          setIsEnsuringUniversity(false);
+          return;
+        }
+
+        console.log("[Overview] University ensured successfully:", newUniversityId);
+
+        // Refetch dashboard data to pick up the new/existing university
+        await refetch();
+
+        toast({
+          title: "University profile ready",
+          description: "Your university profile has been set up. Welcome to your dashboard!",
+        });
+        
+        setIsEnsuringUniversity(false);
+      } catch (err) {
+        console.error("[Overview] Unexpected error ensuring university:", err);
+        ensureFailedRef.current = true;
+        setIsEnsuringUniversity(false);
+      }
+    };
+
+    void ensureUniversityExists();
+  }, [isLoading, profile, data?.university?.id, user?.email, refetch, toast, isEnsuringUniversity]);
+
+  // Show loading while self-healing is in progress
+  if (isEnsuringUniversity) {
+    return <LoadingState message="Setting up your university profile..." />;
+  }
+
+  // If self-healing failed, show actionable message
+  if (!data?.university && ensureFailedRef.current && profile?.tenant_id) {
+    return (
+      <StatePlaceholder
+        icon={<Building2 className="h-10 w-10 text-primary" />}
+        title="University profile setup required"
+        description="We couldn't set up your university profile. Please try again or contact support if the issue persists."
+        action={
+          <Button
+            variant="outline"
+            onClick={() => {
+              ensureFailedRef.current = false;
+              void refetch();
+            }}
+          >
+            Retry setup
+          </Button>
+        }
+      />
+    );
+  }
 
   if (!data?.university) {
     return (

@@ -61,7 +61,8 @@ export default function ProgramsPage() {
 
   // Track if we're ensuring university exists (self-healing mechanism)
   const [isEnsuringUniversity, setIsEnsuringUniversity] = useState(false);
-  const ensureAttemptedRef = useRef(false);
+  // Track if self-healing was attempted AND failed (not just attempted)
+  const ensureFailedRef = useRef(false);
 
   /**
    * Self-healing effect: If the user has a tenant but no university record,
@@ -71,8 +72,11 @@ export default function ProgramsPage() {
    */
   useEffect(() => {
     const ensureUniversityExists = async () => {
-      // Only attempt once per page load to avoid infinite loops
-      if (ensureAttemptedRef.current) return;
+      // If we already failed self-healing, don't retry automatically
+      if (ensureFailedRef.current) return;
+      
+      // If we're already ensuring or loading, wait
+      if (isEnsuringUniversity) return;
       
       // Conditions for self-healing:
       // 1. Dashboard data has loaded (not loading)
@@ -86,7 +90,6 @@ export default function ProgramsPage() {
 
       if (!shouldEnsure) return;
 
-      ensureAttemptedRef.current = true;
       setIsEnsuringUniversity(true);
 
       try {
@@ -109,32 +112,38 @@ export default function ProgramsPage() {
 
         if (rpcError) {
           console.error("[Programs] Failed to ensure university exists:", rpcError);
+          ensureFailedRef.current = true;
           toast({
             title: "Account setup incomplete",
             description: "There was an issue setting up your university profile. Please contact support if this persists.",
             variant: "destructive",
           });
+          setIsEnsuringUniversity(false);
           return;
         }
 
         console.log("[Programs] University ensured successfully:", newUniversityId);
 
         // Refetch dashboard data to pick up the new/existing university
+        // Keep loading state until refetch completes
         await refetch();
 
         toast({
           title: "University profile ready",
           description: "Your university profile has been set up. You can now manage courses.",
         });
+        
+        // Only hide loading AFTER refetch completes successfully
+        setIsEnsuringUniversity(false);
       } catch (err) {
         console.error("[Programs] Unexpected error ensuring university:", err);
-      } finally {
+        ensureFailedRef.current = true;
         setIsEnsuringUniversity(false);
       }
     };
 
     void ensureUniversityExists();
-  }, [isLoading, profile, data?.university?.id, user?.email, refetch, toast]);
+  }, [isLoading, profile, data?.university?.id, user?.email, refetch, toast, isEnsuringUniversity]);
 
   const programs = data?.programs ?? [];
 
@@ -600,8 +609,8 @@ export default function ProgramsPage() {
     return <LoadingState message="Setting up your university profile..." />;
   }
 
-  // If self-healing was attempted but university still not found, show helpful message
-  if (!isLoading && ensureAttemptedRef.current && !universityId && profile?.tenant_id) {
+  // If self-healing failed (not just attempted), show helpful message
+  if (!isLoading && !isEnsuringUniversity && ensureFailedRef.current && !universityId && profile?.tenant_id) {
     return (
       <StatePlaceholder
         title="University profile setup required"
@@ -610,7 +619,7 @@ export default function ProgramsPage() {
           <Button
             variant="outline"
             onClick={() => {
-              ensureAttemptedRef.current = false;
+              ensureFailedRef.current = false;
               void refetch();
             }}
           >
