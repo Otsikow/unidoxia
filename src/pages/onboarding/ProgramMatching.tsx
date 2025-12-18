@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, GraduationCap, Globe, DollarSign, Target, Brain } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 // Course data with country-specific courses
 const programs = [
@@ -242,6 +243,8 @@ const BackgroundDecoration = () => (
 export default function OnboardingProgramMatching() {
   const [showContent, setShowContent] = useState(false);
   const [rotation, setRotation] = useState(0);
+  const [stepCompletion, setStepCompletion] = useState(0.6);
+  const totalSteps = 4;
   const navigate = useNavigate();
   const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
@@ -250,6 +253,12 @@ export default function OnboardingProgramMatching() {
     const timer = setTimeout(() => setShowContent(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!showContent) return;
+    const timer = setTimeout(() => setStepCompletion(1), 250);
+    return () => clearTimeout(timer);
+  }, [showContent]);
 
   // Auto-rotate carousel
   useEffect(() => {
@@ -295,6 +304,13 @@ export default function OnboardingProgramMatching() {
         <div className="container mx-auto max-w-5xl">
           <BackButton fallback="/onboarding/destinations" />
         </div>
+
+        <OnboardingProgress
+          currentStep={4}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Finalize your course matches to continue"
+        />
 
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-5xl">
@@ -396,23 +412,6 @@ export default function OnboardingProgramMatching() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </motion.div>
-
-          {/* Skip option */}
-          <Link
-            to="/auth/signup?role=student"
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            Skip for now
-          </Link>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="container mx-auto max-w-5xl mt-auto pt-6">
-          <div className="flex justify-center gap-2">
-            <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <div className="w-2 h-2 rounded-full bg-primary" />
-          </div>
         </div>
       </div>
 

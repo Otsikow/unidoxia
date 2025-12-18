@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, FileCheck, CheckCircle2 } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 // Country passport stamp data
 const passportStamps = [
@@ -170,6 +171,8 @@ const features = [
 export default function OnboardingVisaSupport() {
   const [showContent, setShowContent] = useState(false);
   const [stampsVisible, setStampsVisible] = useState(false);
+  const [stepCompletion, setStepCompletion] = useState(0.6);
+  const totalSteps = 4;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -181,6 +184,18 @@ export default function OnboardingVisaSupport() {
       clearTimeout(stampsTimer);
     };
   }, []);
+
+  useEffect(() => {
+    if (!showContent) return;
+    const timer = setTimeout(() => setStepCompletion(1), 250);
+    return () => clearTimeout(timer);
+  }, [showContent]);
+
+  useEffect(() => {
+    if (stampsVisible) {
+      setStepCompletion((prev) => Math.min(1, prev + 0.2));
+    }
+  }, [stampsVisible]);
 
   const handleNext = () => {
     // Navigate to the next onboarding step or signup
@@ -197,6 +212,13 @@ export default function OnboardingVisaSupport() {
         <div className="container mx-auto max-w-4xl">
           <BackButton fallback="/onboarding/destinations" />
         </div>
+
+        <OnboardingProgress
+          currentStep={4}
+          totalSteps={totalSteps}
+          stepCompletion={stepCompletion}
+          label="Stay on track with visa support"
+        />
 
         {/* Content */}
         <div className="flex-1 flex flex-col items-center justify-center container mx-auto max-w-4xl">
@@ -256,24 +278,6 @@ export default function OnboardingVisaSupport() {
               Next
               <ArrowRight className="w-4 h-4" />
             </Button>
-          </div>
-
-          {/* Skip option */}
-          <Link 
-            to="/auth/signup?role=student" 
-            className="mt-4 text-sm text-muted-foreground hover:text-primary transition-colors animate-fade-in"
-            style={{ animationDelay: "1.5s" }}
-          >
-            Skip for now
-          </Link>
-        </div>
-
-        {/* Progress indicator */}
-        <div className="container mx-auto max-w-4xl mt-auto pt-6">
-          <div className="flex justify-center gap-2">
-            <Link to="/onboarding/welcome" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <Link to="/onboarding/destinations" className="w-2 h-2 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
-            <div className="w-2 h-2 rounded-full bg-primary" />
           </div>
         </div>
       </div>
