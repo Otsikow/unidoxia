@@ -28,6 +28,7 @@ import BackButton from "@/components/BackButton";
 import ProgramRecommendations from "@/components/ai/ProgramRecommendations";
 import SoPGenerator from "@/components/ai/SoPGenerator";
 import InterviewPractice from "@/components/ai/InterviewPractice";
+import { CourseCard, type Course } from "@/components/student/CourseCard";
 import {
   Search,
   GraduationCap,
@@ -133,6 +134,24 @@ const getUniversityVisual = (name: string, logo: string | null): string => {
 
 const getProgramVisual = (program: Program, university: University): string => {
   return program.image_url || getUniversityVisual(university.name, university.logo_url);
+};
+
+// Helper function to transform course data to CourseCard format
+const transformToCourseCardFormat = (course: Program & { university: University }): Course => {
+  return {
+    id: course.id,
+    university_id: course.university_id,
+    name: course.name,
+    level: course.level,
+    discipline: course.discipline,
+    duration_months: course.duration_months,
+    tuition_currency: course.tuition_currency,
+    tuition_amount: course.tuition_amount,
+    university_name: course.university.name,
+    university_country: course.university.country,
+    university_city: course.university.city || '',
+    university_logo_url: course.university.logo_url || undefined,
+  };
 };
 
 export interface ProgramSearchViewProps {
@@ -710,14 +729,28 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     </div>
                     
                     {loadingCourses ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                           <Card key={i} className="overflow-hidden">
-                            <Skeleton className="h-40 w-full" />
-                            <CardContent className="p-4 space-y-2">
-                              <Skeleton className="h-5 w-3/4" />
-                              <Skeleton className="h-4 w-1/2" />
-                              <Skeleton className="h-4 w-full" />
+                            <CardContent className="pt-6 pb-4 space-y-4">
+                              <div className="flex items-start gap-3">
+                                <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0" />
+                                <div className="flex-1 space-y-2">
+                                  <Skeleton className="h-4 w-3/4" />
+                                  <Skeleton className="h-3 w-1/2" />
+                                </div>
+                              </div>
+                              <Skeleton className="h-6 w-full" />
+                              <div className="flex gap-2">
+                                <Skeleton className="h-5 w-20 rounded-full" />
+                                <Skeleton className="h-5 w-24 rounded-full" />
+                              </div>
+                              <div className="space-y-2">
+                                <Skeleton className="h-4 w-2/3" />
+                                <Skeleton className="h-4 w-1/2" />
+                                <Skeleton className="h-4 w-3/4" />
+                              </div>
+                              <Skeleton className="h-10 w-full rounded-md" />
                             </CardContent>
                           </Card>
                         ))}
@@ -730,63 +763,12 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       </Card>
                     ) : (
                       <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                           {allCourses.map((course) => (
-                            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition group">
-                              <div className="relative h-40 bg-muted">
-                                <img
-                                  src={getProgramVisual(course, course.university)}
-                                  alt={course.name}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                  loading="lazy"
-                                  onError={(e) => {
-                                    (e.currentTarget as HTMLImageElement).src = getUniversityVisual(
-                                      course.university.name,
-                                      course.university.logo_url,
-                                    );
-                                  }}
-                                />
-                                <div className="absolute top-2 left-2">
-                                  <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">
-                                    {course.level}
-                                  </Badge>
-                                </div>
-                              </div>
-                              <CardContent className="p-4 space-y-3">
-                                <div>
-                                  <h4 className="font-semibold text-base leading-tight line-clamp-2 mb-1">
-                                    {course.name}
-                                  </h4>
-                                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                    <MapPin className="h-3 w-3" />
-                                    {course.university.name}
-                                  </p>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                  <span className="flex items-center gap-1 text-muted-foreground">
-                                    <DollarSign className="h-3 w-3" />
-                                    {course.tuition_amount?.toLocaleString()} {course.tuition_currency}
-                                  </span>
-                                  <span className="text-muted-foreground">
-                                    {course.duration_months} {t("pages.universitySearch.browseCourses.duration", { months: "" }).replace("{{months}}", "").trim() || "months"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <Badge variant="outline" className="text-xs">{course.discipline}</Badge>
-                                  <span className="flex items-center gap-1">
-                                    <MapPin className="h-3 w-3" />
-                                    {course.university.country}
-                                  </span>
-                                </div>
-                                <Button size="sm" className="w-full" asChild>
-                                  <Link to={getApplyUrl(course.id)}>
-                                    {isAgentOrStaff
-                                      ? t("pages.universitySearch.results.programs.submitApplication", { defaultValue: "Submit Application" })
-                                      : t("pages.universitySearch.results.programs.apply")}
-                                  </Link>
-                                </Button>
-                              </CardContent>
-                            </Card>
+                            <CourseCard
+                              key={course.id}
+                              course={transformToCourseCardFormat(course)}
+                            />
                           ))}
                         </div>
                         
