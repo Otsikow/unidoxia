@@ -49,9 +49,13 @@ interface Document {
   file_size: number;
   mime_type: string;
   storage_path: string;
-  status: "awaiting_admin_review" | "admin_rejected" | "ready_for_university_review" | "university_reviewed";
+  verified_status: string;
   verification_notes: string | null;
   created_at: string;
+  updated_at?: string;
+  verified_at?: string | null;
+  verified_by?: string | null;
+  checksum?: string | null;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -224,29 +228,27 @@ export default function Documents() {
   /*                            Helpers & Status                              */
   /* ------------------------------------------------------------------------ */
 
-  const getStatusIcon = (status: Document["status"]) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
-      case "university_reviewed":
+      case "verified":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case "awaiting_admin_review":
+      case "pending":
         return <ShieldAlert className="h-4 w-4 text-amber-500" />;
-      case "admin_rejected":
+      case "rejected":
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
         return <Clock className="h-4 w-4 text-yellow-500" />;
     }
   };
 
-  const getStatusBadge = (status: Document["status"]) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case "awaiting_admin_review":
-        return { label: "Admin Review", variant: "secondary" as const };
-      case "admin_rejected":
+      case "pending":
+        return { label: "Pending Review", variant: "secondary" as const };
+      case "rejected":
         return { label: "Rejected", variant: "destructive" as const };
-      case "ready_for_university_review":
-        return { label: "Sent to University", variant: "default" as const };
-      case "university_reviewed":
-        return { label: "Reviewed", variant: "default" as const };
+      case "verified":
+        return { label: "Verified", variant: "default" as const };
       default:
         return { label: "Pending", variant: "secondary" as const };
     }
@@ -314,7 +316,7 @@ export default function Documents() {
           )}
 
           {documents.map((doc) => {
-            const badge = getStatusBadge(doc.status);
+            const badge = getStatusBadge(doc.verified_status);
             return (
               <div
                 key={doc.id}
@@ -327,7 +329,7 @@ export default function Documents() {
                     <Badge variant={badge.variant}>{badge.label}</Badge>
                   </div>
                 </div>
-                {getStatusIcon(doc.status)}
+                {getStatusIcon(doc.verified_status)}
               </div>
             );
           })}

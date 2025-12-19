@@ -93,7 +93,7 @@ interface DocumentRequestsSnapshotProps {
     documentUrl: string | null;
   }>;
   tenantId: string | null;
-  refetch: () => Promise<void>;
+  refetch: () => Promise<unknown>;
 }
 
 const DocumentRequestsSnapshot = ({
