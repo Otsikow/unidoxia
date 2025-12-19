@@ -18,6 +18,7 @@ import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import heroBackground from "@/assets/hero-background.jpeg";
 import studentsStudyingGroup from "@/assets/students-studying-group.png";
 import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
@@ -185,23 +186,29 @@ const Index = () => {
       <section className="hero-video-container">
         <LandingHeader />
 
-        {shouldRenderHeroVideo ? <>
-            <div className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`} aria-hidden />
-            <video
-              ref={heroVideoRef}
-              className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
-              poster="/videos/hero-poster.jpg"
-              // @ts-expect-error - fetchpriority is valid HTML attribute
-              fetchpriority="high"
-            >
-              <source src="/videos/hero-video.mp4" type="video/mp4" />
-            </video>
-          </> : <div className="hero-fallback" aria-hidden />}
+        {/* Background image placeholder */}
+        <div 
+          className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`} 
+          style={{ backgroundImage: `url(${heroBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+          aria-hidden 
+        />
+        
+        {shouldRenderHeroVideo && (
+          <video
+            ref={heroVideoRef}
+            className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster={heroBackground}
+            // @ts-expect-error - fetchpriority is valid HTML attribute
+            fetchpriority="high"
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
+        )}
 
         <div className="hero-content">
           <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
