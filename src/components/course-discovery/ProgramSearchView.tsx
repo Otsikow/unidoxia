@@ -14,6 +14,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -74,8 +83,7 @@ const TAB_TRIGGER_STYLES =
   "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
 const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
-const INITIAL_COURSE_LOAD = 12;
-const COURSE_LOAD_INCREMENT = 12;
+const COURSES_PER_PAGE = 100;
 
 interface University {
   id: string;
@@ -198,13 +206,12 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [activeTab, setActiveTab] = useState("search");
   const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
-  
+
   // All courses listing state
   const [allCourses, setAllCourses] = useState<(Program & { university: University })[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
-  const [courseOffset, setCourseOffset] = useState(0);
-  const [hasMoreCourses, setHasMoreCourses] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentCoursePage, setCurrentCoursePage] = useState(1);
+  const [totalCourses, setTotalCourses] = useState(0);
   
   // Check if user is an agent/staff/admin to determine the correct apply URL
   const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
@@ -301,13 +308,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   }, []);
 
   // Load all courses on mount for browsing
-  const loadAllCourses = useCallback(async (offset: number = 0, append: boolean = false) => {
+  const loadAllCourses = useCallback(async (page: number = 1) => {
+    const offset = (page - 1) * COURSES_PER_PAGE;
+
     try {
-      if (offset === 0) {
-        setLoadingCourses(true);
-      } else {
-        setLoadingMore(true);
-      }
+      setLoadingCourses(true);
 
       // Fallback to sample data when Supabase isn't configured
       if (!isSupabaseConfigured) {
@@ -319,7 +324,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           return true;
         });
 
-        const paginated = filteredPrograms.slice(offset, offset + COURSE_LOAD_INCREMENT);
+        const paginated = filteredPrograms.slice(offset, offset + COURSES_PER_PAGE);
 
         const formattedCourses = paginated.map((program) => ({
           ...program,
@@ -334,14 +339,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           },
         }));
 
-        if (append) {
-          setAllCourses((prev) => [...prev, ...formattedCourses]);
-        } else {
-          setAllCourses(formattedCourses);
-        }
-
-        setHasMoreCourses(offset + paginated.length < filteredPrograms.length);
-        setCourseOffset(offset + paginated.length);
+        setAllCourses(formattedCourses);
+        setCurrentCoursePage(page);
+        setTotalCourses(filteredPrograms.length);
         return;
       }
 
@@ -351,10 +351,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         .select(`
           id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url,
           universities!inner (id, name, country, city, logo_url, website, description, active)
-        `)
+        `, { count: "exact" })
         .eq("active", true)
         .eq("universities.active", true)
-        .range(offset, offset + COURSE_LOAD_INCREMENT - 1)
+        .range(offset, offset + COURSES_PER_PAGE - 1)
         .order("name");
 
       query = applyRealUniversityFilters(query);
@@ -373,7 +373,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         query = query.lte("tuition_amount", parseFloat(maxFee));
       }
 
-      const { data, error } = await query;
+      const { data, error, count } = await query;
 
       if (error) {
         console.error("Error loading courses:", error);
@@ -400,36 +400,64 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         },
       }));
 
-      if (append) {
-        setAllCourses((prev) => [...prev, ...formattedCourses]);
-      } else {
-        setAllCourses(formattedCourses);
-      }
-
-      setHasMoreCourses(formattedCourses.length === COURSE_LOAD_INCREMENT);
-      setCourseOffset(offset + formattedCourses.length);
+      setAllCourses(formattedCourses);
+      setCurrentCoursePage(page);
+      setTotalCourses(count ?? offset + formattedCourses.length);
     } catch (error) {
       console.error("Error loading courses:", error);
     } finally {
       setLoadingCourses(false);
-      setLoadingMore(false);
     }
   }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
 
   // Initial load of courses
   useEffect(() => {
-    loadAllCourses(0, false);
-  }, []);
+    loadAllCourses(1);
+  }, [loadAllCourses]);
 
   // Reload courses when filters change (but only if not actively searching)
   useEffect(() => {
     if (!hasSearched) {
-      loadAllCourses(0, false);
+      loadAllCourses(1);
     }
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched]);
+  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched, loadAllCourses]);
 
-  const handleLoadMore = () => {
-    loadAllCourses(courseOffset, true);
+  const totalCoursePages = useMemo(
+    () => (totalCourses > 0 ? Math.ceil(totalCourses / COURSES_PER_PAGE) : 1),
+    [totalCourses],
+  );
+
+  const paginationRange = useMemo<(number | string)[]>(() => {
+    if (totalCoursePages <= 7) {
+      return Array.from({ length: totalCoursePages }, (_, i) => i + 1);
+    }
+
+    const range: (number | string)[] = [1];
+    const start = Math.max(2, currentCoursePage - 1);
+    const end = Math.min(totalCoursePages - 1, currentCoursePage + 1);
+
+    if (start > 2) {
+      range.push("ellipsis-left");
+    }
+
+    for (let page = start; page <= end; page++) {
+      range.push(page);
+    }
+
+    if (end < totalCoursePages - 1) {
+      range.push("ellipsis-right");
+    }
+
+    range.push(totalCoursePages);
+    return range;
+  }, [currentCoursePage, totalCoursePages]);
+
+  const courseRangeStart = totalCourses === 0 ? 0 : (currentCoursePage - 1) * COURSES_PER_PAGE + 1;
+  const courseRangeEnd = totalCourses === 0 ? 0 : Math.min(totalCourses, currentCoursePage * COURSES_PER_PAGE);
+
+  const handleCoursePageChange = (page: number) => {
+    if (page < 1 || page > totalCoursePages || page === currentCoursePage) return;
+    loadAllCourses(page);
   };
 
   const handleSearch = useCallback(async () => {
@@ -899,24 +927,62 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                             />
                           ))}
                         </div>
-                        
-                        {hasMoreCourses && (
-                          <div className="flex justify-center pt-4">
-                            <Button
-                              variant="outline"
-                              onClick={handleLoadMore}
-                              disabled={loadingMore}
-                              className="min-w-[200px]"
-                            >
-                              {loadingMore ? (
-                                <>
-                                  <span className="animate-spin mr-2">⏳</span>
-                                  {t("common.status.loading")}
-                                </>
-                              ) : (
-                                t("pages.universitySearch.browseCourses.loadMore")
-                              )}
-                            </Button>
+
+                        {totalCoursePages > 1 && (
+                          <div className="flex flex-col items-center gap-2 pt-6">
+                            <div className="text-sm text-muted-foreground">
+                              Showing {courseRangeStart} - {courseRangeEnd} of {totalCourses} courses
+                            </div>
+                            <Pagination>
+                              <PaginationContent>
+                                <PaginationItem>
+                                  <PaginationPrevious
+                                    href="#"
+                                    className={
+                                      currentCoursePage === 1
+                                        ? "pointer-events-none opacity-50"
+                                        : undefined
+                                    }
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleCoursePageChange(currentCoursePage - 1);
+                                    }}
+                                  />
+                                </PaginationItem>
+                                {paginationRange.map((page) => (
+                                  <PaginationItem key={page}>
+                                    {typeof page === "number" ? (
+                                      <PaginationLink
+                                        href="#"
+                                        isActive={page === currentCoursePage}
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          handleCoursePageChange(page);
+                                        }}
+                                      >
+                                        {page}
+                                      </PaginationLink>
+                                    ) : (
+                                      <PaginationEllipsis />
+                                    )}
+                                  </PaginationItem>
+                                ))}
+                                <PaginationItem>
+                                  <PaginationNext
+                                    href="#"
+                                    className={
+                                      currentCoursePage === totalCoursePages
+                                        ? "pointer-events-none opacity-50"
+                                        : undefined
+                                    }
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleCoursePageChange(currentCoursePage + 1);
+                                    }}
+                                  />
+                                </PaginationItem>
+                              </PaginationContent>
+                            </Pagination>
                           </div>
                         )}
                       </>
