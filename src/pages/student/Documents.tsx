@@ -26,6 +26,10 @@ interface Document {
   created_at: string;
 }
 
+const ADMIN_REVIEW_STATUS = 'awaiting_admin_review' as const;
+const ADMIN_REVIEW_MESSAGE =
+  'Pending admin review – we are checking your document for accuracy.';
+
 const DOCUMENT_TYPES = [
   'passport_photo',
   'passport',
@@ -158,23 +162,23 @@ export default function Documents() {
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
           storage_path: filePath,
-          verified_status: 'pending',
+          verified_status: ADMIN_REVIEW_STATUS,
         });
 
-        if (dbError) {
-          await supabase.storage.from('student-documents').remove([filePath]);
-          throw new Error(dbError.message);
-        }
+      if (dbError) {
+        await supabase.storage.from('student-documents').remove([filePath]);
+        throw new Error(dbError.message);
+      }
 
-        toast({ title: 'Success', description: 'Document uploaded successfully' });
-        setSelectedFile(null);
-        setDocumentType('');
-        const fileInput = document.getElementById('file-input') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
+      toast({ title: 'Success', description: 'Document uploaded successfully' });
+      setSelectedFile(null);
+      setDocumentType('');
+      const fileInput = document.getElementById('file-input') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
 
-        if (studentId) {
-          loadDocumentsForStudent(studentId);
-        }
+      if (studentId) {
+        loadDocumentsForStudent(studentId);
+      }
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -235,6 +239,7 @@ export default function Documents() {
     switch (status) {
       case 'verified':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case ADMIN_REVIEW_STATUS:
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-500" />;
       case 'rejected':
@@ -242,6 +247,15 @@ export default function Documents() {
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
+  };
+
+  const formatStatusLabel = (status: string) => {
+    if (!status) return 'Unknown';
+
+    return status
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   };
 
   const formatFileSize = (bytes: number) => {
@@ -275,6 +289,9 @@ export default function Documents() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-md border bg-muted/50 p-3 text-sm text-muted-foreground">
+            {ADMIN_REVIEW_MESSAGE}
+          </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="document-type">Document Type</Label>
@@ -372,9 +389,13 @@ export default function Documents() {
                       className="flex items-center gap-1 whitespace-nowrap"
                     >
                       {getStatusIcon(doc.verified_status)}
-                      {doc.verified_status.charAt(0).toUpperCase() +
-                        doc.verified_status.slice(1)}
+                      {formatStatusLabel(doc.verified_status)}
                     </Badge>
+                    {doc.verified_status === ADMIN_REVIEW_STATUS && (
+                      <span className="text-xs text-muted-foreground">
+                        {ADMIN_REVIEW_MESSAGE}
+                      </span>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
