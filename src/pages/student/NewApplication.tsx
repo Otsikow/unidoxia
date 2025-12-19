@@ -66,6 +66,40 @@ const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
   sop: ['personal_statement'],
 };
 
+const TRACKING_ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const TRACKING_ID_LENGTH = 8;
+
+const generateTrackingId = () => {
+  const bytes = new Uint32Array(TRACKING_ID_LENGTH);
+  crypto.getRandomValues(bytes);
+
+  return Array.from(bytes)
+    .map((value) => TRACKING_ID_ALPHABET[value % TRACKING_ID_ALPHABET.length])
+    .join('');
+};
+
+const getUniqueTrackingId = async (): Promise<string> => {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = generateTrackingId();
+
+    const { data, error } = await supabase
+      .from('applications')
+      .select('id')
+      .eq('app_number', candidate)
+      .maybeSingle();
+
+    if (error && error.code !== 'PGRST116') {
+      throw error;
+    }
+
+    if (!data) {
+      return candidate;
+    }
+  }
+
+  throw new Error('Unable to generate a unique tracking ID. Please try again.');
+};
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
@@ -243,6 +277,7 @@ export default function NewApplication() {
   const [agentId, setAgentId] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [trackingCode, setTrackingCode] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [autoSaveError, setAutoSaveError] = useState<string | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -1003,7 +1038,10 @@ export default function NewApplication() {
           ? programMeta.tenant_id
           : tenantId;
 
+      const trackingId = await getUniqueTrackingId();
+
       const baseApplicationPayload = {
+        app_number: trackingId,
         student_id: studentId,
         program_id: programId,
         intake_year: formData.programSelection.intakeYear,
@@ -1080,6 +1118,7 @@ export default function NewApplication() {
       }
 
       setApplicationId(createdApplication.id);
+      setTrackingCode(createdApplication.app_number ?? trackingId);
 
       // Upload documents to storage and create document records
       for (const docType of APPLICATION_DOCUMENT_TYPES) {
@@ -1445,10 +1484,13 @@ export default function NewApplication() {
                 Your application has been successfully submitted. You will receive updates via
                 email and notifications.
               </p>
-              {applicationId && (
+              {trackingCode && (
                 <div className="bg-muted p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Application Tracking ID:</p>
-                  <p className="text-lg font-mono font-bold">{applicationId.slice(0, 8).toUpperCase()}</p>
+                  <p className="text-sm font-medium mb-1">Application Tracking ID</p>
+                  <p className="text-lg font-mono font-bold">{trackingCode}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Use this ID anytime in your dashboard to instantly open your application status.
+                  </p>
                 </div>
               )}
             </DialogDescription>
@@ -1459,6 +1501,13 @@ export default function NewApplication() {
               className="flex-1"
             >
               View Application
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => navigate(`/student/application-tracking${trackingCode ? `?trackingId=${trackingCode}` : ''}`)}
+              className="flex-1"
+            >
+              Track with ID
             </Button>
             <Button
               variant="outline"
