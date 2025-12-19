@@ -378,7 +378,7 @@ export default function StaffMessages() {
 
   if (messagingError) {
     return (
-      <DashboardLayout>
+      <DashboardLayout showToolbarBackButton={false}>
         <div className="space-y-4">
           <BackButton variant="ghost" />
           <MessagingUnavailable
@@ -394,7 +394,7 @@ export default function StaffMessages() {
   // Agents use application-linked messaging threads (student/agent/university).
   if (isAgent) {
     return (
-      <DashboardLayout>
+      <DashboardLayout showToolbarBackButton={false}>
         <div className="space-y-4">
           <BackButton variant="ghost" size="sm" fallback="/dashboard" />
           <MessagesDashboard />
@@ -404,7 +404,7 @@ export default function StaffMessages() {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
         <div className="border-b bg-background px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">

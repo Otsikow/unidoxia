@@ -564,7 +564,7 @@ const Applications = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="p-4 sm:p-6 lg:p-8 space-y-6">
         <BackButton variant="ghost" size="sm" fallback="/dashboard" />
 

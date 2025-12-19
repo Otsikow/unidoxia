@@ -61,7 +61,7 @@ export default function StaffSettings() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <BackButton fallback="/dashboard" label={t("back", { defaultValue: "Back" })} />
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

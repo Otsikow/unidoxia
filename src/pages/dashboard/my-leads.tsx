@@ -4,7 +4,7 @@ import LeadsList from "@/components/agent/LeadsList";
 
 export default function MyLeadsPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="p-4 md:p-8 space-y-6">
         <BackButton variant="ghost" size="sm" fallback="/dashboard" />
 

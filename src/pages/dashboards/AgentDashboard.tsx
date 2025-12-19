@@ -116,7 +116,7 @@ export default function AgentDashboard() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="p-3 sm:p-4 md:p-6 lg:p-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:gap-6">
           {/* Header */}
