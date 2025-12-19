@@ -190,6 +190,8 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
         storage_path: fileName,
         file_size: preparedFile.size,
         mime_type: detectedMimeType,
+        verified_status: 'pending',
+        admin_review_status: 'awaiting_admin_review',
       });
 
       if (dbError) throw dbError;

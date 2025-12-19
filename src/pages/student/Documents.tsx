@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { getErrorMessage, logError, formatErrorForToast } from '@/lib/errorUtils';
 import { validateFileUpload } from '@/lib/fileUpload';
-import { FileText, Upload, Download, Trash2, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { FileText, Upload, Download, Trash2, CheckCircle, Clock, XCircle, ShieldAlert } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { Badge } from '@/components/ui/badge';
 import { useStudentRecord } from '@/hooks/useStudentRecord';
@@ -22,6 +22,8 @@ interface Document {
   mime_type: string;
   storage_path: string;
   verified_status: string;
+  admin_review_status?: string | null;
+  admin_review_notes?: string | null;
   verification_notes: string | null;
   created_at: string;
 }
@@ -159,6 +161,7 @@ export default function Documents() {
           mime_type: detectedMimeType,
           storage_path: filePath,
           verified_status: 'pending',
+          admin_review_status: 'awaiting_admin_review',
         });
 
         if (dbError) {
@@ -235,13 +238,45 @@ export default function Documents() {
     switch (status) {
       case 'verified':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'ready_for_university_review':
+        return <CheckCircle className="h-4 w-4 text-emerald-500" />;
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-500" />;
+      case 'awaiting_admin_review':
+        return <ShieldAlert className="h-4 w-4 text-amber-500" />;
       case 'rejected':
         return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'admin_rejected':
+        return <XCircle className="h-4 w-4 text-destructive" />;
       default:
         return <Clock className="h-4 w-4 text-gray-500" />;
     }
+  };
+
+  const getDisplayStatus = (doc: Document) => {
+    const adminStatus = doc.admin_review_status ?? 'awaiting_admin_review';
+
+    if (adminStatus === 'awaiting_admin_review') {
+      return { label: 'Awaiting Admin Review', value: adminStatus, variant: 'secondary' as const };
+    }
+
+    if (adminStatus === 'admin_rejected') {
+      return { label: 'Admin Rejected', value: adminStatus, variant: 'destructive' as const };
+    }
+
+    if (adminStatus === 'ready_for_university_review') {
+      if (doc.verified_status === 'verified') {
+        return { label: 'Verified', value: 'verified', variant: 'default' as const };
+      }
+
+      if (doc.verified_status === 'rejected') {
+        return { label: 'Rejected', value: 'rejected', variant: 'destructive' as const };
+      }
+
+      return { label: 'Ready for University Review', value: 'ready_for_university_review', variant: 'secondary' as const };
+    }
+
+    return { label: 'Pending', value: 'pending', variant: 'secondary' as const };
   };
 
   const formatFileSize = (bytes: number) => {
@@ -361,20 +396,18 @@ export default function Documents() {
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <Badge
-                      variant={
-                        doc.verified_status === 'verified'
-                          ? 'default'
-                          : doc.verified_status === 'rejected'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                      className="flex items-center gap-1 whitespace-nowrap"
-                    >
-                      {getStatusIcon(doc.verified_status)}
-                      {doc.verified_status.charAt(0).toUpperCase() +
-                        doc.verified_status.slice(1)}
-                    </Badge>
+                    {(() => {
+                      const status = getDisplayStatus(doc);
+                      return (
+                        <Badge
+                          variant={status.variant}
+                          className="flex items-center gap-1 whitespace-nowrap"
+                        >
+                          {getStatusIcon(status.value)}
+                          {status.label}
+                        </Badge>
+                      );
+                    })()}
                     <Button
                       variant="outline"
                       size="sm"
@@ -392,6 +425,12 @@ export default function Documents() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+                  {doc.admin_review_status === 'admin_rejected' && (
+                    <div className="sm:w-full text-sm text-destructive">
+                      Your document was rejected by the admin. {doc.admin_review_notes && `Reason: ${doc.admin_review_notes}. `}
+                      Please re-upload an updated version to continue.
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

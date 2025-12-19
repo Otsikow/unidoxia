@@ -143,7 +143,8 @@ export default function SopGenerator() {
         file_size: blob.size,
         mime_type: 'text/plain',
         storage_path: storagePath,
-        verified_status: 'pending'
+        verified_status: 'pending',
+        admin_review_status: 'awaiting_admin_review'
       });
 
       if (dbError) {
