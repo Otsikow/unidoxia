@@ -8,6 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   GraduationCap,
   MapPin,
   Globe,
@@ -110,6 +118,18 @@ const getMonthName = (month: number): string => {
   return months[month - 1] || "";
 };
 
+const parseEntryRequirements = (requirements: Program["entry_requirements"]): string[] => {
+  if (!requirements) return [];
+  if (Array.isArray(requirements)) return requirements.filter(Boolean).map(String);
+  if (typeof requirements === "string") {
+    return requirements
+      .split(/\n|,/)
+      .map((req) => req.trim())
+      .filter(Boolean);
+  }
+  return [];
+};
+
 export default function UniversityProfile() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
@@ -124,6 +144,10 @@ export default function UniversityProfile() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
+  const selectedProgramRequirements = selectedProgram
+    ? parseEntryRequirements(selectedProgram.entry_requirements)
+    : [];
   
   // Check if user is an agent/staff/admin to determine the correct apply URL
   const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
@@ -613,10 +637,8 @@ export default function UniversityProfile() {
                             </CardDescription>
                           </div>
                         </div>
-                        <Button asChild>
-                          <Link to={getApplyUrl(program.id)}>
-                            {isAgentOrStaff ? "Submit Application" : "Apply Now"}
-                          </Link>
+                        <Button onClick={() => setSelectedProgram(program)}>
+                          View Details
                         </Button>
                       </div>
                     </CardHeader>
@@ -665,6 +687,82 @@ export default function UniversityProfile() {
                     </CardContent>
                   </Card>
                 ))}
+
+                <Dialog open={Boolean(selectedProgram)} onOpenChange={(open) => !open && setSelectedProgram(null)}>
+                  <DialogContent className="max-w-3xl">
+                    {selectedProgram && (
+                      <>
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold">{selectedProgram.name}</DialogTitle>
+                          <DialogDescription className="text-base">
+                            {university?.name} • {university?.city}, {university?.country}
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-6">
+                          {selectedProgram.description && (
+                            <p className="text-muted-foreground leading-relaxed">{selectedProgram.description}</p>
+                          )}
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center gap-2 text-sm">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                {selectedProgram.tuition_amount.toLocaleString()} {selectedProgram.tuition_currency}/year
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{selectedProgram.duration_months} months</span>
+                            </div>
+                            {selectedProgram.intake_months?.length > 0 && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                                <span>
+                                  Intakes: {selectedProgram.intake_months.map(getMonthName).join(", ")}
+                                </span>
+                              </div>
+                            )}
+                            {(selectedProgram.ielts_overall || selectedProgram.toefl_overall) && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                <span>
+                                  {selectedProgram.ielts_overall && `IELTS: ${selectedProgram.ielts_overall}`}
+                                  {selectedProgram.ielts_overall && selectedProgram.toefl_overall && " • "}
+                                  {selectedProgram.toefl_overall && `TOEFL: ${selectedProgram.toefl_overall}`}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {selectedProgramRequirements.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-sm font-semibold text-foreground">Entry requirements</p>
+                              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                {selectedProgramRequirements.map((requirement, index) => (
+                                  <li key={index}>{requirement}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+
+                        <DialogFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4">
+                          <Button
+                            variant="ghost"
+                            className="w-full sm:w-auto"
+                            onClick={() => setSelectedProgram(null)}
+                          >
+                            Close
+                          </Button>
+                          <Button asChild className="w-full sm:w-auto">
+                            <Link to={getApplyUrl(selectedProgram.id)}>Apply</Link>
+                          </Button>
+                        </DialogFooter>
+                      </>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
           </TabsContent>
