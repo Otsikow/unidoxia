@@ -44,6 +44,28 @@ const createId = (prefix: string) =>
     ? crypto.randomUUID()
     : `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
+const isLikelyDuplicateMessage = (existing: Message, incoming: Message) => {
+  if (existing.id === incoming.id) return true;
+
+  const sameSender = existing.sender_id === incoming.sender_id;
+  const contentMatch = (existing.content || "").trim() === (incoming.content || "").trim();
+  const typeMatch = (existing.message_type ?? "text") === (incoming.message_type ?? "text");
+  const attachmentsMatch = (existing.attachments?.length ?? 0) === (incoming.attachments?.length ?? 0);
+
+  const existingCreated = new Date(existing.created_at).getTime();
+  const incomingCreated = new Date(incoming.created_at).getTime();
+  const timeDiff = Math.abs(existingCreated - incomingCreated);
+
+  return (
+    sameSender &&
+    contentMatch &&
+    typeMatch &&
+    attachmentsMatch &&
+    Number.isFinite(timeDiff) &&
+    timeDiff < 10_000
+  );
+};
+
 /**
  * Retry a function with exponential backoff
  */
@@ -652,11 +674,23 @@ export function useMessages() {
           };
 
           // Update messages cache
+          const mergeWithExisting = (existingMessages: Message[]) => {
+            const duplicateIndex = existingMessages.findIndex((m) =>
+              isLikelyDuplicateMessage(m, message)
+            );
+
+            if (duplicateIndex !== -1) {
+              const next = [...existingMessages];
+              next[duplicateIndex] = message;
+              return next;
+            }
+
+            return [...existingMessages, message];
+          };
+
           setMessagesById((prev) => {
             const existing = prev[newMessage.conversation_id] ?? [];
-            // Avoid duplicates
-            if (existing.some((m) => m.id === message.id)) return prev;
-            const next = [...existing, message];
+            const next = mergeWithExisting(existing);
             messagesRef.current = { ...prev, [newMessage.conversation_id]: next };
             return messagesRef.current;
           });
@@ -664,10 +698,7 @@ export function useMessages() {
           // If this is the current conversation, update visible messages
           setCurrentConversationState((currentId) => {
             if (currentId === newMessage.conversation_id) {
-              setMessages((prev) => {
-                if (prev.some((m) => m.id === message.id)) return prev;
-                return [...prev, message];
-              });
+              setMessages((prev) => mergeWithExisting(prev));
             }
             return currentId;
           });

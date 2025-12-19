@@ -685,8 +685,8 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
   };
 
   return (
-    <div className="p-2 sm:p-3 md:p-4 border-t bg-background flex-shrink-0">
-      <div className="flex items-end gap-2 sm:gap-3">
+    <div className="p-3 sm:p-4 md:p-5 border-t bg-background flex-shrink-0 space-y-3">
+      <div className="flex items-start gap-2 sm:gap-3">
         <Popover open={isActionsOpen} onOpenChange={setIsActionsOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -808,10 +808,21 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[44px] sm:min-h-[48px] max-h-32 sm:max-h-40 resize-none text-sm sm:text-base py-2.5 px-3"
+            className="min-h-[64px] sm:min-h-[72px] max-h-48 sm:max-h-56 resize-none text-sm sm:text-base py-3 px-3"
             rows={1}
           />
         </div>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+          disabled={disabled}
+          aria-label="Open message actions"
+          onClick={() => setIsActionsOpen((prev) => !prev)}
+        >
+          <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
+        </Button>
 
         {/* Send Button */}
         <Button
