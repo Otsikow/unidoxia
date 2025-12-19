@@ -209,18 +209,20 @@ const Index = () => {
         <div className="hero-video-overlay" />
 
         <div className="hero-content">
-          <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-50 brightness-0 invert" />
+          <div className="hero-glass-panel">
+            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-50 brightness-0 invert" />
 
-          <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
-            Apply to Global Universities. Get Accepted. Study Abroad with Confidence.
-          </h1>
+            <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
+              Apply to Global Universities. Get Accepted. Study Abroad with Confidence.
+            </h1>
 
-          <Button asChild size="lg" className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 text-lg">
-            <Link to="/auth/signup">
-              <Sparkles className="mr-2 h-5 w-5" />
-              Start Your Study Journey
-            </Link>
-          </Button>
+            <Button asChild size="lg" className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 text-lg">
+              <Link to="/auth/signup">
+                <Sparkles className="mr-2 h-5 w-5" />
+                Start Your Study Journey
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
