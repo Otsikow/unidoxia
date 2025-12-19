@@ -7,6 +7,16 @@ import type { Tables } from "@/integrations/supabase/types";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { AccountInspector } from "@/components/admin/AccountInspector";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { CheckCircle2, FileText, Mail, Phone, Shield, UserRoundX } from "lucide-react";
 
 interface RoleSummary {
   role: string;
@@ -20,6 +30,16 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Tables<"profiles">[]>([]);
   const [roleSummary, setRoleSummary] = useState<RoleSummary[]>([]);
+  const [selectedUser, setSelectedUser] = useState<Tables<"profiles"> | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [studentRecord, setStudentRecord] = useState<Tables<"students"> | null>(null);
+  const [studentDocuments, setStudentDocuments] = useState<
+    Tables<"student_documents">[]
+  >([]);
+  const [documentCount, setDocumentCount] = useState(0);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [isOpeningDocument, setIsOpeningDocument] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -38,7 +58,7 @@ const AdminUsers = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, full_name, email, role, created_at, active")
+          .select("id, full_name, email, role, created_at, active, phone, country, timezone, onboarded")
           .eq("tenant_id", tenantId)
           .order("created_at", { ascending: false })
           .limit(50);
@@ -64,6 +84,87 @@ const AdminUsers = () => {
       isMounted = false;
     };
   }, [tenantId]);
+
+  const handleSelectUser = async (user: Tables<"profiles">) => {
+    setSelectedUser(user);
+    setIsDetailOpen(true);
+    setDetailLoading(true);
+    setStudentRecord(null);
+    setStudentDocuments([]);
+    setDocumentCount(0);
+
+    try {
+      const { data: studentData } = await supabase
+        .from("students")
+        .select(
+          "id, legal_name, preferred_name, contact_email, contact_phone, nationality, current_country, profile_completeness, created_at"
+        )
+        .eq("profile_id", user.id)
+        .maybeSingle();
+
+      setStudentRecord((studentData ?? null) as Tables<"students"> | null);
+
+      if (studentData?.id) {
+        const [{ data: docs }, { count }] = await Promise.all([
+          supabase
+            .from("student_documents")
+            .select("id, document_type, file_name, storage_path, verified_status, created_at")
+            .eq("student_id", studentData.id)
+            .order("created_at", { ascending: false })
+            .limit(5),
+          supabase
+            .from("student_documents")
+            .select("id", { count: "exact", head: true })
+            .eq("student_id", studentData.id),
+        ]);
+
+        setStudentDocuments((docs ?? []) as Tables<"student_documents">[]);
+        setDocumentCount(count ?? 0);
+      }
+    } catch (error) {
+      console.error("Failed to load student details", error);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  const updateUserStatus = async (active: boolean) => {
+    if (!selectedUser) return;
+    setIsStatusUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ active })
+        .eq("id", selectedUser.id);
+
+      if (error) throw error;
+
+      setRows((prev) => prev.map((row) => (row.id === selectedUser.id ? { ...row, active } : row)));
+      setSelectedUser((prev) => (prev ? { ...prev, active } : prev));
+    } catch (error) {
+      console.error("Failed to update user status", error);
+    } finally {
+      setIsStatusUpdating(false);
+    }
+  };
+
+  const handleViewDocument = async (doc: Tables<"student_documents">) => {
+    setIsOpeningDocument(doc.id);
+    try {
+      const { data, error } = await supabase.storage
+        .from("student-documents")
+        .createSignedUrl(doc.storage_path, 3600);
+
+      if (error) throw error;
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, "_blank");
+      }
+    } catch (err) {
+      console.error("Unable to open document", err);
+    } finally {
+      setIsOpeningDocument(null);
+    }
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -128,7 +229,11 @@ const AdminUsers = () => {
               {/* Mobile Card View */}
               <div className="block space-y-3 md:hidden">
                 {rows.map((user) => (
-                  <div key={user.id} className="rounded-lg border p-3 space-y-2">
+                  <button
+                    key={user.id}
+                    className="rounded-lg border p-3 space-y-2 text-left w-full transition hover:border-primary"
+                    onClick={() => handleSelectUser(user)}
+                  >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-sm truncate">{user.full_name}</p>
@@ -144,10 +249,10 @@ const AdminUsers = () => {
                         {user.created_at ? new Date(user.created_at).toLocaleDateString() : "—"}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
-              
+
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="min-w-full divide-y divide-border">
@@ -162,7 +267,11 @@ const AdminUsers = () => {
                   </thead>
                   <tbody className="divide-y divide-border text-sm">
                     {rows.map((user) => (
-                      <tr key={user.id}>
+                      <tr
+                        key={user.id}
+                        className="cursor-pointer transition hover:bg-muted/60"
+                        onClick={() => handleSelectUser(user)}
+                      >
                         <td className="px-3 py-2 lg:px-4 font-medium">{user.full_name}</td>
                         <td className="px-3 py-2 lg:px-4 text-muted-foreground truncate max-w-[200px]">{user.email}</td>
                         <td className="px-3 py-2 lg:px-4 uppercase tracking-wide text-xs">{user.role}</td>
@@ -181,6 +290,179 @@ const AdminUsers = () => {
           )}
         </CardContent>
       </Card>
+
+      <Sheet open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+          <SheetHeader className="space-y-2">
+            <SheetTitle className="flex items-center gap-2 text-lg">
+              <Shield className="h-5 w-5 text-primary" />
+              User profile
+            </SheetTitle>
+            <SheetDescription>
+              Review student context, documents, and quickly approve or suspend access.
+            </SheetDescription>
+          </SheetHeader>
+
+          {detailLoading ? (
+            <div className="mt-6 space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          ) : selectedUser ? (
+            <div className="mt-6 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-lg font-semibold leading-tight">{selectedUser.full_name}</p>
+                    <div className="flex flex-wrap gap-2 text-sm text-muted-foreground mt-1">
+                      <span className="flex items-center gap-1"><Mail className="h-4 w-4" />{selectedUser.email}</span>
+                      {selectedUser.phone && (
+                        <span className="flex items-center gap-1"><Phone className="h-4 w-4" />{selectedUser.phone}</span>
+                      )}
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="uppercase tracking-wide">{selectedUser.role}</Badge>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant={selectedUser.active ? "outline" : "destructive"} className="gap-1 text-xs">
+                    {selectedUser.active ? <CheckCircle2 className="h-4 w-4" /> : <UserRoundX className="h-4 w-4" />}
+                    {selectedUser.active ? "Active" : "Suspended"}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    Created {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString() : "—"}
+                  </span>
+                  {selectedUser.country && <span className="text-xs text-muted-foreground">• {selectedUser.country}</span>}
+                  {selectedUser.timezone && <span className="text-xs text-muted-foreground">• {selectedUser.timezone}</span>}
+                </div>
+              </div>
+
+              <div className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Student profile</p>
+                    <p className="text-sm text-muted-foreground">Enrollment context linked to this account.</p>
+                  </div>
+                  {typeof studentRecord?.profile_completeness === "number" ? (
+                    <Badge variant="secondary" className="text-xs">
+                      {studentRecord.profile_completeness}% complete
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs">Profile drafted</Badge>
+                  )}
+                </div>
+
+                {studentRecord ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Legal name</Label>
+                      <p className="font-medium">{studentRecord.legal_name || "—"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Preferred name</Label>
+                      <p className="font-medium">{studentRecord.preferred_name || "—"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Contact email</Label>
+                      <p className="font-medium">{studentRecord.contact_email || selectedUser.email}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Contact phone</Label>
+                      <p className="font-medium">{studentRecord.contact_phone || selectedUser.phone || "—"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Nationality</Label>
+                      <p className="font-medium">{studentRecord.nationality || "—"}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Current country</Label>
+                      <p className="font-medium">{studentRecord.current_country || "—"}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No student record linked yet.</p>
+                )}
+              </div>
+
+              <div className="rounded-lg border p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Documents</p>
+                    <p className="text-sm text-muted-foreground">Latest uploads from the student workspace.</p>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">{documentCount} on file</Badge>
+                </div>
+
+                {studentDocuments.length > 0 ? (
+                  <div className="space-y-2">
+                    {studentDocuments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-start justify-between gap-3 rounded border p-2"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <p className="font-medium text-sm">{doc.file_name || doc.document_type}</p>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {doc.document_type} • {new Date(doc.created_at ?? "").toLocaleDateString()}
+                          </p>
+                          <Badge variant="outline" className="text-[11px] uppercase">
+                            {doc.verified_status || "pending"}
+                          </Badge>
+                        </div>
+                        {doc.storage_path && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={isOpeningDocument === doc.id}
+                            onClick={() => handleViewDocument(doc)}
+                          >
+                            {isOpeningDocument === doc.id ? "Opening..." : "Review"}
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No documents uploaded yet.</p>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Actions</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button
+                    variant="default"
+                    onClick={() => updateUserStatus(true)}
+                    disabled={isStatusUpdating || selectedUser.active === true}
+                    className="gap-2"
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    Approve & activate
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => updateUserStatus(false)}
+                    disabled={isStatusUpdating || selectedUser.active === false}
+                    className="gap-2"
+                  >
+                    <UserRoundX className="h-4 w-4" />
+                    Suspend access
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+              <p className="text-xs text-muted-foreground">
+                Tip: use the Account Inspector above for deeper repairs, role fixes, or enrollment alignment.
+              </p>
+            </div>
+          ) : null}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
