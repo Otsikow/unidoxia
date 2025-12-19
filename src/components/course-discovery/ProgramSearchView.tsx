@@ -279,10 +279,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       .not("name", "ilike", "%placeholder%")
       .not("name", "ilike", "%test university%")
       .not("name", "ilike", "%sample university%")
-      .not("name", "ilike", "%demo university%")
-      .not("name", "ilike", "%inhist%")
-      .not("name", "ilike", "%InHisTime%")
-      .or("city.neq.Toronto,country.neq.United Kingdom");
+      .not("name", "ilike", "%demo university%");
   };
 
   // Load filter options once on mount
