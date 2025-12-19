@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-import BackButton from "@/components/BackButton";
 import { useToast } from "@/hooks/use-toast";
 import { useStudentRecord } from "@/hooks/useStudentRecord";
 import { validateFileUpload } from "@/lib/fileUpload";
@@ -424,8 +423,6 @@ export default function Documents() {
 
   return (
     <div className="container mx-auto py-8 space-y-6">
-      <BackButton fallback="/dashboard" />
-
       <h1 className="text-3xl font-bold">My Documents</h1>
 
       {/* Upload */}
