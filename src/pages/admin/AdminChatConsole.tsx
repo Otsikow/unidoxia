@@ -1,146 +1,362 @@
+import { useCallback, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Send, ShieldCheck, Users } from "lucide-react";
+import { AlertCircle, Loader2, MessageSquare, Send, ShieldCheck, Target } from "lucide-react";
+import MessagesDashboard from "@/components/messages/MessagesDashboard";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import {
+  audienceLabel,
+  createAudienceConversation,
+  fetchAudienceContacts,
+  sendAudienceMessage,
+  type AudienceType,
+} from "@/lib/messaging/adminAudienceService";
+import type { DirectoryProfile } from "@/lib/messaging/directory";
+import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
+import { cn } from "@/lib/utils";
+import { useMessages } from "@/hooks/useMessages";
 
-const CHANNELS = [
-  { name: "Admissions escalations", members: 12, status: "Priority" },
-  { name: "Agent onboarding", members: 28, status: "Active" },
-  { name: "Compliance alerts", members: 9, status: "Restricted" },
-];
+const audienceOptions: AudienceType[] = ["universities", "students", "agents", "all"];
 
-const MESSAGES = [
-  {
-    author: "Taylor (Support Lead)",
-    initials: "TS",
-    body: "We resolved the outstanding visa document issue; notifying the student now.",
-    timestamp: "2:14 PM",
-  },
-  {
-    author: "Morgan (Admissions)",
-    initials: "MA",
-    body: "Great! Please tag this thread and update the weekly summary dashboard.",
-    timestamp: "2:16 PM",
-  },
-  {
-    author: "Jordan (Agent Success)",
-    initials: "JA",
-    body: "Adding @Region-APAC to ensure they communicate the change to partner agents.",
-    timestamp: "2:18 PM",
-  },
-];
+type ScopeOption = "all" | "specific";
+
+const scopeCopy: Record<ScopeOption, string> = {
+  all: "Message everyone in this audience",
+  specific: "Choose recipients to personalise outreach",
+};
 
 const AdminChatConsole = () => {
+  const { profile } = useAuth();
+  const { toast } = useToast();
+  const tenantId = profile?.tenant_id ?? DEFAULT_TENANT_ID;
+
+  const messaging = useMessages();
+
+  const [audience, setAudience] = useState<AudienceType>("universities");
+  const [scope, setScope] = useState<ScopeOption>("all");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+  const [search, setSearch] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [results, setResults] = useState<DirectoryProfile[]>([]);
+  const [selected, setSelected] = useState<DirectoryProfile[]>([]);
+
+  const selectedIds = useMemo(() => new Set(selected.map((entry) => entry.id)), [selected]);
+
+  const handleSearch = useCallback(async () => {
+    setSearching(true);
+    try {
+      const contacts = await fetchAudienceContacts(audience, tenantId, search.trim() || undefined);
+      setResults(contacts);
+      if (contacts.length === 0) {
+        toast({
+          title: "No results",
+          description: "Try a different name, email, or audience type.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to search contacts", error);
+      toast({
+        title: "Search failed",
+        description: "We could not fetch contacts right now. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSearching(false);
+    }
+  }, [audience, search, tenantId, toast]);
+
+  const handleToggleRecipient = useCallback((entry: DirectoryProfile) => {
+    setSelected((current) => {
+      if (current.find((item) => item.id === entry.id)) {
+        return current.filter((item) => item.id !== entry.id);
+      }
+      return [...current, entry];
+    });
+  }, []);
+
+  const resetComposer = useCallback(() => {
+    setSubject("");
+    setMessage("");
+    setSearch("");
+    setResults([]);
+    setSelected([]);
+  }, []);
+
+  const handleSend = useCallback(async () => {
+    if (!profile?.id) {
+      toast({
+        title: "Sign in required",
+        description: "You need an admin session to send messages.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!message.trim()) {
+      toast({ title: "Message required", description: "Add some content before sending." });
+      return;
+    }
+
+    setSending(true);
+    try {
+      const recipients =
+        scope === "all"
+          ? await fetchAudienceContacts(audience, tenantId)
+          : selected;
+
+      if (recipients.length === 0) {
+        toast({
+          title: "No recipients",
+          description: scope === "all"
+            ? "We could not find anyone in this audience."
+            : "Select at least one recipient to continue.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const conversationId = await createAudienceConversation({
+        participantIds: recipients.map((entry) => entry.id),
+        createdBy: profile.id,
+        tenantId,
+        audience,
+        scope,
+        subject: subject.trim() || undefined,
+      });
+
+      await sendAudienceMessage(conversationId, profile.id, message.trim());
+
+      toast({
+        title: "Message delivered",
+        description: `Sent to ${recipients.length} ${audienceLabel[audience].toLowerCase()}.`,
+      });
+
+      resetComposer();
+      await messaging.fetchConversations();
+      messaging.setCurrentConversation(conversationId);
+    } catch (error) {
+      console.error("Failed to send broadcast message", error);
+      toast({
+        title: "Send failed",
+        description: "The message could not be delivered. Please try again shortly.",
+        variant: "destructive",
+      });
+    } finally {
+      setSending(false);
+    }
+  }, [audience, messaging, message, profile?.id, resetComposer, scope, selected, subject, tenantId, toast]);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Admin Chat Console</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Admin Messaging Console</h1>
           <p className="text-sm text-muted-foreground">
-            Coordinate across teams with governance-ready chat channels and searchable archives.
+            Broadcast updates to universities, agents, students, or every user from one place.
           </p>
         </div>
         <Badge variant="outline" className="gap-1">
           <ShieldCheck className="h-4 w-4" />
-          Audit logging on
+          RLS protected
         </Badge>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Channels
-            </CardTitle>
-            <CardDescription>Spin up internal workspaces for focused collaboration.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Input placeholder="Search channels" />
-            <div className="space-y-3">
-              {CHANNELS.map((channel) => (
-                <div key={channel.name} className="rounded-lg border p-3">
-                  <p className="text-sm font-medium">{channel.name}</p>
-                  <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{channel.members} members</span>
-                    <Badge variant="secondary">{channel.status}</Badge>
-                  </div>
-                </div>
-              ))}
+      <Card>
+        <CardHeader className="space-y-2">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <div>
+              <CardTitle>New broadcast message</CardTitle>
+              <CardDescription>Select an audience, craft the announcement, and deliver instantly.</CardDescription>
             </div>
-            <Button className="w-full">Create channel</Button>
-          </CardContent>
-        </Card>
-
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              Admissions escalations
-            </CardTitle>
-            <CardDescription>Secure channel with message retention and export controls.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col gap-4">
-            <ScrollArea className="h-64 rounded-md border">
-              <div className="space-y-4 p-4">
-                {MESSAGES.map((message) => (
-                  <div key={message.timestamp} className="flex gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback>{message.initials}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-medium text-sm">{message.author}</span>
-                        <span className="text-muted-foreground">{message.timestamp}</span>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{message.body}</p>
-                    </div>
-                  </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Audience</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {audienceOptions.map((option) => (
+                  <Button
+                    key={option}
+                    variant={audience === option ? "default" : "outline"}
+                    className="justify-start gap-2"
+                    onClick={() => setAudience(option)}
+                  >
+                    <Target className="h-4 w-4" />
+                    {audienceLabel[option]}
+                  </Button>
                 ))}
               </div>
-            </ScrollArea>
+              <p className="text-xs text-muted-foreground">
+                Choose whether to reach universities, students, agents, or every user.
+              </p>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="chat-reply" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Draft response
-              </Label>
-              <Textarea id="chat-reply" rows={4} placeholder="Share updates, attach notes, or hand off the request..." />
+              <Label>Delivery scope</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={scope === "all" ? "default" : "outline"}
+                  onClick={() => setScope("all")}
+                  className="flex-1"
+                >
+                  Message all
+                </Button>
+                <Button
+                  variant={scope === "specific" ? "default" : "outline"}
+                  onClick={() => setScope("specific")}
+                  className="flex-1"
+                >
+                  Pick recipients
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">{scopeCopy[scope]}</p>
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <Button variant="outline" size="sm">
-                Add attachment
-              </Button>
-              <Button className="gap-2">
-                <Send className="h-4 w-4" />
-                Send reply
+
+            <div className="space-y-2">
+              <Label htmlFor="broadcast-subject">Subject (optional)</Label>
+              <Input
+                id="broadcast-subject"
+                placeholder="Admissions update"
+                value={subject}
+                onChange={(event) => setSubject(event.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Label the thread for quick context.</p>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="broadcast-message">Message</Label>
+            <Textarea
+              id="broadcast-message"
+              rows={4}
+              placeholder="Share deadlines, reminders, or platform updates..."
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+            />
+          </div>
+
+          {scope === "specific" && (
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Recipient search</p>
+                  <p className="text-xs text-muted-foreground">
+                    Add universities, agents, or students to this broadcast.
+                  </p>
+                </div>
+                <Badge variant="secondary">{selected.length} selected</Badge>
+              </div>
+              <div className="flex flex-col gap-2 md:flex-row">
+                <Input
+                  placeholder="Search by name or email"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+                <Button onClick={() => void handleSearch()} disabled={searching} className="gap-2">
+                  {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  Search
+                </Button>
+              </div>
+
+              {selected.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selected.map((entry) => (
+                    <Badge
+                      key={entry.id}
+                      variant="secondary"
+                      className="flex items-center gap-2 pr-3"
+                    >
+                      {entry.full_name}
+                      <button
+                        type="button"
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => handleToggleRecipient(entry)}
+                      >
+                        ✕
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              <ScrollArea className="h-56 rounded-md border">
+                <div className="divide-y">
+                  {searching ? (
+                    <div className="flex items-center justify-center p-6 text-muted-foreground">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    </div>
+                  ) : results.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 p-6 text-center text-muted-foreground">
+                      <AlertCircle className="h-5 w-5" />
+                      <p className="text-sm">Search results will appear here.</p>
+                    </div>
+                  ) : (
+                    results.map((entry) => (
+                      <button
+                        key={entry.id}
+                        className={cn(
+                          "flex w-full items-center gap-3 p-3 text-left transition hover:bg-accent",
+                          selectedIds.has(entry.id) && "bg-accent/60",
+                        )}
+                        onClick={() => handleToggleRecipient(entry)}
+                      >
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={entry.avatar_url || undefined} alt={entry.full_name} />
+                          <AvatarFallback>{entry.full_name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-semibold">{entry.full_name}</p>
+                          <p className="text-xs text-muted-foreground">{entry.email}</p>
+                        </div>
+                        <Badge variant={selectedIds.has(entry.id) ? "default" : "outline"}>
+                          {selectedIds.has(entry.id) ? "Added" : "Add"}
+                        </Badge>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <MessageSquare className="h-4 w-4" />
+              {scope === "all"
+                ? `This will message every profile in ${audienceLabel[audience].toLowerCase()}.`
+                : `Ready to notify ${selected.length} recipient${selected.length === 1 ? "" : "s"}.`}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={resetComposer}>Reset</Button>
+              <Button className="gap-2" onClick={() => void handleSend()} disabled={sending}>
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                {sending ? "Sending" : "Send now"}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Retention policy</CardTitle>
-          <CardDescription>Transparency for data governance teams.</CardDescription>
+          <CardTitle>Active conversations</CardTitle>
+          <CardDescription>
+            Continue ongoing threads or review previous broadcasts without leaving the admin dashboard.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-3">
-          {["Message history", "File exports", "Escalation tags"].map((label, index) => (
-            <div key={label} className="rounded-lg border p-4">
-              <p className="text-sm font-semibold">{label}</p>
-              <Separator className="my-3" />
-              <p className="text-sm text-muted-foreground">
-                {index === 0 && "12 month retention with automated legal hold."}
-                {index === 1 && "Exports limited to security administrators."}
-                {index === 2 && "Escalations synced to the compliance dashboard."}
-              </p>
-            </div>
-          ))}
+        <CardContent className="p-0">
+          <MessagesDashboard />
         </CardContent>
       </Card>
     </div>
