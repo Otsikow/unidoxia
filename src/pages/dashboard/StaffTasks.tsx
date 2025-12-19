@@ -11,7 +11,7 @@ import { StaffTaskComposerProvider } from "@/components/staff/StaffTaskComposerP
 
 export default function StaffTasks() {
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <StaffTaskComposerProvider>
         <div className="space-y-6 p-4 sm:p-6 lg:p-8">
           <BackButton fallback="/dashboard" label="Back" />

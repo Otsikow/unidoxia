@@ -5,7 +5,7 @@ import CommissionManagement from "@/components/commission/CommissionManagement";
 
 export default function AgentCommissionsPage() {
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="p-4 md:p-8 space-y-6">
         <BackButton variant="ghost" size="sm" fallback="/dashboard" />
 

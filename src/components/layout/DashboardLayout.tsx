@@ -30,16 +30,17 @@ const getInitials = (value?: string | null) =>
 
 interface DashboardLayoutProps {
   children: ReactNode;
+  showToolbarBackButton?: boolean;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardLayout({ children, showToolbarBackButton = true }: DashboardLayoutProps) {
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar />
         <SidebarInset className="bg-gradient-subtle min-w-0">
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <SidebarToolbar />
+            <SidebarToolbar showBackButton={showToolbarBackButton} />
             <main className="flex-1 min-w-0 animate-fade-in overflow-y-auto">
               <div className="page-shell py-4 sm:py-6 lg:py-8">
                 {children}
@@ -53,7 +54,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   );
 }
 
-function SidebarToolbar() {
+function SidebarToolbar({ showBackButton }: { showBackButton?: boolean }) {
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,6 +65,7 @@ function SidebarToolbar() {
   const roleLabel = formatRoleLabel(primaryRole);
 
   const showBack =
+    showBackButton !== false &&
     location.pathname !== "/dashboard" &&
     location.pathname !== "/dashboard/" &&
     location.pathname !== "/student/dashboard" &&

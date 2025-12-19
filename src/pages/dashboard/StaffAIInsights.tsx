@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function StaffAIInsights() {
   return (
-    <DashboardLayout>
+    <DashboardLayout showToolbarBackButton={false}>
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
         <BackButton fallback="/dashboard" label="Back" />
         <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
