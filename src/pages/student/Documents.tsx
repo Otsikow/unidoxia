@@ -247,6 +247,8 @@ export default function Documents() {
         return { label: "Sent to University", variant: "default" as const };
       case "university_reviewed":
         return { label: "Reviewed", variant: "default" as const };
+      default:
+        return { label: "Pending", variant: "secondary" as const };
     }
   };
 
