@@ -346,7 +346,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let query = supabase
         .from("programs")
         .select(`
-          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url,
+          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id,
           universities!inner (id, name, country, city, logo_url, website, description, active)
         `, { count: "exact" })
         .eq("active", true)
@@ -385,7 +385,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         tuition_currency: p.tuition_currency,
         duration_months: p.duration_months,
         university_id: p.university_id,
-        image_url: p.image_url ?? null,
+        image_url: null,
         university: {
           id: p.universities.id,
           name: p.universities.name,
@@ -601,7 +601,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let progQuery = supabase
         .from("programs")
         .select(
-          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url",
+          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id",
         )
         .in("university_id", uniIds)
         .eq("active", true)
@@ -671,7 +671,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           tuition_currency: p.tuition_currency,
           duration_months: p.duration_months,
           university_id: p.university_id,
-          image_url: p.image_url ?? null 
+          image_url: null 
         }));
       }
       const scholarships = scholarshipsResult.data || [];
@@ -740,23 +740,22 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="relative">
-              <TabsList className="w-full h-auto flex-nowrap justify-start gap-3 md:gap-4 md:justify-center px-4 sm:px-6 py-2 rounded-2xl bg-card/90 border border-border shadow-lg scroll-smooth snap-x snap-mandatory">
+          <div className="relative overflow-hidden">
+            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+              <TabsList className="inline-flex h-auto gap-2 p-2 rounded-2xl bg-card/90 border border-border shadow-lg min-w-max md:w-full md:justify-center">
                 {translatedTabs.map((tab) => (
-                  <TabsTrigger key={tab.value} value={tab.value} className={TAB_TRIGGER_STYLES}>
-                    <tab.icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
+                  <TabsTrigger 
+                    key={tab.value} 
+                    value={tab.value} 
+                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    <tab.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
                   </TabsTrigger>
                 ))}
-            </TabsList>
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-background via-background/70 to-transparent"
-            />
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-background via-background/70 to-transparent"
-            />
+              </TabsList>
+            </div>
           </div>
 
           {/* SEARCH TAB */}
