@@ -379,17 +379,19 @@ const en = {
           heading: "Why Choose UniDoxia?",
           cards: {
             applyEasily: {
-              title: "Apply Easily",
+              title: "We Help You Apply With Confidence",
               description:
-                "Streamlined application process with step-by-step guidance. Submit applications to multiple universities effortlessly.",
+                "We guide you step by step through your application, checking your documents and helping you apply to the right universities—so you’re never guessing or applying alone.",
             },
             trackRealtime: {
-              title: "Track in Real-Time",
-              description: "Monitor your application status 24/7 with live updates and instant notifications.",
+              title: "We Keep You Informed at Every Step",
+              description:
+                "We track your application with you and keep you updated in real time—so you always know what’s happening and what comes next, without stress or confusion.",
             },
             connectAgents: {
-              title: "Connect with Verified Agents",
-              description: "Access certified education agents who provide personalized support throughout your journey.",
+              title: "We Support You From Start to Finish",
+              description:
+                "You receive personalized support from verified education experts who guide you throughout your journey—from application to admission and beyond.",
             },
           },
         },
