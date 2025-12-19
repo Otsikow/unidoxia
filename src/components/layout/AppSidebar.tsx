@@ -55,7 +55,7 @@ const menuItems = {
   student: [
     { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "My Profile", url: "/student/profile", icon: UserCircle },
-    { title: "Universities", url: "/universities", icon: Building2 },
+    { title: "Universities", url: "/student/universities", icon: Building2 },
     { title: "Discover Courses", url: "/courses", icon: Search },
     { title: "My Applications", url: "/student/applications", icon: FileText },
     { title: "Documents", url: "/student/documents", icon: Upload },
