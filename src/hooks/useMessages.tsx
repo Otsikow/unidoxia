@@ -334,15 +334,46 @@ export function useMessages() {
         return null;
       }
 
-      const convs = await fetchConversationsFromDb();
-      conversationsRef.current = convs;
-      setConversations(convs);
-      cacheConversations(convs);
-      await setCurrentConversation(conv.id);
+      // Refresh conversations after creating (using inline fetch)
+      const { data: refreshedMemberships } = await supabase
+        .from("conversation_participants")
+        .select("conversation_id,last_read_at")
+        .eq("user_id", currentUserId);
+
+      if (refreshedMemberships?.length) {
+        const refreshedIds = refreshedMemberships.map((m) => m.conversation_id);
+        const { data: refreshedConvs } = await supabase
+          .from("conversations")
+          .select(`
+            id,
+            tenant_id,
+            type,
+            is_group,
+            created_at,
+            updated_at,
+            last_message_at,
+            participants:conversation_participants(
+              user_id,
+              last_read_at,
+              profile:profiles(id, full_name, avatar_url, role)
+            )
+          `)
+          .in("id", refreshedIds)
+          .order("last_message_at", { ascending: false, nullsFirst: false });
+
+        const mapped = (refreshedConvs ?? []).map((c: any) => ({
+          ...c,
+          title: c.title ?? null,
+        })) as Conversation[];
+        const sortedConvs = sortConversations(mapped);
+        conversationsRef.current = sortedConvs;
+        setConversations(sortedConvs);
+        cacheConversations(sortedConvs);
+      }
 
       return conv.id as string;
     },
-    [currentUserId, fetchConversationsFromDb, setCurrentConversation, tenantId]
+    [currentUserId, tenantId]
   );
 
   /* ======================================================
@@ -660,7 +691,7 @@ export function useMessages() {
                   conversation_id: pending.conversationId,
                   sender_id: currentUserId,
                   content: pending.content,
-                  attachments: pending.attachments ?? [],
+                  attachments: (pending.attachments ?? []) as unknown as Record<string, never>[],
                   message_type: "text",
                 }]);
                 
@@ -1010,7 +1041,7 @@ export function useMessages() {
           conversation_id: pending.conversationId,
           sender_id: currentUserId,
           content: pending.content,
-          attachments: pending.attachments ?? [],
+          attachments: (pending.attachments ?? []) as unknown as Record<string, never>[],
           message_type: "text",
         }]);
         

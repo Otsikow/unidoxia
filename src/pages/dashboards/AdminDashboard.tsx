@@ -51,8 +51,8 @@ type AdminDocumentReview = {
   document_type: string;
   file_name: string;
   storage_path: string;
-  admin_review_status: string | null;
-  admin_review_notes: string | null;
+  verified_status: string | null;
+  verification_notes: string | null;
   created_at: string | null;
   students?: StudentPreview | null;
 };
@@ -133,18 +133,18 @@ export default function AdminDashboard() {
           document_type,
           file_name,
           storage_path,
-          admin_review_status,
-          admin_review_notes,
+          verified_status,
+          verification_notes,
           created_at,
           students:student_id (id, profile_id, tenant_id, legal_name, preferred_name)
         `)
-        .in('admin_review_status', ['awaiting_admin_review', 'admin_rejected'])
+        .in('verified_status', ['pending', 'rejected'])
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      setPendingDocuments((data as AdminDocumentReview[]) ?? []);
+      setPendingDocuments((data as unknown as AdminDocumentReview[]) ?? []);
     } catch (error) {
       console.error('Error loading pending documents:', error);
     } finally {
@@ -153,7 +153,7 @@ export default function AdminDashboard() {
   }, [isAdminUser]);
 
   const updateDocumentStatus = useCallback(
-    async (doc: AdminDocumentReview, status: 'ready_for_university_review' | 'admin_rejected') => {
+    async (doc: AdminDocumentReview, status: 'verified' | 'rejected') => {
       try {
         setUpdatingDocumentId(doc.id);
         const note = (documentNotes[doc.id] ?? '').trim() || null;
@@ -161,17 +161,16 @@ export default function AdminDashboard() {
         const { error } = await supabase
           .from('student_documents')
           .update({
-            admin_review_status: status,
-            admin_review_notes: note,
-            admin_reviewed_by: profile?.id ?? null,
-            admin_reviewed_at: new Date().toISOString(),
-            verified_status: status === 'ready_for_university_review' ? 'pending' : 'pending',
+            verified_status: status,
+            verification_notes: note,
+            verified_by: profile?.id ?? null,
+            verified_at: new Date().toISOString(),
           })
           .eq('id', doc.id);
 
         if (error) throw error;
 
-        if (status === 'admin_rejected' && doc.students?.profile_id && doc.students?.tenant_id) {
+        if (status === 'rejected' && doc.students?.profile_id && doc.students?.tenant_id) {
           await createNotification({
             userId: doc.students.profile_id,
             tenantId: doc.students.tenant_id,
@@ -363,8 +362,8 @@ export default function AdminDashboard() {
                             </div>
                             <div className="font-medium break-words">{doc.file_name}</div>
                             <div className="text-sm text-muted-foreground">Student: {studentName}</div>
-                            {doc.admin_review_notes && (
-                              <div className="text-xs text-muted-foreground">Last note: {doc.admin_review_notes}</div>
+                            {doc.verification_notes && (
+                              <div className="text-xs text-muted-foreground">Last note: {doc.verification_notes}</div>
                             )}
                           </div>
                           <div className="flex flex-col gap-2 md:items-end md:min-w-[240px]">
@@ -379,16 +378,16 @@ export default function AdminDashboard() {
                                 variant="outline"
                                 size="sm"
                                 disabled={updatingDocumentId === doc.id}
-                                onClick={() => updateDocumentStatus(doc, 'admin_rejected')}
+                                onClick={() => updateDocumentStatus(doc, 'rejected')}
                               >
                                 {updatingDocumentId === doc.id ? 'Saving...' : 'Reject'}
                               </Button>
                               <Button
                                 size="sm"
                                 disabled={updatingDocumentId === doc.id}
-                                onClick={() => updateDocumentStatus(doc, 'ready_for_university_review')}
+                                onClick={() => updateDocumentStatus(doc, 'verified')}
                               >
-                                {updatingDocumentId === doc.id ? 'Saving...' : 'Approve for University'}
+                                {updatingDocumentId === doc.id ? 'Saving...' : 'Approve'}
                               </Button>
                             </div>
                           </div>

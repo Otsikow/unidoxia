@@ -66,7 +66,7 @@ interface Notification {
   id: string;
   title: string;
   message: string;
-  type: "info" | "success" | "warning" | "error" | "application_status" | "message" | "commission" | "course_recommendation";
+  type: "info" | "success" | "warning" | "error" | "application_status" | "message" | "commission" | "course_recommendation" | "document" | "document_request";
   read: boolean;
   created_at: string;
   action_url?: string;

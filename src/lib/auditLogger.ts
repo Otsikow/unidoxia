@@ -35,12 +35,12 @@ export const logDocumentAuditEvent = async (event: DocumentAuditEvent) => {
     entity_id: event.entityId ?? null,
     tenant_id: tenantId,
     user_id: userId,
-    changes: event.details ?? {},
+    changes: (event.details ?? {}) as unknown as Record<string, never>,
     user_agent: typeof window !== "undefined" ? window.navigator.userAgent : null,
     ip_address: null,
   };
 
-  const { error } = await supabase.from("audit_logs").insert(payload);
+  const { error } = await supabase.from("audit_logs").insert([payload as any]);
 
   if (error) {
     console.error("Failed to write document audit event", { error, payload });
