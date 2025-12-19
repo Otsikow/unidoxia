@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Send,
+  Plus,
   Smile,
   Paperclip,
   Mic,
@@ -82,6 +83,7 @@ export function MessageInput({
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isRecordingAudio, setIsRecordingAudio] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastTypingEventRef = useRef<number>(0);
@@ -684,91 +686,117 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
 
   return (
     <div className="p-2 sm:p-3 md:p-4 border-t bg-background flex-shrink-0">
-      <div className="flex items-end gap-1.5 sm:gap-2">
-        {/* Emoji Picker */}
-        <Popover>
+      <div className="flex items-end gap-2 sm:gap-3">
+        <Popover open={isActionsOpen} onOpenChange={setIsActionsOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+              className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
               disabled={disabled}
+              aria-label="Open message actions"
             >
-              <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
+              <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 sm:w-80 p-2" align="start">
-            <div className="max-h-60 sm:max-h-72 overflow-y-auto">
-              {Object.entries(EMOJI_CATEGORIES).map(([category, emojis]) => (
-                <div key={category} className="mb-3">
-                  <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-2 px-2">
-                    {category}
-                  </p>
-                  <div className="grid grid-cols-8 gap-0.5 sm:gap-1">
-                    {emojis.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => insertEmoji(emoji)}
-                        className="p-1.5 sm:p-2 hover:bg-accent rounded transition-colors text-lg sm:text-xl"
-                      >
-                        {emoji}
-                      </button>
+          <PopoverContent className="w-72 sm:w-80 p-3" align="start" sideOffset={8}>
+            <div className="flex flex-col gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start gap-2"
+                    disabled={disabled}
+                    aria-label="Add emoji"
+                  >
+                    <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="text-sm sm:text-base">Add emoji</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 sm:w-80 p-2" align="start">
+                  <div className="max-h-60 sm:max-h-72 overflow-y-auto">
+                    {Object.entries(EMOJI_CATEGORIES).map(([category, emojis]) => (
+                      <div key={category} className="mb-3">
+                        <p className="text-[10px] sm:text-xs font-semibold text-muted-foreground mb-2 px-2">
+                          {category}
+                        </p>
+                        <div className="grid grid-cols-8 gap-0.5 sm:gap-1">
+                          {emojis.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => {
+                                insertEmoji(emoji);
+                                setIsActionsOpen(false);
+                              }}
+                              className="p-1.5 sm:p-2 hover:bg-accent rounded transition-colors text-lg sm:text-xl"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
-                </div>
-              ))}
+                </PopoverContent>
+              </Popover>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={SUPPORTED_FILE_TYPES}
+                multiple
+                className="hidden"
+                data-testid="message-file-input"
+                onChange={(event) => handleAttachmentSelection(event.target.files)}
+              />
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                disabled={disabled || isUploading || attachments.length >= MAX_ATTACHMENTS}
+                onClick={() => {
+                  handleAttachmentButtonClick();
+                  setIsActionsOpen(false);
+                }}
+                title="Attach files"
+                aria-label="Attach files"
+              >
+                <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-sm sm:text-base">Upload a document</span>
+              </Button>
+
+              <Button
+                variant={isTranscribing ? 'destructive' : 'ghost'}
+                className="w-full justify-start gap-2"
+                disabled={disabled || isUploading || isRecordingAudio}
+                onClick={() => {
+                  handleToggleTranscription();
+                  setIsActionsOpen(false);
+                }}
+                title={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
+                aria-label={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
+              >
+                {isTranscribing ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Keyboard className="h-4 w-4 sm:h-5 sm:w-5" />}
+                <span className="text-sm sm:text-base">Voice input</span>
+              </Button>
+
+              <Button
+                variant={isRecordingAudio ? 'destructive' : 'ghost'}
+                className="w-full justify-start gap-2"
+                disabled={disabled || isUploading || isTranscribing}
+                onClick={() => {
+                  handleAudioRecordingToggle();
+                  setIsActionsOpen(false);
+                }}
+                title={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
+                aria-label={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
+              >
+                {isRecordingAudio ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
+                <span className="text-sm sm:text-base">Voice message</span>
+              </Button>
             </div>
           </PopoverContent>
         </Popover>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={SUPPORTED_FILE_TYPES}
-          multiple
-          className="hidden"
-          data-testid="message-file-input"
-          onChange={(event) => handleAttachmentSelection(event.target.files)}
-        />
-
-        {/* Attachment button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
-          disabled={disabled || isUploading || attachments.length >= MAX_ATTACHMENTS}
-          onClick={handleAttachmentButtonClick}
-          title="Attach files"
-          aria-label="Attach files"
-        >
-          <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
-        </Button>
-
-        {/* Voice-to-text button - only on larger screens */}
-        <Button
-          variant={isTranscribing ? 'destructive' : 'ghost'}
-          size="icon"
-          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden sm:flex"
-          disabled={disabled || isUploading || isRecordingAudio}
-          onClick={handleToggleTranscription}
-          title={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
-          aria-label={isTranscribing ? 'Stop voice to text' : 'Voice to text'}
-        >
-          {isTranscribing ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Keyboard className="h-4 w-4 sm:h-5 sm:w-5" />}
-        </Button>
-
-        {/* Audio recording button */}
-        <Button
-          variant={isRecordingAudio ? 'destructive' : 'ghost'}
-          size="icon"
-          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
-          disabled={disabled || isUploading || isTranscribing}
-          onClick={handleAudioRecordingToggle}
-          title={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
-          aria-label={isRecordingAudio ? 'Stop audio recording' : 'Record audio message'}
-        >
-          {isRecordingAudio ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
-        </Button>
 
         {/* Message Input - takes remaining space */}
         <div className="flex-1 min-w-0">
@@ -780,7 +808,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[40px] sm:min-h-[44px] max-h-24 sm:max-h-32 resize-none text-sm sm:text-base py-2.5 px-3"
+            className="min-h-[44px] sm:min-h-[48px] max-h-32 sm:max-h-40 resize-none text-sm sm:text-base py-2.5 px-3"
             rows={1}
           />
         </div>
