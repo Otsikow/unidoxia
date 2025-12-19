@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +29,12 @@ import { AIPerformanceDashboardSection } from "@/components/landing/AIPerformanc
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createNotification } from "@/lib/notifications";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface DashboardMetrics {
   totalStudents: number;
@@ -77,6 +83,7 @@ export default function AdminDashboard() {
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [updatingDocumentId, setUpdatingDocumentId] = useState<string | null>(null);
   const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null);
+  const [downloadingDocumentId, setDownloadingDocumentId] = useState<string | null>(null);
 
   const metricCards = [
     {
@@ -213,6 +220,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleDownloadDocument = async (doc: AdminDocumentReview) => {
+    try {
+      setDownloadingDocumentId(doc.id);
+      const { data, error } = await supabase.storage
+        .from('student-documents')
+        .createSignedUrl(doc.storage_path, 60 * 60, { download: doc.file_name });
+
+      if (error) throw error;
+      if (data?.signedUrl) {
+        const link = document.createElement('a');
+        link.href = data.signedUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.download = doc.file_name;
+        link.click();
+      }
+    } catch (error) {
+      console.error('Error downloading document:', error);
+    } finally {
+      setDownloadingDocumentId(null);
+    }
+  };
+
   const sendDocumentMessage = async (doc: AdminDocumentReview) => {
     const message = (documentMessages[doc.id] ?? '').trim();
     if (!message || !doc.students?.profile_id || !doc.students?.tenant_id) return;
@@ -328,6 +358,41 @@ export default function AdminDashboard() {
     void fetchPendingDocuments();
   }, [fetchPendingDocuments]);
 
+  const groupedDocuments = useMemo(() => {
+    const groups = new Map<
+      string,
+      {
+        studentId: string;
+        studentName: string;
+        contactEmail: string | null | undefined;
+        contactPhone: string | null | undefined;
+        documents: AdminDocumentReview[];
+      }
+    >();
+
+    pendingDocuments.forEach((doc) => {
+      const studentId = doc.students?.id || `unknown-${doc.id}`;
+      const studentName =
+        doc.students?.preferred_name ||
+        doc.students?.legal_name ||
+        'Unknown student';
+
+      if (!groups.has(studentId)) {
+        groups.set(studentId, {
+          studentId,
+          studentName,
+          contactEmail: doc.students?.contact_email,
+          contactPhone: doc.students?.contact_phone,
+          documents: [],
+        });
+      }
+
+      groups.get(studentId)?.documents.push(doc);
+    });
+
+    return Array.from(groups.values());
+  }, [pendingDocuments]);
+
   return (
     <div className="space-y-8">
       <BackButton variant="ghost" size="sm" fallback="/admin" />
@@ -387,90 +452,111 @@ export default function AdminDashboard() {
               ) : pendingDocuments.length === 0 ? (
                 <div className="text-sm text-muted-foreground">No documents are awaiting admin review.</div>
               ) : (
-                <div className="space-y-4">
-                  {pendingDocuments.map((doc) => {
-                    const studentName = doc.students?.preferred_name || doc.students?.legal_name || 'Unknown student';
-                    return (
-                      <div
-                        key={doc.id}
-                        className="rounded-lg border bg-card p-4 shadow-sm"
-                      >
-                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Badge variant="outline" className="capitalize">
-                                {doc.document_type.replace(/_/g, ' ')}
-                              </Badge>
-                              <span className="text-xs text-muted-foreground">{new Date(doc.created_at || '').toLocaleString()}</span>
-                            </div>
-                            <div className="font-medium break-words">{doc.file_name}</div>
-                            <div className="text-sm text-muted-foreground">Student: {studentName}</div>
-                            {(doc.students?.contact_email || doc.students?.contact_phone) && (
+                <Accordion type="multiple" className="space-y-3">
+                  {groupedDocuments.map((group) => (
+                    <AccordionItem key={group.studentId} value={group.studentId} className="rounded-lg border px-2">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex w-full items-center justify-between gap-2 text-left">
+                          <div className="space-y-0.5">
+                            <div className="font-semibold leading-tight">{group.studentName}</div>
+                            {(group.contactEmail || group.contactPhone) && (
                               <div className="text-xs text-muted-foreground space-y-0.5">
-                                {doc.students?.contact_email && <div>Email: {doc.students.contact_email}</div>}
-                                {doc.students?.contact_phone && <div>Phone: {doc.students.contact_phone}</div>}
+                                {group.contactEmail && <div>{group.contactEmail}</div>}
+                                {group.contactPhone && <div>{group.contactPhone}</div>}
                               </div>
                             )}
-                            {doc.verification_notes && (
-                              <div className="text-xs text-muted-foreground">Last note: {doc.verification_notes}</div>
-                            )}
                           </div>
-                          <div className="flex flex-col gap-2 md:items-end md:min-w-[240px]">
-                            <div className="flex flex-wrap gap-2 justify-end w-full">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="w-full md:w-auto"
-                                disabled={openingDocumentId === doc.id}
-                                onClick={() => handleViewDocument(doc)}
-                              >
-                                {openingDocumentId === doc.id ? 'Opening...' : 'View document'}
-                              </Button>
-                            </div>
-                            <Textarea
-                              placeholder="Add internal review notes"
-                              value={documentNotes[doc.id] ?? ''}
-                              onChange={(e) => setDocumentNotes((prev) => ({ ...prev, [doc.id]: e.target.value }))}
-                              className="min-h-[60px]"
-                            />
-                            <Textarea
-                              placeholder="Send a message to the student"
-                              value={documentMessages[doc.id] ?? ''}
-                              onChange={(e) => setDocumentMessages((prev) => ({ ...prev, [doc.id]: e.target.value }))}
-                              className="min-h-[60px]"
-                            />
-                            <div className="flex flex-wrap gap-2 justify-end">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="md:w-auto"
-                                disabled={updatingDocumentId === doc.id || !(documentMessages[doc.id] ?? '').trim()}
-                                onClick={() => sendDocumentMessage(doc)}
-                              >
-                                {updatingDocumentId === doc.id ? 'Sending...' : 'Send message'}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={updatingDocumentId === doc.id}
-                                onClick={() => updateDocumentStatus(doc, 'rejected')}
-                              >
-                                {updatingDocumentId === doc.id ? 'Saving...' : 'Reject'}
-                              </Button>
-                              <Button
-                                size="sm"
-                                disabled={updatingDocumentId === doc.id}
-                                onClick={() => updateDocumentStatus(doc, 'verified')}
-                              >
-                                {updatingDocumentId === doc.id ? 'Saving...' : 'Approve'}
-                              </Button>
-                            </div>
-                          </div>
+                          <Badge variant="secondary" className="shrink-0">
+                            {group.documents.length} document{group.documents.length === 1 ? '' : 's'}
+                          </Badge>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-3">
+                        {group.documents.map((doc) => (
+                          <div
+                            key={doc.id}
+                            className="rounded-lg border bg-card p-4 shadow-sm"
+                          >
+                            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                              <div className="space-y-1">
+                                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                  <Badge variant="outline" className="capitalize">
+                                    {doc.document_type.replace(/_/g, ' ')}
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">{new Date(doc.created_at || '').toLocaleString()}</span>
+                                </div>
+                                <div className="font-medium break-words">{doc.file_name}</div>
+                                {doc.verification_notes && (
+                                  <div className="text-xs text-muted-foreground">Last note: {doc.verification_notes}</div>
+                                )}
+                              </div>
+                              <div className="flex flex-col gap-2 md:items-end md:min-w-[260px]">
+                                <div className="flex flex-wrap gap-2 justify-end w-full">
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className="w-full md:w-auto"
+                                    disabled={openingDocumentId === doc.id}
+                                    onClick={() => handleViewDocument(doc)}
+                                  >
+                                    {openingDocumentId === doc.id ? 'Opening...' : 'View document'}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full md:w-auto"
+                                    disabled={downloadingDocumentId === doc.id}
+                                    onClick={() => handleDownloadDocument(doc)}
+                                  >
+                                    {downloadingDocumentId === doc.id ? 'Preparing...' : 'Download'}
+                                  </Button>
+                                </div>
+                                <Textarea
+                                  placeholder="Add internal review notes"
+                                  value={documentNotes[doc.id] ?? ''}
+                                  onChange={(e) => setDocumentNotes((prev) => ({ ...prev, [doc.id]: e.target.value }))}
+                                  className="min-h-[60px]"
+                                />
+                                <Textarea
+                                  placeholder="Send a message to the student"
+                                  value={documentMessages[doc.id] ?? ''}
+                                  onChange={(e) => setDocumentMessages((prev) => ({ ...prev, [doc.id]: e.target.value }))}
+                                  className="min-h-[60px]"
+                                />
+                                <div className="flex flex-wrap gap-2 justify-end">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="md:w-auto"
+                                    disabled={updatingDocumentId === doc.id || !(documentMessages[doc.id] ?? '').trim()}
+                                    onClick={() => sendDocumentMessage(doc)}
+                                  >
+                                    {updatingDocumentId === doc.id ? 'Sending...' : 'Send message'}
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={updatingDocumentId === doc.id}
+                                    onClick={() => updateDocumentStatus(doc, 'rejected')}
+                                  >
+                                    {updatingDocumentId === doc.id ? 'Saving...' : 'Reject'}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    disabled={updatingDocumentId === doc.id}
+                                    onClick={() => updateDocumentStatus(doc, 'verified')}
+                                  >
+                                    {updatingDocumentId === doc.id ? 'Saving...' : 'Approve'}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               )}
             </CardContent>
           </Card>
