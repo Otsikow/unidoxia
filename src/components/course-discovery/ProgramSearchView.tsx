@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import type { PostgrestFilterBuilder } from "@supabase/postgrest-js";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Input } from "@/components/ui/input";
@@ -30,6 +30,7 @@ import ProgramRecommendations from "@/components/ai/ProgramRecommendations";
 import SoPGenerator from "@/components/ai/SoPGenerator";
 import InterviewPractice from "@/components/ai/InterviewPractice";
 import { CourseCard, type Course } from "@/components/student/CourseCard";
+import { SAMPLE_PROGRAMS } from "@/data/programs-sample";
 import {
   Search,
   GraduationCap,
@@ -308,6 +309,42 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         setLoadingMore(true);
       }
 
+      // Fallback to sample data when Supabase isn't configured
+      if (!isSupabaseConfigured) {
+        const filteredPrograms = SAMPLE_PROGRAMS.filter((program) => {
+          if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
+          if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
+          if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
+          if (maxFee && program.tuition_amount > parseFloat(maxFee)) return false;
+          return true;
+        });
+
+        const paginated = filteredPrograms.slice(offset, offset + COURSE_LOAD_INCREMENT);
+
+        const formattedCourses = paginated.map((program) => ({
+          ...program,
+          university: {
+            id: program.university_id,
+            name: program.university_name,
+            country: program.university_country,
+            city: program.university_city || null,
+            logo_url: program.university_logo_url || null,
+            website: null,
+            description: null,
+          },
+        }));
+
+        if (append) {
+          setAllCourses((prev) => [...prev, ...formattedCourses]);
+        } else {
+          setAllCourses(formattedCourses);
+        }
+
+        setHasMoreCourses(offset + paginated.length < filteredPrograms.length);
+        setCourseOffset(offset + paginated.length);
+        return;
+      }
+
       // Build query with filters
       let query = supabase
         .from("programs")
@@ -399,6 +436,57 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     setHasSearched(true);
     setLoading(true);
     try {
+      // Fallback search when Supabase isn't configured
+      if (!isSupabaseConfigured) {
+        const searchQuery = debouncedSearchTerm?.trim().toLowerCase() || "";
+
+        const matchesSearch = (program: typeof SAMPLE_PROGRAMS[number]) => {
+          if (!searchQuery) return true;
+          return (
+            program.name.toLowerCase().includes(searchQuery) ||
+            program.university_name.toLowerCase().includes(searchQuery)
+          );
+        };
+
+        const filteredPrograms = SAMPLE_PROGRAMS.filter((program) => {
+          if (!matchesSearch(program)) return false;
+          if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
+          if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
+          if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
+          if (maxFee && program.tuition_amount > parseFloat(maxFee)) return false;
+          return true;
+        });
+
+        const universitiesMap = new Map<string, SearchResult>();
+
+        filteredPrograms.forEach((program) => {
+          const existing = universitiesMap.get(program.university_id);
+          const university: University = {
+            id: program.university_id,
+            name: program.university_name,
+            country: program.university_country,
+            city: program.university_city,
+            logo_url: program.university_logo_url || null,
+            website: null,
+            description: null,
+          };
+
+          if (!existing) {
+            universitiesMap.set(program.university_id, {
+              university,
+              programs: [program],
+              scholarships: [],
+            });
+            return;
+          }
+
+          existing.programs.push(program);
+        });
+
+        setResults(Array.from(universitiesMap.values()));
+        return;
+      }
+
       // Build search query - search both universities and programs
       const searchQuery = debouncedSearchTerm?.trim().toLowerCase() || "";
       
