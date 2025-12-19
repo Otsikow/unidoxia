@@ -105,36 +105,46 @@ export function CourseCard({ course }: CourseCardProps) {
       <Card className="group hover:shadow-lg transition-all duration-300 h-full flex flex-col animate-fade-in-up hover:scale-[1.01] relative overflow-visible">
         <CardContent className="pt-6 pb-4 flex-1">
           {/* University Header */}
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-start gap-3 min-w-0">
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110">
-                {course.university_logo_url ? (
-                  <img
-                    src={course.university_logo_url}
-                    alt={course.university_name}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <GraduationCap className="h-6 w-6 text-muted-foreground" />
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110">
+              {course.university_logo_url ? (
+                <img
+                  src={course.university_logo_url}
+                  alt={course.university_name}
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <GraduationCap className="h-6 w-6 text-muted-foreground" />
+              )}
+            </div>
+
+            <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex items-start gap-3 justify-between">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
+                    {course.university_name}
+                  </h3>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span className="truncate">
+                      {course.university_city}, {course.university_country}
+                    </span>
+                  </div>
+                </div>
+                {showInstantSubmission && (
+                  <Badge className="flex-shrink-0 bg-gradient-to-r from-emerald-600 to-blue-600 text-white shadow-md border-0 text-[11px] px-3 py-1 leading-tight rounded-full whitespace-nowrap">
+                    Instant Submission
+                  </Badge>
                 )}
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm text-muted-foreground truncate">
-                  {course.university_name}
-                </h3>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  <span className="truncate">
-                    {course.university_city}, {course.university_country}
-                  </span>
+
+              {showInstantSubmission && (
+                <div className="inline-flex items-center gap-2 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-2.5 py-1 w-fit">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+                  <span className="font-medium">Fast-track ready via UniDoxia</span>
                 </div>
-              </div>
+              )}
             </div>
-            {showInstantSubmission && (
-              <Badge className="flex-shrink-0 bg-gradient-to-r from-green-600 to-blue-600 text-white shadow-md border-0 text-[11px] px-3 py-1 leading-tight">
-                Instant Submission
-              </Badge>
-            )}
           </div>
 
           {/* Programme Title */}
