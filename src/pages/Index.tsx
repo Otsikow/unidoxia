@@ -235,15 +235,15 @@ const Index = () => {
       {/* ---------- SIGN-UP CARDS ---------- */}
       <section className="container mx-auto px-4 py-12">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {heroCtas.map(cta => <Card key={cta.key} className="h-full overflow-hidden shadow-2xl border border-border/60 bg-white">
+          {heroCtas.map(cta => <Card key={cta.key} className="h-full overflow-hidden shadow-card">
               <div className="aspect-[4/3] overflow-hidden">
                 <img src={cta.image} alt={cta.title} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
               </div>
 
               <CardContent className="p-6 space-y-4 flex flex-col h-full">
                 <Badge variant="secondary" className="uppercase tracking-wide text-xs px-3 py-1">{cta.badge}</Badge>
-                <h3 className="text-xl font-semibold leading-snug">{cta.title}</h3>
-                <p className="text-sm leading-relaxed text-foreground/80">{cta.description}</p>
+                <h3 className="text-xl font-semibold leading-snug text-card-foreground">{cta.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{cta.description}</p>
 
                 <Button asChild className="w-full mt-auto">
                   <Link to={cta.href}>{cta.action}</Link>
