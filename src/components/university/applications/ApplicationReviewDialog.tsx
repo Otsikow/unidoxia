@@ -75,6 +75,8 @@ import {
   isApplicationStatus,
   type ApplicationStatus,
 } from "@/lib/applicationStatus";
+import { useAuth } from "@/hooks/useAuth";
+import { logDocumentAuditEvent } from "@/lib/auditLogger";
 import {
   buildMissingRpcError,
   isRpcMissingError,
@@ -473,6 +475,7 @@ export function ApplicationReviewDialog({
 }: ApplicationReviewDialogProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
 
   const [activeTab, setActiveTab] = useState<"overview" | "student" | "documents" | "notes" | "messages">("overview");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -700,6 +703,20 @@ export function ApplicationReviewDialog({
       [reviewingDocId]: { status: reviewStatusDraft, notes: reviewNotesDraft.trim() || null },
     }));
 
+    void logDocumentAuditEvent({
+      action: "document_reviewed_by_university",
+      tenantId,
+      userId: user?.id ?? profile?.id ?? null,
+      entityId: doc.id,
+      details: {
+        applicationId: application?.id ?? null,
+        documentType: doc.documentType,
+        decision: reviewStatusDraft,
+        notes: reviewNotesDraft.trim() || null,
+        source: doc.source,
+      },
+    });
+
     setSavingReview(false);
     setReviewingDocId(null);
     toast({ title: "Saved", description: "Document review updated." });
@@ -881,23 +898,43 @@ export function ApplicationReviewDialog({
         // 2. Insert into application_documents
         // We use "other" as document_type or maybe map based on status?
         // For now "other" is safe.
-        const { error: dbError } = await supabase
+        const { data: insertedApplicationDoc, error: dbError } = await supabase
           .from("application_documents")
           .insert({
             application_id: application.id,
-            document_type: "other", 
+            document_type: "other",
             storage_path: filePath,
             mime_type: selectedFile.type,
             file_size: selectedFile.size,
             verified: true, // University uploaded it
             uploaded_at: new Date().toISOString(),
-          } as any);
+          } as any)
+          .select("id")
+          .single();
 
         if (dbError) {
            console.error("[ApplicationReview] Document record creation failed:", dbError);
-           // We uploaded the file but failed to create record. 
+           // We uploaded the file but failed to create record.
            // Technically we should delete the file, but for now just throw.
            throw new Error(`Failed to record document: ${dbError.message}`);
+        }
+
+        if (insertedApplicationDoc) {
+          void logDocumentAuditEvent({
+            action: "document_uploaded",
+            tenantId,
+            userId: user?.id ?? profile?.id ?? null,
+            entityId: insertedApplicationDoc.id,
+            details: {
+              applicationId: application.id,
+              documentType: "other",
+              storagePath: filePath,
+              mimeType: selectedFile.type,
+              fileSize: selectedFile.size,
+              source: "application_documents",
+              uploadedBy: "university",
+            },
+          });
         }
 
         console.log("[ApplicationReview] File uploaded and recorded successfully");

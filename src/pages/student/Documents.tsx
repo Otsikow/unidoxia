@@ -31,8 +31,6 @@ import { logError, formatErrorForToast } from "@/lib/errorUtils";
 import {
   FileText,
   Upload,
-  Download,
-  Trash2,
   CheckCircle,
   Clock,
   XCircle,
@@ -51,9 +49,7 @@ interface Document {
   file_size: number;
   mime_type: string;
   storage_path: string;
-  verified_status: string;
-  admin_review_status?: string | null;
-  admin_review_notes?: string | null;
+  status: "awaiting_admin_review" | "admin_rejected" | "ready_for_university_review" | "university_reviewed";
   verification_notes: string | null;
   created_at: string;
 }
@@ -62,20 +58,15 @@ interface Document {
 /*                                  Constants                                 */
 /* -------------------------------------------------------------------------- */
 
-const ADMIN_REVIEW_STATUS = "awaiting_admin_review";
-
-const ADMIN_REVIEW_MESSAGE =
-  "Pending admin review – we are checking your document for accuracy.";
-
 const DOCUMENT_TYPES = [
-  "passport_photo",
   "passport",
   "transcript",
-  "degree_certificate",
-  "english_test",
-  "recommendation_letter",
-  "personal_statement",
-  "cv_resume",
+  "ielts",
+  "toefl",
+  "sop",
+  "cv",
+  "lor",
+  "portfolio",
   "financial_document",
   "other",
 ];
@@ -185,11 +176,11 @@ export default function Documents() {
         });
 
       const ext = sanitizedFileName.split(".").pop();
-      const path = `${studentId}/${documentType}_${Date.now()}.${ext}`;
+      const storagePath = `${studentId}/${documentType}_${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("student-documents")
-        .upload(path, preparedFile, {
+        .upload(storagePath, preparedFile, {
           cacheControl: "3600",
           upsert: false,
           contentType: detectedMimeType,
@@ -205,13 +196,12 @@ export default function Documents() {
           file_name: sanitizedFileName,
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
-          storage_path: path,
-          verified_status: "pending",
-          admin_review_status: ADMIN_REVIEW_STATUS,
+          storage_path: storagePath,
+          status: "awaiting_admin_review",
         });
 
       if (dbError) {
-        await supabase.storage.from("student-documents").remove([path]);
+        await supabase.storage.from("student-documents").remove([storagePath]);
         throw dbError;
       }
 
@@ -234,13 +224,12 @@ export default function Documents() {
   /*                            Helpers & Status                              */
   /* ------------------------------------------------------------------------ */
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: Document["status"]) => {
     switch (status) {
-      case "verified":
+      case "university_reviewed":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "awaiting_admin_review":
         return <ShieldAlert className="h-4 w-4 text-amber-500" />;
-      case "rejected":
       case "admin_rejected":
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
@@ -248,32 +237,18 @@ export default function Documents() {
     }
   };
 
-  const formatStatus = (doc: Document) => {
-    if (doc.admin_review_status === "admin_rejected") {
-      return { label: "Admin Rejected", variant: "destructive" as const };
+  const getStatusBadge = (status: Document["status"]) => {
+    switch (status) {
+      case "awaiting_admin_review":
+        return { label: "Admin Review", variant: "secondary" as const };
+      case "admin_rejected":
+        return { label: "Rejected", variant: "destructive" as const };
+      case "ready_for_university_review":
+        return { label: "Sent to University", variant: "default" as const };
+      case "university_reviewed":
+        return { label: "Reviewed", variant: "default" as const };
     }
-
-    if (doc.admin_review_status === "awaiting_admin_review") {
-      return { label: "Awaiting Admin Review", variant: "secondary" as const };
-    }
-
-    if (doc.verified_status === "verified") {
-      return { label: "Verified", variant: "default" as const };
-    }
-
-    if (doc.verified_status === "rejected") {
-      return { label: "Rejected", variant: "destructive" as const };
-    }
-
-    return { label: "Pending", variant: "secondary" as const };
   };
-
-  const formatSize = (bytes: number) =>
-    bytes < 1024
-      ? `${bytes} B`
-      : bytes < 1024 * 1024
-      ? `${(bytes / 1024).toFixed(1)} KB`
-      : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
   /* ------------------------------------------------------------------------ */
   /*                                   UI                                     */
@@ -289,9 +264,73 @@ export default function Documents() {
 
       <h1 className="text-3xl font-bold">My Documents</h1>
 
-      {/* Upload Card */}
-      {/* Document List */}
-      {/* (UI remains unchanged – logic above is now clean and correct) */}
+      {/* Upload */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Upload Document</CardTitle>
+          <CardDescription>
+            Upload required documents for your applications
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Document Type</Label>
+            <Select value={documentType} onValueChange={setDocumentType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select document type" />
+              </SelectTrigger>
+              <SelectContent>
+                {DOCUMENT_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type.replace(/_/g, " ")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label>File</Label>
+            <Input type="file" onChange={handleFileSelect} />
+          </div>
+
+          <Button onClick={handleUpload} disabled={uploading}>
+            <Upload className="mr-2 h-4 w-4" />
+            Upload
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Documents */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Documents</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {documents.length === 0 && (
+            <p className="text-muted-foreground">No documents uploaded yet.</p>
+          )}
+
+          {documents.map((doc) => {
+            const badge = getStatusBadge(doc.status);
+            return (
+              <div
+                key={doc.id}
+                className="flex items-center justify-between border rounded-md p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5" />
+                  <div>
+                    <p className="font-medium">{doc.file_name}</p>
+                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                  </div>
+                </div>
+                {getStatusIcon(doc.status)}
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 }
