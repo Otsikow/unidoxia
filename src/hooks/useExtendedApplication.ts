@@ -408,10 +408,12 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             mime_type,
             file_size,
             verified_status,
+            admin_review_status,
             verification_notes,
             created_at
           `)
-          .eq("student_id", appData.student_id);
+          .eq("student_id", appData.student_id)
+          .eq("admin_review_status", "ready_for_university_review");
 
         if (studentDocsError) {
           console.warn("[useExtendedApplication] Student documents fetch warning:", studentDocsError);

@@ -91,11 +91,11 @@ Deno.serve(async (req) => {
 
     // If documentId provided, fetch document details
     if (documentId) {
-      const { data: doc, error: docError } = await adminClient
-        .from("student_documents")
-        .select("storage_path, student_id")
-        .eq("id", documentId)
-        .single();
+    const { data: doc, error: docError } = await adminClient
+      .from("student_documents")
+      .select("storage_path, student_id, admin_review_status")
+      .eq("id", documentId)
+      .single();
 
       if (docError || !doc) {
         console.error("[get-document-url] Document not found:", docError);
@@ -107,11 +107,49 @@ Deno.serve(async (req) => {
 
       finalStoragePath = doc.storage_path;
       studentId = doc.student_id;
+
+      const restrictedStatuses = ["awaiting_admin_review", "admin_rejected"]; // Admin-only visibility
+      const isAdmin = profile.role === "admin";
+
+      if (restrictedStatuses.includes(doc.admin_review_status || "") && !isAdmin) {
+        console.warn("[get-document-url] Access denied due to admin review status", {
+          user: user.id,
+          status: doc.admin_review_status,
+        });
+        return new Response(
+          JSON.stringify({ error: "Document not available" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     } else if (storagePath) {
       // Extract student ID from storage path (format: studentId/filename)
       const pathParts = storagePath.split("/");
       if (pathParts.length >= 1) {
         studentId = pathParts[0];
+      }
+
+      const { data: docByPath } = await adminClient
+        .from("student_documents")
+        .select("student_id, admin_review_status")
+        .eq("storage_path", storagePath)
+        .maybeSingle();
+
+      if (docByPath) {
+        studentId = docByPath.student_id || studentId;
+
+        const restrictedStatuses = ["awaiting_admin_review", "admin_rejected"];
+        const isAdmin = profile.role === "admin";
+
+        if (restrictedStatuses.includes(docByPath.admin_review_status || "") && !isAdmin) {
+          console.warn("[get-document-url] Access denied due to admin review status (storage path)", {
+            user: user.id,
+            status: docByPath.admin_review_status,
+          });
+          return new Response(
+            JSON.stringify({ error: "Document not available" }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
       }
     }
 
