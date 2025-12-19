@@ -204,13 +204,17 @@ const Index = () => {
           </> : <div className="hero-fallback" aria-hidden />}
 
         <div className="hero-content">
-          <div className="flex flex-col items-center text-center gap-6">
+          <div className="hero-glass-panel flex flex-col items-center gap-6 text-white">
             <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
 
-            <div className="hero-text space-y-3 text-white">
-              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Apply to Global Universities.</p>
-              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Secure Your Admission.</p>
-              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Arrive Ready to Study Abroad.</p>
+            <div className="hero-text space-y-2 md:space-y-3 text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span>Apply to Global Universities.</span>
+                <br className="hidden sm:block" />
+                <span>Get Accepted.</span>
+                <br className="hidden sm:block" />
+                <span>Study Abroad with Confidence.</span>
+              </h1>
             </div>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
