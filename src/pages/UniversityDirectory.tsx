@@ -28,6 +28,13 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import BackButton from "@/components/BackButton";
 
 // --- University Images ---
 import defaultUniversityImg from "@/assets/university-default.jpg";
@@ -403,58 +410,59 @@ export default function UniversityDirectory() {
     sortedUniversities.length === 1 ? "University" : "Universities"
   } Found`;
 
-  if (loading) {
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="min-h-screen bg-background pb-12">
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
+            <Skeleton className="h-10 w-32" />
+            <div className="space-y-4">
+              <Skeleton className="h-12 w-96" />
+              <Skeleton className="h-6 w-64" />
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Skeleton className="h-40" />
+              <Skeleton className="h-40" />
+              <Skeleton className="h-40" />
+            </div>
+            <Skeleton className="h-48" />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <Skeleton className="h-80" />
+              <Skeleton className="h-80" />
+              <Skeleton className="h-80" />
+              <Skeleton className="h-80" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background pb-12">
+        <SEO
+          title="University Directory - UniDoxia"
+          description="Browse our directory of partner universities from around the world. Find detailed profiles, rankings, and program information to help you choose the right institution."
+          keywords="university directory, partner universities, college listings, international universities, student recruitment directory, university finder"
+        />
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
-          <Skeleton className="h-10 w-32" />
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-96" />
-            <Skeleton className="h-6 w-64" />
-          </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Skeleton className="h-40" />
-            <Skeleton className="h-40" />
-            <Skeleton className="h-40" />
-          </div>
-          <Skeleton className="h-48" />
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <Skeleton className="h-80" />
-            <Skeleton className="h-80" />
-            <Skeleton className="h-80" />
-            <Skeleton className="h-80" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background pb-12">
-      <SEO
-        title="University Directory - UniDoxia"
-        description="Browse our directory of partner universities from around the world. Find detailed profiles, rankings, and program information to help you choose the right institution."
-        keywords="university directory, partner universities, college listings, international universities, student recruitment directory, university finder"
-      />
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Globe className="h-4 w-4" />
-              Partner universities • Live data
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="h-4 w-4" />
+                Partner universities • Live data
+              </div>
+              <div className="space-y-2">
+                <h1 className="text-4xl font-bold text-foreground">University Directory</h1>
+                <p className="max-w-2xl text-base text-muted-foreground">
+                  Discover partner universities with key information, courses,
+                  and direct links to explore admissions further.
+                </p>
+              </div>
             </div>
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold text-foreground">University Directory</h1>
-              <p className="max-w-2xl text-base text-muted-foreground">
-                Discover partner universities with key information, courses,
-                and direct links to explore admissions further.
-              </p>
-            </div>
+            <Badge variant="secondary" className="h-fit px-3 py-2 text-xs uppercase tracking-wide">
+              Live Profiles
+            </Badge>
           </div>
-          <Badge variant="secondary" className="h-fit px-3 py-2 text-xs uppercase tracking-wide">
-            Live Profiles
-          </Badge>
-        </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card 
@@ -688,6 +696,37 @@ export default function UniversityDirectory() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    );
+  };
+
+  return (
+    <SidebarProvider defaultOpen>
+      <div className="flex min-h-screen w-full bg-background text-foreground">
+        <AppSidebar />
+        <SidebarInset className="flex min-h-screen flex-1 flex-col bg-background">
+          <div className="sticky top-0 z-30 flex items-center gap-3 border-b bg-background/90 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+            <SidebarTrigger className="h-8 w-8" aria-label="Toggle navigation" />
+            <BackButton
+              variant="ghost"
+              size="sm"
+              showHistoryMenu={false}
+              fallback="/"
+              className="h-9 px-3"
+            />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Navigation
+              </span>
+              <span className="text-sm font-semibold text-foreground">
+                University Directory
+              </span>
+            </div>
+          </div>
+
+          <main className="flex-1 bg-background pb-12">{renderContent()}</main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }
