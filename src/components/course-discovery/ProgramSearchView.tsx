@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import type { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -261,6 +262,20 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     [searchParams],
   );
 
+  // Utility to exclude placeholder/test universities
+  const applyRealUniversityFilters = (
+    query: PostgrestFilterBuilder<any, any, any[], any>,
+  ) => {
+    return query
+      .not("name", "ilike", "%placeholder%")
+      .not("name", "ilike", "%test university%")
+      .not("name", "ilike", "%sample university%")
+      .not("name", "ilike", "%demo university%")
+      .not("name", "ilike", "%inhist%")
+      .not("name", "ilike", "%InHisTime%")
+      .or("city.neq.Toronto,country.neq.United Kingdom");
+  };
+
   // Load filter options once on mount
   useEffect(() => {
     const loadFilterOptions = async () => {
@@ -268,7 +283,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         const { data: programs } = await supabase
           .from("programs")
           .select("level, discipline")
-          .or("active.eq.true,active.is.null");
+          .eq("active", true);
 
         if (programs) {
           setLevels(PROGRAM_LEVELS);
@@ -297,11 +312,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         .from("programs")
         .select(`
           id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url,
-          universities!inner (id, name, country, city, logo_url, website, description)
+          universities!inner (id, name, country, city, logo_url, website, description, active)
         `)
-        .or("active.eq.true,active.is.null")
+        .eq("active", true)
+        .eq("universities.active", true)
         .range(offset, offset + COURSE_LOAD_INCREMENT - 1)
         .order("name");
+
+      query = applyRealUniversityFilters(query);
 
       // Apply filters if set
       if (selectedCountry !== "all") {
@@ -387,8 +405,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let uniQuery = supabase
         .from("universities")
         .select("id, name, country, city, logo_url, website, description")
-        .or("active.eq.true,active.is.null")
+        .eq("active", true)
         .limit(MAX_UNIVERSITY_RESULTS);
+
+      uniQuery = applyRealUniversityFilters(uniQuery);
       
       if (searchQuery) {
         uniQuery = uniQuery.ilike("name", `%${searchQuery}%`);
@@ -398,14 +418,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       }
 
       // Query programs in parallel if we have a search term (to also match program names)
-      const programSearchQuery = searchQuery
-        ? supabase
-            .from("programs")
-            .select("university_id")
-            .or("active.eq.true,active.is.null")
-            .ilike("name", `%${searchQuery}%`)
-            .limit(MAX_PROGRAM_RESULTS)
-        : null;
+        const programSearchQuery = searchQuery
+          ? supabase
+              .from("programs")
+              .select("university_id")
+              .eq("active", true)
+              .ilike("name", `%${searchQuery}%`)
+              .limit(MAX_PROGRAM_RESULTS)
+          : null;
 
       // Execute queries in parallel
       const [uniResult, progMatchResult] = await Promise.all([
@@ -426,11 +446,13 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         const missingUniIds = [...programUniIds].filter(id => !existingUniIds.has(id));
         
         if (missingUniIds.length > 0) {
-          const { data: additionalUnis } = await supabase
-            .from("universities")
-            .select("id, name, country, city, logo_url, website, description")
-            .in("id", missingUniIds)
-            .or("active.eq.true,active.is.null");
+          const { data: additionalUnis } = await applyRealUniversityFilters(
+            supabase
+              .from("universities")
+              .select("id, name, country, city, logo_url, website, description")
+              .in("id", missingUniIds)
+              .eq("active", true),
+          );
           
           if (additionalUnis) {
             // Apply country filter to additional universities
@@ -468,7 +490,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id, image_url",
         )
         .in("university_id", uniIds)
-        .or("active.eq.true,active.is.null")
+        .eq("active", true)
         .limit(MAX_PROGRAM_RESULTS);
       
       if (selectedLevel !== "all") {
