@@ -224,27 +224,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ---------- SIGN-UP CARDS ---------- */}
-      <section className="container mx-auto px-4 -mt-14 md:-mt-20 relative z-10">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {heroCtas.map(cta => <Card key={cta.key} className="overflow-hidden shadow-2xl border border-white/30 bg-white/90 backdrop-blur">
-              <div className="aspect-[4/3] overflow-hidden">
-                <img src={cta.image} alt={cta.title} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
-              </div>
-
-              <CardContent className="p-6 space-y-4">
-                <Badge variant="secondary" className="uppercase tracking-wide text-xs px-3 py-1">{cta.badge}</Badge>
-                <h3 className="text-xl font-semibold leading-snug">{cta.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{cta.description}</p>
-
-                <Button asChild className="w-full">
-                  <Link to={cta.href}>{cta.action}</Link>
-                </Button>
-              </CardContent>
-            </Card>)}
-        </div>
-      </section>
-
       {/* ---------- WELCOME ---------- */}
       <section className="py-16 text-center">
         <TypewriterText prefix={heroTitleParts.prefix} highlight={heroTitleParts.highlight} phrases={["Your Future", "Your Dreams", "Your Success"]} suffix={heroTitleParts.suffix} className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4" />
@@ -252,6 +231,27 @@ const Index = () => {
       </section>
 
       <StudyProgramSearch />
+
+      {/* ---------- SIGN-UP CARDS ---------- */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {heroCtas.map(cta => <Card key={cta.key} className="h-full overflow-hidden shadow-2xl border border-border/60 bg-white">
+              <div className="aspect-[4/3] overflow-hidden">
+                <img src={cta.image} alt={cta.title} className="h-full w-full object-cover transition duration-500 hover:scale-105" />
+              </div>
+
+              <CardContent className="p-6 space-y-4 flex flex-col h-full">
+                <Badge variant="secondary" className="uppercase tracking-wide text-xs px-3 py-1">{cta.badge}</Badge>
+                <h3 className="text-xl font-semibold leading-snug">{cta.title}</h3>
+                <p className="text-sm leading-relaxed text-foreground/80">{cta.description}</p>
+
+                <Button asChild className="w-full mt-auto">
+                  <Link to={cta.href}>{cta.action}</Link>
+                </Button>
+              </CardContent>
+            </Card>)}
+        </div>
+      </section>
 
       {/* ---------- VISA ---------- */}
       <section className="py-24 container mx-auto grid lg:grid-cols-2 gap-14 px-4">
