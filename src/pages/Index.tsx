@@ -76,6 +76,7 @@ const Index = () => {
 
     const activateVideo = () => {
       setHeroVideoReady(true);
+      videoEl.currentTime = 0;
       const playPromise = videoEl.play();
       if (playPromise && typeof playPromise.catch === "function") {
         playPromise.catch(() => {
@@ -84,23 +85,19 @@ const Index = () => {
       }
     };
 
-    // Start as soon as metadata is loaded (first frame available)
-    // HAVE_METADATA (1) = duration and dimensions known
-    // HAVE_CURRENT_DATA (2) = data for current position available
-    if (videoEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
-      activateVideo();
-      return;
-    }
+    // Trigger playback immediately on mount for instant start
+    activateVideo();
 
-    // Use loadedmetadata for fastest possible start
-    const handleLoadedMetadata = () => {
-      activateVideo();
+    const handleCanPlay = () => {
+      setHeroVideoReady(true);
     };
 
-    videoEl.addEventListener("loadedmetadata", handleLoadedMetadata, { once: true });
+    videoEl.addEventListener("loadeddata", handleCanPlay);
+    videoEl.addEventListener("canplay", handleCanPlay);
 
     return () => {
-      videoEl.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      videoEl.removeEventListener("loadeddata", handleCanPlay);
+      videoEl.removeEventListener("canplay", handleCanPlay);
     };
   }, [shouldRenderHeroVideo]);
 
@@ -210,18 +207,31 @@ const Index = () => {
 
         <div className="hero-content">
           <div className="hero-glass-panel">
-            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-50 brightness-0 invert" />
+            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
 
-            <h1 className="hero-text text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white">
-              Apply to Global Universities. Get Accepted. Study Abroad with Confidence.
-            </h1>
+            <div className="hero-text space-y-3 text-center text-white">
+              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Apply to Global Universities.</p>
+              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Secure Your Admission.</p>
+              <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Arrive Ready to Study Abroad.</p>
+            </div>
 
-            <Button asChild size="lg" className="mt-8 bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 text-lg">
-              <Link to="/auth/signup">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Start Your Study Journey
-              </Link>
-            </Button>
+            <div className="mt-6 grid gap-4 text-left text-white/90 sm:grid-cols-3">
+              {["Streamlined applications", "Personal guidance & updates", "Visa-ready checklists"].map(item => <div key={item} className="flex items-start gap-3 rounded-2xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10">
+                  <div className="mt-1 h-2 w-2 rounded-full bg-white" aria-hidden />
+                  <p className="text-base sm:text-lg font-semibold leading-snug">{item}</p>
+                </div>)}
+            </div>
+
+            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center mt-8">
+              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 text-lg">
+                <Link to="/auth/signup">
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Start Your Study Journey
+                </Link>
+              </Button>
+
+              <p className="text-white/80 text-sm sm:text-base">Built for students, universities, and trusted education agents.</p>
+            </div>
           </div>
         </div>
       </section>

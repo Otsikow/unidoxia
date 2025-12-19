@@ -615,7 +615,9 @@ All colors MUST be HSL.
     width: 100%;
     min-height: 100vh;
     overflow: hidden;
-    background: hsl(0 0% 0% / 0.65);
+    background: radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.2), transparent 35%),
+      radial-gradient(circle at 80% 30%, hsl(210 100% 75% / 0.18), transparent 40%),
+      linear-gradient(145deg, hsl(220 35% 12%), hsl(220 42% 9%));
   }
 
   .hero-video {
@@ -641,14 +643,11 @@ All colors MUST be HSL.
   .hero-video-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to bottom,
-      hsl(0 0% 0% / 0.12) 0%,
-      hsl(0 0% 0% / 0.24) 40%,
-      hsl(0 0% 0% / 0.32) 100%
-    );
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    background: linear-gradient(180deg, hsl(215 68% 8% / 0.5) 0%, hsl(215 68% 8% / 0.78) 40%, hsl(215 68% 6% / 0.92) 100%),
+      radial-gradient(circle at 15% 20%, hsl(var(--primary) / 0.32), transparent 32%),
+      radial-gradient(circle at 80% 10%, hsl(195 100% 70% / 0.25), transparent 36%);
+    backdrop-filter: blur(4px) saturate(110%);
+    -webkit-backdrop-filter: blur(4px) saturate(110%);
     z-index: 1;
   }
 
@@ -708,10 +707,10 @@ All colors MUST be HSL.
     inset: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.15), transparent 35%),
-      radial-gradient(circle at 80% 10%, hsl(var(--primary) / 0.12), transparent 30%),
-      radial-gradient(circle at 50% 80%, hsl(var(--primary) / 0.1), transparent 40%),
-      linear-gradient(135deg, hsl(220 30% 10% / 0.9), hsl(220 30% 8% / 0.95));
+    background: radial-gradient(circle at 18% 22%, hsl(var(--primary) / 0.25), transparent 38%),
+      radial-gradient(circle at 82% 28%, hsl(195 92% 72% / 0.22), transparent 42%),
+      radial-gradient(circle at 50% 80%, hsl(210 70% 60% / 0.14), transparent 46%),
+      linear-gradient(135deg, hsl(220 40% 12% / 0.92), hsl(220 35% 9% / 0.96));
     z-index: 0;
     opacity: 1;
     transition: opacity 80ms ease-out, visibility 80ms ease-out;
