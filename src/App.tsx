@@ -413,6 +413,9 @@ const UniversityProfileSettings = lazyWithErrorHandling(() =>
 const UniversityNotifications = lazyWithErrorHandling(() =>
   import("./pages/university/Notifications")
 );
+const ProfileSettingsPage = lazyWithErrorHandling(() =>
+  import("./pages/ProfileSettings")
+);
 
 /* ==========================================================================
    AI Chatbot — Deferred
@@ -646,7 +649,7 @@ const App = () => {
                           <Route path="sop" element={<SopGenerator />} />
                           <Route path="notifications" element={<Notifications />} />
                           <Route path="payments" element={<StudentPaymentsPage />} />
-                          <Route path="settings" element={<UniversityProfileSettings />} />
+                          <Route path="settings" element={<ProfileSettingsPage />} />
                         </Route>
 
                         {/* ADMIN ROUTES */}
@@ -703,7 +706,7 @@ const App = () => {
                         <Route path="/agent/settings" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentSettingsPage /></ProtectedRoute>} />
 
                         {/* General Settings */}
-                        <Route path="/profile/settings" element={<ProtectedRoute><UniversityProfileSettings /></ProtectedRoute>} />
+                        <Route path="/profile/settings" element={<ProtectedRoute><ProfileSettingsPage /></ProtectedRoute>} />
 
                         {/* Payments */}
                         <Route path="/payments" element={<ProtectedRoute><StudentPaymentsPage /></ProtectedRoute>} />
