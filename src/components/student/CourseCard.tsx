@@ -103,37 +103,38 @@ export function CourseCard({ course }: CourseCardProps) {
       aria-label={`View details for ${course.name}`}
     >
       <Card className="group hover:shadow-lg transition-all duration-300 h-full flex flex-col animate-fade-in-up hover:scale-[1.01] relative overflow-visible">
-        {/* Instant Submission Badge */}
-        {showInstantSubmission && (
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 px-4 py-1 rounded-full text-white text-xs font-semibold shadow-md bg-gradient-to-r from-green-600 to-blue-600 whitespace-nowrap">
-            Instant Submission
-          </div>
-        )}
         <CardContent className="pt-6 pb-4 flex-1">
           {/* University Header */}
-          <div className="flex items-start gap-3 mb-4">
-            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110">
-              {course.university_logo_url ? (
-                <img
-                  src={course.university_logo_url}
-                  alt={course.university_name}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <GraduationCap className="h-6 w-6 text-muted-foreground" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-muted-foreground truncate">
-                {course.university_name}
-              </h3>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
-                <span className="truncate">
-                  {course.university_city}, {course.university_country}
-                </span>
+          <div className="flex items-start justify-between gap-3 mb-4">
+            <div className="flex items-start gap-3 min-w-0">
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110">
+                {course.university_logo_url ? (
+                  <img
+                    src={course.university_logo_url}
+                    alt={course.university_name}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <GraduationCap className="h-6 w-6 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-muted-foreground truncate">
+                  {course.university_name}
+                </h3>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <MapPin className="h-3 w-3" />
+                  <span className="truncate">
+                    {course.university_city}, {course.university_country}
+                  </span>
+                </div>
               </div>
             </div>
+            {showInstantSubmission && (
+              <Badge className="flex-shrink-0 bg-gradient-to-r from-green-600 to-blue-600 text-white shadow-md border-0 text-[11px] px-3 py-1 leading-tight">
+                Instant Submission
+              </Badge>
+            )}
           </div>
 
           {/* Programme Title */}
