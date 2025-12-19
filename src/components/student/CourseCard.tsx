@@ -21,6 +21,8 @@ export interface Course {
   university_logo_url?: string;
   next_intake_month?: number;
   next_intake_year?: number;
+  applyUrl?: string;
+  detailsUrl?: string;
   /** Indicates if the program is fully onboarded in UniDoxia for instant submission */
   instant_submission?: boolean;
   /** Indicates if the university is an official UniDoxia partner */
@@ -51,6 +53,11 @@ export function CourseCard({ course }: CourseCardProps) {
     course.is_unidoxia_partner === true;
 
   const handleCardClick = () => {
+    if (course.detailsUrl) {
+      navigate(course.detailsUrl);
+      return;
+    }
+
     const params = new URLSearchParams({ program: course.id });
     if (studentIdFromUrl) {
       params.set('studentId', studentIdFromUrl);
@@ -60,6 +67,11 @@ export function CourseCard({ course }: CourseCardProps) {
 
   const handleApplyNow = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+    if (course.applyUrl) {
+      navigate(course.applyUrl);
+      return;
+    }
+
     const params = new URLSearchParams({ program: course.id });
     if (studentIdFromUrl) {
       params.set('studentId', studentIdFromUrl);

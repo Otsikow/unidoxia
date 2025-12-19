@@ -1,11 +1,11 @@
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  LayoutDashboard, 
+  LayoutDashboard,
   Users,
   FileText,
   DollarSign,
@@ -14,7 +14,8 @@ import {
   GraduationCap,
   Building2,
   UserCog,
-  Wallet
+  Wallet,
+  ShieldAlert
 } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,6 +26,9 @@ import ApplicationsTab from '@/components/dashboard/ApplicationsTab';
 import PaymentsTab from '@/components/dashboard/PaymentsTab';
 import ReportsTab from '@/components/dashboard/ReportsTab';
 import { AIPerformanceDashboardSection } from "@/components/landing/AIPerformanceDashboardSection";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { createNotification } from "@/lib/notifications";
 
 interface DashboardMetrics {
   totalStudents: number;
@@ -33,6 +37,25 @@ interface DashboardMetrics {
   agents: number;
   revenue: number;
 }
+
+type StudentPreview = {
+  id: string;
+  profile_id: string | null;
+  tenant_id: string | null;
+  legal_name: string | null;
+  preferred_name: string | null;
+};
+
+type AdminDocumentReview = {
+  id: string;
+  document_type: string;
+  file_name: string;
+  storage_path: string;
+  admin_review_status: string | null;
+  admin_review_notes: string | null;
+  created_at: string | null;
+  students?: StudentPreview | null;
+};
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -45,6 +68,11 @@ export default function AdminDashboard() {
     revenue: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [pendingDocuments, setPendingDocuments] = useState<AdminDocumentReview[]>([]);
+  const [documentNotes, setDocumentNotes] = useState<Record<string, string>>({});
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [updatingDocumentId, setUpdatingDocumentId] = useState<string | null>(null);
 
   const metricCards = [
     {
@@ -90,6 +118,82 @@ export default function AdminDashboard() {
     },
   ];
 
+  const fetchPendingDocuments = useCallback(async () => {
+    if (!isAdminUser) {
+      setPendingDocuments([]);
+      return;
+    }
+
+    try {
+      setLoadingDocuments(true);
+      const { data, error } = await supabase
+        .from('student_documents')
+        .select(`
+          id,
+          document_type,
+          file_name,
+          storage_path,
+          admin_review_status,
+          admin_review_notes,
+          created_at,
+          students:student_id (id, profile_id, tenant_id, legal_name, preferred_name)
+        `)
+        .in('admin_review_status', ['awaiting_admin_review', 'admin_rejected'])
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (error) throw error;
+
+      setPendingDocuments((data as AdminDocumentReview[]) ?? []);
+    } catch (error) {
+      console.error('Error loading pending documents:', error);
+    } finally {
+      setLoadingDocuments(false);
+    }
+  }, [isAdminUser]);
+
+  const updateDocumentStatus = useCallback(
+    async (doc: AdminDocumentReview, status: 'ready_for_university_review' | 'admin_rejected') => {
+      try {
+        setUpdatingDocumentId(doc.id);
+        const note = (documentNotes[doc.id] ?? '').trim() || null;
+
+        const { error } = await supabase
+          .from('student_documents')
+          .update({
+            admin_review_status: status,
+            admin_review_notes: note,
+            admin_reviewed_by: profile?.id ?? null,
+            admin_reviewed_at: new Date().toISOString(),
+            verified_status: status === 'ready_for_university_review' ? 'pending' : 'pending',
+          })
+          .eq('id', doc.id);
+
+        if (error) throw error;
+
+        if (status === 'admin_rejected' && doc.students?.profile_id && doc.students?.tenant_id) {
+          await createNotification({
+            userId: doc.students.profile_id,
+            tenantId: doc.students.tenant_id,
+            type: 'document_review',
+            title: 'Document rejected by admin',
+            content: note
+              ? `Your document "${doc.file_name}" was rejected. Note: ${note}`
+              : `Your document "${doc.file_name}" was rejected. Please upload a new version.`,
+            actionUrl: '/student/documents',
+          });
+        }
+
+        await fetchPendingDocuments();
+      } catch (error) {
+        console.error('Error updating document status:', error);
+      } finally {
+        setUpdatingDocumentId(null);
+      }
+    },
+    [documentNotes, fetchPendingDocuments, profile?.id]
+  );
+
   const handleMetricNavigation = (path: string) => navigate(path);
 
   const handleMetricKeyDown = (event: KeyboardEvent<HTMLDivElement>, path: string) => {
@@ -103,15 +207,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     const checkAccess = async () => {
       if (!profile) return;
-      
+
       const { data: userRoles } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', profile.id);
 
-      const hasAdminAccess = userRoles?.some(
-        (ur) => ur.role === 'admin' || ur.role === 'staff'
-      );
+      const hasAdminRole = userRoles?.some((ur) => ur.role === 'admin');
+      const hasAdminAccess = hasAdminRole || userRoles?.some((ur) => ur.role === 'staff');
+
+      setIsAdminUser(Boolean(hasAdminRole));
 
       if (!hasAdminAccess) {
         navigate('/dashboard');
@@ -177,6 +282,10 @@ export default function AdminDashboard() {
     fetchMetrics();
   }, []);
 
+  useEffect(() => {
+    void fetchPendingDocuments();
+  }, [fetchPendingDocuments]);
+
   return (
     <div className="space-y-8">
       <BackButton variant="ghost" size="sm" fallback="/admin" />
@@ -218,6 +327,80 @@ export default function AdminDashboard() {
             );
           })}
         </div>
+
+        {isAdminUser && (
+          <Card className="shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <ShieldAlert className="h-5 w-5 text-amber-500" /> Admin Document Reviews
+                <Badge variant="secondary">{pendingDocuments.length}</Badge>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Approve documents before universities or agents can view them. Admin-only items remain hidden elsewhere.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loadingDocuments ? (
+                <div className="text-sm text-muted-foreground">Loading documents...</div>
+              ) : pendingDocuments.length === 0 ? (
+                <div className="text-sm text-muted-foreground">No documents are awaiting admin review.</div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingDocuments.map((doc) => {
+                    const studentName = doc.students?.preferred_name || doc.students?.legal_name || 'Unknown student';
+                    return (
+                      <div
+                        key={doc.id}
+                        className="rounded-lg border bg-card p-4 shadow-sm"
+                      >
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Badge variant="outline" className="capitalize">
+                                {doc.document_type.replace(/_/g, ' ')}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">{new Date(doc.created_at || '').toLocaleString()}</span>
+                            </div>
+                            <div className="font-medium break-words">{doc.file_name}</div>
+                            <div className="text-sm text-muted-foreground">Student: {studentName}</div>
+                            {doc.admin_review_notes && (
+                              <div className="text-xs text-muted-foreground">Last note: {doc.admin_review_notes}</div>
+                            )}
+                          </div>
+                          <div className="flex flex-col gap-2 md:items-end md:min-w-[240px]">
+                            <Textarea
+                              placeholder="Add internal review notes"
+                              value={documentNotes[doc.id] ?? ''}
+                              onChange={(e) => setDocumentNotes((prev) => ({ ...prev, [doc.id]: e.target.value }))}
+                              className="min-h-[60px]"
+                            />
+                            <div className="flex flex-wrap gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={updatingDocumentId === doc.id}
+                                onClick={() => updateDocumentStatus(doc, 'admin_rejected')}
+                              >
+                                {updatingDocumentId === doc.id ? 'Saving...' : 'Reject'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={updatingDocumentId === doc.id}
+                                onClick={() => updateDocumentStatus(doc, 'ready_for_university_review')}
+                              >
+                                {updatingDocumentId === doc.id ? 'Saving...' : 'Approve for University'}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <div className="-mx-4 sm:-mx-6 lg:-mx-8">
           <AIPerformanceDashboardSection />
