@@ -2249,6 +2249,7 @@ export type Database = {
           file_size: number
           id: string
           mime_type: string
+          status: Database["public"]["Enums"]["student_document_status"]
           storage_path: string
           student_id: string
           updated_at: string | null
@@ -2269,6 +2270,7 @@ export type Database = {
           file_size: number
           id?: string
           mime_type: string
+          status?: Database["public"]["Enums"]["student_document_status"]
           storage_path: string
           student_id: string
           updated_at?: string | null
@@ -2289,6 +2291,7 @@ export type Database = {
           file_size?: number
           id?: string
           mime_type?: string
+          status?: Database["public"]["Enums"]["student_document_status"]
           storage_path?: string
           student_id?: string
           updated_at?: string | null
@@ -3155,6 +3158,11 @@ export type Database = {
       notification_channel: "email" | "sms" | "whatsapp" | "in_app"
       notification_status: "pending" | "sent" | "failed" | "delivered"
       offer_type: "conditional" | "unconditional"
+      student_document_status:
+        | "awaiting_admin_review"
+        | "admin_rejected"
+        | "ready_for_university_review"
+        | "university_reviewed"
       payment_purpose:
         | "application_fee"
         | "service_fee"
@@ -3331,6 +3339,12 @@ export const Constants = {
         "lor",
         "portfolio",
         "other",
+      ],
+      student_document_status: [
+        "awaiting_admin_review",
+        "admin_rejected",
+        "ready_for_university_review",
+        "university_reviewed",
       ],
       featured_listing_status: ["active", "pending", "expired", "cancelled"],
       message_type: ["text", "system", "document"],

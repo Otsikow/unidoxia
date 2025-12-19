@@ -385,7 +385,9 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
           fileName: doc.storage_path?.split("/").pop() ?? "Unknown",
           mimeType: doc.mime_type,
           fileSize: doc.file_size,
-          reviewStatus: (doc.verified ? "verified" : "pending") as any,
+          reviewStatus: (doc.verified
+            ? "ready_for_university_review"
+            : "pending") as any,
           verificationNotes: doc.verification_notes ?? null,
           uploadedAt: doc.uploaded_at ?? "",
           publicUrl: getPublicUrl(doc.storage_path),
@@ -419,19 +421,25 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
         if (studentDocs && studentDocs.length > 0) {
           console.log("[useExtendedApplication] Student documents loaded:", studentDocs.length);
-          documents = studentDocs.map((doc) => ({
-            id: doc.id,
-            documentType: doc.document_type,
-            storagePath: doc.storage_path,
-            fileName: doc.file_name ?? doc.storage_path?.split("/").pop() ?? "Unknown",
-            mimeType: doc.mime_type,
-            fileSize: doc.file_size,
-            reviewStatus: (doc.verified_status ?? "pending") as any,
-            verificationNotes: doc.verification_notes ?? null,
-            uploadedAt: doc.created_at ?? "",
-            publicUrl: getPublicUrl(doc.storage_path),
-            source: "student_documents" as const,
-          }));
+          documents = studentDocs.map((doc) => {
+            const rawStatus = (doc.verified_status ?? "pending") as string;
+            const normalizedStatus =
+              rawStatus === "verified" ? "ready_for_university_review" : rawStatus;
+
+            return {
+              id: doc.id,
+              documentType: doc.document_type,
+              storagePath: doc.storage_path,
+              fileName: doc.file_name ?? doc.storage_path?.split("/").pop() ?? "Unknown",
+              mimeType: doc.mime_type,
+              fileSize: doc.file_size,
+              reviewStatus: normalizedStatus as any,
+              verificationNotes: doc.verification_notes ?? null,
+              uploadedAt: doc.created_at ?? "",
+              publicUrl: getPublicUrl(doc.storage_path),
+              source: "student_documents" as const,
+            };
+          });
         }
       }
 
