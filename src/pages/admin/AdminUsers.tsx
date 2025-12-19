@@ -20,6 +20,7 @@ const AdminUsers = () => {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Tables<"profiles">[]>([]);
   const [roleSummary, setRoleSummary] = useState<RoleSummary[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -47,6 +48,7 @@ const AdminUsers = () => {
         if (!isMounted) return;
 
         setRows((data ?? []) as any);
+        setSelectedRole(null);
         const summary = new Map<string, number>();
         for (const item of data ?? []) {
           summary.set(item.role, (summary.get(item.role) ?? 0) + 1);
@@ -64,6 +66,8 @@ const AdminUsers = () => {
       isMounted = false;
     };
   }, [tenantId]);
+
+  const filteredRows = selectedRole ? rows.filter((user) => user.role === selectedRole) : rows;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -99,10 +103,21 @@ const AdminUsers = () => {
             {loading && <Skeleton className="h-10 w-24" />}
             {!loading &&
               roleSummary.map((role) => (
-                <Badge key={role.role} variant="outline" className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm">
+                <button
+                  key={role.role}
+                  type="button"
+                  onClick={() => setSelectedRole((current) => (current === role.role ? null : role.role))}
+                  className={`flex items-center rounded-full border px-3 py-1.5 text-xs transition-colors sm:px-4 sm:py-2 sm:text-sm ${
+                    selectedRole === role.role
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background/80 text-foreground hover:border-primary/60"
+                  }`}
+                >
                   <span className="font-semibold">{role.users}</span>
-                  <span className="ml-1.5 sm:ml-2 uppercase tracking-wide text-xs text-muted-foreground">{role.role}</span>
-                </Badge>
+                  <span className="ml-1.5 sm:ml-2 uppercase tracking-wide text-xs text-muted-foreground">
+                    {role.role}
+                  </span>
+                </button>
               ))}
             {!loading && roleSummary.length === 0 && <p className="text-sm text-muted-foreground">No roles assigned yet.</p>}
           </div>
@@ -125,9 +140,19 @@ const AdminUsers = () => {
             <p className="text-sm text-muted-foreground">No administrator records found.</p>
           ) : (
             <>
+              {selectedRole && (
+                <div className="mb-3 text-xs uppercase tracking-wide text-muted-foreground sm:text-sm">
+                  Showing users with role <span className="font-semibold text-foreground">{selectedRole}</span>
+                </div>
+              )}
+
+              {selectedRole && filteredRows.length === 0 && (
+                <p className="mb-3 text-sm text-muted-foreground">No users match the selected role.</p>
+              )}
+
               {/* Mobile Card View */}
               <div className="block space-y-3 md:hidden">
-                {rows.map((user) => (
+                {filteredRows.map((user) => (
                   <div key={user.id} className="rounded-lg border p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
@@ -161,7 +186,7 @@ const AdminUsers = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border text-sm">
-                    {rows.map((user) => (
+                    {filteredRows.map((user) => (
                       <tr key={user.id}>
                         <td className="px-3 py-2 lg:px-4 font-medium">{user.full_name}</td>
                         <td className="px-3 py-2 lg:px-4 text-muted-foreground truncate max-w-[200px]">{user.email}</td>
