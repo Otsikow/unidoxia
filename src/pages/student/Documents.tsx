@@ -59,16 +59,16 @@ interface Document {
 /* -------------------------------------------------------------------------- */
 
 const DOCUMENT_TYPES = [
-  "passport",
-  "transcript",
-  "ielts",
-  "toefl",
-  "sop",
-  "cv",
-  "lor",
-  "portfolio",
-  "financial_document",
-  "other",
+  { value: "passport", label: "Passport" },
+  { value: "transcript", label: "Transcript" },
+  { value: "ielts", label: "IELTS" },
+  { value: "toefl", label: "TOEFL" },
+  { value: "sop", label: "Statement of Purpose" },
+  { value: "cv", label: "CV/Resume" },
+  { value: "lor", label: "Letter of Recommendation" },
+  { value: "portfolio", label: "Portfolio" },
+  { value: "financial_document", label: "Financial Document" },
+  { value: "other", label: "Other" },
 ];
 
 /* -------------------------------------------------------------------------- */
@@ -283,8 +283,8 @@ export default function Documents() {
               </SelectTrigger>
               <SelectContent>
                 {DOCUMENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type.replace(/_/g, " ")}
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
                   </SelectItem>
                 ))}
               </SelectContent>
