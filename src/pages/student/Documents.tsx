@@ -12,6 +12,8 @@ import { FileText, Upload, Download, Trash2, CheckCircle, Clock, XCircle } from 
 import BackButton from '@/components/BackButton';
 import { Badge } from '@/components/ui/badge';
 import { useStudentRecord } from '@/hooks/useStudentRecord';
+import { useAuth } from '@/hooks/useAuth';
+import { logDocumentAuditEvent } from '@/lib/auditLogger';
 
 interface Document {
   id: string;
@@ -46,6 +48,7 @@ export default function Documents() {
     isLoading: studentRecordLoading,
     error: studentRecordError,
   } = useStudentRecord();
+  const { user, profile } = useAuth();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -149,7 +152,7 @@ export default function Documents() {
 
       if (uploadError) throw new Error(uploadError.message);
 
-      const { error: dbError } = await supabase
+      const { data: insertedDocument, error: dbError } = await supabase
         .from('student_documents')
         .insert({
           student_id: studentId,
@@ -159,12 +162,30 @@ export default function Documents() {
           mime_type: detectedMimeType,
           storage_path: filePath,
           verified_status: 'pending',
-        });
+        })
+        .select('id')
+        .single();
 
-        if (dbError) {
-          await supabase.storage.from('student-documents').remove([filePath]);
-          throw new Error(dbError.message);
-        }
+      if (dbError) {
+        await supabase.storage.from('student-documents').remove([filePath]);
+        throw new Error(dbError.message);
+      }
+
+      void logDocumentAuditEvent({
+        action: 'document_uploaded',
+        tenantId: studentRecord?.tenant_id ?? profile?.tenant_id ?? null,
+        userId: user?.id ?? profile?.id ?? null,
+        entityId: insertedDocument?.id ?? null,
+        details: {
+          studentId,
+          documentType,
+          fileName: sanitizedFileName,
+          fileSize: preparedFile.size,
+          mimeType: detectedMimeType,
+          storagePath: filePath,
+          source: 'student_documents',
+        },
+      });
 
         toast({ title: 'Success', description: 'Document uploaded successfully' });
         setSelectedFile(null);
