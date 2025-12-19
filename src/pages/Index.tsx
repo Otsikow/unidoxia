@@ -208,7 +208,7 @@ const Index = () => {
             <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
 
             <div className="hero-text space-y-2 md:space-y-3 text-white">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
                 <span>Apply to Global Universities.</span>
                 <br className="hidden sm:block" />
                 <span>Get Accepted.</span>
