@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { searchDirectoryProfiles, type DirectoryProfile } from "@/lib/messaging/directory";
 import { fetchAppliedUniversityContacts, fetchUniversityApplicants, fetchSupportContacts, type AppliedUniversityContact, type UniversityApplicantContact, type SupportContact } from "@/lib/messaging/contactsService";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
+import { cn } from "@/lib/utils";
 
 // Role-based dashboard redirects
 const roleRedirects: Record<string, string> = {
@@ -520,9 +521,14 @@ export default function MessagesDashboard() {
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 gap-4 min-h-0 overflow-hidden">
-        {/* Chat list */}
-        <div className="w-full md:w-80 lg:w-96 flex-shrink-0">
+      <div className="flex flex-1 gap-2 sm:gap-4 min-h-0 overflow-hidden">
+        {/* Chat list - full width on mobile when no conversation selected, fixed width on larger screens */}
+        <div className={cn(
+          "flex-shrink-0 transition-all duration-200",
+          currentConversationId 
+            ? "hidden md:block md:w-72 lg:w-80 xl:w-96" 
+            : "w-full md:w-72 lg:w-80 xl:w-96"
+        )}>
           <div className="h-full overflow-hidden rounded-lg border bg-card shadow-sm">
             <ChatList
               conversations={conversations}
@@ -535,8 +541,11 @@ export default function MessagesDashboard() {
           </div>
         </div>
 
-        {/* Chat area - hidden on mobile when no conversation selected */}
-        <div className="hidden md:flex flex-1 overflow-hidden rounded-lg border bg-card shadow-sm">
+        {/* Chat area - shown on desktop always, on mobile only when conversation selected */}
+        <div className={cn(
+          "flex-1 overflow-hidden rounded-lg border bg-card shadow-sm min-w-0",
+          currentConversationId ? "flex" : "hidden md:flex"
+        )}>
           <ChatArea
             conversation={currentConversation}
             messages={messages}
@@ -548,27 +557,9 @@ export default function MessagesDashboard() {
             getUserPresence={getUserPresence}
             isUserOnline={isUserOnline}
             onBack={handleBack}
+            showBackButton={!!currentConversationId}
           />
         </div>
-
-        {/* Mobile fullscreen chat when conversation is selected */}
-        {currentConversationId && (
-          <div className="md:hidden fixed inset-0 z-50 bg-background">
-            <ChatArea
-              conversation={currentConversation}
-              messages={messages}
-              typingUsers={typingUsers}
-              loading={isLoading}
-              onSendMessage={handleSendMessage}
-              onStartTyping={handleStartTyping}
-              onStopTyping={handleStopTyping}
-              getUserPresence={getUserPresence}
-              isUserOnline={isUserOnline}
-              onBack={handleBack}
-              showBackButton
-            />
-          </div>
-        )}
       </div>
 
       {/* New Chat Dialog */}

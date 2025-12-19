@@ -2951,6 +2951,18 @@ export type Database = {
         Args: { p_agent_profile_id: string; p_regenerate?: boolean }
         Returns: string
       }
+      get_messaging_contacts: {
+        Args: { p_limit?: number; p_search?: string }
+        Returns: {
+          avatar_url: string
+          contact_type: string
+          email: string
+          full_name: string
+          headline: string
+          profile_id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       get_or_create_conversation: {
         Args: {
           p_other_user_id: string
