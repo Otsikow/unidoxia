@@ -7,6 +7,10 @@ interface StatusBadgeProps {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
+  awaiting_admin_review: { label: 'Awaiting Admin Review', className: 'status-awaiting-admin' },
+  admin_rejected: { label: 'Admin Rejected', className: 'status-admin-rejected' },
+  ready_for_university_review: { label: 'Ready for University Review', className: 'status-ready-university' },
+  university_reviewed: { label: 'University Reviewed', className: 'status-university-reviewed' },
   draft: { label: 'Draft', className: 'status-draft' },
   submitted: { label: 'Submitted', className: 'status-submitted' },
   screening: { label: 'Under Review', className: 'status-screening' },

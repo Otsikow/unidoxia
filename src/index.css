@@ -322,7 +322,23 @@ All colors MUST be HSL.
   .status-draft {
     @apply bg-muted text-muted-foreground;
   }
-  
+
+  .status-awaiting-admin {
+    @apply bg-warning-light text-warning dark:bg-warning/20 dark:text-warning;
+  }
+
+  .status-admin-rejected {
+    @apply bg-destructive/10 text-destructive;
+  }
+
+  .status-ready-university {
+    @apply bg-info-light text-info dark:bg-info/20 dark:text-info;
+  }
+
+  .status-university-reviewed {
+    @apply bg-success-light text-success dark:bg-success/20 dark:text-success;
+  }
+
   .status-submitted {
     @apply bg-info-light text-info dark:bg-info/20 dark:text-info;
   }
