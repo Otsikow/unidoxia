@@ -217,7 +217,7 @@ const Index = () => {
               </h1>
             </div>
 
-            <Button asChild size="lg" className="hero-cta-button">
+            <Button asChild size="lg" className="hero-cta-button bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-bold shadow-lg">
               <Link to="/auth/signup">
                 <Sparkles className="mr-2 h-5 w-5" />
                 Start Your Study Journey
