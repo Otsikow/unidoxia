@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +46,7 @@ import {
 
 interface Application {
   id: string;
+  app_number: string | null;
   status: string;
   intake_year: number;
   intake_month: number;
@@ -295,6 +296,7 @@ const generateApplicationNudges = (
 
 export default function ApplicationTracking() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const {
     data: studentRecord,
@@ -306,7 +308,7 @@ export default function ApplicationTracking() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [trackingIdInput, setTrackingIdInput] = useState<string>('');
   const [missingDocs, setMissingDocs] = useState<Record<string, MissingDocument[]>>({});
   const [dismissedNudges, setDismissedNudges] = useState<Set<string>>(new Set());
 
@@ -318,6 +320,30 @@ export default function ApplicationTracking() {
   const visibleNudges = useMemo(
     () => computedNudges.filter((nudge) => !dismissedNudges.has(nudge.fingerprint)),
     [computedNudges, dismissedNudges]
+  );
+
+  const handleTrackingLookup = useCallback(
+    (trackingValue?: string) => {
+      const normalized = (trackingValue ?? trackingIdInput).trim().toUpperCase();
+
+      if (!normalized) {
+        toast({
+          title: 'Enter your tracking ID',
+          description: 'Paste the ID we shared after submission to jump to your application.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const matchingApp = applications.find(
+        (app) =>
+          app.app_number?.toUpperCase() === normalized ||
+          app.id.toUpperCase().startsWith(normalized)
+      );
+
+      navigate(`/student/applications/${matchingApp ? matchingApp.id : normalized}`);
+    },
+    [applications, navigate, toast, trackingIdInput]
   );
 
   const fetchApplications = useCallback(async () => {
@@ -337,6 +363,7 @@ export default function ApplicationTracking() {
         .from('applications')
         .select(`
           id,
+          app_number,
           status,
           intake_year,
           intake_month,
@@ -463,6 +490,18 @@ export default function ApplicationTracking() {
     });
   }, [computedNudges]);
 
+  useEffect(() => {
+    const trackingId = searchParams.get('trackingId');
+    if (!trackingId) return;
+
+    const normalized = trackingId.trim().toUpperCase();
+    setTrackingIdInput(normalized);
+
+    if (!loading) {
+      handleTrackingLookup(normalized);
+    }
+  }, [handleTrackingLookup, loading, searchParams]);
+
   const handleDismissNudge = useCallback((fingerprint: string) => {
     setDismissedNudges((prev) => {
       if (prev.has(fingerprint)) {
@@ -511,11 +550,15 @@ export default function ApplicationTracking() {
     const programName = a.program?.name?.toLowerCase() ?? '';
     const universityName = a.program?.university?.name?.toLowerCase() ?? '';
     const universityCountry = a.program?.university?.country?.toLowerCase() ?? '';
+    const appNumber = a.app_number?.toLowerCase() ?? '';
+    const applicationId = a.id.toLowerCase();
     const matchesSearch =
       !term ||
       programName.includes(term) ||
       universityName.includes(term) ||
-      universityCountry.includes(term);
+      universityCountry.includes(term) ||
+      appNumber.includes(term) ||
+      applicationId.startsWith(term);
     return matchesStatus && matchesSearch;
   });
 
@@ -545,21 +588,45 @@ export default function ApplicationTracking() {
       <BackButton variant="ghost" size="sm" wrapperClassName="mb-4" fallback="/dashboard" />
 
       {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
-            Application Tracking
-          </h1>
-          <p className="text-muted-foreground">
-            Track your university applications and manage documents in real-time
-          </p>
-        </div>
+      <div className="space-y-2">
+        <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">
+          Application Tracking
+        </h1>
+        <p className="text-muted-foreground">
+          Track your university applications and manage documents in real-time
+        </p>
+      </div>
 
-        {visibleNudges.length > 0 && (
-          <ApplicationDeadlineNudges
-            nudges={visibleNudges}
-            onDismiss={handleDismissNudge}
-          />
-        )}
+      {visibleNudges.length > 0 && (
+        <ApplicationDeadlineNudges
+          nudges={visibleNudges}
+          onDismiss={handleDismissNudge}
+        />
+      )}
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium">Track with your ID</p>
+              <p className="text-xs text-muted-foreground">
+                Paste the tracking ID from your confirmation email to jump straight to your application.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-[420px]">
+              <Input
+                value={trackingIdInput}
+                onChange={(e) => setTrackingIdInput(e.target.value.toUpperCase())}
+                placeholder="Enter tracking ID (e.g., 7078FFFC)"
+                className="font-mono"
+              />
+              <Button onClick={() => handleTrackingLookup()} className="whitespace-nowrap">
+                Track Application
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -780,8 +847,9 @@ export default function ApplicationTracking() {
                 )}
 
                 {/* Application ID */}
-                <div className="text-xs text-muted-foreground">
-                  Application ID: {app.id}
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>Tracking ID: {app.app_number ?? app.id.slice(0, 8).toUpperCase()}</div>
+                  <div className="text-[11px]">Internal reference: {app.id}</div>
                 </div>
               </CardContent>
             </Card>
