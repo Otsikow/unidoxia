@@ -446,7 +446,8 @@ export function useMessages() {
 
     const ids = memberships.map((m) => m.conversation_id);
 
-    const { data: convs } = await supabase
+    // Attempt 1: fetch with nested profile join
+    const { data: convs, error: convsError } = await supabase
       .from("conversations")
       .select(
         `
@@ -467,12 +468,88 @@ export function useMessages() {
       .in("id", ids)
       .order("last_message_at", { ascending: false, nullsFirst: false });
 
-    // Map DB results to Conversation type with required fields
-    const mapped = (convs ?? []).map((c: any) => ({
+    if (!convsError) {
+      const mapped = (convs ?? []).map((c: any) => ({
+        ...c,
+        title: c.title ?? null,
+      })) as Conversation[];
+      return sortConversations(mapped);
+    }
+
+    // If the backend schema cache doesn't see the participants->profiles relationship yet,
+    // fallback to a 2-step fetch (participants + profiles) so messaging still works.
+    const errMsg = (convsError as any)?.message?.toLowerCase?.() ?? "";
+    const isSchemaCacheIssue = errMsg.includes("could not find a relationship") && errMsg.includes("conversation_participants") && errMsg.includes("profiles");
+
+    if (!isSchemaCacheIssue) {
+      console.error("Failed to fetch conversations:", convsError);
+      return [];
+    }
+
+    // Attempt 2: fetch conversations + participants + profiles separately
+    const { data: baseConvs, error: baseError } = await supabase
+      .from("conversations")
+      .select("id, tenant_id, type, is_group, created_at, updated_at, last_message_at")
+      .in("id", ids)
+      .order("last_message_at", { ascending: false, nullsFirst: false });
+
+    if (baseError) {
+      console.error("Failed to fetch conversations (fallback):", baseError);
+      return [];
+    }
+
+    const { data: parts, error: partsError } = await supabase
+      .from("conversation_participants")
+      .select("conversation_id, user_id, last_read_at")
+      .in("conversation_id", ids);
+
+    if (partsError) {
+      console.error("Failed to fetch participants (fallback):", partsError);
+      return [];
+    }
+
+    const userIds = Array.from(new Set((parts ?? []).map((p: any) => p.user_id)));
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, role")
+      .in("id", userIds);
+
+    if (profilesError) {
+      console.error("Failed to fetch profiles (fallback):", profilesError);
+      return [];
+    }
+
+    const profileMap = new Map<string, any>((profiles ?? []).map((p: any) => [p.id, p]));
+    const participantsByConv = new Map<string, any[]>();
+
+    for (const p of parts ?? []) {
+      const arr = participantsByConv.get((p as any).conversation_id) ?? [];
+      arr.push({
+        id: `${(p as any).conversation_id}-${(p as any).user_id}`,
+        conversation_id: (p as any).conversation_id,
+        user_id: (p as any).user_id,
+        joined_at: new Date().toISOString(),
+        last_read_at: (p as any).last_read_at ?? null,
+        profile: profileMap.get((p as any).user_id)
+          ? {
+              id: (p as any).user_id,
+              full_name: profileMap.get((p as any).user_id).full_name,
+              avatar_url: profileMap.get((p as any).user_id).avatar_url,
+              role: profileMap.get((p as any).user_id).role,
+            }
+          : undefined,
+      });
+      participantsByConv.set((p as any).conversation_id, arr);
+    }
+
+    const fallbackMapped: Conversation[] = (baseConvs ?? []).map((c: any) => ({
       ...c,
-      title: c.title ?? null,
-    })) as Conversation[];
-    return sortConversations(mapped);
+      title: null,
+      participants: participantsByConv.get(c.id) ?? [],
+    }));
+
+    return sortConversations(fallbackMapped);
   }, [user?.id]);
 
   /* ======================================================
