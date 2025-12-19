@@ -266,7 +266,7 @@ export function ChatArea({
       : undefined;
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0">
+    <div className="flex-1 flex flex-col h-full min-h-0 w-full">
       {/* Header */}
       <div className="p-3 sm:p-4 border-b bg-background flex items-center gap-2 sm:gap-3 flex-shrink-0">
         {showBackButton && onBack && (

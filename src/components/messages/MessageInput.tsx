@@ -683,15 +683,15 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
   };
 
   return (
-    <div className="p-3 sm:p-4 border-t bg-background flex-shrink-0">
-      <div className="flex items-end gap-1 sm:gap-2">
-        {/* Emoji Picker - hidden on very small screens */}
+    <div className="p-2 sm:p-3 md:p-4 border-t bg-background flex-shrink-0">
+      <div className="flex items-end gap-1.5 sm:gap-2">
+        {/* Emoji Picker */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9 hidden xs:flex"
+              className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
               disabled={disabled}
             >
               <Smile className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -731,6 +731,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           onChange={(event) => handleAttachmentSelection(event.target.files)}
         />
 
+        {/* Attachment button */}
         <Button
           variant="ghost"
           size="icon"
@@ -743,6 +744,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
 
+        {/* Voice-to-text button - only on larger screens */}
         <Button
           variant={isTranscribing ? 'destructive' : 'ghost'}
           size="icon"
@@ -755,6 +757,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           {isTranscribing ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Keyboard className="h-4 w-4 sm:h-5 sm:w-5" />}
         </Button>
 
+        {/* Audio recording button */}
         <Button
           variant={isRecordingAudio ? 'destructive' : 'ghost'}
           size="icon"
@@ -767,8 +770,8 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           {isRecordingAudio ? <Square className="h-4 w-4 sm:h-5 sm:w-5" /> : <Mic className="h-4 w-4 sm:h-5 sm:w-5" />}
         </Button>
 
-        {/* Message Input */}
-        <div className="flex-1 relative min-w-0">
+        {/* Message Input - takes remaining space */}
+        <div className="flex-1 min-w-0">
           <Textarea
             ref={textareaRef}
             value={message}
@@ -777,7 +780,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[36px] sm:min-h-[44px] max-h-24 sm:max-h-32 resize-none pr-2 text-sm sm:text-base"
+            className="min-h-[40px] sm:min-h-[44px] max-h-24 sm:max-h-32 resize-none text-sm sm:text-base py-2.5 px-3"
             rows={1}
           />
         </div>
@@ -787,7 +790,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           onClick={handleSend}
           disabled={disabled || isUploading || isRecordingAudio || (!message.trim() && attachments.length === 0)}
           size="icon"
-          className="flex-shrink-0 h-8 w-8 sm:h-9 sm:w-9"
+          className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
           aria-label="Send message"
         >
           <Send className="h-4 w-4 sm:h-5 sm:w-5" />
