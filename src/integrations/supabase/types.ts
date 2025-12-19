@@ -2245,6 +2245,7 @@ export type Database = {
           file_size: number
           id: string
           mime_type: string
+          student_profile_id: string
           storage_path: string
           student_id: string
           updated_at: string | null
@@ -2252,6 +2253,9 @@ export type Database = {
           verified_at: string | null
           verified_by: string | null
           verified_status: string | null
+          university_access_approved: boolean | null
+          university_access_approved_at: string | null
+          university_access_approved_by: string | null
         }
         Insert: {
           checksum?: string | null
@@ -2261,6 +2265,7 @@ export type Database = {
           file_size: number
           id?: string
           mime_type: string
+          student_profile_id?: string
           storage_path: string
           student_id: string
           updated_at?: string | null
@@ -2268,6 +2273,9 @@ export type Database = {
           verified_at?: string | null
           verified_by?: string | null
           verified_status?: string | null
+          university_access_approved?: boolean | null
+          university_access_approved_at?: string | null
+          university_access_approved_by?: string | null
         }
         Update: {
           checksum?: string | null
@@ -2277,6 +2285,7 @@ export type Database = {
           file_size?: number
           id?: string
           mime_type?: string
+          student_profile_id?: string
           storage_path?: string
           student_id?: string
           updated_at?: string | null
@@ -2284,6 +2293,9 @@ export type Database = {
           verified_at?: string | null
           verified_by?: string | null
           verified_status?: string | null
+          university_access_approved?: boolean | null
+          university_access_approved_at?: string | null
+          university_access_approved_by?: string | null
         }
         Relationships: [
           {

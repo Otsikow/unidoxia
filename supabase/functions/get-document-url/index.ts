@@ -88,12 +88,13 @@ Deno.serve(async (req) => {
 
     let finalStoragePath = storagePath;
     let studentId: string | null = null;
+    let universityAccessApproved = false;
 
     // If documentId provided, fetch document details
     if (documentId) {
       const { data: doc, error: docError } = await adminClient
         .from("student_documents")
-        .select("storage_path, student_id")
+        .select("storage_path, student_id, university_access_approved")
         .eq("id", documentId)
         .single();
 
@@ -107,12 +108,25 @@ Deno.serve(async (req) => {
 
       finalStoragePath = doc.storage_path;
       studentId = doc.student_id;
+      universityAccessApproved = !!doc.university_access_approved;
     } else if (storagePath) {
-      // Extract student ID from storage path (format: studentId/filename)
-      const pathParts = storagePath.split("/");
-      if (pathParts.length >= 1) {
-        studentId = pathParts[0];
+      const { data: doc, error: docError } = await adminClient
+        .from("student_documents")
+        .select("storage_path, student_id, university_access_approved")
+        .eq("storage_path", storagePath)
+        .single();
+
+      if (docError || !doc) {
+        console.error("[get-document-url] Document not found by path:", docError);
+        return new Response(
+          JSON.stringify({ error: "Document not found" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
+
+      finalStoragePath = doc.storage_path;
+      studentId = doc.student_id;
+      universityAccessApproved = !!doc.university_access_approved;
     }
 
     if (!finalStoragePath) {
@@ -127,13 +141,17 @@ Deno.serve(async (req) => {
     // Check access permissions
     let hasAccess = false;
 
-    // Admin, staff, counselor, verifier have full access
-    if (["admin", "staff", "counselor", "verifier"].includes(profile.role)) {
+    // Admins have full access
+    if (profile.role === "admin") {
       hasAccess = true;
-      console.log("[get-document-url] Access granted: admin/staff role");
+      console.log("[get-document-url] Access granted: admin role");
     }
     // Partners and school reps can access documents of students who applied to their universities
+    // only after an admin approval flag is set on the document
     else if (["partner", "school_rep"].includes(profile.role) && studentId) {
+      if (!universityAccessApproved) {
+        console.warn("[get-document-url] Partner access denied: no admin approval");
+      } else {
       const { data: applications } = await adminClient
         .from("applications")
         .select(`
@@ -148,11 +166,12 @@ Deno.serve(async (req) => {
         .eq("student_id", studentId);
 
       if (applications && applications.length > 0) {
-        hasAccess = applications.some((app: any) => 
+        hasAccess = applications.some((app: any) =>
           app.programs?.universities?.tenant_id === profile.tenant_id
         );
       }
       console.log("[get-document-url] Partner access check:", hasAccess);
+      }
     }
     // Students can access their own documents
     else if (profile.role === "student" && studentId) {
