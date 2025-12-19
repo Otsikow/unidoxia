@@ -44,6 +44,8 @@ type StudentPreview = {
   tenant_id: string | null;
   legal_name: string | null;
   preferred_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
 };
 
 type AdminDocumentReview = {
@@ -71,8 +73,10 @@ export default function AdminDashboard() {
   const [isAdminUser, setIsAdminUser] = useState(false);
   const [pendingDocuments, setPendingDocuments] = useState<AdminDocumentReview[]>([]);
   const [documentNotes, setDocumentNotes] = useState<Record<string, string>>({});
+  const [documentMessages, setDocumentMessages] = useState<Record<string, string>>({});
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [updatingDocumentId, setUpdatingDocumentId] = useState<string | null>(null);
+  const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null);
 
   const metricCards = [
     {
@@ -136,7 +140,7 @@ export default function AdminDashboard() {
           verified_status,
           verification_notes,
           created_at,
-          students:student_id (id, profile_id, tenant_id, legal_name, preferred_name)
+          students:student_id (id, profile_id, tenant_id, legal_name, preferred_name, contact_email, contact_phone)
         `)
         .in('verified_status', ['pending', 'rejected'])
         .order('created_at', { ascending: false })
@@ -192,6 +196,45 @@ export default function AdminDashboard() {
     },
     [documentNotes, fetchPendingDocuments, profile?.id]
   );
+
+  const handleViewDocument = async (doc: AdminDocumentReview) => {
+    try {
+      setOpeningDocumentId(doc.id);
+      const { data, error } = await supabase.storage
+        .from('student-documents')
+        .createSignedUrl(doc.storage_path, 60 * 60);
+
+      if (error) throw error;
+      if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+    } catch (error) {
+      console.error('Error opening document:', error);
+    } finally {
+      setOpeningDocumentId(null);
+    }
+  };
+
+  const sendDocumentMessage = async (doc: AdminDocumentReview) => {
+    const message = (documentMessages[doc.id] ?? '').trim();
+    if (!message || !doc.students?.profile_id || !doc.students?.tenant_id) return;
+
+    try {
+      setUpdatingDocumentId(doc.id);
+      await createNotification({
+        userId: doc.students.profile_id,
+        tenantId: doc.students.tenant_id,
+        type: 'document_review',
+        title: 'Update on your document',
+        content: `${message} (File: ${doc.file_name})`,
+        actionUrl: '/student/documents',
+      });
+
+      setDocumentMessages((prev) => ({ ...prev, [doc.id]: '' }));
+    } catch (error) {
+      console.error('Error sending document message:', error);
+    } finally {
+      setUpdatingDocumentId(null);
+    }
+  };
 
   const handleMetricNavigation = (path: string) => navigate(path);
 
@@ -362,18 +405,50 @@ export default function AdminDashboard() {
                             </div>
                             <div className="font-medium break-words">{doc.file_name}</div>
                             <div className="text-sm text-muted-foreground">Student: {studentName}</div>
+                            {(doc.students?.contact_email || doc.students?.contact_phone) && (
+                              <div className="text-xs text-muted-foreground space-y-0.5">
+                                {doc.students?.contact_email && <div>Email: {doc.students.contact_email}</div>}
+                                {doc.students?.contact_phone && <div>Phone: {doc.students.contact_phone}</div>}
+                              </div>
+                            )}
                             {doc.verification_notes && (
                               <div className="text-xs text-muted-foreground">Last note: {doc.verification_notes}</div>
                             )}
                           </div>
                           <div className="flex flex-col gap-2 md:items-end md:min-w-[240px]">
+                            <div className="flex flex-wrap gap-2 justify-end w-full">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="w-full md:w-auto"
+                                disabled={openingDocumentId === doc.id}
+                                onClick={() => handleViewDocument(doc)}
+                              >
+                                {openingDocumentId === doc.id ? 'Opening...' : 'View document'}
+                              </Button>
+                            </div>
                             <Textarea
                               placeholder="Add internal review notes"
                               value={documentNotes[doc.id] ?? ''}
                               onChange={(e) => setDocumentNotes((prev) => ({ ...prev, [doc.id]: e.target.value }))}
                               className="min-h-[60px]"
                             />
+                            <Textarea
+                              placeholder="Send a message to the student"
+                              value={documentMessages[doc.id] ?? ''}
+                              onChange={(e) => setDocumentMessages((prev) => ({ ...prev, [doc.id]: e.target.value }))}
+                              className="min-h-[60px]"
+                            />
                             <div className="flex flex-wrap gap-2 justify-end">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="md:w-auto"
+                                disabled={updatingDocumentId === doc.id || !(documentMessages[doc.id] ?? '').trim()}
+                                onClick={() => sendDocumentMessage(doc)}
+                              >
+                                {updatingDocumentId === doc.id ? 'Sending...' : 'Send message'}
+                              </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
