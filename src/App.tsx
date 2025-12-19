@@ -571,7 +571,7 @@ const App = () => {
 
                         {/* Public Screens */}
                         <Route path="/search" element={<SearchRedirect />} />
-                        <Route path="/courses" element={<PublicLayout><CourseDiscovery /></PublicLayout>} />
+                        <Route path="/courses" element={<CourseDiscovery />} />
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
                         <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
                         <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />
