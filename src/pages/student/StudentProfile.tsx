@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import type { Tables } from '@/integrations/supabase/types';
 import { Circle, CheckCircle, Loader2, ChevronRight } from 'lucide-react';
+import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
@@ -153,6 +154,10 @@ export default function StudentProfile() {
     }
   }, [clearError, queryClient, user?.id, refetchStudentRecord, recalcCompleteness, handleError, toast]);
 
+  const handleBackToHome = useCallback(() => {
+    navigate('/dashboard');
+  }, [navigate]);
+
   const DEFAULT_TENANT_ID =
     import.meta.env.VITE_DEFAULT_TENANT_ID ?? '00000000-0000-0000-0000-000000000001';
   const [creatingProfile, setCreatingProfile] = useState(false);
@@ -252,11 +257,20 @@ export default function StudentProfile() {
     return (
       <div className="min-h-screen bg-gradient-subtle">
         <div className="container mx-auto py-6 md:py-8 px-4 space-y-6">
-          <ErrorDisplay
-            error={error}
-            onRetry={() => retryWithHandler(refreshStudentData)}
-            onClear={clearError}
+          <BackButton
+            variant="ghost"
+            size="sm"
+            fallback="/dashboard"
+            onClick={(event) => {
+              event.preventDefault();
+              handleBackToHome();
+            }}
           />
+            <ErrorDisplay
+              error={error}
+              onRetry={() => retryWithHandler(refreshStudentData)}
+              onClear={clearError}
+            />
         </div>
       </div>
     );
@@ -293,6 +307,16 @@ export default function StudentProfile() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <div className="container mx-auto py-6 md:py-8 px-4 space-y-6">
+        <BackButton
+          variant="ghost"
+          size="sm"
+          fallback="/dashboard"
+          onClick={(event) => {
+            event.preventDefault();
+            handleBackToHome();
+          }}
+        />
+
         <div className="space-y-2 animate-fade-in">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">My Profile</h1>
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -300,108 +324,110 @@ export default function StudentProfile() {
           </p>
         </div>
 
-        {/* Progress Overview */}
-        <Card className="hover:shadow-lg transition-shadow animate-fade-in">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
-            <CardDescription className="text-sm sm:text-base">
-              {completeness}% complete • {completedSteps} of 5 steps completed
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative">
-              <Progress value={completeness} className="h-3" />
-              <span className="absolute right-2 -top-1 text-xs font-medium">
-                {completeness}%
-              </span>
-            </div>
-            {completeness < 100 && (
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Tip: Upload documents like passport and transcripts in the{' '}
-                <Link className="underline" to="/student/documents">
-                  Documents
-                </Link>{' '}
-                section to improve completeness.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+          {/* Progress Overview */}
+          <Card className="hover:shadow-lg transition-shadow animate-fade-in">
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
+              <CardDescription className="text-sm sm:text-base">
+                {completeness}% complete • {completedSteps} of 5 steps completed
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative">
+                <Progress value={completeness} className="h-3" />
+                <span className="absolute right-2 -top-1 text-xs font-medium">
+                  {completeness}%
+                </span>
+              </div>
+              {completeness < 100 && (
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  Tip: Upload documents like passport and transcripts in the{' '}
+                  <Link className="underline" to="/student/documents">
+                    Documents
+                  </Link>{' '}
+                  section to improve completeness.
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
-        <Card className="hover:shadow-lg transition-shadow animate-fade-in">
-          <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Profile Checklist</CardTitle>
-            <CardDescription>Track what’s left to reach 100% completeness.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {checklist.map((item) => {
-              const handleItemClick = () => {
-                if (item.id === 'documents') {
-                  navigate('/student/documents');
-                } else {
-                  setActiveTab(item.id);
-                  // Smooth scroll to tabs section
-                  const tabsElement = document.querySelector('[role="tablist"]');
-                  if (tabsElement) {
-                    tabsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          <Card className="hover:shadow-lg transition-shadow animate-fade-in">
+            <CardHeader>
+              <CardTitle className="text-lg sm:text-xl">Profile Checklist</CardTitle>
+              <CardDescription>
+                Track what’s left to reach 100% completeness.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {checklist.map((item) => {
+                const handleItemClick = () => {
+                  if (item.id === 'documents') {
+                    navigate('/student/documents');
+                  } else {
+                    setActiveTab(item.id);
+                    // Smooth scroll to tabs section
+                    const tabsElement = document.querySelector('[role="tablist"]');
+                    if (tabsElement) {
+                      tabsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                   }
-                }
-              };
+                };
 
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={handleItemClick}
-                  className="w-full flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-all duration-200 text-left group"
-                >
-                  {item.completed ? (
-                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
-                  ) : (
-                    <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium leading-tight">{item.title}</p>
-                    <p className="text-sm text-muted-foreground leading-tight mt-0.5">{item.description}</p>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all flex-shrink-0" />
-                </button>
-              );
-            })}
-          </CardContent>
-        </Card>
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={handleItemClick}
+                    className="w-full flex items-center gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-all duration-200 text-left group"
+                  >
+                    {item.completed ? (
+                      <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                    ) : (
+                      <Circle className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium leading-tight">{item.title}</p>
+                      <p className="text-sm text-muted-foreground leading-tight mt-0.5">{item.description}</p>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                  </button>
+                );
+              })}
+            </CardContent>
+          </Card>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 h-auto p-1 sm:p-2">
-            <TabsTrigger value="personal" className="text-sm sm:text-base">
-              Personal Info
-            </TabsTrigger>
-            <TabsTrigger value="education" className="text-sm sm:text-base">
-              Education
-            </TabsTrigger>
-            <TabsTrigger value="tests" className="text-sm sm:text-base">
-              Test Scores
-            </TabsTrigger>
-            <TabsTrigger value="finances" className="text-sm sm:text-base">
-              Finances
-            </TabsTrigger>
-          </TabsList>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 h-auto p-1 sm:p-2">
+              <TabsTrigger value="personal" className="text-sm sm:text-base">
+                Personal Info
+              </TabsTrigger>
+              <TabsTrigger value="education" className="text-sm sm:text-base">
+                Education
+              </TabsTrigger>
+              <TabsTrigger value="tests" className="text-sm sm:text-base">
+                Test Scores
+              </TabsTrigger>
+              <TabsTrigger value="finances" className="text-sm sm:text-base">
+                Finances
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="personal" className="space-y-4 animate-fade-in">
-            <PersonalInfoTab student={studentRecord} onUpdate={refreshStudentData} />
-          </TabsContent>
+            <TabsContent value="personal" className="space-y-4 animate-fade-in">
+                <PersonalInfoTab student={studentRecord} onUpdate={refreshStudentData} />
+            </TabsContent>
 
-          <TabsContent value="education" className="space-y-4 animate-fade-in">
-            <EducationTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
-          </TabsContent>
+            <TabsContent value="education" className="space-y-4 animate-fade-in">
+                <EducationTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
+            </TabsContent>
 
-          <TabsContent value="tests" className="space-y-4 animate-fade-in">
-            <TestScoresTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
-          </TabsContent>
+            <TabsContent value="tests" className="space-y-4 animate-fade-in">
+                <TestScoresTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
+            </TabsContent>
 
-          <TabsContent value="finances" className="space-y-4 animate-fade-in">
-            <FinancesTab student={studentRecord} onUpdate={refreshStudentData} />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="finances" className="space-y-4 animate-fade-in">
+                <FinancesTab student={studentRecord} onUpdate={refreshStudentData} />
+            </TabsContent>
+          </Tabs>
       </div>
     </div>
   );
