@@ -154,7 +154,7 @@ export interface ApplicationDocument {
   fileName: string;
   mimeType: string | null;
   fileSize: number | null;
-  reviewStatus: "pending" | "verified" | "rejected";
+  reviewStatus: "pending" | "verified" | "rejected" | "ready_for_university_review";
   verificationNotes: string | null;
   uploadedAt: string;
   publicUrl: string | null;
@@ -509,10 +509,18 @@ export function ApplicationReviewDialog({
 
   // Document review state (local overrides so UI updates immediately)
   const [reviewOverrides, setReviewOverrides] = useState<
-    Record<string, { status: "pending" | "verified" | "rejected"; notes: string | null }>
+    Record<
+      string,
+      {
+        status: "pending" | "verified" | "rejected" | "ready_for_university_review";
+        notes: string | null;
+      }
+    >
   >({});
   const [reviewingDocId, setReviewingDocId] = useState<string | null>(null);
-  const [reviewStatusDraft, setReviewStatusDraft] = useState<"pending" | "verified" | "rejected">("pending");
+  const [reviewStatusDraft, setReviewStatusDraft] = useState<
+    "pending" | "verified" | "rejected" | "ready_for_university_review"
+  >("pending");
   const [reviewNotesDraft, setReviewNotesDraft] = useState<string>("");
   const [savingReview, setSavingReview] = useState(false);
 
@@ -536,6 +544,14 @@ export function ApplicationReviewDialog({
     setConversationId(null);
     setNotesSavedAt(null);
   }, [application]);
+
+  const readyDocuments = useMemo(
+    () =>
+      application?.documents?.filter(
+        (doc) => doc.reviewStatus === "ready_for_university_review",
+      ) ?? [],
+    [application?.documents],
+  );
 
   // Load messages when switching to messages tab
   const loadMessages = useCallback(async () => {
@@ -620,13 +636,13 @@ export function ApplicationReviewDialog({
 
   // Load signed URLs for documents
   useEffect(() => {
-    if (!application?.documents?.length || !open) return;
+    if (!readyDocuments.length || !open) return;
 
     const loadSignedUrls = async () => {
       setLoadingUrls(true);
       const urls: Record<string, string> = {};
 
-      for (const doc of application.documents) {
+      for (const doc of readyDocuments) {
         if (doc.storagePath) {
           const signedUrl = await getSignedUrlViaEdge(doc.id, doc.storagePath);
           if (signedUrl) {
@@ -642,7 +658,7 @@ export function ApplicationReviewDialog({
     };
 
     void loadSignedUrls();
-  }, [application?.documents, open]);
+  }, [open, readyDocuments]);
 
   const openReview = (doc: ApplicationDocument) => {
     setReviewingDocId(doc.id);
@@ -1905,10 +1921,10 @@ export function ApplicationReviewDialog({
                           <div>
                             <CardTitle className="text-base flex items-center gap-2">
                               <FileText className="h-4 w-4" />
-                              Submitted Documents
+                              Admin-verified documents
                             </CardTitle>
                             <CardDescription>
-                              {application.documents.length} document(s) uploaded
+                              {readyDocuments.length} document(s) cleared for university review
                             </CardDescription>
                           </div>
                           {loadingUrls && (
@@ -1917,14 +1933,17 @@ export function ApplicationReviewDialog({
                         </div>
                       </CardHeader>
                       <CardContent>
-                        {application.documents.length === 0 ? (
-                          <div className="text-center py-6 text-muted-foreground">
+                        {readyDocuments.length === 0 ? (
+                          <div className="text-center py-6 text-muted-foreground space-y-2">
                             <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p>No documents uploaded yet</p>
+                            <p>No admin-verified documents are available yet.</p>
+                            <p className="text-xs">
+                              Universities only see documents marked as ready for university review.
+                            </p>
                           </div>
                         ) : (
                           <div className="space-y-3">
-                            {application.documents.map((doc) => (
+                            {readyDocuments.map((doc) => (
                               <div
                                 key={doc.id}
                                 className="flex items-center justify-between border rounded-lg p-3"
@@ -1944,25 +1963,10 @@ export function ApplicationReviewDialog({
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  {(() => {
-                                    const effectiveStatus =
-                                      reviewOverrides[doc.id]?.status ?? doc.reviewStatus;
-
-                                    if (effectiveStatus === "verified") {
-                                      return (
-                                        <Badge variant="outline" className="border-success text-success">
-                                          <CheckCircle2 className="h-3 w-3 mr-1" />
-                                          Accepted
-                                        </Badge>
-                                      );
-                                    }
-
-                                    if (effectiveStatus === "rejected") {
-                                      return <Badge variant="destructive">Rejected</Badge>;
-                                    }
-
-                                    return <Badge variant="outline">Pending Review</Badge>;
-                                  })()}
+                                  <Badge variant="outline" className="border-success/50 bg-success/10 text-success">
+                                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                                    Admin Verified
+                                  </Badge>
 
                                   {documentUrls[doc.id] ? (
                                     <>
@@ -2011,14 +2015,6 @@ export function ApplicationReviewDialog({
                                       Loading
                                     </Button>
                                   )}
-
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openReview(doc)}
-                                  >
-                                    Review
-                                  </Button>
                                 </div>
                               </div>
                             ))}
