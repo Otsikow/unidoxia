@@ -311,6 +311,54 @@ export default function StudentDashboard() {
   }, [user?.id, studentId, preferredProgramLevel, toast]);
 
   useEffect(() => {
+    if (!user?.id) return;
+
+    const normalizeNotification = (raw: Record<string, unknown>): Notification => ({
+      id: (raw.id as string) ?? '',
+      title: (raw.title as string) || 'Notification',
+      content: (raw.content as string) || '',
+      created_at: (raw.created_at as string) || new Date().toISOString(),
+      read: Boolean(raw.read),
+      type: (raw.type as string) || 'general',
+    });
+
+    const updateNotifications = (updater: (prev: Notification[]) => Notification[]) => {
+      setNotifications((prev) => {
+        const next = updater(prev);
+        return next
+          .sort(
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )
+          .slice(0, 5);
+      });
+    };
+
+    const channel = supabase
+      .channel('student-dashboard-notifications')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const notification = normalizeNotification(payload.new as Record<string, unknown>);
+            updateNotifications((prev) => [notification, ...prev.filter((n) => n.id !== notification.id)]);
+          } else if (payload.eventType === 'UPDATE') {
+            const notification = normalizeNotification(payload.new as Record<string, unknown>);
+            updateNotifications((prev) => prev.map((n) => (n.id === notification.id ? notification : n)));
+          } else if (payload.eventType === 'DELETE') {
+            const id = (payload.old as Record<string, unknown>).id as string;
+            updateNotifications((prev) => prev.filter((n) => n.id !== id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
     if (studentRecordLoading) return;
     fetchDashboardData();
   }, [fetchDashboardData, studentRecordLoading]);

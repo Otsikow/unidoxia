@@ -134,8 +134,21 @@ export default function NotificationCenter() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [bulkUpdating, setBulkUpdating] = useState(false);
 
+  const applyNotificationState = useCallback((updater: (prev: Notification[]) => Notification[]) => {
+    setNotifications((prev) => {
+      const next = updater(prev);
+      setUnreadCount(next.filter((n) => !n.read).length);
+      return next;
+    });
+  }, []);
+
   const fetchNotifications = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setNotifications([]);
+      setUnreadCount(0);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -158,15 +171,14 @@ export default function NotificationCenter() {
         metadata: (n.metadata as Record<string, unknown>) || {},
       }));
 
-      setNotifications(mapped);
-      setUnreadCount(mapped.filter((n) => !n.read).length);
+      applyNotificationState(() => mapped);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       toast({ title: "Error", description: "Failed to load notifications", variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user, toast, applyNotificationState]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -192,9 +204,9 @@ export default function NotificationCenter() {
   useEffect(() => {
     fetchNotifications();
     if (!user) return;
-    
+
     const channel = supabase
-      .channel("notifications")
+      .channel("notifications-center")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
@@ -211,10 +223,9 @@ export default function NotificationCenter() {
               action_url: (raw.action_url as string) || undefined,
               metadata: (raw.metadata as Record<string, unknown>) || {},
             };
-            
-            setNotifications((prev) => [newNotification, ...prev.filter((n) => n.id !== newNotification.id)]);
+
+            applyNotificationState((prev) => [newNotification, ...prev.filter((n) => n.id !== newNotification.id)]);
             if (!newNotification.read) {
-              setUnreadCount((prev) => prev + 1);
               playNotificationSound();
               toast({
                 title: newNotification.title,
@@ -223,16 +234,10 @@ export default function NotificationCenter() {
             }
           } else if (payload.eventType === "UPDATE") {
             const raw = payload.new as Record<string, unknown>;
-            setNotifications((prev) =>
-              prev.map((n) => (n.id === raw.id ? { ...n, read: !!raw.read } : n))
-            );
-            setUnreadCount((prev) => {
-              const count = notifications.filter((n) => n.id !== raw.id && !n.read).length + (raw.read ? 0 : 1);
-              return count;
-            });
+            applyNotificationState((prev) => prev.map((n) => (n.id === raw.id ? { ...n, read: !!raw.read } : n)));
           } else if (payload.eventType === "DELETE") {
             const raw = payload.old as Record<string, unknown>;
-            setNotifications((prev) => prev.filter((n) => n.id !== raw.id));
+            applyNotificationState((prev) => prev.filter((n) => n.id !== raw.id));
             setSelectedIds((prev) => {
               const next = new Set(prev);
               next.delete(raw.id as string);
@@ -246,18 +251,14 @@ export default function NotificationCenter() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, fetchNotifications, playNotificationSound, toast, notifications]);
+  }, [user, fetchNotifications, playNotificationSound, toast, applyNotificationState]);
 
   const markAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     try {
-      const wasUnread = notifications.find((n) => n.id === id)?.read === false;
       const { error } = await supabase.from("notifications").update({ read: true }).eq("id", id);
       if (error) throw error;
-      setNotifications((p) => p.map((n) => (n.id === id ? { ...n, read: true } : n)));
-      if (wasUnread) {
-        setUnreadCount((c) => Math.max(0, c - 1));
-      }
+      applyNotificationState((p) => p.map((n) => (n.id === id ? { ...n, read: true } : n)));
     } catch {
       toast({ title: "Error", description: "Failed to mark as read", variant: "destructive" });
     }
@@ -266,13 +267,9 @@ export default function NotificationCenter() {
   const markAsUnread = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
     try {
-      const wasRead = notifications.find((n) => n.id === id)?.read === true;
       const { error } = await supabase.from("notifications").update({ read: false }).eq("id", id);
       if (error) throw error;
-      setNotifications((p) => p.map((n) => (n.id === id ? { ...n, read: false } : n)));
-      if (wasRead) {
-        setUnreadCount((c) => c + 1);
-      }
+      applyNotificationState((p) => p.map((n) => (n.id === id ? { ...n, read: false } : n)));
     } catch {
       toast({ title: "Error", description: "Failed to mark as unread", variant: "destructive" });
     }
@@ -288,8 +285,7 @@ export default function NotificationCenter() {
         .eq("user_id", user.id)
         .eq("read", false);
       if (error) throw error;
-      setNotifications((p) => p.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
+      applyNotificationState((p) => p.map((n) => ({ ...n, read: true })));
       toast({ title: "Success", description: "All notifications marked as read" });
     } catch {
       toast({ title: "Error", description: "Failed to mark all as read", variant: "destructive" });
@@ -303,9 +299,7 @@ export default function NotificationCenter() {
     try {
       const { error } = await supabase.from("notifications").delete().eq("id", id);
       if (error) throw error;
-      const wasUnread = notifications.find((n) => n.id === id)?.read === false;
-      setNotifications((p) => p.filter((n) => n.id !== id));
-      if (wasUnread) setUnreadCount((c) => Math.max(0, c - 1));
+      applyNotificationState((p) => p.filter((n) => n.id !== id));
       setSelectedIds((prev) => {
         const next = new Set(prev);
         next.delete(id);
@@ -323,8 +317,7 @@ export default function NotificationCenter() {
       setBulkUpdating(true);
       const { error } = await supabase.from("notifications").delete().eq("user_id", user.id);
       if (error) throw error;
-      setNotifications([]);
-      setUnreadCount(0);
+      applyNotificationState(() => []);
       setSelectedIds(new Set());
       toast({ title: "Success", description: "All notifications cleared" });
     } catch {
@@ -347,12 +340,7 @@ export default function NotificationCenter() {
 
       if (error) throw error;
 
-      const deletedUnreadCount = notifications.filter(
-        (n) => selectedIds.has(n.id) && !n.read
-      ).length;
-
-      setNotifications((prev) => prev.filter((n) => !selectedIds.has(n.id)));
-      setUnreadCount((prev) => Math.max(0, prev - deletedUnreadCount));
+      applyNotificationState((prev) => prev.filter((n) => !selectedIds.has(n.id)));
       toast({
         title: "Deleted",
         description: `${selectedIds.size} notification${selectedIds.size > 1 ? "s" : ""} removed`,
@@ -410,9 +398,31 @@ export default function NotificationCenter() {
     });
   };
 
+  const resolveActionUrl = (n: Notification) => {
+    if (n.action_url) return n.action_url;
+    switch (n.type) {
+      case "message":
+        return "/student/messages";
+      case "application_status":
+        return "/student/application-tracking";
+      case "commission":
+        return "/dashboard/commissions";
+      case "course_recommendation": {
+        const programId = typeof n.metadata?.program_id === "string" ? n.metadata.program_id : undefined;
+        return programId ? `/courses?program=${programId}` : "/courses?view=programs";
+      }
+      case "document":
+      case "document_request":
+        return "/student/documents";
+      default:
+        return "/student/notifications";
+    }
+  };
+
   const handleClick = (n: Notification) => {
     if (!n.read) markAsRead(n.id);
-    if (n.action_url) navigate(n.action_url);
+    const target = resolveActionUrl(n);
+    if (target) navigate(target);
   };
 
   const handleSettingsChange = (key: keyof NotificationSettings, value: boolean) => {
