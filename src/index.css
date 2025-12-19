@@ -692,6 +692,33 @@ All colors MUST be HSL.
     text-shadow: 0 8px 30px hsl(0 0% 0% / 0.55);
   }
 
+  .hero-cta-button {
+    color: hsl(210 40% 98%);
+    font-weight: 600;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    padding: 1rem 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid hsl(0 0% 100% / 0.32);
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.22), hsl(0 0% 100% / 0.08));
+    box-shadow:
+      0 18px 40px hsl(0 0% 0% / 0.35),
+      0 0 0 1px hsl(0 0% 100% / 0.08) inset,
+      0 1px 0 hsl(0 0% 100% / 0.35) inset;
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+
+  .hero-cta-button:hover {
+    background: linear-gradient(135deg, hsl(0 0% 100% / 0.32), hsl(0 0% 100% / 0.14));
+    transform: translateY(-1px);
+    box-shadow:
+      0 22px 45px hsl(0 0% 0% / 0.45),
+      0 0 0 1px hsl(0 0% 100% / 0.12) inset,
+      0 2px 0 hsl(0 0% 100% / 0.42) inset;
+  }
+
   .hero-logo {
     opacity: 0;
     animation: heroFadeIn 1s ease-out 0.2s forwards;
@@ -700,6 +727,7 @@ All colors MUST be HSL.
   .hero-text {
     opacity: 0;
     animation: heroFadeIn 0.8s ease-out 0.6s forwards;
+    text-shadow: 0 8px 30px hsl(0 0% 0% / 0.55);
   }
 
   .hero-fallback {

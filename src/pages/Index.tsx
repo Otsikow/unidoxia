@@ -206,24 +206,17 @@ const Index = () => {
         <div className="hero-video-overlay" />
 
         <div className="hero-content">
-          <div className="hero-glass-panel">
-            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-8 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
+          <div className="flex flex-col items-center text-center gap-6">
+            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
 
-            <div className="hero-text space-y-3 text-center text-white">
+            <div className="hero-text space-y-3 text-white">
               <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Apply to Global Universities.</p>
               <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Secure Your Admission.</p>
               <p className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold">Arrive Ready to Study Abroad.</p>
             </div>
 
-            <div className="mt-6 grid gap-4 text-left text-white/90 sm:grid-cols-3">
-              {["Streamlined applications", "Personal guidance & updates", "Visa-ready checklists"].map(item => <div key={item} className="flex items-start gap-3 rounded-2xl bg-white/5 px-4 py-3 backdrop-blur-sm ring-1 ring-white/10">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-white" aria-hidden />
-                  <p className="text-base sm:text-lg font-semibold leading-snug">{item}</p>
-                </div>)}
-            </div>
-
-            <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center mt-8">
-              <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 text-lg">
+            <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <Button asChild size="lg" className="hero-cta-button">
                 <Link to="/auth/signup">
                   <Sparkles className="mr-2 h-5 w-5" />
                   Start Your Study Journey
