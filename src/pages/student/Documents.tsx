@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -35,6 +35,9 @@ import {
   Clock,
   XCircle,
   ShieldAlert,
+  Download,
+  Eye,
+  RefreshCw,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -86,10 +89,14 @@ export default function Documents() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null);
+  const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
+  const [replacingDocId, setReplacingDocId] = useState<string | null>(null);
 
   const [studentId, setStudentId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState("");
+  const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
 
   /* ------------------------------------------------------------------------ */
   /*                               Data Loading                               */
@@ -225,6 +232,159 @@ export default function Documents() {
   };
 
   /* ------------------------------------------------------------------------ */
+  /*                             Document Actions                             */
+  /* ------------------------------------------------------------------------ */
+
+  const getSignedUrl = async (storagePath: string) => {
+    const { data, error } = await supabase.storage
+      .from("student-documents")
+      .createSignedUrl(storagePath, 3600);
+
+    if (error) throw error;
+    return data?.signedUrl;
+  };
+
+  const handleViewDocument = async (doc: Document) => {
+    try {
+      setViewingDocId(doc.id);
+      const signedUrl = await getSignedUrl(doc.storage_path);
+
+      if (!signedUrl) {
+        toast({
+          title: "Unable to view document",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      window.open(signedUrl, "_blank");
+    } catch (err) {
+      logError(err, "Documents.viewDocument");
+      toast(formatErrorForToast(err, "Failed to open document"));
+    } finally {
+      setViewingDocId(null);
+    }
+  };
+
+  const handleDownloadDocument = async (doc: Document) => {
+    try {
+      setDownloadingDocId(doc.id);
+      const signedUrl = await getSignedUrl(doc.storage_path);
+
+      if (!signedUrl) {
+        toast({
+          title: "Unable to download",
+          description: "Document is not available right now.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const response = await fetch(signedUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = doc.file_name || "document";
+      link.click();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      logError(err, "Documents.downloadDocument");
+      toast(formatErrorForToast(err, "Failed to download document"));
+    } finally {
+      setDownloadingDocId(null);
+    }
+  };
+
+  const handleReplaceDocument = async (
+    doc: Document,
+    file: File,
+    resetInput: () => void
+  ) => {
+    if (!studentId) {
+      toast({
+        title: "Profile Required",
+        description: "Please complete your profile before replacing documents.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setReplacingDocId(doc.id);
+
+      const { preparedFile, sanitizedFileName, detectedMimeType } =
+        await validateFileUpload(file, {
+          allowedMimeTypes: [
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "image/jpg",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ],
+          allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
+          maxSizeBytes: 10 * 1024 * 1024,
+        });
+
+      const ext = sanitizedFileName.split(".").pop();
+      const newStoragePath = `${studentId}/${doc.document_type}_${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("student-documents")
+        .upload(newStoragePath, preparedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: detectedMimeType,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from("student_documents")
+        .update({
+          file_name: sanitizedFileName,
+          file_size: preparedFile.size,
+          mime_type: detectedMimeType,
+          storage_path: newStoragePath,
+          verified_status: "pending",
+          verification_notes: null,
+          verified_at: null,
+          verified_by: null,
+          status: "awaiting_admin_review",
+        })
+        .eq("id", doc.id);
+
+      if (updateError) {
+        await supabase.storage
+          .from("student-documents")
+          .remove([newStoragePath]);
+        throw updateError;
+      }
+
+      if (doc.storage_path) {
+        await supabase.storage
+          .from("student-documents")
+          .remove([doc.storage_path]);
+      }
+
+      toast({
+        title: "Document replaced",
+        description: `${doc.file_name} has been updated and sent for review.`,
+      });
+
+      loadDocuments(studentId);
+    } catch (err) {
+      logError(err, "Documents.replaceDocument");
+      toast(formatErrorForToast(err, "Failed to replace document"));
+    } finally {
+      resetInput();
+      setReplacingDocId(null);
+    }
+  };
+
+  /* ------------------------------------------------------------------------ */
   /*                            Helpers & Status                              */
   /* ------------------------------------------------------------------------ */
 
@@ -320,16 +480,75 @@ export default function Documents() {
             return (
               <div
                 key={doc.id}
-                className="flex items-center justify-between border rounded-md p-3"
+                className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border rounded-md p-3"
               >
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5" />
                   <div>
                     <p className="font-medium">{doc.file_name}</p>
-                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant={badge.variant}>{badge.label}</Badge>
+                      {getStatusIcon(doc.verified_status)}
+                    </div>
                   </div>
                 </div>
-                {getStatusIcon(doc.verified_status)}
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleViewDocument(doc)}
+                    disabled={
+                      viewingDocId === doc.id ||
+                      downloadingDocId === doc.id ||
+                      replacingDocId === doc.id
+                    }
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    {viewingDocId === doc.id ? "Opening…" : "View"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownloadDocument(doc)}
+                    disabled={
+                      downloadingDocId === doc.id ||
+                      replacingDocId === doc.id
+                    }
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    {downloadingDocId === doc.id ? "Preparing…" : "Download"}
+                  </Button>
+                  <input
+                    type="file"
+                    className="hidden"
+                    ref={(el) => {
+                      fileInputsRef.current[doc.id] = el;
+                    }}
+                    onChange={(event) => {
+                      const input = event.target;
+                      const newFile = input.files?.[0];
+                      const reset = () => {
+                        input.value = "";
+                      };
+
+                      if (newFile) {
+                        void handleReplaceDocument(doc, newFile, reset);
+                      } else {
+                        reset();
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputsRef.current[doc.id]?.click()}
+                    disabled={replacingDocId === doc.id}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    {replacingDocId === doc.id ? "Replacing…" : "Replace"}
+                  </Button>
+                </div>
               </div>
             );
           })}
