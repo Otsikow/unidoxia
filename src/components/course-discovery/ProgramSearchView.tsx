@@ -263,9 +263,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   );
 
   // Utility to exclude placeholder/test universities
-  const applyRealUniversityFilters = (
-    query: PostgrestFilterBuilder<any, any, any[], any>,
-  ) => {
+  // Keep this generic so the exact Supabase query builder type is preserved (avoids TS mismatches)
+  const applyRealUniversityFilters = <Q extends PostgrestFilterBuilder<any, any, any, any>>(
+    query: Q,
+  ): Q => {
     return query
       .not("name", "ilike", "%placeholder%")
       .not("name", "ilike", "%test university%")
