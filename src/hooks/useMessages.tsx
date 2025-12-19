@@ -277,6 +277,74 @@ export function useMessages() {
   const currentUserId = resolvedProfile.id;
   const usingMockMessaging = !isSupabaseConfigured;
 
+  const createConversationFallback = useCallback(
+    async (otherUserId: string) => {
+      if (!currentUserId) return null;
+
+      // Try to find an existing conversation by intersecting participant memberships
+      const { data: myMemberships, error: myMembershipsError } = await supabase
+        .from("conversation_participants")
+        .select("conversation_id")
+        .eq("user_id", currentUserId);
+
+      if (myMembershipsError) {
+        console.error("Fallback conversation lookup failed (current user):", myMembershipsError);
+        return null;
+      }
+
+      const { data: otherMemberships, error: otherMembershipsError } = await supabase
+        .from("conversation_participants")
+        .select("conversation_id")
+        .eq("user_id", otherUserId);
+
+      if (otherMembershipsError) {
+        console.error("Fallback conversation lookup failed (other user):", otherMembershipsError);
+        return null;
+      }
+
+      const myIds = new Set((myMemberships ?? []).map((m) => m.conversation_id));
+      const sharedConversationId = (otherMemberships ?? []).find((m) => myIds.has(m.conversation_id))?.conversation_id;
+
+      if (sharedConversationId) {
+        return sharedConversationId as string;
+      }
+
+      // Create a new conversation without referencing optional columns like role
+      const { data: conv, error: convError } = await supabase
+        .from("conversations")
+        .insert([{ tenant_id: tenantId, created_by: currentUserId, is_group: false, type: "direct" }])
+        .select("id")
+        .single();
+
+      if (convError || !conv?.id) {
+        console.error("Fallback conversation creation failed:", convError);
+        return null;
+      }
+
+      const { error: participantError } = await supabase.from("conversation_participants").upsert(
+        [
+          { conversation_id: conv.id, user_id: currentUserId },
+          { conversation_id: conv.id, user_id: otherUserId },
+        ],
+        { onConflict: "conversation_id,user_id" }
+      );
+
+      if (participantError) {
+        console.error("Fallback participant insertion failed:", participantError);
+        return null;
+      }
+
+      const convs = await fetchConversationsFromDb();
+      conversationsRef.current = convs;
+      setConversations(convs);
+      cacheConversations(convs);
+      await setCurrentConversation(conv.id);
+
+      return conv.id as string;
+    },
+    [currentUserId, fetchConversationsFromDb, setCurrentConversation, tenantId]
+  );
+
   /* ======================================================
      Fetch Messages for a Conversation (DB)
   ======================================================= */
@@ -874,7 +942,15 @@ export function useMessages() {
 
       } catch (error: any) {
         console.error("get_or_create_conversation failed after retries:", error);
-        
+
+        // Automatically recover from schema mismatches by using a simplified creation path
+        if (error?.code === "42703" || error?.message?.toLowerCase().includes("does not exist")) {
+          const fallbackId = await createConversationFallback(otherUserId);
+          if (fallbackId) {
+            return fallbackId;
+          }
+        }
+
         const userMessage = parseDbError(error);
         toast({
           title: "Unable to start conversation",
@@ -887,6 +963,7 @@ export function useMessages() {
     [
       currentUserId,
       fetchConversationsFromDb,
+      createConversationFallback,
       resolvedProfile,
       setCurrentConversation,
       tenantId,
