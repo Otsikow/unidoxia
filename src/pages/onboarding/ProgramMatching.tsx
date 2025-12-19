@@ -7,88 +7,55 @@ import { ArrowRight, Sparkles, GraduationCap, Globe, DollarSign, Target, Brain }
 import BackButton from "@/components/BackButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
+import { supabase } from "@/integrations/supabase/client";
 
-// Course data with country-specific courses
-const programs = [
-  {
-    id: 1,
-    name: "Computer Science",
-    university: "University of Oxford",
-    country: "UK",
-    flag: "🇬🇧",
-    level: "MSc",
-    duration: "1 Year",
-    tuition: "£35,000/yr",
-    color: "from-blue-600/20 to-blue-900/20",
-    borderColor: "border-blue-500/40",
-    accentColor: "bg-blue-500",
-  },
-  {
-    id: 2,
-    name: "Business Analytics",
-    university: "MIT Sloan",
-    country: "USA",
-    flag: "🇺🇸",
-    level: "MBA",
-    duration: "2 Years",
-    tuition: "$85,000/yr",
-    color: "from-red-600/20 to-blue-900/20",
-    borderColor: "border-red-500/40",
-    accentColor: "bg-red-500",
-  },
-  {
-    id: 3,
-    name: "Data Science",
-    university: "University of Toronto",
-    country: "Canada",
-    flag: "🇨🇦",
-    level: "MSc",
-    duration: "2 Years",
-    tuition: "C$45,000/yr",
-    color: "from-red-600/20 to-red-800/20",
-    borderColor: "border-red-500/40",
-    accentColor: "bg-red-600",
-  },
-  {
-    id: 4,
-    name: "Engineering",
-    university: "TU Munich",
-    country: "Germany",
-    flag: "🇩🇪",
-    level: "MSc",
-    duration: "2 Years",
-    tuition: "€500/yr",
-    color: "from-yellow-500/20 to-gray-900/20",
-    borderColor: "border-yellow-500/40",
-    accentColor: "bg-yellow-500",
-  },
-  {
-    id: 5,
-    name: "Marine Biology",
-    university: "University of Melbourne",
-    country: "Australia",
-    flag: "🇦🇺",
-    level: "PhD",
-    duration: "4 Years",
-    tuition: "A$42,000/yr",
-    color: "from-blue-500/20 to-yellow-600/20",
-    borderColor: "border-yellow-500/40",
-    accentColor: "bg-yellow-600",
-  },
-  {
-    id: 6,
-    name: "FinTech Innovation",
-    university: "Trinity College Dublin",
-    country: "Ireland",
-    flag: "🇮🇪",
-    level: "MSc",
-    duration: "1 Year",
-    tuition: "€18,000/yr",
-    color: "from-green-600/20 to-orange-600/20",
-    borderColor: "border-green-500/40",
-    accentColor: "bg-green-600",
-  },
+type CarouselProgram = {
+  id: string;
+  name: string;
+  university: string;
+  country: string;
+  flag: string;
+  level: string;
+  duration: string;
+  tuition: string;
+  color: string;
+  borderColor: string;
+  accentColor: string;
+};
+
+const COLOR_PRESETS = [
+  { color: "from-blue-600/20 to-blue-900/20", borderColor: "border-blue-500/40", accentColor: "bg-blue-500" },
+  { color: "from-red-600/20 to-red-800/20", borderColor: "border-red-500/40", accentColor: "bg-red-500" },
+  { color: "from-green-600/20 to-emerald-900/20", borderColor: "border-green-500/40", accentColor: "bg-green-500" },
+  { color: "from-amber-500/20 to-orange-900/20", borderColor: "border-amber-500/40", accentColor: "bg-amber-500" },
+  { color: "from-purple-600/20 to-indigo-900/20", borderColor: "border-purple-500/40", accentColor: "bg-purple-500" },
+  { color: "from-teal-600/20 to-cyan-900/20", borderColor: "border-teal-500/40", accentColor: "bg-teal-500" },
 ];
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  "United Kingdom": "🇬🇧",
+  "United States": "🇺🇸",
+  Canada: "🇨🇦",
+  Germany: "🇩🇪",
+  Australia: "🇦🇺",
+  Ireland: "🇮🇪",
+};
+
+const formatDuration = (months?: number | null) => {
+  if (!months) return "Duration varies";
+  if (months % 12 === 0) {
+    const years = months / 12;
+    return `${years} Year${years > 1 ? "s" : ""}`;
+  }
+  return `${months} Months`;
+};
+
+const formatTuition = (amount?: number | null, currency?: string | null) => {
+  if (!amount) return "Contact for fees";
+  return `${currency ?? ""} ${amount.toLocaleString()}/yr`;
+};
+
+const getCountryFlag = (country?: string | null) => COUNTRY_FLAGS[country || ""] ?? "🌍";
 
 // 3D Rotating Card Component
 const ProgramCard = ({
@@ -96,7 +63,7 @@ const ProgramCard = ({
   position,
   totalCards,
 }: {
-  program: typeof programs[0];
+  program: CarouselProgram;
   position: number;
   totalCards: number;
 }) => {
@@ -244,6 +211,8 @@ export default function OnboardingProgramMatching() {
   const [showContent, setShowContent] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [stepCompletion, setStepCompletion] = useState(0.6);
+  const [programs, setPrograms] = useState<CarouselProgram[]>([]);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
   const totalSteps = 4;
   const navigate = useNavigate();
   const animationRef = useRef<number | null>(null);
@@ -252,6 +221,50 @@ export default function OnboardingProgramMatching() {
   useEffect(() => {
     const timer = setTimeout(() => setShowContent(true), 100);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const loadPrograms = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("programs")
+          .select(
+            `id, name, level, tuition_amount, tuition_currency, duration_months,
+            universities:university_id (name, country)`
+          )
+          .or("active.eq.true,active.is.null")
+          .order("name")
+          .limit(12);
+
+        if (error) throw error;
+
+        const mappedPrograms: CarouselProgram[] = (data ?? []).map((program, index) => {
+          const palette = COLOR_PRESETS[index % COLOR_PRESETS.length];
+          const university = (program as any).universities || {};
+
+          return {
+            id: program.id,
+            name: program.name || "Program",
+            university: university.name || "University partner",
+            country: university.country || "Global",
+            flag: getCountryFlag(university.country),
+            level: program.level || "Program",
+            duration: formatDuration(program.duration_months),
+            tuition: formatTuition(program.tuition_amount, program.tuition_currency),
+            ...palette,
+          };
+        });
+
+        setPrograms(mappedPrograms);
+      } catch (error) {
+        console.error("Error loading onboarding programs:", error);
+        setPrograms([]);
+      } finally {
+        setLoadingPrograms(false);
+      }
+    };
+
+    loadPrograms();
   }, []);
 
   useEffect(() => {
@@ -291,6 +304,7 @@ export default function OnboardingProgramMatching() {
 
   // Calculate card positions based on rotation
   const getCardPosition = (index: number) => {
+    if (programs.length === 0) return 0;
     return ((index * (360 / programs.length)) + rotation) % 360;
   };
 
@@ -366,14 +380,24 @@ export default function OnboardingProgramMatching() {
               className="relative w-full h-full"
               style={{ transformStyle: "preserve-3d" }}
             >
-              {programs.map((program, index) => (
-                <ProgramCard
-                  key={program.id}
-                  program={program}
-                  position={getCardPosition(index)}
-                  totalCards={programs.length}
-                />
-              ))}
+              {loadingPrograms ? (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                  Fetching real courses...
+                </div>
+              ) : programs.length === 0 ? (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-center px-6">
+                  No onboarded courses are available yet. Add programs to your university profiles to see them here.
+                </div>
+              ) : (
+                programs.map((program, index) => (
+                  <ProgramCard
+                    key={program.id}
+                    program={program}
+                    position={getCardPosition(index)}
+                    totalCards={programs.length}
+                  />
+                ))
+              )}
             </div>
           </motion.div>
 
