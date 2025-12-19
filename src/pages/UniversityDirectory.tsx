@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -77,12 +77,17 @@ const numberFormatter = new Intl.NumberFormat("en-US");
 const formatNumber = (value: number) => numberFormatter.format(Math.round(value));
 
 export default function UniversityDirectory() {
+  const location = useLocation();
   const [universities, setUniversities] = useState<UniversityFromDB[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const directoryBasePath = location.pathname.startsWith("/student")
+    ? "/student/universities"
+    : "/universities";
 
   // Fetch universities from database with proper multi-tenant isolation
   useEffect(() => {
@@ -292,8 +297,8 @@ export default function UniversityDirectory() {
         </div>
 
         {/* Compact Programs Card */}
-        <Link 
-          to={`/universities/${university.id}?tab=programs`}
+        <Link
+          to={`${directoryBasePath}/${university.id}?tab=programs`}
           className="block rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-2.5 transition-all hover:border-primary/40 hover:shadow-md hover:from-primary/10 hover:to-primary/15 group"
         >
           <div className="flex items-center justify-between">
@@ -352,7 +357,7 @@ export default function UniversityDirectory() {
 
         <div className="flex flex-wrap items-center justify-end gap-1.5 mt-auto">
           <Button variant="outline" size="sm" className="h-7 text-xs px-2" asChild>
-            <Link to={`/universities/${university.id}`}>
+            <Link to={`${directoryBasePath}/${university.id}`}>
               Explore
             </Link>
           </Button>
@@ -504,7 +509,10 @@ export default function UniversityDirectory() {
           </Link>
 
           {summaryMetrics.universityWithMostPrograms ? (
-            <Link to={`/universities/${summaryMetrics.universityWithMostPrograms.id}`} className="block">
+            <Link
+              to={`${directoryBasePath}/${summaryMetrics.universityWithMostPrograms.id}`}
+              className="block"
+            >
               <Card className="border-border/60 cursor-pointer transition-all hover:shadow-lg hover:border-primary/40 h-full">
                 <CardHeader className="space-y-1">
                   <CardTitle className="flex items-center gap-2 text-base font-semibold">

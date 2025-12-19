@@ -639,6 +639,7 @@ const App = () => {
                           <Route index element={<Navigate to="/student/dashboard" replace />} />
                           <Route path="dashboard" element={<StudentProfile />} />
                           <Route path="profile" element={<StudentProfile />} />
+                          <Route path="universities" element={<UniversityDirectory />} />
                           <Route path="documents" element={<Documents />} />
                           <Route path="applications" element={<Applications />} />
                           <Route path="applications/new" element={<NewApplication />} />
