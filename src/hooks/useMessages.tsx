@@ -347,11 +347,15 @@ export function useMessages() {
           .select(`
             id,
             tenant_id,
+            title,
+            name,
             type,
             is_group,
             created_at,
             updated_at,
             last_message_at,
+            avatar_url,
+            metadata,
             participants:conversation_participants(
               user_id,
               last_read_at,
@@ -453,11 +457,15 @@ export function useMessages() {
         `
         id,
         tenant_id,
+        title,
+        name,
         type,
         is_group,
         created_at,
         updated_at,
         last_message_at,
+        avatar_url,
+        metadata,
         participants:conversation_participants(
           user_id,
           last_read_at,
@@ -489,7 +497,9 @@ export function useMessages() {
     // Attempt 2: fetch conversations + participants + profiles separately
     const { data: baseConvs, error: baseError } = await supabase
       .from("conversations")
-      .select("id, tenant_id, type, is_group, created_at, updated_at, last_message_at")
+      .select(
+        "id, tenant_id, title, name, type, is_group, created_at, updated_at, last_message_at, avatar_url, metadata"
+      )
       .in("id", ids)
       .order("last_message_at", { ascending: false, nullsFirst: false });
 

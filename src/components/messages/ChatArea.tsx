@@ -47,13 +47,49 @@ export function ChatArea({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const getMetadataName = (metadata?: Record<string, unknown> | null) => {
+    if (!metadata) return undefined;
+
+    const possibleKeys = [
+      'university_name',
+      'universityName',
+      'organization_name',
+      'organizationName',
+      'name',
+      'title',
+      'display_name',
+    ];
+
+    for (const key of possibleKeys) {
+      const value = metadata[key];
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+
+    const university = (metadata as Record<string, unknown>).university;
+    if (university && typeof university === 'object' && 'name' in university) {
+      const uniName = (university as Record<string, unknown>).name;
+      if (typeof uniName === 'string' && uniName.trim()) {
+        return uniName.trim();
+      }
+    }
+
+    return undefined;
+  };
+
   const getConversationName = () => {
     if (!conversation) return '';
+
+    const metadataName = getMetadataName(conversation.metadata);
+    const namedConversation = conversation.name || metadataName;
+
     if (conversation.is_group) {
-      return conversation.name || 'Group Message';
+      return namedConversation || 'Group Message';
     }
+
     const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
-    return otherParticipant?.profile?.full_name || 'Unknown User';
+    return namedConversation || otherParticipant?.profile?.full_name || 'Unknown User';
   };
 
   const getConversationAvatar = () => {

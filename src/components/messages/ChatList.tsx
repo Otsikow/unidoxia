@@ -31,25 +31,59 @@ export function ChatList({
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
 
+  const getMetadataName = (metadata?: Record<string, unknown> | null) => {
+    if (!metadata) return undefined;
+
+    const possibleKeys = [
+      'university_name',
+      'universityName',
+      'organization_name',
+      'organizationName',
+      'name',
+      'title',
+      'display_name',
+    ];
+
+    for (const key of possibleKeys) {
+      const value = metadata[key];
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+
+    const university = (metadata as Record<string, unknown>).university;
+    if (university && typeof university === 'object' && 'name' in university) {
+      const uniName = (university as Record<string, unknown>).name;
+      if (typeof uniName === 'string' && uniName.trim()) {
+        return uniName.trim();
+      }
+    }
+
+    return undefined;
+  };
+
   const filteredConversations = conversations.filter(conv => {
     if (!searchQuery) return true;
-    
+
     const otherParticipant = conv.participants?.find(p => p.user_id !== user?.id);
     const searchLower = searchQuery.toLowerCase();
-    
+    const metadataName = getMetadataName(conv.metadata);
+
     return (
       conv.name?.toLowerCase().includes(searchLower) ||
+      metadataName?.toLowerCase().includes(searchLower) ||
       otherParticipant?.profile?.full_name?.toLowerCase().includes(searchLower)
     );
   });
 
   const getConversationName = (conversation: Conversation) => {
     if (conversation.is_group) {
-    return conversation.name || 'Group Message';
+      return conversation.name || getMetadataName(conversation.metadata) || 'Group Message';
     }
-    
+
     const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
-      return otherParticipant?.profile?.full_name || 'Unknown User';
+    const metadataName = getMetadataName(conversation.metadata);
+    return metadataName || otherParticipant?.profile?.full_name || 'Unknown User';
   };
 
   const getConversationAvatar = (conversation: Conversation) => {
