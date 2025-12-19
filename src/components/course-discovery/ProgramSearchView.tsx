@@ -171,212 +171,6 @@ const transformToCourseCardFormat = (
   };
 };
 
-const FEATURED_COURSES: (Program & {
-  university: University;
-  next_intake_month?: number;
-  next_intake_year?: number;
-  applyUrl?: string;
-  detailsUrl?: string;
-  instant_submission?: boolean;
-  is_unidoxia_partner?: boolean;
-})[] = [
-  {
-    id: "11111111-1111-4111-8111-111111111111",
-    name: "BSc Computer Science",
-    level: "Undergraduate",
-    discipline: "Computer Science",
-    tuition_amount: 45000,
-    tuition_currency: "USD",
-    duration_months: 36,
-    university_id: "oxford-university",
-    image_url: oxfordImg,
-    next_intake_month: 9,
-    next_intake_year: new Date().getFullYear(),
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/oxford",
-    instant_submission: true,
-    is_unidoxia_partner: true,
-    university: {
-      id: "oxford-university",
-      name: "University of Oxford",
-      country: "United Kingdom",
-      city: "Oxford",
-      logo_url: null,
-      website: "https://www.ox.ac.uk/",
-      description: "World-leading research university in the heart of Oxford.",
-    },
-  },
-  {
-    id: "22222222-2222-4222-8222-222222222222",
-    name: "MBA in Global Business",
-    level: "Postgraduate",
-    discipline: "Business Administration",
-    tuition_amount: 68000,
-    tuition_currency: "USD",
-    duration_months: 18,
-    university_id: "harvard-university",
-    image_url: harvardImg,
-    next_intake_month: 1,
-    next_intake_year: new Date().getFullYear() + 1,
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/harvard",
-    instant_submission: true,
-    is_unidoxia_partner: true,
-    university: {
-      id: "harvard-university",
-      name: "Harvard University",
-      country: "United States",
-      city: "Cambridge",
-      logo_url: null,
-      website: "https://www.harvard.edu/",
-      description: "Premier institution for leadership and innovation.",
-    },
-  },
-  {
-    id: "33333333-3333-4333-8333-333333333333",
-    name: "MSc Data Science",
-    level: "Postgraduate",
-    discipline: "Data Science",
-    tuition_amount: 52000,
-    tuition_currency: "USD",
-    duration_months: 24,
-    university_id: "mit",
-    image_url: mitImg,
-    next_intake_month: 9,
-    next_intake_year: new Date().getFullYear(),
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/mit",
-    university: {
-      id: "mit",
-      name: "Massachusetts Institute of Technology",
-      country: "United States",
-      city: "Cambridge",
-      logo_url: null,
-      website: "https://www.mit.edu/",
-      description: "Cutting-edge programs in science, engineering, and technology.",
-    },
-  },
-  {
-    id: "44444444-4444-4444-8444-444444444444",
-    name: "BEng Mechanical Engineering",
-    level: "Undergraduate",
-    discipline: "Engineering",
-    tuition_amount: 39000,
-    tuition_currency: "USD",
-    duration_months: 48,
-    university_id: "imperial-college",
-    image_url: imperialImg,
-    next_intake_month: 9,
-    next_intake_year: new Date().getFullYear(),
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/imperial",
-    university: {
-      id: "imperial-college",
-      name: "Imperial College London",
-      country: "United Kingdom",
-      city: "London",
-      logo_url: null,
-      website: "https://www.imperial.ac.uk/",
-      description: "STEM-focused university with industry-leading research.",
-    },
-  },
-  {
-    id: "55555555-5555-4555-8555-555555555555",
-    name: "BA Economics and Finance",
-    level: "Undergraduate",
-    discipline: "Economics",
-    tuition_amount: 32000,
-    tuition_currency: "USD",
-    duration_months: 36,
-    university_id: "ucl",
-    image_url: uclImg,
-    next_intake_month: 9,
-    next_intake_year: new Date().getFullYear(),
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/ucl",
-    university: {
-      id: "ucl",
-      name: "University College London",
-      country: "United Kingdom",
-      city: "London",
-      logo_url: null,
-      website: "https://www.ucl.ac.uk/",
-      description: "Global university known for interdisciplinary excellence.",
-    },
-  },
-  {
-    id: "66666666-6666-4666-8666-666666666666",
-    name: "BSc Artificial Intelligence",
-    level: "Undergraduate",
-    discipline: "Artificial Intelligence",
-    tuition_amount: 28000,
-    tuition_currency: "USD",
-    duration_months: 36,
-    university_id: "university-toronto",
-    image_url: torontoImg,
-    next_intake_month: 1,
-    next_intake_year: new Date().getFullYear() + 1,
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/toronto",
-    university: {
-      id: "university-toronto",
-      name: "University of Toronto",
-      country: "Canada",
-      city: "Toronto",
-      logo_url: null,
-      website: "https://www.utoronto.ca/",
-      description: "Leading Canadian university with robust AI and tech programs.",
-    },
-  },
-  {
-    id: "77777777-7777-4777-8777-777777777777",
-    name: "Master of Public Health",
-    level: "Postgraduate",
-    discipline: "Public Health",
-    tuition_amount: 27000,
-    tuition_currency: "USD",
-    duration_months: 24,
-    university_id: "university-melbourne",
-    image_url: melbourneImg,
-    next_intake_month: 2,
-    next_intake_year: new Date().getFullYear() + 1,
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/melbourne",
-    university: {
-      id: "university-melbourne",
-      name: "University of Melbourne",
-      country: "Australia",
-      city: "Melbourne",
-      logo_url: null,
-      website: "https://www.unimelb.edu.au/",
-      description: "Top-ranked Australian university with global industry links.",
-    },
-  },
-  {
-    id: "88888888-8888-4888-8888-888888888888",
-    name: "PhD in Biomedical Engineering",
-    level: "PHD",
-    discipline: "Biomedical Engineering",
-    tuition_amount: 0,
-    tuition_currency: "USD",
-    duration_months: 48,
-    university_id: "stanford-university",
-    image_url: stanfordImg,
-    next_intake_month: 9,
-    next_intake_year: new Date().getFullYear(),
-    applyUrl: "/student/applications/new",
-    detailsUrl: "/universities/stanford",
-    university: {
-      id: "stanford-university",
-      name: "Stanford University",
-      country: "United States",
-      city: "Stanford",
-      logo_url: null,
-      website: "https://www.stanford.edu/",
-      description: "Innovative research hub with strong industry partnerships.",
-    },
-  },
-];
 
 export interface ProgramSearchViewProps {
   variant?: "page" | "embedded";
@@ -409,28 +203,6 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [courseOffset, setCourseOffset] = useState(0);
   const [hasMoreCourses, setHasMoreCourses] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-
-  const filterFallbackCourses = useCallback(() => {
-    let courses = FEATURED_COURSES;
-
-    if (selectedCountry !== "all") {
-      courses = courses.filter((course) => course.university.country === selectedCountry);
-    }
-    if (selectedLevel !== "all") {
-      courses = courses.filter((course) => course.level === selectedLevel);
-    }
-    if (selectedDiscipline !== "all") {
-      courses = courses.filter((course) => course.discipline === selectedDiscipline);
-    }
-    if (maxFee) {
-      const parsedFee = parseFloat(maxFee);
-      if (!Number.isNaN(parsedFee)) {
-        courses = courses.filter((course) => course.tuition_amount <= parsedFee);
-      }
-    }
-
-    return courses;
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
   
   // Check if user is an agent/staff/admin to determine the correct apply URL
   const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
@@ -572,15 +344,6 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         },
       }));
 
-      const fallbackCourses = filterFallbackCourses();
-
-      if (!formattedCourses.length && fallbackCourses.length) {
-        setAllCourses(fallbackCourses);
-        setHasMoreCourses(false);
-        setCourseOffset(fallbackCourses.length);
-        return;
-      }
-
       if (append) {
         setAllCourses((prev) => [...prev, ...formattedCourses]);
       } else {
@@ -591,17 +354,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       setCourseOffset(offset + formattedCourses.length);
     } catch (error) {
       console.error("Error loading courses:", error);
-      const fallbackCourses = filterFallbackCourses();
-      if (fallbackCourses.length) {
-        setAllCourses(fallbackCourses);
-        setHasMoreCourses(false);
-        setCourseOffset(fallbackCourses.length);
-      }
     } finally {
       setLoadingCourses(false);
       setLoadingMore(false);
     }
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, filterFallbackCourses]);
+  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
 
   // Initial load of courses
   useEffect(() => {
