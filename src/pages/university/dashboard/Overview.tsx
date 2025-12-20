@@ -371,7 +371,7 @@ const RecentApplicationsTable = ({
         <TableHeader>
           <TableRow className="border-b border-border bg-muted/40">
             <TableHead className="text-muted-foreground">Student</TableHead>
-            <TableHead className="text-muted-foreground">Programme</TableHead>
+            <TableHead className="text-muted-foreground">Course</TableHead>
             <TableHead className="text-muted-foreground">Agent</TableHead>
             <TableHead className="text-muted-foreground">Status</TableHead>
             <TableHead className="text-right text-muted-foreground">Date Submitted</TableHead>
