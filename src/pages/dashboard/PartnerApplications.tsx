@@ -332,7 +332,7 @@ const PartnerApplications = () => {
                   <TableRow>
                     <TableHead>Student Name</TableHead>
                     <TableHead>University</TableHead>
-                    <TableHead>Programme</TableHead>
+                    <TableHead>Course</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date Submitted</TableHead>
                     <TableHead>Last Updated</TableHead>
