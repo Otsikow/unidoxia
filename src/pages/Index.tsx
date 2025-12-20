@@ -24,7 +24,7 @@ import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
 import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
-import trackRealTimeImage from "@/assets/features/track-real-time.jpeg";
+import trackRealTimeImage from "@/assets/keeping-you-informed.png";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
 
 /* ---------- Lazy Loaded Sections ---------- */
