@@ -396,10 +396,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
    * - Partner is on shared tenant (needs isolation)
    * - Partner's university record is missing
    */
-  const ensureUserProfileRPC = async (userId: string) => {
+  const ensureUserProfileRPC = async (
+    userId: string,
+    metadata?: {
+      role?: string;
+      fullName?: string;
+      email?: string;
+      phone?: string;
+      country?: string;
+    },
+  ) => {
     try {
       const { data, error } = await supabase.rpc('ensure_user_profile' as any, {
         p_user_id: userId,
+        ...(metadata?.role ? { p_role: metadata.role } : {}),
+        ...(metadata?.fullName ? { p_full_name: metadata.fullName } : {}),
+        ...(metadata?.email ? { p_email: metadata.email } : {}),
+        ...(metadata?.phone ? { p_phone: metadata.phone } : {}),
+        ...(metadata?.country ? { p_country: metadata.country } : {}),
       });
       
       if (error) {
@@ -418,6 +432,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchProfile = async (userId: string, currentUser: User | null = user) => {
     try {
+      const profileMetadata = {
+        role:
+          typeof currentUser?.user_metadata?.role === 'string'
+            ? currentUser.user_metadata.role
+            : undefined,
+        fullName:
+          typeof currentUser?.user_metadata?.full_name === 'string'
+            ? currentUser.user_metadata.full_name
+            : undefined,
+        email: currentUser?.email ?? undefined,
+        phone:
+          typeof currentUser?.user_metadata?.phone === 'string'
+            ? currentUser.user_metadata.phone
+            : undefined,
+        country:
+          typeof currentUser?.user_metadata?.country === 'string'
+            ? currentUser.user_metadata.country
+            : undefined,
+      };
+
       // CRITICAL: Always fetch profile by user_id (auth.uid()) to ensure isolation
       // The profiles table uses auth.users.id as the primary key, so this guarantees
       // we only get the profile belonging to the authenticated user
@@ -430,13 +464,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (error) {
         console.error('Error fetching profile:', error);
 
-        // If profile not found, try server-side self-healing first
-        if (error.code === 'PGRST116') {
-          console.log('Profile not found, attempting server-side self-healing...');
-          
+        const recoverableCodes = ['PGRST116', 'PGRST301', 'PGRST403', '42501'];
+        const shouldAttemptRepair = recoverableCodes.includes(error.code ?? '') || !profile;
+
+        if (shouldAttemptRepair) {
+          console.log('Profile not accessible, attempting server-side self-healing...');
+
           // Try the server-side RPC first (more robust)
-          const rpcResult = await ensureUserProfileRPC(userId);
-          
+          const rpcResult = await ensureUserProfileRPC(userId, profileMetadata);
+
           if (!rpcResult.success) {
             console.log('Server-side repair failed, trying client-side creation...');
             await createProfileForUser(userId);
