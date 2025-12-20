@@ -255,9 +255,9 @@ export default function UniversityDirectory() {
     const highlights = university.profileDetails?.highlights || [];
 
     const cardContent = (
-      <div className="flex flex-col gap-3 p-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-start gap-3">
+      <div className="flex h-full flex-col gap-4 p-4 sm:p-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3 sm:gap-4">
             {/* University Logo */}
             {university.logo_url ? (
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg border border-border bg-background p-1.5">
@@ -272,12 +272,14 @@ export default function UniversityDirectory() {
                 <Building2 className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <CardTitle className="text-base font-semibold text-foreground line-clamp-2">
+            <div className="flex-1 min-w-0 space-y-1">
+              <CardTitle className="text-base font-semibold text-foreground line-clamp-2 sm:line-clamp-3">
                 {university.name}
               </CardTitle>
               {tagline ? (
-                <p className="text-xs text-primary font-medium line-clamp-2">{tagline}</p>
+                <p className="text-xs text-primary font-medium leading-relaxed line-clamp-2 sm:line-clamp-3">
+                  {tagline}
+                </p>
               ) : null}
               <CardDescription className="flex flex-wrap items-center gap-1 mt-0.5">
                 {locationLabel ? (
@@ -290,7 +292,7 @@ export default function UniversityDirectory() {
             </div>
           </div>
           {university.description ? (
-            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-2">
+            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-3 sm:line-clamp-4">
               {university.description}
             </p>
           ) : null}
@@ -321,7 +323,7 @@ export default function UniversityDirectory() {
           </div>
         </Link>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <div className="rounded-md border bg-muted/30 p-2">
             <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
               <MapPin className="h-2.5 w-2.5" />
@@ -356,13 +358,13 @@ export default function UniversityDirectory() {
         ) : null}
 
         <div className="flex flex-wrap items-center justify-end gap-1.5 mt-auto">
-          <Button variant="outline" size="sm" className="h-7 text-xs px-2" asChild>
+          <Button variant="outline" size="sm" className="h-8 text-xs px-3" asChild>
             <Link to={`${directoryBasePath}/${university.id}`}>
               Explore
             </Link>
           </Button>
           {university.website ? (
-            <Button variant="secondary" size="sm" className="h-7 text-xs px-2" asChild>
+            <Button variant="secondary" size="sm" className="h-8 text-xs px-3" asChild>
               <a href={university.website} target="_blank" rel="noreferrer">
                 Website
                 <ExternalLink className="ml-1 h-3 w-3" />
@@ -377,14 +379,14 @@ export default function UniversityDirectory() {
       return (
         <Card className="overflow-hidden border-border/60 transition-all hover:shadow-lg">
           <div className="flex flex-col gap-0 md:flex-row">
-            <div className="h-40 w-full md:h-auto md:w-48">
+            <div className="w-full md:w-56">
               <img
                 src={image}
                 alt={university.name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover aspect-[4/3] md:aspect-[16/9]"
               />
             </div>
-            <div className="flex-1">{cardContent}</div>
+            <div className="flex-1 min-w-0">{cardContent}</div>
           </div>
         </Card>
       );
@@ -392,11 +394,11 @@ export default function UniversityDirectory() {
 
     return (
       <Card className="overflow-hidden border-border/60 transition-all hover:shadow-lg h-full flex flex-col">
-        <div className="h-32 w-full flex-shrink-0">
+        <div className="w-full flex-shrink-0">
           <img
             src={image}
             alt={university.name}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover aspect-[16/10] sm:aspect-[4/3]"
           />
         </div>
         <div className="flex-1 flex flex-col">{cardContent}</div>
