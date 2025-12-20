@@ -82,6 +82,12 @@ interface Profile {
   partner_email_verified?: boolean | null;
 }
 
+const isProfileLike = (value: unknown): value is Profile => {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.id === 'string' && typeof v.email === 'string' && typeof v.tenant_id === 'string';
+};
+
 interface SignUpParams {
   email: string;
   password: string;
@@ -477,32 +483,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           .rpc('get_my_profile' as any)
           .maybeSingle();
 
-        if (rpcProfile && !rpcError) {
-           console.log('Profile retrieved via RPC fallback (RLS bypass successful)');
-           // We found the profile via RPC, proceed with this data
-           // This handles cases where RLS policies are too restrictive or misconfigured
+        if (isProfileLike(rpcProfile) && !rpcError) {
+          console.log('Profile retrieved via RPC fallback (RLS bypass successful)');
 
-           // Continue processing with rpcProfile as if it was the main data
-           // We'll duplicate the post-processing logic below
+          // Verify ownership just in case (though RPC enforces auth.uid())
+          if (rpcProfile.id !== userId) {
+            console.error('CRITICAL SECURITY ERROR: RPC Profile ID mismatch!', {
+              requested: userId,
+              returned: rpcProfile.id,
+            });
+            setProfile(null);
+            return;
+          }
 
-           // Verify ownership just in case (though RPC enforces auth.uid())
-           if (rpcProfile.id !== userId) {
-             console.error('CRITICAL SECURITY ERROR: RPC Profile ID mismatch!', {
-               requested: userId,
-               returned: rpcProfile.id,
-             });
-             setProfile(null);
-             return;
-           }
-
-           // Set data to rpcProfile so it flows into the main success path logic
-           // But we need to jump out of this error block.
-           // Since we can't easily jump, we'll process it here and return.
-
-           const normalizedProfile: Profile = { ...rpcProfile } as Profile;
-           // Process profile (verification, isolation, etc.)
-           await processAndSetProfile(normalizedProfile, userId, currentUser);
-           return;
+          const normalizedProfile: Profile = { ...(rpcProfile as Profile) };
+          await processAndSetProfile(normalizedProfile, userId, currentUser);
+          return;
         }
 
         // If RPC also failed to find a profile, then it truly doesn't exist (or repair needed)
@@ -532,17 +528,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setProfile(null);
           } else {
             // SECURITY CHECK: Verify the returned profile ID matches the requested user ID
-            if (retryData.id !== userId) {
+            if (!isProfileLike(retryData) || retryData.id !== userId) {
               console.error('CRITICAL SECURITY ERROR: Profile ID mismatch!', {
                 requested: userId,
-                returned: retryData.id,
+                returned: isProfileLike(retryData) ? retryData.id : 'invalid_profile_payload',
               });
               setProfile(null);
               return;
             }
             console.log('Profile successfully repaired/created:', retryData.email);
 
-            const normalizedProfile: Profile = { ...retryData } as Profile;
+            const normalizedProfile: Profile = { ...(retryData as Profile) };
             await processAndSetProfile(normalizedProfile, userId, currentUser);
           }
         } else {
