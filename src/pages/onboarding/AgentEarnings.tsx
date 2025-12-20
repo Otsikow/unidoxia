@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { ArrowRight, ArrowUpRight, BarChart3, Gift, LineChart, ShieldCheck, Sparkles, Wallet } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, BarChart3, Gift, LineChart, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { markOnboardingSeen } from "@/lib/onboardingStorage";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 const earningsTimeline = [
   { label: "Week 1", value: 2800 },
@@ -62,11 +63,22 @@ const AgentEarnings = () => {
         <div className="absolute bottom-0 left-20 h-80 w-80 rounded-full bg-gradient-to-tr from-emerald-500/20 via-teal-500/10 to-transparent blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-16 md:px-8">
-        <div className="flex items-center gap-3 text-sm text-cyan-200/80">
-          <Sparkles className="h-4 w-4" />
-          <span>Agent onboarding • Earnings overview</span>
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-12 md:px-8">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3 text-sm text-cyan-200/80">
+            <Sparkles className="h-4 w-4" />
+            <span>Agent onboarding • Earnings overview</span>
+          </div>
+          <div className="flex items-center gap-3 text-sm text-cyan-100/80">
+            <ArrowLeft className="h-4 w-4" />
+            <Link className="underline-offset-4 hover:underline" to={`/agents/onboarding?next=${encodeURIComponent(nextTarget)}`}>
+              Back to overview
+            </Link>
+            <span className="text-cyan-200/80">Next: Create your account</span>
+          </div>
         </div>
+
+        <OnboardingProgress currentStep={2} totalSteps={2} label="See payouts, then sign up in one more step" />
 
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
           {/* Left column */}
@@ -270,6 +282,7 @@ const AgentEarnings = () => {
                     <p className="text-xs text-slate-300">+12% average commission</p>
                   </div>
                 </div>
+                <p className="text-xs text-slate-200">Final step: create your account to lock in your payout schedule. You won&apos;t be asked to repeat onboarding.</p>
                 <Button asChild variant="secondary" className="w-full bg-white text-slate-900 hover:bg-slate-100">
                   <Link to={nextTarget} className="flex items-center justify-center gap-2">
                     Continue to sign up

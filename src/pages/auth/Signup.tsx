@@ -597,6 +597,9 @@ const Signup = () => {
       if (error) {
         toast({ variant: "destructive", title: "Signup failed", description: (error as Error).message || "An error occurred" });
       } else {
+        if (role === "agent") {
+          markOnboardingSeen("agent");
+        }
         toast({
           title: "Account created!",
           description: "Check your email to verify your account before logging in.",
