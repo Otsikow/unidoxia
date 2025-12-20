@@ -90,7 +90,7 @@ export const UniversitySidebar = ({
         </span>
         {!collapsed && (
           <div>
-            <p className="text-sm uppercase tracking-[0.3rem] text-sidebar-foreground/80">
+            <p className="text-sm uppercase tracking-[0.3rem] text-sidebar-foreground">
               UniDoxia
             </p>
             <h1 className="text-base font-semibold leading-tight text-sidebar-foreground">
@@ -134,7 +134,7 @@ export const UniversitySidebar = ({
                             "h-5 w-5 transition-transform duration-200",
                             isActive
                               ? "scale-110 text-sidebar-primary-foreground"
-                              : "text-sidebar-foreground/70",
+                              : "text-sidebar-foreground",
                           )}
                         />
                         <span
@@ -161,9 +161,9 @@ export const UniversitySidebar = ({
       </TooltipProvider>
 
       {!collapsed && (
-        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-4 text-xs text-sidebar-foreground">
+        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent p-4 text-xs text-sidebar-foreground">
           <p className="font-medium text-sidebar-foreground">Need assistance?</p>
-          <p className="mt-1">
+          <p className="mt-1 text-sidebar-foreground">
             Visit the partner help center or contact your UniDoxia partnership manager.
           </p>
         </div>
