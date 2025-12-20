@@ -89,7 +89,7 @@ export function ChatArea({
     }
 
     const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
-    return namedConversation || otherParticipant?.profile?.full_name || 'Unknown User';
+    return namedConversation || otherParticipant?.profile?.full_name || otherParticipant?.user_id || 'Unknown User';
   };
 
   const getConversationAvatar = () => {

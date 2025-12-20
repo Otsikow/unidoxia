@@ -542,7 +542,7 @@ export function useMessages() {
 
     const { data: profiles, error: profilesError } = await supabase
       .from("profiles")
-      .select("id, full_name, avatar_url, role")
+      .select("id, full_name, email, avatar_url, role")
       .in("id", userIds);
 
     if (profilesError) {
@@ -556,6 +556,7 @@ export function useMessages() {
     for (const p of parts ?? []) {
       const arr = participantsByConv.get((p as any).conversation_id) ?? [];
       const prof = profileMap.get((p as any).user_id);
+      const fallbackName = prof?.full_name || prof?.email || "User";
       arr.push({
         id: `${(p as any).conversation_id}-${(p as any).user_id}`,
         conversation_id: (p as any).conversation_id,
@@ -565,7 +566,8 @@ export function useMessages() {
         profile: prof
           ? {
               id: prof.id,
-              full_name: prof.full_name,
+              full_name: fallbackName,
+              email: prof.email ?? null,
               avatar_url: prof.avatar_url,
               role: prof.role,
             }

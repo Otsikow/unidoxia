@@ -83,7 +83,7 @@ export function ChatList({
 
     const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
     const metadataName = getMetadataName(conversation.metadata);
-    return metadataName || otherParticipant?.profile?.full_name || 'Unknown User';
+    return metadataName || otherParticipant?.profile?.full_name || otherParticipant?.user_id || 'Unknown User';
   };
 
   const getConversationAvatar = (conversation: Conversation) => {
