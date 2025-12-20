@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Globe2, GraduationCap, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, GraduationCap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 /* -------------------------- STATIC DATA -------------------------- */
 
@@ -16,14 +17,12 @@ const portraits = [
   {
     name: "Kwame Boateng",
     title: "Agency Director, Accra",
-    image:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
   },
   {
     name: "Lerato Moyo",
     title: "Lead Recruiter, Nairobi",
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
+    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
   },
 ];
 
@@ -40,8 +39,7 @@ const featureHighlights = [
   },
   {
     title: "High commissions, transparent payouts",
-    description:
-      "Earn more with performance tiers, real-time commission tracking, and on-time settlements every intake.",
+    description: "Earn more with performance tiers, real-time commission tracking, and on-time settlements every intake.",
   },
 ];
 
@@ -49,6 +47,29 @@ const quickBenefits = [
   "Personalized onboarding with live support",
   "Visa-ready documentation checklists",
   "Global student pipeline analytics",
+];
+
+const onboardingSteps = [
+  {
+    title: "Orientation",
+    description: "Meet verified agents and review the premium workspace overview.",
+    status: "current" as const,
+  },
+  {
+    title: "Earnings setup",
+    description: "Activate commissions, compliance-ready kits, and payout preferences.",
+    status: "next" as const,
+  },
+  {
+    title: "Pipeline launch",
+    description: "Import students, match programs, and share pre-approved options.",
+    status: "upcoming" as const,
+  },
+  {
+    title: "Go live",
+    description: "Track conversions, monitor visas, and report outcomes confidently.",
+    status: "upcoming" as const,
+  },
 ];
 
 /* -------------------------- UI ICON ORB -------------------------- */
@@ -60,7 +81,7 @@ const IconOrb = ({ icon: Icon }: { icon: typeof Globe2 }) => (
 );
 
 /* =====================================================================
-   AGENT ONBOARDING — FINAL CLEAN VERSION
+   AGENT ONBOARDING — PROFESSIONAL FLOW
    ===================================================================== */
 
 const AgentOnboardingWelcome = () => {
@@ -74,6 +95,14 @@ const AgentOnboardingWelcome = () => {
   const nextParam = searchParams.get("next");
   const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/dashboard/leads";
   const earningsHref = `/agents/earnings?next=${encodeURIComponent(nextTarget)}`;
+
+  const handleBack = useCallback(() => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/auth/login");
+  }, [navigate]);
 
   /* --------------------- Auto-redirect if already onboarded --------------------- */
   useEffect(() => {
@@ -127,212 +156,239 @@ const AgentOnboardingWelcome = () => {
   /* ===================================================================== */
 
   return (
-    <div className="relative min-h-screen bg-white text-slate-900 overflow-hidden">
-      {/* Gradient background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute top-10 right-10 w-80 h-80 rounded-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-100 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-gradient-to-tr from-sky-50 via-primary/5 to-white blur-3xl" />
-      </div>
-
-      <div className="container mx-auto px-4 md:px-8 py-14 md:py-20 relative">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
-          {/* LEFT PANEL */}
-          <div className="flex-1 space-y-8">
-            <div className="inline-flex items-center gap-3 rounded-full bg-primary/5 px-4 py-2 shadow-sm shadow-primary/10 border border-primary/10">
-              <Badge variant="outline" className="bg-white text-primary border-primary/30">
-                Premium Onboarding
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                Designed for high-performing UniDoxia Agents
-              </span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary/5 text-slate-900">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="h-10 w-10 rounded-full border border-slate-200">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">Agent onboarding</span>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">Premium Onboarding</Badge>
+                <span className="text-sm text-slate-600">Designed for UniDoxia Agents</span>
+              </div>
             </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" asChild className="hidden sm:inline-flex">
+              <Link to="/auth/login">Preview dashboard</Link>
+            </Button>
+            <Button size="lg" className="gap-2 bg-primary text-white hover:bg-primary/90" asChild>
+              <Link to={earningsHref}>
+                Next
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
 
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-slate-900">
+        <OnboardingProgress
+          currentStep={1}
+          totalSteps={4}
+          stepCompletion={0.55}
+          label="See what happens before you launch"
+        />
+
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-8 items-start">
+          {/* LEFT PANEL */}
+          <div className="space-y-8">
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-primary inline-flex items-center gap-2 bg-primary/5 rounded-full px-3 py-1">
+                <Globe2 className="h-4 w-4" />
                 Welcome to UniDoxia Agent Portal
+              </p>
+              <h1 className="text-4xl md:text-5xl font-semibold leading-tight tracking-tight">
+                A focused onboarding for modern recruitment teams
               </h1>
               <p className="text-lg text-slate-600 max-w-2xl">
-                Grow your recruitment business with verified programs, high commissions,
-                and a powerful dashboard. Deliver a premium experience to students while
-                keeping every intake on track.
+                Run a premium student journey with verified programs, transparent commissions,
+                and compliance-ready media kits. Each step keeps you on brand and on schedule.
               </p>
             </div>
 
-            {/* ACTION BUTTONS */}
-            <div className="flex flex-wrap gap-3">
-              <Button
-                size="lg"
-                className="gap-2 bg-primary text-white shadow-lg shadow-primary/30 hover:bg-primary/90"
-                asChild
-              >
-                <Link to={earningsHref}>
-                  Launch onboarding
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-
-              <Button
-                size="lg"
-                variant="outline"
-                className="gap-2 border-slate-300 bg-white text-slate-900 hover:bg-white/90 hover:border-slate-400 shadow-sm"
-                asChild
-              >
-                <Link to="/auth/login">
-                  Preview dashboard
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-
-              {/* Only show "Finish onboarding" to logged-in agents */}
-              {profile?.role === "agent" && (
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="gap-2 bg-slate-900 text-white hover:bg-slate-800"
-                  onClick={markOnboarded}
-                  disabled={markingOnboarded}
-                >
-                  {markingOnboarded ? "Saving..." : "Finish onboarding"}
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-
-            {/* METRICS */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { label: "Verified programs", value: "2,400+" },
                 { label: "Top destinations", value: "18" },
                 { label: "Agent satisfaction", value: "4.9/5" },
               ].map((item) => (
-                <Card key={item.label} className="bg-white/80 backdrop-blur border-slate-200 shadow-sm">
-                  <CardContent className="py-4 px-5">
+                <Card key={item.label} className="bg-white/90 backdrop-blur border-slate-200 shadow-sm">
+                  <CardContent className="py-4 px-5 space-y-1">
                     <p className="text-sm text-slate-500">{item.label}</p>
                     <p className="text-2xl font-semibold text-slate-900">{item.value}</p>
                   </CardContent>
                 </Card>
               ))}
             </div>
+
+            <Card className="border-slate-200 bg-white/90 shadow-sm">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Navigation</p>
+                    <p className="text-lg font-semibold text-slate-900">Follow the onboarding path</p>
+                  </div>
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">In progress</Badge>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {onboardingSteps.map((step, index) => (
+                    <div
+                      key={step.title}
+                      className={`rounded-2xl border px-4 py-3 transition-all ${
+                        step.status === "current"
+                          ? "border-primary/60 bg-primary/5 shadow-sm"
+                          : step.status === "next"
+                            ? "border-slate-200 bg-white"
+                            : "border-dashed border-slate-200 bg-slate-50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                        <div
+                          className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                            step.status === "current"
+                              ? "bg-primary text-white"
+                              : step.status === "next"
+                                ? "bg-slate-900 text-white"
+                                : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {index + 1}
+                        </div>
+                        {step.title}
+                      </div>
+                      <p className="mt-2 text-sm text-slate-600">{step.description}</p>
+                      {step.status === "next" && (
+                        <div className="mt-3 flex items-center justify-between text-sm">
+                          <span className="text-primary font-medium">Up next</span>
+                          <Link to={earningsHref} className="inline-flex items-center gap-1 text-primary hover:underline">
+                            Go to step
+                            <ArrowRight className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-wrap gap-3 items-center">
+              {quickBenefits.map((benefit) => (
+                <div
+                  key={benefit}
+                  className="inline-flex items-center gap-2 rounded-full bg-white border border-primary/15 px-4 py-2 shadow-sm text-sm text-slate-700"
+                >
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
+                  {benefit}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* RIGHT PANEL – PORTRAITS + HIGHLIGHTS */}
-          <div className="flex-1 w-full max-w-xl lg:max-w-none relative">
-            <div className="absolute -top-10 -right-6 hidden lg:block">
-              <IconOrb icon={Globe2} />
-            </div>
-            <div className="absolute -bottom-6 -left-2 hidden lg:block">
-              <IconOrb icon={GraduationCap} />
-            </div>
-            <div className="absolute -top-4 left-10 hidden lg:block">
-              <IconOrb icon={MapPin} />
-            </div>
+          <div className="space-y-6">
+            <Card className="relative overflow-hidden border border-slate-200 bg-white shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-white to-indigo-50" />
+              <CardContent className="relative p-6 space-y-6">
+                <div className="flex items-center gap-2 text-sm text-primary font-semibold">
+                  <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                  Live onboarding spotlight
+                </div>
 
-            <Card className="relative overflow-hidden bg-white/80 border border-slate-200 shadow-2xl shadow-primary/10">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-white to-indigo-50" />
-              <CardContent className="relative p-6 md:p-8">
-                <div className="flex flex-col gap-5">
-                  <div className="inline-flex items-center gap-2 text-sm text-primary font-medium bg-primary/5 rounded-full px-3 py-1 self-start">
-                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                    Live onboarding spotlight
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {portraits.map((portrait) => (
+                    <div
+                      key={portrait.name}
+                      className="relative rounded-2xl overflow-hidden border border-white/60 shadow-md bg-slate-900/80"
+                    >
+                      <img src={portrait.image} alt={portrait.name} className="h-60 w-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/25 to-transparent" />
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    {portraits.map((portrait) => (
-                      <div
-                        key={portrait.name}
-                        className="relative rounded-3xl overflow-hidden border border-white/60 shadow-xl shadow-primary/15 bg-white"
-                      >
-                        <img
-                          src={portrait.image}
-                          alt={portrait.name}
-                          className="h-64 w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/65 via-slate-900/20 to-transparent" />
+                      <div className="absolute top-3 right-3 flex items-center gap-2 bg-white/85 text-primary text-xs font-medium rounded-full px-3 py-1 shadow-sm">
+                        <CheckCircle2 className="h-4 w-4" />
+                        Verified Agent
+                      </div>
 
-                        <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 text-white">
-                          <div className="bg-white/20 backdrop-blur rounded-full p-2">
-                            <LaptopGlyph />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-lg">{portrait.name}</p>
-                            <p className="text-sm text-white/80">{portrait.title}</p>
-                          </div>
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center gap-3 text-white">
+                        <div className="bg-white/15 backdrop-blur rounded-full p-2">
+                          <LaptopGlyph />
                         </div>
-
-                        <div className="absolute top-4 right-4 flex items-center gap-2 bg-white/80 text-primary text-xs font-medium rounded-full px-3 py-1 shadow-sm">
-                          <CheckCircle2 className="h-4 w-4" />
-                          Verified Agent
+                        <div>
+                          <p className="font-semibold text-lg leading-tight">{portrait.name}</p>
+                          <p className="text-sm text-white/80">{portrait.title}</p>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                  <div className="sm:col-span-2 rounded-2xl border border-primary/20 bg-white/90 p-4 flex items-center gap-4 shadow-sm">
+                    <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-indigo-100 flex items-center justify-center text-primary">
+                      <GraduationCap className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-slate-900">Education-first storytelling</p>
+                      <p className="text-sm text-slate-600">Compliance-ready program features ready to share with students.</p>
+                    </div>
                   </div>
 
-                  {/* Feature mini section */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-                    <div className="sm:col-span-2 rounded-2xl border border-primary/15 bg-white/80 shadow-inner shadow-primary/5 p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-indigo-100 flex items-center justify-center text-primary">
-                        <GraduationCap className="h-6 w-6" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-semibold text-slate-900">Education-first storytelling</p>
-                        <p className="text-sm text-slate-600">
-                          Showcasing global programs with compliance-ready media kits.
-                        </p>
-                      </div>
+                  <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-indigo-50 p-4 shadow-sm sm:col-span-3">
+                    <p className="text-sm text-slate-500">Featured destinations</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {["UK", "Canada", "USA", "Australia", "Ireland", "Germany"].map((country) => (
+                        <span
+                          key={country}
+                          className="text-xs font-medium text-primary bg-white/80 border border-primary/20 rounded-full px-3 py-1"
+                        >
+                          {country}
+                        </span>
+                      ))}
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-                    <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-white to-indigo-50 p-4 shadow-sm sm:col-span-3">
-                      <p className="text-sm text-slate-500">Featured destinations</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {["UK", "Canada", "USA", "Australia", "Ireland", "Germany"].map((country) => (
-                          <span
-                            key={country}
-                            className="text-xs font-medium text-primary bg-white/80 border border-primary/20 rounded-full px-3 py-1"
-                          >
-                            {country}
-                          </span>
-                        ))}
+            <Card className="bg-slate-900 text-white border-slate-800 shadow-xl">
+              <CardContent className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-white/80">Why UniDoxia</p>
+                    <p className="text-lg font-semibold">A clear path to launch</p>
+                  </div>
+                  <IconOrb icon={Globe2} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {featureHighlights.map((feature) => (
+                    <div key={feature.title} className="rounded-2xl bg-white/5 border border-white/10 p-4 space-y-2">
+                      <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                        <SparkleGlyph />
                       </div>
+                      <p className="font-semibold text-white">{feature.title}</p>
+                      <p className="text-sm text-white/70">{feature.description}</p>
                     </div>
+                  ))}
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="text-sm text-white/80">Need to pause? You can always return to this step.</div>
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" className="bg-white text-slate-900" asChild>
+                      <Link to="/auth/login">Preview dashboard</Link>
+                    </Button>
+                    <Button className="gap-2 bg-primary hover:bg-primary/90" asChild>
+                      <Link to={earningsHref}>
+                        Continue to earnings
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
-        </div>
-
-        {/* Feature cards */}
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {featureHighlights.map((feature) => (
-            <Card
-              key={feature.title}
-              className="h-full bg-white/90 border-slate-200 shadow-sm hover:shadow-lg transition-shadow"
-            >
-              <CardContent className="p-6 space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                    <SparkleGlyph />
-                  </div>
-                  <p className="font-semibold text-lg text-slate-900">{feature.title}</p>
-                </div>
-                <p className="text-sm text-slate-600">{feature.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Quick benefits */}
-        <div className="mt-10 flex flex-wrap gap-3 items-center">
-          {quickBenefits.map((benefit) => (
-            <div
-              key={benefit}
-              className="inline-flex items-center gap-2 rounded-full bg-white border border-primary/15 px-4 py-2 shadow-sm text-sm text-slate-700"
-            >
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              {benefit}
-            </div>
-          ))}
         </div>
       </div>
     </div>
