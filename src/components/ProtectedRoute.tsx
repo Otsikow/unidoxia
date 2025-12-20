@@ -50,9 +50,8 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
       const result = data as { success?: boolean; error?: string } | null;
       if (result?.success) {
         console.log('Account repaired successfully:', result);
-        // Refresh the profile to pick up the repaired state
-        await refreshProfile();
-        // Force a page reload to re-initialize auth state
+        // Force a hard reload to clear any stale cache and re-initialize auth state
+        // This is safer than just refreshProfile() as it resets all context
         window.location.reload();
       } else {
         setRepairError(result?.error || 'Repair did not succeed');
