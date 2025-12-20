@@ -462,13 +462,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.warn('Standard profile fetch failed, attempting fallback...', {
+          code: error.code,
+          message: error.message
+        });
 
+        // Fallback strategy:
+        // 1. Try get_my_profile RPC (bypasses RLS)
+        // 2. If that fails/returns empty, try repair (ensure_user_profile)
+        // 3. Try get_my_profile again
+
+        // Attempt 1: Secure RPC fallback (bypasses RLS)
+        const { data: rpcProfile, error: rpcError } = await supabase
+          .rpc('get_my_profile' as any)
+          .maybeSingle();
+
+        if (rpcProfile && !rpcError) {
+           console.log('Profile retrieved via RPC fallback (RLS bypass successful)');
+           // We found the profile via RPC, proceed with this data
+           // This handles cases where RLS policies are too restrictive or misconfigured
+
+           // Continue processing with rpcProfile as if it was the main data
+           // We'll duplicate the post-processing logic below
+
+           // Verify ownership just in case (though RPC enforces auth.uid())
+           if (rpcProfile.id !== userId) {
+             console.error('CRITICAL SECURITY ERROR: RPC Profile ID mismatch!', {
+               requested: userId,
+               returned: rpcProfile.id,
+             });
+             setProfile(null);
+             return;
+           }
+
+           // Set data to rpcProfile so it flows into the main success path logic
+           // But we need to jump out of this error block.
+           // Since we can't easily jump, we'll process it here and return.
+
+           const normalizedProfile: Profile = { ...rpcProfile } as Profile;
+           // Process profile (verification, isolation, etc.)
+           await processAndSetProfile(normalizedProfile, userId, currentUser);
+           return;
+        }
+
+        // If RPC also failed to find a profile, then it truly doesn't exist (or repair needed)
         const recoverableCodes = ['PGRST116', 'PGRST301', 'PGRST403', '42501'];
+        // PGRST116 is "JSON object requested, multiple (or no) rows returned"
+
         const shouldAttemptRepair = recoverableCodes.includes(error.code ?? '') || !profile;
 
         if (shouldAttemptRepair) {
-          console.log('Profile not accessible, attempting server-side self-healing...');
+          console.log('Profile missing or inaccessible, attempting server-side self-healing...');
 
           // Try the server-side RPC first (more robust)
           const rpcResult = await ensureUserProfileRPC(userId, profileMetadata);
@@ -478,19 +522,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await createProfileForUser(userId);
           }
 
-          // Retry fetching the profile
+          // Retry fetching the profile using the robust RPC method
           const { data: retryData, error: retryError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userId)
-            .single();
+            .rpc('get_my_profile' as any)
+            .maybeSingle();
 
-          if (retryError) {
+          if (retryError || !retryData) {
             console.error('Retry failed after profile repair attempt:', retryError);
             setProfile(null);
           } else {
             // SECURITY CHECK: Verify the returned profile ID matches the requested user ID
-            if (retryData && retryData.id !== userId) {
+            if (retryData.id !== userId) {
               console.error('CRITICAL SECURITY ERROR: Profile ID mismatch!', {
                 requested: userId,
                 returned: retryData.id,
@@ -499,9 +541,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               return;
             }
             console.log('Profile successfully repaired/created:', retryData.email);
-            setProfile(retryData);
+
+            const normalizedProfile: Profile = { ...retryData } as Profile;
+            await processAndSetProfile(normalizedProfile, userId, currentUser);
           }
         } else {
+          console.error('Unrecoverable profile error:', error);
           setProfile(null);
         }
       } else {
@@ -519,6 +564,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const normalizedProfile: Profile = {
           ...data,
         };
+
+        await processAndSetProfile(normalizedProfile, userId, currentUser);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching profile:', err);
+      setProfile(null);
+    }
+  };
+
+  const processAndSetProfile = async (
+    normalizedProfile: Profile,
+    userId: string,
+    currentUser: User | null
+  ) => {
 
         const countryFromMetadata =
           typeof currentUser?.user_metadata?.country === 'string'
@@ -574,11 +633,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         setProfile(finalProfile);
-      }
-    } catch (err) {
-      console.error('Unexpected error fetching profile:', err);
-      setProfile(null);
-    }
   };
 
   const createProfileForUser = async (userId: string) => {
