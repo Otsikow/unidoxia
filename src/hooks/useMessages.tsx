@@ -1008,11 +1008,69 @@ export function useMessages() {
         return null;
       }
 
+      // If a direct conversation already exists, open it immediately.
+      // (Avoids any recipient profile lookup that can fail due to RLS/view constraints.)
+      const existing = conversationsRef.current.find(
+        (c) =>
+          !c.is_group &&
+          c.participants?.some((p) => p.user_id === otherUserId) &&
+          c.participants?.some((p) => p.user_id === currentUserId),
+      );
+
+      if (existing) {
+        await setCurrentConversation(existing.id);
+        return existing.id;
+      }
+
+      // For real backend messaging, do NOT prefetch the recipient profile here.
+      // The backend RPC will validate the recipient and create/return the conversation.
+      // Prefetching can incorrectly fail for valid recipients if profile SELECT is restricted.
+      if (!usingMockMessaging) {
+        try {
+          const conversationId = await retryWithBackoff(async () => {
+            const { data, error } = await supabase.rpc("get_or_create_conversation", {
+              p_user_id: currentUserId,
+              p_other_user_id: otherUserId,
+              p_tenant_id: tenantId,
+            });
+
+            if (error) {
+              console.error("get_or_create_conversation error:", error);
+              throw error;
+            }
+
+            if (!data) {
+              throw new Error("No conversation ID returned");
+            }
+
+            return data as string;
+          });
+
+          const convs = await fetchConversationsFromDb();
+          conversationsRef.current = convs;
+          setConversations(convs);
+          cacheConversations(convs);
+          await setCurrentConversation(conversationId);
+          return conversationId;
+        } catch (error: any) {
+          console.error("get_or_create_conversation failed after retries:", error);
+
+          toast({
+            title: "Unable to message",
+            description: parseDbError(error),
+            variant: "destructive",
+          });
+
+          return null;
+        }
+      }
+
+      // --- Mock-only path below (requires a DirectoryProfile to build participants) ---
       let otherProfile = findDirectoryProfileById(otherUserId);
 
       if (!otherProfile) {
         try {
-          const { data, error } = await retryWithBackoff(async () => {
+          const { data } = await retryWithBackoff(async () => {
             const result = await supabase
               .from("profiles")
               .select("id, full_name, email, avatar_url, role, tenant_id")
@@ -1054,109 +1112,34 @@ export function useMessages() {
         }
       }
 
-      const existing = conversationsRef.current.find(
-        (c) =>
-          !c.is_group &&
-          c.participants?.some((p) => p.user_id === otherUserId) &&
-          c.participants?.some((p) => p.user_id === currentUserId),
-      );
-
-      if (existing) {
-        await setCurrentConversation(existing.id);
-        return existing.id;
-      }
-
-      if (usingMockMessaging) {
-        const id = createId("conv");
-        const ts = new Date().toISOString();
-        const conv: Conversation = {
-          id,
-          tenant_id: tenantId,
-          title: null,
-          type: "direct",
-          is_group: false,
-          created_at: ts,
-          updated_at: ts,
-          last_message_at: null,
-          participants: [
-            buildParticipant(resolvedProfile, id, ts),
-            buildParticipant(otherProfile, id, ts),
-          ],
-          unreadCount: 0,
-        };
-        setConversations((p) => {
-          const next = sortConversations([...p, conv]);
-          conversationsRef.current = next;
-          return next;
-        });
-        await setCurrentConversation(id);
-        return id;
-      }
-
-      try {
-        // Use retry logic for the RPC call
-        const conversationId = await retryWithBackoff(async () => {
-          const { data, error } = await supabase.rpc("get_or_create_conversation", {
-            p_user_id: currentUserId,
-            p_other_user_id: otherUserId,
-            p_tenant_id: tenantId,
-          });
-
-          if (error) {
-            console.error("get_or_create_conversation error:", error);
-            throw error;
-          }
-
-          if (!data) {
-            throw new Error("No conversation ID returned");
-          }
-
-          return data as string;
-        });
-
-        const convs = await fetchConversationsFromDb();
-        conversationsRef.current = convs;
-        setConversations(convs);
-        cacheConversations(convs);
-        await setCurrentConversation(conversationId);
-        return conversationId;
-
-      } catch (error: any) {
-        console.error("get_or_create_conversation failed after retries:", error);
-
-        // Automatically recover from schema mismatches by using a simplified creation path
-        if (error?.code === "42703" || error?.message?.toLowerCase().includes("does not exist")) {
-          const fallbackId = await createConversationFallback(otherUserId);
-          if (fallbackId) {
-            return fallbackId;
-          }
-        }
-
-        // Supabase can sometimes return a PostgREST error when coercing the RPC
-        // result into a single JSON object. In that case, fall back to the
-        // direct participant-based lookup/creation so the user can continue
-        // messaging without seeing a hard error.
-        const errorMessage = error?.message?.toLowerCase?.() ?? "";
-        if (errorMessage.includes("cannot coerce") || errorMessage.includes("single json object")) {
-          const fallbackId = await createConversationFallback(otherUserId);
-          if (fallbackId) {
-            return fallbackId;
-          }
-        }
-
-        const userMessage = parseDbError(error);
-        toast({
-          title: "Unable to start conversation",
-          description: userMessage,
-          variant: "destructive",
-        });
-        return null;
-      }
+      const id = createId("conv");
+      const ts = new Date().toISOString();
+      const conv: Conversation = {
+        id,
+        tenant_id: tenantId,
+        title: null,
+        type: "direct",
+        is_group: false,
+        created_at: ts,
+        updated_at: ts,
+        last_message_at: null,
+        participants: [
+          buildParticipant(resolvedProfile, id, ts),
+          buildParticipant(otherProfile, id, ts),
+        ],
+        unreadCount: 0,
+      };
+      setConversations((p) => {
+        const next = sortConversations([...p, conv]);
+        conversationsRef.current = next;
+        return next;
+      });
+      await setCurrentConversation(id);
+      return id;
     },
     [
       currentUserId,
       fetchConversationsFromDb,
-      createConversationFallback,
       resolvedProfile,
       setCurrentConversation,
       tenantId,
