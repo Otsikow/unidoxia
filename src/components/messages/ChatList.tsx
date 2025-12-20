@@ -97,6 +97,7 @@ export function ChatList({
     const metadataName = getMetadataName(conv.metadata);
 
     return (
+      conv.title?.toLowerCase().includes(searchLower) ||
       conv.name?.toLowerCase().includes(searchLower) ||
       metadataName?.toLowerCase().includes(searchLower) ||
       otherParticipant?.profile?.full_name?.toLowerCase().includes(searchLower)
@@ -104,16 +105,18 @@ export function ChatList({
   });
 
   const getConversationName = (conversation: Conversation) => {
+    const metadataName = getMetadataName(conversation.metadata);
+    const baseName = conversation.title || conversation.name || metadataName;
+
     if (conversation.is_group) {
-      return conversation.name || getMetadataName(conversation.metadata) || 'Group Message';
+      return baseName || 'Group Message';
     }
 
     const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
-    const metadataName = getMetadataName(conversation.metadata);
     const participantProfile = otherParticipant?.profile;
 
     return (
-      metadataName ||
+      baseName ||
       participantProfile?.full_name ||
       participantProfile?.email ||
       'Student Contact'
