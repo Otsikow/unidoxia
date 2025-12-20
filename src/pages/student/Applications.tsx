@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, type HTMLDivElement, type KeyboardEvent } from 'react';
+import { useEffect, useState, useCallback, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/hooks/useAuth';
