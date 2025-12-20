@@ -685,8 +685,20 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-5 border-t bg-background flex-shrink-0 space-y-3">
-      <div className="flex items-start gap-2 sm:gap-3">
+    <div className="p-3 sm:p-4 md:p-5 border-t bg-background flex-shrink-0 space-y-2 sm:space-y-3">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={SUPPORTED_FILE_TYPES}
+        multiple
+        className="hidden"
+        data-testid="message-file-input"
+        onChange={(event) => handleAttachmentSelection(event.target.files)}
+      />
+
+      <div className="flex items-end gap-2 sm:gap-3">
+        {/* Actions Popover - single "+" button */}
         <Popover open={isActionsOpen} onOpenChange={setIsActionsOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -740,16 +752,6 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
                 </PopoverContent>
               </Popover>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept={SUPPORTED_FILE_TYPES}
-                multiple
-                className="hidden"
-                data-testid="message-file-input"
-                onChange={(event) => handleAttachmentSelection(event.target.files)}
-              />
-
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-2"
@@ -798,7 +800,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           </PopoverContent>
         </Popover>
 
-        {/* Message Input - takes remaining space */}
+        {/* Message Input - takes remaining space with better sizing */}
         <div className="flex-1 min-w-0">
           <Textarea
             ref={textareaRef}
@@ -808,21 +810,10 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[64px] sm:min-h-[72px] max-h-48 sm:max-h-56 resize-none text-sm sm:text-base py-3 px-3"
+            className="min-h-[44px] sm:min-h-[52px] max-h-32 sm:max-h-48 resize-none text-sm sm:text-base py-2.5 sm:py-3 px-3 sm:px-4 w-full"
             rows={1}
           />
         </div>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
-          disabled={disabled}
-          aria-label="Open message actions"
-          onClick={() => setIsActionsOpen((prev) => !prev)}
-        >
-          <Plus className="h-5 w-5 sm:h-6 sm:w-6" />
-        </Button>
 
         {/* Send Button */}
         <Button
@@ -835,15 +826,18 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           <Send className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       </div>
+
+      {/* Recording/Transcribing indicator */}
       {(isRecordingAudio || isTranscribing) && (
-        <div className="mt-2 flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground px-1">
           <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
           {isRecordingAudio ? `Recording… ${formatDuration(recordingDuration)}` : 'Listening…'}
         </div>
       )}
 
+      {/* Attachment previews */}
       {(attachments.length > 0 || isUploading) && (
-        <div className="flex flex-col gap-2 mt-2 sm:mt-3 px-1 sm:px-2">
+        <div className="flex flex-col gap-2 px-1 sm:px-2">
           {isUploading && (
             <div className="flex items-center gap-2 text-[10px] sm:text-xs text-muted-foreground">
               <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
@@ -857,7 +851,8 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           )}
         </div>
       )}
-      <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-3 px-1 sm:px-2 hidden sm:block">
+
+      <p className="text-[10px] sm:text-xs text-muted-foreground px-1 sm:px-2 hidden sm:block">
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

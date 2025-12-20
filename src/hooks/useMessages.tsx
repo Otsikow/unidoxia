@@ -97,6 +97,7 @@ const retryWithBackoff = async <T,>(
  * Store pending messages in localStorage for recovery
  */
 const storePendingMessage = (message: {
+  id: string;
   conversationId: string;
   content: string;
   attachments?: MessageAttachment[];
@@ -104,7 +105,8 @@ const storePendingMessage = (message: {
 }) => {
   try {
     const pending = JSON.parse(localStorage.getItem(MESSAGE_CACHE_KEY) || "[]");
-    pending.push({ ...message, id: createId("pending") });
+    // Use the provided id instead of creating a new one
+    pending.push(message);
     localStorage.setItem(MESSAGE_CACHE_KEY, JSON.stringify(pending));
   } catch {
     // Silently fail if localStorage is not available
@@ -800,13 +802,30 @@ export function useMessages() {
           }
         }
 
-        // Attempt to retry any pending messages from previous sessions
+        // Clear stale pending messages from previous buggy sessions 
+        // (messages stored with mismatched IDs that can never be removed)
         const pendingMessages = getPendingMessages();
-        if (pendingMessages.length > 0) {
-          console.log(`Found ${pendingMessages.length} pending messages to retry`);
+        const staleThreshold = 5 * 60 * 1000; // 5 minutes
+        const now = Date.now();
+        const freshPending = pendingMessages.filter((m) => {
+          const age = now - new Date(m.timestamp).getTime();
+          return age < staleThreshold;
+        });
+        
+        // If there were stale messages, clean them up
+        if (freshPending.length < pendingMessages.length) {
+          try {
+            localStorage.setItem(MESSAGE_CACHE_KEY, JSON.stringify(freshPending));
+          } catch {
+            // Silently fail
+          }
+        }
+        
+        if (freshPending.length > 0) {
+          console.log(`Found ${freshPending.length} pending messages to retry`);
           // We'll retry them in background without blocking the UI
           setTimeout(async () => {
-            for (const pending of pendingMessages) {
+            for (const pending of freshPending) {
               try {
                 const { error } = await supabase.from("conversation_messages").insert([{
                   conversation_id: pending.conversationId,
