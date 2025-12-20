@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import type { Message, TypingIndicator, Conversation, SendMessagePayload } from 
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2, FileText, AudioLines } from 'lucide-react';
 import type { UserPresence } from '@/hooks/usePresence';
+import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 
 interface ChatAreaProps {
   conversation: Conversation | null;
@@ -23,6 +24,7 @@ interface ChatAreaProps {
   isUserOnline?: (userId: string) => boolean;
   onBack?: () => void;
   showBackButton?: boolean;
+  onMarkConversationRead?: (conversationId: string) => void;
 }
 
 export function ChatArea({
@@ -37,15 +39,25 @@ export function ChatArea({
   isUserOnline,
   onBack,
   showBackButton,
+  onMarkConversationRead,
 }: ChatAreaProps) {
   const { user } = useAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [readObserverRef, isReadAnchorVisible] = useIntersectionObserver<HTMLDivElement>({
+    threshold: 0.35,
+  });
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (!conversation?.id) return;
+    if (!isReadAnchorVisible) return;
+    onMarkConversationRead?.(conversation.id);
+  }, [conversation?.id, isReadAnchorVisible, onMarkConversationRead]);
 
   const getMetadataName = (metadata?: Record<string, unknown> | null) => {
     if (!metadata) return undefined;
@@ -247,7 +259,7 @@ export function ChatArea({
     if (readParticipants.length === 0) {
       return {
         state: 'delivered' as const,
-        label: others.length === 1 ? 'Delivered' : 'Delivered to group',
+        label: others.length === 1 ? '✓✓ Delivered' : '✓✓ Delivered to group',
         readers: [] as string[],
       };
     }
@@ -260,7 +272,10 @@ export function ChatArea({
     if (everyoneRead) {
       return {
         state: 'read' as const,
-        label: readerNames.length > 0 ? `Read by ${readerNames.join(', ')}` : 'Read',
+        label:
+          readerNames.length > 0
+            ? `✓✓ Read by ${readerNames.join(', ')}`
+            : '✓✓ Read',
         readers: readerNames,
       };
     }
@@ -269,11 +284,20 @@ export function ChatArea({
       state: 'partial' as const,
       label:
         readerNames.length > 0
-          ? `Read by ${readerNames.join(', ')}`
-          : 'Read by some participants',
+          ? `✓✓ Read by ${readerNames.join(', ')}`
+          : '✓✓ Read by some participants',
       readers: readerNames,
     };
   };
+
+  const receiptToneClasses = useMemo(
+    () => ({
+      read: 'text-primary-foreground/80',
+      partial: 'text-primary-foreground/70',
+      delivered: 'text-primary-foreground/60',
+    }),
+    []
+  );
 
   if (loading) {
     return (
@@ -476,9 +500,9 @@ export function ChatArea({
                           {receipt && (
                             <span
                               className={cn(
-                                'leading-none text-[9px] sm:text-[10px]',
+                                'leading-none text-[9px] sm:text-[10px] flex items-center gap-1',
                                 isOwnMessage
-                                  ? 'text-primary-foreground/80'
+                                  ? receiptToneClasses[receipt.state]
                                   : 'text-muted-foreground/90'
                               )}
                             >
@@ -522,7 +546,7 @@ export function ChatArea({
                 </div>
               </div>
             )}
-
+            <div ref={readObserverRef} className="h-1 w-full" aria-hidden />
             <div ref={messagesEndRef} />
           </div>
         )}

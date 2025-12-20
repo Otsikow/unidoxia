@@ -81,6 +81,7 @@ export default function StaffMessages() {
     sendMessage: sendPartnerMessage,
     startTyping: startPartnerTyping,
     stopTyping: stopPartnerTyping,
+    markConversationAsRead: markPartnerConversationAsRead,
     error: partnerError,
   } = partnerMessaging;
 
@@ -95,6 +96,7 @@ export default function StaffMessages() {
     startTyping: startStaffTyping,
     stopTyping: stopStaffStopTyping,
     getOrCreateConversation: getStaffConversation,
+    markConversationAsRead: markStaffConversationAsRead,
     error: staffError,
   } = staffMessaging;
 
@@ -197,6 +199,11 @@ export default function StaffMessages() {
     stopPartnerTyping(partnerCurrentConversationId);
   }, [partnerCurrentConversationId, partnerEnabled, stopPartnerTyping]);
 
+  const handlePartnerMarkRead = useCallback(() => {
+    if (!partnerEnabled || !partnerCurrentConversationId) return;
+    markPartnerConversationAsRead(partnerCurrentConversationId);
+  }, [markPartnerConversationAsRead, partnerCurrentConversationId, partnerEnabled]);
+
   const handleStaffStartTyping = useCallback(() => {
     if (!staffCurrentConversationId) return;
     startStaffTyping(staffCurrentConversationId);
@@ -206,6 +213,11 @@ export default function StaffMessages() {
     if (!staffCurrentConversationId) return;
     stopStaffStopTyping(staffCurrentConversationId);
   }, [staffCurrentConversationId, stopStaffStopTyping]);
+
+  const handleStaffMarkRead = useCallback(() => {
+    if (!staffCurrentConversationId) return;
+    markStaffConversationAsRead(staffCurrentConversationId);
+  }, [markStaffConversationAsRead, staffCurrentConversationId]);
 
   const handlePartnerBack = useCallback(() => {
     setPartnerCurrentConversation(null);
@@ -314,6 +326,7 @@ export default function StaffMessages() {
     onBack,
     enableNewChat = false,
     onNewChat,
+    onMarkConversationRead,
   }: {
     conversations: Conversation[];
     currentConversationId: string | null;
@@ -328,6 +341,7 @@ export default function StaffMessages() {
     onBack: () => void;
     enableNewChat?: boolean;
     onNewChat?: () => void;
+    onMarkConversationRead?: () => void;
   }) => (
     <div className="flex h-full w-full gap-4">
       <div className="w-full max-w-full md:w-80 lg:w-96 xl:w-[420px] flex-shrink-0">
@@ -354,6 +368,7 @@ export default function StaffMessages() {
           getUserPresence={getUserPresence}
           isUserOnline={isUserOnline}
           onBack={onBack}
+          onMarkConversationRead={onMarkConversationRead}
         />
       </div>
       {currentConversationId && (
@@ -370,6 +385,7 @@ export default function StaffMessages() {
             isUserOnline={isUserOnline}
             onBack={onBack}
             showBackButton
+            onMarkConversationRead={onMarkConversationRead}
           />
         </div>
       )}
@@ -454,6 +470,7 @@ export default function StaffMessages() {
                 onSendMessage: handlePartnerSendMessage,
                 onStartTyping: handlePartnerStartTyping,
                 onStopTyping: handlePartnerStopTyping,
+                onMarkConversationRead: handlePartnerMarkRead,
                 messages: partnerMessages,
                 typingUsers: partnerTypingUsers,
                 loading: partnerLoading,
@@ -483,6 +500,7 @@ export default function StaffMessages() {
               onSendMessage: handleStaffSendMessage,
               onStartTyping: handleStaffStartTyping,
               onStopTyping: handleStaffStopTyping,
+              onMarkConversationRead: handleStaffMarkRead,
               messages: staffMessages,
               typingUsers: staffTypingUsers,
               loading: staffLoading,

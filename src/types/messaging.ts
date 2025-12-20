@@ -41,6 +41,8 @@ export interface Message {
   reply_to_id: string | null;
   edited_at: string | null;
   deleted_at: string | null;
+  delivered_at?: string | null;
+  read_at?: string | null;
   created_at: string;
   sender?: {
     id: string;
