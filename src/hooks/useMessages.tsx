@@ -1100,6 +1100,18 @@ export function useMessages() {
           }
         }
 
+        // Supabase can sometimes return a PostgREST error when coercing the RPC
+        // result into a single JSON object. In that case, fall back to the
+        // direct participant-based lookup/creation so the user can continue
+        // messaging without seeing a hard error.
+        const errorMessage = error?.message?.toLowerCase?.() ?? "";
+        if (errorMessage.includes("cannot coerce") || errorMessage.includes("single json object")) {
+          const fallbackId = await createConversationFallback(otherUserId);
+          if (fallbackId) {
+            return fallbackId;
+          }
+        }
+
         const userMessage = parseDbError(error);
         toast({
           title: "Unable to start conversation",
