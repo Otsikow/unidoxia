@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, CheckCircle2, Globe2, GraduationCap, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Globe2, GraduationCap, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 /* -------------------------- STATIC DATA -------------------------- */
 
@@ -135,7 +136,19 @@ const AgentOnboardingWelcome = () => {
         <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-gradient-to-tr from-sky-50 via-primary/5 to-white blur-3xl" />
       </div>
 
-      <div className="container mx-auto px-4 md:px-8 py-14 md:py-20 relative">
+      <div className="container mx-auto px-4 md:px-8 py-10 md:py-14 relative">
+        <div className="mb-8 flex items-center justify-between gap-3">
+          <Button variant="ghost" className="gap-2 text-slate-600" asChild>
+            <Link to="/">
+              <ArrowLeft className="h-4 w-4" />
+              Back to home
+            </Link>
+          </Button>
+          <div className="text-sm text-slate-500">Next: Commissions & payouts</div>
+        </div>
+
+        <OnboardingProgress currentStep={1} totalSteps={2} label="Step into the agent workspace experience" />
+
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
           {/* LEFT PANEL */}
           <div className="flex-1 space-y-8">
@@ -199,17 +212,31 @@ const AgentOnboardingWelcome = () => {
               )}
             </div>
 
-            {/* METRICS */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { label: "Verified programs", value: "2,400+" },
-                { label: "Top destinations", value: "18" },
-                { label: "Agent satisfaction", value: "4.9/5" },
-              ].map((item) => (
-                <Card key={item.label} className="bg-white/80 backdrop-blur border-slate-200 shadow-sm">
-                  <CardContent className="py-4 px-5">
-                    <p className="text-sm text-slate-500">{item.label}</p>
-                    <p className="text-2xl font-semibold text-slate-900">{item.value}</p>
+            <p className="text-sm text-slate-500">
+              Two guided screens, then sign up. Once your account is created, onboarding stays out of the way.
+            </p>
+
+            {/* GUIDED PATH */}
+            <div className="grid gap-4 sm:grid-cols-3">
+              {["Set up", "Learn earnings", "Create account"].map((label, index) => (
+                <Card key={label} className="border-primary/10 bg-white/80 shadow-sm">
+                  <CardContent className="py-5 px-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-primary">0{index + 1}</span>
+                      {index === 2 ? (
+                        <Badge className="bg-emerald-100 text-emerald-800">Ready</Badge>
+                      ) : (
+                        <Badge variant="outline" className="border-slate-200 text-slate-700">
+                          Up next
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-base font-semibold text-slate-900">{label}</p>
+                    <p className="text-sm text-slate-600">
+                      {index === 0 && "Preview the portal built for verified agents."}
+                      {index === 1 && "Understand payouts, referrals, and transparency."}
+                      {index === 2 && "Sign up once—onboarding will stay out of your way."}
+                    </p>
                   </CardContent>
                 </Card>
               ))}
