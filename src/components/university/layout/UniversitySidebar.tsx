@@ -74,7 +74,7 @@ export const UniversitySidebar = ({
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col border-r border-border bg-card py-6 text-card-foreground shadow-lg transition-[width,opacity] duration-300 lg:flex",
+        "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-lg transition-[width,opacity] duration-300 lg:flex",
         collapsed ? "w-20 px-3" : "w-72 px-4",
         className,
       )}
@@ -90,10 +90,10 @@ export const UniversitySidebar = ({
         </span>
         {!collapsed && (
           <div>
-            <p className="text-sm uppercase tracking-[0.3rem] text-muted-foreground">
+            <p className="text-sm uppercase tracking-[0.3rem] text-sidebar-foreground/80">
               UniDoxia
             </p>
-            <h1 className="text-base font-semibold leading-tight text-foreground">
+            <h1 className="text-base font-semibold leading-tight text-sidebar-foreground">
               University Portal
             </h1>
           </div>
@@ -118,11 +118,11 @@ export const UniversitySidebar = ({
                     className={({ isActive }) =>
                       cn(
                         "group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200",
-                        "hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                         collapsed && "justify-center px-3",
                         isActive
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-foreground",
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                          : "text-sidebar-foreground",
                       )
                     }
                     onClick={onNavigate}
@@ -133,8 +133,8 @@ export const UniversitySidebar = ({
                           className={cn(
                             "h-5 w-5 transition-transform duration-200",
                             isActive
-                              ? "scale-110 text-primary-foreground"
-                              : "text-foreground/70",
+                              ? "scale-110 text-sidebar-primary-foreground"
+                              : "text-sidebar-foreground/70",
                           )}
                         />
                         <span
@@ -161,8 +161,8 @@ export const UniversitySidebar = ({
       </TooltipProvider>
 
       {!collapsed && (
-        <div className="rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">Need assistance?</p>
+        <div className="rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-4 text-xs text-sidebar-foreground">
+          <p className="font-medium text-sidebar-foreground">Need assistance?</p>
           <p className="mt-1">
             Visit the partner help center or contact your UniDoxia partnership manager.
           </p>
