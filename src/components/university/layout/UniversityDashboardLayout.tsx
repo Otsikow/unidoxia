@@ -844,6 +844,28 @@ export const UniversityDashboardLayout = ({
     );
   }
 
+  if (!tenantId) {
+    return (
+      <StatePlaceholder
+        icon={<AlertCircle />}
+        title="Partner space not configured"
+        description="We couldn't find a university workspace linked to your account. Please contact support or try refreshing."
+        action={<Button onClick={() => navigate('/dashboard')}>Go back</Button>}
+      />
+    );
+  }
+
+  if (!data?.university) {
+    return (
+      <StatePlaceholder
+        icon={<RefreshCw />}
+        title="Setting up your dashboard"
+        description="We're preparing your university workspace. This usually takes a few seconds—try refreshing if the screen stays blank."
+        action={<Button onClick={() => void refetch()}>Refresh now</Button>}
+      />
+    );
+  }
+
   if (error) {
     return (
       <StatePlaceholder
