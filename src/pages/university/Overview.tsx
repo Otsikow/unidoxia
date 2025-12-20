@@ -66,6 +66,14 @@ const pipelineIcons: Record<string, ComponentType<{ className?: string }>> = {
   enrolled: GraduationCap,
 };
 
+const pipelineLinks: Record<string, string> = {
+  submitted: "/university/applications?status=submitted",
+  screening: "/university/applications?status=screening",
+  offers: "/university/applications?status=offers",
+  cas: "/university/applications?status=cas",
+  enrolled: "/university/applications?status=enrolled",
+};
+
 const formatTimeAgo = (date: Date | null) => {
   if (!date) return "";
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -696,14 +704,21 @@ const OverviewPage = () => {
             ) : (
               pipeline.map((stage) => {
                 const Icon = pipelineIcons[stage.key] ?? FileStack;
-                return (
+                const stageLink = pipelineLinks[stage.key];
+
+                const content = (
                   <div
-                    key={stage.key}
-                    className={withUniversitySurfaceTint("rounded-xl p-4")}
+                    className={withUniversitySurfaceTint(
+                      "rounded-xl p-4 transition-transform hover:-translate-y-0.5",
+                    )}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <span className={withUniversitySurfaceSubtle("inline-flex h-9 w-9 items-center justify-center rounded-xl")}>
+                        <span
+                          className={withUniversitySurfaceSubtle(
+                            "inline-flex h-9 w-9 items-center justify-center rounded-xl",
+                          )}
+                        >
                           <Icon className="h-4 w-4 text-primary" />
                         </span>
                         <div>
@@ -722,6 +737,19 @@ const OverviewPage = () => {
                     </div>
                     <Progress value={stage.percentage} className="mt-3 h-2 bg-primary/20" />
                   </div>
+                );
+                return (
+                  stageLink ? (
+                    <Link
+                      key={stage.key}
+                      to={stageLink}
+                      className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      {content}
+                    </Link>
+                  ) : (
+                    <div key={stage.key}>{content}</div>
+                  )
                 );
               })
             )}

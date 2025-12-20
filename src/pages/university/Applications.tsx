@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { FileStack, Sparkles, BadgeCheck, Eye, Copy, Loader2, Stamp, GraduationCap, RefreshCw } from "lucide-react";
 
 import {
@@ -60,6 +61,8 @@ const formatTimeAgo = (date: Date | null) => {
   return date.toLocaleDateString();
 };
 
+const pipelineStatusFilters = ["submitted", "screening", "offers", "cas", "enrolled"];
+
 const ApplicationsPage = () => {
   const { data, isRefetching, refetch, lastUpdated } = useUniversityDashboard();
   const { toast } = useToast();
@@ -71,6 +74,8 @@ const ApplicationsPage = () => {
     updateLocalStatus,
     updateLocalNotes,
   } = useExtendedApplication();
+
+  const [searchParams] = useSearchParams();
 
   const applications = useMemo(
     () => data?.applications ?? [],
@@ -154,6 +159,22 @@ const ApplicationsPage = () => {
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [applications]);
+
+  useEffect(() => {
+    const statusParam = searchParams.get("status");
+    if (!statusParam) return;
+
+    const normalizedStatus = statusParam.toLowerCase();
+    const isKnownStatus =
+      pipelineStatusFilters.includes(normalizedStatus) ||
+      availableStatuses.some((status) => status.toLowerCase() === normalizedStatus);
+
+    if (isKnownStatus && normalizedStatus !== statusFilter) {
+      setStatusFilter(normalizedStatus);
+      setActiveCard(null);
+      setDateFilter("all");
+    }
+  }, [searchParams, availableStatuses, statusFilter]);
 
   const filteredApplications = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
