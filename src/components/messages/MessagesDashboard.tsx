@@ -78,6 +78,7 @@ export default function MessagesDashboard() {
     stopTyping,
     getOrCreateConversation,
     fetchConversations,
+    markConversationAsRead,
     retryPendingMessages,
     getPendingMessageCount,
   } = useMessages();
@@ -594,6 +595,11 @@ export default function MessagesDashboard() {
             isUserOnline={isUserOnline}
             onBack={handleBack}
             showBackButton={!!currentConversationId}
+            onMarkConversationRead={
+              currentConversation?.id
+                ? () => markConversationAsRead(currentConversation.id)
+                : undefined
+            }
           />
         </div>
       </div>
