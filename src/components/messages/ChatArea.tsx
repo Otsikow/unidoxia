@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
@@ -16,7 +15,7 @@ interface ChatAreaProps {
   messages: Message[];
   typingUsers: TypingIndicator[];
   loading: boolean;
-    onSendMessage: (payload: SendMessagePayload) => void;
+  onSendMessage: (payload: SendMessagePayload) => void;
   onStartTyping: () => void;
   onStopTyping: () => void;
   getUserPresence?: (userId: string) => UserPresence | null;
@@ -39,13 +38,31 @@ export function ChatArea({
   showBackButton,
 }: ChatAreaProps) {
   const { user } = useAuth();
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageListRef = useRef<HTMLDivElement>(null);
+  const isAtBottomRef = useRef(true);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    const container = messageListRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const distanceFromBottom =
+        container.scrollHeight - container.clientHeight - container.scrollTop;
+      isAtBottomRef.current = distanceFromBottom < 80;
+    };
+
+    handleScroll();
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const container = messageListRef.current;
+    if (!container || !isAtBottomRef.current) return;
+
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+  }, [messages, typingUsers]);
+
 
   const getMetadataName = (metadata?: Record<string, unknown> | null) => {
     if (!metadata) return undefined;
@@ -341,13 +358,17 @@ export function ChatArea({
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 px-3 sm:px-5 py-4 sm:py-6 min-h-0">
+      <div
+        ref={messageListRef}
+        className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 sm:py-6 min-h-0"
+        style={{ scrollBehavior: 'smooth' }}
+      >
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-full min-h-[200px]">
             <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="space-y-1 sm:space-y-2" ref={scrollRef}>
+          <div className="space-y-1 sm:space-y-2">
             {messages.map((message, index) => {
               const previousMessage = index > 0 ? messages[index - 1] : null;
               const showDate = shouldShowDateDivider(message, previousMessage);
@@ -368,7 +389,7 @@ export function ChatArea({
 
                   <div
                     className={cn(
-                      'flex gap-1.5 sm:gap-2 items-end',
+                      'flex gap-2 sm:gap-3 items-end',
                       isOwnMessage ? 'justify-end' : 'justify-start',
                       groupWithPrevious && 'mt-0.5',
                       !groupWithPrevious && 'mt-3 sm:mt-4'
@@ -388,18 +409,18 @@ export function ChatArea({
 
                     <div
                       className={cn(
-                        'max-w-[88%] sm:max-w-[72%] md:max-w-[68%] rounded-2xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm',
+                        'max-w-[90%] sm:max-w-[82%] lg:max-w-[70%] rounded-2xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm',
                         isOwnMessage
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted'
                       )}
                     >
                         {!isOwnMessage && !groupWithPrevious && (
-                          <p className="text-[10px] sm:text-xs font-semibold mb-0.5 sm:mb-1">
+                          <p className="text-[11px] sm:text-xs font-semibold mb-0.5 sm:mb-1">
                             {message.sender?.full_name}
                           </p>
                         )}
-                        <p className="text-xs sm:text-sm whitespace-pre-wrap break-words leading-relaxed">
+                        <p className="text-[15px] sm:text-[15px] md:text-base whitespace-pre-wrap break-words leading-relaxed">
                           {message.content}
                         </p>
                         {message.attachments.length > 0 && (
@@ -411,7 +432,7 @@ export function ChatArea({
                                     key={attachment.id}
                                     src={attachment.preview_url || attachment.url}
                                     alt={attachment.name || 'Shared image'}
-                                    className="max-w-[240px] rounded-lg border"
+                                    className="max-w-[260px] sm:max-w-[320px] rounded-lg border"
                                   />
                                 );
                               }
@@ -421,7 +442,7 @@ export function ChatArea({
                                   <video
                                     key={attachment.id}
                                     controls
-                                    className="w-full max-w-[320px] rounded-lg border"
+                                    className="w-full max-w-[360px] rounded-lg border"
                                   >
                                     <source src={attachment.url} type={attachment.mime_type || 'video/mp4'} />
                                   </video>
@@ -430,7 +451,7 @@ export function ChatArea({
 
                               if (attachment.type === 'audio') {
                                 return (
-                                  <div key={attachment.id} className="flex flex-col gap-1 text-xs">
+                                  <div key={attachment.id} className="flex flex-col gap-1 text-sm">
                                     <div className="flex items-center gap-2 font-medium">
                                       <AudioLines className="h-4 w-4" />
                                       <span>{attachment.name || 'Audio message'}</span>
@@ -451,7 +472,7 @@ export function ChatArea({
                                   href={attachment.url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-2 text-xs underline break-all"
+                                  className="inline-flex items-center gap-2 text-sm underline break-all"
                                   download={attachment.name ?? undefined}
                                 >
                                   <FileText className="h-4 w-4" />
@@ -466,7 +487,7 @@ export function ChatArea({
                         )}
                         <div
                           className={cn(
-                            'mt-1 text-[10px] sm:text-xs flex flex-col gap-0.5',
+                            'mt-1 text-[11px] sm:text-xs flex flex-col gap-0.5 leading-relaxed',
                             isOwnMessage
                               ? 'items-end text-right text-primary-foreground/70'
                               : 'text-muted-foreground'
@@ -476,7 +497,7 @@ export function ChatArea({
                           {receipt && (
                             <span
                               className={cn(
-                                'leading-none text-[9px] sm:text-[10px]',
+                                'leading-none text-[10px] sm:text-[11px]',
                                 isOwnMessage
                                   ? 'text-primary-foreground/80'
                                   : 'text-muted-foreground/90'
@@ -499,7 +520,7 @@ export function ChatArea({
                   <AvatarFallback className="text-xs">•••</AvatarFallback>
                 </Avatar>
                 <div className="bg-muted rounded-2xl px-3 py-2 sm:px-4 sm:py-3">
-                  <p className="text-[10px] sm:text-xs font-medium text-muted-foreground mb-1.5 sm:mb-2">
+                  <p className="text-[11px] sm:text-xs font-medium text-muted-foreground mb-1.5 sm:mb-2">
                     {typingUsers
                       .map(indicator => indicator.profile?.full_name || 'Someone')
                       .join(', ')}{' '}
@@ -522,11 +543,9 @@ export function ChatArea({
                 </div>
               </div>
             )}
-
-            <div ref={messagesEndRef} />
           </div>
         )}
-      </ScrollArea>
+      </div>
 
       {/* Message Input */}
       <MessageInput
