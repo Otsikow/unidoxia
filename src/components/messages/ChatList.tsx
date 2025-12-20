@@ -39,6 +39,16 @@ export function ChatList({
       'universityName',
       'organization_name',
       'organizationName',
+      'student_name',
+      'studentName',
+      'student_full_name',
+      'studentFullName',
+      'contact_name',
+      'contactName',
+      'applicant_name',
+      'applicantName',
+      'full_name',
+      'fullName',
       'name',
       'title',
       'display_name',
@@ -48,6 +58,23 @@ export function ChatList({
       const value = metadata[key];
       if (typeof value === 'string' && value.trim()) {
         return value.trim();
+      }
+    }
+
+    const nestedKeys = [
+      (metadata as Record<string, unknown>).student,
+      (metadata as Record<string, unknown>).applicant,
+      (metadata as Record<string, unknown>).contact,
+      (metadata as Record<string, unknown>).profile,
+      (metadata as Record<string, unknown>).student_profile,
+    ];
+
+    for (const nested of nestedKeys) {
+      if (nested && typeof nested === 'object') {
+        const nestedName = (nested as Record<string, unknown>).full_name || (nested as Record<string, unknown>).name;
+        if (typeof nestedName === 'string' && nestedName.trim()) {
+          return nestedName.trim();
+        }
       }
     }
 
@@ -83,7 +110,14 @@ export function ChatList({
 
     const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
     const metadataName = getMetadataName(conversation.metadata);
-    return metadataName || otherParticipant?.profile?.full_name || otherParticipant?.user_id || 'Unknown User';
+    const participantProfile = otherParticipant?.profile;
+
+    return (
+      metadataName ||
+      participantProfile?.full_name ||
+      participantProfile?.email ||
+      'Student Contact'
+    );
   };
 
   const getConversationAvatar = (conversation: Conversation) => {
