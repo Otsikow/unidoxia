@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,10 @@ interface ChatListProps {
   getUserPresence?: (userId: string) => UserPresence | null;
   isUserOnline?: (userId: string) => boolean;
 }
+
+type AggregatedConversation = Conversation & {
+  relatedConversationIds: string[];
+};
 
 export function ChatList({
   conversations,
@@ -89,7 +93,7 @@ export function ChatList({
     return undefined;
   };
 
-  const filteredConversations = conversations.filter(conv => {
+  const filteredConversations = aggregatedConversations.filter(conv => {
     if (!searchQuery) return true;
 
     const otherParticipant = conv.participants?.find(p => p.user_id !== user?.id);
@@ -259,6 +263,112 @@ export function ChatList({
       indicator: 'bg-gray-400',
     };
   };
+
+  const getConversationIdentifier = useCallback((conversation: Conversation) => {
+    if (conversation.is_group) return conversation.id;
+
+    const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
+    if (otherParticipant?.user_id) return otherParticipant.user_id;
+
+    const metadata = conversation.metadata as Record<string, unknown> | null;
+    if (metadata) {
+      const possibleIds = [
+        'student_id',
+        'studentId',
+        'student_profile_id',
+        'studentProfileId',
+        'applicant_id',
+        'applicantId',
+        'profile_id',
+        'profileId',
+      ];
+
+      for (const key of possibleIds) {
+        const value = metadata[key];
+        if (typeof value === 'string' && value.trim()) {
+          return value;
+        }
+      }
+
+      const nestedCandidates = [
+        (metadata as Record<string, unknown>).student,
+        (metadata as Record<string, unknown>).student_profile,
+        (metadata as Record<string, unknown>).applicant,
+        (metadata as Record<string, unknown>).profile,
+      ];
+
+      for (const candidate of nestedCandidates) {
+        if (candidate && typeof candidate === 'object') {
+          const nestedId = (candidate as Record<string, unknown>).id;
+          if (typeof nestedId === 'string' && nestedId.trim()) {
+            return nestedId;
+          }
+        }
+      }
+    }
+
+    if (otherParticipant?.profile?.email) return otherParticipant.profile.email;
+
+    return conversation.id;
+  }, [user?.id]);
+
+  const getSortTimestamp = useCallback((conversation: Conversation) => {
+    const lastMessageTime = conversation.lastMessage?.created_at
+      ? new Date(conversation.lastMessage.created_at).getTime()
+      : null;
+    const lastUpdated = conversation.updated_at ? new Date(conversation.updated_at).getTime() : null;
+    const lastConversationActivity = conversation.last_message_at
+      ? new Date(conversation.last_message_at).getTime()
+      : null;
+
+    return Math.max(lastMessageTime ?? 0, lastConversationActivity ?? 0, lastUpdated ?? 0);
+  }, []);
+
+  const aggregatedConversations = useMemo<AggregatedConversation[]>(() => {
+    const groups = new Map<string, { primary: Conversation; related: Conversation[] }>();
+
+    conversations.forEach((conversation) => {
+      const identifier = getConversationIdentifier(conversation);
+      const existing = groups.get(identifier);
+
+      if (!existing) {
+        groups.set(identifier, { primary: conversation, related: [conversation] });
+        return;
+      }
+
+      existing.related.push(conversation);
+
+      const currentTimestamp = getSortTimestamp(existing.primary);
+      const candidateTimestamp = getSortTimestamp(conversation);
+
+      if (candidateTimestamp > currentTimestamp) {
+        existing.primary = conversation;
+      }
+    });
+
+    const merged = Array.from(groups.values()).map(({ primary, related }) => {
+      const unreadCount = related.reduce((total, item) => total + (item.unreadCount || 0), 0);
+
+      const latestMessage = related.reduce<Conversation['lastMessage'] | undefined>((latest, item) => {
+        if (!item.lastMessage) return latest;
+        if (!latest) return item.lastMessage;
+
+        const latestTime = new Date(latest.created_at).getTime();
+        const candidateTime = new Date(item.lastMessage.created_at).getTime();
+
+        return candidateTime > latestTime ? item.lastMessage : latest;
+      }, primary.lastMessage);
+
+      return {
+        ...primary,
+        unreadCount,
+        lastMessage: latestMessage,
+        relatedConversationIds: related.map((item) => item.id),
+      };
+    });
+
+    return merged.sort((a, b) => getSortTimestamp(b) - getSortTimestamp(a));
+  }, [conversations, getConversationIdentifier, getSortTimestamp]);
 
   return (
     <div className="flex flex-col h-full bg-background">
