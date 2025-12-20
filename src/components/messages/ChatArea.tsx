@@ -302,9 +302,9 @@ export function ChatArea({
       : undefined;
 
   return (
-    <div className="flex-1 flex flex-col h-full min-h-0 w-full">
+    <div className="flex-1 flex flex-col h-full min-h-0 w-full bg-gradient-to-b from-background via-background to-muted/40">
       {/* Header */}
-      <div className="p-3 sm:p-4 border-b bg-background flex items-center gap-2 sm:gap-3 flex-shrink-0">
+      <div className="p-3 sm:p-4 border-b bg-card/90 backdrop-blur supports-[backdrop-filter]:bg-card/80 flex items-center gap-2 sm:gap-3 flex-shrink-0">
         {showBackButton && onBack && (
           <Button
             variant="ghost"
@@ -341,13 +341,13 @@ export function ChatArea({
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-3 sm:p-4 min-h-0">
+      <ScrollArea className="flex-1 px-3 sm:px-5 py-4 sm:py-6 min-h-0">
         {loading && messages.length === 0 ? (
           <div className="flex items-center justify-center h-full min-h-[200px]">
             <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="space-y-1" ref={scrollRef}>
+          <div className="space-y-1 sm:space-y-2" ref={scrollRef}>
             {messages.map((message, index) => {
               const previousMessage = index > 0 ? messages[index - 1] : null;
               const showDate = shouldShowDateDivider(message, previousMessage);
@@ -388,7 +388,7 @@ export function ChatArea({
 
                     <div
                       className={cn(
-                        'max-w-[80%] sm:max-w-[70%] rounded-2xl px-3 py-2 sm:px-4 sm:py-2',
+                        'max-w-[88%] sm:max-w-[72%] md:max-w-[68%] rounded-2xl px-3 py-2 sm:px-4 sm:py-3 shadow-sm',
                         isOwnMessage
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted'

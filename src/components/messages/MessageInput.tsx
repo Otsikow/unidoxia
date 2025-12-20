@@ -685,7 +685,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-5 border-t bg-background flex-shrink-0 space-y-2 sm:space-y-3">
+    <div className="p-3 sm:p-4 md:p-5 border-t bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/90 flex-shrink-0 space-y-3 sm:space-y-4 shadow-inner">
       {/* Hidden file input */}
       <input
         ref={fileInputRef}
@@ -697,14 +697,14 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChange={(event) => handleAttachmentSelection(event.target.files)}
       />
 
-      <div className="flex items-end gap-2 sm:gap-3">
+      <div className="flex flex-wrap items-end gap-2 sm:gap-3 md:flex-nowrap">
         {/* Actions Popover - single "+" button */}
         <Popover open={isActionsOpen} onOpenChange={setIsActionsOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+              className="flex-shrink-0 h-10 w-10 sm:h-11 sm:w-11 border border-border/70 bg-background/80 shadow-sm"
               disabled={disabled}
               aria-label="Open message actions"
             >
@@ -810,7 +810,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[44px] sm:min-h-[52px] max-h-32 sm:max-h-48 resize-none text-sm sm:text-base py-2.5 sm:py-3 px-3 sm:px-4 w-full"
+            className="min-h-[56px] sm:min-h-[64px] max-h-48 sm:max-h-56 resize-none text-sm sm:text-base leading-relaxed py-3 sm:py-3.5 px-3 sm:px-4 w-full rounded-2xl border border-border/60 bg-background/90 shadow-sm focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary"
             rows={1}
           />
         </div>
@@ -820,7 +820,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
           onClick={handleSend}
           disabled={disabled || isUploading || isRecordingAudio || (!message.trim() && attachments.length === 0)}
           size="icon"
-          className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10"
+          className="flex-shrink-0 h-10 w-10 sm:h-11 sm:w-11 shadow-sm"
           aria-label="Send message"
         >
           <Send className="h-4 w-4 sm:h-5 sm:w-5" />

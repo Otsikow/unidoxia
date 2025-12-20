@@ -470,7 +470,7 @@ export default function MessagesDashboard() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] bg-background">
+    <div className="flex flex-col h-[calc(100vh-10rem)] bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/90">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -521,15 +521,15 @@ export default function MessagesDashboard() {
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 gap-2 sm:gap-4 min-h-0 overflow-hidden">
+      <div className="flex flex-1 gap-3 sm:gap-5 min-h-0 overflow-hidden">
         {/* Chat list - full width on mobile when no conversation selected, fixed width on larger screens */}
         <div className={cn(
           "flex-shrink-0 transition-all duration-200",
-          currentConversationId 
-            ? "hidden md:block md:w-72 lg:w-80 xl:w-96" 
+          currentConversationId
+            ? "hidden md:block md:w-72 lg:w-80 xl:w-96"
             : "w-full md:w-72 lg:w-80 xl:w-96"
         )}>
-          <div className="h-full overflow-hidden rounded-lg border bg-card shadow-sm">
+          <div className="h-full overflow-hidden rounded-2xl border bg-card/90 shadow-lg">
             <ChatList
               conversations={conversations}
               currentConversation={currentConversationId}
@@ -543,7 +543,7 @@ export default function MessagesDashboard() {
 
         {/* Chat area - shown on desktop always, on mobile only when conversation selected */}
         <div className={cn(
-          "flex-1 overflow-hidden rounded-lg border bg-card shadow-sm min-w-0",
+          "flex-1 overflow-hidden rounded-2xl border bg-card/90 shadow-xl min-w-0",
           currentConversationId ? "flex" : "hidden md:flex"
         )}>
           <ChatArea
