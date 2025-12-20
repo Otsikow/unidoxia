@@ -8,11 +8,15 @@ export const getOrCreateConversation = async (studentId: string): Promise<string
     .from("profiles")
     .select("tenant_id")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (profileError) {
     console.error("Error fetching user profile:", profileError);
     throw profileError;
+  }
+
+  if (!profile?.tenant_id) {
+    throw new Error("Profile tenant not found");
   }
 
   const { data, error } = await supabase.rpc("get_or_create_conversation", {
@@ -51,7 +55,7 @@ export const sendMessage = async (
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
   
-  const { data, error } = await supabase
+  const { data: rows, error } = await supabase
     .from("conversation_messages")
     .insert([
       {
@@ -60,8 +64,9 @@ export const sendMessage = async (
         content: content,
       },
     ])
-    .select()
-    .single();
+    .select();
+
+  const data = Array.isArray(rows) ? rows[0] : rows;
 
   if (error) {
     console.error("Error sending message:", error);

@@ -332,21 +332,22 @@ export function useMessages() {
       }
 
       // Create a new conversation without referencing optional columns like role
-      const { data: conv, error: convError } = await supabase
+      const { data: convRows, error: convError } = await supabase
         .from("conversations")
         .insert([{ tenant_id: tenantId, created_by: currentUserId, is_group: false, type: "direct" }])
-        .select("id")
-        .single();
+        .select("id");
 
-      if (convError || !conv?.id) {
+      const convId = Array.isArray(convRows) ? convRows[0]?.id : (convRows as any)?.id;
+
+      if (convError || !convId) {
         console.error("Fallback conversation creation failed:", convError);
         return null;
       }
 
       const { error: participantError } = await supabase.from("conversation_participants").upsert(
         [
-          { conversation_id: conv.id, user_id: currentUserId },
-          { conversation_id: conv.id, user_id: otherUserId },
+          { conversation_id: convId, user_id: currentUserId },
+          { conversation_id: convId, user_id: otherUserId },
         ],
         { onConflict: "conversation_id,user_id" }
       );
@@ -397,7 +398,7 @@ export function useMessages() {
         cacheConversations(sortedConvs);
       }
 
-      return conv.id as string;
+      return convId as string;
     },
     [currentUserId, tenantId]
   );
@@ -987,8 +988,8 @@ export function useMessages() {
               .from("profiles")
               .select("id, full_name, email, avatar_url, role, tenant_id")
               .eq("id", otherUserId)
-              .single();
-            
+              .maybeSingle();
+
             if (result.error) throw result.error;
             return result;
           });

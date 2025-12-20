@@ -67,7 +67,7 @@ export async function fetchMessagingContacts(
       .from('profiles')
       .select('role, tenant_id')
       .eq('id', userData.user.id)
-      .single();
+      .maybeSingle();
 
     if (!profileData) return [];
 
