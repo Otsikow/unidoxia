@@ -117,7 +117,7 @@ export function CourseCard({ course }: CourseCardProps) {
           <CardContent className="pt-6 pb-4 flex-1">
             {/* University Header */}
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110">
+              <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110 shadow-sm">
                 {course.university_logo_url ? (
                   <img
                     src={course.university_logo_url}
@@ -129,15 +129,15 @@ export function CourseCard({ course }: CourseCardProps) {
                 )}
               </div>
 
-              <div className="flex-1 min-w-0 space-y-1">
+              <div className="flex-1 min-w-0 space-y-1.5">
                 <div className="flex items-start gap-3 justify-between">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm text-foreground leading-tight truncate">
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <h3 className="font-semibold text-[15px] text-foreground leading-snug line-clamp-2">
                       {course.university_name}
                     </h3>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground leading-snug">
                       <MapPin className="h-3 w-3" />
-                      <span className="truncate">
+                      <span className="line-clamp-2">
                         {course.university_city}, {course.university_country}
                       </span>
                     </div>
@@ -159,7 +159,7 @@ export function CourseCard({ course }: CourseCardProps) {
             </div>
 
             {/* Programme Title */}
-            <h2 className="text-lg font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors duration-300">
+            <h2 className="text-base sm:text-lg font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors duration-300 leading-snug">
               {course.name}
             </h2>
 
