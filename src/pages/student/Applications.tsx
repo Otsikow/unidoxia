@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, type HTMLDivElement, type KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/hooks/useAuth';
@@ -201,7 +201,15 @@ export default function Applications() {
     const program = a.program;
     const university = program?.university;
 
-    const matchesStatus = statusFilter === 'all' || a.status === statusFilter;
+    const matchesStatus = (() => {
+      if (statusFilter === 'all') return true;
+      if (statusFilter === 'in_progress') return ['draft', 'screening'].includes(a.status);
+      if (statusFilter === 'offers')
+        return ['conditional_offer', 'unconditional_offer'].includes(a.status);
+      if (statusFilter === 'submitted') return Boolean(a.submitted_at) || a.status === 'submitted';
+      return a.status === statusFilter;
+    })();
+
     const matchesCountry =
       countryFilter === 'all' || !university || university.country === countryFilter;
     const term = searchTerm.toLowerCase();
@@ -219,7 +227,8 @@ export default function Applications() {
     const program = draft.program;
     const university = program?.university;
 
-    const matchesStatus = statusFilter === 'all' || statusFilter === 'draft';
+    const matchesStatus =
+      statusFilter === 'all' || statusFilter === 'draft' || statusFilter === 'in_progress';
     const matchesCountry =
       countryFilter === 'all' || university?.country === countryFilter;
     const term = searchTerm.toLowerCase();
@@ -230,6 +239,27 @@ export default function Applications() {
 
     return matchesStatus && matchesCountry && matchesSearch;
   });
+
+  const totalCount = applications.length + drafts.length;
+  const submittedCount = applications.filter((a) => a.submitted_at).length;
+  const inProgressCount =
+    applications.filter((a) => ['draft', 'screening'].includes(a.status)).length + drafts.length;
+  const offersCount = applications.filter((a) =>
+    ['conditional_offer', 'unconditional_offer'].includes(a.status)
+  ).length;
+
+  const handleSummaryCardClick = (filter: string) => {
+    setStatusFilter(filter);
+    setCountryFilter('all');
+    setSearchTerm('');
+  };
+
+  const handleSummaryCardKeyDown = (event: KeyboardEvent<HTMLDivElement>, filter: string) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleSummaryCardClick(filter);
+    }
+  };
 
   const etaFor = (status: string) => {
     const map: Record<string, string> = {
@@ -330,9 +360,11 @@ export default function Applications() {
               <option value="all">All Statuses</option>
               <option value="draft">Draft</option>
               <option value="submitted">Submitted</option>
+              <option value="in_progress">In Progress (Draft + Screening)</option>
               <option value="screening">Screening</option>
               <option value="conditional_offer">Conditional Offer</option>
               <option value="unconditional_offer">Unconditional Offer</option>
+              <option value="offers">Offers (Conditional + Unconditional)</option>
               <option value="cas_loa">CAS/LOA</option>
               <option value="visa">Visa</option>
               <option value="enrolled">Enrolled</option>
@@ -358,52 +390,68 @@ export default function Applications() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <Card className="min-w-0">
+        <Card
+          className={`min-w-0 transition cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+            statusFilter === 'all' ? 'ring-2 ring-primary/40 border-primary/30' : ''
+          }`}
+          role="button"
+          tabIndex={0}
+          onClick={() => handleSummaryCardClick('all')}
+          onKeyDown={(event) => handleSummaryCardKeyDown(event, 'all')}
+        >
           <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
             <CardTitle className="text-xs sm:text-sm font-medium truncate">Total Applications</CardTitle>
           </CardHeader>
           <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-xl sm:text-2xl font-bold">{applications.length + drafts.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">{totalCount}</div>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <Card
+          className={`min-w-0 transition cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+            statusFilter === 'submitted' ? 'ring-2 ring-primary/40 border-primary/30' : ''
+          }`}
+          role="button"
+          tabIndex={0}
+          onClick={() => handleSummaryCardClick('submitted')}
+          onKeyDown={(event) => handleSummaryCardKeyDown(event, 'submitted')}
+        >
           <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
             <CardTitle className="text-xs sm:text-sm font-medium truncate">Submitted</CardTitle>
           </CardHeader>
           <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-xl sm:text-2xl font-bold">
-              {applications.filter((a) => a.submitted_at).length}
-            </div>
+            <div className="text-xl sm:text-2xl font-bold">{submittedCount}</div>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <Card
+          className={`min-w-0 transition cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+            statusFilter === 'in_progress' ? 'ring-2 ring-primary/40 border-primary/30' : ''
+          }`}
+          role="button"
+          tabIndex={0}
+          onClick={() => handleSummaryCardClick('in_progress')}
+          onKeyDown={(event) => handleSummaryCardKeyDown(event, 'in_progress')}
+        >
           <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
             <CardTitle className="text-xs sm:text-sm font-medium truncate">In Progress</CardTitle>
           </CardHeader>
           <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-xl sm:text-2xl font-bold">
-              {
-                applications.filter(
-                  (a) => a.status === 'draft' || a.status === 'screening'
-                ).length + drafts.length
-              }
-            </div>
+            <div className="text-xl sm:text-2xl font-bold">{inProgressCount}</div>
           </CardContent>
         </Card>
-        <Card className="min-w-0">
+        <Card
+          className={`min-w-0 transition cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
+            statusFilter === 'offers' ? 'ring-2 ring-primary/40 border-primary/30' : ''
+          }`}
+          role="button"
+          tabIndex={0}
+          onClick={() => handleSummaryCardClick('offers')}
+          onKeyDown={(event) => handleSummaryCardKeyDown(event, 'offers')}
+        >
           <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
             <CardTitle className="text-xs sm:text-sm font-medium truncate">Offers</CardTitle>
           </CardHeader>
           <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
-            <div className="text-xl sm:text-2xl font-bold">
-              {
-                applications.filter(
-                  (a) =>
-                    a.status === 'conditional_offer' ||
-                    a.status === 'unconditional_offer'
-                ).length
-              }
-            </div>
+            <div className="text-xl sm:text-2xl font-bold">{offersCount}</div>
           </CardContent>
         </Card>
       </div>
