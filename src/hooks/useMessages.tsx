@@ -365,33 +365,72 @@ export function useMessages() {
 
       if (refreshedMemberships?.length) {
         const refreshedIds = refreshedMemberships.map((m) => m.conversation_id);
-        const { data: refreshedConvs } = await supabase
+
+        const { data: refreshedConvs, error: refreshedConvsError } = await supabase
           .from("conversations")
-          .select(`
-            id,
-            tenant_id,
-            title,
-            name,
-            type,
-            is_group,
-            created_at,
-            updated_at,
-            last_message_at,
-            avatar_url,
-            metadata,
-            participants:conversation_participants(
-              user_id,
-              last_read_at,
-              profile:profiles(id, full_name, avatar_url, role)
-            )
-          `)
+          .select(
+            "id, tenant_id, title, type, is_group, created_at, updated_at, last_message_at, avatar_url, metadata"
+          )
           .in("id", refreshedIds)
           .order("last_message_at", { ascending: false, nullsFirst: false });
+
+        if (refreshedConvsError) {
+          console.error("Failed to refresh conversations after create:", refreshedConvsError);
+          return convId as string;
+        }
+
+        const { data: parts, error: partsError } = await supabase
+          .from("conversation_participants")
+          .select("conversation_id, user_id, last_read_at")
+          .in("conversation_id", refreshedIds);
+
+        if (partsError) {
+          console.error("Failed to refresh participants after create:", partsError);
+          return convId as string;
+        }
+
+        const userIds = Array.from(new Set((parts ?? []).map((p: any) => p.user_id)));
+
+        const { data: profRows, error: profError } = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url, role")
+          .in("id", userIds);
+
+        if (profError) {
+          console.error("Failed to refresh profiles after create:", profError);
+          return convId as string;
+        }
+
+        const profileMap = new Map<string, any>((profRows ?? []).map((p: any) => [p.id, p]));
+        const participantsByConv = new Map<string, any[]>();
+
+        for (const p of parts ?? []) {
+          const arr = participantsByConv.get((p as any).conversation_id) ?? [];
+          const prof = profileMap.get((p as any).user_id);
+          arr.push({
+            id: `${(p as any).conversation_id}-${(p as any).user_id}`,
+            conversation_id: (p as any).conversation_id,
+            user_id: (p as any).user_id,
+            joined_at: new Date().toISOString(),
+            last_read_at: (p as any).last_read_at ?? null,
+            profile: prof
+              ? {
+                  id: prof.id,
+                  full_name: prof.full_name,
+                  avatar_url: prof.avatar_url,
+                  role: prof.role,
+                }
+              : undefined,
+          });
+          participantsByConv.set((p as any).conversation_id, arr);
+        }
 
         const mapped = (refreshedConvs ?? []).map((c: any) => ({
           ...c,
           title: c.title ?? null,
+          participants: participantsByConv.get(c.id) ?? [],
         })) as Conversation[];
+
         const sortedConvs = sortConversations(mapped);
         conversationsRef.current = sortedConvs;
         setConversations(sortedConvs);
@@ -473,61 +512,17 @@ export function useMessages() {
 
     const ids = memberships.map((m) => m.conversation_id);
 
-    // Attempt 1: fetch with nested profile join
-    const { data: convs, error: convsError } = await supabase
-      .from("conversations")
-      .select(
-        `
-        id,
-        tenant_id,
-        title,
-        name,
-        type,
-        is_group,
-        created_at,
-        updated_at,
-        last_message_at,
-        avatar_url,
-        metadata,
-        participants:conversation_participants(
-          user_id,
-          last_read_at,
-          profile:profiles(id, full_name, avatar_url, role)
-        )
-      `,
-      )
-      .in("id", ids)
-      .order("last_message_at", { ascending: false, nullsFirst: false });
-
-    if (!convsError) {
-      const mapped = (convs ?? []).map((c: any) => ({
-        ...c,
-        title: c.title ?? null,
-      })) as Conversation[];
-      return sortConversations(mapped);
-    }
-
-    // If the backend schema cache doesn't see the participants->profiles relationship yet,
-    // fallback to a 2-step fetch (participants + profiles) so messaging still works.
-    const errMsg = (convsError as any)?.message?.toLowerCase?.() ?? "";
-    const isSchemaCacheIssue = errMsg.includes("could not find a relationship") && errMsg.includes("conversation_participants") && errMsg.includes("profiles");
-
-    if (!isSchemaCacheIssue) {
-      console.error("Failed to fetch conversations:", convsError);
-      return [];
-    }
-
-    // Attempt 2: fetch conversations + participants + profiles separately
+    // Fetch conversations (without relying on unsupported columns / joins)
     const { data: baseConvs, error: baseError } = await supabase
       .from("conversations")
       .select(
-        "id, tenant_id, title, name, type, is_group, created_at, updated_at, last_message_at, avatar_url, metadata"
+        "id, tenant_id, title, type, is_group, created_at, updated_at, last_message_at, avatar_url, metadata"
       )
       .in("id", ids)
       .order("last_message_at", { ascending: false, nullsFirst: false });
 
     if (baseError) {
-      console.error("Failed to fetch conversations (fallback):", baseError);
+      console.error("Failed to fetch conversations:", baseError);
       return [];
     }
 
@@ -537,7 +532,7 @@ export function useMessages() {
       .in("conversation_id", ids);
 
     if (partsError) {
-      console.error("Failed to fetch participants (fallback):", partsError);
+      console.error("Failed to fetch participants:", partsError);
       return [];
     }
 
@@ -549,7 +544,7 @@ export function useMessages() {
       .in("id", userIds);
 
     if (profilesError) {
-      console.error("Failed to fetch profiles (fallback):", profilesError);
+      console.error("Failed to fetch profiles:", profilesError);
       return [];
     }
 
@@ -558,31 +553,32 @@ export function useMessages() {
 
     for (const p of parts ?? []) {
       const arr = participantsByConv.get((p as any).conversation_id) ?? [];
+      const prof = profileMap.get((p as any).user_id);
       arr.push({
         id: `${(p as any).conversation_id}-${(p as any).user_id}`,
         conversation_id: (p as any).conversation_id,
         user_id: (p as any).user_id,
         joined_at: new Date().toISOString(),
         last_read_at: (p as any).last_read_at ?? null,
-        profile: profileMap.get((p as any).user_id)
+        profile: prof
           ? {
-              id: (p as any).user_id,
-              full_name: profileMap.get((p as any).user_id).full_name,
-              avatar_url: profileMap.get((p as any).user_id).avatar_url,
-              role: profileMap.get((p as any).user_id).role,
+              id: prof.id,
+              full_name: prof.full_name,
+              avatar_url: prof.avatar_url,
+              role: prof.role,
             }
           : undefined,
       });
       participantsByConv.set((p as any).conversation_id, arr);
     }
 
-    const fallbackMapped: Conversation[] = (baseConvs ?? []).map((c: any) => ({
+    const mapped: Conversation[] = (baseConvs ?? []).map((c: any) => ({
       ...c,
-      title: null,
+      title: c.title ?? null,
       participants: participantsByConv.get(c.id) ?? [],
     }));
 
-    return sortConversations(fallbackMapped);
+    return sortConversations(mapped);
   }, [user?.id]);
 
   /* ======================================================
@@ -649,11 +645,17 @@ export function useMessages() {
           if (!isParticipant) return;
 
           // Fetch sender info for the message
-          const { data: senderData } = await supabase
+          const { data: senderRows, error: senderError } = await supabase
             .from("profiles")
             .select("id, full_name, avatar_url")
             .eq("id", newMessage.sender_id)
-            .single();
+            .limit(1);
+
+          if (senderError) {
+            console.warn("Failed to fetch sender profile:", senderError);
+          }
+
+          const senderData = Array.isArray(senderRows) ? senderRows[0] : null;
 
           const message: Message = {
             id: newMessage.id,
@@ -902,36 +904,42 @@ export function useMessages() {
 
       try {
         // Use retry logic for reliability
-        const data = await retryWithBackoff(async () => {
-          const { data, error } = await supabase.from("conversation_messages").insert([{
-            conversation_id: conversationId,
-            sender_id: currentUserId,
-            content,
-            attachments: attachments as unknown as any[],
-            message_type: payload.messageType ?? "text",
-          }]).select().single();
+        const inserted = await retryWithBackoff(async () => {
+          const { data: rows, error } = await supabase
+            .from("conversation_messages")
+            .insert([
+              {
+                conversation_id: conversationId,
+                sender_id: currentUserId,
+                content,
+                attachments: attachments as unknown as any[],
+                message_type: payload.messageType ?? "text",
+              },
+            ])
+            .select();
 
           if (error) {
             throw error;
           }
-          return data;
+
+          return Array.isArray(rows) ? rows[0] : rows;
         });
 
         // Success - remove from pending
         removePendingMessage(optimisticId);
 
         // Replace optimistic message with real one
-        if (data) {
+        if (inserted) {
           setMessagesById((prev) => {
             const updated = (prev[conversationId] ?? []).map((m) =>
-              m.id === optimistic.id ? { ...optimistic, id: data.id } : m
+              m.id === optimistic.id ? { ...optimistic, id: inserted.id } : m
             );
             messagesRef.current = { ...prev, [conversationId]: updated };
             return messagesRef.current;
           });
-          setMessages((prev) => prev.map((m) =>
-            m.id === optimistic.id ? { ...optimistic, id: data.id } : m
-          ));
+          setMessages((prev) =>
+            prev.map((m) => (m.id === optimistic.id ? { ...optimistic, id: inserted.id } : m))
+          );
         }
 
         // Refresh conversations to update order
@@ -988,10 +996,12 @@ export function useMessages() {
               .from("profiles")
               .select("id, full_name, email, avatar_url, role, tenant_id")
               .eq("id", otherUserId)
-              .maybeSingle();
+              .limit(1);
 
             if (result.error) throw result.error;
-            return result;
+
+            const row = Array.isArray(result.data) ? result.data[0] : null;
+            return { data: row, error: null } as { data: any; error: null };
           });
 
           if (!data) {
