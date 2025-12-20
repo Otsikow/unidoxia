@@ -2951,6 +2951,17 @@ export type Database = {
         Args: { p_agent_profile_id: string; p_regenerate?: boolean }
         Returns: string
       }
+      ensure_user_profile: {
+        Args: {
+          p_country?: string
+          p_email?: string
+          p_full_name?: string
+          p_phone?: string
+          p_role?: string
+          p_user_id?: string
+        }
+        Returns: Json
+      }
       get_messaging_contacts: {
         Args: { p_limit?: number; p_search?: string }
         Returns: {
