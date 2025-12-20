@@ -73,7 +73,7 @@ export default function AdvisorNetwork() {
   const [bookingSlot, setBookingSlot] = useState<BookingSlot | null>(null);
   const [bookingNotes, setBookingNotes] = useState('');
 
-  const countries = ['all', 'Canada', 'United States', 'United Kingdom', 'Australia', 'Germany', 'Ireland', 'Netherlands', 'Sweden'];
+  const countries = ['all', 'Canada', 'United States', 'United Kingdom', 'Australia', 'Germany', 'Ireland'];
   const languages = ['all', 'English', 'French', 'Spanish', 'Arabic', 'Swahili', 'Portuguese', 'German'];
   const specializations = ['all', 'Visa Process', 'University Selection', 'Scholarship Applications', 'Academic Planning', 'Career Guidance', 'Cultural Adaptation'];
 
@@ -114,7 +114,7 @@ export default function AdvisorNetwork() {
         title: 'International Student Advisor',
         bio: 'Ahmed is a former international student who now helps others achieve their study abroad dreams. He specializes in UK and European universities and understands the unique challenges faced by African students.',
         languages: ['English', 'Arabic', 'Swahili'],
-        countries: ['United Kingdom', 'Germany', 'Netherlands'],
+        countries: ['United Kingdom', 'Germany', 'Ireland'],
         specializations: ['Cultural Adaptation', 'Academic Planning', 'Career Guidance'],
         rating: 4.8,
         reviewCount: 89,
