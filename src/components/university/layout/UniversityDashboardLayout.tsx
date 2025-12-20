@@ -657,6 +657,7 @@ export const UniversityDashboardLayout = ({
   const channelRef = useRef<RealtimeChannel | null>(null);
   const ensureUniversityAttemptedRef = useRef(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const tenantId = profile?.tenant_id ?? null;
 
@@ -867,8 +868,20 @@ export const UniversityDashboardLayout = ({
     >
       <div className="flex min-h-screen">
         <UniversitySidebar className="hidden lg:flex" />
+        
+        {/* Mobile sidebar */}
+        <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+          <SheetContent side="left" className="w-72 p-0">
+            <UniversitySidebar className="flex h-full" onNavigate={() => setMobileNavOpen(false)} />
+          </SheetContent>
+        </Sheet>
+        
         <div className="flex flex-col flex-1">
-          <UniversityHeader onRefresh={() => void refetch()} refreshing={isFetching} />
+          <UniversityHeader 
+            onRefresh={() => void refetch()} 
+            refreshing={isFetching}
+            onToggleMobileNav={() => setMobileNavOpen(true)}
+          />
           <main className="flex-1 p-6">{children}</main>
         </div>
       </div>
