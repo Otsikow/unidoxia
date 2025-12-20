@@ -85,7 +85,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
   });
   const [profileDirty, setProfileDirty] = useState(false);
 
-  const countries = ['Canada', 'United States', 'United Kingdom', 'Australia', 'Germany', 'Ireland', 'Netherlands', 'Norway', 'Sweden'];
+  const countries = ['Canada', 'United States', 'United Kingdom', 'Australia', 'Germany', 'Ireland'];
   const programLevels = ['Undergraduate', 'Postgraduate', 'PHD'];
   const disciplines = ['Computer Science', 'Business', 'Engineering', 'Medicine', 'Law', 'Arts', 'Sciences', 'Education'];
   const goalSuggestions = [
