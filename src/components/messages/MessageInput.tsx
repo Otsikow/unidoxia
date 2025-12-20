@@ -232,11 +232,24 @@ export function MessageInput({
       return;
     }
 
-  if (now - lastTypingEventRef.current >= 2000) {
-    onStartTyping();
-    lastTypingEventRef.current = now;
-  }
-}, [isTyping, onStartTyping]);
+    if (now - lastTypingEventRef.current >= 2000) {
+      onStartTyping();
+      lastTypingEventRef.current = now;
+    }
+  }, [isTyping, onStartTyping]);
+
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
+    const maxHeight = viewportHeight ? Math.max(200, Math.floor(viewportHeight * 0.35)) : 260;
+    const minHeight = 48;
+
+    textarea.style.height = 'auto';
+    const newHeight = Math.min(Math.max(textarea.scrollHeight, minHeight), maxHeight);
+    textarea.style.height = `${newHeight}px`;
+  }, []);
 
   const handleAttachmentSelection = useCallback(async (fileList: FileList | null) => {
     if (!fileList || disabled) return;
@@ -295,20 +308,20 @@ export function MessageInput({
     }
   }, [attachments.length, disabled, toast, uploadFileAttachment]);
 
-const handleAttachmentButtonClick = useCallback(() => {
-  if (disabled) return;
+  const handleAttachmentButtonClick = useCallback(() => {
+    if (disabled) return;
 
-  const remainingSlots = MAX_ATTACHMENTS - attachments.length;
-  if (remainingSlots <= 0) {
-    toast({
-      title: 'Attachment limit reached',
+    const remainingSlots = MAX_ATTACHMENTS - attachments.length;
+    if (remainingSlots <= 0) {
+      toast({
+        title: 'Attachment limit reached',
         description: `You can add up to ${MAX_ATTACHMENTS} attachments per message.`,
-    });
-    return;
-  }
+      });
+      return;
+    }
 
-  fileInputRef.current?.click();
-}, [attachments.length, disabled, toast]);
+    fileInputRef.current?.click();
+  }, [attachments.length, disabled, toast]);
 
   const handleRemoveAttachment = useCallback((attachmentId: string) => {
     setAttachments((prev) => {
@@ -323,9 +336,10 @@ const handleAttachmentButtonClick = useCallback(() => {
     });
   }, []);
 
-const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setMessage(value);
+    adjustTextareaHeight();
 
     // Typing indicator logic
     if (value.trim()) {
@@ -335,6 +349,16 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       emitStopTyping();
     }
   };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [adjustTextareaHeight, message, attachments.length]);
+
+  useEffect(() => {
+    const handleResize = () => adjustTextareaHeight();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [adjustTextareaHeight]);
 
   const handleSend = () => {
     const trimmed = message.trim();
@@ -366,6 +390,8 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage('');
     setAttachments([]);
     emitStopTyping();
+
+    requestAnimationFrame(() => adjustTextareaHeight());
 
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
@@ -409,10 +435,10 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     }, 0);
   };
 
-    const handleToggleTranscription = useCallback(() => {
+  const handleToggleTranscription = useCallback(() => {
     if (disabled) return;
 
-      if (isTranscribing) {
+    if (isTranscribing) {
       try {
         recognitionRef.current?.stop?.();
       } catch (error) {
@@ -810,7 +836,8 @@ const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
             onBlur={handleBlur}
             placeholder="Type a message..."
             disabled={disabled}
-            className="min-h-[56px] sm:min-h-[64px] max-h-48 sm:max-h-56 resize-none text-sm sm:text-base leading-relaxed py-3 sm:py-3.5 px-3 sm:px-4 w-full rounded-2xl border border-border/60 bg-background/90 shadow-sm focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary"
+            className="min-h-[48px] sm:min-h-[56px] max-h-[35vh] resize-none text-[15px] sm:text-base leading-relaxed py-3 sm:py-3.5 px-3 sm:px-4 w-full rounded-2xl border border-border/60 bg-background/90 shadow-sm focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary transition-[height] duration-150"
+            style={{ minHeight: '48px', maxHeight: '35vh', overflow: 'hidden' }}
             rows={1}
           />
         </div>
