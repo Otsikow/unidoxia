@@ -85,6 +85,7 @@ export default function MessagesDashboard() {
   
   const [pendingCount, setPendingCount] = useState(0);
   const [retryingPending, setRetryingPending] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!currentConversationId);
   
   // Check for pending messages on mount and after actions
   useEffect(() => {
@@ -158,6 +159,10 @@ export default function MessagesDashboard() {
   const handleSelectConversation = useCallback(
     (conversationId: string) => {
       setCurrentConversation(conversationId);
+
+      if (typeof window !== 'undefined' && window.innerWidth < 1280) {
+        setIsSidebarOpen(false);
+      }
     },
     [setCurrentConversation]
   );
@@ -182,7 +187,19 @@ export default function MessagesDashboard() {
 
   const handleBack = useCallback(() => {
     setCurrentConversation(null);
+    setIsSidebarOpen(true);
   }, [setCurrentConversation]);
+
+  useEffect(() => {
+    if (!currentConversationId) {
+      setIsSidebarOpen(true);
+      return;
+    }
+
+    if (typeof window !== 'undefined' && window.innerWidth < 1280) {
+      setIsSidebarOpen(false);
+    }
+  }, [currentConversationId]);
 
   const fetchContacts = useCallback(
     async (query: string) => {
@@ -471,17 +488,28 @@ export default function MessagesDashboard() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-10rem)] bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+    <div className="flex flex-col min-h-[calc(100vh-5rem)] bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/90">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <MessageSquare className="h-6 w-6" />
-            Messages
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Chat with your agents, UniDoxia staff, or universities
-          </p>
+      <div className="flex items-center justify-between mb-4 gap-3">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon"
+            className="lg:hidden"
+            onClick={() => setIsSidebarOpen(true)}
+            aria-label="Open conversations list"
+          >
+            <MessageSquare className="h-4 w-4" />
+          </Button>
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2">
+              <MessageSquare className="h-6 w-6" />
+              Messages
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Chat with your agents, UniDoxia staff, or universities
+            </p>
+          </div>
         </div>
         {totalUnread > 0 && (
           <Badge variant="destructive" className="px-3 py-1">
@@ -522,15 +550,23 @@ export default function MessagesDashboard() {
       )}
 
       {/* Main content */}
-      <div className="flex flex-1 gap-3 sm:gap-5 min-h-0 overflow-hidden">
-        {/* Chat list - full width on mobile when no conversation selected, fixed width on larger screens */}
-        <div className={cn(
-          "flex-shrink-0 transition-all duration-200",
-          currentConversationId
-            ? "hidden md:block md:w-72 lg:w-80 xl:w-96"
-            : "w-full md:w-72 lg:w-80 xl:w-96"
-        )}>
-          <div className="h-full overflow-hidden rounded-2xl border bg-card/90 shadow-lg">
+      <div className="relative flex flex-1 gap-3 sm:gap-5 min-h-0 overflow-hidden">
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm lg:hidden z-20"
+            onClick={() => setIsSidebarOpen(false)}
+            aria-hidden
+          />
+        )}
+
+        {/* Chat list - overlays on tablet/mobile, fixed width on desktop */}
+        <div
+          className={cn(
+            "z-30 transition-[transform,opacity] duration-200 lg:relative lg:translate-x-0 lg:opacity-100 lg:flex",
+            isSidebarOpen ? "fixed inset-y-0 left-0 right-0 px-4 lg:px-0 flex" : "hidden lg:flex"
+          )}
+        >
+          <div className="h-full w-full max-w-[360px] lg:w-[300px] xl:w-[320px] flex-shrink-0 overflow-hidden rounded-2xl border bg-card/95 shadow-lg">
             <ChatList
               conversations={conversations}
               currentConversation={currentConversationId}
@@ -544,8 +580,8 @@ export default function MessagesDashboard() {
 
         {/* Chat area - shown on desktop always, on mobile only when conversation selected */}
         <div className={cn(
-          "flex-1 overflow-hidden rounded-2xl border bg-card/90 shadow-xl min-w-0",
-          currentConversationId ? "flex" : "hidden md:flex"
+          "flex-1 overflow-hidden rounded-2xl border bg-card/90 shadow-xl min-w-0 flex",
+          currentConversationId ? "flex" : "hidden lg:flex"
         )}>
           <ChatArea
             conversation={currentConversation}
