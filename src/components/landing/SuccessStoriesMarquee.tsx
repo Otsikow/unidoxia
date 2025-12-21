@@ -148,8 +148,6 @@ export function SuccessStoriesMarquee({ className }: { className?: string }) {
           <div className="pointer-events-none absolute -inset-x-6 -bottom-10 h-32 bg-gradient-to-r from-transparent via-primary/5 to-primary/10 blur-2xl" />
 
           <div className="success-marquee">
-            <div className="success-marquee__fade success-marquee__fade--left" aria-hidden="true" />
-            <div className="success-marquee__fade success-marquee__fade--right" aria-hidden="true" />
 
             <div className="space-y-4 sm:space-y-5">
               <div className="success-marquee__track">
