@@ -93,20 +93,22 @@ export function ChatList({
     return undefined;
   };
 
-  const filteredConversations = aggregatedConversations.filter(conv => {
-    if (!searchQuery) return true;
+  const filterConversations = useCallback((convs: AggregatedConversation[]) => {
+    if (!searchQuery) return convs;
+    
+    return convs.filter(conv => {
+      const otherParticipant = conv.participants?.find(p => p.user_id !== user?.id);
+      const searchLower = searchQuery.toLowerCase();
+      const metadataName = getMetadataName(conv.metadata);
 
-    const otherParticipant = conv.participants?.find(p => p.user_id !== user?.id);
-    const searchLower = searchQuery.toLowerCase();
-    const metadataName = getMetadataName(conv.metadata);
-
-    return (
-      conv.title?.toLowerCase().includes(searchLower) ||
-      conv.name?.toLowerCase().includes(searchLower) ||
-      metadataName?.toLowerCase().includes(searchLower) ||
-      otherParticipant?.profile?.full_name?.toLowerCase().includes(searchLower)
-    );
-  });
+      return (
+        conv.title?.toLowerCase().includes(searchLower) ||
+        conv.name?.toLowerCase().includes(searchLower) ||
+        metadataName?.toLowerCase().includes(searchLower) ||
+        otherParticipant?.profile?.full_name?.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [searchQuery, user?.id]);
 
   const getConversationName = (conversation: Conversation) => {
     const metadataName = getMetadataName(conversation.metadata);
@@ -372,6 +374,11 @@ export function ChatList({
 
     return merged.sort((a, b) => getSortTimestamp(b) - getSortTimestamp(a));
   }, [conversations, getConversationIdentifier, getSortTimestamp]);
+
+  const filteredConversations = useMemo(
+    () => filterConversations(aggregatedConversations),
+    [filterConversations, aggregatedConversations]
+  );
 
   return (
     <div className="flex flex-col h-full bg-background">
