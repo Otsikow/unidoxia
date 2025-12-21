@@ -941,23 +941,7 @@ All colors MUST be HSL.
 @layer components {
   .success-marquee {
     @apply relative overflow-hidden rounded-[32px] border border-border/60 bg-gradient-to-b from-background via-background to-muted/30 px-3 py-5 sm:px-4;
-    mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.75) 10%, rgba(0, 0, 0, 0.75) 90%, transparent 100%);
     --marquee-duration: 54s;
-  }
-
-  .success-marquee__fade {
-    @apply pointer-events-none absolute top-0 h-full w-16 sm:w-24 lg:w-32;
-    background: linear-gradient(to right, hsl(var(--background)) 0%, transparent 100%);
-  }
-
-  .success-marquee__fade--left {
-    left: 0;
-  }
-
-  .success-marquee__fade--right {
-    right: 0;
-    transform: scaleX(-1);
   }
 
   .success-marquee__track {
