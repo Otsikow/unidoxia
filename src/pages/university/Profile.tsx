@@ -23,7 +23,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { LoadingState } from "@/components/LoadingState";
-import BackButton from "@/components/BackButton";
 import type { UniversityRecord } from "@/lib/universityProfile";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 interface UniversityProfileQueryResult {
@@ -894,7 +893,6 @@ const UniversityProfilePage = () => {
   return <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="space-y-2">
-          <BackButton variant="ghost" size="sm" fallback="/university" showHistoryMenu={false} wrapperClassName="inline-flex" />
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {isNewProfile ? "Set up your university profile" : "University profile"}
