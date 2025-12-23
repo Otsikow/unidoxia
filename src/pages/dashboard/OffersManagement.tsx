@@ -636,11 +636,11 @@ export default function OffersManagement() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoading || (isFetching && !data) ? (
               <div className="py-16">
                 <LoadingState message="Loading offers and CAS records..." />
               </div>
-            ) : error ? (
+            ) : error && !isFetching ? (
               <div className="py-12 text-center">
                 <p className="font-medium text-destructive">
                   We couldn&apos;t load the records.
