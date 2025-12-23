@@ -44,6 +44,9 @@ interface SupabaseProfile {
 }
 
 interface SupabaseStudent {
+  id?: string | null;
+  legal_name?: string | null;
+  preferred_name?: string | null;
   profiles?: SupabaseProfile | null;
 }
 
@@ -138,7 +141,11 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
     application_id,
     applications (
       id,
+      student_id,
       students (
+        id,
+        legal_name,
+        preferred_name,
         profiles (
           full_name,
           email
@@ -160,7 +167,11 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
     application_id,
     applications (
       id,
+      student_id,
       students (
+        id,
+        legal_name,
+        preferred_name,
         profiles (
           full_name,
           email
@@ -237,8 +248,13 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
   };
 
   const extractDetails = (application?: SupabaseApplication | null) => {
-    const studentName = application?.students?.profiles?.full_name ?? "Unknown Student";
-    const studentEmail = application?.students?.profiles?.email ?? undefined;
+    const students = application?.students as any;
+    // Priority: profile full_name > preferred_name > legal_name
+    const studentName = students?.profiles?.full_name 
+      || students?.preferred_name 
+      || students?.legal_name 
+      || "Unknown Student";
+    const studentEmail = students?.profiles?.email ?? undefined;
     const universityName =
       application?.programs?.universities?.name ?? "Unknown University";
     return { studentName, studentEmail, universityName };

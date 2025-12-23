@@ -86,12 +86,15 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
       status,
       updated_at,
       created_at,
+      student_id,
       programs!inner (
         name,
         university_id
       ),
       students (
+        id,
         legal_name,
+        preferred_name,
         profiles (
           full_name
         )
@@ -111,10 +114,37 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
     throw error;
   }
 
+  // Collect student IDs that need name lookup via security definer function
+  const studentIds = (applications || [])
+    .map((app: any) => app.student_id)
+    .filter((id: string | null) => id != null);
+
+  // Use security definer function to get student names (bypasses RLS)
+  let studentNamesMap = new Map<string, string>();
+  if (studentIds.length > 0) {
+    const { data: studentData, error: studentError } = await supabase
+      .rpc("get_students_for_university_applications", {
+        p_student_ids: studentIds,
+      });
+    
+    if (!studentError && studentData) {
+      for (const student of studentData) {
+        // Priority: profile_name > preferred_name > legal_name
+        const displayName = student.profile_name || student.preferred_name || student.legal_name || "Unknown Student";
+        studentNamesMap.set(student.id, displayName);
+      }
+    }
+  }
+
   // Process records and generate signed URLs
   const processed = await Promise.all(
     (applications || []).map(async (app: any) => {
-      const studentName = app.students?.profiles?.full_name || app.students?.legal_name || "Unknown Student";
+      // First try the RPC result, then fallback to direct data
+      let studentName = studentNamesMap.get(app.student_id) 
+        || app.students?.profiles?.full_name 
+        || app.students?.preferred_name
+        || app.students?.legal_name 
+        || "Unknown Student";
       const courseName = app.programs?.name || "Unknown Course";
       const status = app.status;
       
