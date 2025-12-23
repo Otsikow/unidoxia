@@ -10,9 +10,10 @@ import type {
   TypingIndicator,
   Conversation,
   SendMessagePayload,
+  MessageAttachment,
 } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Loader2, FileText, AudioLines } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, AudioLines, Download, Play, Image as ImageIcon } from 'lucide-react';
 import type { UserPresence } from '@/hooks/usePresence';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { getConversationDisplayName } from '@/lib/messaging/conversationDisplay';
@@ -100,6 +101,131 @@ export function ChatArea({
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  /* ---------------- Attachment Rendering ---------------- */
+  const renderAttachment = (attachment: MessageAttachment, isOwn: boolean) => {
+    const baseClasses = cn(
+      'rounded-lg overflow-hidden',
+      isOwn ? 'bg-primary/20' : 'bg-muted/50'
+    );
+
+    if (attachment.type === 'image') {
+      return (
+        <div key={attachment.id} className={cn(baseClasses, 'max-w-[280px]')}>
+          <a href={attachment.url} target="_blank" rel="noopener noreferrer" className="block">
+            <img
+              src={attachment.preview_url || attachment.url}
+              alt={attachment.name || 'Image attachment'}
+              className="w-full h-auto max-h-[200px] object-cover rounded-lg hover:opacity-90 transition-opacity"
+              loading="lazy"
+            />
+          </a>
+          {attachment.name && (
+            <div className={cn(
+              'px-2 py-1 text-xs truncate',
+              isOwn ? 'text-primary-foreground/80' : 'text-muted-foreground'
+            )}>
+              {attachment.name}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (attachment.type === 'video') {
+      return (
+        <div key={attachment.id} className={cn(baseClasses, 'max-w-[320px]')}>
+          <video
+            className="w-full max-h-[240px] rounded-lg"
+            controls
+            preload="metadata"
+          >
+            <source src={attachment.url} type={attachment.mime_type || 'video/mp4'} />
+            Your browser does not support video playback.
+          </video>
+          {attachment.name && (
+            <div className={cn(
+              'px-2 py-1 text-xs truncate',
+              isOwn ? 'text-primary-foreground/80' : 'text-muted-foreground'
+            )}>
+              {attachment.name}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (attachment.type === 'audio') {
+      return (
+        <div
+          key={attachment.id}
+          className={cn(
+            baseClasses,
+            'flex flex-col gap-2 p-3 min-w-[200px] max-w-[280px]'
+          )}
+        >
+          <div className={cn(
+            'flex items-center gap-2 text-sm font-medium',
+            isOwn ? 'text-primary-foreground' : 'text-foreground'
+          )}>
+            <AudioLines className="h-4 w-4 flex-shrink-0" />
+            <span className="truncate">{attachment.name || 'Audio message'}</span>
+          </div>
+          <audio controls className="w-full h-8">
+            <source src={attachment.url} type={attachment.mime_type || 'audio/webm'} />
+            Your browser does not support audio playback.
+          </audio>
+          {attachment.size && (
+            <div className={cn(
+              'text-xs',
+              isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+            )}>
+              {formatFileSize(attachment.size)}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Default: file attachment (PDF, documents, etc.)
+    return (
+      <a
+        key={attachment.id}
+        href={attachment.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          baseClasses,
+          'flex items-center gap-3 p-3 min-w-[180px] max-w-[280px] hover:opacity-80 transition-opacity cursor-pointer'
+        )}
+      >
+        <div className={cn(
+          'flex-shrink-0 p-2 rounded-lg',
+          isOwn ? 'bg-primary/30' : 'bg-muted'
+        )}>
+          <FileText className={cn(
+            'h-5 w-5',
+            isOwn ? 'text-primary-foreground' : 'text-muted-foreground'
+          )} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className={cn(
+            'text-sm font-medium truncate',
+            isOwn ? 'text-primary-foreground' : 'text-foreground'
+          )}>
+            {attachment.name || 'File attachment'}
+          </div>
+          <div className={cn(
+            'text-xs flex items-center gap-2',
+            isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+          )}>
+            {attachment.size && <span>{formatFileSize(attachment.size)}</span>}
+            <Download className="h-3 w-3" />
+          </div>
+        </div>
+      </a>
+    );
   };
 
   const formatMessageDate = (date: string) => {
@@ -262,9 +388,21 @@ export function ChatArea({
                         : 'bg-muted'
                     )}
                   >
-                    <p className="whitespace-pre-wrap">
-                      {message.content}
-                    </p>
+                    {/* Message Attachments */}
+                    {message.attachments && message.attachments.length > 0 && (
+                      <div className="flex flex-col gap-2 mb-2">
+                        {message.attachments.map((attachment) =>
+                          renderAttachment(attachment, isOwn)
+                        )}
+                      </div>
+                    )}
+
+                    {/* Message Text Content */}
+                    {message.content && message.content.trim() && (
+                      <p className="whitespace-pre-wrap">
+                        {message.content}
+                      </p>
+                    )}
 
                     <div
                       className={cn(
