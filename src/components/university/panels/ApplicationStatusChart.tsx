@@ -13,6 +13,7 @@ import { StatePlaceholder } from "../common/StatePlaceholder";
 import { withUniversityCardStyles } from "../common/cardStyles";
 import { CheckCircle } from "lucide-react";
 import type { ChartDatum } from "../layout/UniversityDashboardLayout";
+import { universityChartTooltipStyles } from "./chartTheme";
 
 interface ApplicationStatusChartProps {
   data: ChartDatum[];
@@ -50,12 +51,7 @@ export const ApplicationStatusChart = ({
                 tick={{ fill: "hsl(var(--foreground))" }}
               />
               <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  borderColor: "hsl(var(--border))",
-                  borderRadius: "12px",
-                  color: "hsl(var(--card-foreground))",
-                }}
+                {...universityChartTooltipStyles}
               />
               <Bar dataKey="value" radius={[12, 12, 0, 0]}>
                 {data.map((entry) => (

@@ -10,6 +10,7 @@ import { StatePlaceholder } from "../common/StatePlaceholder";
 import { withUniversityCardStyles } from "../common/cardStyles";
 import { Globe2 } from "lucide-react";
 import type { ChartDatum } from "../layout/UniversityDashboardLayout";
+import { universityChartTooltipStyles } from "./chartTheme";
 
 const COLORS = [
   "hsl(var(--primary))",
@@ -81,12 +82,7 @@ export const ApplicationSourcesChart = ({
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{
-                  background: "hsl(var(--card))",
-                  borderColor: "hsl(var(--border))",
-                  borderRadius: "12px",
-                  color: "hsl(var(--card-foreground))",
-                }}
+                {...universityChartTooltipStyles}
               />
             </PieChart>
           </ResponsiveContainer>
