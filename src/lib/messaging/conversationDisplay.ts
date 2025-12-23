@@ -145,21 +145,23 @@ export const getConversationDisplayName = (
   conversation: Conversation,
   currentUserId?: string | null,
 ): string => {
-  const metadataName = getNameFromMetadata(conversation.metadata);
-  const baseName = conversation.title || conversation.name || metadataName;
-
   if (conversation.is_group) {
+    const metadataName = getNameFromMetadata(conversation.metadata);
+    const baseName = conversation.title || conversation.name || metadataName;
+
     return baseName || 'Group Message';
   }
 
   const otherParticipant = getOtherParticipant(conversation, currentUserId);
   const participantProfile = otherParticipant?.profile;
+  const metadataName = getNameFromMetadata(conversation.metadata);
+  const baseName = conversation.title || conversation.name;
 
-  if (participantProfile?.full_name) return baseName || participantProfile.full_name;
-  if (participantProfile?.email) return baseName || participantProfile.email;
-  if (metadataName) return baseName || metadataName;
-
-  return baseName || 'Student Contact';
+  if (participantProfile?.full_name) return participantProfile.full_name;
+  if (participantProfile?.email) return participantProfile.email;
+  if (metadataName) return metadataName;
+  if (baseName) return baseName;
+  return 'Student Contact';
 };
 
 export const getConversationContact = (
