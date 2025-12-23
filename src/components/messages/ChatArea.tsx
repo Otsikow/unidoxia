@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Loader2, FileText, AudioLines } from 'lucide-react';
 import type { UserPresence } from '@/hooks/usePresence';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
+import { getConversationDisplayName } from '@/lib/messaging/conversationDisplay';
 
 interface ChatAreaProps {
   conversation: Conversation | null;
@@ -171,6 +172,11 @@ export function ChatArea({
     []
   );
 
+  const conversationName = useMemo(
+    () => (conversation ? getConversationDisplayName(conversation, user?.id) : 'Conversation'),
+    [conversation, user?.id]
+  );
+
   /* ---------------- Loading / Empty ---------------- */
   if (loading) {
     return (
@@ -204,7 +210,7 @@ export function ChatArea({
           </Button>
         )}
         <h2 className="font-semibold truncate">
-          {conversation.name || 'Conversation'}
+          {conversationName}
         </h2>
       </div>
 
