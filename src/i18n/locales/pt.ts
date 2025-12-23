@@ -382,14 +382,17 @@ const pt = {
               title: "Candidate-se com facilidade",
               description:
                 "Processo simplificado com orientação passo a passo. Envie candidaturas para várias universidades sem complicações.",
+              action: "Start your application",
             },
             trackRealtime: {
               title: "Acompanhe em tempo real",
               description: "Monitore o status da candidatura 24/7 com atualizações e notificações instantâneas.",
+              action: "Get real-time updates",
             },
             connectAgents: {
               title: "Conecte-se a agentes verificados",
               description: "Conte com agentes certificados que oferecem suporte personalizado em toda a jornada.",
+              action: "Speak with an advisor",
             },
           },
         },

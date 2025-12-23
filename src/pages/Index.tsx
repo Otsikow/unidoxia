@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users, FileCheck, Clock, Sparkles, Calculator } from "lucide-react";
+import { Users, FileCheck, Clock, Sparkles, Calculator, ArrowRight } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
@@ -138,21 +138,25 @@ const Index = () => {
     key: "applyEasily",
     icon: FileCheck,
     color: "from-blue-500 to-cyan-500",
-    image: applyEasilyImage
+    image: applyEasilyImage,
+    href: "/auth/signup?role=student"
   }, {
     key: "trackRealtime",
     icon: Clock,
     color: "from-purple-500 to-pink-500",
-    image: trackRealTimeImage
+    image: trackRealTimeImage,
+    href: "/auth/signup?role=student"
   }, {
     key: "connectAgents",
     icon: Users,
     color: "from-orange-500 to-red-500",
-    image: connectAgentImage
+    image: connectAgentImage,
+    href: "/auth/signup?role=student"
   }].map(f => ({
     ...f,
     title: t(`pages.index.features.cards.${f.key}.title`),
-    description: t(`pages.index.features.cards.${f.key}.description`)
+    description: t(`pages.index.features.cards.${f.key}.description`),
+    action: t(`pages.index.features.cards.${f.key}.action`)
   })), [t]);
 
   /* ---------- FAQ ---------- */
@@ -291,14 +295,23 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-4xl font-bold text-center mb-12">{featuresHeading}</h2>
         <div className="grid md:grid-cols-3 gap-8">
-          {features.map(f => <Card key={f.key}>
+          {features.map(f => <Card key={f.key} className="flex flex-col h-full overflow-hidden shadow-card">
               <img src={f.image} alt={f.title} className="h-48 w-full object-cover rounded-t-xl" />
-              <CardContent className="p-8">
-                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} mb-4`}>
+              <CardContent className="p-8 flex flex-col gap-4 h-full">
+                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} w-max`}>
                   <f.icon className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-xl font-bold mb-2">{f.title}</h3>
-                <p className="text-muted-foreground">{f.description}</p>
+                <h3 className="text-xl font-bold leading-snug">{f.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{f.description}</p>
+
+                <div className="mt-auto">
+                  <Button asChild className={`w-full justify-between bg-gradient-to-r ${f.color} text-white shadow-lg hover:opacity-95`}>
+                    <Link to={f.href}>
+                      <span>{f.action}</span>
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>)}
         </div>

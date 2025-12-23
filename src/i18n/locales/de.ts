@@ -256,16 +256,19 @@ const de = {
             title: "Einfach bewerben",
             description:
               "Ein schlanker Bewerbungsprozess mit Schritt-für-Schritt-Anleitung. Reichen Sie Bewerbungen mühelos bei mehreren Universitäten ein.",
+            action: "Start your application",
           },
           trackRealtime: {
             title: "In Echtzeit verfolgen",
             description:
               "Verfolgen Sie den Status Ihrer Bewerbung rund um die Uhr mit Live-Updates und sofortigen Benachrichtigungen.",
+            action: "Get real-time updates",
           },
           connectAgents: {
             title: "Mit verifizierten Agenten verbinden",
             description:
               "Greifen Sie auf zertifizierte Bildungsberater:innen zu, die Sie während Ihres gesamten Weges persönlich unterstützen.",
+            action: "Speak with an advisor",
           },
         },
       },
