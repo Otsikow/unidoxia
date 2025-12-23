@@ -278,6 +278,17 @@ export function ChatList({
     const merged = Array.from(groups.values()).map(({ primary, related }) => {
       const unreadCount = related.reduce((total, item) => total + (item.unreadCount || 0), 0);
 
+      const participants =
+        primary.participants?.length
+          ? primary.participants
+          : related.find((item) => item.participants?.length)?.participants ?? [];
+
+      const metadata =
+        primary.metadata && Object.keys(primary.metadata).length > 0
+          ? primary.metadata
+          : related.find((item) => item.metadata && Object.keys(item.metadata).length > 0)?.metadata ??
+            primary.metadata;
+
       const latestMessage = related.reduce<Conversation['lastMessage'] | undefined>((latest, item) => {
         if (!item.lastMessage) return latest;
         if (!latest) return item.lastMessage;
@@ -290,6 +301,8 @@ export function ChatList({
 
       return {
         ...primary,
+        participants,
+        metadata,
         unreadCount,
         lastMessage: latestMessage,
         relatedConversationIds: related.map((item) => item.id),
