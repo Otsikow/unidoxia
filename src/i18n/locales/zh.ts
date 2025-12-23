@@ -204,14 +204,17 @@ const zh = {
               title: "轻松申请",
               description:
                 "流程清晰、逐步引导，一次即可向多所大学提交申请。",
+              action: "Start your application",
             },
             trackRealtime: {
               title: "实时跟踪",
               description: "24/7 实时掌握申请状态，立即收到关键提醒。",
+              action: "Get real-time updates",
             },
             connectAgents: {
               title: "对接认证顾问",
               description: "连接经过认证的教育顾问，全程提供个性化支持。",
+              action: "Speak with an advisor",
             },
           },
         },

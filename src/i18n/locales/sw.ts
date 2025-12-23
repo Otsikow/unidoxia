@@ -164,6 +164,29 @@ const sw = {
   },
   pages: {
     index: {
+        features: {
+          heading: "Why Choose UniDoxia?",
+          cards: {
+            applyEasily: {
+              title: "We Help You Apply With Confidence",
+              description:
+                "We guide you step by step through your application, checking your documents and helping you apply to the right universities—so you’re never guessing or applying alone.",
+              action: "Start your application",
+            },
+            trackRealtime: {
+              title: "We Keep You Informed at Every Step",
+              description:
+                "We track your application with you and keep you updated in real time—so you always know what’s happening and what comes next, without stress or confusion.",
+              action: "Get real-time updates",
+            },
+            connectAgents: {
+              title: "We Support You From Start to Finish",
+              description:
+                "You receive personalized support from verified education experts who guide you throughout your journey—from application to admission and beyond.",
+              action: "Speak with an advisor",
+            },
+          },
+        },
         aiDocumentChecker: {
           badge: "AI Document Checker",
           heading: "Let AI review every document in seconds",
