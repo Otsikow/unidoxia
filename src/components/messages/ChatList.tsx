@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import type { Conversation } from '@/hooks/useMessages';
 import type { UserPresence } from '@/hooks/usePresence';
 import { useAuth } from '@/hooks/useAuth';
+import { getConversationContact, getConversationDisplayName, getNameFromMetadata } from '@/lib/messaging/conversationDisplay';
 
 interface ChatListProps {
   conversations: Conversation[];
@@ -35,71 +36,13 @@ export function ChatList({
   const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
 
-  const getMetadataName = (metadata?: Record<string, unknown> | null) => {
-    if (!metadata) return undefined;
-
-    const possibleKeys = [
-      'university_name',
-      'universityName',
-      'organization_name',
-      'organizationName',
-      'student_name',
-      'studentName',
-      'student_full_name',
-      'studentFullName',
-      'contact_name',
-      'contactName',
-      'applicant_name',
-      'applicantName',
-      'full_name',
-      'fullName',
-      'name',
-      'title',
-      'display_name',
-    ];
-
-    for (const key of possibleKeys) {
-      const value = metadata[key];
-      if (typeof value === 'string' && value.trim()) {
-        return value.trim();
-      }
-    }
-
-    const nestedKeys = [
-      (metadata as Record<string, unknown>).student,
-      (metadata as Record<string, unknown>).applicant,
-      (metadata as Record<string, unknown>).contact,
-      (metadata as Record<string, unknown>).profile,
-      (metadata as Record<string, unknown>).student_profile,
-    ];
-
-    for (const nested of nestedKeys) {
-      if (nested && typeof nested === 'object') {
-        const nestedName = (nested as Record<string, unknown>).full_name || (nested as Record<string, unknown>).name;
-        if (typeof nestedName === 'string' && nestedName.trim()) {
-          return nestedName.trim();
-        }
-      }
-    }
-
-    const university = (metadata as Record<string, unknown>).university;
-    if (university && typeof university === 'object' && 'name' in university) {
-      const uniName = (university as Record<string, unknown>).name;
-      if (typeof uniName === 'string' && uniName.trim()) {
-        return uniName.trim();
-      }
-    }
-
-    return undefined;
-  };
-
   const filterConversations = useCallback((convs: AggregatedConversation[]) => {
     if (!searchQuery) return convs;
-    
+
     return convs.filter(conv => {
       const otherParticipant = conv.participants?.find(p => p.user_id !== user?.id);
       const searchLower = searchQuery.toLowerCase();
-      const metadataName = getMetadataName(conv.metadata);
+      const metadataName = getNameFromMetadata(conv.metadata);
 
       return (
         conv.title?.toLowerCase().includes(searchLower) ||
@@ -109,25 +52,6 @@ export function ChatList({
       );
     });
   }, [searchQuery, user?.id]);
-
-  const getConversationName = (conversation: Conversation) => {
-    const metadataName = getMetadataName(conversation.metadata);
-    const baseName = conversation.title || conversation.name || metadataName;
-
-    if (conversation.is_group) {
-      return baseName || 'Group Message';
-    }
-
-    const otherParticipant = conversation.participants?.find(p => p.user_id !== user?.id);
-    const participantProfile = otherParticipant?.profile;
-
-    return (
-      baseName ||
-      participantProfile?.full_name ||
-      participantProfile?.email ||
-      'Student Contact'
-    );
-  };
 
   const getConversationAvatar = (conversation: Conversation) => {
     if (conversation.avatar_url) {
@@ -429,13 +353,14 @@ export function ChatList({
             </div>
             ) : (
               filteredConversations.map((conversation) => {
-                const name = getConversationName(conversation);
+                const name = getConversationDisplayName(conversation, user?.id);
                 const avatarUrl = getConversationAvatar(conversation);
                 const isActive = currentConversation === conversation.id;
                 const metadataSubtitle =
                   conversation.metadata && typeof conversation.metadata === 'object'
                     ? (conversation.metadata as { subtitle?: string }).subtitle
                     : undefined;
+                const contactInfo = getConversationContact(conversation, user?.id);
                 const presenceDetails = getPresenceDetails(conversation);
 
                 return (
@@ -475,9 +400,9 @@ export function ChatList({
                       </div>
 
                       <div className="flex flex-col gap-0.5">
-                        {metadataSubtitle && (
+                        {(metadataSubtitle || contactInfo) && (
                           <p className="text-[11px] sm:text-xs text-muted-foreground truncate">
-                            {metadataSubtitle}
+                            {metadataSubtitle || contactInfo}
                           </p>
                         )}
                         <div className="flex items-center justify-between gap-2">
