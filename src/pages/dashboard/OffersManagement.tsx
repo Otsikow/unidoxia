@@ -43,6 +43,8 @@ interface SupabaseProfile {
 }
 
 interface SupabaseStudent {
+  legal_name?: string | null;
+  preferred_name?: string | null;
   profiles?: SupabaseProfile | null;
 }
 
@@ -213,6 +215,8 @@ export default function OffersManagement() {
         applications (
           id,
           students (
+            legal_name,
+            preferred_name,
             profiles (
               full_name,
               email
@@ -237,6 +241,8 @@ export default function OffersManagement() {
         applications (
           id,
           students (
+            legal_name,
+            preferred_name,
             profiles (
               full_name,
               email
@@ -338,9 +344,11 @@ export default function OffersManagement() {
       };
 
       const pullApplicationDetails = (application?: SupabaseApplication | null) => {
+        const students = application?.students as any;
+        // Priority: profile full_name > preferred_name > legal_name
         const studentName =
-          application?.students?.profiles?.full_name ?? "Unknown Student";
-        const studentEmail = application?.students?.profiles?.email ?? undefined;
+          students?.profiles?.full_name ?? students?.preferred_name ?? students?.legal_name ?? "Unknown Student";
+        const studentEmail = students?.profiles?.email ?? undefined;
         const universityName =
           application?.programs?.universities?.name ?? "Unknown University";
         const programName = application?.programs?.name ?? undefined;
