@@ -658,6 +658,7 @@ export const UniversityDashboardLayout = ({
   const ensureUniversityAttemptedRef = useRef(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const tenantId = profile?.tenant_id ?? null;
 
@@ -889,20 +890,29 @@ export const UniversityDashboardLayout = ({
       }}
     >
       <div className="flex min-h-screen">
-        <UniversitySidebar className="hidden lg:flex" />
-        
+        <UniversitySidebar
+          className="hidden lg:flex"
+          collapsed={sidebarCollapsed}
+        />
+
         {/* Mobile sidebar */}
         <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
           <SheetContent side="left" className="w-72 p-0">
-            <UniversitySidebar className="flex h-full" onNavigate={() => setMobileNavOpen(false)} />
+            <UniversitySidebar
+              className="flex h-full"
+              onNavigate={() => setMobileNavOpen(false)}
+              collapsed={sidebarCollapsed}
+            />
           </SheetContent>
         </Sheet>
-        
+
         <div className="flex flex-col flex-1">
-          <UniversityHeader 
-            onRefresh={() => void refetch()} 
+          <UniversityHeader
+            onRefresh={() => void refetch()}
             refreshing={isFetching}
             onToggleMobileNav={() => setMobileNavOpen(true)}
+            onToggleSidebar={() => setSidebarCollapsed((prev) => !prev)}
+            sidebarCollapsed={sidebarCollapsed}
           />
           <main className="flex-1 p-6">{children}</main>
         </div>
