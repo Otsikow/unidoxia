@@ -273,7 +273,7 @@ export default function UniversityDirectory() {
               </div>
             )}
             <div className="flex-1 min-w-0 space-y-1">
-              <CardTitle className="text-base font-semibold text-foreground line-clamp-2 sm:line-clamp-3">
+              <CardTitle className="text-base font-semibold text-foreground break-words sm:text-lg">
                 {university.name}
               </CardTitle>
               {tagline ? (
@@ -524,7 +524,7 @@ export default function UniversityDirectory() {
                   <CardDescription>Most courses available</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-lg font-bold text-foreground line-clamp-2">
+                  <p className="text-lg font-bold text-foreground break-words">
                     {summaryMetrics.universityWithMostPrograms.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
