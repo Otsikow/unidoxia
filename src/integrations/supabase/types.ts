@@ -2947,6 +2947,7 @@ export type Database = {
         }
         Returns: string
       }
+      diagnose_app_update_issue: { Args: { p_app_id: string }; Returns: Json }
       ensure_agent_team_invite_code: {
         Args: { p_agent_profile_id: string; p_regenerate?: boolean }
         Returns: string
@@ -3129,6 +3130,28 @@ export type Database = {
           full_name: string
           id: string
         }[]
+      }
+      university_update_application_status: {
+        Args: { p_application_id: string; p_notes?: string; p_status: string }
+        Returns: Json
+      }
+      update_application_review: {
+        Args: {
+          p_append_timeline_event?: Json
+          p_application_id: string
+          p_internal_notes?: string
+          p_new_status?: string
+        }
+        Returns: Json
+      }
+      update_application_review_text: {
+        Args: {
+          p_append_timeline_event?: Json
+          p_application_id: string
+          p_internal_notes?: string
+          p_new_status?: string
+        }
+        Returns: Json
       }
     }
     Enums: {
