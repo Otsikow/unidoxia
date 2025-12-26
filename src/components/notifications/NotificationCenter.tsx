@@ -133,13 +133,58 @@ export default function NotificationCenter() {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [bulkUpdating, setBulkUpdating] = useState(false);
+  const [studentId, setStudentId] = useState<string | null>(null);
 
   const applyNotificationState = useCallback((updater: (prev: Notification[]) => Notification[]) => {
     setNotifications((prev) => {
-      const next = updater(prev);
+      const next = updater(prev).sort(
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
       setUnreadCount(next.filter((n) => !n.read).length);
       return next;
     });
+  }, []);
+
+  const resolveStudentId = useCallback(async () => {
+    if (!user?.id) {
+      setStudentId(null);
+      return null;
+    }
+
+    const { data, error } = await supabase
+      .from("students")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (error) {
+      console.error("Error fetching student id", error);
+      setStudentId(null);
+      return null;
+    }
+
+    setStudentId(data?.id ?? null);
+    return data?.id ?? null;
+  }, [user?.id]);
+
+  const mapDocumentRequestToNotification = useCallback((payload: any): Notification => {
+    const documentType = (payload.document_type as string) || "Document";
+    const status = (payload.status as string) || "pending";
+    const createdAt = (payload.requested_at as string) || (payload.created_at as string);
+
+    return {
+      id: `docreq-${payload.id as string}`,
+      title: `Document request: ${documentType.replace(/_/g, " ")}`,
+      message: (payload.notes as string) || `Status: ${status}`,
+      type: "document_request",
+      read: false,
+      created_at: createdAt || new Date().toISOString(),
+      action_url: "/student/documents",
+      metadata: {
+        document_type: documentType,
+        status,
+      },
+    };
   }, []);
 
   const fetchNotifications = useCallback(async () => {
@@ -151,12 +196,21 @@ export default function NotificationCenter() {
     }
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from("notifications")
-        .select("id, title, content, type, read, created_at, action_url, metadata")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(100);
+      const [baseNotifications, resolvedStudent] = await Promise.all([
+        supabase
+          .from("notifications")
+          .select("id, title, content, type, read, created_at, action_url, metadata")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(100),
+        studentId ? Promise.resolve({ data: { id: studentId }, error: null }) : resolveStudentId(),
+      ]);
+
+      const { data, error } = baseNotifications;
+      const resolvedStudentId =
+        typeof resolvedStudent === "string"
+          ? resolvedStudent
+          : (resolvedStudent as { data?: { id?: string } | null })?.data?.id || studentId;
 
       if (error) throw error;
 
@@ -171,14 +225,30 @@ export default function NotificationCenter() {
         metadata: (n.metadata as Record<string, unknown>) || {},
       }));
 
-      applyNotificationState(() => mapped);
+      let merged = mapped;
+
+      if (resolvedStudentId) {
+        const { data: requests, error: requestsError } = await supabase
+          .from("document_requests")
+          .select("id, document_type, status, notes, requested_at, created_at")
+          .eq("student_id", resolvedStudentId)
+          .order("requested_at", { ascending: false })
+          .limit(25);
+
+        if (!requestsError && requests) {
+          const requestNotifications = requests.map(mapDocumentRequestToNotification);
+          merged = [...merged, ...requestNotifications];
+        }
+      }
+
+      applyNotificationState(() => merged);
     } catch (error) {
       console.error("Error fetching notifications:", error);
       toast({ title: "Error", description: "Failed to load notifications", variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [user, toast, applyNotificationState]);
+  }, [user, toast, applyNotificationState, resolveStudentId, studentId, mapDocumentRequestToNotification]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -205,56 +275,97 @@ export default function NotificationCenter() {
     fetchNotifications();
     if (!user) return;
 
-    const channel = supabase
-      .channel("notifications-center")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          if (payload.eventType === "INSERT") {
-            const raw = payload.new as Record<string, unknown>;
-            const newNotification: Notification = {
-              id: raw.id as string,
-              title: (raw.title as string) || "Notification",
-              message: (raw.content as string) || "",
-              type: (raw.type as Notification["type"]) || "info",
-              read: !!raw.read,
-              created_at: raw.created_at as string,
-              action_url: (raw.action_url as string) || undefined,
-              metadata: (raw.metadata as Record<string, unknown>) || {},
-            };
+    const channels = [
+      supabase
+        .channel("notifications-center")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+          (payload) => {
+            if (payload.eventType === "INSERT") {
+              const raw = payload.new as Record<string, unknown>;
+              const newNotification: Notification = {
+                id: raw.id as string,
+                title: (raw.title as string) || "Notification",
+                message: (raw.content as string) || "",
+                type: (raw.type as Notification["type"]) || "info",
+                read: !!raw.read,
+                created_at: raw.created_at as string,
+                action_url: (raw.action_url as string) || undefined,
+                metadata: (raw.metadata as Record<string, unknown>) || {},
+              };
 
-            applyNotificationState((prev) => [newNotification, ...prev.filter((n) => n.id !== newNotification.id)]);
-            if (!newNotification.read) {
-              playNotificationSound();
-              toast({
-                title: newNotification.title,
-                description: newNotification.message,
+              applyNotificationState((prev) => [newNotification, ...prev.filter((n) => n.id !== newNotification.id)]);
+              if (!newNotification.read) {
+                playNotificationSound();
+                toast({
+                  title: newNotification.title,
+                  description: newNotification.message,
+                });
+              }
+            } else if (payload.eventType === "UPDATE") {
+              const raw = payload.new as Record<string, unknown>;
+              applyNotificationState((prev) => prev.map((n) => (n.id === raw.id ? { ...n, read: !!raw.read } : n)));
+            } else if (payload.eventType === "DELETE") {
+              const raw = payload.old as Record<string, unknown>;
+              applyNotificationState((prev) => prev.filter((n) => n.id !== raw.id));
+              setSelectedIds((prev) => {
+                const next = new Set(prev);
+                next.delete(raw.id as string);
+                return next;
               });
             }
-          } else if (payload.eventType === "UPDATE") {
-            const raw = payload.new as Record<string, unknown>;
-            applyNotificationState((prev) => prev.map((n) => (n.id === raw.id ? { ...n, read: !!raw.read } : n)));
-          } else if (payload.eventType === "DELETE") {
-            const raw = payload.old as Record<string, unknown>;
-            applyNotificationState((prev) => prev.filter((n) => n.id !== raw.id));
-            setSelectedIds((prev) => {
-              const next = new Set(prev);
-              next.delete(raw.id as string);
-              return next;
-            });
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe(),
+    ];
+
+    if (studentId) {
+      channels.push(
+        supabase
+          .channel("notifications-document-requests")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "document_requests", filter: `student_id=eq.${studentId}` },
+            (payload) => {
+              const raw = (payload.new || payload.old) as Record<string, unknown>;
+              if (!raw?.id) return;
+              const docNotification = mapDocumentRequestToNotification(raw);
+              applyNotificationState((prev) => [docNotification, ...prev.filter((n) => n.id !== docNotification.id)]);
+              if (!docNotification.read && payload.eventType === "INSERT") {
+                playNotificationSound();
+                toast({
+                  title: docNotification.title,
+                  description: docNotification.message,
+                });
+              }
+            }
+          )
+          .subscribe()
+      );
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      channels.forEach((channel) => supabase.removeChannel(channel));
     };
-  }, [user, fetchNotifications, playNotificationSound, toast, applyNotificationState]);
+  }, [
+    user,
+    fetchNotifications,
+    playNotificationSound,
+    toast,
+    applyNotificationState,
+    studentId,
+    mapDocumentRequestToNotification,
+  ]);
 
   const markAsRead = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
+
+    if (id.startsWith("docreq-")) {
+      applyNotificationState((p) => p.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      return;
+    }
+
     try {
       const { error } = await supabase.from("notifications").update({ read: true }).eq("id", id);
       if (error) throw error;
@@ -266,6 +377,12 @@ export default function NotificationCenter() {
 
   const markAsUnread = async (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
+
+    if (id.startsWith("docreq-")) {
+      applyNotificationState((p) => p.map((n) => (n.id === id ? { ...n, read: false } : n)));
+      return;
+    }
+
     try {
       const { error } = await supabase.from("notifications").update({ read: false }).eq("id", id);
       if (error) throw error;
@@ -358,21 +475,21 @@ export default function NotificationCenter() {
     if (!user || selectedIds.size === 0) return;
     try {
       setBulkUpdating(true);
+      const standardIds = Array.from(selectedIds).filter((id) => !id.startsWith("docreq-"));
+
       const { error } = await supabase
         .from("notifications")
         .update({ read: true })
         .eq("user_id", user.id)
-        .in("id", Array.from(selectedIds));
+        .in("id", standardIds.length > 0 ? standardIds : ["-"]);
 
-      if (error) throw error;
+      if (error && standardIds.length > 0) throw error;
 
       const markedCount = notifications.filter(
         (n) => selectedIds.has(n.id) && !n.read
       ).length;
 
-      setNotifications((prev) =>
-        prev.map((n) => (selectedIds.has(n.id) ? { ...n, read: true } : n))
-      );
+      setNotifications((prev) => prev.map((n) => (selectedIds.has(n.id) ? { ...n, read: true } : n)));
       setUnreadCount((prev) => Math.max(0, prev - markedCount));
       toast({
         title: "Success",
