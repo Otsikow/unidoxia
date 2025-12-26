@@ -85,6 +85,16 @@ const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
 const COURSES_PER_PAGE = 100;
 
+const DISCIPLINE_NORMALIZATION_MAP: Record<string, string> = {
+  "Project Managament": "Project Management",
+};
+
+const normalizeDisciplineName = (discipline?: string | null): string | null => {
+  if (!discipline) return null;
+  const trimmed = discipline.trim();
+  return DISCIPLINE_NORMALIZATION_MAP[trimmed] ?? trimmed;
+};
+
 interface University {
   id: string;
   name: string;
@@ -293,7 +303,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
         if (programs) {
           setLevels(PROGRAM_LEVELS);
-          const uniqueDisciplines = [...new Set(programs.map((p) => p.discipline).filter(Boolean))].sort();
+          const uniqueDisciplines = [
+            ...new Set(programs.map((p) => normalizeDisciplineName(p.discipline)).filter(Boolean)),
+          ].sort();
           setDisciplines(uniqueDisciplines);
         }
       } catch (error) {
