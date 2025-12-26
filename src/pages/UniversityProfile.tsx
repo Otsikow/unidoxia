@@ -281,12 +281,12 @@ export default function UniversityProfile() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative h-96 overflow-hidden">
+      <div className="relative min-h-[22rem] md:h-96 overflow-hidden">
         <img src={heroImage} alt={university.name} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-background/30" />
-        <div className="absolute bottom-0 left-0 right-0 p-8">
+        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-end gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6">
               {/* University Logo */}
               {university.logo_url ? (
                 <div className="flex h-20 w-20 md:h-24 md:w-24 flex-shrink-0 items-center justify-center rounded-xl border border-white/20 bg-background/90 p-3 backdrop-blur-sm shadow-lg">
@@ -298,7 +298,7 @@ export default function UniversityProfile() {
                 </div>
               ) : null}
               <div className="flex-1 space-y-2">
-                <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
+                <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg leading-tight">
                   {university.name}
                 </h1>
                 {profileDetails.tagline ? (
@@ -615,7 +615,7 @@ export default function UniversityProfile() {
                 {filteredPrograms.map((program) => (
                   <Card key={program.id} className="hover:shadow-lg transition-shadow">
                     <CardHeader>
-                      <div className="flex items-start justify-between gap-4">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div className="flex flex-1 items-start gap-3">
                           {university ? (
                             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-white shadow-sm">
@@ -637,7 +637,7 @@ export default function UniversityProfile() {
                             </CardDescription>
                           </div>
                         </div>
-                        <Button onClick={() => setSelectedProgram(program)}>
+                        <Button onClick={() => setSelectedProgram(program)} className="w-full sm:w-auto">
                           View Details
                         </Button>
                       </div>
