@@ -223,10 +223,6 @@ export function AppSidebar() {
               </Button>
             </div>
           ) : null}
-          <SidebarTrigger
-            className="ml-auto sm:ml-0 hidden h-8 w-8 shrink-0 sm:inline-flex"
-            aria-label={state === "collapsed" ? "Expand navigation" : "Collapse navigation"}
-          />
         </div>
       </SidebarHeader>
 
