@@ -15,9 +15,10 @@ import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingState } from '@/components/LoadingState';
-import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer, MessageSquare, Mail, Phone, Globe } from 'lucide-react';
+import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer, MessageSquare, Mail, Phone, Globe, Upload, AlertCircle } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { parseUniversityProfileDetails } from '@/lib/universityProfile';
+import { DocumentUploadDialog } from '@/components/student/DocumentUploadDialog';
 
 interface University {
   name: string;
@@ -51,6 +52,7 @@ interface Application {
   intake_month: number;
   created_at: string;
   submitted_at: string | null;
+  student_id?: string;
   program: Program | null;
   timeline_json?: TimelineItem[];
 }
@@ -96,6 +98,23 @@ interface OfferDocument {
   mime_type: string;
   uploaded_at: string;
   signedUrl?: string | null;
+}
+
+interface DocumentRequest {
+  id: string;
+  document_type: string;
+  request_type?: string | null;
+  status: string | null;
+  requested_at: string | null;
+  due_date?: string | null;
+  description?: string | null;
+  notes?: string | null;
+  document_url?: string | null;
+  file_url?: string | null;
+  uploaded_file_url?: string | null;
+  storage_path?: string | null;
+  submitted_at?: string | null;
+  created_at?: string | null;
 }
 
 export default function ApplicationDetails() {
@@ -214,6 +233,7 @@ export default function ApplicationDetails() {
   const [offers, setOffers] = useState<OfferWithSignedUrl[]>([]);
   const [docs, setDocs] = useState<AppDocument[]>([]);
   const [offerDocs, setOfferDocs] = useState<OfferDocument[]>([]);
+  const [documentRequests, setDocumentRequests] = useState<DocumentRequest[]>([]);
   const [loadingOfferUrls, setLoadingOfferUrls] = useState(false);
 
   const getIntakeLabel = (month: number, year: number) => {
@@ -294,6 +314,7 @@ export default function ApplicationDetails() {
           intake_month,
           created_at,
           submitted_at,
+          student_id,
           timeline_json,
           program:programs (
             id,
@@ -362,7 +383,7 @@ export default function ApplicationDetails() {
       // Filter for offer-related documents from application_documents
       // These are documents uploaded by universities (e.g., offer letters, CAS letters)
       const offerRelatedTypes = ['offer_letter', 'conditional_offer', 'unconditional_offer', 'cas', 'cas_letter', 'loa', 'other'];
-      const offerDocuments = (docData || []).filter((d: any) => 
+      const offerDocuments = (docData || []).filter((d: any) =>
         offerRelatedTypes.includes(d.document_type?.toLowerCase()) ||
         d.document_type?.toLowerCase()?.includes('offer') ||
         d.document_type?.toLowerCase()?.includes('cas')
@@ -380,10 +401,32 @@ export default function ApplicationDetails() {
       if (offersWithUrls.some(o => isStoragePath(o.letter_url))) {
         void loadOfferSignedUrls(offersWithUrls);
       }
-      
+
       // Load signed URLs for offer documents
       if (offerDocuments.length > 0) {
         void loadOfferDocumentUrls(offerDocuments);
+      }
+
+      // Load document requests for this student/application
+      if (appData.student_id) {
+        const documentRequestQuery = supabase
+          .from('document_requests')
+          .select('id,document_type,request_type,status,requested_at,due_date,description,notes,document_url,file_url,uploaded_file_url,storage_path,submitted_at,created_at')
+          .eq('student_id', appData.student_id)
+          .order('requested_at', { ascending: false });
+
+        let requestResult = await documentRequestQuery.eq('application_id' as any, applicationId);
+
+        if (requestResult.error) {
+          const message = (requestResult.error.message || '').toLowerCase();
+          if (message.includes('application_id')) {
+            requestResult = await documentRequestQuery;
+          } else {
+            throw requestResult.error;
+          }
+        }
+
+        setDocumentRequests((requestResult.data ?? []) as DocumentRequest[]);
       }
     } catch (error) {
       logError(error, 'ApplicationDetails.loadAll');
@@ -651,6 +694,83 @@ export default function ApplicationDetails() {
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Document requests</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {documentRequests.length === 0 ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <AlertCircle className="h-4 w-4" />
+                  No pending document requests from your university.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {documentRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      className="p-4 rounded-lg border bg-muted/30 flex flex-col gap-2"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="secondary">{request.status ?? 'pending'}</Badge>
+                          <span className="font-medium capitalize">
+                            {request.document_type?.replace(/_/g, ' ') || 'Document'}
+                          </span>
+                          {request.request_type && (
+                            <span className="text-xs text-muted-foreground">({request.request_type})</span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {request.requested_at && (
+                            <Badge variant="outline">Requested {new Date(request.requested_at).toLocaleDateString()}</Badge>
+                          )}
+                          {request.due_date && (
+                            <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
+                              Due {new Date(request.due_date).toLocaleDateString()}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {request.description && (
+                        <p className="text-sm text-muted-foreground">{request.description}</p>
+                      )}
+                      {request.notes && (
+                        <p className="text-xs text-muted-foreground">Notes: {request.notes}</p>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        <DocumentUploadDialog
+                          applicationId={app.id}
+                          onUploadComplete={loadAll}
+                          trigger={
+                            <Button size="sm" variant="outline" className="gap-2">
+                              <Upload className="h-4 w-4" />
+                              Upload response
+                            </Button>
+                          }
+                        />
+                        {(request.document_url || request.file_url || request.uploaded_file_url || request.storage_path) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-2"
+                            onClick={() => {
+                              const url = request.document_url || request.file_url || request.uploaded_file_url || request.storage_path;
+                              if (url) window.open(url, '_blank');
+                            }}
+                          >
+                            <FileText className="h-4 w-4" />
+                            View instructions
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>Documents</CardTitle>

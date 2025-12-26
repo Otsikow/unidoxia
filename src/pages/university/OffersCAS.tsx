@@ -120,7 +120,7 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
     .filter((id: string | null) => id != null);
 
   // Use security definer function to get student names (bypasses RLS)
-  let studentNamesMap = new Map<string, string>();
+  const studentNamesMap = new Map<string, string>();
   if (studentIds.length > 0) {
     const { data: studentData, error: studentError } = await supabase
       .rpc("get_students_for_university_applications", {
@@ -140,10 +140,10 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
   const processed = await Promise.all(
     (applications || []).map(async (app: any) => {
       // First try the RPC result, then fallback to direct data
-      let studentName = studentNamesMap.get(app.student_id) 
-        || app.students?.profiles?.full_name 
+      const studentName = studentNamesMap.get(app.student_id)
+        || app.students?.profiles?.full_name
         || app.students?.preferred_name
-        || app.students?.legal_name 
+        || app.students?.legal_name
         || "Unknown Student";
       const courseName = app.programs?.name || "Unknown Course";
       const status = app.status;
