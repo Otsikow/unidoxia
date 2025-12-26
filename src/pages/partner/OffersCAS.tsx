@@ -82,6 +82,15 @@ interface CasRecord {
   applications?: SupabaseApplication | null;
 }
 
+interface OfferDocumentRecord {
+  id: string;
+  application_id: string;
+  document_type?: string | null;
+  storage_path?: string | null;
+  uploaded_at?: string | null;
+  applications?: SupabaseApplication | null;
+}
+
 interface CombinedRecord {
   applicationId: string;
   studentName: string;
@@ -132,6 +141,11 @@ const formatDate = (isoDate?: string) => {
   }
 };
 
+const isStoragePath = (url?: string | null): boolean => {
+  if (!url) return false;
+  return !url.startsWith("http://") && !url.startsWith("https://");
+};
+
 const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
   const offerSelect = `
     id,
@@ -139,6 +153,32 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
     letter_url,
     created_at,
     application_id,
+    applications (
+      id,
+      student_id,
+      students (
+        id,
+        legal_name,
+        preferred_name,
+        profiles (
+          full_name,
+          email
+        )
+      ),
+      programs (
+        universities (
+          name
+        )
+      )
+    )
+  `;
+
+  const offerDocumentSelect = `
+    id,
+    application_id,
+    document_type,
+    storage_path,
+    uploaded_at,
     applications (
       id,
       student_id,
@@ -230,6 +270,24 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
 
   const offers = (offersResponse.data ?? []) as unknown as OfferRecord[];
 
+  const { data: offerDocData, error: offerDocError } = await supabase
+    .from("application_documents")
+    .select(offerDocumentSelect)
+    .in("document_type", [
+      "offer_letter",
+      "conditional_offer",
+      "unconditional_offer",
+      "cas",
+      "cas_letter",
+      "loa",
+      "other",
+    ])
+    .order("uploaded_at", { ascending: false });
+
+  if (offerDocError) throw offerDocError;
+
+  const offerDocuments = (offerDocData ?? []) as unknown as OfferDocumentRecord[];
+
   const combinedMap = new Map<string, CombinedRecord>();
 
   const upsertRecord = (
@@ -276,6 +334,28 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
     }));
   }
 
+  for (const doc of offerDocuments) {
+    const { studentName, studentEmail, universityName } = extractDetails(
+      doc.applications,
+    );
+
+    const inferredOfferType = doc.document_type?.includes("conditional")
+      ? "conditional"
+      : doc.document_type?.includes("unconditional")
+        ? "unconditional"
+        : undefined;
+
+    upsertRecord(doc.application_id, (current) => ({
+      ...current,
+      studentName,
+      studentEmail,
+      universityName,
+      offerType: current.offerType ?? inferredOfferType,
+      offerLetterUrl: current.offerLetterUrl ?? doc.storage_path ?? undefined,
+      offerCreatedAt: current.offerCreatedAt ?? doc.uploaded_at ?? undefined,
+    }));
+  }
+
   for (const cas of casLetters) {
     const { studentName, studentEmail, universityName } = extractDetails(
       cas.applications,
@@ -298,7 +378,9 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
     const status: RecordStatus =
       record.casNumber || record.casLetterUrl || record.casIssueDate
         ? "issued"
-        : "pending";
+        : record.offerLetterUrl
+          ? "pending"
+          : "pending";
 
     return {
       id: record.applicationId,
@@ -367,14 +449,12 @@ export default function OffersCASPage() {
       return;
     }
 
-    // Check if this is a storage path (not a full URL)
-    const isStoragePath = !url.startsWith('http://') && !url.startsWith('https://');
-    
-    if (isStoragePath) {
+    if (isStoragePath(url)) {
+      const normalizedPath = url.replace(/^application-documents\//, "");
       // Get signed URL for private bucket
       const { data, error } = await supabase.storage
         .from('application-documents')
-        .createSignedUrl(url, 3600);
+        .createSignedUrl(normalizedPath, 3600);
       
       if (error || !data?.signedUrl) {
         toast({
