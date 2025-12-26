@@ -357,7 +357,7 @@ export default function OffersCASPage() {
     return { totalOffers, issuedCas, pendingCas };
   }, [records]);
 
-  const handleDownload = (url?: string) => {
+  const handleDownload = async (url?: string) => {
     if (!url) {
       toast({
         title: "No document available",
@@ -367,7 +367,28 @@ export default function OffersCASPage() {
       return;
     }
 
-    window.open(url, "_blank", "noopener,noreferrer");
+    // Check if this is a storage path (not a full URL)
+    const isStoragePath = !url.startsWith('http://') && !url.startsWith('https://');
+    
+    if (isStoragePath) {
+      // Get signed URL for private bucket
+      const { data, error } = await supabase.storage
+        .from('application-documents')
+        .createSignedUrl(url, 3600);
+      
+      if (error || !data?.signedUrl) {
+        toast({
+          title: "Could not access document",
+          description: "Failed to generate download link. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
   };
 
   const renderContent = () => {

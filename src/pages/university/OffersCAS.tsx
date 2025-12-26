@@ -170,24 +170,25 @@ const fetchOffersAndCas = async (universityId: string, tenantId: string | null):
       if (docs.length > 0) {
         const latestDoc = docs[0];
         if (latestDoc.storage_path) {
-           const { data } = supabase.storage
+           // Use signed URL since bucket is private
+           const { data } = await supabase.storage
             .from("application-documents")
-            .getPublicUrl(latestDoc.storage_path);
+            .createSignedUrl(latestDoc.storage_path, 3600);
            
            if (isCasIssued) {
-             casLetterUrl = data.publicUrl;
+             casLetterUrl = data?.signedUrl;
              // Try to find an older doc that might be the offer letter
              if (docs.length > 1) {
                 const prevDoc = docs[1];
                 if (prevDoc.storage_path) {
-                  const { data: offerData } = supabase.storage
+                  const { data: offerData } = await supabase.storage
                     .from("application-documents")
-                    .getPublicUrl(prevDoc.storage_path);
-                  offerLetterUrl = offerData.publicUrl;
+                    .createSignedUrl(prevDoc.storage_path, 3600);
+                  offerLetterUrl = offerData?.signedUrl;
                 }
              }
            } else {
-             offerLetterUrl = data.publicUrl;
+             offerLetterUrl = data?.signedUrl;
            }
         }
       }
