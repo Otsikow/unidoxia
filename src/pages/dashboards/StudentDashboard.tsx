@@ -16,6 +16,10 @@ import {
   CheckCircle2,
   ArrowRight,
   Activity,
+  Gift,
+  Download,
+  ExternalLink,
+  PartyPopper,
 } from 'lucide-react';
 
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -102,6 +106,20 @@ interface DocumentRequestItem {
   requested_at: string | null;
 }
 
+interface OfferItem {
+  id: string;
+  application_id: string;
+  offer_type: 'conditional' | 'unconditional';
+  status: string | null;
+  letter_url: string | null;
+  conditions_summary: string | null;
+  expiry_date: string | null;
+  created_at: string;
+  program_name: string | null;
+  university_name: string | null;
+  university_logo_url: string | null;
+}
+
 type StudentProfile = Tables<'students'>;
 
 export default function StudentDashboard() {
@@ -117,6 +135,7 @@ export default function StudentDashboard() {
   const [recommendedPrograms, setRecommendedPrograms] = useState<RecommendedProgram[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [documentRequests, setDocumentRequests] = useState<DocumentRequestItem[]>([]);
+  const [offers, setOffers] = useState<OfferItem[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   const studentProfile = studentRecord;
@@ -245,11 +264,48 @@ export default function StudentDashboard() {
             .limit(10)
         : Promise.resolve({ data: [] as DocumentRequestItem[], error: null });
 
-      const [appsResult, programsResult, notificationsResult, docRequestsResult] = await Promise.allSettled([
+      // Fetch offers for the student - try RPC first, fallback to direct query
+      const offersPromise = studentId
+        ? supabase
+            .rpc('get_student_offers', { p_student_id: studentId })
+            .then((result) => {
+              if (result.error) {
+                // Fallback to direct query if RPC doesn't exist
+                console.log('[StudentDashboard] RPC not available, using direct offers query');
+                return supabase
+                  .from('offers')
+                  .select(`
+                    id,
+                    application_id,
+                    offer_type,
+                    status,
+                    letter_url,
+                    conditions_summary,
+                    expiry_date,
+                    created_at,
+                    applications!inner (
+                      programs (
+                        name,
+                        universities (
+                          name,
+                          logo_url
+                        )
+                      )
+                    )
+                  `)
+                  .eq('student_id', studentId)
+                  .order('created_at', { ascending: false });
+              }
+              return result;
+            })
+        : Promise.resolve({ data: [] as OfferItem[], error: null });
+
+      const [appsResult, programsResult, notificationsResult, docRequestsResult, offersResult] = await Promise.allSettled([
         applicationsPromise,
         programsPromise,
         notificationsPromise,
         documentRequestsPromise,
+        offersPromise,
       ]);
 
       if (appsResult.status === 'fulfilled') {
@@ -341,6 +397,38 @@ export default function StudentDashboard() {
         console.error('[StudentDashboard] Document requests fetch failed:', docRequestsResult.reason);
         setDocumentRequests([]);
       }
+
+      // Handle offers result
+      if (offersResult.status === 'fulfilled') {
+        const { data, error } = offersResult.value as {
+          data: any[] | null;
+          error: unknown;
+        };
+
+        if (error) {
+          console.error('[StudentDashboard] Offers fetch error:', error);
+          setOffers([]);
+        } else {
+          // Normalize the data structure (may come from RPC or direct query)
+          const normalizedOffers = (data ?? []).map((offer: any) => ({
+            id: offer.id,
+            application_id: offer.application_id,
+            offer_type: offer.offer_type,
+            status: offer.status,
+            letter_url: offer.letter_url,
+            conditions_summary: offer.conditions_summary,
+            expiry_date: offer.expiry_date,
+            created_at: offer.created_at,
+            program_name: offer.program_name || offer.applications?.programs?.name || null,
+            university_name: offer.university_name || offer.applications?.programs?.universities?.name || null,
+            university_logo_url: offer.university_logo_url || offer.applications?.programs?.universities?.logo_url || null,
+          }));
+          setOffers(normalizedOffers);
+        }
+      } else {
+        console.error('[StudentDashboard] Offers fetch failed:', offersResult.reason);
+        setOffers([]);
+      }
     } catch (error) {
       logError(error, 'StudentDashboard.fetchDashboardData');
       toast(formatErrorForToast(error, 'Failed to load dashboard data'));
@@ -381,6 +469,12 @@ export default function StudentDashboard() {
           if (payload.eventType === 'INSERT') {
             const notification = normalizeNotification(payload.new as Record<string, unknown>);
             updateNotifications((prev) => [notification, ...prev.filter((n) => n.id !== notification.id)]);
+            
+            // If it's an offer notification, refetch offers
+            if (notification.type === 'offer_issued' || notification.type === 'offer_updated') {
+              console.log('[StudentDashboard] Offer notification received, refetching offers');
+              void fetchDashboardData();
+            }
           } else if (payload.eventType === 'UPDATE') {
             const notification = normalizeNotification(payload.new as Record<string, unknown>);
             updateNotifications((prev) => prev.map((n) => (n.id === notification.id ? notification : n)));
@@ -395,7 +489,50 @@ export default function StudentDashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user?.id, fetchDashboardData]);
+
+  // Realtime subscription for offers table (direct)
+  useEffect(() => {
+    if (!studentId) return;
+
+    const offersChannel = supabase
+      .channel('student-dashboard-offers')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'offers', filter: `student_id=eq.${studentId}` },
+        (payload) => {
+          console.log('[StudentDashboard] Offers realtime update:', payload.eventType);
+          // Refetch to get complete offer data with joins
+          void fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(offersChannel);
+    };
+  }, [studentId, fetchDashboardData]);
+
+  // Realtime subscription for document requests table
+  useEffect(() => {
+    if (!studentId) return;
+
+    const docRequestsChannel = supabase
+      .channel('student-dashboard-doc-requests')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'document_requests', filter: `student_id=eq.${studentId}` },
+        (payload) => {
+          console.log('[StudentDashboard] Document requests realtime update:', payload.eventType);
+          void fetchDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(docRequestsChannel);
+    };
+  }, [studentId, fetchDashboardData]);
 
   useEffect(() => {
     if (studentRecordLoading) return;
@@ -573,6 +710,100 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
 
+        {/* Offers Section - Show prominently when offers exist */}
+        {offers.length > 0 && (
+          <Card className="border-l-4 border-l-green-500 shadow-md bg-gradient-to-r from-green-500/5 to-transparent">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <PartyPopper className="h-5 w-5 text-green-500" />
+                  Your Offers
+                  <Badge className="ml-2 bg-green-500 text-white">
+                    {offers.length} {offers.length === 1 ? 'offer' : 'offers'}
+                  </Badge>
+                </CardTitle>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/student/applications">View All Applications</Link>
+                </Button>
+              </div>
+              <CardDescription>
+                Congratulations! You have received university offers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {offers.slice(0, 3).map((offer) => (
+                <div
+                  key={offer.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/20 gap-3"
+                >
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {offer.university_logo_url && (
+                      <img
+                        src={offer.university_logo_url}
+                        alt={offer.university_name || 'University'}
+                        className="h-12 w-12 rounded-lg object-contain bg-white p-1 border flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex flex-col gap-1 min-w-0">
+                      <span className="font-semibold text-base truncate">
+                        {offer.program_name || 'Program'}
+                      </span>
+                      <span className="text-sm text-muted-foreground truncate">
+                        {offer.university_name || 'University'}
+                      </span>
+                      <div className="flex items-center gap-2 flex-wrap mt-1">
+                        <Badge 
+                          variant="outline" 
+                          className={offer.offer_type === 'unconditional' 
+                            ? 'border-green-500 bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' 
+                            : 'border-amber-500 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
+                          }
+                        >
+                          {offer.offer_type === 'unconditional' ? '✓ Unconditional' : '⚡ Conditional'}
+                        </Badge>
+                        {offer.conditions_summary && (
+                          <span className="text-xs text-muted-foreground">
+                            {offer.conditions_summary}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    {offer.letter_url && offer.letter_url.length > 0 && (
+                      <Button 
+                        asChild 
+                        size="sm" 
+                        variant="outline"
+                        className="gap-1"
+                      >
+                        <a href={offer.letter_url} target="_blank" rel="noopener noreferrer">
+                          <Download className="h-3 w-3" />
+                          Offer Letter
+                        </a>
+                      </Button>
+                    )}
+                    <Button asChild size="sm" variant="default" className="gap-1">
+                      <Link to={`/student/applications/${offer.application_id}`}>
+                        <ExternalLink className="h-3 w-3" />
+                        View Details
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {offers.length > 3 && (
+                <Button asChild variant="ghost" className="w-full mt-2">
+                  <Link to="/student/applications">
+                    View all {offers.length} offers
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Pending Document Requests - only show if there are pending requests */}
         {documentRequests.filter(r => r.status !== 'received' && r.status !== 'completed').length > 0 && (
           <Card className="border-l-4 border-l-amber-500 shadow-md">
@@ -586,7 +817,7 @@ export default function StudentDashboard() {
                   </Badge>
                 </CardTitle>
                 <Button asChild variant="outline" size="sm">
-                  <Link to="/student/applications">View All</Link>
+                  <Link to="/student/documents">View All</Link>
                 </Button>
               </div>
               <CardDescription>
@@ -618,7 +849,7 @@ export default function StudentDashboard() {
                         </Badge>
                       )}
                       <Button asChild size="sm" variant="default">
-                        <Link to="/student/applications">
+                        <Link to="/student/documents">
                           <Upload className="h-3 w-3 mr-1" />
                           Respond
                         </Link>
