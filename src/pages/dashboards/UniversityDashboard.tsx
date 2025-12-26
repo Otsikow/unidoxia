@@ -36,6 +36,8 @@ interface Application {
   app_number: string;
   status: string;
   created_at: string;
+  agent_id?: string | null;
+  program_id?: string;
   student: {
     legal_name: string;
     nationality: string;
@@ -173,100 +175,71 @@ export default function UniversityDashboard() {
 
       setUniversity(uniData);
 
-      const { data: programsData, error: programsError } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('tenant_id', profile.tenant_id)
-        .eq('university_id', uniData.id)
-        .order('name');
+      const [programsResponse, applicationsResponse, agentsResponse] = await Promise.all([
+        supabase
+          .from('programs')
+          .select('*')
+          .eq('tenant_id', profile.tenant_id)
+          .eq('university_id', uniData.id)
+          .order('name'),
+        supabase
+          .from('applications')
+          .select(`
+            id,
+            app_number,
+            status,
+            created_at,
+            agent_id,
+            program_id,
+            student:students!inner (id, legal_name, nationality),
+            program:programs!inner (id, name, level, university_id)
+          `)
+          .eq('tenant_id', profile.tenant_id)
+          .eq('program.university_id', uniData.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('agents')
+          .select(`
+            id,
+            company_name,
+            profile:profiles!inner(full_name, email)
+          `)
+          .eq('tenant_id', profile.tenant_id),
+      ]);
 
-      if (programsError) {
-        throw programsError;
-      }
+      if (programsResponse.error) throw programsResponse.error;
+      if (applicationsResponse.error) throw applicationsResponse.error;
+      if (agentsResponse.error) throw agentsResponse.error;
 
-      const programList = programsData ?? [];
+      const programList = programsResponse.data ?? [];
       setPrograms(programList);
 
-      const programIds = programList.map(program => program.id);
-      let assembledApplications: Application[] = [];
+      const applicationsWithRelations = (applicationsResponse.data ?? []).map((app) => ({
+        id: app.id,
+        app_number: app.app_number,
+        status: app.status,
+        created_at: app.created_at,
+        student: app.student || { legal_name: 'Unknown', nationality: 'Unknown' },
+        program: app.program || {
+          id: app.program?.id ?? app.program_id ?? 'unknown-program',
+          name: 'Unknown',
+          level: 'Unknown',
+        },
+        agent_id: app.agent_id,
+      }));
 
-      if (programIds.length > 0) {
-        const { data: rawApplications, error: applicationsError } = await supabase
-          .from('applications')
-          .select('id, app_number, status, created_at, program_id, student_id')
-          .eq('tenant_id', profile.tenant_id)
-          .in('program_id', programIds)
-          .order('created_at', { ascending: false });
+      setApplications(applicationsWithRelations);
 
-        if (applicationsError) {
-          throw applicationsError;
-        }
+      const referralCounts = applicationsWithRelations.reduce((acc, app) => {
+        if (!app.agent_id) return acc;
+        acc.set(app.agent_id, (acc.get(app.agent_id) ?? 0) + 1);
+        return acc;
+      }, new Map<string, number>());
 
-        const applicationRows = rawApplications ?? [];
-        const studentIds = Array.from(new Set(applicationRows.map(app => app.student_id))).filter(Boolean);
-
-        let studentsMap = new Map<string, { id: string; legal_name: string | null; nationality: string | null }>();
-        if (studentIds.length > 0) {
-          const { data: studentsData, error: studentsError } = await supabase
-            .from('students')
-            .select('id, legal_name, nationality')
-            .in('id', studentIds)
-            .eq('tenant_id', profile.tenant_id);
-
-          if (studentsError) {
-            throw studentsError;
-          }
-
-          studentsMap = new Map((studentsData ?? []).map(student => [student.id, student]));
-        }
-
-        const programsMap = new Map(
-          programList.map(program => [program.id, { id: program.id, name: program.name, level: program.level }])
-        );
-
-        assembledApplications = applicationRows.map((app) => ({
-          id: app.id,
-          app_number: app.app_number,
-          status: app.status,
-          created_at: app.created_at,
-          student: studentsMap.get(app.student_id) || { legal_name: 'Unknown', nationality: 'Unknown' },
-          program: programsMap.get(app.program_id) || { id: app.program_id, name: 'Unknown', level: 'Unknown' },
-        }));
-      }
-
-      setApplications(assembledApplications);
-
-      const { data: agentsData, error: agentsError } = await supabase
-        .from('agents')
-        .select(`
-          id,
-          company_name,
-          profile:profiles!inner(full_name, email)
-        `)
-        .eq('tenant_id', profile.tenant_id);
-
-      if (agentsError) {
-        throw agentsError;
-      }
-
-      const agentsWithCounts = await Promise.all(
-        (agentsData ?? []).map(async (agent: any) => {
-          const { count, error: countError } = await supabase
-            .from('applications')
-            .select('id', { count: 'exact', head: true })
-            .eq('agent_id', agent.id)
-            .eq('tenant_id', profile.tenant_id);
-
-          if (countError) {
-            throw countError;
-          }
-
-          return {
-            ...agent,
-            referral_count: count ?? 0,
-          };
-        })
-      );
+      const agentsWithCounts = (agentsResponse.data ?? []).map((agent: any) => ({
+        ...agent,
+        referral_count: referralCounts.get(agent.id) ?? 0,
+      }));
 
       setAgents(agentsWithCounts);
     } catch (error) {
