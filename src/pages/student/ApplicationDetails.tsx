@@ -409,13 +409,13 @@ export default function ApplicationDetails() {
 
       // Load document requests for this student/application
       if (appData.student_id) {
-        const documentRequestQuery = supabase
+        const documentRequestQuery: any = supabase
           .from('document_requests')
           .select('id,document_type,request_type,status,requested_at,due_date,description,notes,document_url,file_url,uploaded_file_url,storage_path,submitted_at,created_at')
           .eq('student_id', appData.student_id)
           .order('requested_at', { ascending: false });
 
-        let requestResult = await documentRequestQuery.eq('application_id' as any, applicationId);
+        let requestResult: any = await documentRequestQuery.eq('application_id' as any, applicationId);
 
         if (requestResult.error) {
           const message = (requestResult.error.message || '').toLowerCase();
