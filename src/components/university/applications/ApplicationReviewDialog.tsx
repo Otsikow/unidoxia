@@ -69,6 +69,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { LoadingState } from "@/components/LoadingState";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   APPLICATION_STATUS_OPTIONS,
   getApplicationStatusLabel,
@@ -896,13 +897,14 @@ export function ApplicationReviewDialog({
         }
 
         // 2. Insert into application_documents
-        // We use "other" as document_type or maybe map based on status?
-        // For now "other" is safe.
+        // Use the generic "other" type since offer/CAS files are stored in the application documents bucket
+        const documentType: Database['public']['Enums']['document_type'] = 'other';
+
         const { data: insertedApplicationDoc, error: dbError } = await supabase
           .from("application_documents")
           .insert({
             application_id: application.id,
-            document_type: "other",
+            document_type: documentType,
             storage_path: filePath,
             mime_type: selectedFile.type,
             file_size: selectedFile.size,
@@ -935,6 +937,24 @@ export function ApplicationReviewDialog({
               uploadedBy: "university",
             },
           });
+        }
+
+        // Also make sure the offer record is created/updated for students to view
+        if (selectedStatus === 'conditional_offer' || selectedStatus === 'unconditional_offer') {
+          const offerType = selectedStatus === 'conditional_offer' ? 'conditional' : 'unconditional';
+          const { error: offerError } = await supabase
+            .from('offers')
+            .upsert({
+              application_id: application.id,
+              offer_type: offerType,
+              letter_url: filePath,
+              accepted: null,
+            }, { onConflict: 'application_id' });
+
+          if (offerError) {
+            console.error('[ApplicationReview] Offer upsert failed:', offerError);
+            throw new Error(`Failed to record offer: ${offerError.message}`);
+          }
         }
 
         console.log("[ApplicationReview] File uploaded and recorded successfully");
