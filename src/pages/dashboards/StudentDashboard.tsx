@@ -93,6 +93,15 @@ interface Notification {
   type: string;
 }
 
+interface DocumentRequestItem {
+  id: string;
+  document_type: string;
+  status: string | null;
+  notes: string | null;
+  due_date: string | null;
+  requested_at: string | null;
+}
+
 type StudentProfile = Tables<'students'>;
 
 export default function StudentDashboard() {
@@ -107,6 +116,7 @@ export default function StudentDashboard() {
   const [applications, setApplications] = useState<ApplicationWithDetails[]>([]);
   const [recommendedPrograms, setRecommendedPrograms] = useState<RecommendedProgram[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [documentRequests, setDocumentRequests] = useState<DocumentRequestItem[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   const studentProfile = studentRecord;
@@ -225,10 +235,21 @@ export default function StudentDashboard() {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      const [appsResult, programsResult, notificationsResult] = await Promise.allSettled([
+      // Fetch document requests for the student
+      const documentRequestsPromise = studentId
+        ? supabase
+            .from('document_requests')
+            .select('id, document_type, status, notes, due_date, requested_at')
+            .eq('student_id', studentId)
+            .order('requested_at', { ascending: false })
+            .limit(10)
+        : Promise.resolve({ data: [] as DocumentRequestItem[], error: null });
+
+      const [appsResult, programsResult, notificationsResult, docRequestsResult] = await Promise.allSettled([
         applicationsPromise,
         programsPromise,
         notificationsPromise,
+        documentRequestsPromise,
       ]);
 
       if (appsResult.status === 'fulfilled') {
@@ -301,6 +322,24 @@ export default function StudentDashboard() {
         logError(notificationsResult.reason, 'StudentDashboard.fetchNotifications');
         toast(formatErrorForToast(notificationsResult.reason, 'Failed to load notifications'));
         setNotifications([]);
+      }
+
+      // Handle document requests result
+      if (docRequestsResult.status === 'fulfilled') {
+        const { data, error } = docRequestsResult.value as {
+          data: DocumentRequestItem[] | null;
+          error: unknown;
+        };
+
+        if (error) {
+          console.error('[StudentDashboard] Document requests fetch error:', error);
+          setDocumentRequests([]);
+        } else {
+          setDocumentRequests((data ?? []) as DocumentRequestItem[]);
+        }
+      } else {
+        console.error('[StudentDashboard] Document requests fetch failed:', docRequestsResult.reason);
+        setDocumentRequests([]);
       }
     } catch (error) {
       logError(error, 'StudentDashboard.fetchDashboardData');
@@ -533,6 +572,63 @@ export default function StudentDashboard() {
             <Progress value={profileCompleteness} className="mt-4 h-3" />
           </CardContent>
         </Card>
+
+        {/* Pending Document Requests - only show if there are pending requests */}
+        {documentRequests.filter(r => r.status !== 'received' && r.status !== 'completed').length > 0 && (
+          <Card className="border-l-4 border-l-amber-500 shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <FileText className="h-5 w-5 text-amber-500" />
+                  Document Requests
+                  <Badge variant="destructive" className="ml-2">
+                    {documentRequests.filter(r => r.status !== 'received' && r.status !== 'completed').length} pending
+                  </Badge>
+                </CardTitle>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/student/applications">View All</Link>
+                </Button>
+              </div>
+              <CardDescription>
+                Universities have requested the following documents from you
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {documentRequests
+                .filter(r => r.status !== 'received' && r.status !== 'completed')
+                .slice(0, 3)
+                .map((request) => (
+                  <div
+                    key={request.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border bg-muted/30 gap-2"
+                  >
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium capitalize">
+                        {request.document_type?.replace(/_/g, ' ') || 'Document'}
+                      </span>
+                      {request.notes && (
+                        <span className="text-xs text-muted-foreground line-clamp-1">{request.notes}</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="secondary">{request.status ?? 'pending'}</Badge>
+                      {request.due_date && (
+                        <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
+                          Due {new Date(request.due_date).toLocaleDateString()}
+                        </Badge>
+                      )}
+                      <Button asChild size="sm" variant="default">
+                        <Link to="/student/applications">
+                          <Upload className="h-3 w-3 mr-1" />
+                          Respond
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

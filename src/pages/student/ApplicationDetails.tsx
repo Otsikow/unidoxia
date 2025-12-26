@@ -407,26 +407,21 @@ export default function ApplicationDetails() {
         void loadOfferDocumentUrls(offerDocuments);
       }
 
-      // Load document requests for this student/application
+      // Load document requests for this student
+      // Note: document_requests table only has student_id, not application_id
       if (appData.student_id) {
-        const documentRequestQuery: any = supabase
+        const { data: requestData, error: requestError } = await supabase
           .from('document_requests')
           .select('id,document_type,request_type,status,requested_at,due_date,description,notes,document_url,file_url,uploaded_file_url,storage_path,submitted_at,created_at')
           .eq('student_id', appData.student_id)
           .order('requested_at', { ascending: false });
 
-        let requestResult: any = await documentRequestQuery.eq('application_id' as any, applicationId);
-
-        if (requestResult.error) {
-          const message = (requestResult.error.message || '').toLowerCase();
-          if (message.includes('application_id')) {
-            requestResult = await documentRequestQuery;
-          } else {
-            throw requestResult.error;
-          }
+        if (requestError) {
+          console.error('[ApplicationDetails] Document requests fetch error:', requestError);
+          // Don't throw - just log and continue with empty array
         }
 
-        setDocumentRequests((requestResult.data ?? []) as DocumentRequest[]);
+        setDocumentRequests((requestData ?? []) as DocumentRequest[]);
       }
     } catch (error) {
       logError(error, 'ApplicationDetails.loadAll');
