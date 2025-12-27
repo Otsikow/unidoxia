@@ -538,7 +538,7 @@ export default function NotificationCenter() {
         case "agent": return "/dashboard/applications";
         case "staff": return "/dashboard/applications";
         case "admin": return "/admin/applications";
-        default: return "/student/application-tracking";
+        default: return "/student/applications";
       }
     };
     
