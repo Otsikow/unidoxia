@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { LogIn, LogOut, PanelsTopLeft, UserPlus } from "lucide-react";
+import { LogIn, LogOut, PanelsTopLeft, UserPlus, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo, useState } from "react";
 
@@ -53,6 +53,18 @@ export function LandingHeader() {
               </>
             ) : (
               <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 rounded-full text-white hover:bg-white/10 hover:text-white hover:scale-100 active:scale-100"
+                >
+                  <Link to="/pricing" aria-label="View UniDoxia pricing plans">
+                    <CreditCard className="h-4 w-4" />
+                    Pricing
+                  </Link>
+                </Button>
+
                 <Button
                   asChild
                   variant="ghost"
