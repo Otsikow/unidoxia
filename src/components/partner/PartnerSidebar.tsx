@@ -51,7 +51,7 @@ export function PartnerSidebar() {
           {state !== "collapsed" && (
             <div className="space-y-1">
               <div className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">UniDoxia</div>
-              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Partner</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Partner University</div>
             </div>
           )}
         </div>

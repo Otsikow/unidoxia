@@ -66,7 +66,7 @@ export function PartnerHeader() {
           />
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">UniDoxia</p>
-            <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100 md:text-2xl">Partner Dashboard</h1>
+            <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100 md:text-2xl">Partner University</h1>
           </div>
         </div>
       </div>
