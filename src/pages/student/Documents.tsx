@@ -65,17 +65,27 @@ interface Document {
 /* -------------------------------------------------------------------------- */
 
 const DOCUMENT_TYPES = [
-  { value: "passport", label: "Passport" },
-  { value: "transcript", label: "Transcript" },
-  { value: "ielts", label: "IELTS" },
-  { value: "toefl", label: "TOEFL" },
-  { value: "sop", label: "Statement of Purpose" },
-  { value: "cv", label: "CV/Resume" },
-  { value: "lor", label: "Letter of Recommendation" },
-  { value: "portfolio", label: "Portfolio" },
-  { value: "financial_document", label: "Financial Document" },
-  { value: "other", label: "Other" },
+  { value: "passport", label: "Passport", required: true },
+  { value: "passport_photo", label: "Passport Photo", required: true },
+  { value: "transcript", label: "Academic Transcript", required: true },
+  { value: "cv", label: "CV / Resume", required: true },
+  { value: "ielts", label: "IELTS Score", required: false },
+  { value: "toefl", label: "TOEFL Score", required: false },
+  { value: "sop", label: "Statement of Purpose", required: false },
+  { value: "lor", label: "Letter of Recommendation", required: false },
+  { value: "portfolio", label: "Portfolio", required: false },
+  { value: "financial_document", label: "Financial Document", required: false },
+  { value: "other", label: "Other", required: false },
 ];
+
+// Required core documents that students should upload
+const REQUIRED_DOCUMENTS = DOCUMENT_TYPES.filter((t) => t.required);
+
+// Helper to get document type label from value
+const getDocumentTypeLabel = (value: string): string => {
+  const docType = DOCUMENT_TYPES.find((t) => t.value === value);
+  return docType?.label || value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, " ");
+};
 
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */
@@ -462,10 +472,55 @@ export default function Documents() {
         </CardContent>
       </Card>
 
-      {/* Documents */}
+      {/* Outstanding Documents */}
+      {(() => {
+        const uploadedTypes = new Set(documents.map((d) => d.document_type));
+        const outstanding = REQUIRED_DOCUMENTS.filter(
+          (t) => !uploadedTypes.has(t.value)
+        );
+        
+        if (outstanding.length === 0) return null;
+        
+        return (
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Clock className="h-5 w-5 text-amber-600" />
+                Outstanding Documents
+              </CardTitle>
+              <CardDescription>
+                The following documents are required but have not been uploaded yet
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {outstanding.map((docType) => (
+                  <div
+                    key={docType.value}
+                    className="flex items-center gap-3 p-3 bg-white rounded-md border border-amber-200"
+                  >
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                      <Upload className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{docType.label}</p>
+                      <p className="text-sm text-muted-foreground">Not uploaded</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
+
+      {/* Uploaded Documents */}
       <Card>
         <CardHeader>
           <CardTitle>Your Documents</CardTitle>
+          <CardDescription>
+            Documents you have uploaded for your applications
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {documents.length === 0 && (
@@ -474,16 +529,22 @@ export default function Documents() {
 
           {documents.map((doc) => {
             const badge = getStatusBadge(doc.verified_status);
+            const docTypeLabel = getDocumentTypeLabel(doc.document_type);
             return (
               <div
                 key={doc.id}
-                className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border rounded-md p-3"
+                className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between border rounded-md p-4"
               >
                 <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5" />
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-slate-600" />
+                  </div>
                   <div>
-                    <p className="font-medium">{doc.file_name}</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <p className="font-semibold text-base">{docTypeLabel}</p>
+                    <p className="text-sm text-muted-foreground truncate max-w-[200px]" title={doc.file_name}>
+                      {doc.file_name}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1.5">
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                       {getStatusIcon(doc.verified_status)}
                     </div>
