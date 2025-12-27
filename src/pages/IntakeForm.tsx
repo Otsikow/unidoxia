@@ -1,5 +1,5 @@
 import StudentIntakeForm from '@/components/forms/StudentIntakeForm';
-import professionalConsultant from '@/assets/professional-consultant.png';
+import professionalConsultant from '@/assets/zoe-portrait.png';
 
 export default function IntakeForm() {
   return (

@@ -35,7 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { getSupabaseBrowserConfig } from "@/lib/supabaseClientConfig";
-import zoeAvatar from "@/assets/professional-consultant.png";
+import zoeAvatar from "@/assets/zoe-portrait.png";
 import { cn } from "@/lib/utils";
 import ZoeTypingIndicator from "@/components/ai/ZoeTypingIndicator";
 import { generateZoeMockResponse } from "@/lib/zoe/mockResponse";

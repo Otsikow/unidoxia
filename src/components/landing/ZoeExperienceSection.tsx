@@ -22,7 +22,7 @@ import {
   Users2,
 } from "lucide-react";
 
-import zoePortrait from "@/assets/professional-consultant.png";
+import zoePortrait from "@/assets/zoe-portrait.png";
 
 interface FocusArea {
   key: string;
