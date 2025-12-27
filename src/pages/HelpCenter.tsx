@@ -66,13 +66,53 @@ const HelpCenter = () => {
     }
   }, [searchQuery, faqs]);
 
+  // Static billing FAQs - always available
+  const billingFaqs: FAQ[] = [
+    {
+      id: 'billing-1',
+      question: 'Is this a subscription?',
+      answer: 'No. All UniDoxia payments are one-time payments. You pay once and get permanent access to your plan\'s features. There are no recurring charges.',
+      category: 'Billing & Payments',
+    },
+    {
+      id: 'billing-2',
+      question: 'Are payments refundable?',
+      answer: 'No. All payments are non-refundable once completed. Please review your plan selection carefully before making a payment.',
+      category: 'Billing & Payments',
+    },
+    {
+      id: 'billing-3',
+      question: 'Will I be charged again later?',
+      answer: 'No. There are no renewals or hidden charges. Your one-time payment grants you permanent access to your selected plan.',
+      category: 'Billing & Payments',
+    },
+    {
+      id: 'billing-4',
+      question: 'What are the available plans?',
+      answer: 'We offer three plans: Free ($0 - 1 application), Self-Service ($49 - unlimited applications), and Agent-Supported ($200 - unlimited applications with dedicated agent guidance).',
+      category: 'Billing & Payments',
+    },
+    {
+      id: 'billing-5',
+      question: 'Can I upgrade my plan?',
+      answer: 'Yes. You can upgrade from Free to Self-Service or Agent-Supported at any time. Each upgrade is a separate one-time payment.',
+      category: 'Billing & Payments',
+    },
+    {
+      id: 'billing-6',
+      question: 'What do I get with the Agent-Supported plan?',
+      answer: 'With the Agent-Supported plan ($200), you get a dedicated UniDoxia Agent who will guide you through document review, applications, offer letters, and visa preparation.',
+      category: 'Billing & Payments',
+    },
+  ];
+
   // Fetch FAQs (STUB - requires faqs table)
   const fetchFAQs = async () => {
     try {
       setLoading(true);
-      // Stub - table doesn't exist
-      setFaqs([]);
-      setFilteredFaqs([]);
+      // Include static billing FAQs plus any from database
+      setFaqs(billingFaqs);
+      setFilteredFaqs(billingFaqs);
     } catch (error) {
       console.error('Error fetching FAQs:', error);
       toast({
