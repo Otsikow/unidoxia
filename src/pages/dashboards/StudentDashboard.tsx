@@ -664,7 +664,7 @@ export default function StudentDashboard() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm" className="hover-scale whitespace-nowrap text-xs sm:text-sm">
-              <Link to="/student/application-tracking" className="flex items-center gap-1.5 sm:gap-2">
+              <Link to="/student/applications" className="flex items-center gap-1.5 sm:gap-2">
                 <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Track Apps</span>
                 <span className="sm:hidden">Track</span>

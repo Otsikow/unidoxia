@@ -1549,10 +1549,10 @@ export default function NewApplication() {
             </Button>
             <Button
               variant="secondary"
-              onClick={() => navigate(`/student/application-tracking${trackingCode ? `?trackingId=${trackingCode}` : ''}`)}
+              onClick={() => navigate(applicationsListUrl)}
               className="flex-1"
             >
-              Track with ID
+              Track Applications
             </Button>
             <Button
               variant="outline"

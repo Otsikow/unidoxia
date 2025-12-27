@@ -295,7 +295,7 @@ export default function ApplicationTrackingSystem() {
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <Button asChild variant="outline" size="sm" className="hover-scale">
-            <Link to="/student/application-tracking">
+            <Link to="/student/applications">
               <ArrowUpRight className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Full View</span>
             </Link>
