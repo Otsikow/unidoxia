@@ -106,6 +106,8 @@ export default function Documents() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState("");
   const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+  const outstandingFileInputRef = useRef<HTMLInputElement | null>(null);
+  const [pendingDocType, setPendingDocType] = useState<string | null>(null);
 
   /* ------------------------------------------------------------------------ */
   /*                               Data Loading                               */
@@ -166,6 +168,82 @@ export default function Documents() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
+  };
+
+  const handleOutstandingDocClick = (docTypeValue: string) => {
+    setPendingDocType(docTypeValue);
+    outstandingFileInputRef.current?.click();
+  };
+
+  const handleOutstandingFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !pendingDocType || !studentId) {
+      setPendingDocType(null);
+      e.target.value = "";
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const { preparedFile, sanitizedFileName, detectedMimeType } =
+        await validateFileUpload(file, {
+          allowedMimeTypes: [
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "image/jpg",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          ],
+          allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
+          maxSizeBytes: 10 * 1024 * 1024,
+        });
+
+      const ext = sanitizedFileName.split(".").pop();
+      const storagePath = `${studentId}/${pendingDocType}_${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("student-documents")
+        .upload(storagePath, preparedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: detectedMimeType,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase
+        .from("student_documents")
+        .insert({
+          student_id: studentId,
+          document_type: pendingDocType,
+          file_name: sanitizedFileName,
+          file_size: preparedFile.size,
+          mime_type: detectedMimeType,
+          storage_path: storagePath,
+          status: "awaiting_admin_review",
+        });
+
+      if (dbError) {
+        await supabase.storage.from("student-documents").remove([storagePath]);
+        throw dbError;
+      }
+
+      const docLabel = DOCUMENT_TYPES.find(t => t.value === pendingDocType)?.label || pendingDocType;
+      toast({ title: "Uploaded", description: `${docLabel} uploaded successfully.` });
+      loadDocuments(studentId);
+    } catch (err) {
+      toast({
+        title: "Upload Failed",
+        description: err instanceof Error ? err.message : "Upload failed",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      setPendingDocType(null);
+      e.target.value = "";
+    }
   };
 
   const handleUpload = async () => {
@@ -482,32 +560,51 @@ export default function Documents() {
         if (outstanding.length === 0) return null;
         
         return (
-          <Card className="border-amber-200 bg-amber-50/50">
+          <Card className="border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/40">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5 text-amber-600" />
+              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+                <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 Outstanding Documents
               </CardTitle>
-              <CardDescription>
-                The following documents are required but have not been uploaded yet
+              <CardDescription className="text-muted-foreground dark:text-amber-200/70">
+                The following documents are required but have not been uploaded yet. Click to upload.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {outstanding.map((docType) => (
-                  <div
-                    key={docType.value}
-                    className="flex items-center gap-3 p-3 bg-white rounded-md border border-amber-200"
-                  >
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
-                      <Upload className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{docType.label}</p>
-                      <p className="text-sm text-muted-foreground">Not uploaded</p>
-                    </div>
-                  </div>
-                ))}
+              {/* Hidden file input for outstanding document uploads */}
+              <input
+                type="file"
+                className="hidden"
+                ref={outstandingFileInputRef}
+                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                onChange={handleOutstandingFileSelect}
+              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                {outstanding.map((docType) => {
+                  const isUploading = uploading && pendingDocType === docType.value;
+                  return (
+                    <button
+                      key={docType.value}
+                      onClick={() => handleOutstandingDocClick(docType.value)}
+                      disabled={uploading}
+                      className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-amber-300 dark:border-amber-600 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-shrink-0 h-11 w-11 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60 transition-colors">
+                        {isUploading ? (
+                          <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400 animate-spin" />
+                        ) : (
+                          <Upload className="h-5 w-5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">{docType.label}</p>
+                        <p className="text-sm text-amber-600 dark:text-amber-400">
+                          {isUploading ? "Uploading..." : "Click to upload"}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
