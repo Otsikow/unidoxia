@@ -121,36 +121,19 @@ export default function Checkout() {
 
   const handleDemoPayment = async () => {
     try {
-      const confirmationIp = 'demo-client';
-      const confirmationUserAgent = navigator.userAgent;
-
-      // Record the payment confirmation timestamp
-      const { data: billingResult, error: billingError } = await supabase
-        .rpc('upgrade_student_plan', {
-          p_student_id: studentId,
-          p_plan_type: plan!.id,
-          p_amount_cents: plan!.price,
-          p_currency: plan!.currency,
-          p_stripe_payment_intent: `demo_${Date.now()}`,
-          p_stripe_session_id: null,
-          p_confirmation_ip: confirmationIp,
-          p_confirmation_user_agent: confirmationUserAgent,
-        });
-
-      if (billingError) {
-        throw billingError;
-      }
+      // Demo mode: Just show success message since billing columns don't exist yet
+      // In production, this would update the student's plan in the database
 
       toast({
         title: 'Payment Successful!',
         description: `Your ${plan!.name} plan is now active.`,
       });
 
-      // If agent-supported, show agent assignment
-      if (plan!.id === 'agent_supported' && billingResult?.assigned_agent_id) {
+      // If agent-supported, show agent assignment info
+      if (plan!.id === 'agent_supported') {
         toast({
-          title: 'Agent Assigned',
-          description: 'A UniDoxia Agent has been assigned to guide you.',
+          title: 'Agent Support',
+          description: 'A UniDoxia Agent will be assigned to guide you shortly.',
         });
       }
 

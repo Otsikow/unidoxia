@@ -265,40 +265,42 @@ export default function StudentDashboard() {
             .limit(10)
         : Promise.resolve({ data: [] as DocumentRequestItem[], error: null });
 
-      // Fetch offers for the student - try RPC first, fallback to direct query
+      // Fetch offers for the student via applications
       const offersPromise = studentId
-        ? supabase
-            .rpc('get_student_offers', { p_student_id: studentId })
-            .then((result) => {
-              if (result.error) {
-                // Fallback to direct query if RPC doesn't exist
-                console.log('[StudentDashboard] RPC not available, using direct offers query');
-                return supabase
-                  .from('offers')
-                  .select(`
-                    id,
-                    application_id,
-                    offer_type,
-                    status,
-                    letter_url,
-                    conditions_summary,
-                    expiry_date,
-                    created_at,
-                    applications!inner (
-                      programs (
-                        name,
-                        universities (
-                          name,
-                          logo_url
-                        )
-                      )
+        ? (async () => {
+            // First get application IDs for this student
+            const { data: appIds, error: appError } = await supabase
+              .from('applications')
+              .select('id')
+              .eq('student_id', studentId);
+            
+            if (appError || !appIds?.length) {
+              return { data: [] as OfferItem[], error: null };
+            }
+            
+            // Then get offers for those applications
+            return supabase
+              .from('offers')
+              .select(`
+                id,
+                application_id,
+                offer_type,
+                letter_url,
+                expiry_date,
+                created_at,
+                applications!inner (
+                  programs (
+                    name,
+                    universities (
+                      name,
+                      logo_url
                     )
-                  `)
-                  .eq('student_id', studentId)
-                  .order('created_at', { ascending: false });
-              }
-              return result;
-            })
+                  )
+                )
+              `)
+              .in('application_id', appIds.map(a => a.id))
+              .order('created_at', { ascending: false });
+          })()
         : Promise.resolve({ data: [] as OfferItem[], error: null });
 
       const [appsResult, programsResult, notificationsResult, docRequestsResult, offersResult] = await Promise.allSettled([

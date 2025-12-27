@@ -270,18 +270,21 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
 
   const offers = (offersResponse.data ?? []) as unknown as OfferRecord[];
 
+  // Cast document types to any since the enum may not include all offer types
+  const offerDocTypes = [
+    "offer_letter",
+    "conditional_offer",
+    "unconditional_offer",
+    "cas",
+    "cas_letter",
+    "loa",
+    "other",
+  ] as any[];
+
   const { data: offerDocData, error: offerDocError } = await supabase
     .from("application_documents")
     .select(offerDocumentSelect)
-    .in("document_type", [
-      "offer_letter",
-      "conditional_offer",
-      "unconditional_offer",
-      "cas",
-      "cas_letter",
-      "loa",
-      "other",
-    ])
+    .in("document_type", offerDocTypes)
     .order("uploaded_at", { ascending: false });
 
   if (offerDocError) throw offerDocError;
