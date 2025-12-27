@@ -190,7 +190,7 @@ export function AppSidebar() {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia Logo"
-            className="h-8 w-8 md:h-10 md:w-10 rounded-md object-contain flex-shrink-0 dark:brightness-0 dark:invert"
+            className="h-8 w-8 md:h-10 md:w-10 rounded-md object-contain flex-shrink-0 dark:bg-white dark:p-0.5"
           />
           {state !== "collapsed" && (
             <div className="min-w-0 flex-1">
