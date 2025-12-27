@@ -373,6 +373,9 @@ const ApplicationsRouter = lazyWithErrorHandling(() =>
 const StaffBlogManagement = lazyWithErrorHandling(() =>
   import("./pages/dashboard/StaffBlog")
 );
+const DashboardNotifications = lazyWithErrorHandling(() =>
+  import("./pages/dashboard/DashboardNotifications")
+);
 const PartnerDocumentRequests = lazyWithErrorHandling(() =>
   import("./pages/dashboard/DocumentRequests")
 );
@@ -640,6 +643,7 @@ const App = () => {
                         <Route path="/dashboard/partners" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentPartners /></ProtectedRoute>} />
                         <Route path="/dashboard/settings/*" element={<ProtectedRoute><StaffSettingsRouter /></ProtectedRoute>} />
                         <Route path="/dashboard/ai-insights" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffAIInsightsPage /></ProtectedRoute>} />
+                        <Route path="/dashboard/notifications" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><DashboardNotifications /></ProtectedRoute>} />
 
                         {/* STUDENT ROUTES */}
                         <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>

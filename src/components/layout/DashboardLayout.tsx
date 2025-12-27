@@ -64,6 +64,22 @@ function SidebarToolbar({ showBackButton }: { showBackButton?: boolean }) {
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
   const roleLabel = formatRoleLabel(primaryRole);
 
+  // Determine notification URL based on role
+  const notificationsUrl = (() => {
+    switch (primaryRole) {
+      case "partner":
+        return "/university/notifications";
+      case "agent":
+        return "/dashboard/notifications";
+      case "staff":
+        return "/dashboard/notifications";
+      case "admin":
+        return "/admin/notifications";
+      default:
+        return "/student/notifications";
+    }
+  })();
+
   const showBack =
     showBackButton !== false &&
     location.pathname !== "/dashboard" &&
@@ -142,7 +158,7 @@ function SidebarToolbar({ showBackButton }: { showBackButton?: boolean }) {
         {/* Right actions */}
         <div className="flex items-center gap-2 sm:gap-3">
           <NotificationBell
-            notificationsUrl="/student/notifications"
+            notificationsUrl={notificationsUrl}
             maxItems={5}
           />
 
