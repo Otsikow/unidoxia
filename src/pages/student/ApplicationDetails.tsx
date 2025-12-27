@@ -18,7 +18,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer, MessageSquare, Mail, Phone, Globe, Upload, AlertCircle } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { parseUniversityProfileDetails } from '@/lib/universityProfile';
-import { DocumentUploadDialog } from '@/components/student/DocumentUploadDialog';
+import { DocumentUploadDialog, DocumentRequestInfo } from '@/components/student/DocumentUploadDialog';
 
 interface University {
   name: string;
@@ -737,10 +737,18 @@ export default function ApplicationDetails() {
                         <DocumentUploadDialog
                           applicationId={app.id}
                           onUploadComplete={loadAll}
+                          documentRequest={{
+                            id: request.id,
+                            document_type: request.document_type,
+                            request_type: request.request_type,
+                            notes: request.notes,
+                            description: request.description,
+                            due_date: request.due_date,
+                          }}
                           trigger={
                             <Button size="sm" variant="outline" className="gap-2">
                               <Upload className="h-4 w-4" />
-                              Upload response
+                              Upload {request.document_type?.replace(/_/g, ' ') || 'document'}
                             </Button>
                           }
                         />
