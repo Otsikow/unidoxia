@@ -222,10 +222,10 @@ export default function Documents() {
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
           storage_path: storagePath,
-          status: "awaiting_admin_review",
         });
 
       if (dbError) {
+        // Attempt to clean up the uploaded file if database insert fails
         await supabase.storage.from("student-documents").remove([storagePath]);
         throw dbError;
       }
@@ -234,9 +234,15 @@ export default function Documents() {
       toast({ title: "Uploaded", description: `${docLabel} uploaded successfully.` });
       loadDocuments(studentId);
     } catch (err) {
+      logError(err, "Documents.handleOutstandingFileSelect");
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : "An unexpected error occurred while uploading";
       toast({
         title: "Upload Failed",
-        description: err instanceof Error ? err.message : "Upload failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -295,10 +301,10 @@ export default function Documents() {
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
           storage_path: storagePath,
-          status: "awaiting_admin_review",
         });
 
       if (dbError) {
+        // Attempt to clean up the uploaded file if database insert fails
         await supabase.storage.from("student-documents").remove([storagePath]);
         throw dbError;
       }
@@ -308,9 +314,15 @@ export default function Documents() {
       setDocumentType("");
       loadDocuments(studentId);
     } catch (err) {
+      logError(err, "Documents.handleUpload");
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : "An unexpected error occurred while uploading";
       toast({
         title: "Upload Failed",
-        description: err instanceof Error ? err.message : "Upload failed",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -439,7 +451,6 @@ export default function Documents() {
           verification_notes: null,
           verified_at: null,
           verified_by: null,
-          status: "awaiting_admin_review",
         })
         .eq("id", doc.id);
 
