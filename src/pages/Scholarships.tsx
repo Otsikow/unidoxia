@@ -12,6 +12,7 @@ import { ScholarshipDetailDialog } from "@/components/scholarships/ScholarshipDe
 import { ScholarshipShareDialog } from "@/components/scholarships/ScholarshipShareDialog";
 import { ScholarshipAIFinder } from "@/components/scholarships/ScholarshipAIFinder";
 import { useScholarshipSearch } from "@/hooks/useScholarshipSearch";
+import BackButton from "@/components/BackButton";
 import type {
   ScholarshipSearchFilters,
   ScholarshipSearchResult,
@@ -320,6 +321,13 @@ const ScholarshipsPage = () => {
       
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
+          <BackButton 
+            variant="ghost" 
+            size="sm" 
+            fallback="/dashboard" 
+            wrapperClassName="mb-4"
+            showHistoryMenu={false}
+          />
           <div className="mb-8">
             <h1 className="text-4xl font-bold mb-2">Find Scholarships</h1>
             <p className="text-muted-foreground">
