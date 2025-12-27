@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -43,7 +44,7 @@ import {
 /*                                   Types                                    */
 /* -------------------------------------------------------------------------- */
 
-interface Document {
+interface StudentDocument {
   id: string;
   student_id: string;
   document_type: string;
@@ -76,7 +77,7 @@ const DOCUMENT_TYPES = [
   { value: "portfolio", label: "Portfolio", required: false },
   { value: "financial_document", label: "Financial Document", required: false },
   { value: "other", label: "Other", required: false },
-];
+] as const;
 
 // Required core documents that students should upload
 const REQUIRED_DOCUMENTS = DOCUMENT_TYPES.filter((t) => t.required);
@@ -84,8 +85,26 @@ const REQUIRED_DOCUMENTS = DOCUMENT_TYPES.filter((t) => t.required);
 // Helper to get document type label from value
 const getDocumentTypeLabel = (value: string): string => {
   const docType = DOCUMENT_TYPES.find((t) => t.value === value);
-  return docType?.label || value.charAt(0).toUpperCase() + value.slice(1).replace(/_/g, " ");
+  if (docType) return docType.label;
+  return value
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+const UPLOAD_VALIDATION = {
+  allowedMimeTypes: [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/jpg",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
+  maxSizeBytes: 10 * 1024 * 1024,
+} as const;
+
+const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */
@@ -95,9 +114,10 @@ export default function Documents() {
   const { toast } = useToast();
   const { data: studentRecord, isLoading, error } = useStudentRecord();
 
-  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documents, setDocuments] = useState<StudentDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
   const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
   const [replacingDocId, setReplacingDocId] = useState<string | null>(null);
@@ -105,6 +125,7 @@ export default function Documents() {
   const [studentId, setStudentId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState("");
+
   const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
   const outstandingFileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingDocType, setPendingDocType] = useState<string | null>(null);
@@ -125,7 +146,7 @@ export default function Documents() {
           .order("created_at", { ascending: false });
 
         if (error) throw error;
-        setDocuments(data ?? []);
+        setDocuments((data ?? []) as StudentDocument[]);
       } catch (err) {
         logError(err, "Documents.loadDocuments");
         toast(formatErrorForToast(err, "Failed to load documents"));
@@ -159,7 +180,7 @@ export default function Documents() {
     }
 
     setStudentId(studentRecord.id);
-    loadDocuments(studentRecord.id);
+    void loadDocuments(studentRecord.id);
   }, [studentRecord, isLoading, error, loadDocuments, toast]);
 
   /* ------------------------------------------------------------------------ */
@@ -167,7 +188,8 @@ export default function Documents() {
   /* ------------------------------------------------------------------------ */
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
+    const file = e.target.files?.[0] ?? null;
+    setSelectedFile(file);
   };
 
   const handleOutstandingDocClick = (docTypeValue: string) => {
@@ -175,9 +197,35 @@ export default function Documents() {
     outstandingFileInputRef.current?.click();
   };
 
+  const insertDocumentRow = async (args: {
+    student_id: string;
+    document_type: string;
+    file_name: string;
+    file_size: number;
+    mime_type: string;
+    storage_path: string;
+  }) => {
+    const { error: dbError } = await supabase.from("student_documents").insert(args);
+    if (dbError) throw dbError;
+  };
+
+  const uploadToStorage = async (storagePath: string, file: File, contentType: string) => {
+    const { error: uploadError } = await supabase.storage
+      .from("student-documents")
+      .upload(storagePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType,
+      });
+
+    if (uploadError) throw uploadError;
+  };
+
   const handleOutstandingFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !pendingDocType || !studentId) {
+    const selectedDocType = pendingDocType;
+
+    if (!file || !selectedDocType || !studentId) {
       setPendingDocType(null);
       e.target.value = "";
       return;
@@ -186,65 +234,39 @@ export default function Documents() {
     setUploading(true);
 
     try {
-      const { preparedFile, sanitizedFileName, detectedMimeType } =
-        await validateFileUpload(file, {
-          allowedMimeTypes: [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "image/jpg",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ],
-          allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
-          maxSizeBytes: 10 * 1024 * 1024,
-        });
+      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
+        file,
+        UPLOAD_VALIDATION
+      );
 
-      const ext = sanitizedFileName.split(".").pop();
-      const storagePath = `${studentId}/${pendingDocType}_${Date.now()}.${ext}`;
+      const ext = sanitizedFileName.split(".").pop() || "pdf";
+      const storagePath = `${studentId}/${selectedDocType}_${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("student-documents")
-        .upload(storagePath, preparedFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: detectedMimeType,
-        });
+      await uploadToStorage(storagePath, preparedFile, detectedMimeType);
 
-      if (uploadError) throw uploadError;
-
-      const { error: dbError } = await supabase
-        .from("student_documents")
-        .insert({
+      try {
+        await insertDocumentRow({
           student_id: studentId,
-          document_type: pendingDocType,
+          document_type: selectedDocType,
           file_name: sanitizedFileName,
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
           storage_path: storagePath,
         });
-
-      if (dbError) {
-        // Attempt to clean up the uploaded file if database insert fails
+      } catch (dbErr) {
+        // Clean up uploaded file if DB insert fails
         await supabase.storage.from("student-documents").remove([storagePath]);
-        throw dbError;
+        throw dbErr;
       }
 
-      const docLabel = DOCUMENT_TYPES.find(t => t.value === pendingDocType)?.label || pendingDocType;
+      const docLabel =
+        DOCUMENT_TYPES.find((t) => t.value === selectedDocType)?.label || selectedDocType;
+
       toast({ title: "Uploaded", description: `${docLabel} uploaded successfully.` });
-      loadDocuments(studentId);
+      void loadDocuments(studentId);
     } catch (err) {
       logError(err, "Documents.handleOutstandingFileSelect");
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : "An unexpected error occurred while uploading";
-      toast({
-        title: "Upload Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast(formatErrorForToast(err, "Failed to upload document"));
     } finally {
       setUploading(false);
       setPendingDocType(null);
@@ -265,36 +287,18 @@ export default function Documents() {
     setUploading(true);
 
     try {
-      const { preparedFile, sanitizedFileName, detectedMimeType } =
-        await validateFileUpload(selectedFile, {
-          allowedMimeTypes: [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "image/jpg",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ],
-          allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
-          maxSizeBytes: 10 * 1024 * 1024,
-        });
+      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
+        selectedFile,
+        UPLOAD_VALIDATION
+      );
 
-      const ext = sanitizedFileName.split(".").pop();
+      const ext = sanitizedFileName.split(".").pop() || "pdf";
       const storagePath = `${studentId}/${documentType}_${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("student-documents")
-        .upload(storagePath, preparedFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: detectedMimeType,
-        });
+      await uploadToStorage(storagePath, preparedFile, detectedMimeType);
 
-      if (uploadError) throw uploadError;
-
-      const { error: dbError } = await supabase
-        .from("student_documents")
-        .insert({
+      try {
+        await insertDocumentRow({
           student_id: studentId,
           document_type: documentType,
           file_name: sanitizedFileName,
@@ -302,29 +306,18 @@ export default function Documents() {
           mime_type: detectedMimeType,
           storage_path: storagePath,
         });
-
-      if (dbError) {
-        // Attempt to clean up the uploaded file if database insert fails
+      } catch (dbErr) {
         await supabase.storage.from("student-documents").remove([storagePath]);
-        throw dbError;
+        throw dbErr;
       }
 
       toast({ title: "Uploaded", description: "Document uploaded successfully." });
       setSelectedFile(null);
       setDocumentType("");
-      loadDocuments(studentId);
+      void loadDocuments(studentId);
     } catch (err) {
       logError(err, "Documents.handleUpload");
-      const errorMessage = err instanceof Error 
-        ? err.message 
-        : typeof err === 'object' && err !== null && 'message' in err
-          ? String((err as { message: unknown }).message)
-          : "An unexpected error occurred while uploading";
-      toast({
-        title: "Upload Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      toast(formatErrorForToast(err, "Failed to upload document"));
     } finally {
       setUploading(false);
     }
@@ -343,7 +336,7 @@ export default function Documents() {
     return data?.signedUrl;
   };
 
-  const handleViewDocument = async (doc: Document) => {
+  const handleViewDocument = async (doc: StudentDocument) => {
     try {
       setViewingDocId(doc.id);
       const signedUrl = await getSignedUrl(doc.storage_path);
@@ -357,7 +350,7 @@ export default function Documents() {
         return;
       }
 
-      window.open(signedUrl, "_blank");
+      window.open(signedUrl, "_blank", "noopener,noreferrer");
     } catch (err) {
       logError(err, "Documents.viewDocument");
       toast(formatErrorForToast(err, "Failed to open document"));
@@ -366,7 +359,7 @@ export default function Documents() {
     }
   };
 
-  const handleDownloadDocument = async (doc: Document) => {
+  const handleDownloadDocument = async (doc: StudentDocument) => {
     try {
       setDownloadingDocId(doc.id);
       const signedUrl = await getSignedUrl(doc.storage_path);
@@ -381,12 +374,18 @@ export default function Documents() {
       }
 
       const response = await fetch(signedUrl);
+      if (!response.ok) throw new Error("Failed to fetch document");
+
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
+
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = doc.file_name || "document";
+      document.body.appendChild(link);
       link.click();
+      link.remove();
+
       window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       logError(err, "Documents.downloadDocument");
@@ -397,7 +396,7 @@ export default function Documents() {
   };
 
   const handleReplaceDocument = async (
-    doc: Document,
+    doc: StudentDocument,
     file: File,
     resetInput: () => void
   ) => {
@@ -413,32 +412,15 @@ export default function Documents() {
     try {
       setReplacingDocId(doc.id);
 
-      const { preparedFile, sanitizedFileName, detectedMimeType } =
-        await validateFileUpload(file, {
-          allowedMimeTypes: [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "image/jpg",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          ],
-          allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
-          maxSizeBytes: 10 * 1024 * 1024,
-        });
+      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
+        file,
+        UPLOAD_VALIDATION
+      );
 
-      const ext = sanitizedFileName.split(".").pop();
+      const ext = sanitizedFileName.split(".").pop() || "pdf";
       const newStoragePath = `${studentId}/${doc.document_type}_${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("student-documents")
-        .upload(newStoragePath, preparedFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: detectedMimeType,
-        });
-
-      if (uploadError) throw uploadError;
+      await uploadToStorage(newStoragePath, preparedFile, detectedMimeType);
 
       const { error: updateError } = await supabase
         .from("student_documents")
@@ -455,24 +437,20 @@ export default function Documents() {
         .eq("id", doc.id);
 
       if (updateError) {
-        await supabase.storage
-          .from("student-documents")
-          .remove([newStoragePath]);
+        await supabase.storage.from("student-documents").remove([newStoragePath]);
         throw updateError;
       }
 
       if (doc.storage_path) {
-        await supabase.storage
-          .from("student-documents")
-          .remove([doc.storage_path]);
+        await supabase.storage.from("student-documents").remove([doc.storage_path]);
       }
 
       toast({
         title: "Document replaced",
-        description: `${doc.file_name} has been updated and sent for review.`,
+        description: `${getDocumentTypeLabel(doc.document_type)} has been updated and sent for review.`,
       });
 
-      loadDocuments(studentId);
+      void loadDocuments(studentId);
     } catch (err) {
       logError(err, "Documents.replaceDocument");
       toast(formatErrorForToast(err, "Failed to replace document"));
@@ -528,9 +506,7 @@ export default function Documents() {
       <Card>
         <CardHeader>
           <CardTitle>Upload Document</CardTitle>
-          <CardDescription>
-            Upload required documents for your applications
-          </CardDescription>
+          <CardDescription>Upload required documents for your applications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -551,12 +527,16 @@ export default function Documents() {
 
           <div>
             <Label>File</Label>
-            <Input type="file" onChange={handleFileSelect} />
+            <Input type="file" accept={FILE_ACCEPT} onChange={handleFileSelect} />
           </div>
 
-          <Button onClick={handleUpload} disabled={uploading}>
+          <Button
+            onClick={handleUpload}
+            disabled={uploading || !studentId}
+            aria-disabled={uploading || !studentId}
+          >
             <Upload className="mr-2 h-4 w-4" />
-            Upload
+            {uploading ? "Uploading…" : "Upload"}
           </Button>
         </CardContent>
       </Card>
@@ -564,12 +544,10 @@ export default function Documents() {
       {/* Outstanding Documents */}
       {(() => {
         const uploadedTypes = new Set(documents.map((d) => d.document_type));
-        const outstanding = REQUIRED_DOCUMENTS.filter(
-          (t) => !uploadedTypes.has(t.value)
-        );
-        
+        const outstanding = REQUIRED_DOCUMENTS.filter((t) => !uploadedTypes.has(t.value));
+
         if (outstanding.length === 0) return null;
-        
+
         return (
           <Card className="border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/40">
             <CardHeader className="pb-3">
@@ -578,7 +556,8 @@ export default function Documents() {
                 Outstanding Documents
               </CardTitle>
               <CardDescription className="text-muted-foreground dark:text-amber-200/70">
-                The following documents are required but have not been uploaded yet. Click to upload.
+                The following documents are required but have not been uploaded yet. Click to
+                upload.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -587,18 +566,21 @@ export default function Documents() {
                 type="file"
                 className="hidden"
                 ref={outstandingFileInputRef}
-                accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                accept={FILE_ACCEPT}
                 onChange={handleOutstandingFileSelect}
               />
+
               <div className="grid gap-3 sm:grid-cols-2">
                 {outstanding.map((docType) => {
                   const isUploading = uploading && pendingDocType === docType.value;
+
                   return (
                     <button
                       key={docType.value}
                       onClick={() => handleOutstandingDocClick(docType.value)}
                       disabled={uploading}
                       className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-amber-300 dark:border-amber-600 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                      type="button"
                     >
                       <div className="flex-shrink-0 h-11 w-11 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60 transition-colors">
                         {isUploading ? (
@@ -607,8 +589,11 @@ export default function Documents() {
                           <Upload className="h-5 w-5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
                         )}
                       </div>
+
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">{docType.label}</p>
+                        <p className="font-semibold text-gray-900 dark:text-gray-100">
+                          {docType.label}
+                        </p>
                         <p className="text-sm text-amber-600 dark:text-amber-400">
                           {isUploading ? "Uploading..." : "Click to upload"}
                         </p>
@@ -626,9 +611,7 @@ export default function Documents() {
       <Card>
         <CardHeader>
           <CardTitle>Your Documents</CardTitle>
-          <CardDescription>
-            Documents you have uploaded for your applications
-          </CardDescription>
+          <CardDescription>Documents you have uploaded for your applications</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {documents.length === 0 && (
@@ -638,6 +621,12 @@ export default function Documents() {
           {documents.map((doc) => {
             const badge = getStatusBadge(doc.verified_status);
             const docTypeLabel = getDocumentTypeLabel(doc.document_type);
+
+            const isBusy =
+              viewingDocId === doc.id ||
+              downloadingDocId === doc.id ||
+              replacingDocId === doc.id;
+
             return (
               <div
                 key={doc.id}
@@ -647,11 +636,16 @@ export default function Documents() {
                   <div className="flex-shrink-0 h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
                     <FileText className="h-5 w-5 text-slate-600" />
                   </div>
+
                   <div>
                     <p className="font-semibold text-base">{docTypeLabel}</p>
-                    <p className="text-sm text-muted-foreground truncate max-w-[200px]" title={doc.file_name}>
+                    <p
+                      className="text-sm text-muted-foreground truncate max-w-[200px]"
+                      title={doc.file_name}
+                    >
                       {doc.file_name}
                     </p>
+
                     <div className="flex items-center gap-2 mt-1.5">
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                       {getStatusIcon(doc.verified_status)}
@@ -663,37 +657,34 @@ export default function Documents() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleViewDocument(doc)}
-                    disabled={
-                      viewingDocId === doc.id ||
-                      downloadingDocId === doc.id ||
-                      replacingDocId === doc.id
-                    }
+                    onClick={() => void handleViewDocument(doc)}
+                    disabled={isBusy}
                   >
                     <Eye className="mr-2 h-4 w-4" />
                     {viewingDocId === doc.id ? "Opening…" : "View"}
                   </Button>
+
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDownloadDocument(doc)}
-                    disabled={
-                      downloadingDocId === doc.id ||
-                      replacingDocId === doc.id
-                    }
+                    onClick={() => void handleDownloadDocument(doc)}
+                    disabled={downloadingDocId === doc.id || replacingDocId === doc.id}
                   >
                     <Download className="mr-2 h-4 w-4" />
                     {downloadingDocId === doc.id ? "Preparing…" : "Download"}
                   </Button>
+
                   <input
                     type="file"
                     className="hidden"
+                    accept={FILE_ACCEPT}
                     ref={(el) => {
                       fileInputsRef.current[doc.id] = el;
                     }}
                     onChange={(event) => {
                       const input = event.target;
                       const newFile = input.files?.[0];
+
                       const reset = () => {
                         input.value = "";
                       };
@@ -705,6 +696,7 @@ export default function Documents() {
                       }
                     }}
                   />
+
                   <Button
                     variant="outline"
                     size="sm"
