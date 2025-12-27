@@ -38,6 +38,7 @@ import {
   Download,
   Eye,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -121,6 +122,7 @@ export default function Documents() {
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
   const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
   const [replacingDocId, setReplacingDocId] = useState<string | null>(null);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
   const [studentId, setStudentId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -460,6 +462,60 @@ export default function Documents() {
     }
   };
 
+  const handleDeleteDocument = async (doc: StudentDocument) => {
+    if (!studentId) {
+      toast({
+        title: "Profile Required",
+        description: "Please complete your profile first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Confirm deletion
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${getDocumentTypeLabel(doc.document_type)}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingDocId(doc.id);
+
+      // Delete from storage first
+      if (doc.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from("student-documents")
+          .remove([doc.storage_path]);
+
+        if (storageError) {
+          console.warn("Failed to delete file from storage:", storageError);
+          // Continue with database deletion even if storage deletion fails
+        }
+      }
+
+      // Delete from database
+      const { error: dbError } = await supabase
+        .from("student_documents")
+        .delete()
+        .eq("id", doc.id);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Document deleted",
+        description: `${getDocumentTypeLabel(doc.document_type)} has been deleted.`,
+      });
+
+      void loadDocuments(studentId);
+    } catch (err) {
+      logError(err, "Documents.deleteDocument");
+      toast(formatErrorForToast(err, "Failed to delete document"));
+    } finally {
+      setDeletingDocId(null);
+    }
+  };
+
   /* ------------------------------------------------------------------------ */
   /*                            Helpers & Status                              */
   /* ------------------------------------------------------------------------ */
@@ -699,7 +755,8 @@ export default function Documents() {
             const isBusy =
               viewingDocId === doc.id ||
               downloadingDocId === doc.id ||
-              replacingDocId === doc.id;
+              replacingDocId === doc.id ||
+              deletingDocId === doc.id;
 
             return (
               <div
@@ -779,6 +836,17 @@ export default function Documents() {
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     {replacingDocId === doc.id ? "Replacing…" : "Replace"}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void handleDeleteDocument(doc)}
+                    disabled={isBusy}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {deletingDocId === doc.id ? "Deleting…" : "Delete"}
                   </Button>
                 </div>
               </div>
