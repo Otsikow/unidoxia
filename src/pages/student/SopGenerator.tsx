@@ -52,8 +52,6 @@ interface LoadedStatementState {
 /*                                  Constants                                 */
 /* -------------------------------------------------------------------------- */
 
-const ADMIN_REVIEW_STATUS = "awaiting_admin_review";
-
 const formatFileSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -198,7 +196,6 @@ export default function SopGenerator() {
           mime_type: "text/plain",
           storage_path: storagePath,
           verified_status: "pending",
-          admin_review_status: ADMIN_REVIEW_STATUS,
         });
 
       if (dbError) {
