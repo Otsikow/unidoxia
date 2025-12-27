@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactForm } from "@/components/ContactForm";
-import professionalConsultant from "@/assets/professional-consultant.png";
+import professionalConsultant from "@/assets/zoe-portrait.png";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
