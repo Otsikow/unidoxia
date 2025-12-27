@@ -59,6 +59,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRoles } from "@/hooks/useUserRoles";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -117,6 +118,7 @@ const saveSettings = (settings: NotificationSettings) => {
 
 export default function NotificationCenter() {
   const { user } = useAuth();
+  const { primaryRole } = useUserRoles();
   const { toast } = useToast();
   const navigate = useNavigate();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -516,12 +518,55 @@ export default function NotificationCenter() {
   };
 
   const resolveActionUrl = (n: Notification) => {
+    // If action_url is set in the notification, use it
     if (n.action_url) return n.action_url;
+    
+    // Role-based URL resolution for fallback cases
+    const getMessagesUrl = () => {
+      switch (primaryRole) {
+        case "partner": return "/university/messages";
+        case "agent": return "/dashboard/messages";
+        case "staff": return "/dashboard/messages";
+        case "admin": return "/admin/messages";
+        default: return "/student/messages";
+      }
+    };
+    
+    const getApplicationsUrl = () => {
+      switch (primaryRole) {
+        case "partner": return "/university/applications";
+        case "agent": return "/dashboard/applications";
+        case "staff": return "/dashboard/applications";
+        case "admin": return "/admin/applications";
+        default: return "/student/application-tracking";
+      }
+    };
+    
+    const getDocumentsUrl = () => {
+      switch (primaryRole) {
+        case "partner": return "/university/documents";
+        case "agent": return "/dashboard/documents";
+        case "staff": return "/dashboard/documents";
+        case "admin": return "/admin/documents";
+        default: return "/student/documents";
+      }
+    };
+    
+    const getNotificationsUrl = () => {
+      switch (primaryRole) {
+        case "partner": return "/university/notifications";
+        case "agent": return "/dashboard/notifications";
+        case "staff": return "/dashboard/notifications";
+        case "admin": return "/admin/notifications";
+        default: return "/student/notifications";
+      }
+    };
+    
     switch (n.type) {
       case "message":
-        return "/student/messages";
+        return getMessagesUrl();
       case "application_status":
-        return "/student/application-tracking";
+        return getApplicationsUrl();
       case "commission":
         return "/dashboard/commissions";
       case "course_recommendation": {
@@ -530,9 +575,9 @@ export default function NotificationCenter() {
       }
       case "document":
       case "document_request":
-        return "/student/documents";
+        return getDocumentsUrl();
       default:
-        return "/student/notifications";
+        return getNotificationsUrl();
     }
   };
 
