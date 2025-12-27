@@ -222,7 +222,6 @@ export default function Documents() {
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
           storage_path: storagePath,
-          status: "awaiting_admin_review",
         });
 
       if (dbError) {
@@ -234,11 +233,8 @@ export default function Documents() {
       toast({ title: "Uploaded", description: `${docLabel} uploaded successfully.` });
       loadDocuments(studentId);
     } catch (err) {
-      toast({
-        title: "Upload Failed",
-        description: err instanceof Error ? err.message : "Upload failed",
-        variant: "destructive",
-      });
+      logError(err, "Documents.handleOutstandingFileSelect");
+      toast(formatErrorForToast(err, "Failed to upload document"));
     } finally {
       setUploading(false);
       setPendingDocType(null);
@@ -295,7 +291,6 @@ export default function Documents() {
           file_size: preparedFile.size,
           mime_type: detectedMimeType,
           storage_path: storagePath,
-          status: "awaiting_admin_review",
         });
 
       if (dbError) {
@@ -308,11 +303,8 @@ export default function Documents() {
       setDocumentType("");
       loadDocuments(studentId);
     } catch (err) {
-      toast({
-        title: "Upload Failed",
-        description: err instanceof Error ? err.message : "Upload failed",
-        variant: "destructive",
-      });
+      logError(err, "Documents.handleUpload");
+      toast(formatErrorForToast(err, "Failed to upload document"));
     } finally {
       setUploading(false);
     }
@@ -439,7 +431,6 @@ export default function Documents() {
           verification_notes: null,
           verified_at: null,
           verified_by: null,
-          status: "awaiting_admin_review",
         })
         .eq("id", doc.id);
 
