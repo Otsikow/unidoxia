@@ -19,7 +19,6 @@ import {
   Clock,
 } from 'lucide-react';
 import { LandingHeader } from '@/components/landing/LandingHeader';
-import { AppFooter } from '@/components/layout/AppFooter';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -413,8 +412,6 @@ export default function Pricing() {
           </p>
         </section>
       </main>
-
-      <AppFooter />
     </div>
   );
 }
