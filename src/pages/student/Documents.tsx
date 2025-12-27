@@ -543,10 +543,25 @@ export default function Documents() {
 
       {/* Outstanding Documents */}
       {(() => {
-        const uploadedTypes = new Set(documents.map((d) => d.document_type));
-        const outstanding = REQUIRED_DOCUMENTS.filter((t) => !uploadedTypes.has(t.value));
+        // Get the latest document for each type (to check if it's rejected)
+        const latestDocByType = new Map<string, StudentDocument>();
+        for (const doc of documents) {
+          const existing = latestDocByType.get(doc.document_type);
+          if (!existing || new Date(doc.created_at) > new Date(existing.created_at)) {
+            latestDocByType.set(doc.document_type, doc);
+          }
+        }
 
-        if (outstanding.length === 0) return null;
+        // Find required documents that are either not uploaded or rejected
+        const notUploaded = REQUIRED_DOCUMENTS.filter((t) => !latestDocByType.has(t.value));
+        
+        // Find rejected documents (from all document types, not just required)
+        const rejectedDocs = Array.from(latestDocByType.values()).filter(
+          (doc) => doc.verified_status === "rejected"
+        );
+
+        // No outstanding items
+        if (notUploaded.length === 0 && rejectedDocs.length === 0) return null;
 
         return (
           <Card className="border-amber-300 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/40">
@@ -560,7 +575,7 @@ export default function Documents() {
                 upload.
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               {/* Hidden file input for outstanding document uploads */}
               <input
                 type="file"
@@ -570,38 +585,97 @@ export default function Documents() {
                 onChange={handleOutstandingFileSelect}
               />
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {outstanding.map((docType) => {
-                  const isUploading = uploading && pendingDocType === docType.value;
+              {/* Rejected Documents Section */}
+              {rejectedDocs.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-2">
+                    <XCircle className="h-4 w-4" />
+                    Rejected Documents - Please Resubmit
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {rejectedDocs.map((doc) => {
+                      const isUploading = uploading && pendingDocType === doc.document_type;
+                      const docLabel = getDocumentTypeLabel(doc.document_type);
 
-                  return (
-                    <button
-                      key={docType.value}
-                      onClick={() => handleOutstandingDocClick(docType.value)}
-                      disabled={uploading}
-                      className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-amber-300 dark:border-amber-600 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-                      type="button"
-                    >
-                      <div className="flex-shrink-0 h-11 w-11 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60 transition-colors">
-                        {isUploading ? (
-                          <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400 animate-spin" />
-                        ) : (
-                          <Upload className="h-5 w-5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-                        )}
-                      </div>
+                      return (
+                        <button
+                          key={`rejected-${doc.id}`}
+                          onClick={() => handleOutstandingDocClick(doc.document_type)}
+                          disabled={uploading}
+                          className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-red-300 dark:border-red-600 hover:border-red-400 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                          type="button"
+                        >
+                          <div className="flex-shrink-0 h-11 w-11 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center group-hover:bg-red-200 dark:group-hover:bg-red-800/60 transition-colors">
+                            {isUploading ? (
+                              <RefreshCw className="h-5 w-5 text-red-600 dark:text-red-400 animate-spin" />
+                            ) : (
+                              <Upload className="h-5 w-5 text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform" />
+                            )}
+                          </div>
 
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100">
-                          {docType.label}
-                        </p>
-                        <p className="text-sm text-amber-600 dark:text-amber-400">
-                          {isUploading ? "Uploading..." : "Click to upload"}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                              {docLabel}
+                            </p>
+                            <p className="text-sm text-red-600 dark:text-red-400">
+                              {isUploading ? "Uploading..." : "Click to resubmit"}
+                            </p>
+                            {doc.verification_notes && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title={doc.verification_notes}>
+                                Reason: {doc.verification_notes}
+                              </p>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Not Yet Uploaded Documents Section */}
+              {notUploaded.length > 0 && (
+                <div className="space-y-3">
+                  {rejectedDocs.length > 0 && (
+                    <p className="text-sm font-medium text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Not Yet Uploaded
+                    </p>
+                  )}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {notUploaded.map((docType) => {
+                      const isUploading = uploading && pendingDocType === docType.value;
+
+                      return (
+                        <button
+                          key={docType.value}
+                          onClick={() => handleOutstandingDocClick(docType.value)}
+                          disabled={uploading}
+                          className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-amber-300 dark:border-amber-600 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                          type="button"
+                        >
+                          <div className="flex-shrink-0 h-11 w-11 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center group-hover:bg-amber-200 dark:group-hover:bg-amber-800/60 transition-colors">
+                            {isUploading ? (
+                              <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400 animate-spin" />
+                            ) : (
+                              <Upload className="h-5 w-5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
+                              {docType.label}
+                            </p>
+                            <p className="text-sm text-amber-600 dark:text-amber-400">
+                              {isUploading ? "Uploading..." : "Click to upload"}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         );
