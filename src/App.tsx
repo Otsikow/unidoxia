@@ -245,6 +245,10 @@ const Notifications = lazyWithErrorHandling(() =>
 const StudentPaymentsPage = lazyWithErrorHandling(() =>
   import("./pages/student/StudentPayments")
 );
+const StudentCheckout = lazyWithErrorHandling(() =>
+  import("./pages/student/Checkout")
+);
+const Pricing = lazyWithErrorHandling(() => import("./pages/Pricing"));
 
 /* ==========================================================================
    LAZY IMPORTS — ADMIN
@@ -593,6 +597,9 @@ const App = () => {
 
                         {/* Scholarships */}
                         <Route path="/scholarships" element={<PublicLayout><Scholarships /></PublicLayout>} />
+
+                        {/* Pricing */}
+                        <Route path="/pricing" element={<PublicLayout><Pricing /></PublicLayout>} />
                         <Route path="/scholarships/share" element={<PublicLayout><ScholarshipShareLanding /></PublicLayout>} />
 
                         {/* Visa Calculator */}
@@ -650,6 +657,7 @@ const App = () => {
                           <Route path="sop" element={<SopGenerator />} />
                           <Route path="notifications" element={<Notifications />} />
                           <Route path="payments" element={<StudentPaymentsPage />} />
+                          <Route path="checkout" element={<StudentCheckout />} />
                           <Route path="settings" element={<ProfileSettingsPage />} />
                         </Route>
 

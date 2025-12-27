@@ -45,6 +45,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { formatErrorForToast, logError } from '@/lib/errorUtils';
 import type { Tables } from '@/integrations/supabase/types';
+import { PlanStatusCard } from '@/components/billing/PlanStatusCard';
 
 interface ApplicationWithDetails {
   id: string;
@@ -678,6 +679,9 @@ export default function StudentDashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Plan Status */}
+        <PlanStatusCard />
 
         {/* Profile Progress */}
         <Card className="border-l-4 border-l-primary shadow-md">
