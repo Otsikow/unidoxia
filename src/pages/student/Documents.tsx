@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { useToast } from "@/hooks/use-toast";
 import { useStudentRecord } from "@/hooks/useStudentRecord";
@@ -37,6 +38,7 @@ import {
   Download,
   Eye,
   RefreshCw,
+  AlertCircle,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -83,14 +85,15 @@ const DOCUMENT_TYPES = [
 
 export default function Documents() {
   const { toast } = useToast();
-  const { data: studentRecord, isLoading, error } = useStudentRecord();
+  const { data: studentRecord, isLoading: studentRecordLoading, error: studentRecordError } = useStudentRecord();
 
   const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [documentsLoading, setDocumentsLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
   const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
   const [replacingDocId, setReplacingDocId] = useState<string | null>(null);
+  const [hasShownProfileError, setHasShownProfileError] = useState(false);
 
   const [studentId, setStudentId] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -104,7 +107,7 @@ export default function Documents() {
   const loadDocuments = useCallback(
     async (id: string) => {
       try {
-        setLoading(true);
+        setDocumentsLoading(true);
 
         const { data, error } = await supabase
           .from("student_documents")
@@ -118,37 +121,40 @@ export default function Documents() {
         logError(err, "Documents.loadDocuments");
         toast(formatErrorForToast(err, "Failed to load documents"));
       } finally {
-        setLoading(false);
+        setDocumentsLoading(false);
       }
     },
     [toast]
   );
 
+  // Handle student record error separately to prevent repeated toasts
   useEffect(() => {
-    if (isLoading) return;
-
-    if (error) {
-      logError(error, "Documents.studentRecord");
-      toast(formatErrorForToast(error, "Failed to load student profile"));
-      setLoading(false);
-      return;
+    if (studentRecordError && !hasShownProfileError) {
+      logError(studentRecordError, "Documents.studentRecord");
+      toast(formatErrorForToast(studentRecordError, "Failed to load student profile"));
+      setHasShownProfileError(true);
     }
+  }, [studentRecordError, hasShownProfileError, toast]);
 
+  // Load documents when student record is available
+  useEffect(() => {
+    // Wait for student record loading to complete
+    if (studentRecordLoading) return;
+
+    // If no student record exists after loading completes
     if (!studentRecord?.id) {
       setStudentId(null);
       setDocuments([]);
-      setLoading(false);
-      toast({
-        title: "Profile Required",
-        description: "Please complete your student profile first.",
-        variant: "destructive",
-      });
       return;
     }
 
+    // Student record exists - load documents
     setStudentId(studentRecord.id);
     loadDocuments(studentRecord.id);
-  }, [studentRecord, isLoading, error, loadDocuments, toast]);
+  }, [studentRecord, studentRecordLoading, loadDocuments]);
+
+  // Combined loading state - true when either student record or documents are loading
+  const isPageLoading = studentRecordLoading || documentsLoading;
 
   /* ------------------------------------------------------------------------ */
   /*                               File Upload                                */
@@ -417,8 +423,81 @@ export default function Documents() {
   /*                                   UI                                     */
   /* ------------------------------------------------------------------------ */
 
-  if (loading) {
-    return <div className="text-center py-10">Loading documents…</div>;
+  // Loading skeleton for the documents page
+  const LoadingSkeleton = () => (
+    <div className="container mx-auto py-8 space-y-6">
+      <Skeleton className="h-9 w-48" />
+
+      {/* Upload Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-4 w-64 mt-2" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-10 w-24" />
+        </CardContent>
+      </Card>
+
+      {/* Documents Card Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-36" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center justify-between border rounded-md p-3">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-40" />
+                  <Skeleton className="h-5 w-24" />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-8 w-20" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  // Show loading skeleton while page is loading
+  if (isPageLoading) {
+    return <LoadingSkeleton />;
+  }
+
+  // Handle case where student profile doesn't exist
+  if (!studentId && !studentRecordLoading) {
+    return (
+      <div className="container mx-auto py-8 space-y-6">
+        <h1 className="text-3xl font-bold">My Documents</h1>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Profile Required</h2>
+            <p className="text-muted-foreground mb-4 max-w-md">
+              Please complete your student profile first before uploading documents.
+            </p>
+            <Button asChild>
+              <a href="/student/profile">Go to Profile</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -457,7 +536,7 @@ export default function Documents() {
 
           <Button onClick={handleUpload} disabled={uploading}>
             <Upload className="mr-2 h-4 w-4" />
-            Upload
+            {uploading ? "Uploading…" : "Upload"}
           </Button>
         </CardContent>
       </Card>
