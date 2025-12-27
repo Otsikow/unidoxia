@@ -99,10 +99,10 @@ const UPLOAD_VALIDATION = {
     "image/jpg",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ],
-  allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"],
+  ] as string[],
+  allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"] as string[],
   maxSizeBytes: 10 * 1024 * 1024,
-} as const;
+};
 
 const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 

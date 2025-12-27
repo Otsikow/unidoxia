@@ -37,29 +37,31 @@ export function useStudentBilling() {
     queryFn: async (): Promise<StudentWithBilling | null> => {
       if (!user?.id) return null;
 
+      // The students table doesn't have billing columns - return defaults
       const { data, error } = await supabase
         .from('students')
-        .select(`
-          id,
-          plan_type,
-          payment_type,
-          payment_date,
-          payment_amount_cents,
-          payment_currency,
-          refund_eligibility,
-          payment_confirmed_at,
-          assigned_agent_id,
-          agent_assigned_at
-        `)
+        .select('id')
         .eq('profile_id', user.id)
         .single();
 
       if (error) {
-        console.error('Error fetching student billing:', error);
+        console.error('Error fetching student:', error);
         throw error;
       }
 
-      return data as StudentWithBilling;
+      // Return default billing data since these columns don't exist yet
+      return {
+        id: data.id,
+        plan_type: 'free' as StudentPlanType,
+        payment_type: null,
+        payment_date: null,
+        payment_amount_cents: null,
+        payment_currency: 'USD',
+        refund_eligibility: false,
+        payment_confirmed_at: null,
+        assigned_agent_id: null,
+        agent_assigned_at: null,
+      };
     },
     enabled: !!user?.id,
   });

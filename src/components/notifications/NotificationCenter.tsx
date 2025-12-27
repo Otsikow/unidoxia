@@ -156,7 +156,7 @@ export default function NotificationCenter() {
     const { data, error } = await supabase
       .from("students")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("profile_id", user.id)
       .single();
 
     if (error) {
@@ -216,7 +216,7 @@ export default function NotificationCenter() {
 
       if (error) throw error;
 
-      const mapped = (data || []).map((n) => ({
+      const mapped: Notification[] = (data || []).map((n) => ({
         id: n.id,
         title: n.title || "Notification",
         message: n.content || "",
@@ -227,7 +227,7 @@ export default function NotificationCenter() {
         metadata: (n.metadata as Record<string, unknown>) || {},
       }));
 
-      let merged = mapped;
+      let merged: Notification[] = mapped;
 
       if (resolvedStudentId) {
         const { data: requests, error: requestsError } = await supabase
