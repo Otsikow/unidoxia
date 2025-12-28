@@ -22,7 +22,6 @@ import {
   PartyPopper,
 } from 'lucide-react';
 
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -620,24 +619,21 @@ export default function StudentDashboard() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="p-4 md:p-8 space-y-6">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-24" />
-            ))}
-          </div>
-          <Skeleton className="h-96 w-full" />
+      <div className="p-4 md:p-8 space-y-6">
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
         </div>
-      </DashboardLayout>
+        <Skeleton className="h-96 w-full" />
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8 max-w-[1600px] mx-auto">
+    <div className="p-3 sm:p-4 md:p-6 lg:p-8 space-y-4 sm:space-y-6 md:space-y-8 max-w-[1600px] mx-auto">
         {/* Greeting */}
         <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3 sm:gap-4">
@@ -1092,6 +1088,6 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }
