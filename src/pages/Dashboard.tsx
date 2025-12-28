@@ -5,6 +5,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { EmptyState } from '@/components/EmptyState';
 import { LogIn, HelpCircle } from 'lucide-react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 // NOTE: Keep dashboards lazy to avoid pulling them into the initial bundle.
 const StudentDashboard = lazy(() => import('@/pages/dashboards/StudentDashboard'));
@@ -107,15 +108,17 @@ const Dashboard = () => {
 
   if (resolvedRole === 'student')
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <LoadingState message="Loading your dashboard..." size="lg" />
-          </div>
-        }
-      >
-        <StudentDashboard />
-      </Suspense>
+      <DashboardLayout>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <LoadingState message="Loading your dashboard..." size="lg" />
+            </div>
+          }
+        >
+          <StudentDashboard />
+        </Suspense>
+      </DashboardLayout>
     );
 
   if (resolvedRole === 'agent')
