@@ -122,7 +122,7 @@ interface OfferItem {
 
 type StudentProfile = Tables<'students'>;
 
-export default function StudentDashboard() {
+const StudentDashboard = () => {
   const { profile, user } = useAuth();
   const { toast } = useToast();
   const {
@@ -1090,4 +1090,6 @@ export default function StudentDashboard() {
       </div>
     </div>
   );
-}
+};
+
+export default StudentDashboard;
