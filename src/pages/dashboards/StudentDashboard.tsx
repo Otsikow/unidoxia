@@ -1088,7 +1088,6 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
