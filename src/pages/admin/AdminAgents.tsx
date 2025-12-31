@@ -50,6 +50,7 @@ const AdminAgents = () => {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const performanceTableRef = useRef<HTMLDivElement>(null);
 
   const [pipelineStats, setPipelineStats] = useState<PipelineStats>({
     activeAgencies: 0,
@@ -308,11 +309,48 @@ const AdminAgents = () => {
     },
   ];
 
+  const scrollToPerformanceTable = () => {
+    performanceTableRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const pipelineStatsDisplay = [
-    { label: "Active agencies", value: pipelineStats.activeAgencies.toString(), delta: `+${pipelineStats.activeThisMonth} this month` },
-    { label: "Pending approvals", value: pipelineStats.pendingApprovals.toString(), delta: `${pipelineStats.requireFollowUp} require follow-up` },
-    { label: "Avg. response time", value: pipelineStats.avgResponseTime, delta: "Support queue within SLA" },
-    { label: "Onboarding completion", value: `${pipelineStats.onboardingCompletion}%`, delta: "Shared training deck" },
+    { 
+      label: "Active agencies", 
+      value: pipelineStats.activeAgencies.toString(), 
+      delta: `+${pipelineStats.activeThisMonth} this month`,
+      action: () => {
+        setActiveTab("active");
+        setTimeout(scrollToPerformanceTable, 100);
+      },
+      actionLabel: "View active agencies"
+    },
+    { 
+      label: "Pending approvals", 
+      value: pipelineStats.pendingApprovals.toString(), 
+      delta: `${pipelineStats.requireFollowUp} require follow-up`,
+      action: () => {
+        setActiveTab("pending");
+        setTimeout(scrollToPerformanceTable, 100);
+      },
+      actionLabel: "Review pending agencies"
+    },
+    { 
+      label: "Avg. response time", 
+      value: pipelineStats.avgResponseTime, 
+      delta: "Support queue within SLA",
+      action: () => {
+        setActiveTab("active");
+        setTimeout(scrollToPerformanceTable, 100);
+      },
+      actionLabel: "View agency performance"
+    },
+    { 
+      label: "Onboarding completion", 
+      value: `${pipelineStats.onboardingCompletion}%`, 
+      delta: "Shared training deck",
+      action: () => setInviteDialogOpen(true),
+      actionLabel: "Invite new agency"
+    },
   ];
 
   return (
@@ -340,7 +378,20 @@ const AdminAgents = () => {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {pipelineStatsDisplay.map((stat) => (
-          <Card key={stat.label}>
+          <Card 
+            key={stat.label}
+            className="cursor-pointer transition-all hover:border-primary/50 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
+            onClick={stat.action}
+            role="button"
+            tabIndex={0}
+            aria-label={stat.actionLabel}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                stat.action();
+              }
+            }}
+          >
             <CardContent className="pt-6 space-y-2">
               <p className="text-sm text-muted-foreground">{stat.label}</p>
               <div className="flex items-baseline justify-between">
@@ -356,7 +407,7 @@ const AdminAgents = () => {
         ))}
       </div>
 
-      <Card>
+      <Card ref={performanceTableRef}>
         <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <CardTitle>Agency performance</CardTitle>
