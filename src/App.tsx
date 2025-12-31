@@ -326,6 +326,12 @@ const FeaturedUniversitiesAdmin = lazyWithErrorHandling(() =>
 const AdminUniversitiesPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminUniversities")
 );
+const AdminStudentsPage = lazyWithErrorHandling(() =>
+  import("./pages/admin/AdminStudents")
+);
+const AdminStudentDetailPage = lazyWithErrorHandling(() =>
+  import("./pages/admin/AdminStudentDetail")
+);
 
 /* ==========================================================================
    LAZY IMPORTS — AGENTS & STAFF
@@ -700,6 +706,8 @@ const App = () => {
                           <Route path="previews" element={<BuildPreviews />} />
                           <Route path="featured-universities" element={<FeaturedUniversitiesAdmin />} />
                           <Route path="universities" element={<AdminUniversitiesPage />} />
+                          <Route path="students" element={<AdminStudentsPage />} />
+                          <Route path="students/:studentId" element={<AdminStudentDetailPage />} />
                         </Route>
 
                         {/* UNIVERSITY PARTNER ROUTES */}

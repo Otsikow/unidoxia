@@ -55,6 +55,8 @@ interface StudentDocument {
   storage_path: string;
   verified_status: string;
   verification_notes: string | null;
+  admin_review_status: string | null;
+  admin_review_notes: string | null;
   created_at: string;
   updated_at?: string;
   verified_at?: string | null;
@@ -527,8 +529,59 @@ export default function Documents() {
   /*                            Helpers & Status                              */
   /* ------------------------------------------------------------------------ */
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
+  const getStatusBadge = (doc: StudentDocument) => {
+    // Show admin review status first if applicable
+    const adminStatus = doc.admin_review_status;
+    
+    if (adminStatus === "admin_rejected") {
+      return { label: "Rejected - Resubmit Required", variant: "destructive" as const };
+    }
+    if (adminStatus === "awaiting_admin_review") {
+      return { label: "Pending Admin Review", variant: "secondary" as const };
+    }
+    if (adminStatus === "ready_for_university_review") {
+      // Document is approved by admin, check university verification status
+      switch (doc.verified_status) {
+        case "verified":
+          return { label: "Verified by University", variant: "default" as const };
+        case "rejected":
+          return { label: "Rejected by University", variant: "destructive" as const };
+        default:
+          return { label: "Approved - Pending University Review", variant: "outline" as const };
+      }
+    }
+    
+    // Fallback to verified_status
+    switch (doc.verified_status) {
+      case "pending":
+        return { label: "Pending Review", variant: "secondary" as const };
+      case "rejected":
+        return { label: "Rejected", variant: "destructive" as const };
+      case "verified":
+        return { label: "Verified", variant: "default" as const };
+      default:
+        return { label: "Pending", variant: "secondary" as const };
+    }
+  };
+
+  const getStatusIcon = (doc: StudentDocument) => {
+    const adminStatus = doc.admin_review_status;
+    
+    if (adminStatus === "admin_rejected") {
+      return <XCircle className="h-4 w-4 text-red-500" />;
+    }
+    if (adminStatus === "awaiting_admin_review") {
+      return <Clock className="h-4 w-4 text-amber-500" />;
+    }
+    if (adminStatus === "ready_for_university_review") {
+      if (doc.verified_status === "verified") {
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      }
+      return <ShieldAlert className="h-4 w-4 text-blue-500" />;
+    }
+    
+    // Fallback
+    switch (doc.verified_status) {
       case "verified":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "pending":
@@ -540,16 +593,16 @@ export default function Documents() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusIconLegacy = (status: string) => {
     switch (status) {
-      case "pending":
-        return { label: "Pending Review", variant: "secondary" as const };
-      case "rejected":
-        return { label: "Rejected", variant: "destructive" as const };
       case "verified":
-        return { label: "Verified", variant: "default" as const };
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "pending":
+        return <ShieldAlert className="h-4 w-4 text-amber-500" />;
+      case "rejected":
+        return <XCircle className="h-4 w-4 text-red-500" />;
       default:
-        return { label: "Pending", variant: "secondary" as const };
+        return <Clock className="h-4 w-4 text-yellow-500" />;
     }
   };
 
@@ -619,8 +672,9 @@ export default function Documents() {
         const notUploaded = REQUIRED_DOCUMENTS.filter((t) => !latestDocByType.has(t.value));
         
         // Find rejected documents (from all document types, not just required)
+        // Include both admin-rejected and university-rejected documents
         const rejectedDocs = Array.from(latestDocByType.values()).filter(
-          (doc) => doc.verified_status === "rejected"
+          (doc) => doc.verified_status === "rejected" || doc.admin_review_status === "admin_rejected"
         );
 
         // No outstanding items
@@ -683,9 +737,9 @@ export default function Documents() {
                             <p className="text-sm text-red-600 dark:text-red-400">
                               {isUploading ? "Uploading..." : "Click to resubmit"}
                             </p>
-                            {doc.verification_notes && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title={doc.verification_notes}>
-                                Reason: {doc.verification_notes}
+                            {(doc.admin_review_notes || doc.verification_notes) && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate" title={doc.admin_review_notes || doc.verification_notes || ""}>
+                                Reason: {doc.admin_review_notes || doc.verification_notes}
                               </p>
                             )}
                           </div>
@@ -756,7 +810,7 @@ export default function Documents() {
           )}
 
           {documents.map((doc) => {
-            const badge = getStatusBadge(doc.verified_status);
+            const badge = getStatusBadge(doc);
             const docTypeLabel = getDocumentTypeLabel(doc.document_type);
 
             const isBusy =
@@ -786,8 +840,13 @@ export default function Documents() {
 
                     <div className="flex items-center gap-2 mt-1.5">
                       <Badge variant={badge.variant}>{badge.label}</Badge>
-                      {getStatusIcon(doc.verified_status)}
+                      {getStatusIcon(doc)}
                     </div>
+                    {doc.admin_review_notes && doc.admin_review_status === "admin_rejected" && (
+                      <div className="text-xs text-red-600 bg-red-50 dark:bg-red-950/40 rounded p-2 mt-2">
+                        <strong>Rejection Reason:</strong> {doc.admin_review_notes}
+                      </div>
+                    )}
                   </div>
                 </div>
 
