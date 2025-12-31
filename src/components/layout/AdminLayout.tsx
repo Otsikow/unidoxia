@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType, type SVGProps, useState } from "react";
+import { type ComponentType, type SVGProps, useState, useCallback, useEffect } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,6 +25,7 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Activity,
   BadgeCheck,
   BookOpen,
@@ -257,6 +258,18 @@ const getInitials = (value: string) =>
 /* -------------------------------------------------------------------------- */
 /* ✅ Main Admin Layout                                                       */
 /* -------------------------------------------------------------------------- */
+// Storage key for persisting collapsed state
+const COLLAPSED_GROUPS_KEY = "admin_sidebar_collapsed_groups";
+
+const getInitialCollapsedGroups = (): Record<string, boolean> => {
+  try {
+    const saved = localStorage.getItem(COLLAPSED_GROUPS_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+};
+
 const AdminLayout = () => {
   const { profile, signOut } = useAuth();
   const { t } = useTranslation();
@@ -265,6 +278,23 @@ const AdminLayout = () => {
   const isMobile = useIsMobile();
   const { loading: rolesLoading, hasRole } = useUserRoles();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(getInitialCollapsedGroups);
+
+  // Persist collapsed state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(collapsedGroups));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [collapsedGroups]);
+
+  const toggleGroup = useCallback((groupKey: string) => {
+    setCollapsedGroups((prev) => ({
+      ...prev,
+      [groupKey]: !prev[groupKey],
+    }));
+  }, []);
 
   /* ---------------------------------------------------------------------- */
   /* ✅ Role Validation                                                     */
@@ -336,50 +366,86 @@ const AdminLayout = () => {
       </div>
       <ScrollArea className="flex-1">
         <nav className="px-2 py-3 sm:py-4">
-          {NAV_GROUPS.map((group, groupIndex) => (
-            <div key={group.groupKey} className={cn(groupIndex > 0 && "mt-4 pt-4 border-t border-border/50")}>
-              {/* Group Label */}
-              {(!isCollapsed || !showCollapseButton) && (
-                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                  {t(group.groupKey, { defaultValue: group.groupDefault })}
-                </p>
-              )}
-              {isCollapsed && showCollapseButton && groupIndex > 0 && (
-                <div className="mb-2 mx-auto w-6 h-px bg-border/50" />
-              )}
-              {/* Group Items */}
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const isActive = location.pathname.startsWith(item.to);
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
+          {NAV_GROUPS.map((group, groupIndex) => {
+            const isGroupCollapsed = collapsedGroups[group.groupKey] ?? false;
+            const hasActiveItem = group.items.some((item) => location.pathname.startsWith(item.to));
+            
+            return (
+              <div key={group.groupKey} className={cn(groupIndex > 0 && "mt-4 pt-4 border-t border-border/50")}>
+                {/* Collapsible Group Header */}
+                {(!isCollapsed || !showCollapseButton) && (
+                  <button
+                    type="button"
+                    onClick={() => toggleGroup(group.groupKey)}
+                    className={cn(
+                      "mb-2 px-3 w-full flex items-center justify-between gap-2 group/header",
+                      "hover:bg-muted/50 rounded-md py-1.5 -my-1.5 transition-colors",
+                      hasActiveItem && isGroupCollapsed && "bg-primary/5"
+                    )}
+                  >
+                    <span className={cn(
+                      "text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70",
+                      "group-hover/header:text-muted-foreground transition-colors",
+                      hasActiveItem && "text-primary/70"
+                    )}>
+                      {t(group.groupKey, { defaultValue: group.groupDefault })}
+                    </span>
+                    <ChevronDown
                       className={cn(
-                        "group block rounded-lg p-2 sm:p-2.5 transition touch-manipulation",
-                        isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                        "h-3.5 w-3.5 text-muted-foreground/50 transition-transform duration-200",
+                        "group-hover/header:text-muted-foreground",
+                        isGroupCollapsed && "-rotate-90"
                       )}
-                    >
-                      <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
-                        <Icon className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-                        {(!isCollapsed || !showCollapseButton) && (
-                          <div className="flex min-w-0 flex-col">
-                            <span className="text-sm font-medium truncate">
-                              {t(item.labelKey, { defaultValue: item.labelDefault })}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground group-hover:text-muted-foreground/80 truncate hidden sm:block">
-                              {t(item.descriptionKey, { defaultValue: item.descriptionDefault })}
-                            </span>
-                          </div>
+                    />
+                  </button>
+                )}
+                {isCollapsed && showCollapseButton && groupIndex > 0 && (
+                  <div className="mb-2 mx-auto w-6 h-px bg-border/50" />
+                )}
+                {/* Group Items - Collapsible */}
+                <div
+                  className={cn(
+                    "space-y-0.5 overflow-hidden transition-all duration-200 ease-in-out",
+                    // When sidebar is collapsed, always show items (icons only)
+                    isCollapsed && showCollapseButton
+                      ? "max-h-[1000px] opacity-100"
+                      : isGroupCollapsed
+                        ? "max-h-0 opacity-0"
+                        : "max-h-[1000px] opacity-100"
+                  )}
+                >
+                  {group.items.map((item) => {
+                    const isActive = location.pathname.startsWith(item.to);
+                    const Icon = item.icon;
+                    return (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={cn(
+                          "group block rounded-lg p-2 sm:p-2.5 transition touch-manipulation",
+                          isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
                         )}
-                      </div>
-                    </NavLink>
-                  );
-                })}
+                      >
+                        <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
+                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                          {(!isCollapsed || !showCollapseButton) && (
+                            <div className="flex min-w-0 flex-col">
+                              <span className="text-sm font-medium truncate">
+                                {t(item.labelKey, { defaultValue: item.labelDefault })}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground group-hover:text-muted-foreground/80 truncate hidden sm:block">
+                                {t(item.descriptionKey, { defaultValue: item.descriptionDefault })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </NavLink>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </nav>
       </ScrollArea>
 
