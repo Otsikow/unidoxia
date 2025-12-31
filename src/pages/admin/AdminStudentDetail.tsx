@@ -29,7 +29,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import {
   AlertCircle,
-  AlertTriangle,
   ArrowLeft,
   Check,
   CheckCircle2,
@@ -40,10 +39,7 @@ import {
   Loader2,
   MessageSquare,
   RefreshCw,
-  RotateCcw,
   Send,
-  Shield,
-  ShieldCheck,
   X,
   XCircle,
 } from "lucide-react";
@@ -79,9 +75,6 @@ interface StudentProfile {
   nationality: string | null;
   created_at: string | null;
   assigned_agent_id: string | null;
-  profile_ready_for_university: boolean | null;
-  profile_approved_at: string | null;
-  profile_approved_by: string | null;
   profile: {
     id: string;
     full_name: string | null;
@@ -126,14 +119,6 @@ const DOCUMENT_TYPE_LABELS: Record<string, string> = {
   other: "Other Document",
 };
 
-// Required documents that must be uploaded and approved before profile is ready
-const REQUIRED_DOCUMENT_TYPES = [
-  { value: "passport", label: "Passport" },
-  { value: "passport_photo", label: "Passport Photo" },
-  { value: "transcript", label: "Academic Transcript" },
-  { value: "cv", label: "CV / Resume" },
-] as const;
-
 const getDocumentTypeLabel = (type: string) => {
   return DOCUMENT_TYPE_LABELS[type] ?? type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 };
@@ -163,13 +148,6 @@ const AdminStudentDetail = () => {
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
   const [relatedDocumentId, setRelatedDocumentId] = useState<string | null>(null);
 
-  // Reset document state
-  const [resetDocId, setResetDocId] = useState<string | null>(null);
-  const [resetLoading, setResetLoading] = useState<boolean>(false);
-
-  // Profile readiness state
-  const [profileReadinessLoading, setProfileReadinessLoading] = useState<boolean>(false);
-
   const fetchStudentData = useCallback(async () => {
     if (!studentId) {
       setError("Student ID is required");
@@ -194,9 +172,6 @@ const AdminStudentDetail = () => {
           current_country,
           nationality,
           created_at,
-          profile_ready_for_university,
-          profile_approved_at,
-          profile_approved_by,
           profile:profiles!students_profile_id_fkey (
             id,
             full_name,
@@ -475,152 +450,6 @@ const AdminStudentDetail = () => {
     }
   };
 
-  // Reset an approved document back to pending review
-  const handleResetDocument = async (docId: string) => {
-    if (!profile?.id) return;
-
-    setResetLoading(true);
-    setResetDocId(docId);
-
-    try {
-      const { error: updateError } = await supabase
-        .from("student_documents")
-        .update({
-          admin_review_status: "awaiting_admin_review",
-          admin_review_notes: null,
-          admin_reviewed_by: null,
-          admin_reviewed_at: null,
-        })
-        .eq("id", docId);
-
-      if (updateError) throw updateError;
-
-      // Notify the student
-      const doc = documents.find((d) => d.id === docId);
-      if (student?.profile_id && doc) {
-        await supabase.from("notifications").insert({
-          user_id: student.profile_id,
-          tenant_id: profile.tenant_id,
-          title: "Document Reset - Action Required",
-          content: `Your ${getDocumentTypeLabel(doc.document_type)} has been reset and needs to be re-uploaded or will be re-reviewed.`,
-          type: "document_reset",
-          metadata: {
-            document_id: docId,
-            document_type: doc.document_type,
-            action: "reset",
-          },
-        });
-      }
-
-      toast({
-        title: "Document Reset",
-        description: "The document has been reset for re-review.",
-      });
-
-      void fetchStudentData();
-    } catch (err) {
-      console.error("Failed to reset document", err);
-      toast({
-        title: "Error",
-        description: "Failed to reset document. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setResetLoading(false);
-      setResetDocId(null);
-    }
-  };
-
-  // Toggle profile readiness for university review
-  const handleToggleProfileReadiness = async (ready: boolean) => {
-    if (!profile?.id || !studentId) return;
-
-    setProfileReadinessLoading(true);
-
-    try {
-      const updateData: Record<string, unknown> = {
-        profile_ready_for_university: ready,
-      };
-
-      if (ready) {
-        updateData.profile_approved_at = new Date().toISOString();
-        updateData.profile_approved_by = profile.id;
-      } else {
-        updateData.profile_approved_at = null;
-        updateData.profile_approved_by = null;
-      }
-
-      const { error: updateError } = await supabase
-        .from("students")
-        .update(updateData)
-        .eq("id", studentId);
-
-      if (updateError) throw updateError;
-
-      // Notify the student
-      if (student?.profile_id) {
-        await supabase.from("notifications").insert({
-          user_id: student.profile_id,
-          tenant_id: profile.tenant_id,
-          title: ready ? "Profile Approved" : "Profile Approval Revoked",
-          content: ready
-            ? "Your profile has been approved and is now ready for university review."
-            : "Your profile approval has been revoked. Please ensure all documents are in order.",
-          type: ready ? "profile_approved" : "profile_approval_revoked",
-        });
-      }
-
-      toast({
-        title: ready ? "Profile Approved" : "Approval Revoked",
-        description: ready
-          ? "The student profile is now visible to partner universities."
-          : "The student profile is no longer visible to universities.",
-      });
-
-      void fetchStudentData();
-    } catch (err) {
-      console.error("Failed to update profile readiness", err);
-      toast({
-        title: "Error",
-        description: "Failed to update profile readiness. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setProfileReadinessLoading(false);
-    }
-  };
-
-  // Calculate missing documents
-  const getMissingDocuments = () => {
-    const latestDocByType = new Map<string, StudentDocument>();
-
-    // Group documents by type, keeping only the latest
-    for (const doc of documents) {
-      const existing = latestDocByType.get(doc.document_type);
-      if (!existing || new Date(doc.created_at) > new Date(existing.created_at)) {
-        latestDocByType.set(doc.document_type, doc);
-      }
-    }
-
-    // Find missing or rejected required documents
-    return REQUIRED_DOCUMENT_TYPES.filter((type) => {
-      const doc = latestDocByType.get(type.value);
-      return !doc || doc.admin_review_status === "admin_rejected";
-    });
-  };
-
-  // Check if profile can be marked ready
-  const canMarkProfileReady = () => {
-    const missingDocs = getMissingDocuments();
-    const allRequiredApproved = missingDocs.length === 0 && REQUIRED_DOCUMENT_TYPES.every((type) => {
-      const doc = documents.find(
-        (d) => d.document_type === type.value && d.admin_review_status === "ready_for_university_review"
-      );
-      return Boolean(doc);
-    });
-    return allRequiredApproved;
-  };
-
   const getStatusBadge = (status: string | null) => {
     switch (status) {
       case "ready_for_university_review":
@@ -807,119 +636,10 @@ const AdminStudentDetail = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Profile Readiness Control */}
-          <Card className={student.profile_ready_for_university ? "border-green-500/50" : ""}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                {student.profile_ready_for_university ? (
-                  <ShieldCheck className="h-4 w-4 text-green-600" />
-                ) : (
-                  <Shield className="h-4 w-4" />
-                )}
-                Profile Readiness
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {student.profile_ready_for_university ? (
-                <div className="space-y-3">
-                  <Badge className="bg-green-600 gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Ready for University Review
-                  </Badge>
-                  {student.profile_approved_at && (
-                    <p className="text-xs text-muted-foreground">
-                      Approved on {format(new Date(student.profile_approved_at), "MMM d, yyyy")}
-                    </p>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => void handleToggleProfileReadiness(false)}
-                    disabled={profileReadinessLoading}
-                  >
-                    {profileReadinessLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <XCircle className="h-4 w-4 mr-2" />
-                    )}
-                    Revoke Approval
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Badge variant="secondary" className="gap-1">
-                    <Clock className="h-3 w-3" />
-                    Not Ready
-                  </Badge>
-                  {!canMarkProfileReady() && (
-                    <p className="text-xs text-muted-foreground">
-                      All required documents must be approved before marking profile as ready.
-                    </p>
-                  )}
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="w-full bg-green-600 hover:bg-green-700"
-                    onClick={() => void handleToggleProfileReadiness(true)}
-                    disabled={profileReadinessLoading || !canMarkProfileReady()}
-                  >
-                    {profileReadinessLoading ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <ShieldCheck className="h-4 w-4 mr-2" />
-                    )}
-                    Mark Ready for Universities
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
 
         {/* Documents Panel */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Missing Required Documents */}
-          {getMissingDocuments().length > 0 && (
-            <Card className="border-red-500/50">
-              <CardHeader className="bg-red-50/50 dark:bg-red-950/20 rounded-t-lg">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
-                  Missing Required Documents ({getMissingDocuments().length})
-                </CardTitle>
-                <CardDescription>
-                  The following required documents have not been uploaded or were rejected.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {getMissingDocuments().map((docType) => {
-                    const rejectedDoc = documents.find(
-                      (d) => d.document_type === docType.value && d.admin_review_status === "admin_rejected"
-                    );
-                    return (
-                      <div
-                        key={docType.value}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-dashed border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10"
-                      >
-                        <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-red-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{docType.label}</p>
-                          <Badge variant={rejectedDoc ? "destructive" : "outline"} className="text-xs mt-1">
-                            {rejectedDoc ? "Rejected" : "Not Uploaded"}
-                          </Badge>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Pending Documents - Priority */}
           {pendingDocs.length > 0 && (
             <Card className="border-amber-500/50">
@@ -1113,25 +833,6 @@ const AdminStudentDetail = () => {
                                 >
                                   <X className="h-4 w-4 mr-1" />
                                   Reject
-                                </Button>
-                              </>
-                            )}
-                            {(doc.admin_review_status === "ready_for_university_review" ||
-                              doc.admin_review_status === "admin_rejected") && (
-                              <>
-                                <div className="flex-1" />
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => void handleResetDocument(doc.id)}
-                                  disabled={resetLoading && resetDocId === doc.id}
-                                >
-                                  {resetLoading && resetDocId === doc.id ? (
-                                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                                  ) : (
-                                    <RotateCcw className="h-4 w-4 mr-1" />
-                                  )}
-                                  Reset for Re-review
                                 </Button>
                               </>
                             )}

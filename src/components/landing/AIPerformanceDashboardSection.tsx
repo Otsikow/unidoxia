@@ -2,9 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Sparkles, Loader2 } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { useCEODashboardData, formatCEOMetrics } from "@/hooks/admin/useCEODashboardData";
+import { Sparkles } from "lucide-react";
 
 interface MetricConfig {
   label: string;
@@ -21,11 +19,6 @@ const trendClassMap: Record<NonNullable<MetricConfig["trend"]>, string> = {
 
 export function AIPerformanceDashboardSection() {
   const { t } = useTranslation();
-  const { profile } = useAuth();
-  const tenantId = profile?.tenant_id;
-
-  // Fetch real data when tenant is available
-  const { data: ceoDashboardData, isLoading } = useCEODashboardData(tenantId);
 
   const titleParts = useMemo(
     () =>
@@ -37,13 +30,11 @@ export function AIPerformanceDashboardSection() {
     [t]
   );
 
-  // Use real data when available, fallback to i18n static data
-  const metrics = useMemo(() => {
-    if (ceoDashboardData) {
-      return formatCEOMetrics(ceoDashboardData, t);
-    }
-    return (t("pages.index.aiExecutiveDashboard.metrics", { returnObjects: true }) as MetricConfig[]) ?? [];
-  }, [ceoDashboardData, t]);
+  const metrics = useMemo(
+    () =>
+      (t("pages.index.aiExecutiveDashboard.metrics", { returnObjects: true }) as MetricConfig[]) ?? [],
+    [t]
+  );
 
   const insights = useMemo(
     () =>
@@ -61,26 +52,9 @@ export function AIPerformanceDashboardSection() {
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.1),_transparent_50%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.25),_transparent_50%)]" />
       <div className="container mx-auto grid gap-12 px-4 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="space-y-8">
-          <div className="flex items-center gap-2">
-            <Badge className="w-fit border-slate-300 bg-slate-200/80 text-xs font-semibold tracking-wide text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white">
-              {badgeLabel}
-            </Badge>
-            {isLoading && tenantId && (
-              <Badge variant="outline" className="flex items-center gap-1.5 border-primary/30 bg-primary/5 text-xs text-primary">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                Loading...
-              </Badge>
-            )}
-            {ceoDashboardData && !isLoading && (
-              <Badge variant="outline" className="flex items-center gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-600 dark:text-emerald-400">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                </span>
-                Live data
-              </Badge>
-            )}
-          </div>
+          <Badge className="w-fit border-slate-300 bg-slate-200/80 text-xs font-semibold tracking-wide text-slate-700 dark:border-white/20 dark:bg-white/10 dark:text-white">
+            {badgeLabel}
+          </Badge>
           <div className="space-y-4">
             <h2 className="text-4xl font-semibold leading-tight sm:text-5xl">
               {titleParts.prefix}
