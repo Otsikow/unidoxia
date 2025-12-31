@@ -74,12 +74,13 @@ interface StudentProfile {
   current_country: string | null;
   nationality: string | null;
   created_at: string | null;
+  assigned_agent_id: string | null;
   profile: {
     id: string;
     full_name: string | null;
     email: string | null;
   } | null;
-  agent: {
+  assigned_agent: {
     id: string;
     company_name: string | null;
     profile: {
@@ -171,12 +172,13 @@ const AdminStudentDetail = () => {
           current_country,
           nationality,
           created_at,
+          assigned_agent_id,
           profile:profiles (
             id,
             full_name,
             email
           ),
-          agent:agents (
+          assigned_agent:agents!assigned_agent_id (
             id,
             company_name,
             profile:profiles (
@@ -576,10 +578,10 @@ const AdminStudentDetail = () => {
               <Separator />
               <div className="space-y-2">
                 <p className="text-sm font-medium text-muted-foreground">Agent</p>
-                {student.agent ? (
+                {student.assigned_agent ? (
                   <div className="text-sm">
-                    <p>{student.agent.profile?.full_name ?? student.agent.company_name}</p>
-                    <p className="text-muted-foreground">{student.agent.profile?.email}</p>
+                    <p>{student.assigned_agent.profile?.full_name ?? student.assigned_agent.company_name}</p>
+                    <p className="text-muted-foreground">{student.assigned_agent.profile?.email}</p>
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">Direct application</p>
