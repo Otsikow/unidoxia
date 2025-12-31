@@ -57,11 +57,12 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
+  assigned_agent_id: string | null;
   profile: {
     full_name: string | null;
     email: string | null;
   } | null;
-  agent: {
+  assigned_agent: {
     id: string;
     company_name: string | null;
     profile: {
@@ -122,11 +123,12 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          assigned_agent_id,
           profile:profiles (
             full_name,
             email
           ),
-          agent:agents (
+          assigned_agent:agents!assigned_agent_id (
             id,
             company_name,
             profile:profiles (
@@ -170,9 +172,9 @@ const AdminStudents = () => {
   const uniqueAgents = useMemo(() => {
     const agents = new Map<string, string>();
     students.forEach((student) => {
-      if (student.agent?.id) {
-        const name = student.agent.profile?.full_name ?? student.agent.company_name ?? "Unknown Agent";
-        agents.set(student.agent.id, name);
+      if (student.assigned_agent?.id) {
+        const name = student.assigned_agent.profile?.full_name ?? student.assigned_agent.company_name ?? "Unknown Agent";
+        agents.set(student.assigned_agent.id, name);
       }
     });
     return Array.from(agents.entries()).sort((a, b) => a[1].localeCompare(b[1]));
@@ -204,7 +206,7 @@ const AdminStudents = () => {
     return students.filter((student) => {
       const name = student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "";
       const email = student.contact_email ?? student.profile?.email ?? "";
-      const agentName = student.agent?.profile?.full_name ?? student.agent?.company_name ?? "";
+      const agentName = student.assigned_agent?.profile?.full_name ?? student.assigned_agent?.company_name ?? "";
 
       const searchMatch =
         lowerSearch.length === 0 ||
@@ -231,7 +233,7 @@ const AdminStudents = () => {
 
       let agentMatch = true;
       if (agentFilter !== ALL_FILTER) {
-        agentMatch = student.agent?.id === agentFilter;
+        agentMatch = student.assigned_agent?.id === agentFilter;
       }
 
       return searchMatch && docStatusMatch && applicationMatch && agentMatch;
@@ -313,9 +315,9 @@ const AdminStudents = () => {
             {student.current_country ?? "—"}
           </TableCell>
           <TableCell className="min-w-[120px]">
-            {student.agent ? (
+            {student.assigned_agent ? (
               <span className="text-sm">
-                {student.agent.profile?.full_name ?? student.agent.company_name ?? "Unknown"}
+                {student.assigned_agent.profile?.full_name ?? student.assigned_agent.company_name ?? "Unknown"}
               </span>
             ) : (
               <span className="text-muted-foreground">Direct</span>
@@ -404,7 +406,7 @@ const AdminStudents = () => {
       {/* Summary Cards */}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card 
-          className="cursor-pointer transition-colors hover:bg-accent/50"
+          className={`cursor-pointer transition-all hover:bg-accent/50 ${documentStatusFilter === ALL_FILTER ? "ring-2 ring-primary" : ""}`}
           onClick={() => setDocumentStatusFilter(ALL_FILTER)}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -417,7 +419,7 @@ const AdminStudents = () => {
           </CardContent>
         </Card>
         <Card 
-          className="cursor-pointer transition-colors hover:bg-accent/50"
+          className={`cursor-pointer transition-all hover:bg-accent/50 ${documentStatusFilter === "awaiting_admin_review" ? "ring-2 ring-amber-500" : ""}`}
           onClick={() => setDocumentStatusFilter("awaiting_admin_review")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -430,7 +432,7 @@ const AdminStudents = () => {
           </CardContent>
         </Card>
         <Card 
-          className="cursor-pointer transition-colors hover:bg-accent/50"
+          className={`cursor-pointer transition-all hover:bg-accent/50 ${documentStatusFilter === "ready_for_university_review" ? "ring-2 ring-green-500" : ""}`}
           onClick={() => setDocumentStatusFilter("ready_for_university_review")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -443,7 +445,7 @@ const AdminStudents = () => {
           </CardContent>
         </Card>
         <Card 
-          className="cursor-pointer transition-colors hover:bg-accent/50"
+          className={`cursor-pointer transition-all hover:bg-accent/50 ${documentStatusFilter === "admin_rejected" ? "ring-2 ring-red-500" : ""}`}
           onClick={() => setDocumentStatusFilter("admin_rejected")}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
