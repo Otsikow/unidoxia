@@ -42,15 +42,18 @@ export const agentRestrictedStudentDataQueryKey = (agentProfileId?: string | nul
 const fetchAgentRestrictedStudentData = async (
   agentProfileId: string
 ): Promise<RestrictedStudentData[]> => {
-  // First get the agent record
+  // First get the agent record - using maybeSingle to handle non-agent users gracefully
   const { data: agentData, error: agentError } = await supabase
     .from("agents")
     .select("id")
     .eq("profile_id", agentProfileId)
-    .single();
+    .maybeSingle();
 
-  if (agentError || !agentData) {
-    console.error("Error fetching agent:", agentError);
+  // Handle case where user is not an agent or no agent record exists
+  if (!agentData) {
+    if (agentError && agentError.code !== "PGRST116") {
+      console.error("Error fetching agent:", agentError);
+    }
     return [];
   }
 

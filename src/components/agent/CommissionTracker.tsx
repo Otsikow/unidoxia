@@ -17,39 +17,68 @@ interface Commission {
 }
 
 export default function CommissionTracker() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [commissions, setCommissions] = useState<Commission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [agentNotFound, setAgentNotFound] = useState(false);
 
   const fetchCommissions = useCallback(async () => {
+    // Reset state
+    setAgentNotFound(false);
+    
     try {
       setLoading(true);
 
+      // First try to get the agent record
       const { data: agentData, error: agentError } = await supabase
         .from("agents")
         .select("id")
         .eq("profile_id", user?.id)
-        .single();
+        .maybeSingle();
 
-      if (agentError || !agentData) {
-        throw agentError || new Error("Agent not found");
+      // Handle case where user is not an agent (no error, just no data)
+      if (!agentData) {
+        // Check if it's a "no rows" situation vs an actual error
+        if (agentError && agentError.code !== "PGRST116") {
+          // This is an actual database error, not just "no rows found"
+          console.error("Error fetching agent record:", agentError);
+          toast({
+            title: "Unable to load commissions",
+            description: "There was an error accessing your agent profile.",
+            variant: "destructive",
+          });
+        }
+        // User is not an agent - this is expected for non-agent users
+        setAgentNotFound(true);
+        setCommissions([]);
+        return;
       }
 
+      // Fetch commissions for this agent
       const { data, error } = await supabase
         .from("commissions")
         .select("id, amount_cents, currency, status, created_at, paid_at")
         .eq("agent_id", agentData.id)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching commissions:", error);
+        toast({
+          title: "Unable to load commissions",
+          description: "Real-time commission data could not be retrieved.",
+          variant: "destructive",
+        });
+        setCommissions([]);
+        return;
+      }
 
       setCommissions(data || []);
     } catch (err) {
       console.error("Error loading commissions", err);
       toast({
         title: "Unable to load commissions",
-        description: "Real-time commission data could not be retrieved.",
+        description: "An unexpected error occurred while loading commission data.",
         variant: "destructive",
       });
       setCommissions([]);
@@ -85,6 +114,27 @@ export default function CommissionTracker() {
 
   if (loading) {
     return <LoadingState message="Fetching your latest earnings" />;
+  }
+
+  // If user is not an agent, show appropriate message
+  if (agentNotFound) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Commission Tracker</CardTitle>
+          <CardDescription>Track your earnings and commissions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Agent profile required</AlertTitle>
+            <AlertDescription>
+              Commission tracking is available for registered agents. If you believe this is an error, please contact support.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
