@@ -334,13 +334,143 @@ const AdminStudents = () => {
         </Alert>
       )}
 
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search students by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="flex-1"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Select
+                value={documentStatusFilter}
+                onValueChange={(v) => setDocumentStatusFilter(v as DocumentStatusFilter)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Document Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Documents</SelectItem>
+                  <SelectItem value="awaiting_admin_review">Pending Review</SelectItem>
+                  <SelectItem value="ready_for_university_review">Approved</SelectItem>
+                  <SelectItem value="admin_rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={applicationStatusFilter}
+                onValueChange={setApplicationStatusFilter}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Application Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  {uniqueApplicationStatuses.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {(searchTerm || documentStatusFilter !== "all" || applicationStatusFilter !== "all") && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchTerm("");
+                  setDocumentStatusFilter("all");
+                  setApplicationStatusFilter("all");
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stats Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
+                <Users className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold">{filteredStudents.length}</p>
+                <p className="text-sm text-muted-foreground">Students</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold">
+                  {students.reduce((sum, s) => sum + getDocumentStats(s).pending, 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Pending Review</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold">
+                  {students.reduce((sum, s) => sum + getDocumentStats(s).approved, 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Approved</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-red-100 dark:bg-red-950/30 flex items-center justify-center">
+                <XCircle className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-semibold">
+                  {students.reduce((sum, s) => sum + getDocumentStats(s).rejected, 0)}
+                </p>
+                <p className="text-sm text-muted-foreground">Rejected</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Students
+            Students ({filteredStudents.length})
           </CardTitle>
+          <CardDescription>
+            Click on a student to review their documents
+          </CardDescription>
         </CardHeader>
         <CardContent className="overflow-x-auto">
           <Table>
@@ -369,63 +499,87 @@ const AdminStudents = () => {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7}>
-                    <Skeleton className="h-10 w-full" />
-                  </TableCell>
-                </TableRow>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                  </TableRow>
+                ))
               ) : filteredStudents.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-10">
-                    No students match your filters.
+                    <div className="flex flex-col items-center gap-2">
+                      <FileText className="h-10 w-10 text-muted-foreground/30" />
+                      <p className="text-muted-foreground">No students match your filters.</p>
+                    </div>
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredStudents.map(student => {
                   const stats = getDocumentStats(student);
+                  const hasPending = stats.pending > 0;
                   return (
                     <TableRow
                       key={student.id}
-                      className="cursor-pointer"
-                      onClick={() =>
-                        navigate(`/admin/students/${student.id}`)
-                      }
+                      className={`cursor-pointer hover:bg-muted/50 ${hasPending ? "bg-amber-50/30 dark:bg-amber-950/10" : ""}`}
+                      onClick={() => navigate(`/admin/students/${student.id}`)}
                     >
-                      <TableCell>{getStudentName(student)}</TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{getStudentName(student)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {student.contact_email ?? student.profile?.email ?? "—"}
+                          </p>
+                        </div>
+                      </TableCell>
                       <TableCell>{student.current_country ?? "—"}</TableCell>
                       <TableCell>
                         {student.applications[0]?.program?.level ?? "—"}
                       </TableCell>
-                      <TableCell className="flex gap-1">
-                        {stats.pending > 0 && (
-                          <Badge variant="secondary">
-                            {stats.pending} pending
-                          </Badge>
-                        )}
-                        {stats.approved > 0 && (
-                          <Badge className="bg-green-600">
-                            {stats.approved} approved
-                          </Badge>
-                        )}
-                        {stats.rejected > 0 && (
-                          <Badge variant="destructive">
-                            {stats.rejected} rejected
-                          </Badge>
-                        )}
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {stats.pending > 0 && (
+                            <Badge variant="secondary" className="gap-1">
+                              <Clock className="h-3 w-3" />
+                              {stats.pending}
+                            </Badge>
+                          )}
+                          {stats.approved > 0 && (
+                            <Badge className="bg-green-600 gap-1">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {stats.approved}
+                            </Badge>
+                          )}
+                          {stats.rejected > 0 && (
+                            <Badge variant="destructive" className="gap-1">
+                              <XCircle className="h-3 w-3" />
+                              {stats.rejected}
+                            </Badge>
+                          )}
+                          {stats.total === 0 && (
+                            <span className="text-sm text-muted-foreground">No docs</span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
-                        {student.applications[0]?.status ?? "—"}
+                        <Badge variant="outline">
+                          {student.applications[0]?.status?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "—"}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {student.created_at
-                          ? format(
-                              new Date(student.created_at),
-                              "MMM d, yyyy"
-                            )
+                          ? format(new Date(student.created_at), "MMM d, yyyy")
                           : "—"}
                       </TableCell>
                       <TableCell>
-                        <Eye className="h-4 w-4" />
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
