@@ -34,6 +34,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CheckCircle2,
   Clock,
   Eye,
@@ -73,8 +76,15 @@ interface StudentWithDocuments {
   applications: {
     id: string;
     status: string | null;
+    program: {
+      level: string;
+      name: string;
+    } | null;
   }[];
 }
+
+type SortField = "name" | "country" | "programme" | "joined";
+type SortDirection = "asc" | "desc";
 
 type DocumentStatusFilter = "all" | "awaiting_admin_review" | "ready_for_university_review" | "admin_rejected";
 
@@ -92,6 +102,8 @@ const AdminStudents = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [documentStatusFilter, setDocumentStatusFilter] = useState<DocumentStatusFilter>(ALL_FILTER);
   const [applicationStatusFilter, setApplicationStatusFilter] = useState<string>(ALL_FILTER);
+  const [sortField, setSortField] = useState<SortField>("joined");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   
 
   const fetchStudents = useCallback(async () => {
@@ -132,7 +144,11 @@ const AdminStudents = () => {
           ),
           applications (
             id,
-            status
+            status,
+            program:programs (
+              level,
+              name
+            )
           )
         `)
         .eq("tenant_id", tenantId)
@@ -181,7 +197,7 @@ const AdminStudents = () => {
   const filteredStudents = useMemo(() => {
     const lowerSearch = searchTerm.trim().toLowerCase();
 
-    return students.filter((student) => {
+    const filtered = students.filter((student) => {
       const name = student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "";
       const email = student.contact_email ?? student.profile?.email ?? "";
 
@@ -209,7 +225,43 @@ const AdminStudents = () => {
 
       return searchMatch && docStatusMatch && applicationMatch;
     });
-  }, [students, searchTerm, documentStatusFilter, applicationStatusFilter]);
+
+    // Sort the filtered results
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortField) {
+        case "name": {
+          const nameA = (a.preferred_name ?? a.legal_name ?? a.profile?.full_name ?? "").toLowerCase();
+          const nameB = (b.preferred_name ?? b.legal_name ?? b.profile?.full_name ?? "").toLowerCase();
+          comparison = nameA.localeCompare(nameB);
+          break;
+        }
+        case "country": {
+          const countryA = (a.current_country ?? "").toLowerCase();
+          const countryB = (b.current_country ?? "").toLowerCase();
+          comparison = countryA.localeCompare(countryB);
+          break;
+        }
+        case "programme": {
+          const programmeA = a.applications.find((app) => app.program?.level)?.program?.level ?? "";
+          const programmeB = b.applications.find((app) => app.program?.level)?.program?.level ?? "";
+          comparison = programmeA.toLowerCase().localeCompare(programmeB.toLowerCase());
+          break;
+        }
+        case "joined": {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          comparison = dateA - dateB;
+          break;
+        }
+      }
+
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return sorted;
+  }, [students, searchTerm, documentStatusFilter, applicationStatusFilter, sortField, sortDirection]);
 
   const totals = useMemo(() => {
     const total = students.length;
@@ -239,11 +291,42 @@ const AdminStudents = () => {
     return student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "Unknown Student";
   };
 
+  const getStudentProgrammeLevel = (student: StudentWithDocuments): string | null => {
+    const appWithProgram = student.applications.find((app) => app.program?.level);
+    return appWithProgram?.program?.level ?? null;
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="ml-1 h-4 w-4 text-muted-foreground" />;
+    }
+    return sortDirection === "asc"
+      ? <ArrowUp className="ml-1 h-4 w-4" />
+      : <ArrowDown className="ml-1 h-4 w-4" />;
+  };
+
+  const formatProgrammeLevel = (level: string | null) => {
+    if (!level) return "—";
+    return level
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
+
   const renderTableBody = () => {
     if (loading) {
       return (
         <TableRow>
-          <TableCell colSpan={7}>
+          <TableCell colSpan={8}>
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, index) => (
                 <Skeleton key={index} className="h-10 w-full" />
@@ -257,7 +340,7 @@ const AdminStudents = () => {
     if (filteredStudents.length === 0) {
       return (
         <TableRow>
-          <TableCell colSpan={7}>
+          <TableCell colSpan={8}>
             <div className="py-10 text-center text-sm text-muted-foreground">
               No students match the current filters.
             </div>
@@ -284,6 +367,9 @@ const AdminStudents = () => {
           </TableCell>
           <TableCell className="min-w-[120px]">
             {student.current_country ?? "—"}
+          </TableCell>
+          <TableCell className="min-w-[140px]">
+            {formatProgrammeLevel(getStudentProgrammeLevel(student))}
           </TableCell>
           <TableCell className="min-w-[120px]">
             <span className="text-muted-foreground">Direct</span>
@@ -510,12 +596,53 @@ const AdminStudents = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Country</TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 -ml-2 font-medium hover:bg-transparent"
+                      onClick={() => handleSort("name")}
+                    >
+                      Student
+                      {getSortIcon("name")}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 -ml-2 font-medium hover:bg-transparent"
+                      onClick={() => handleSort("country")}
+                    >
+                      Country
+                      {getSortIcon("country")}
+                    </Button>
+                  </TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 -ml-2 font-medium hover:bg-transparent"
+                      onClick={() => handleSort("programme")}
+                    >
+                      Programme Level
+                      {getSortIcon("programme")}
+                    </Button>
+                  </TableHead>
                   <TableHead>Agent</TableHead>
                   <TableHead>Documents</TableHead>
                   <TableHead>Application Status</TableHead>
-                  <TableHead>Joined</TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 -ml-2 font-medium hover:bg-transparent"
+                      onClick={() => handleSort("joined")}
+                    >
+                      Joined
+                      {getSortIcon("joined")}
+                    </Button>
+                  </TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
