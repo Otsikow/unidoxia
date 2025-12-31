@@ -21,7 +21,7 @@ export function LandingHeader() {
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-30">
+    <header className="absolute top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4 pt-4 sm:pt-6">
         <div className="flex justify-end">
           <div className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-1.5 py-1 shadow-lg shadow-black/10 backdrop-blur-md dark:border-white/10 dark:bg-black/20">
