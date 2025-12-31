@@ -464,7 +464,12 @@ const AdminStudentDetail = () => {
 
   const getStudentName = () => {
     if (!student) return "Unknown Student";
-    return student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "Unknown Student";
+    // Use || to handle empty strings, not just null/undefined
+    const name =
+      (student.preferred_name?.trim()) ||
+      (student.legal_name?.trim()) ||
+      (student.profile?.full_name?.trim());
+    return name || "Unknown Student";
   };
 
   const formatFileSize = (bytes: number) => {
