@@ -44,6 +44,20 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
+      {/* X (formerly Twitter) logo */}
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
 export function AppFooter() {
   const year = new Date().getFullYear();
   const { t } = useTranslation();
@@ -106,10 +120,21 @@ export function AppFooter() {
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("layout.footer.followUsSubtitle", {
-                  defaultValue: "Follow us on LinkedIn, Facebook, and our WhatsApp channel.",
+                  defaultValue: "Follow us on X, LinkedIn, Facebook, and our WhatsApp channel.",
                 })}
               </p>
               <div className="mt-3 flex items-center gap-2">
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <a
+                    href="https://x.com/unidoxia"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("layout.footer.social.x", { defaultValue: "Follow us on X" })}
+                    title={t("layout.footer.social.xShort", { defaultValue: "X" })}
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </a>
+                </Button>
                 <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
                   <a
                     href="https://www.linkedin.com/company/110137778/admin/dashboard/"
