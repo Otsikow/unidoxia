@@ -747,7 +747,12 @@ const AdminAdmissionsOversight = () => {
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <Card>
+        <Card 
+          className="cursor-pointer transition-colors hover:bg-accent/50"
+          onClick={() => {
+            setStatusFilter(ALL_FILTER_VALUE);
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active applications</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
@@ -757,7 +762,12 @@ const AdminAdmissionsOversight = () => {
             <p className="text-xs text-muted-foreground">Total files across your tenant</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card 
+          className="cursor-pointer transition-colors hover:bg-accent/50"
+          onClick={() => {
+            setStatusFilter("submitted");
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">In review / submitted</CardTitle>
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -767,7 +777,12 @@ const AdminAdmissionsOversight = () => {
             <p className="text-xs text-muted-foreground">Progressing beyond draft stage</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card 
+          className="cursor-pointer transition-colors hover:bg-accent/50"
+          onClick={() => {
+            setStatusFilter("conditional_offer");
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Offers issued</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
@@ -777,7 +792,12 @@ const AdminAdmissionsOversight = () => {
             <p className="text-xs text-muted-foreground">Conditional + unconditional offers</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card 
+          className="cursor-pointer transition-colors hover:bg-accent/50"
+          onClick={() => {
+            setStatusFilter("enrolled");
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Enrolment conversion</CardTitle>
             <CalendarClock className="h-4 w-4 text-muted-foreground" />
