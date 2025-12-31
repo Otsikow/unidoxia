@@ -396,6 +396,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       }
 
       // If no application_documents, fall back to student_documents (linked to student)
+      // University partners should only see documents that have been approved for university access
       if (documents.length === 0 && appData.student_id) {
         console.log("[useExtendedApplication] No application documents, checking student documents for student:", appData.student_id);
         const { data: studentDocs, error: studentDocsError } = await supabase
@@ -409,10 +410,11 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
             file_size,
             verified_status,
             verification_notes,
+            admin_review_status,
+            university_access_approved,
             created_at
           `)
-          .eq("student_id", appData.student_id)
-          .eq("verified_status", "verified");
+          .eq("student_id", appData.student_id);
 
         if (studentDocsError) {
           console.warn("[useExtendedApplication] Student documents fetch warning:", studentDocsError);
@@ -420,10 +422,37 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
 
         if (studentDocs && studentDocs.length > 0) {
           console.log("[useExtendedApplication] Student documents loaded:", studentDocs.length);
-          documents = studentDocs.map((doc) => {
-            const rawStatus = (doc.verified_status ?? "pending") as string;
-            const normalizedStatus =
-              rawStatus === "verified" ? "ready_for_university_review" : rawStatus;
+          
+          // Filter for documents that are ready for university review
+          // A document is ready if:
+          // 1. admin_review_status = 'ready_for_university_review' OR
+          // 2. university_access_approved = true OR
+          // 3. verified_status = 'verified' (fallback for older documents)
+          const readyDocs = studentDocs.filter((doc: any) => {
+            const adminStatus = doc.admin_review_status;
+            const universityApproved = doc.university_access_approved;
+            const verifiedStatus = doc.verified_status;
+            
+            return (
+              adminStatus === "ready_for_university_review" ||
+              universityApproved === true ||
+              verifiedStatus === "verified"
+            );
+          });
+          
+          console.log("[useExtendedApplication] Documents ready for university review:", readyDocs.length);
+          
+          documents = readyDocs.map((doc: any) => {
+            // Determine the review status for display
+            let reviewStatus: "pending" | "verified" | "rejected" | "ready_for_university_review" = "pending";
+            
+            if (doc.admin_review_status === "ready_for_university_review" || 
+                doc.university_access_approved === true ||
+                doc.verified_status === "verified") {
+              reviewStatus = "ready_for_university_review";
+            } else if (doc.verified_status === "rejected") {
+              reviewStatus = "rejected";
+            }
 
             return {
               id: doc.id,
@@ -432,7 +461,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
               fileName: doc.file_name ?? doc.storage_path?.split("/").pop() ?? "Unknown",
               mimeType: doc.mime_type,
               fileSize: doc.file_size,
-              reviewStatus: normalizedStatus as any,
+              reviewStatus,
               verificationNotes: doc.verification_notes ?? null,
               uploadedAt: doc.created_at ?? "",
               publicUrl: getPublicUrl(doc.storage_path),

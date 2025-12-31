@@ -137,6 +137,11 @@ export default function AdminDashboard() {
 
     try {
       setLoadingDocuments(true);
+      // Fetch documents awaiting admin review
+      // Include documents that are:
+      // 1. verified_status = 'pending' (new documents)
+      // 2. admin_review_status = 'awaiting_admin_review' (in review workflow)
+      // Exclude documents that have already been approved (verified_status = 'verified')
       const { data, error } = await supabase
         .from('student_documents')
         .select(`
@@ -146,16 +151,25 @@ export default function AdminDashboard() {
           storage_path,
           verified_status,
           verification_notes,
+          admin_review_status,
+          university_access_approved,
           created_at,
           students:student_id (id, profile_id, tenant_id, legal_name, preferred_name, contact_email, contact_phone)
         `)
-        .in('verified_status', ['pending', 'rejected'])
+        .or('verified_status.eq.pending,admin_review_status.eq.awaiting_admin_review')
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) throw error;
 
-      setPendingDocuments((data as unknown as AdminDocumentReview[]) ?? []);
+      // Filter out already approved documents (in case of OR matching)
+      const pendingDocs = (data ?? []).filter((doc: any) => 
+        doc.verified_status !== 'verified' && 
+        doc.admin_review_status !== 'ready_for_university_review' &&
+        !doc.university_access_approved
+      );
+
+      setPendingDocuments((pendingDocs as unknown as AdminDocumentReview[]) ?? []);
     } catch (error) {
       console.error('Error loading pending documents:', error);
     } finally {
@@ -169,14 +183,36 @@ export default function AdminDashboard() {
         setUpdatingDocumentId(doc.id);
         const note = (documentNotes[doc.id] ?? '').trim() || null;
 
+        // Build update payload with all required fields for document workflow
+        // When admin approves a document:
+        // - verified_status = 'verified' (for backward compatibility)
+        // - admin_review_status = 'ready_for_university_review' (for the gated RPC)
+        // - university_access_approved = true (for RLS policies and edge function)
+        const updatePayload: Record<string, unknown> = {
+          verified_status: status,
+          verification_notes: note,
+          verified_by: profile?.id ?? null,
+          verified_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+
+        if (status === 'verified') {
+          // When approving, also enable university access
+          updatePayload.admin_review_status = 'ready_for_university_review';
+          updatePayload.university_access_approved = true;
+          updatePayload.university_access_approved_at = new Date().toISOString();
+          updatePayload.university_access_approved_by = profile?.id ?? null;
+        } else if (status === 'rejected') {
+          // When rejecting, revoke university access
+          updatePayload.admin_review_status = 'admin_rejected';
+          updatePayload.university_access_approved = false;
+          updatePayload.university_access_approved_at = null;
+          updatePayload.university_access_approved_by = null;
+        }
+
         const { error } = await supabase
           .from('student_documents')
-          .update({
-            verified_status: status,
-            verification_notes: note,
-            verified_by: profile?.id ?? null,
-            verified_at: new Date().toISOString(),
-          })
+          .update(updatePayload)
           .eq('id', doc.id);
 
         if (error) throw error;

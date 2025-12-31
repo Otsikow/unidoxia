@@ -424,6 +424,8 @@ export default function Documents() {
 
       await uploadToStorage(newStoragePath, preparedFile, detectedMimeType);
 
+      // Reset all verification-related fields when replacing a document
+      // This ensures the document goes through the full review workflow again
       const { error: updateError } = await supabase
         .from("student_documents")
         .update({
@@ -435,6 +437,11 @@ export default function Documents() {
           verification_notes: null,
           verified_at: null,
           verified_by: null,
+          // Reset admin review status columns
+          admin_review_status: "awaiting_admin_review",
+          university_access_approved: false,
+          university_access_approved_at: null,
+          university_access_approved_by: null,
         })
         .eq("id", doc.id);
 
