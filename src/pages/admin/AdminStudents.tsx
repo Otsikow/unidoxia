@@ -182,8 +182,9 @@ const AdminStudents = () => {
     const lowerSearch = searchTerm.trim().toLowerCase();
 
     return students.filter((student) => {
-      const name = student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "";
-      const email = student.contact_email ?? student.profile?.email ?? "";
+      // Use || to handle empty strings properly in search
+      const name = (student.preferred_name?.trim()) || (student.legal_name?.trim()) || (student.profile?.full_name?.trim()) || "";
+      const email = (student.contact_email?.trim()) || (student.profile?.email?.trim()) || "";
 
       const searchMatch =
         lowerSearch.length === 0 ||
@@ -236,7 +237,12 @@ const AdminStudents = () => {
   };
 
   const getStudentName = (student: StudentWithDocuments) => {
-    return student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "Unknown Student";
+    // Use || to handle empty strings, not just null/undefined
+    const name =
+      (student.preferred_name?.trim()) ||
+      (student.legal_name?.trim()) ||
+      (student.profile?.full_name?.trim());
+    return name || "Unknown Student";
   };
 
   const renderTableBody = () => {
