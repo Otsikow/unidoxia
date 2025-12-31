@@ -2241,6 +2241,10 @@ export type Database = {
       }
       student_documents: {
         Row: {
+          admin_review_notes: string | null
+          admin_review_status: string | null
+          admin_reviewed_at: string | null
+          admin_reviewed_by: string | null
           checksum: string | null
           created_at: string | null
           document_type: string
@@ -2257,6 +2261,10 @@ export type Database = {
           verified_status: string | null
         }
         Insert: {
+          admin_review_notes?: string | null
+          admin_review_status?: string | null
+          admin_reviewed_at?: string | null
+          admin_reviewed_by?: string | null
           checksum?: string | null
           created_at?: string | null
           document_type: string
@@ -2273,6 +2281,10 @@ export type Database = {
           verified_status?: string | null
         }
         Update: {
+          admin_review_notes?: string | null
+          admin_review_status?: string | null
+          admin_reviewed_at?: string | null
+          admin_reviewed_by?: string | null
           checksum?: string | null
           created_at?: string | null
           document_type?: string
@@ -2289,6 +2301,20 @@ export type Database = {
           verified_status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "student_documents_admin_reviewed_by_fkey"
+            columns: ["admin_reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_documents_admin_reviewed_by_fkey"
+            columns: ["admin_reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_documents_student_id_fkey"
             columns: ["student_id"]
