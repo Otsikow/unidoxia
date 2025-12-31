@@ -6,16 +6,39 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  GraduationCap,
   MapPin,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+
+// Professional gradient backgrounds for universities without banner images
+const GRADIENT_THEMES = [
+  { gradient: "from-blue-600 via-blue-700 to-indigo-800", accent: "bg-blue-400/20" },
+  { gradient: "from-emerald-600 via-teal-700 to-cyan-800", accent: "bg-emerald-400/20" },
+  { gradient: "from-purple-600 via-violet-700 to-indigo-800", accent: "bg-purple-400/20" },
+  { gradient: "from-amber-600 via-orange-700 to-red-800", accent: "bg-amber-400/20" },
+  { gradient: "from-rose-600 via-pink-700 to-fuchsia-800", accent: "bg-rose-400/20" },
+  { gradient: "from-cyan-600 via-sky-700 to-blue-800", accent: "bg-cyan-400/20" },
+  { gradient: "from-slate-600 via-slate-700 to-zinc-800", accent: "bg-slate-400/20" },
+  { gradient: "from-indigo-600 via-purple-700 to-violet-800", accent: "bg-indigo-400/20" },
+];
+
+// Generate consistent gradient based on university name
+const getUniversityTheme = (name: string) => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return GRADIENT_THEMES[Math.abs(hash) % GRADIENT_THEMES.length];
+};
 
 interface FeaturedUniversity {
   id: string;
@@ -205,16 +228,22 @@ export function FeaturedUniversitiesSection() {
       return (
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3" role="status" aria-live="polite">
           {Array.from({ length: 6 }).map((_, index) => (
-            <Card key={index} className="border-muted/40">
-              <CardContent className="space-y-4 p-6">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <Skeleton className="h-5 w-3/4" />
+            <Card key={index} className="border-0 shadow-lg overflow-hidden">
+              {/* Banner skeleton */}
+              <Skeleton className="h-48 w-full rounded-none" />
+              <CardContent className="space-y-4 pt-12 pb-6 relative">
+                {/* Logo skeleton */}
+                <div className="absolute -top-8 left-6">
+                  <Skeleton className="h-16 w-16 rounded-xl" />
+                </div>
+                <Skeleton className="h-6 w-3/4" />
                 <Skeleton className="h-4 w-1/2" />
                 <Skeleton className="h-16 w-full" />
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-1/3" />
-                  <Skeleton className="h-9 w-24" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
                 </div>
+                <Skeleton className="h-10 w-full" />
               </CardContent>
             </Card>
           ))}
@@ -232,15 +261,15 @@ export function FeaturedUniversitiesSection() {
 
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-sm uppercase tracking-[0.25em] text-primary/70">{networkLabel}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">{networkLabel}</p>
             <p className="text-sm text-muted-foreground">{networkSummary}</p>
           </div>
           {universitiesToDisplay.length > 3 && (
-            <div className="hidden gap-2 md:flex">
+            <div className="hidden gap-3 md:flex">
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full"
+                className="h-11 w-11 rounded-full border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
                 onClick={() => scrollBy("left")}
                 aria-label={scrollLeftLabel}
               >
@@ -249,7 +278,7 @@ export function FeaturedUniversitiesSection() {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full"
+                className="h-11 w-11 rounded-full border-2 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
                 onClick={() => scrollBy("right")}
                 aria-label={scrollRightLabel}
               >
@@ -262,100 +291,153 @@ export function FeaturedUniversitiesSection() {
         <div ref={scrollRef} className="grid gap-6 max-md:overflow-x-auto max-md:pb-2 sm:grid-cols-2 xl:grid-cols-3">
           {universitiesToDisplay.map((university, index) => {
             const formattedWebsite = formatWebsiteUrl(university.website);
+            const theme = getUniversityTheme(university.name);
 
             return (
               <Card
                 key={university.id}
                 className={cn(
-                  "relative h-full overflow-hidden border-muted/50 bg-card/80 backdrop-blur transition-all",
-                  "hover:-translate-y-1 hover:border-primary/60 hover:shadow-xl"
+                  "group relative h-full overflow-hidden border-0 bg-card/90 shadow-lg transition-all duration-300",
+                  "hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/10"
                 )}
               >
-                <div className="relative h-40 w-full bg-muted/40">
+                {/* Banner Section */}
+                <div className="relative h-48 w-full overflow-hidden">
                   {university.featured_image_url ? (
-                    <img
-                      src={university.featured_image_url}
-                      alt={`${university.name} campus`}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
+                    <>
+                      <img
+                        src={university.featured_image_url}
+                        alt={`${university.name} campus`}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    </>
                   ) : (
-                    <div className="flex h-full items-center justify-center text-muted-foreground">
-                      <Building2 className="h-12 w-12" />
+                    /* Professional dynamic gradient placeholder */
+                    <div className={cn(
+                      "relative h-full w-full bg-gradient-to-br",
+                      theme.gradient
+                    )}>
+                      {/* Decorative elements */}
+                      <div className="absolute inset-0 overflow-hidden">
+                        <div className={cn("absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-30", theme.accent)} />
+                        <div className={cn("absolute -bottom-4 -left-4 h-24 w-24 rounded-full opacity-20", theme.accent)} />
+                        <div className={cn("absolute right-1/4 top-1/2 h-16 w-16 rounded-full opacity-25", theme.accent)} />
+                      </div>
+                      {/* University icon */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="rounded-2xl bg-white/10 p-6 backdrop-blur-sm">
+                          <GraduationCap className="h-16 w-16 text-white/90" />
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/5 to-transparent" />
-                  {index < 3 && (
-                    <Badge className="absolute left-4 top-4 bg-primary/90 text-primary-foreground" variant="secondary">
-                      <Sparkles className="mr-1 h-3 w-3" /> {topPickLabel}
-                    </Badge>
-                  )}
-                </div>
-                <CardHeader className="space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full border bg-background p-2 shadow-inner">
-                        {university.logo_url ? (
-                          <img
-                            src={university.logo_url}
-                            alt={`${university.name} logo`}
-                            className="h-full w-full object-contain"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <Building2 className="h-6 w-6 text-primary" />
-                        )}
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg leading-tight">{university.name}</CardTitle>
-                        {(university.city || university.country) && (
-                          <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 text-primary" />
-                            {[university.city, university.country].filter(Boolean).join(", ")}
-                          </p>
-                        )}
-                      </div>
+
+                  {/* Logo overlay - positioned at bottom of banner */}
+                  <div className="absolute -bottom-8 left-6 z-10">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-xl border-4 border-background bg-white p-2 shadow-lg">
+                      {university.logo_url ? (
+                        <img
+                          src={university.logo_url}
+                          alt={`${university.name} logo`}
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <Building2 className="h-8 w-8 text-primary" />
+                      )}
                     </div>
                   </div>
+
+                  {/* Top pick badge */}
+                  {index < 3 && (
+                    <Badge className="absolute right-4 top-4 border-0 bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg">
+                      <Star className="mr-1 h-3 w-3 fill-current" /> {topPickLabel}
+                    </Badge>
+                  )}
+
+                  {/* Priority badge */}
                   {typeof university.featured_priority === "number" && (
-                    <Badge variant="outline" className="self-start text-xs">
+                    <Badge 
+                      variant="secondary" 
+                      className="absolute left-4 top-4 border-0 bg-white/90 text-slate-700 shadow-sm backdrop-blur-sm"
+                    >
                       {priorityLabel(university.featured_priority + 1)}
                     </Badge>
                   )}
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-sm leading-relaxed text-muted-foreground">
+                </div>
+
+                {/* Content Section */}
+                <CardContent className="space-y-4 pt-12 pb-6">
+                  {/* University name and location */}
+                  <div className="space-y-1">
+                    <h3 className="text-xl font-bold leading-tight text-foreground line-clamp-2">
+                      {university.name}
+                    </h3>
+                    {(university.city || university.country) && (
+                      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        {[university.city, university.country].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Summary */}
+                  <p className="text-sm leading-relaxed text-muted-foreground line-clamp-3">
                     {university.featured_summary || university.featured_highlight || fallbackSummary}
                   </p>
+
+                  {/* Rankings/highlights */}
                   {university.ranking && typeof university.ranking === "object" && (
-                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap gap-2">
                       {Object.entries(university.ranking)
                         .filter(([, value]) => value !== null && value !== "")
-                        .slice(0, 3)
+                        .slice(0, 2)
                         .map(([label, value]) => (
-                          <Badge key={label} variant="outline" className="bg-muted/40">
+                          <Badge 
+                            key={label} 
+                            variant="secondary" 
+                            className="bg-primary/10 text-primary border-0 text-xs font-medium"
+                          >
                             {label}: {String(value)}
                           </Badge>
                         ))}
                     </div>
                   )}
-                  <div className="flex items-center justify-between">
-                    <div className="text-xs text-muted-foreground">
+
+                  {/* Highlight tag */}
+                  <div className="flex items-center gap-2 text-xs">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                    <span className="text-muted-foreground font-medium">
                       {university.featured_highlight || recommendedHighlight}
-                    </div>
+                    </span>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="pt-2">
                     {formattedWebsite ? (
-                      <Button asChild variant="ghost" size="sm" className="gap-1">
+                      <Button 
+                        asChild 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full gap-2 border-primary/20 hover:bg-primary hover:text-primary-foreground transition-colors"
+                      >
                         <a href={formattedWebsite} target="_blank" rel="noopener noreferrer">
                           {visitSiteLabel}
-                          <ExternalLink className="h-3.5 w-3.5" />
+                          <ExternalLink className="h-4 w-4" />
                         </a>
                       </Button>
                     ) : (
-                      <Button asChild variant="ghost" size="sm" className="gap-1" disabled>
-                        <span className="flex items-center gap-1 text-muted-foreground/70">
-                          {visitSiteLabel}
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </span>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full gap-2 opacity-50 cursor-not-allowed" 
+                        disabled
+                      >
+                        {visitSiteLabel}
+                        <ExternalLink className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
@@ -365,29 +447,46 @@ export function FeaturedUniversitiesSection() {
           })}
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl border bg-card/70 p-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-primary">{partnerCtaHeading}</p>
-            <p className="text-sm text-muted-foreground">{partnerCtaDescription}</p>
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 p-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between relative z-10">
+            <div className="space-y-2">
+              <p className="text-lg font-semibold text-foreground">{partnerCtaHeading}</p>
+              <p className="text-muted-foreground max-w-lg">{partnerCtaDescription}</p>
+            </div>
+            <Button asChild size="lg" className="gap-2 shadow-lg hover:shadow-xl transition-shadow whitespace-nowrap">
+              <Link to="/partnership">
+                {partnerCtaAction}
+                <ExternalLink className="h-4 w-4" />
+              </Link>
+            </Button>
           </div>
-          <Button asChild size="sm">
-            <Link to="/partnership">{partnerCtaAction}</Link>
-          </Button>
+          {/* Decorative elements */}
+          <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+          <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-primary/5 blur-2xl" />
         </div>
       </div>
     );
   };
 
   return (
-    <section className="relative py-20" aria-labelledby="featured-universities-heading">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-primary/5 via-background to-primary/10" />
+    <section className="relative py-24" aria-labelledby="featured-universities-heading">
+      {/* Background decorations */}
+      <div className="absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-background" />
+        <div className="absolute -left-32 top-1/4 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -right-32 bottom-1/4 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
+      </div>
       <div className="container mx-auto px-4 space-y-12">
-          <div className="mx-auto max-w-2xl space-y-4 text-center">
-            <h2 id="featured-universities-heading" className="text-4xl font-bold">
-              {sectionHeading}
-            </h2>
-            <p className="text-muted-foreground">{sectionDescription}</p>
+        <div className="mx-auto max-w-3xl space-y-6 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+            <GraduationCap className="h-4 w-4" />
+            <span>Partner Institutions</span>
           </div>
+          <h2 id="featured-universities-heading" className="text-4xl font-bold tracking-tight md:text-5xl">
+            {sectionHeading}
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">{sectionDescription}</p>
+        </div>
         {renderContent()}
       </div>
     </section>
