@@ -113,7 +113,9 @@ const AdminStudents = () => {
     setError(null);
 
     try {
-      const { data, error: queryError } = await supabase
+      // Fetch students with their profiles, documents, and applications
+      // Using separate queries to avoid complex join issues with RLS policies
+      const { data: studentsData, error: studentsError } = await supabase
         .from("students")
         .select(`
           id,
@@ -124,16 +126,9 @@ const AdminStudents = () => {
           current_country,
           created_at,
           assigned_agent_id,
-          profile:profiles (
+          profile:profiles!students_profile_id_fkey (
             full_name,
             email
-          ),
-          assigned_agent:agents!assigned_agent_id (
-            id,
-            company_name,
-            profile:profiles (
-              full_name
-            )
           ),
           documents:student_documents (
             id,
@@ -152,11 +147,42 @@ const AdminStudents = () => {
         .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
 
-      if (queryError) {
-        throw queryError;
+      if (studentsError) {
+        throw studentsError;
       }
 
-      setStudents((data ?? []) as StudentWithDocuments[]);
+      // Fetch agents separately for students that have assigned agents
+      const studentsList = studentsData ?? [];
+      const agentIds = [...new Set(studentsList.map(s => s.assigned_agent_id).filter(Boolean))];
+
+      let agentsMap = new Map<string, { id: string; company_name: string | null; profile: { full_name: string | null } | null }>();
+
+      if (agentIds.length > 0) {
+        const { data: agentsData } = await supabase
+          .from("agents")
+          .select(`
+            id,
+            company_name,
+            profile:profiles!agents_profile_id_fkey (
+              full_name
+            )
+          `)
+          .in("id", agentIds);
+
+        if (agentsData) {
+          agentsData.forEach((agent: any) => {
+            agentsMap.set(agent.id, agent);
+          });
+        }
+      }
+
+      // Combine students with their agents
+      const studentsWithAgents = studentsList.map((student: any) => ({
+        ...student,
+        assigned_agent: student.assigned_agent_id ? agentsMap.get(student.assigned_agent_id) ?? null : null,
+      }));
+
+      setStudents(studentsWithAgents as StudentWithDocuments[]);
     } catch (err) {
       console.error("Failed to load students", err);
       setError("Unable to load students at this time.");
