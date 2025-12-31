@@ -34,6 +34,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import {
   AlertCircle,
+  AlertTriangle,
   ArrowDown,
   ArrowUp,
   ArrowUpDown,
@@ -45,6 +46,7 @@ import {
   Loader2,
   RefreshCw,
   Search,
+  ShieldCheck,
   Users,
   XCircle,
 } from "lucide-react";
@@ -62,6 +64,8 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
+  profile_ready_for_university: boolean | null;
+  profile_approved_at: string | null;
   profile: {
     full_name: string | null;
     email: string | null;
@@ -84,6 +88,9 @@ interface StudentWithDocuments {
     } | null;
   }[];
 }
+
+// Required documents that must be uploaded and approved
+const REQUIRED_DOCUMENT_TYPES = ["passport", "passport_photo", "transcript", "cv"];
 
 type SortField = "name" | "country" | "programme" | "joined";
 type SortDirection = "asc" | "desc";
@@ -145,6 +152,8 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          profile_ready_for_university,
+          profile_approved_at,
           profile:profiles!students_profile_id_fkey (
             full_name,
             email
@@ -204,6 +213,23 @@ const AdminStudents = () => {
       approved: docs.filter(d => d.admin_review_status === "ready_for_university_review").length,
       rejected: docs.filter(d => d.admin_review_status === "admin_rejected").length,
     };
+  };
+
+  const getMissingDocsCount = (s: StudentWithDocuments) => {
+    const docs = s.documents ?? [];
+    // Get latest doc for each type
+    const latestByType = new Map<string, typeof docs[0]>();
+    for (const doc of docs) {
+      const existing = latestByType.get(doc.document_type);
+      if (!existing || new Date(doc.created_at) > new Date(existing.created_at)) {
+        latestByType.set(doc.document_type, doc);
+      }
+    }
+    // Count missing or rejected required docs
+    return REQUIRED_DOCUMENT_TYPES.filter(type => {
+      const doc = latestByType.get(type);
+      return !doc || doc.admin_review_status === "admin_rejected";
+    }).length;
   };
 
   const uniqueApplicationStatuses = useMemo(() => {
@@ -358,7 +384,8 @@ const AdminStudents = () => {
                 </TableHead>
                 <TableHead>Programme</TableHead>
                 <TableHead>Documents</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Profile</TableHead>
+                <TableHead>App Status</TableHead>
                 <TableHead>
                   <Button variant="ghost" onClick={() => handleSort("joined")}>
                     Joined {getSortIcon("joined")}
@@ -370,19 +397,20 @@ const AdminStudents = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <Skeleton className="h-10 w-full" />
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-10">
+                  <TableCell colSpan={8} className="text-center py-10">
                     No students match your filters.
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredStudents.map(student => {
                   const stats = getDocumentStats(student);
+                  const missingCount = getMissingDocsCount(student);
                   return (
                     <TableRow
                       key={student.id}
@@ -396,25 +424,46 @@ const AdminStudents = () => {
                       <TableCell>
                         {student.applications[0]?.program?.level ?? "—"}
                       </TableCell>
-                      <TableCell className="flex gap-1">
-                        {stats.pending > 0 && (
-                          <Badge variant="secondary">
-                            {stats.pending} pending
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {missingCount > 0 && (
+                            <Badge variant="outline" className="border-red-300 text-red-600 gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              {missingCount} missing
+                            </Badge>
+                          )}
+                          {stats.pending > 0 && (
+                            <Badge variant="secondary">
+                              {stats.pending} pending
+                            </Badge>
+                          )}
+                          {stats.approved > 0 && (
+                            <Badge className="bg-green-600">
+                              {stats.approved} approved
+                            </Badge>
+                          )}
+                          {stats.rejected > 0 && (
+                            <Badge variant="destructive">
+                              {stats.rejected} rejected
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {student.profile_ready_for_university ? (
+                          <Badge className="bg-green-600 gap-1">
+                            <ShieldCheck className="h-3 w-3" />
+                            Ready
                           </Badge>
-                        )}
-                        {stats.approved > 0 && (
-                          <Badge className="bg-green-600">
-                            {stats.approved} approved
-                          </Badge>
-                        )}
-                        {stats.rejected > 0 && (
-                          <Badge variant="destructive">
-                            {stats.rejected} rejected
+                        ) : (
+                          <Badge variant="outline" className="gap-1">
+                            <Clock className="h-3 w-3" />
+                            Not Ready
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell>
-                        {student.applications[0]?.status ?? "—"}
+                        {student.applications[0]?.status?.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) ?? "—"}
                       </TableCell>
                       <TableCell>
                         {student.created_at
