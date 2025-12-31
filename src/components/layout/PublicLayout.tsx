@@ -12,7 +12,7 @@ interface PublicLayoutProps {
 }
 
 /** Paths where the back button should be hidden by default */
-const HIDDEN_BACK_BUTTON_PATHS = new Set(["/", "/home"]);
+const HIDDEN_BACK_BUTTON_PATHS = new Set(["/", "/home", "/pricing"]);
 
 /** Path prefixes where the back button should be hidden (pages with their own back navigation) */
 const HIDDEN_BACK_BUTTON_PREFIXES = ["/auth/", "/agents/", "/onboarding/"];

@@ -105,7 +105,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <LandingHeader />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 pt-20 sm:pt-24 pb-12">
         {/* Back Button */}
         <Button
           variant="ghost"
