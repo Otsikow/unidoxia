@@ -159,7 +159,7 @@ const AdminStudentDetail = () => {
     setError(null);
 
     try {
-      // Fetch student profile
+      // Fetch student profile with basic relations
       const { data: studentData, error: studentError } = await supabase
         .from("students")
         .select(`
@@ -173,18 +173,10 @@ const AdminStudentDetail = () => {
           nationality,
           created_at,
           assigned_agent_id,
-          profile:profiles (
+          profile:profiles!students_profile_id_fkey (
             id,
             full_name,
             email
-          ),
-          assigned_agent:agents!assigned_agent_id (
-            id,
-            company_name,
-            profile:profiles (
-              full_name,
-              email
-            )
           ),
           applications (
             id,
@@ -209,7 +201,32 @@ const AdminStudentDetail = () => {
         throw studentError;
       }
 
-      setStudent(studentData as StudentProfile);
+      // Fetch agent info separately if there's an assigned agent
+      let agentData = null;
+      if (studentData?.assigned_agent_id) {
+        const { data: agentResult } = await supabase
+          .from("agents")
+          .select(`
+            id,
+            company_name,
+            profile:profiles!agents_profile_id_fkey (
+              full_name,
+              email
+            )
+          `)
+          .eq("id", studentData.assigned_agent_id)
+          .single();
+
+        agentData = agentResult;
+      }
+
+      // Combine student with agent
+      const studentWithAgent = {
+        ...studentData,
+        assigned_agent: agentData,
+      };
+
+      setStudent(studentWithAgent as StudentProfile);
 
       // Fetch student documents
       const { data: docsData, error: docsError } = await supabase
@@ -395,35 +412,28 @@ const AdminStudentDetail = () => {
   };
 
   const handleSendMessage = async () => {
-    if (!messageContent.trim() || !student?.profile_id || !profile?.id) return;
+    if (!messageContent.trim() || !student?.profile_id || !profile?.id || !profile?.tenant_id) return;
 
     setMessageLoading(true);
 
     try {
-      // Create or find existing conversation
-      const { data: existingConversation, error: convError } = await supabase
-        .from("conversations")
-        .select("id")
-        .contains("participant_ids", [profile.id, student.profile_id])
-        .single();
+      // Use the get_or_create_conversation RPC to properly create/find conversation
+      const { data: conversationId, error: convError } = await supabase.rpc(
+        "get_or_create_conversation",
+        {
+          p_user_id: profile.id,
+          p_other_user_id: student.profile_id,
+          p_tenant_id: profile.tenant_id,
+        }
+      );
 
-      let conversationId: string;
+      if (convError) {
+        console.error("Conversation error:", convError);
+        throw convError;
+      }
 
-      if (convError || !existingConversation) {
-        // Create new conversation
-        const { data: newConv, error: newConvError } = await supabase
-          .from("conversations")
-          .insert({
-            participant_ids: [profile.id, student.profile_id],
-            tenant_id: profile.tenant_id,
-          })
-          .select("id")
-          .single();
-
-        if (newConvError) throw newConvError;
-        conversationId = newConv.id;
-      } else {
-        conversationId = existingConversation.id;
+      if (!conversationId) {
+        throw new Error("Failed to create conversation");
       }
 
       // Get related document info if applicable
