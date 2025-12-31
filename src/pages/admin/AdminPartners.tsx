@@ -117,6 +117,9 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
   const [programs, setPrograms] = useState<ProgramRow[]>([]);
   const [agentStudentLinks, setAgentStudentLinks] = useState<AgentStudentLinkRow[]>([]);
 
+  // Check if user is admin/staff who should see all universities
+  const isAdminOrStaff = profile?.role === "admin" || profile?.role === "staff";
+
   useEffect(() => {
     let isMounted = true;
 
@@ -135,29 +138,56 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
 
       try {
         setLoading(true);
+        
+        // Build queries - admins/staff see all universities across tenants,
+        // other roles only see their own tenant's data
+        const agentQuery = supabase
+          .from("agents")
+          .select(
+            "id, company_name, active, commission_rate_l1, verification_status, profile_id, tenant_id, profile:profiles(email, full_name)"
+          )
+          .eq("tenant_id", tenantId);
+
+        // Universities: admins/staff see ALL universities (each university has its own tenant)
+        const universityQuery = isAdminOrStaff
+          ? supabase
+              .from("universities")
+              .select("id, name, country, city, partnership_status, active, tenant_id")
+          : supabase
+              .from("universities")
+              .select("id, name, country, city, partnership_status, active, tenant_id")
+              .eq("tenant_id", tenantId);
+
+        // Applications and programs: admins/staff see all to calculate stats correctly
+        const applicationQuery = isAdminOrStaff
+          ? supabase
+              .from("applications")
+              .select("id, status, agent_id, student_id, tenant_id, program:programs(id, university_id, name)")
+          : supabase
+              .from("applications")
+              .select("id, status, agent_id, student_id, tenant_id, program:programs(id, university_id, name)")
+              .eq("tenant_id", tenantId);
+
+        const programQuery = isAdminOrStaff
+          ? supabase
+              .from("programs")
+              .select("id, university_id, active, tenant_id")
+          : supabase
+              .from("programs")
+              .select("id, university_id, active, tenant_id")
+              .eq("tenant_id", tenantId);
+
+        const agentStudentLinksQuery = supabase
+          .from("agent_student_links")
+          .select("agent_id, student_id, status")
+          .eq("tenant_id", tenantId);
+
         const [agentResponse, universityResponse, applicationResponse, programResponse, agentStudentLinksResponse] = await Promise.all([
-          supabase
-            .from("agents")
-            .select(
-              "id, company_name, active, commission_rate_l1, verification_status, profile_id, tenant_id, profile:profiles(email, full_name)"
-            )
-            .eq("tenant_id", tenantId),
-          supabase
-            .from("universities")
-            .select("id, name, country, partnership_status, active, tenant_id")
-            .eq("tenant_id", tenantId),
-          supabase
-            .from("applications")
-            .select("id, status, agent_id, student_id, tenant_id, program:programs(id, university_id, name)")
-            .eq("tenant_id", tenantId),
-          supabase
-            .from("programs")
-            .select("id, university_id, active, tenant_id")
-            .eq("tenant_id", tenantId),
-          supabase
-            .from("agent_student_links")
-            .select("agent_id, student_id, status")
-            .eq("tenant_id", tenantId),
+          agentQuery,
+          universityQuery,
+          applicationQuery,
+          programQuery,
+          agentStudentLinksQuery,
         ]);
 
         if (!isMounted) return;
@@ -192,7 +222,7 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
     return () => {
       isMounted = false;
     };
-  }, [tenantId, toast]);
+  }, [tenantId, toast, isAdminOrStaff]);
 
   const agentCards = useMemo<AgentCard[]>(() => {
     if (agents.length === 0) return [];
