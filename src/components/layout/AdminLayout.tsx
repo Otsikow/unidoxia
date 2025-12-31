@@ -42,7 +42,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import BackButton from "@/components/BackButton";
 
 /* -------------------------------------------------------------------------- */
-/* ✅ Nav Items with Localization Support                                     */
+/* ✅ Nav Items with Localization Support - Organized by Category             */
 /* -------------------------------------------------------------------------- */
 interface NavItem {
   to: string;
@@ -53,150 +53,192 @@ interface NavItem {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 }
 
-const NAV_ITEMS: NavItem[] = [
+interface NavGroup {
+  groupKey: string;
+  groupDefault: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
   {
-    to: "/admin/dashboard",
-    labelKey: "admin.layout.navigation.dashboard.label",
-    descriptionKey: "admin.layout.navigation.dashboard.description",
-    labelDefault: "Dashboard",
-    descriptionDefault: "Key metrics & insights",
-    icon: Gauge,
+    groupKey: "admin.layout.navigation.groups.overview",
+    groupDefault: "Overview",
+    items: [
+      {
+        to: "/admin/dashboard",
+        labelKey: "admin.layout.navigation.dashboard.label",
+        descriptionKey: "admin.layout.navigation.dashboard.description",
+        labelDefault: "Dashboard",
+        descriptionDefault: "Key metrics & insights",
+        icon: Gauge,
+      },
+      {
+        to: "/admin/overview",
+        labelKey: "admin.layout.navigation.overview.label",
+        descriptionKey: "admin.layout.navigation.overview.description",
+        labelDefault: "Executive Summary",
+        descriptionDefault: "High-level overview",
+        icon: BarChart3,
+      },
+    ],
   },
   {
-    to: "/admin/overview",
-    labelKey: "admin.layout.navigation.overview.label",
-    descriptionKey: "admin.layout.navigation.overview.description",
-    labelDefault: "Overview",
-    descriptionDefault: "Executive summary",
-    icon: BarChart3,
+    groupKey: "admin.layout.navigation.groups.studentsAgents",
+    groupDefault: "Students & Agents",
+    items: [
+      {
+        to: "/admin/admissions",
+        labelKey: "admin.layout.navigation.admissions.label",
+        descriptionKey: "admin.layout.navigation.admissions.description",
+        labelDefault: "Applications",
+        descriptionDefault: "Review student documents",
+        icon: ScrollText,
+      },
+      {
+        to: "/admin/agents",
+        labelKey: "admin.layout.navigation.agents.label",
+        descriptionKey: "admin.layout.navigation.agents.description",
+        labelDefault: "Agents",
+        descriptionDefault: "Agency management",
+        icon: Users,
+      },
+    ],
   },
   {
-    to: "/admin/users",
-    labelKey: "admin.layout.navigation.users.label",
-    descriptionKey: "admin.layout.navigation.users.description",
-    labelDefault: "Users",
-    descriptionDefault: "Administrators & roles",
-    icon: Users,
+    groupKey: "admin.layout.navigation.groups.universities",
+    groupDefault: "Universities",
+    items: [
+      {
+        to: "/admin/universities",
+        labelKey: "admin.layout.navigation.universities.label",
+        descriptionKey: "admin.layout.navigation.universities.description",
+        labelDefault: "All Universities",
+        descriptionDefault: "Institution partners",
+        icon: GraduationCap,
+      },
+      {
+        to: "/admin/programs",
+        labelKey: "admin.layout.navigation.programs.label",
+        descriptionKey: "admin.layout.navigation.programs.description",
+        labelDefault: "Courses",
+        descriptionDefault: "Catalogue & intakes",
+        icon: BookOpen,
+      },
+      {
+        to: "/admin/featured-universities",
+        labelKey: "admin.layout.navigation.featuredUniversities.label",
+        descriptionKey: "admin.layout.navigation.featuredUniversities.description",
+        labelDefault: "Featured",
+        descriptionDefault: "Homepage spotlight",
+        icon: BadgeCheck,
+      },
+    ],
   },
   {
-    to: "/admin/admissions",
-    labelKey: "admin.layout.navigation.admissions.label",
-    descriptionKey: "admin.layout.navigation.admissions.description",
-    labelDefault: "Admissions Oversight",
-    descriptionDefault: "Pipeline ownership",
-    icon: ScrollText,
+    groupKey: "admin.layout.navigation.groups.platform",
+    groupDefault: "Platform",
+    items: [
+      {
+        to: "/admin/users",
+        labelKey: "admin.layout.navigation.users.label",
+        descriptionKey: "admin.layout.navigation.users.description",
+        labelDefault: "Users",
+        descriptionDefault: "Administrators & roles",
+        icon: Users,
+      },
+      {
+        to: "/admin/partners",
+        labelKey: "admin.layout.navigation.partners.label",
+        descriptionKey: "admin.layout.navigation.partners.description",
+        labelDefault: "Partners",
+        descriptionDefault: "Agencies & universities",
+        icon: Handshake,
+      },
+      {
+        to: "/admin/payments",
+        labelKey: "admin.layout.navigation.payments.label",
+        descriptionKey: "admin.layout.navigation.payments.description",
+        labelDefault: "Payments",
+        descriptionDefault: "Stripe & payouts",
+        icon: CreditCard,
+      },
+      {
+        to: "/admin/resources",
+        labelKey: "admin.layout.navigation.resources.label",
+        descriptionKey: "admin.layout.navigation.resources.description",
+        labelDefault: "Resources",
+        descriptionDefault: "Content & assets",
+        icon: Library,
+      },
+    ],
   },
   {
-    to: "/admin/payments",
-    labelKey: "admin.layout.navigation.payments.label",
-    descriptionKey: "admin.layout.navigation.payments.description",
-    labelDefault: "Payments",
-    descriptionDefault: "Stripe & payouts",
-    icon: CreditCard,
+    groupKey: "admin.layout.navigation.groups.analytics",
+    groupDefault: "Analytics",
+    items: [
+      {
+        to: "/admin/insights",
+        labelKey: "admin.layout.navigation.insights.label",
+        descriptionKey: "admin.layout.navigation.insights.description",
+        labelDefault: "Insights",
+        descriptionDefault: "AI & analytics",
+        icon: Brain,
+      },
+      {
+        to: "/admin/intelligence",
+        labelKey: "admin.layout.navigation.intelligence.label",
+        descriptionKey: "admin.layout.navigation.intelligence.description",
+        labelDefault: "Zoe Intelligence",
+        descriptionDefault: "AI insights console",
+        icon: Sparkles,
+      },
+      {
+        to: "/admin/usage-monitoring",
+        labelKey: "admin.layout.navigation.usage.label",
+        descriptionKey: "admin.layout.navigation.usage.description",
+        labelDefault: "Usage Monitoring",
+        descriptionDefault: "Live engagement",
+        icon: Activity,
+      },
+    ],
   },
   {
-    to: "/admin/partners",
-    labelKey: "admin.layout.navigation.partners.label",
-    descriptionKey: "admin.layout.navigation.partners.description",
-    labelDefault: "Partners",
-    descriptionDefault: "Agencies & universities",
-    icon: Handshake,
-  },
-  {
-    to: "/admin/universities",
-    labelKey: "admin.layout.navigation.universities.label",
-    descriptionKey: "admin.layout.navigation.universities.description",
-    labelDefault: "Universities",
-    descriptionDefault: "Institution partners",
-    icon: GraduationCap,
-  },
-  {
-    to: "/admin/programs",
-    labelKey: "admin.layout.navigation.programs.label",
-    descriptionKey: "admin.layout.navigation.programs.description",
-    labelDefault: "Courses",
-    descriptionDefault: "Catalogue & intakes",
-    icon: BookOpen,
-  },
-  {
-    to: "/admin/featured-universities",
-    labelKey: "admin.layout.navigation.featuredUniversities.label",
-    descriptionKey: "admin.layout.navigation.featuredUniversities.description",
-    labelDefault: "Featured Universities",
-    descriptionDefault: "Homepage spotlight",
-    icon: BadgeCheck,
-  },
-  {
-    to: "/admin/resources",
-    labelKey: "admin.layout.navigation.resources.label",
-    descriptionKey: "admin.layout.navigation.resources.description",
-    labelDefault: "Resources",
-    descriptionDefault: "Content & assets",
-    icon: Library,
-  },
-  {
-    to: "/admin/agents",
-    labelKey: "admin.layout.navigation.agents.label",
-    descriptionKey: "admin.layout.navigation.agents.description",
-    labelDefault: "Agents",
-    descriptionDefault: "Agency performance",
-    icon: Users,
-  },
-  {
-    to: "/admin/tools",
-    labelKey: "admin.layout.navigation.tools.label",
-    descriptionKey: "admin.layout.navigation.tools.description",
-    labelDefault: "Tools",
-    descriptionDefault: "Automation & QA",
-    icon: Wrench,
-  },
-  {
-    to: "/admin/insights",
-    labelKey: "admin.layout.navigation.insights.label",
-    descriptionKey: "admin.layout.navigation.insights.description",
-    labelDefault: "Insights",
-    descriptionDefault: "AI & analytics",
-    icon: Brain,
-  },
-  {
-    to: "/admin/intelligence",
-    labelKey: "admin.layout.navigation.intelligence.label",
-    descriptionKey: "admin.layout.navigation.intelligence.description",
-    labelDefault: "Zoe Intelligence",
-    descriptionDefault: "AI insights console",
-    icon: Sparkles,
-  },
-  {
-    to: "/admin/settings",
-    labelKey: "admin.layout.navigation.settings.label",
-    descriptionKey: "admin.layout.navigation.settings.description",
-    labelDefault: "Settings",
-    descriptionDefault: "Tenant configuration",
-    icon: Settings,
-  },
-  {
-    to: "/admin/notifications",
-    labelKey: "admin.layout.navigation.notifications.label",
-    descriptionKey: "admin.layout.navigation.notifications.description",
-    labelDefault: "Notifications",
-    descriptionDefault: "System alerts",
-    icon: Bell,
-  },
-  {
-    to: "/admin/logs",
-    labelKey: "admin.layout.navigation.logs.label",
-    descriptionKey: "admin.layout.navigation.logs.description",
-    labelDefault: "Logs",
-    descriptionDefault: "Audit trails",
-    icon: ShieldCheck,
-  },
-  {
-    to: "/admin/usage-monitoring",
-    labelKey: "admin.layout.navigation.usage.label",
-    descriptionKey: "admin.layout.navigation.usage.description",
-    labelDefault: "Usage Monitoring",
-    descriptionDefault: "Live engagement view",
-    icon: Activity,
+    groupKey: "admin.layout.navigation.groups.system",
+    groupDefault: "System",
+    items: [
+      {
+        to: "/admin/settings",
+        labelKey: "admin.layout.navigation.settings.label",
+        descriptionKey: "admin.layout.navigation.settings.description",
+        labelDefault: "Settings",
+        descriptionDefault: "Configuration",
+        icon: Settings,
+      },
+      {
+        to: "/admin/notifications",
+        labelKey: "admin.layout.navigation.notifications.label",
+        descriptionKey: "admin.layout.navigation.notifications.description",
+        labelDefault: "Notifications",
+        descriptionDefault: "System alerts",
+        icon: Bell,
+      },
+      {
+        to: "/admin/logs",
+        labelKey: "admin.layout.navigation.logs.label",
+        descriptionKey: "admin.layout.navigation.logs.description",
+        labelDefault: "Logs",
+        descriptionDefault: "Audit trails",
+        icon: ShieldCheck,
+      },
+      {
+        to: "/admin/tools",
+        labelKey: "admin.layout.navigation.tools.label",
+        descriptionKey: "admin.layout.navigation.tools.description",
+        labelDefault: "Tools",
+        descriptionDefault: "Automation & QA",
+        icon: Wrench,
+      },
+    ],
   },
 ];
 
@@ -293,35 +335,51 @@ const AdminLayout = () => {
         )}
       </div>
       <ScrollArea className="flex-1">
-        <nav className="space-y-1 px-2 py-3 sm:py-4">
-          {NAV_ITEMS.map((item) => {
-            const isActive = location.pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "group block rounded-lg p-2.5 sm:p-3 transition touch-manipulation",
-                  isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
-                )}
-              >
-                <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
-                  <Icon className="h-5 w-5 shrink-0" />
-                  {(!isCollapsed || !showCollapseButton) && (
-                    <div className="flex min-w-0 flex-col">
-                      <span className="text-sm font-medium truncate">
-                        {t(item.labelKey, { defaultValue: item.labelDefault })}
-                      </span>
-                      <span className="text-xs text-muted-foreground group-hover:text-muted-foreground/80 truncate hidden sm:block">
-                        {t(item.descriptionKey, { defaultValue: item.descriptionDefault })}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </NavLink>
-            );
-          })}
+        <nav className="px-2 py-3 sm:py-4">
+          {NAV_GROUPS.map((group, groupIndex) => (
+            <div key={group.groupKey} className={cn(groupIndex > 0 && "mt-4 pt-4 border-t border-border/50")}>
+              {/* Group Label */}
+              {(!isCollapsed || !showCollapseButton) && (
+                <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  {t(group.groupKey, { defaultValue: group.groupDefault })}
+                </p>
+              )}
+              {isCollapsed && showCollapseButton && groupIndex > 0 && (
+                <div className="mb-2 mx-auto w-6 h-px bg-border/50" />
+              )}
+              {/* Group Items */}
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const isActive = location.pathname.startsWith(item.to);
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={cn(
+                        "group block rounded-lg p-2 sm:p-2.5 transition touch-manipulation",
+                        isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                      )}
+                    >
+                      <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
+                        <Icon className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                        {(!isCollapsed || !showCollapseButton) && (
+                          <div className="flex min-w-0 flex-col">
+                            <span className="text-sm font-medium truncate">
+                              {t(item.labelKey, { defaultValue: item.labelDefault })}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground group-hover:text-muted-foreground/80 truncate hidden sm:block">
+                              {t(item.descriptionKey, { defaultValue: item.descriptionDefault })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </ScrollArea>
 
