@@ -57,17 +57,9 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
-  assigned_agent_id: string | null;
   profile: {
     full_name: string | null;
     email: string | null;
-  } | null;
-  assigned_agent: {
-    id: string;
-    company_name: string | null;
-    profile: {
-      full_name: string | null;
-    } | null;
   } | null;
   documents: {
     id: string;
@@ -100,7 +92,7 @@ const AdminStudents = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [documentStatusFilter, setDocumentStatusFilter] = useState<DocumentStatusFilter>(ALL_FILTER);
   const [applicationStatusFilter, setApplicationStatusFilter] = useState<string>(ALL_FILTER);
-  const [agentFilter, setAgentFilter] = useState<string>(ALL_FILTER);
+  
 
   const fetchStudents = useCallback(async () => {
     if (!tenantId) {
@@ -125,7 +117,6 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
-          assigned_agent_id,
           profile:profiles!students_profile_id_fkey (
             full_name,
             email
@@ -151,38 +142,8 @@ const AdminStudents = () => {
         throw studentsError;
       }
 
-      // Fetch agents separately for students that have assigned agents
       const studentsList = studentsData ?? [];
-      const agentIds = [...new Set(studentsList.map(s => s.assigned_agent_id).filter(Boolean))];
-
-      let agentsMap = new Map<string, { id: string; company_name: string | null; profile: { full_name: string | null } | null }>();
-
-      if (agentIds.length > 0) {
-        const { data: agentsData } = await supabase
-          .from("agents")
-          .select(`
-            id,
-            company_name,
-            profile:profiles!agents_profile_id_fkey (
-              full_name
-            )
-          `)
-          .in("id", agentIds);
-
-        if (agentsData) {
-          agentsData.forEach((agent: any) => {
-            agentsMap.set(agent.id, agent);
-          });
-        }
-      }
-
-      // Combine students with their agents
-      const studentsWithAgents = studentsList.map((student: any) => ({
-        ...student,
-        assigned_agent: student.assigned_agent_id ? agentsMap.get(student.assigned_agent_id) ?? null : null,
-      }));
-
-      setStudents(studentsWithAgents as StudentWithDocuments[]);
+      setStudents(studentsList as StudentWithDocuments[]);
     } catch (err) {
       console.error("Failed to load students", err);
       setError("Unable to load students at this time.");
@@ -195,16 +156,7 @@ const AdminStudents = () => {
     void fetchStudents();
   }, [fetchStudents]);
 
-  const uniqueAgents = useMemo(() => {
-    const agents = new Map<string, string>();
-    students.forEach((student) => {
-      if (student.assigned_agent?.id) {
-        const name = student.assigned_agent.profile?.full_name ?? student.assigned_agent.company_name ?? "Unknown Agent";
-        agents.set(student.assigned_agent.id, name);
-      }
-    });
-    return Array.from(agents.entries()).sort((a, b) => a[1].localeCompare(b[1]));
-  }, [students]);
+  // Removed agent-related filter since assigned_agent_id doesn't exist on students
 
   const uniqueApplicationStatuses = useMemo(() => {
     const statuses = new Set<string>();
@@ -232,13 +184,11 @@ const AdminStudents = () => {
     return students.filter((student) => {
       const name = student.preferred_name ?? student.legal_name ?? student.profile?.full_name ?? "";
       const email = student.contact_email ?? student.profile?.email ?? "";
-      const agentName = student.assigned_agent?.profile?.full_name ?? student.assigned_agent?.company_name ?? "";
 
       const searchMatch =
         lowerSearch.length === 0 ||
         name.toLowerCase().includes(lowerSearch) ||
-        email.toLowerCase().includes(lowerSearch) ||
-        agentName.toLowerCase().includes(lowerSearch);
+        email.toLowerCase().includes(lowerSearch);
 
       const docStats = getDocumentStats(student);
       let docStatusMatch = true;
@@ -257,14 +207,9 @@ const AdminStudents = () => {
         applicationMatch = student.applications.some((app) => app.status === applicationStatusFilter);
       }
 
-      let agentMatch = true;
-      if (agentFilter !== ALL_FILTER) {
-        agentMatch = student.assigned_agent?.id === agentFilter;
-      }
-
-      return searchMatch && docStatusMatch && applicationMatch && agentMatch;
+      return searchMatch && docStatusMatch && applicationMatch;
     });
-  }, [students, searchTerm, documentStatusFilter, applicationStatusFilter, agentFilter]);
+  }, [students, searchTerm, documentStatusFilter, applicationStatusFilter]);
 
   const totals = useMemo(() => {
     const total = students.length;
@@ -341,13 +286,7 @@ const AdminStudents = () => {
             {student.current_country ?? "—"}
           </TableCell>
           <TableCell className="min-w-[120px]">
-            {student.assigned_agent ? (
-              <span className="text-sm">
-                {student.assigned_agent.profile?.full_name ?? student.assigned_agent.company_name ?? "Unknown"}
-              </span>
-            ) : (
-              <span className="text-muted-foreground">Direct</span>
-            )}
+            <span className="text-muted-foreground">Direct</span>
           </TableCell>
           <TableCell className="min-w-[140px]">
             <div className="flex flex-wrap gap-1">
@@ -537,22 +476,6 @@ const AdminStudents = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Agent</span>
-              <Select value={agentFilter} onValueChange={setAgentFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All agents" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={ALL_FILTER}>All agents</SelectItem>
-                  {uniqueAgents.map(([id, name]) => (
-                    <SelectItem key={id} value={id}>
-                      {name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button
@@ -562,7 +485,6 @@ const AdminStudents = () => {
                 setSearchTerm("");
                 setDocumentStatusFilter(ALL_FILTER);
                 setApplicationStatusFilter(ALL_FILTER);
-                setAgentFilter(ALL_FILTER);
               }}
             >
               Clear filters

@@ -172,7 +172,6 @@ const AdminStudentDetail = () => {
           current_country,
           nationality,
           created_at,
-          assigned_agent_id,
           profile:profiles!students_profile_id_fkey (
             id,
             full_name,
@@ -201,32 +200,7 @@ const AdminStudentDetail = () => {
         throw studentError;
       }
 
-      // Fetch agent info separately if there's an assigned agent
-      let agentData = null;
-      if (studentData?.assigned_agent_id) {
-        const { data: agentResult } = await supabase
-          .from("agents")
-          .select(`
-            id,
-            company_name,
-            profile:profiles!agents_profile_id_fkey (
-              full_name,
-              email
-            )
-          `)
-          .eq("id", studentData.assigned_agent_id)
-          .single();
-
-        agentData = agentResult;
-      }
-
-      // Combine student with agent
-      const studentWithAgent = {
-        ...studentData,
-        assigned_agent: agentData,
-      };
-
-      setStudent(studentWithAgent as StudentProfile);
+      setStudent(studentData as unknown as StudentProfile);
 
       // Fetch student documents
       const { data: docsData, error: docsError } = await supabase
@@ -373,10 +347,11 @@ const AdminStudentDetail = () => {
 
         await supabase.from("notifications").insert({
           user_id: student.profile_id,
+          tenant_id: profile.tenant_id,
           title: notificationTitle,
-          message: notificationMessage,
+          content: notificationMessage,
           type: actionType === "approve" ? "document_approved" : "document_rejected",
-          data: {
+          metadata: {
             document_id: selectedDocument.id,
             document_type: selectedDocument.document_type,
             action: actionType,
@@ -445,11 +420,12 @@ const AdminStudentDetail = () => {
         }
       }
 
-      // Send message
-      const { error: msgError } = await supabase.from("messages").insert({
+      // Send message using conversation_messages table
+      const { error: msgError } = await supabase.from("conversation_messages").insert({
         conversation_id: conversationId,
         sender_id: profile.id,
         content: messageBody,
+        message_type: "text",
       });
 
       if (msgError) throw msgError;
