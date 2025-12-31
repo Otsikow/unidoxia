@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -40,7 +40,9 @@ import {
   FileText,
   GraduationCap,
   Loader2,
+  Maximize2,
   MessageSquare,
+  Minimize2,
   Plane,
   RefreshCw,
   Send,
@@ -179,6 +181,8 @@ const AdminStudentDetail = () => {
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // Message dialog state
   const [messageDialogOpen, setMessageDialogOpen] = useState<boolean>(false);
@@ -323,7 +327,44 @@ const AdminStudentDetail = () => {
   const closePreview = () => {
     setPreviewDoc(null);
     setPreviewUrl(null);
+    // Exit fullscreen if active when closing preview
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    }
+    setIsFullscreen(false);
   };
+
+  const toggleFullscreen = async () => {
+    if (!previewContainerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await previewContainerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (err) {
+      console.error("Fullscreen toggle failed:", err);
+      // Fallback: open in new tab for browsers that don't support fullscreen
+      if (previewUrl) {
+        window.open(previewUrl, "_blank");
+      }
+    }
+  };
+
+  // Listen for fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   const handleDownloadDocument = async (doc: StudentDocument) => {
     try {
@@ -921,16 +962,34 @@ const AdminStudentDetail = () => {
 
       {/* Document Preview Dialog */}
       <Dialog open={Boolean(previewDoc)} onOpenChange={(open) => !open && closePreview()}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>
-              {previewDoc && getDocumentTypeLabel(previewDoc.document_type)}
-            </DialogTitle>
-            <DialogDescription>
-              {previewDoc?.file_name}
-            </DialogDescription>
+        <DialogContent className={`${isFullscreen ? "max-w-none w-screen h-screen m-0 rounded-none" : "max-w-4xl max-h-[90vh]"}`}>
+          <DialogHeader className="flex flex-row items-start justify-between space-y-0">
+            <div className="space-y-1.5">
+              <DialogTitle>
+                {previewDoc && getDocumentTypeLabel(previewDoc.document_type)}
+              </DialogTitle>
+              <DialogDescription>
+                {previewDoc?.file_name}
+              </DialogDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => void toggleFullscreen()}
+              title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            >
+              {isFullscreen ? (
+                <Minimize2 className="h-4 w-4" />
+              ) : (
+                <Maximize2 className="h-4 w-4" />
+              )}
+            </Button>
           </DialogHeader>
-          <div className="flex-1 min-h-[60vh] bg-muted rounded-lg overflow-hidden">
+          <div
+            ref={previewContainerRef}
+            className={`flex-1 bg-muted rounded-lg overflow-hidden ${isFullscreen ? "min-h-[calc(100vh-180px)]" : "min-h-[60vh]"}`}
+          >
             {previewLoading ? (
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -945,7 +1004,7 @@ const AdminStudentDetail = () => {
               ) : previewDoc.mime_type === "application/pdf" ? (
                 <iframe
                   src={previewUrl}
-                  className="w-full h-[60vh]"
+                  className={`w-full ${isFullscreen ? "h-[calc(100vh-180px)]" : "h-[60vh]"}`}
                   title={previewDoc.file_name}
                 />
               ) : (
@@ -963,6 +1022,22 @@ const AdminStudentDetail = () => {
           <DialogFooter>
             <Button variant="outline" onClick={closePreview}>
               Close
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => void toggleFullscreen()}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="h-4 w-4 mr-2" />
+                  Exit Fullscreen
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="h-4 w-4 mr-2" />
+                  Fullscreen
+                </>
+              )}
             </Button>
             {previewDoc && (
               <Button onClick={() => void handleDownloadDocument(previewDoc)}>
