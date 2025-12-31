@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
     const { data: document } = await adminClient
       .from("student_documents")
       .select(
-        "storage_path, student_id, status, university_access_approved"
+        "storage_path, student_id, verified_status, admin_review_status, university_access_approved"
       )
       .or(
         documentId
@@ -99,21 +99,36 @@ Deno.serve(async (req) => {
     const {
       storage_path,
       student_id,
-      status,
+      verified_status,
+      admin_review_status,
       university_access_approved,
     } = document;
 
-    const restrictedStatuses = [
+    // Admin-only statuses that restrict access for non-admins
+    const restrictedAdminStatuses = [
       "awaiting_admin_review",
       "admin_rejected",
     ];
 
+    // Check if document is restricted based on admin_review_status
     if (
-      restrictedStatuses.includes(status) &&
+      admin_review_status &&
+      restrictedAdminStatuses.includes(admin_review_status) &&
       profile.role !== "admin"
     ) {
       return new Response(
-        JSON.stringify({ error: "Document not available" }),
+        JSON.stringify({ error: "Document not available - awaiting admin review" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Also check verified_status for rejected documents
+    if (
+      verified_status === "rejected" &&
+      profile.role !== "admin"
+    ) {
+      return new Response(
+        JSON.stringify({ error: "Document has been rejected" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
