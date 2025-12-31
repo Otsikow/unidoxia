@@ -6,11 +6,11 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  Globe2,
-  GraduationCap,
+  DollarSign,
+  Globe,
+  Users,
 } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,82 +20,32 @@ import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 
 /* -------------------------- STATIC DATA -------------------------- */
 
-const portraits = [
+const benefits = [
   {
-    name: "Kwame Boateng",
-    title: "Agency Director, Accra",
-    image:
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80",
+    icon: Globe,
+    title: "Global University Network",
+    description: "Access 500+ verified programs across top destinations worldwide.",
   },
   {
-    name: "Lerato Moyo",
-    title: "Lead Recruiter, Nairobi",
-    image:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
-  },
-];
-
-const featureHighlights = [
-  {
-    title: "Verified programs, ready to promote",
-    description:
-      "Curated university partnerships across top destinations with compliance-ready program sheets and marketing kits.",
+    icon: DollarSign,
+    title: "High Commissions",
+    description: "Earn competitive rates with transparent tracking and timely payouts.",
   },
   {
-    title: "Powerful agent workspace",
-    description:
-      "Import leads, track documents, collaborate with universities, and launch applications from a single dashboard.",
-  },
-  {
-    title: "High commissions, transparent payouts",
-    description:
-      "Earn more with performance tiers, real-time commission tracking, and on-time settlements every intake.",
+    icon: Users,
+    title: "Powerful Tools",
+    description: "Manage leads, track applications, and collaborate from one dashboard.",
   },
 ];
 
-const quickBenefits = [
-  "Personalized onboarding with live support",
-  "Visa-ready documentation checklists",
-  "Global student pipeline analytics",
+const highlights = [
+  "Verified programs ready to promote",
+  "Real-time commission tracking",
+  "Dedicated partner support",
 ];
-
-const onboardingSteps = [
-  {
-    title: "Orientation",
-    description:
-      "Meet verified agents and review the premium workspace overview.",
-    status: "current" as const,
-  },
-  {
-    title: "Earnings setup",
-    description:
-      "Activate commissions, compliance-ready kits, and payout preferences.",
-    status: "next" as const,
-  },
-  {
-    title: "Pipeline launch",
-    description:
-      "Import students, match programs, and share pre-approved options.",
-    status: "upcoming" as const,
-  },
-  {
-    title: "Go live",
-    description:
-      "Track conversions, monitor visas, and report outcomes confidently.",
-    status: "upcoming" as const,
-  },
-];
-
-/* -------------------------- UI ICON ORB -------------------------- */
-
-const IconOrb = ({ icon: Icon }: { icon: typeof Globe2 }) => (
-  <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-primary/10 via-primary/5 to-primary/30 shadow-lg shadow-primary/10 border border-primary/20 flex items-center justify-center text-primary">
-    <Icon className="h-5 w-5" />
-  </div>
-);
 
 /* =====================================================================
-   AGENT ONBOARDING — PROFESSIONAL FLOW
+   AGENT ONBOARDING — WELCOME SCREEN
    ===================================================================== */
 
 const AgentOnboardingWelcome = () => {
@@ -109,9 +59,7 @@ const AgentOnboardingWelcome = () => {
   const nextTarget = nextParam
     ? decodeURIComponent(nextParam)
     : "/dashboard/leads";
-  const earningsHref = `/agents/earnings?next=${encodeURIComponent(
-    nextTarget
-  )}`;
+  const earningsHref = `/agents/earnings?next=${encodeURIComponent(nextTarget)}`;
 
   const handleBack = useCallback(() => {
     if (window.history.length > 1) {
@@ -152,8 +100,7 @@ const AgentOnboardingWelcome = () => {
 
       toast({
         title: "Onboarding complete",
-        description:
-          "Welcome aboard! Redirecting you to your dashboard.",
+        description: "Welcome aboard! Redirecting you to your dashboard.",
       });
 
       navigate("/dashboard/leads");
@@ -177,132 +124,113 @@ const AgentOnboardingWelcome = () => {
   ]);
 
   return (
-    <div className="relative min-h-screen bg-white text-slate-900 overflow-hidden">
-      {/* Ambient background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute top-10 right-10 w-80 h-80 rounded-full bg-gradient-to-br from-primary/15 via-primary/5 to-indigo-100 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-gradient-to-tr from-sky-50 via-primary/5 to-white blur-3xl" />
-      </div>
-
-      <div className="container mx-auto px-4 md:px-8 py-10 md:py-14 relative space-y-10">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-subtle">
+      <div className="container mx-auto max-w-4xl px-4 py-8 md:py-12">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between mb-8">
           <Button
             variant="ghost"
-            className="gap-2 text-slate-600"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-foreground"
             onClick={handleBack}
           >
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
 
-          <Button size="lg" className="gap-2" asChild>
+          <Button size="default" className="gap-2" asChild>
             <Link to={earningsHref}>
-              Next
+              Continue
               <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>
 
+        {/* Progress */}
         <OnboardingProgress
           currentStep={1}
-          totalSteps={4}
-          stepCompletion={0.55}
-          label="Step into the UniDoxia agent experience"
+          totalSteps={2}
+          stepCompletion={0.5}
+          label="Welcome to UniDoxia"
         />
 
-        {/* Content */}
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10">
-          {/* LEFT */}
-          <div className="space-y-8">
-            <Badge variant="outline" className="text-primary">
-              Premium Agent Onboarding
-            </Badge>
-
-            <h1 className="text-4xl md:text-5xl font-semibold">
-              Built for serious recruitment partners
-            </h1>
-
-            <p className="text-lg text-slate-600 max-w-2xl">
-              Everything you need to recruit, convert, and earn — without
-              chaos, guesswork, or hidden rules.
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              {quickBenefits.map((benefit) => (
-                <span
-                  key={benefit}
-                  className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm"
-                >
-                  <CheckCircle2 className="h-4 w-4 text-primary" />
-                  {benefit}
-                </span>
-              ))}
+        {/* Main Content */}
+        <div className="space-y-8">
+          {/* Hero Section */}
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+              <Users className="h-4 w-4" />
+              Agent Partner Program
             </div>
+            
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+              Grow Your Recruitment Business
+            </h1>
+            
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Join thousands of agents earning commissions by connecting students 
+              with world-class universities. Simple tools, transparent payouts.
+            </p>
+          </div>
 
+          {/* Benefits Grid */}
+          <div className="grid md:grid-cols-3 gap-4">
+            {benefits.map((benefit) => {
+              const Icon = benefit.icon;
+              return (
+                <Card key={benefit.title} className="border-border/50">
+                  <CardContent className="p-6 space-y-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground">{benefit.title}</h3>
+                    <p className="text-sm text-muted-foreground">{benefit.description}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Quick Highlights */}
+          <Card className="border-border/50">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
+                <p className="font-medium text-foreground shrink-0">Why agents choose us:</p>
+                <div className="flex flex-wrap gap-3">
+                  {highlights.map((highlight) => (
+                    <span
+                      key={highlight}
+                      className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm text-foreground"
+                    >
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      {highlight}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* CTA Section */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <Button size="lg" className="w-full sm:w-auto gap-2" asChild>
+              <Link to={earningsHref}>
+                See How You Earn
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            
             {profile?.role === "agent" && (
               <Button
                 size="lg"
-                variant="secondary"
+                variant="outline"
+                className="w-full sm:w-auto"
                 onClick={markOnboarded}
                 disabled={markingOnboarded}
               >
-                {markingOnboarded
-                  ? "Saving…"
-                  : "Finish onboarding"}
+                {markingOnboarded ? "Saving…" : "Skip to Dashboard"}
               </Button>
             )}
-          </div>
-
-          {/* RIGHT */}
-          <div className="space-y-6">
-            <Card className="shadow-lg">
-              <CardContent className="p-6 space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold">Why UniDoxia</h3>
-                  <IconOrb icon={Globe2} />
-                </div>
-
-                <div className="grid sm:grid-cols-3 gap-3">
-                  {featureHighlights.map((f) => (
-                    <div
-                      key={f.title}
-                      className="rounded-xl border p-4 space-y-2"
-                    >
-                      <GraduationCap className="h-5 w-5 text-primary" />
-                      <p className="font-medium">{f.title}</p>
-                      <p className="text-sm text-slate-600">
-                        {f.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6 grid sm:grid-cols-2 gap-4">
-                {portraits.map((p) => (
-                  <div
-                    key={p.name}
-                    className="rounded-xl overflow-hidden border"
-                  >
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="h-48 w-full object-cover"
-                    />
-                    <div className="p-3">
-                      <p className="font-semibold">{p.name}</p>
-                      <p className="text-sm text-slate-600">
-                        {p.title}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
