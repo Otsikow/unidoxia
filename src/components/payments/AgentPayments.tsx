@@ -140,6 +140,7 @@ export function AgentPayments() {
     }, {} as Record<string, string>),
   );
   const [savingDetails, setSavingDetails] = useState(false);
+  const [agentNotFound, setAgentNotFound] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -153,18 +154,25 @@ export function AgentPayments() {
   }, [user]);
 
   const fetchCommissions = async () => {
+    // Reset state
+    setAgentNotFound(false);
+    
     try {
       setLoading(true);
 
-      // Get agent ID first
+      // Get agent ID first using maybeSingle to handle non-agent users
       const { data: agentData, error: agentError } = await supabase
         .from('agents')
         .select('id')
         .eq('profile_id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (agentError) {
-        console.error('Error fetching agent:', agentError);
+      // Handle case where user is not an agent
+      if (!agentData) {
+        if (agentError && agentError.code !== 'PGRST116') {
+          console.error('Error fetching agent:', agentError);
+        }
+        setAgentNotFound(true);
         setLoading(false);
         return;
       }
@@ -217,10 +225,10 @@ export function AgentPayments() {
         .from('agents')
         .select('id')
         .eq('profile_id', user?.id)
-        .single();
+        .maybeSingle();
 
-      if (agentError) {
-        throw agentError;
+      if (agentError || !agentData) {
+        throw agentError || new Error('Agent not found');
       }
 
       // Get all approved but unpaid commissions
@@ -392,6 +400,35 @@ export function AgentPayments() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingState message="Loading commissions..." />
+      </div>
+    );
+  }
+
+  // If user is not an agent, show appropriate message
+  if (agentNotFound) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Agent Payments
+            </CardTitle>
+            <CardDescription>
+              Track and manage your commission payments
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center space-y-2">
+              <p className="text-muted-foreground">
+                Payment tracking is available for registered agents.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                If you believe this is an error, please contact support.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
