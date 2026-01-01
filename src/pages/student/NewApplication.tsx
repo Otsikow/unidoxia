@@ -1279,6 +1279,18 @@ export default function NewApplication() {
         logError(draftCleanupError, 'NewApplication.clearDraftAfterSubmit');
       }
 
+        // Send email notification (submission)
+        try {
+          await supabase.functions.invoke('send-application-update', {
+            body: {
+              applicationId: createdApplication.id,
+              type: 'submitted'
+            }
+          });
+        } catch (emailError) {
+          console.error("Failed to send submission email:", emailError);
+        }
+
         // Show success modal
         setShowSuccessModal(true);
     } catch (error) {
