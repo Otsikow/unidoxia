@@ -560,7 +560,7 @@ export default function NewApplication() {
           email: studentData.contact_email || profile?.email || studentData.profile?.email || '',
           phone: studentData.contact_phone || profile?.phone || studentData.profile?.phone || '',
           whatsappNumber:
-            studentData.whatsapp_number ||
+            (studentData.address as any)?.whatsapp ||
             studentData.contact_phone ||
             profile?.phone ||
             studentData.profile?.phone ||
@@ -1080,12 +1080,7 @@ export default function NewApplication() {
           },
         );
 
-        if (!rpcResult.error && whatsappNumber) {
-          await supabase
-            .from('students')
-            .update({ whatsapp_number: whatsappNumber || null })
-            .eq('id', studentId);
-        }
+        // WhatsApp number is stored in address JSON, no separate column update needed
 
         // If RPC exists and succeeded, we're done.
         if (!rpcResult.error) return;

@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { DirectoryProfile } from "./directory";
 import { DEFAULT_TENANT_ID } from "./data";
+import type { Json } from "@/integrations/supabase/types";
 
 export type AudienceType = "universities" | "students" | "agents" | "all";
 
@@ -97,15 +98,15 @@ export async function createAudienceConversation({
 }: AudienceConversationOptions): Promise<string> {
   const uniqueParticipantIds = Array.from(new Set([...participantIds, createdBy]));
   const createdAt = new Date().toISOString();
-  const baseMetadata = {
+  const baseMetadata: Json = {
     audience,
     scope,
-    subject,
+    subject: subject ?? null,
     delivery: {
-      targetCount,
+      targetCount: targetCount ?? 0,
       deliveredCount: 0,
       readCount: 0,
-      status: "pending" as BroadcastDeliverySnapshot["status"],
+      status: "pending",
       sentAt: createdAt,
     },
     auditTrail: [
@@ -115,10 +116,10 @@ export async function createAudienceConversation({
         at: createdAt,
         scope,
         audience,
-        targetCount,
+        targetCount: targetCount ?? 0,
       },
     ],
-  } satisfies Record<string, unknown>;
+  };
 
   const { data: conversation, error: conversationError } = await supabase
     .from("conversations")
@@ -127,7 +128,7 @@ export async function createAudienceConversation({
       created_by: createdBy,
       is_group: true,
       type: "broadcast",
-      name: subject || `${audienceLabel[audience]} broadcast`,
+      title: subject || `${audienceLabel[audience]} broadcast`,
       metadata: baseMetadata,
     })
     .select("id")
@@ -160,7 +161,7 @@ export async function sendAudienceMessage(
   options: BroadcastSendOptions
 ) {
   const sentAt = new Date().toISOString();
-  const deliverySnapshot: BroadcastDeliverySnapshot = {
+  const deliverySnapshot = {
     status: "delivered",
     sentAt,
     deliveredAt: sentAt,
@@ -169,17 +170,19 @@ export async function sendAudienceMessage(
     readCount: 0,
   };
 
+  const messageMetadata: Json = {
+    audience: options.audience,
+    scope: options.scope,
+    delivery: deliverySnapshot,
+  };
+
   const { error: messageError } = await supabase.from("conversation_messages").insert({
     conversation_id: conversationId,
     sender_id: senderId,
     content,
     message_type: "text",
     attachments: [],
-    metadata: {
-      audience: options.audience,
-      scope: options.scope,
-      delivery: deliverySnapshot,
-    },
+    metadata: messageMetadata,
   });
 
   if (messageError) {
@@ -197,17 +200,19 @@ export async function sendAudienceMessage(
   }
 
   const metadata = (existing?.metadata as Record<string, unknown> | null) ?? {};
-  const auditTrail = Array.isArray((metadata as { auditTrail?: unknown }).auditTrail)
-    ? ((metadata as { auditTrail: unknown[] }).auditTrail as Record<string, unknown>[])
+  const existingAuditTrail = metadata.auditTrail;
+  const auditTrail: Json[] = Array.isArray(existingAuditTrail) 
+    ? (existingAuditTrail as Json[])
     : [];
 
-  const updatedMetadata = {
-    ...metadata,
+  const existingDelivery = metadata.delivery as Record<string, unknown> | undefined;
+
+  const updatedMetadata: Json = {
     audience: options.audience,
     scope: options.scope,
-    subject: options.subject ?? (metadata as { subject?: string }).subject,
+    subject: options.subject ?? (metadata.subject as string | undefined) ?? null,
     delivery: {
-      ...((metadata as { delivery?: Record<string, unknown> }).delivery ?? {}),
+      ...(existingDelivery ?? {}),
       ...deliverySnapshot,
       lastUpdated: sentAt,
     },
@@ -222,7 +227,7 @@ export async function sendAudienceMessage(
         scope: options.scope,
       },
     ],
-  } satisfies Record<string, unknown>;
+  };
 
   const { error: updateError } = await supabase
     .from("conversations")
@@ -243,7 +248,7 @@ export async function sendAudienceMessage(
       audience: options.audience,
       scope: options.scope,
       targetCount: options.targetCount,
-      subject: options.subject,
+      subject: options.subject ?? null,
       sentAt,
     },
   });
