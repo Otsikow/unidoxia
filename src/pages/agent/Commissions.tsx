@@ -2,6 +2,7 @@ import BackButton from "@/components/BackButton";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import CommissionTracker from "@/components/agent/CommissionTracker";
 import CommissionManagement from "@/components/commission/CommissionManagement";
+import AgentAnalyticsDashboard from "@/components/agent/AgentAnalyticsDashboard";
 
 export default function AgentCommissionsPage() {
   return (
@@ -17,6 +18,13 @@ export default function AgentCommissionsPage() {
         </div>
 
         <CommissionTracker />
+
+        {/* Analytics Dashboard */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold tracking-tight">Analytics & Insights</h2>
+          <AgentAnalyticsDashboard />
+        </section>
+
         <CommissionManagement />
       </div>
     </DashboardLayout>
