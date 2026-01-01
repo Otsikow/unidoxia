@@ -2989,6 +2989,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_admin_student_review_bundle: {
+        Args: { p_student_id: string }
+        Returns: Json
+      }
       get_messaging_contacts: {
         Args: { p_limit?: number; p_search?: string }
         Returns: {
