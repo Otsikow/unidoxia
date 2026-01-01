@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -202,11 +203,14 @@ const AdminStudentDetail = () => {
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
-  // Message dialog state
+  // Message dialog state (legacy - now using chat panel)
   const [messageDialogOpen, setMessageDialogOpen] = useState<boolean>(false);
   const [messageContent, setMessageContent] = useState<string>("");
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
   const [relatedDocumentId, setRelatedDocumentId] = useState<string | null>(null);
+
+  // Chat panel state
+  const [chatPanelOpen, setChatPanelOpen] = useState<boolean>(false);
 
   // Document tab state
   const [activeDocTab, setActiveDocTab] = useState<string>("pending");
@@ -631,9 +635,8 @@ const AdminStudentDetail = () => {
   /* ------------------------------------------------------------------------ */
 
   const openMessageDialog = (docId?: string) => {
-    setRelatedDocumentId(docId ?? null);
-    setMessageContent("");
-    setMessageDialogOpen(true);
+    // Open the full chat panel instead of the simple modal
+    setChatPanelOpen(true);
   };
 
   const handleSendMessage = async () => {
@@ -1352,45 +1355,18 @@ const AdminStudentDetail = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Message Dialog */}
-      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Message Student</DialogTitle>
-            <DialogDescription>
-              Send a message to {getStudentName()} about their documents.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {relatedDocumentId && (
-              <div className="rounded-lg border p-3 bg-muted/50">
-                <p className="text-sm text-muted-foreground">
-                  Regarding: {getDocumentTypeLabel(documents.find((d) => d.id === relatedDocumentId)?.document_type ?? "")}
-                </p>
-              </div>
-            )}
-            <Textarea
-              placeholder="Type your message here..."
-              value={messageContent}
-              onChange={(e) => setMessageContent(e.target.value)}
-              rows={6}
+      {/* Chat Panel */}
+      {chatPanelOpen && student?.profile_id && (
+        <Dialog open={chatPanelOpen} onOpenChange={setChatPanelOpen}>
+          <DialogContent className="sm:max-w-2xl p-0 gap-0">
+            <AdminStudentChat
+              studentProfileId={student.profile_id}
+              studentName={getStudentName()}
+              onClose={() => setChatPanelOpen(false)}
             />
-          </div>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={() => setMessageDialogOpen(false)} disabled={messageLoading}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => void handleSendMessage()}
-              disabled={messageLoading || !messageContent.trim()}
-            >
-              {messageLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              <Send className="h-4 w-4 mr-2" />
-              Send Message
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
