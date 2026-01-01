@@ -501,12 +501,12 @@ const AdminStudentDetail = () => {
                 )}
               </div>
               <Separator />
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Email</span>
                 {studentEmail ? (
                   <a 
                     href={`mailto:${studentEmail}`}
-                    className="font-medium text-primary hover:underline truncate max-w-[180px]"
+                    className="font-medium text-primary hover:underline cursor-pointer"
                     title={studentEmail}
                   >
                     {studentEmail}
