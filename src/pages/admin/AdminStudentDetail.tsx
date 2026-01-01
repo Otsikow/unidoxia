@@ -109,7 +109,7 @@ interface StudentProfile {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  whatsapp_number: string | null;
+  whatsapp_number: string | null; // derived from address JSON (no dedicated column)
   current_country: string | null;
   nationality: string | null;
   date_of_birth: string | null;
@@ -117,6 +117,7 @@ interface StudentProfile {
   passport_expiry: string | null;
   visa_history_json: any;
   education_history: any;
+  address: any;
   created_at: string | null;
   profile: {
     id: string;
@@ -247,7 +248,7 @@ const AdminStudentDetail = () => {
           preferred_name,
           contact_email,
           contact_phone,
-          whatsapp_number,
+          address,
           current_country,
           nationality,
           date_of_birth,
@@ -283,8 +284,14 @@ const AdminStudentDetail = () => {
         .single();
 
       if (studentError) throw studentError;
-      setStudent(studentData as unknown as StudentProfile);
 
+      const derivedWhatsapp =
+        (studentData as any)?.address?.whatsapp || (studentData as any)?.contact_phone || null;
+
+      setStudent({
+        ...(studentData as any),
+        whatsapp_number: derivedWhatsapp,
+      } as StudentProfile);
       // Fetch student documents
       const { data: docsData, error: docsError } = await supabase
         .from("student_documents")
