@@ -1358,7 +1358,7 @@ const AdminStudentDetail = () => {
       {/* Chat Panel */}
       {chatPanelOpen && student?.profile_id && (
         <Dialog open={chatPanelOpen} onOpenChange={setChatPanelOpen}>
-          <DialogContent className="sm:max-w-2xl p-0 gap-0">
+          <DialogContent hideClose className="sm:max-w-2xl p-0 gap-0">
             <AdminStudentChat
               studentProfileId={student.profile_id}
               studentName={getStudentName()}
