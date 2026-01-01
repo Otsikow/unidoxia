@@ -188,6 +188,12 @@ const parseDbError = (error: { message?: string; code?: string }): string => {
   if (message.includes("messaging not permitted")) {
     return "You don't have permission to message this user.";
   }
+  if (message.includes("students cannot message other students")) {
+    return "Students cannot message other students.";
+  }
+  if (message.includes("agents cannot message other agents")) {
+    return "Agents cannot message other agents.";
+  }
   if (message.includes("not authenticated")) {
     return "Please sign in to send messages.";
   }
