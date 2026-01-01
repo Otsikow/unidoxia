@@ -786,7 +786,66 @@ const AdminStudentDetail = () => {
                 </a>
               </Button>
             )}
-            <Button onClick={() => setPreviewDoc(null)}>Close</Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                if (!previewDoc || !profile?.id) return;
+                setReviewLoading(true);
+                try {
+                  const { error } = await supabase
+                    .from("student_documents")
+                    .update({
+                      admin_review_status: "admin_rejected",
+                      admin_reviewed_by: profile.id,
+                      admin_reviewed_at: new Date().toISOString(),
+                    })
+                    .eq("id", previewDoc.id);
+                  if (error) throw error;
+                  toast({ title: "Document rejected", description: "The document has been rejected." });
+                  setPreviewDoc(null);
+                  loadData();
+                } catch (e) {
+                  console.error(e);
+                  toast({ title: "Error", description: "Failed to reject document", variant: "destructive" });
+                } finally {
+                  setReviewLoading(false);
+                }
+              }}
+              disabled={reviewLoading}
+            >
+              {reviewLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <XCircle className="h-4 w-4 mr-2" />}
+              Reject
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!previewDoc || !profile?.id) return;
+                setReviewLoading(true);
+                try {
+                  const { error } = await supabase
+                    .from("student_documents")
+                    .update({
+                      admin_review_status: "ready_for_university_review",
+                      admin_reviewed_by: profile.id,
+                      admin_reviewed_at: new Date().toISOString(),
+                    })
+                    .eq("id", previewDoc.id);
+                  if (error) throw error;
+                  toast({ title: "Document approved", description: "The document has been approved." });
+                  setPreviewDoc(null);
+                  loadData();
+                } catch (e) {
+                  console.error(e);
+                  toast({ title: "Error", description: "Failed to approve document", variant: "destructive" });
+                } finally {
+                  setReviewLoading(false);
+                }
+              }}
+              disabled={reviewLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {reviewLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+              Approve
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
