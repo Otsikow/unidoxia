@@ -16,6 +16,7 @@ import {
   HelpCircle,
   Linkedin,
   Facebook,
+  Instagram,
   CreditCard,
   DollarSign,
 } from "lucide-react";
@@ -120,7 +121,7 @@ export function AppFooter() {
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("layout.footer.followUsSubtitle", {
-                  defaultValue: "Follow us on X, LinkedIn, Facebook, and our WhatsApp channel.",
+                  defaultValue: "Follow us on X, LinkedIn, Facebook, Instagram, and our WhatsApp channel.",
                 })}
               </p>
               <div className="mt-3 flex items-center gap-2">
@@ -155,6 +156,17 @@ export function AppFooter() {
                     title={t("layout.footer.social.facebookShort", { defaultValue: "Facebook" })}
                   >
                     <Facebook className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <a
+                    href="https://www.instagram.com/unidoxia/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("layout.footer.social.instagram", { defaultValue: "Follow us on Instagram" })}
+                    title={t("layout.footer.social.instagramShort", { defaultValue: "Instagram" })}
+                  >
+                    <Instagram className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
