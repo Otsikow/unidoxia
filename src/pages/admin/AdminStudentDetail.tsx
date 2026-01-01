@@ -90,16 +90,6 @@ interface EducationRecord {
   grade_scale: string | null;
 }
 
-interface ChatMessage {
-  id: string;
-  sender_id: string;
-  content: string;
-  created_at: string;
-  sender?: {
-    full_name: string | null;
-  };
-}
-
 interface StudentProfile {
   id: string;
   profile_id: string;
@@ -107,7 +97,7 @@ interface StudentProfile {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  whatsapp_number: string | null;
+  address: Record<string, any> | null;
   nationality: string | null;
   current_country: string | null;
   date_of_birth: string | null;
@@ -142,10 +132,27 @@ const DOCUMENT_LABELS: Record<string, string> = {
   transcript: "Academic Transcript",
   sop: "Statement of Purpose",
   cv: "CV / Resume",
+  degree_certificate: "Degree Certificate",
+  recommendation_letter: "Recommendation Letter",
+  english_proficiency: "English Proficiency",
+  financial_document: "Financial Document",
 };
+
+const REQUIRED_DOCUMENTS = [
+  "passport",
+  "transcript",
+  "sop",
+  "cv",
+];
 
 const getDocLabel = (t: string) =>
   DOCUMENT_LABELS[t] ?? t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 /* -------------------------------------------------------------------------- */
 /*                               Component                                    */
@@ -170,20 +177,41 @@ const AdminStudentDetail = () => {
   const [fullscreen, setFullscreen] = useState(false);
 
   const [chatOpen, setChatOpen] = useState(false);
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
+  const [reviewDoc, setReviewDoc] = useState<StudentDocument | null>(null);
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  const [docTab, setDocTab] = useState("pending");
 
   /* ------------------------------ Data Load ------------------------------ */
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
 
       const { data: studentData, error: studentErr } = await supabase
         .from("students")
         .select(`
-          *,
-          profile:profiles (*),
+          id,
+          profile_id,
+          legal_name,
+          preferred_name,
+          contact_email,
+          contact_phone,
+          address,
+          nationality,
+          current_country,
+          date_of_birth,
+          passport_number,
+          passport_expiry,
+          visa_history_json,
+          created_at,
+          profile:profiles (
+            id,
+            full_name,
+            email
+          ),
           applications (
             id,
             status,
@@ -194,9 +222,13 @@ const AdminStudentDetail = () => {
           )
         `)
         .eq("id", studentId)
-        .single();
+        .maybeSingle();
 
       if (studentErr) throw studentErr;
+      if (!studentData) {
+        setError("Student not found");
+        return;
+      }
 
       setStudent(studentData as StudentProfile);
 
@@ -226,6 +258,45 @@ const AdminStudentDetail = () => {
     loadData();
   }, [loadData]);
 
+  /* ------------------------------ Document Stats ------------------------------ */
+
+  const documentStats = useMemo(() => {
+    const pending = documents.filter(
+      (d) => !d.admin_review_status || d.admin_review_status === "pending"
+    ).length;
+    const approved = documents.filter(
+      (d) => d.admin_review_status === "ready_for_university_review" || d.admin_review_status === "approved"
+    ).length;
+    const rejected = documents.filter(
+      (d) => d.admin_review_status === "rejected" || d.admin_review_status === "admin_rejected"
+    ).length;
+    return { pending, approved, rejected };
+  }, [documents]);
+
+  const missingDocuments = useMemo(() => {
+    const uploadedTypes = documents.map((d) => d.document_type.toLowerCase());
+    return REQUIRED_DOCUMENTS.filter((req) => !uploadedTypes.includes(req));
+  }, [documents]);
+
+  const filteredDocuments = useMemo(() => {
+    switch (docTab) {
+      case "pending":
+        return documents.filter(
+          (d) => !d.admin_review_status || d.admin_review_status === "pending"
+        );
+      case "approved":
+        return documents.filter(
+          (d) => d.admin_review_status === "ready_for_university_review" || d.admin_review_status === "approved"
+        );
+      case "rejected":
+        return documents.filter(
+          (d) => d.admin_review_status === "rejected" || d.admin_review_status === "admin_rejected"
+        );
+      default:
+        return documents;
+    }
+  }, [documents, docTab]);
+
   /* ------------------------------ Document Preview ------------------------------ */
 
   const preview = async (doc: StudentDocument) => {
@@ -249,101 +320,491 @@ const AdminStudentDetail = () => {
     }
   };
 
+  /* ------------------------------ Document Review ------------------------------ */
+
+  const handleReviewDocument = async (status: "approved" | "rejected") => {
+    if (!reviewDoc || !profile?.id) return;
+    setReviewLoading(true);
+    try {
+      const { error } = await supabase
+        .from("student_documents")
+        .update({
+          admin_review_status: status === "approved" ? "ready_for_university_review" : "admin_rejected",
+          admin_review_notes: reviewNotes || null,
+          admin_reviewed_by: profile.id,
+          admin_reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", reviewDoc.id);
+
+      if (error) throw error;
+
+      toast({
+        title: `Document ${status}`,
+        description: `The document has been ${status}.`,
+      });
+
+      setReviewDoc(null);
+      setReviewNotes("");
+      loadData();
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Failed to update document status",
+        variant: "destructive",
+      });
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  /* ------------------------------ Derived Values ------------------------------ */
+
+  const studentName = student?.preferred_name || student?.legal_name || student?.profile?.full_name || "Student";
+  const studentEmail = student?.contact_email || student?.profile?.email || "";
+  const whatsappNumber = (student?.address as any)?.whatsapp || student?.contact_phone || null;
+
+  const overallStatus = useMemo(() => {
+    if (documentStats.pending > 0) return "review_in_progress";
+    if (documentStats.rejected > 0) return "needs_attention";
+    if (documentStats.approved > 0) return "ready";
+    return "pending";
+  }, [documentStats]);
+
+  const statusBadge = useMemo(() => {
+    switch (overallStatus) {
+      case "review_in_progress":
+        return <Badge variant="outline" className="border-amber-500 text-amber-500"><Clock className="w-3 h-3 mr-1" /> Review In Progress</Badge>;
+      case "needs_attention":
+        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" /> Needs Attention</Badge>;
+      case "ready":
+        return <Badge className="bg-green-600"><CheckCircle2 className="w-3 h-3 mr-1" /> Ready</Badge>;
+      default:
+        return <Badge variant="secondary"><Clock className="w-3 h-3 mr-1" /> Pending</Badge>;
+    }
+  }, [overallStatus]);
+
   /* ------------------------------ Render ------------------------------ */
 
-  if (loading) return <Skeleton className="h-96 w-full" />;
+  if (loading) {
+    return (
+      <div className="space-y-6 p-6">
+        <Skeleton className="h-8 w-32" />
+        <Skeleton className="h-24 w-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Skeleton className="h-96" />
+          <Skeleton className="h-96 lg:col-span-2" />
+        </div>
+      </div>
+    );
+  }
 
   if (error || !student) {
     return (
-      <Alert variant="destructive">
-        <AlertCircle />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error ?? "Student not found"}</AlertDescription>
-      </Alert>
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error ?? "Student not found"}</AlertDescription>
+        </Alert>
+        <Button variant="ghost" className="mt-4" onClick={() => navigate("/admin/students")}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Students
+        </Button>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Button variant="ghost" onClick={() => navigate("/admin/students")}>
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back
-      </Button>
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin/students")}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-semibold">{studentName}</h1>
+            <p className="text-muted-foreground">{studentEmail}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {statusBadge}
+          <Button variant="outline" onClick={() => setChatOpen(true)}>
+            <MessageSquare className="h-4 w-4 mr-2" /> Message
+          </Button>
+          <Button variant="ghost" size="icon" onClick={loadData}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
 
-      <h1 className="text-2xl font-semibold">
-        {student.preferred_name || student.legal_name}
-      </h1>
-
-      {/* DOCUMENTS */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Documents</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {documents.map((doc) => (
-            <div key={doc.id} className="border p-4 rounded flex justify-between">
-              <div>
-                <p className="font-medium">{getDocLabel(doc.document_type)}</p>
-                <p className="text-sm text-muted-foreground">{doc.file_name}</p>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Personal Information */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" /> Personal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Legal Name</span>
+                <span className="font-medium">{student.legal_name || "—"}</span>
               </div>
-              <Button size="sm" onClick={() => preview(doc)}>
-                <Eye className="h-4 w-4 mr-1" /> Preview
-              </Button>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Date of Birth</span>
+                <span className="font-medium">
+                  {student.date_of_birth ? format(new Date(student.date_of_birth), "MMM d, yyyy") : "—"}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Nationality</span>
+                <span className="font-medium">{student.nationality || "—"}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Country</span>
+                <span className="font-medium">{student.current_country || "—"}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Phone</span>
+                <span className="font-medium">{student.contact_phone || "—"}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">WhatsApp</span>
+                <span className="font-medium">{whatsappNumber || "—"}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Email</span>
+                <span className="font-medium truncate max-w-[180px]" title={studentEmail}>
+                  {studentEmail || "—"}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Passport No.</span>
+                <span className="font-medium">{student.passport_number || "—"}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Passport Expiry</span>
+                <span className="font-medium">
+                  {student.passport_expiry ? format(new Date(student.passport_expiry), "MMM d, yyyy") : "—"}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* CHAT */}
-      <Button variant="outline" onClick={() => setChatOpen(true)}>
-        <MessageSquare className="h-4 w-4 mr-2" /> Message Student
-      </Button>
+          {/* Education Records */}
+          {education.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5" /> Education History
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {education.map((edu) => (
+                  <div key={edu.id} className="border-l-2 border-primary pl-4 py-2">
+                    <p className="font-medium">{edu.institution_name}</p>
+                    <p className="text-sm text-muted-foreground">{edu.level} • {edu.country}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(new Date(edu.start_date), "yyyy")} - {edu.end_date ? format(new Date(edu.end_date), "yyyy") : "Present"}
+                      {edu.gpa && ` • GPA: ${edu.gpa}`}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
+          {/* Applications */}
+          {student.applications && student.applications.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5" /> Applications
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {student.applications.map((app) => (
+                  <div key={app.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-sm">{app.program?.name || "Unknown Program"}</p>
+                      <p className="text-xs text-muted-foreground">{app.program?.university?.name || ""}</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {app.status?.replace(/_/g, " ") || "Draft"}
+                    </Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Right Column - Documents */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Missing Documents Alert */}
+          {missingDocuments.length > 0 && (
+            <Alert className="border-amber-500 bg-amber-500/10">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              <AlertTitle className="text-amber-500">Missing Required Documents</AlertTitle>
+              <AlertDescription className="mt-2">
+                <div className="flex flex-wrap gap-2">
+                  {missingDocuments.map((doc) => (
+                    <Badge key={doc} variant="outline" className="border-amber-500 text-amber-600">
+                      {getDocLabel(doc)}
+                    </Badge>
+                  ))}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Document Status Cards */}
+          <div className="grid grid-cols-3 gap-4">
+            <Card 
+              className={`cursor-pointer transition-all ${docTab === "pending" ? "ring-2 ring-amber-500" : ""}`}
+              onClick={() => setDocTab("pending")}
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-amber-500/20">
+                    <Clock className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">{documentStats.pending}</p>
+                    <p className="text-sm text-muted-foreground">Pending</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card 
+              className={`cursor-pointer transition-all ${docTab === "approved" ? "ring-2 ring-green-500" : ""}`}
+              onClick={() => setDocTab("approved")}
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-green-500/20">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">{documentStats.approved}</p>
+                    <p className="text-sm text-muted-foreground">Approved</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card 
+              className={`cursor-pointer transition-all ${docTab === "rejected" ? "ring-2 ring-destructive" : ""}`}
+              onClick={() => setDocTab("rejected")}
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-destructive/20">
+                    <XCircle className="h-5 w-5 text-destructive" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold">{documentStats.rejected}</p>
+                    <p className="text-sm text-muted-foreground">Rejected</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Documents List */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" /> Documents
+              </CardTitle>
+              <CardDescription>Review and approve student documents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={docTab} onValueChange={setDocTab}>
+                <TabsList className="mb-4">
+                  <TabsTrigger value="pending" className="gap-2">
+                    <Clock className="h-4 w-4" /> Pending ({documentStats.pending})
+                  </TabsTrigger>
+                  <TabsTrigger value="approved" className="gap-2">
+                    <CheckCircle2 className="h-4 w-4" /> Approved ({documentStats.approved})
+                  </TabsTrigger>
+                  <TabsTrigger value="rejected" className="gap-2">
+                    <XCircle className="h-4 w-4" /> Rejected ({documentStats.rejected})
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="space-y-3">
+                  {filteredDocuments.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No {docTab} documents
+                    </div>
+                  ) : (
+                    filteredDocuments.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-3 rounded-lg bg-muted">
+                            <FileText className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{getDocLabel(doc.document_type)}</p>
+                            <p className="text-sm text-muted-foreground">{doc.file_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatFileSize(doc.file_size)} • Uploaded {format(new Date(doc.created_at), "MMM d, yyyy")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant={
+                              doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
+                                ? "default"
+                                : doc.admin_review_status === "rejected" || doc.admin_review_status === "admin_rejected"
+                                ? "destructive"
+                                : "outline"
+                            }
+                            className={
+                              doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
+                                ? "bg-green-600"
+                                : ""
+                            }
+                          >
+                            {doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
+                              ? "Approved"
+                              : doc.admin_review_status === "rejected" || doc.admin_review_status === "admin_rejected"
+                              ? "Rejected"
+                              : "Pending"}
+                          </Badge>
+                          <Button variant="ghost" size="sm" onClick={() => preview(doc)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {(!doc.admin_review_status || doc.admin_review_status === "pending") && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => {
+                                setReviewDoc(doc);
+                                setReviewNotes("");
+                              }}
+                            >
+                              Review
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Chat Dialog */}
       <Dialog open={chatOpen} onOpenChange={setChatOpen}>
-        <DialogContent className="max-w-2xl p-0">
+        <DialogContent className="max-w-2xl p-0" hideClose>
           <AdminStudentChat
             studentProfileId={student.profile_id}
-            studentName={student.preferred_name || student.legal_name || "Student"}
+            studentName={studentName}
             onClose={() => setChatOpen(false)}
           />
         </DialogContent>
       </Dialog>
 
-      {/* APPLICATION REVIEW */}
-      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
-        <DialogContent className="max-w-3xl">
-          {selectedAppId && (
-            <ApplicationReview
-              applicationId={selectedAppId}
-              defaultStage="admin_review"
-            />
-          )}
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>{previewDoc && getDocLabel(previewDoc.document_type)}</DialogTitle>
+            <DialogDescription>{previewDoc?.file_name}</DialogDescription>
+          </DialogHeader>
+
+          <div ref={previewRef} className="min-h-[60vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+            {previewLoading ? (
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            ) : previewUrl ? (
+              previewDoc?.mime_type === "application/pdf" ? (
+                <iframe src={previewUrl} className="w-full h-[60vh] border-0" />
+              ) : (
+                <img src={previewUrl} className="max-w-full max-h-[60vh] object-contain" alt={previewDoc?.file_name} />
+              )
+            ) : (
+              <p className="text-muted-foreground">Unable to load preview</p>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={toggleFullscreen}>
+              {fullscreen ? <Minimize2 className="h-4 w-4 mr-2" /> : <Maximize2 className="h-4 w-4 mr-2" />}
+              {fullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            </Button>
+            {previewUrl && (
+              <Button variant="outline" asChild>
+                <a href={previewUrl} download={previewDoc?.file_name} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4 mr-2" /> Download
+                </a>
+              </Button>
+            )}
+            <Button onClick={() => setPreviewDoc(null)}>Close</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* PREVIEW */}
-      <Dialog open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
-        <DialogContent className="max-w-4xl">
+      {/* Document Review Dialog */}
+      <Dialog open={!!reviewDoc} onOpenChange={() => setReviewDoc(null)}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>{previewDoc && getDocLabel(previewDoc.document_type)}</DialogTitle>
+            <DialogTitle>Review Document</DialogTitle>
+            <DialogDescription>
+              {reviewDoc && getDocLabel(reviewDoc.document_type)} - {reviewDoc?.file_name}
+            </DialogDescription>
           </DialogHeader>
 
-          <div ref={previewRef} className="min-h-[60vh] bg-muted">
-            {previewLoading ? (
-              <Loader2 className="animate-spin m-auto" />
-            ) : previewUrl ? (
-              previewDoc?.mime_type === "application/pdf" ? (
-                <iframe src={previewUrl} className="w-full h-full" />
-              ) : (
-                <img src={previewUrl} className="w-full h-full object-contain" />
-              )
-            ) : null}
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Review Notes (Optional)</label>
+              <Textarea
+                placeholder="Add any notes about this document..."
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                className="mt-1"
+              />
+            </div>
           </div>
 
-          <DialogFooter>
-            <Button variant="outline" onClick={toggleFullscreen}>
-              {fullscreen ? <Minimize2 /> : <Maximize2 />}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setReviewDoc(null)} disabled={reviewLoading}>
+              Cancel
             </Button>
-            <Button onClick={() => setPreviewDoc(null)}>Close</Button>
+            <Button
+              variant="destructive"
+              onClick={() => handleReviewDocument("rejected")}
+              disabled={reviewLoading}
+            >
+              {reviewLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <XCircle className="h-4 w-4 mr-2" />}
+              Reject
+            </Button>
+            <Button
+              onClick={() => handleReviewDocument("approved")}
+              disabled={reviewLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {reviewLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+              Approve
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
