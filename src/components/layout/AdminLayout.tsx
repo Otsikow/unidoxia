@@ -339,10 +339,23 @@ const AdminLayout = () => {
   const sidebar = (showCollapseButton = true) => (
     <div
       className={cn(
-        "flex h-full flex-col border-r bg-card transition-all duration-300",
+        "relative flex h-full flex-col border-r bg-card transition-all duration-300",
         isCollapsed && showCollapseButton ? "w-20" : "w-72"
       )}
     >
+      {/* Floating collapse toggle button at the edge of sidebar */}
+      {showCollapseButton && (
+        <Button
+          size="icon"
+          variant="outline"
+          className="absolute -right-3 top-20 z-50 h-6 w-6 rounded-full border bg-background shadow-md hover:bg-accent hover:shadow-lg transition-all duration-200"
+          onClick={() => setIsCollapsed((prev) => !prev)}
+          aria-expanded={!isCollapsed}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+        </Button>
+      )}
       <div className="flex h-14 sm:h-16 items-center gap-2 sm:gap-3 border-b px-3 sm:px-4">
         <img
           src={unidoxiaLogo}
@@ -358,18 +371,6 @@ const AdminLayout = () => {
               {t("admin.layout.sidebar.subtitle", { defaultValue: "Admin Control Centre" })}
             </p>
           </div>
-        )}
-        {showCollapseButton && (
-          <Button
-            size="icon"
-            variant="ghost"
-            className="ml-auto h-8 w-8 sm:h-9 sm:w-9 shrink-0"
-            onClick={() => setIsCollapsed((prev) => !prev)}
-            aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
         )}
       </div>
       <ScrollArea className="flex-1">
@@ -504,7 +505,7 @@ const AdminLayout = () => {
   return (
     <div className="flex min-h-screen bg-muted/20">
       {mobileNavSheet}
-      <div className={cn("hidden md:flex shrink-0", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
+      <div className={cn("hidden md:flex shrink-0 overflow-visible", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
       <div className="flex w-full min-w-0 flex-col">
         {/* Top Header Bar with Notification Bell */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
