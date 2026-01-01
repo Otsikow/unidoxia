@@ -72,6 +72,7 @@ const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
 
 const TRACKING_ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const TRACKING_ID_LENGTH = 8;
+const WEST_AFRICAN_COUNTRIES = new Set(['Nigeria', 'Ghana', 'Sierra Leone', 'Gambia', 'Liberia']);
 
 const generateTrackingId = () => {
   const bytes = new Uint32Array(TRACKING_ID_LENGTH);
@@ -126,6 +127,14 @@ const isMissingColumnError = (error: PostgrestError | null, column: string) => {
     mentionsColumn ||
     message.includes('schema cache')
   );
+};
+
+const normalizeName = (value: string | null | undefined) => value?.trim().replace(/\s+/g, ' ').toLowerCase() ?? '';
+
+const parseDateStrict = (value: string) => {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 };
 
 const mergeLegacyFormData = (
@@ -340,6 +349,95 @@ export default function NewApplication() {
   useEffect(() => {
     formDataRef.current = formData;
   }, [formData]);
+
+  const validationIssues = useMemo(() => {
+    const issues: string[] = [];
+    const personal = formData.personalInfo;
+
+    if (!personal.fullName.trim()) {
+      issues.push('Add your full legal name as it appears on your passport.');
+    }
+
+    const profileName = normalizeName(profile?.full_name);
+    const passportName = normalizeName(personal.fullName);
+    if (profileName && passportName && profileName !== passportName) {
+      issues.push('The name on your passport must match your profile name exactly. Update one of them so they are identical.');
+    }
+
+    const parsedDob = parseDateStrict(personal.dateOfBirth);
+    if (!parsedDob) {
+      issues.push('Use the YYYY-MM-DD format for your date of birth to avoid unreadable handwritten dates.');
+    }
+
+    if (!personal.nationality.trim()) {
+      issues.push('Select your nationality so we can apply the right country-specific rules.');
+    }
+
+    if (formData.educationHistory.length === 0) {
+      issues.push('Add at least one education record so universities can verify your academic history.');
+    }
+
+    const datedRecords: { startYear: number; endYear: number; label: string }[] = [];
+
+    formData.educationHistory.forEach((record, index) => {
+      const label = record.institutionName || `Education record ${index + 1}`;
+      const startDate = parseDateStrict(record.startDate);
+      const endDate = parseDateStrict(record.endDate);
+
+      if (!startDate) {
+        issues.push(`${label}: add a valid start date in YYYY-MM-DD format.`);
+      }
+
+      if (!endDate) {
+        issues.push(`${label}: include an end date or expected graduation year so there are no missing years.`);
+      }
+
+      if (startDate && endDate) {
+        if (endDate < startDate) {
+          issues.push(`${label}: end date cannot be before the start date.`);
+        } else {
+          datedRecords.push({
+            startYear: startDate.getUTCFullYear(),
+            endYear: endDate.getUTCFullYear(),
+            label,
+          });
+        }
+      }
+
+      const normalizedLevel = record.level.toLowerCase();
+      if (WEST_AFRICAN_COUNTRIES.has(record.country.trim()) && !['WAEC', 'NECO'].includes(record.gradeScale)) {
+        issues.push(`${label}: pick WAEC or NECO because the record is from a West African country.`);
+      }
+
+      if (normalizedLevel.includes('a level') && record.gradeScale !== 'A-Levels') {
+        issues.push(`${label}: choose "A-Levels" for A-Level studies so admissions see the right exam system.`);
+      }
+
+      if (normalizedLevel.includes('ib') && record.gradeScale !== 'IB') {
+        issues.push(`${label}: select "IB" for International Baccalaureate coursework.`);
+      }
+    });
+
+    datedRecords
+      .sort((a, b) => a.startYear - b.startYear)
+      .some((record, index, arr) => {
+        if (index === 0) return false;
+        const previous = arr[index - 1];
+        if (record.startYear - previous.endYear > 1) {
+          issues.push(
+            `Education history gap detected between ${previous.endYear} and ${record.startYear}. Add a record or update dates so there are no missing years.`,
+          );
+          return true;
+        }
+        return false;
+      });
+
+    if (!formData.programSelection.programId) {
+      issues.push('Select a course before you submit your application.');
+    }
+
+    return issues;
+  }, [formData, profile]);
 
   const mapStudentDocuments = useCallback(
     (documents: StudentDocumentMetadata[]): Partial<Record<ApplicationDocumentType, StudentDocumentMetadata>> => {
@@ -916,6 +1014,15 @@ export default function NewApplication() {
       return;
     }
 
+    if (validationIssues.length > 0) {
+      toast({
+        title: 'Complete the required details',
+        description: validationIssues.join(' '),
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const programId = toValidUuidOrNull(formData.programSelection.programId);
     if (!programId) {
       toast({
@@ -1448,6 +1555,20 @@ export default function NewApplication() {
       </Card>
 
       {/* Step Content */}
+      {validationIssues.length > 0 && (
+        <Alert variant="destructive" className="border-amber-200 bg-amber-50 dark:bg-amber-950/40">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="text-base">Finish these items before you submit</AlertTitle>
+          <AlertDescription className="mt-2 space-y-1">
+            <ul className="list-disc pl-5 space-y-1">
+              {validationIssues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="animate-fade-in">
         {currentStep === 1 && (
           <PersonalInfoStep
@@ -1489,6 +1610,7 @@ export default function NewApplication() {
             submitting={submitting}
             onNotesChange={(notes) => setFormData((prev) => ({ ...prev, notes }))}
             existingDocuments={existingDocumentsForStep}
+            validationIssues={validationIssues}
           />
         )}
       </div>

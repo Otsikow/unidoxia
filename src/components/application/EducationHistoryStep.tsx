@@ -26,7 +26,7 @@ interface EducationHistoryStepProps {
   onBack: () => void;
 }
 
-const GRADE_SCALES = ['4.0', '5.0', '10.0', '100', 'Percentage', 'Other'];
+const GRADE_SCALES = ['WAEC', 'NECO', 'A-Levels', 'IB', '4.0', '5.0', '10.0', '100', 'Percentage', 'Other'];
 
 export default function EducationHistoryStep({
   data,
@@ -219,7 +219,7 @@ export default function EducationHistoryStep({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`gradeScale-${record.id}`}>Grade Scale</Label>
+                        <Label htmlFor={`gradeScale-${record.id}`}>Grade Scale / Exam System</Label>
                         <Select
                           value={record.gradeScale}
                           onValueChange={(value) => updateRecord(record.id, 'gradeScale', value)}
@@ -235,6 +235,10 @@ export default function EducationHistoryStep({
                             ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Choose WAEC/NECO for West African exams, A-Levels for UK curricula, or IB for
+                          International Baccalaureate transcripts.
+                        </p>
                       </div>
                     </div>
                   </CardContent>

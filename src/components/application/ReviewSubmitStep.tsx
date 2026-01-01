@@ -17,6 +17,7 @@ import {
 import { ApplicationFormData } from '@/types/application';
 import { ExistingDocumentMap } from './DocumentsUploadStep';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ReviewSubmitStepProps {
   formData: ApplicationFormData;
@@ -25,6 +26,7 @@ interface ReviewSubmitStepProps {
   submitting: boolean;
   onNotesChange: (notes: string) => void;
   existingDocuments?: ExistingDocumentMap;
+  validationIssues: string[];
 }
 
 type ProgramDetailsRow = Pick<
@@ -56,10 +58,12 @@ export default function ReviewSubmitStep({
   submitting,
   onNotesChange,
   existingDocuments,
+  validationIssues,
 }: ReviewSubmitStepProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(true);
+  const hasBlockingIssues = validationIssues.length > 0;
 
   useEffect(() => {
     const fetchProgramDetails = async () => {
@@ -108,6 +112,10 @@ export default function ReviewSubmitStep({
   }, [formData.programSelection.programId]);
 
   const handleSubmit = () => {
+    if (hasBlockingIssues) {
+      return;
+    }
+
     if (!agreedToTerms) {
       alert('Please agree to the terms and conditions before submitting');
       return;
@@ -152,6 +160,19 @@ export default function ReviewSubmitStep({
           </CardDescription>
         </CardHeader>
       </Card>
+
+      {hasBlockingIssues && (
+        <Alert variant="destructive" className="border-amber-200 bg-amber-50 dark:bg-amber-950/30">
+          <AlertTitle>Submission is blocked until you fix these items:</AlertTitle>
+          <AlertDescription className="mt-2 space-y-1">
+            <ul className="list-disc pl-5 space-y-1">
+              {validationIssues.map((issue) => (
+                <li key={issue}>{issue}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Personal Information Section */}
       <Card>
@@ -382,7 +403,7 @@ export default function ReviewSubmitStep({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!agreedToTerms || submitting}
+              disabled={!agreedToTerms || submitting || hasBlockingIssues}
               size="lg"
               className="min-w-[200px]"
             >
