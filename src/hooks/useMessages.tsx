@@ -471,7 +471,7 @@ export function useMessages() {
         edited_at,
         deleted_at,
         created_at,
-        sender:profiles!conversation_messages_sender_profile_fkey(id, full_name, avatar_url)
+        sender:profiles!conversation_messages_sender_id_fkey(id, full_name, avatar_url)
       `)
       .eq("conversation_id", conversationId)
       .is("deleted_at", null)
