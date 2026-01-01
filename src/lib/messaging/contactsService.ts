@@ -39,6 +39,15 @@ export async function fetchMessagingContacts(
       );
 
       if (!rpcError && contacts && Array.isArray(contacts)) {
+        // Get current user's role for additional client-side filtering
+        const { data: currentUserProfile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userData.user.id)
+          .maybeSingle();
+
+        const currentUserRole = currentUserProfile?.role;
+
         // Transform RPC result to DirectoryProfile format
         const seenIds = new Set<string>();
         return contacts
@@ -54,6 +63,16 @@ export async function fetchMessagingContacts(
           .filter((profile: DirectoryProfile) => {
             if (seenIds.has(profile.id)) return false;
             seenIds.add(profile.id);
+
+            // Additional safeguard: students cannot message other students
+            if (currentUserRole === 'student' && profile.role === 'student') {
+              return false;
+            }
+            // Additional safeguard: agents cannot message other agents
+            if (currentUserRole === 'agent' && profile.role === 'agent') {
+              return false;
+            }
+
             return true;
           });
       }
