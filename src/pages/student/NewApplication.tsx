@@ -1275,12 +1275,16 @@ export default function NewApplication() {
             }
 
             // Create document record
+            // Retrieve verification status if available
+            const verificationStatus = (formData.documents as any)[`${docType}_verificationStatus`];
+
             await supabase.from('application_documents').insert([{
               application_id: createdApplication.id,
               document_type: docType as any,
               storage_path: filePath,
               file_size: file.size,
               mime_type: file.type,
+              verification_status: verificationStatus || 'Pending',
             }]);
           } catch (error) {
             console.error(`Error processing ${docType}:`, error);

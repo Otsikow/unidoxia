@@ -18,6 +18,9 @@ verify_jwt = true
 [functions.get-document-url]
 verify_jwt = true
 
+[functions.verify-document]
+verify_jwt = true
+
 # Note: Rate limiting and breached password checks are configured in Supabase Dashboard
 # The following settings have been removed as they are not supported in supabase/config.toml:
 # - auth.rate_limit (use Dashboard → Authentication → Rate Limits)
