@@ -80,7 +80,7 @@ export const ApplicationReview = ({ applicationId, readOnly = false, defaultStag
         .maybeSingle();
 
       if (error && error.code !== "PGRST116") throw error;
-      return data as AppReviewType | null;
+      return data as unknown as AppReviewType | null;
     },
   });
 

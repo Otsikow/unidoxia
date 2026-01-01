@@ -239,9 +239,10 @@ serve(async (req: Request): Promise<Response> => {
         }
     }
 
-    const programName = appData.program?.name || 'Unknown Program';
+    // @ts-ignore: nested join typing - program is returned as array from join
+    const programName = Array.isArray(appData.program) ? appData.program[0]?.name : appData.program?.name || 'Unknown Program';
     // @ts-ignore: nested join typing
-    const universityName = appData.program?.university?.name || 'UniDoxia Partner University';
+    const universityName = Array.isArray(appData.program) ? appData.program[0]?.university?.name : appData.program?.university?.name || 'UniDoxia Partner University';
     // @ts-ignore: nested join typing
     const studentEmail = appData.student?.contact_email; // Removed override
     // @ts-ignore: nested join typing
