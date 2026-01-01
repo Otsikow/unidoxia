@@ -190,6 +190,9 @@ const AdminStudentDetail = () => {
   const [messageLoading, setMessageLoading] = useState<boolean>(false);
   const [relatedDocumentId, setRelatedDocumentId] = useState<string | null>(null);
 
+  // Document tab state
+  const [activeDocTab, setActiveDocTab] = useState<string>("pending");
+
   /* ------------------------------------------------------------------------ */
   /*                              Data Fetching                               */
   /* ------------------------------------------------------------------------ */
@@ -819,7 +822,10 @@ const AdminStudentDetail = () => {
 
           {/* Document Summary Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <Card className={pendingDocs.length > 0 ? "border-amber-500/50" : ""}>
+            <Card
+              className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${pendingDocs.length > 0 ? "border-amber-500/50" : ""} ${activeDocTab === "pending" ? "ring-2 ring-amber-500" : ""}`}
+              onClick={() => setActiveDocTab("pending")}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
@@ -832,7 +838,10 @@ const AdminStudentDetail = () => {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card
+              className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${activeDocTab === "approved" ? "ring-2 ring-green-500" : ""}`}
+              onClick={() => setActiveDocTab("approved")}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-green-100 dark:bg-green-950/30 flex items-center justify-center">
@@ -845,7 +854,10 @@ const AdminStudentDetail = () => {
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card
+              className={`cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md ${activeDocTab === "rejected" ? "ring-2 ring-red-500" : ""}`}
+              onClick={() => setActiveDocTab("rejected")}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-red-100 dark:bg-red-950/30 flex items-center justify-center">
@@ -870,7 +882,7 @@ const AdminStudentDetail = () => {
               <CardDescription>Review and approve student documents</CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="pending">
+              <Tabs value={activeDocTab} onValueChange={setActiveDocTab}>
                 <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="pending" className="gap-2">
                     <Clock className="h-4 w-4" />
