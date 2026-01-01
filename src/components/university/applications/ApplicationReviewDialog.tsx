@@ -1151,6 +1151,21 @@ export function ApplicationReviewDialog({
 
     onStatusUpdate?.(application.id, finalStatus);
 
+    // Send email notification (status update)
+    if (finalStatus !== application.status) {
+      try {
+        await supabase.functions.invoke('send-application-update', {
+          body: {
+            applicationId: application.id,
+            type: 'status_change',
+            newStatus: finalStatus
+          }
+        });
+      } catch (emailError) {
+        console.error("Failed to send status update email:", emailError);
+      }
+    }
+
     toast({
       title: "Status updated",
       description: `Application status changed to ${getApplicationStatusLabel(finalStatus)}`,
