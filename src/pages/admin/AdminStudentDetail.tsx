@@ -39,6 +39,7 @@ import {
   Eye,
   FileText,
   GraduationCap,
+  History,
   Loader2,
   Maximize2,
   MessageSquare,
@@ -84,6 +85,20 @@ interface EducationRecord {
   end_date: string | null;
   gpa: number | null;
   grade_scale: string | null;
+}
+
+interface ChatMessage {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  content: string;
+  message_type: string | null;
+  created_at: string;
+  sender?: {
+    id: string;
+    full_name: string | null;
+    avatar_url: string | null;
+  };
 }
 
 interface StudentProfile {
@@ -193,6 +208,11 @@ const AdminStudentDetail = () => {
   // Document tab state
   const [activeDocTab, setActiveDocTab] = useState<string>("pending");
 
+  // Chat history state
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatLoading, setChatLoading] = useState<boolean>(false);
+
   /* ------------------------------------------------------------------------ */
   /*                              Data Fetching                               */
   /* ------------------------------------------------------------------------ */
@@ -286,6 +306,115 @@ const AdminStudentDetail = () => {
   useEffect(() => {
     void fetchStudentData();
   }, [fetchStudentData]);
+
+  /* ------------------------------------------------------------------------ */
+  /*                          Chat History Fetching                           */
+  /* ------------------------------------------------------------------------ */
+
+  const fetchChatHistory = useCallback(async () => {
+    if (!student?.profile_id || !profile?.id || !profile?.tenant_id) return;
+
+    setChatLoading(true);
+    try {
+      // Get or create conversation
+      const { data: convId, error: convError } = await supabase.rpc(
+        "get_or_create_conversation",
+        {
+          p_user_id: profile.id,
+          p_other_user_id: student.profile_id,
+          p_tenant_id: profile.tenant_id,
+        }
+      );
+
+      if (convError) throw convError;
+      if (!convId) return;
+
+      setConversationId(convId);
+
+      // Fetch messages with sender info
+      const { data: messages, error: msgError } = await supabase
+        .from("conversation_messages")
+        .select(`
+          id,
+          conversation_id,
+          sender_id,
+          content,
+          message_type,
+          created_at,
+          sender:profiles!conversation_messages_sender_id_fkey (
+            id,
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq("conversation_id", convId)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: true });
+
+      if (msgError) throw msgError;
+      setChatMessages((messages ?? []) as unknown as ChatMessage[]);
+    } catch (err) {
+      console.error("Failed to fetch chat history", err);
+    } finally {
+      setChatLoading(false);
+    }
+  }, [student?.profile_id, profile?.id, profile?.tenant_id]);
+
+  useEffect(() => {
+    if (student?.profile_id && profile?.id) {
+      void fetchChatHistory();
+    }
+  }, [student?.profile_id, profile?.id, fetchChatHistory]);
+
+  // Real-time subscription for new messages
+  useEffect(() => {
+    if (!conversationId) return;
+
+    const channel = supabase
+      .channel(`chat-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "conversation_messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        async (payload) => {
+          // Fetch the full message with sender info
+          const { data: newMessage } = await supabase
+            .from("conversation_messages")
+            .select(`
+              id,
+              conversation_id,
+              sender_id,
+              content,
+              message_type,
+              created_at,
+              sender:profiles!conversation_messages_sender_id_fkey (
+                id,
+                full_name,
+                avatar_url
+              )
+            `)
+            .eq("id", payload.new.id)
+            .single();
+
+          if (newMessage) {
+            setChatMessages((prev) => {
+              // Avoid duplicates
+              if (prev.some((m) => m.id === newMessage.id)) return prev;
+              return [...prev, newMessage as unknown as ChatMessage];
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
 
   /* ------------------------------------------------------------------------ */
   /*                          Document Operations                             */
@@ -794,6 +923,77 @@ const AdminStudentDetail = () => {
                         </Badge>
                       </div>
                     ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Chat History */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center justify-between text-base">
+                <span className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Chat History
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2"
+                  onClick={() => openMessageDialog()}
+                >
+                  <Send className="h-3 w-3 mr-1" />
+                  New
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {chatLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : chatMessages.length === 0 ? (
+                <div className="text-center py-4">
+                  <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                  <p className="text-sm text-muted-foreground">No messages yet</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => openMessageDialog()}
+                  >
+                    <Send className="h-3 w-3 mr-1" />
+                    Start Conversation
+                  </Button>
+                </div>
+              ) : (
+                <ScrollArea className="h-[300px]">
+                  <div className="space-y-3 pr-2">
+                    {chatMessages.map((msg) => {
+                      const isCurrentUser = msg.sender_id === profile?.id;
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"}`}
+                        >
+                          <div
+                            className={`max-w-[85%] rounded-lg px-3 py-2 ${
+                              isCurrentUser
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted"
+                            }`}
+                          >
+                            <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                          </div>
+                          <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                            <span>{msg.sender?.full_name ?? (isCurrentUser ? "You" : "Student")}</span>
+                            <span>•</span>
+                            <span>{format(new Date(msg.created_at), "MMM d, h:mm a")}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </ScrollArea>
               )}
