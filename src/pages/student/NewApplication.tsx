@@ -140,6 +140,7 @@ const mergeLegacyFormData = (
     'fullName',
     'email',
     'phone',
+    'whatsappNumber',
     'dateOfBirth',
     'nationality',
     'passportNumber',
@@ -312,6 +313,7 @@ export default function NewApplication() {
       fullName: '',
       email: '',
       phone: '',
+      whatsappNumber: '+',
       dateOfBirth: '',
       nationality: '',
       passportNumber: '',
@@ -459,6 +461,12 @@ export default function NewApplication() {
           fullName: studentData.legal_name || profile?.full_name || studentData.profile?.full_name || '',
           email: studentData.contact_email || profile?.email || studentData.profile?.email || '',
           phone: studentData.contact_phone || profile?.phone || studentData.profile?.phone || '',
+          whatsappNumber:
+            studentData.whatsapp_number ||
+            studentData.contact_phone ||
+            profile?.phone ||
+            studentData.profile?.phone ||
+            '+',
           dateOfBirth: studentData.date_of_birth || '',
           nationality: studentData.nationality || '',
           passportNumber: studentData.passport_number || '',
@@ -930,6 +938,7 @@ export default function NewApplication() {
         const legalName = personal.fullName?.trim() ?? '';
         const contactEmail = personal.email?.trim() ?? '';
         const contactPhone = personal.phone?.trim() ?? '';
+        const whatsappNumber = personal.whatsappNumber?.trim() ?? '';
         const nationality = personal.nationality?.trim() ?? '';
         const passportNumber = personal.passportNumber?.trim() ?? '';
         const currentCountry = personal.currentCountry?.trim() ?? '';
@@ -954,6 +963,7 @@ export default function NewApplication() {
             p_legal_name: legalName || null,
             p_contact_email: contactEmail || null,
             p_contact_phone: contactPhone || null,
+            p_whatsapp_number: whatsappNumber || null,
             p_date_of_birth: dateOfBirth || null,
             p_nationality: nationality || null,
             p_passport_number: passportNumber || null,
@@ -962,6 +972,13 @@ export default function NewApplication() {
             p_education_records: educationRecords as any,
           },
         );
+
+        if (!rpcResult.error && whatsappNumber) {
+          await supabase
+            .from('students')
+            .update({ whatsapp_number: whatsappNumber || null })
+            .eq('id', studentId);
+        }
 
         // If RPC exists and succeeded, we're done.
         if (!rpcResult.error) return;
@@ -986,6 +1003,7 @@ export default function NewApplication() {
         if (legalName) updateStudent.legal_name = legalName;
         if (contactEmail) updateStudent.contact_email = contactEmail;
         if (contactPhone) updateStudent.contact_phone = contactPhone;
+        if (whatsappNumber) updateStudent.whatsapp_number = whatsappNumber;
         if (nationality) updateStudent.nationality = nationality;
         if (passportNumber) updateStudent.passport_number = passportNumber;
         if (currentCountry) updateStudent.current_country = currentCountry;

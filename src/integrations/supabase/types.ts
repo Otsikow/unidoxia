@@ -2361,6 +2361,7 @@ export type Database = {
           tenant_id: string
           test_scores: Json | null
           updated_at: string | null
+          whatsapp_number: string | null
           visa_history_json: Json | null
         }
         Insert: {
@@ -2385,6 +2386,7 @@ export type Database = {
           tenant_id: string
           test_scores?: Json | null
           updated_at?: string | null
+          whatsapp_number?: string | null
           visa_history_json?: Json | null
         }
         Update: {
@@ -2409,6 +2411,7 @@ export type Database = {
           tenant_id?: string
           test_scores?: Json | null
           updated_at?: string | null
+          whatsapp_number?: string | null
           visa_history_json?: Json | null
         }
         Relationships: [

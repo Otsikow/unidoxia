@@ -4,12 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRIES } from '@/lib/countries';
-import { User, Mail, Phone, Calendar, Globe, CreditCard, MapPin } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Globe, CreditCard, MapPin, MessageCircle } from 'lucide-react';
 
 interface PersonalInfo {
   fullName: string;
   email: string;
   phone: string;
+  whatsappNumber: string;
   dateOfBirth: string;
   nationality: string;
   passportNumber: string;
@@ -33,6 +34,7 @@ export default function PersonalInfoStep({ data, onChange, onNext }: PersonalInf
       data.fullName.trim() !== '' &&
       data.email.trim() !== '' &&
       data.phone.trim() !== '' &&
+      data.whatsappNumber.trim() !== '' &&
       data.dateOfBirth !== '' &&
       data.nationality.trim() !== '' &&
       data.currentCountry.trim() !== ''
@@ -98,6 +100,21 @@ export default function PersonalInfoStep({ data, onChange, onNext }: PersonalInf
               required
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp Number (with country code) *
+          </Label>
+          <Input
+            id="whatsappNumber"
+            type="tel"
+            value={data.whatsappNumber}
+            onChange={(e) => handleChange('whatsappNumber', e.target.value)}
+            placeholder="+233 501 234 567"
+            required
+          />
         </div>
 
         {/* Date of Birth */}

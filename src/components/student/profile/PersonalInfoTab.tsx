@@ -36,6 +36,7 @@ const extractFormData = (student: Tables<'students'>) => {
     passport_expiry: student.passport_expiry || '',
     contact_email: student.contact_email || '',
     contact_phone: addressData?.phone || '',
+    whatsapp_number: student.whatsapp_number || addressData?.phone || '+',
     current_country: student.current_country || '',
     address_line1: addressData?.line1 || '',
     address_line2: addressData?.line2 || '',
@@ -80,6 +81,10 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           passport_number: formData.passport_number,
           passport_expiry: formData.passport_expiry,
           contact_email: formData.contact_email,
+          whatsapp_number:
+            formData.whatsapp_number.trim() && formData.whatsapp_number.trim() !== '+'
+              ? formData.whatsapp_number.trim()
+              : null,
           current_country: formData.current_country,
           address: {
             line1: formData.address_line1,
@@ -231,6 +236,21 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
                 value={formData.contact_phone}
                 onChange={handleChange}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp_number">WhatsApp Number (with country code)</Label>
+              <Input
+                id="whatsapp_number"
+                name="whatsapp_number"
+                type="tel"
+                value={formData.whatsapp_number}
+                onChange={handleChange}
+                placeholder="+233 501 234 567"
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                Use your full international format so admins can message you directly.
+              </p>
             </div>
           </div>
 
