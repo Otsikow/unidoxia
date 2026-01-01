@@ -324,6 +324,67 @@ export type Database = {
           },
         ]
       }
+      application_reviews: {
+        Row: {
+          application_id: string
+          created_at: string
+          decision: string | null
+          feedback: Json | null
+          id: string
+          reviewer_id: string | null
+          scores: Json | null
+          stage: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          decision?: string | null
+          feedback?: Json | null
+          id?: string
+          reviewer_id?: string | null
+          scores?: Json | null
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          decision?: string | null
+          feedback?: Json | null
+          id?: string
+          reviewer_id?: string | null
+          scores?: Json | null
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_reviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           agent_id: string | null
@@ -2435,6 +2496,45 @@ export type Database = {
           },
         ]
       }
+      survey_responses: {
+        Row: {
+          application_id: string
+          created_at: string
+          id: string
+          responses: Json
+          student_id: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          id?: string
+          responses?: Json
+          student_id: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          id?: string
+          responses?: Json
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           application_id: string | null
@@ -2991,6 +3091,10 @@ export type Database = {
       }
       get_admin_student_review_bundle: {
         Args: { p_student_id: string }
+        Returns: Json
+      }
+      get_agent_performance_metrics: {
+        Args: { agent_id_param: string }
         Returns: Json
       }
       get_messaging_contacts: {
