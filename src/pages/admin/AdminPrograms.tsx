@@ -69,6 +69,7 @@ interface ProgramRecord {
   applications: number;
   scholarships: string;
   active: boolean;
+  tenant_id: string | null;
 }
 
 interface ProgramStats {
@@ -131,16 +132,10 @@ const AdminPrograms = () => {
   ]);
 
   const fetchProgramData = useCallback(async () => {
-    if (!tenantId) {
-      setPrograms([]);
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
 
-      // Fetch programs with university data
+      // Fetch programs with university data from all universities
       const { data: programsData, error: programsError } = await supabase
         .from("programs")
         .select(`
@@ -154,12 +149,12 @@ const AdminPrograms = () => {
           active,
           created_at,
           description,
+          tenant_id,
           university:universities (
             name,
             country
           )
         `)
-        .eq("tenant_id", tenantId)
         .order("created_at", { ascending: false });
 
       if (programsError) {
@@ -167,11 +162,10 @@ const AdminPrograms = () => {
         return;
       }
 
-      // Fetch application counts per program
+      // Fetch application counts per program from all tenants
       const { data: applicationCounts } = await supabase
         .from("applications")
-        .select("program_id, status")
-        .eq("tenant_id", tenantId);
+        .select("program_id, status");
 
       // Calculate applications per program and enrolled counts
       const programAppCounts: Record<string, { total: number; enrolled: number }> = {};
@@ -232,6 +226,7 @@ const AdminPrograms = () => {
           applications: apps.total,
           scholarships: disciplineScholarships[program.discipline] || "Standard aid",
           active: program.active ?? true,
+          tenant_id: (program as any).tenant_id || null,
         };
       });
 
@@ -304,7 +299,7 @@ const AdminPrograms = () => {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, []);
 
   // Initial data fetch
   useEffect(() => {
@@ -477,8 +472,7 @@ const AdminPrograms = () => {
       const { error } = await supabase
         .from("programs")
         .update({ active: true, updated_at: new Date().toISOString() })
-        .in("id", Array.from(selectedPrograms))
-        .eq("tenant_id", tenantId);
+        .in("id", Array.from(selectedPrograms));
 
       if (error) throw error;
 
@@ -509,8 +503,7 @@ const AdminPrograms = () => {
       const { error } = await supabase
         .from("programs")
         .update({ active: false, updated_at: new Date().toISOString() })
-        .in("id", Array.from(selectedPrograms))
-        .eq("tenant_id", tenantId);
+        .in("id", Array.from(selectedPrograms));
 
       if (error) throw error;
 
@@ -541,8 +534,7 @@ const AdminPrograms = () => {
       const { error } = await supabase
         .from("programs")
         .delete()
-        .in("id", Array.from(selectedPrograms))
-        .eq("tenant_id", tenantId);
+        .in("id", Array.from(selectedPrograms));
 
       if (error) throw error;
 
@@ -574,8 +566,7 @@ const AdminPrograms = () => {
       const { error } = await supabase
         .from("programs")
         .delete()
-        .eq("id", singleDeleteId)
-        .eq("tenant_id", tenantId);
+        .eq("id", singleDeleteId);
 
       if (error) throw error;
 
@@ -604,8 +595,7 @@ const AdminPrograms = () => {
       const { error } = await supabase
         .from("programs")
         .update({ active: !currentActive, updated_at: new Date().toISOString() })
-        .eq("id", programId)
-        .eq("tenant_id", tenantId);
+        .eq("id", programId);
 
       if (error) throw error;
 
