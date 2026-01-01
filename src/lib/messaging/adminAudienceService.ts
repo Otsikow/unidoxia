@@ -24,6 +24,25 @@ export interface AudienceConversationOptions {
   audience: AudienceType;
   scope: "all" | "specific";
   subject?: string;
+  targetCount?: number;
+}
+
+export interface BroadcastDeliverySnapshot {
+  status: "pending" | "sent" | "delivered" | "read";
+  sentAt: string;
+  deliveredAt?: string;
+  readAt?: string;
+  targetCount?: number;
+  deliveredCount?: number;
+  readCount?: number;
+}
+
+export interface BroadcastSendOptions {
+  audience: AudienceType;
+  scope: "all" | "specific";
+  tenantId?: string | null;
+  targetCount: number;
+  subject?: string;
 }
 
 export async function fetchAudienceContacts(
@@ -74,8 +93,32 @@ export async function createAudienceConversation({
   audience,
   scope,
   subject,
+  targetCount,
 }: AudienceConversationOptions): Promise<string> {
   const uniqueParticipantIds = Array.from(new Set([...participantIds, createdBy]));
+  const createdAt = new Date().toISOString();
+  const baseMetadata = {
+    audience,
+    scope,
+    subject,
+    delivery: {
+      targetCount,
+      deliveredCount: 0,
+      readCount: 0,
+      status: "pending" as BroadcastDeliverySnapshot["status"],
+      sentAt: createdAt,
+    },
+    auditTrail: [
+      {
+        action: "conversation_created",
+        by: createdBy,
+        at: createdAt,
+        scope,
+        audience,
+        targetCount,
+      },
+    ],
+  } satisfies Record<string, unknown>;
 
   const { data: conversation, error: conversationError } = await supabase
     .from("conversations")
@@ -85,11 +128,7 @@ export async function createAudienceConversation({
       is_group: true,
       type: "broadcast",
       name: subject || `${audienceLabel[audience]} broadcast`,
-      metadata: {
-        audience,
-        scope,
-        subject,
-      },
+      metadata: baseMetadata,
     })
     .select("id")
     .single();
@@ -117,17 +156,95 @@ export async function createAudienceConversation({
 export async function sendAudienceMessage(
   conversationId: string,
   senderId: string,
-  content: string
+  content: string,
+  options: BroadcastSendOptions
 ) {
-  const { error } = await supabase.from("conversation_messages").insert({
+  const sentAt = new Date().toISOString();
+  const deliverySnapshot: BroadcastDeliverySnapshot = {
+    status: "delivered",
+    sentAt,
+    deliveredAt: sentAt,
+    targetCount: options.targetCount,
+    deliveredCount: options.targetCount,
+    readCount: 0,
+  };
+
+  const { error: messageError } = await supabase.from("conversation_messages").insert({
     conversation_id: conversationId,
     sender_id: senderId,
     content,
     message_type: "text",
     attachments: [],
+    metadata: {
+      audience: options.audience,
+      scope: options.scope,
+      delivery: deliverySnapshot,
+    },
   });
 
-  if (error) {
-    throw error;
+  if (messageError) {
+    throw messageError;
   }
+
+  const { data: existing, error: metadataError } = await supabase
+    .from("conversations")
+    .select("metadata")
+    .eq("id", conversationId)
+    .single();
+
+  if (metadataError) {
+    throw metadataError;
+  }
+
+  const metadata = (existing?.metadata as Record<string, unknown> | null) ?? {};
+  const auditTrail = Array.isArray((metadata as { auditTrail?: unknown }).auditTrail)
+    ? ((metadata as { auditTrail: unknown[] }).auditTrail as Record<string, unknown>[])
+    : [];
+
+  const updatedMetadata = {
+    ...metadata,
+    audience: options.audience,
+    scope: options.scope,
+    subject: options.subject ?? (metadata as { subject?: string }).subject,
+    delivery: {
+      ...((metadata as { delivery?: Record<string, unknown> }).delivery ?? {}),
+      ...deliverySnapshot,
+      lastUpdated: sentAt,
+    },
+    auditTrail: [
+      ...auditTrail,
+      {
+        action: "broadcast_sent",
+        by: senderId,
+        at: sentAt,
+        targetCount: options.targetCount,
+        audience: options.audience,
+        scope: options.scope,
+      },
+    ],
+  } satisfies Record<string, unknown>;
+
+  const { error: updateError } = await supabase
+    .from("conversations")
+    .update({ metadata: updatedMetadata })
+    .eq("id", conversationId);
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  await supabase.from("audit_logs").insert({
+    action: "broadcast_message",
+    entity: "conversation",
+    entity_id: conversationId,
+    tenant_id: options.tenantId ?? DEFAULT_TENANT_ID,
+    user_id: senderId,
+    changes: {
+      audience: options.audience,
+      scope: options.scope,
+      targetCount: options.targetCount,
+      subject: options.subject,
+      sentAt,
+    },
+  });
 }

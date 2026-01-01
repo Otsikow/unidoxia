@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Loader2, MessageSquare, Send, ShieldCheck, Target } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock4, Eye, Loader2, MessageSquare, Send, ShieldCheck, Target } from "lucide-react";
 import MessagesDashboard from "@/components/messages/MessagesDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -17,11 +17,13 @@ import {
   fetchAudienceContacts,
   sendAudienceMessage,
   type AudienceType,
+  type BroadcastSendOptions,
 } from "@/lib/messaging/adminAudienceService";
 import type { DirectoryProfile } from "@/lib/messaging/directory";
 import { DEFAULT_TENANT_ID } from "@/lib/messaging/data";
 import { cn } from "@/lib/utils";
 import { useMessages } from "@/hooks/useMessages";
+import { useBroadcastLog } from "@/hooks/admin/useBroadcastLog";
 
 const audienceOptions: AudienceType[] = ["universities", "students", "agents", "all"];
 
@@ -38,6 +40,7 @@ const AdminChatConsole = () => {
   const tenantId = profile?.tenant_id ?? DEFAULT_TENANT_ID;
 
   const messaging = useMessages();
+  const { entries: broadcastLog, loading: logLoading, refresh: refreshBroadcastLog } = useBroadcastLog(tenantId);
 
   const [audience, setAudience] = useState<AudienceType>("universities");
   const [scope, setScope] = useState<ScopeOption>("all");
@@ -124,16 +127,26 @@ const AdminChatConsole = () => {
         return;
       }
 
+      const targetCount = recipients.length;
+      const broadcastOptions: BroadcastSendOptions = {
+        audience,
+        scope,
+        tenantId,
+        targetCount,
+        subject: subject.trim() || undefined,
+      };
+
       const conversationId = await createAudienceConversation({
         participantIds: recipients.map((entry) => entry.id),
         createdBy: profile.id,
         tenantId,
         audience,
         scope,
-        subject: subject.trim() || undefined,
+        subject: broadcastOptions.subject,
+        targetCount,
       });
 
-      await sendAudienceMessage(conversationId, profile.id, message.trim());
+      await sendAudienceMessage(conversationId, profile.id, message.trim(), broadcastOptions);
 
       toast({
         title: "Message delivered",
@@ -143,6 +156,7 @@ const AdminChatConsole = () => {
       resetComposer();
       await messaging.fetchConversations();
       messaging.setCurrentConversation(conversationId);
+      await refreshBroadcastLog();
     } catch (error) {
       console.error("Failed to send broadcast message", error);
       toast({
@@ -153,7 +167,47 @@ const AdminChatConsole = () => {
     } finally {
       setSending(false);
     }
-  }, [audience, messaging, message, profile?.id, resetComposer, scope, selected, subject, tenantId, toast]);
+  }, [
+    audience,
+    messaging,
+    message,
+    profile?.id,
+    refreshBroadcastLog,
+    resetComposer,
+    scope,
+    selected,
+    subject,
+    tenantId,
+    toast,
+  ]);
+
+  const latestBroadcast = broadcastLog[0];
+
+  const renderDeliveryStatus = (status: "sent" | "delivered" | "read") => {
+    switch (status) {
+      case "read":
+        return (
+          <Badge variant="secondary" className="gap-1 bg-emerald-500/10 text-emerald-800 dark:text-emerald-100">
+            <Eye className="h-3.5 w-3.5" />
+            Read
+          </Badge>
+        );
+      case "delivered":
+        return (
+          <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Delivered
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline" className="gap-1">
+            <Clock4 className="h-3.5 w-3.5" />
+            Sent
+          </Badge>
+        );
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -357,6 +411,102 @@ const AdminChatConsole = () => {
         </CardHeader>
         <CardContent className="p-0">
           <MessagesDashboard />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Delivery status</CardTitle>
+          <CardDescription>Track the most recent broadcast across all user roles.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {logLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading delivery details...
+            </div>
+          ) : latestBroadcast ? (
+            <div className="rounded-lg border p-4">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-semibold">
+                    {latestBroadcast.subject || latestBroadcast.title || "Broadcast update"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Audience: {audienceLabel[latestBroadcast.audience ?? "all"]} • Scope: {latestBroadcast.scope}
+                  </p>
+                </div>
+                {renderDeliveryStatus(latestBroadcast.status)}
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Sent</p>
+                  <p className="text-sm font-semibold">{latestBroadcast.targetCount} recipients</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Delivered</p>
+                  <p className="text-sm font-semibold">{latestBroadcast.deliveredCount}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Read</p>
+                  <p className="text-sm font-semibold">{latestBroadcast.readCount}</p>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Last updated {latestBroadcast.lastUpdated ? new Date(latestBroadcast.lastUpdated).toLocaleString() : "moments ago"}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No broadcasts recorded yet.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Communication log</CardTitle>
+          <CardDescription>Auditable trail of admin broadcasts by audience and scope.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {logLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading communication log...
+            </div>
+          ) : broadcastLog.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No broadcast activity logged yet.</p>
+          ) : (
+            broadcastLog.map((entry) => (
+              <div key={entry.id} className="rounded-lg border p-3">
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold">{entry.subject || entry.title || "Broadcast"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Audience: {audienceLabel[entry.audience ?? "all"]} • Scope: {entry.scope}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Sent {entry.sentAt ? new Date(entry.sentAt).toLocaleString() : new Date(entry.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  {renderDeliveryStatus(entry.status)}
+                </div>
+                <div className="mt-3 grid gap-3 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Sent</p>
+                    <p className="text-sm font-semibold">{entry.targetCount} recipients</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Delivered</p>
+                    <p className="text-sm font-semibold">{entry.deliveredCount}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Read</p>
+                    <p className="text-sm font-semibold">{entry.readCount}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
     </div>
