@@ -1133,6 +1133,35 @@ export function ApplicationReviewDialog({
       return;
     }
 
+    // Dynamic Decision Letter Generation
+    // If status is offer and no file was uploaded, try to generate one
+    if ((selectedStatus === 'conditional_offer' || selectedStatus === 'unconditional_offer') && !selectedFile) {
+        try {
+            // Need the offer ID first. Since the trigger 'ensure_offer_on_status_change' creates it
+            // we should fetch it.
+            const { data: offerData, error: offerFetchError } = await supabase
+                .from('offers')
+                .select('id')
+                .eq('application_id', application.id)
+                .maybeSingle();
+
+            if (offerData?.id) {
+                toast({ title: 'Generating Decision Letter', description: 'Please wait...' });
+                const { error: genError } = await supabase.functions.invoke('generate-decision-letter', {
+                    body: { applicationId: application.id, offerId: offerData.id }
+                });
+                if (genError) {
+                    console.error("Letter generation failed", genError);
+                    toast({ title: 'Warning', description: 'Could not generate automatic decision letter.', variant: 'destructive'});
+                } else {
+                    toast({ title: 'Success', description: 'Decision letter generated automatically.' });
+                }
+            }
+        } catch (e) {
+            console.error("Auto-generation error", e);
+        }
+    }
+
     // Clear file selection on success
     if (fileInputRef.current) fileInputRef.current.value = "";
     setSelectedFile(null);
@@ -1170,7 +1199,7 @@ export function ApplicationReviewDialog({
       title: "Status updated",
       description: `Application status changed to ${getApplicationStatusLabel(finalStatus)}`,
     });
-  }, [application, selectedStatus, onStatusUpdate, toast]);
+  }, [application, selectedStatus, onStatusUpdate, toast, selectedFile]);
 
   /* ===========================
      Request Document
