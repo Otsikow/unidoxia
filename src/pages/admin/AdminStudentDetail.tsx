@@ -473,19 +473,47 @@ const AdminStudentDetail = () => {
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phone</span>
-                <span className="font-medium">{student.contact_phone || "—"}</span>
+                {student.contact_phone ? (
+                  <a 
+                    href={`tel:${student.contact_phone}`} 
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {student.contact_phone}
+                  </a>
+                ) : (
+                  <span className="font-medium">—</span>
+                )}
               </div>
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">WhatsApp</span>
-                <span className="font-medium">{whatsappNumber || "—"}</span>
+                {whatsappNumber ? (
+                  <a 
+                    href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-green-500 hover:underline"
+                  >
+                    {whatsappNumber}
+                  </a>
+                ) : (
+                  <span className="font-medium">—</span>
+                )}
               </div>
               <Separator />
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Email</span>
-                <span className="font-medium truncate max-w-[180px]" title={studentEmail}>
-                  {studentEmail || "—"}
-                </span>
+                {studentEmail ? (
+                  <a 
+                    href={`mailto:${studentEmail}`}
+                    className="font-medium text-primary hover:underline truncate max-w-[180px]"
+                    title={studentEmail}
+                  >
+                    {studentEmail}
+                  </a>
+                ) : (
+                  <span className="font-medium">—</span>
+                )}
               </div>
               <Separator />
               <div className="flex justify-between">
