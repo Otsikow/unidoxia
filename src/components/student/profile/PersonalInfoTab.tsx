@@ -229,17 +229,18 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_phone">Phone Number</Label>
+              <Label htmlFor="contact_phone">Phone Number *</Label>
               <Input
                 id="contact_phone"
                 name="contact_phone"
                 type="tel"
                 value={formData.contact_phone}
                 onChange={handleChange}
+                required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="whatsapp_number">WhatsApp Number (with country code)</Label>
+              <Label htmlFor="whatsapp_number">WhatsApp Number (with country code) *</Label>
               <Input
                 id="whatsapp_number"
                 name="whatsapp_number"

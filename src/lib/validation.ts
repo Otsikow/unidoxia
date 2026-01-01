@@ -88,13 +88,20 @@ export const resetPasswordSchema = z.object({
 
 // ==================== PROFILE SCHEMAS ====================
 
+export const whatsappSchema = z
+  .string()
+  .min(1, 'WhatsApp number is required')
+  .regex(/^\+?[\d\s\-()]+$/, 'Invalid WhatsApp number format')
+  .min(10, 'WhatsApp number must be at least 10 digits')
+  .max(20, 'WhatsApp number must be less than 20 digits');
+
 export const studentProfileSchema = z.object({
   fullName: z
     .string()
     .min(2, 'Full name must be at least 2 characters')
     .max(100, 'Full name must be less than 100 characters'),
   email: emailSchema,
-  phone: phoneSchema.optional().or(z.literal('')),
+  phone: phoneSchema,
   dateOfBirth: pastDateSchema.optional(),
   nationality: z.string().min(2, 'Please select your nationality'),
   passportNumber: z
