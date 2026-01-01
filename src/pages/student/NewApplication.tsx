@@ -560,7 +560,7 @@ export default function NewApplication() {
           email: studentData.contact_email || profile?.email || studentData.profile?.email || '',
           phone: studentData.contact_phone || profile?.phone || studentData.profile?.phone || '',
           whatsappNumber:
-            studentData.whatsapp_number ||
+            (studentData.address as any)?.whatsapp ||
             studentData.contact_phone ||
             profile?.phone ||
             studentData.profile?.phone ||
@@ -1080,12 +1080,7 @@ export default function NewApplication() {
           },
         );
 
-        if (!rpcResult.error && whatsappNumber) {
-          await supabase
-            .from('students')
-            .update({ whatsapp_number: whatsappNumber || null })
-            .eq('id', studentId);
-        }
+        // WhatsApp number is stored in address JSON, no separate column update needed
 
         // If RPC exists and succeeded, we're done.
         if (!rpcResult.error) return;
@@ -1280,12 +1275,16 @@ export default function NewApplication() {
             }
 
             // Create document record
+            // Retrieve verification status if available
+            const verificationStatus = (formData.documents as any)[`${docType}_verificationStatus`];
+
             await supabase.from('application_documents').insert([{
               application_id: createdApplication.id,
               document_type: docType as any,
               storage_path: filePath,
               file_size: file.size,
               mime_type: file.type,
+              verification_status: verificationStatus || 'Pending',
             }]);
           } catch (error) {
             console.error(`Error processing ${docType}:`, error);
@@ -1385,6 +1384,18 @@ export default function NewApplication() {
       } catch (draftCleanupError) {
         logError(draftCleanupError, 'NewApplication.clearDraftAfterSubmit');
       }
+
+        // Send email notification (submission)
+        try {
+          await supabase.functions.invoke('send-application-update', {
+            body: {
+              applicationId: createdApplication.id,
+              type: 'submitted'
+            }
+          });
+        } catch (emailError) {
+          console.error("Failed to send submission email:", emailError);
+        }
 
         // Show success modal
         setShowSuccessModal(true);
