@@ -358,7 +358,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">Phone Number *</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -366,6 +366,7 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
                 value={formData.phone}
                 onChange={handleInputChange}
                 placeholder="+1 (555) 123-4567"
+                required
               />
             </div>
 
