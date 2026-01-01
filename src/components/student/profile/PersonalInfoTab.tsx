@@ -18,6 +18,7 @@ interface PersonalInfoTabProps {
 
 type AddressData = { 
   phone?: string; 
+  whatsapp?: string;
   line1?: string; 
   line2?: string; 
   city?: string; 
@@ -36,7 +37,7 @@ const extractFormData = (student: Tables<'students'>) => {
     passport_expiry: student.passport_expiry || '',
     contact_email: student.contact_email || '',
     contact_phone: addressData?.phone || '',
-    whatsapp_number: student.whatsapp_number || addressData?.phone || '+',
+    whatsapp_number: addressData?.whatsapp || addressData?.phone || '+',
     current_country: student.current_country || '',
     address_line1: addressData?.line1 || '',
     address_line2: addressData?.line2 || '',

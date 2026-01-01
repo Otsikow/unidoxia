@@ -4,7 +4,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Building2, CheckCircle2, Circle, Globe, Image as ImageIcon, Loader2, Mail, MapPin, Phone, Plus, RefreshCw, Sparkles, Trash2, Upload } from "lucide-react";
+import { Building2, CheckCircle2, Circle, Globe, Image as ImageIcon, Loader2, Mail, MapPin, Phone, Plus, RefreshCw, Sparkles, Trash2, Upload, Scale } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
 import { COUNTRIES } from "@/lib/countries";
 import { computeUniversityProfileCompletion, emptyUniversityProfileDetails, getUniversityProfileChecklist, mergeUniversityProfileDetails, parseUniversityProfileDetails, isNewUniversityProfile, type UniversityProfileDetails, type UniversityProfileChecklistItem } from "@/lib/universityProfile";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,10 +26,14 @@ import type { Json } from "@/integrations/supabase/types";
 import { LoadingState } from "@/components/LoadingState";
 import type { UniversityRecord } from "@/lib/universityProfile";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { ScoringConfig } from "@/types/review";
+
 interface UniversityProfileQueryResult {
   university: UniversityRecord | null;
   details: UniversityProfileDetails;
+  scoringConfig: ScoringConfig;
 }
+
 const MAX_LOGO_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_HERO_SIZE = 10 * 1024 * 1024; // 10MB
 const UNIVERSITY_MEDIA_BUCKET = "university-media";
@@ -75,6 +80,12 @@ const profileSchema = z.object({
     instagram: optionalUrlSchema,
     linkedin: optionalUrlSchema,
     youtube: optionalUrlSchema
+  }),
+  scoringConfig: z.object({
+    academics: z.number().min(0).max(100),
+    english_proficiency: z.number().min(0).max(100),
+    statement_quality: z.number().min(0).max(100),
+    visa_risk: z.number().min(0).max(100),
   })
 });
 type UniversityProfileFormValues = z.infer<typeof profileSchema>;
@@ -134,6 +145,12 @@ const UniversityProfilePage = () => {
         instagram: "",
         linkedin: "",
         youtube: ""
+      },
+      scoringConfig: {
+        academics: 25,
+        english_proficiency: 25,
+        statement_quality: 25,
+        visa_risk: 25
       }
     }
   });
@@ -161,6 +178,12 @@ const UniversityProfilePage = () => {
           university: null,
           details: {
             ...emptyUniversityProfileDetails
+          },
+          scoringConfig: {
+            academics: { weight: 25 },
+            english_proficiency: { weight: 25 },
+            statement_quality: { weight: 25 },
+            visa_risk: { weight: 25 }
           }
         };
       }
@@ -206,9 +229,19 @@ const UniversityProfilePage = () => {
       console.log("University profile loaded:", data?.name ?? "No university found", "for user:", profile.id, "tenant:", tenantId);
 
       const details = parseUniversityProfileDetails(data?.submission_config_json ?? null);
+
+      // Parse scoring config (mocking since types aren't updated yet)
+      const scoringConfig: ScoringConfig = (data as any)?.scoring_config ? (data as any).scoring_config : {
+        academics: { weight: 25 },
+        english_proficiency: { weight: 25 },
+        statement_quality: { weight: 25 },
+        visa_risk: { weight: 25 }
+      };
+
       return {
         university: data ?? null,
-        details
+        details,
+        scoringConfig
       };
     }
   });
@@ -217,7 +250,8 @@ const UniversityProfilePage = () => {
     if (!queryData) return;
     const {
       university,
-      details
+      details,
+      scoringConfig
     } = queryData;
     form.reset({
       name: university?.name ?? "",
@@ -236,6 +270,12 @@ const UniversityProfilePage = () => {
         instagram: details.social.instagram ?? "",
         linkedin: details.social.linkedin ?? "",
         youtube: details.social.youtube ?? ""
+      },
+      scoringConfig: {
+        academics: scoringConfig.academics.weight,
+        english_proficiency: scoringConfig.english_proficiency.weight,
+        statement_quality: scoringConfig.statement_quality.weight,
+        visa_risk: scoringConfig.visa_risk.weight
       }
     });
     if (logoPreviewObjectUrl) {
@@ -574,6 +614,15 @@ const UniversityProfilePage = () => {
           heroImageUrl: heroUrl
         }
       });
+
+      // Prepare scoring config to save
+      const scoringConfigToSave = {
+        academics: { weight: values.scoringConfig.academics },
+        english_proficiency: { weight: values.scoringConfig.english_proficiency },
+        statement_quality: { weight: values.scoringConfig.statement_quality },
+        visa_risk: { weight: values.scoringConfig.visa_risk }
+      };
+
       const payload = {
         name: values.name.trim(),
         country: values.country,
@@ -583,7 +632,9 @@ const UniversityProfilePage = () => {
         logo_url: logoUrl,
         featured_image_url: heroUrl,
         submission_config_json: updatedDetails as unknown as Json,
-        active: true
+        active: true,
+        // @ts-ignore - scoring_config not yet in generated types
+        scoring_config: scoringConfigToSave as Json
       };
 
       // Check if there's an existing university for this tenant
@@ -765,11 +816,20 @@ const UniversityProfilePage = () => {
       const savedUniversity = await fetchLatestUniversity();
       const savedDetails = parseUniversityProfileDetails(savedUniversity.submission_config_json);
 
+      // Parse scoring config for cache update
+      const savedScoringConfig: ScoringConfig = (savedUniversity as any).scoring_config ? (savedUniversity as any).scoring_config : {
+        academics: { weight: 25 },
+        english_proficiency: { weight: 25 },
+        statement_quality: { weight: 25 },
+        visa_risk: { weight: 25 }
+      };
+
       // Update local cache with saved data
       // CRITICAL: Include profile.id in query key for user-specific caching
       queryClient.setQueryData<UniversityProfileQueryResult>(["university-profile", tenantId, profile.id], {
         university: savedUniversity,
-        details: savedDetails
+        details: savedDetails,
+        scoringConfig: savedScoringConfig
       });
       
       // Invalidate ALL related queries to ensure profile completion is consistent across the app.
@@ -820,6 +880,12 @@ const UniversityProfilePage = () => {
           instagram: savedDetails.social.instagram ?? "",
           linkedin: savedDetails.social.linkedin ?? "",
           youtube: savedDetails.social.youtube ?? ""
+        },
+        scoringConfig: {
+          academics: savedScoringConfig.academics.weight,
+          english_proficiency: savedScoringConfig.english_proficiency.weight,
+          statement_quality: savedScoringConfig.statement_quality.weight,
+          visa_risk: savedScoringConfig.visa_risk.weight
         }
       });
       setLogoPreview(savedUniversity.logo_url ?? null);
@@ -1108,7 +1174,112 @@ const UniversityProfilePage = () => {
                 <section className="space-y-6" id="profile-step-3">
                   <div className="space-y-2">
                     <Badge className="w-fit bg-primary/10 text-xs font-medium text-primary" variant="outline">
-                      Step 3 · Primary contact
+                      Step 3 · Scoring Rubric
+                    </Badge>
+                    <h2 className="text-lg font-semibold text-foreground">
+                      Application Scoring
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      Configure the weightage for automated application scoring. Total should ideally encompass your priority areas.
+                    </p>
+                  </div>
+                  <div className="space-y-6">
+                    <FormField control={form.control} name="scoringConfig.academics" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Academics Weight (%)</FormLabel>
+                          <span className="text-sm font-medium">{field.value}%</span>
+                        </div>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={5}
+                            value={[field.value]}
+                            onValueChange={(vals) => field.onChange(vals[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="scoringConfig.english_proficiency" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>English Proficiency Weight (%)</FormLabel>
+                          <span className="text-sm font-medium">{field.value}%</span>
+                        </div>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={5}
+                            value={[field.value]}
+                            onValueChange={(vals) => field.onChange(vals[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="scoringConfig.statement_quality" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Statement Quality Weight (%)</FormLabel>
+                          <span className="text-sm font-medium">{field.value}%</span>
+                        </div>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={5}
+                            value={[field.value]}
+                            onValueChange={(vals) => field.onChange(vals[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="scoringConfig.visa_risk" render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Visa Risk Weight (%)</FormLabel>
+                          <span className="text-sm font-medium">{field.value}%</span>
+                        </div>
+                        <FormControl>
+                          <Slider
+                            min={0}
+                            max={100}
+                            step={5}
+                            value={[field.value]}
+                            onValueChange={(vals) => field.onChange(vals[0])}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <div className="rounded-lg bg-muted p-4">
+                      <div className="flex items-center gap-2">
+                         <Scale className="h-4 w-4 text-muted-foreground" />
+                         <span className="text-sm font-medium">Total Weight: {
+                           (form.watch("scoringConfig.academics") || 0) +
+                           (form.watch("scoringConfig.english_proficiency") || 0) +
+                           (form.watch("scoringConfig.statement_quality") || 0) +
+                           (form.watch("scoringConfig.visa_risk") || 0)
+                         }%</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Ensure weights align with your admission priorities.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                <Separator />
+
+                <section className="space-y-6" id="profile-step-4">
+                  <div className="space-y-2">
+                    <Badge className="w-fit bg-primary/10 text-xs font-medium text-primary" variant="outline">
+                      Step 4 · Primary contact
                     </Badge>
                     <h2 className="text-lg font-semibold text-foreground">
                       Primary contact
@@ -1162,10 +1333,10 @@ const UniversityProfilePage = () => {
 
                 <Separator />
 
-                <section className="space-y-6" id="profile-step-4">
+                <section className="space-y-6" id="profile-step-5">
                   <div className="space-y-2">
                     <Badge className="w-fit bg-primary/10 text-xs font-medium text-primary" variant="outline">
-                      Step 4 · Social & media
+                      Step 5 · Social & media
                     </Badge>
                     <h2 className="text-lg font-semibold text-foreground">
                       Social & media
@@ -1217,10 +1388,10 @@ const UniversityProfilePage = () => {
 
                 <Separator />
 
-                <section className="space-y-6" id="profile-step-5">
+                <section className="space-y-6" id="profile-step-6">
                   <div className="space-y-2">
                     <Badge className="w-fit bg-primary/10 text-xs font-medium text-primary" variant="outline">
-                      Step 5 · Branding assets
+                      Step 6 · Branding assets
                     </Badge>
                     <h2 className="text-lg font-semibold text-foreground">
                       Branding assets
