@@ -44,6 +44,9 @@ import {
   MoreHorizontal,
   Eye,
   Edit3,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import NewProgrammeDialog from "@/components/admin/NewProgrammeDialog";
@@ -81,6 +84,14 @@ interface ReadinessCheck {
   note: string;
 }
 
+type SortColumn = "name" | "university" | "country" | "discipline" | "level" | "seats" | "applications" | "status";
+type SortDirection = "asc" | "desc";
+
+interface SortConfig {
+  column: SortColumn | null;
+  direction: SortDirection;
+}
+
 const AdminPrograms = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -90,6 +101,7 @@ const AdminPrograms = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: "asc" });
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   // Selection state
@@ -378,8 +390,31 @@ const AdminPrograms = () => {
       );
     }
 
+    // Sort by selected column
+    if (sortConfig.column) {
+      filtered = [...filtered].sort((a, b) => {
+        const column = sortConfig.column!;
+        let aValue: string | number = a[column];
+        let bValue: string | number = b[column];
+
+        // Handle numeric columns
+        if (column === "seats" || column === "applications") {
+          aValue = Number(aValue) || 0;
+          bValue = Number(bValue) || 0;
+        } else {
+          // Convert to lowercase strings for text comparison
+          aValue = String(aValue).toLowerCase();
+          bValue = String(bValue).toLowerCase();
+        }
+
+        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
     return filtered;
-  }, [programs, activeTab, searchQuery]);
+  }, [programs, activeTab, searchQuery, sortConfig]);
 
   // Selection handlers
   const isAllSelected = filteredPrograms.length > 0 && filteredPrograms.every((p) => selectedPrograms.has(p.id));
@@ -403,6 +438,34 @@ const AdminPrograms = () => {
       }
       return next;
     });
+  };
+
+  // Sort handler
+  const handleSort = (column: SortColumn) => {
+    setSortConfig((prev) => {
+      if (prev.column === column) {
+        // Toggle direction or clear sort
+        if (prev.direction === "asc") {
+          return { column, direction: "desc" };
+        } else {
+          return { column: null, direction: "asc" };
+        }
+      }
+      // New column, start with ascending
+      return { column, direction: "asc" };
+    });
+  };
+
+  // Sort indicator component
+  const SortIndicator = ({ column }: { column: SortColumn }) => {
+    if (sortConfig.column !== column) {
+      return <ArrowUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground/50" />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <ArrowUp className="ml-1 h-3.5 w-3.5 text-primary" />
+    ) : (
+      <ArrowDown className="ml-1 h-3.5 w-3.5 text-primary" />
+    );
   };
 
   // Bulk action handlers
@@ -737,14 +800,78 @@ const AdminPrograms = () => {
                       className={isSomeSelected && !isAllSelected ? "opacity-50" : ""}
                     />
                   </TableHead>
-                  <TableHead>Course</TableHead>
-                  <TableHead>University</TableHead>
-                  <TableHead>Country</TableHead>
-                  <TableHead>Discipline</TableHead>
-                  <TableHead>Level</TableHead>
-                  <TableHead className="text-right">Seats</TableHead>
-                  <TableHead className="text-right">Applications</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort("name")}
+                  >
+                    <div className="flex items-center">
+                      Course
+                      <SortIndicator column="name" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort("university")}
+                  >
+                    <div className="flex items-center">
+                      University
+                      <SortIndicator column="university" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort("country")}
+                  >
+                    <div className="flex items-center">
+                      Country
+                      <SortIndicator column="country" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort("discipline")}
+                  >
+                    <div className="flex items-center">
+                      Discipline
+                      <SortIndicator column="discipline" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort("level")}
+                  >
+                    <div className="flex items-center">
+                      Level
+                      <SortIndicator column="level" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors text-right"
+                    onClick={() => handleSort("seats")}
+                  >
+                    <div className="flex items-center justify-end">
+                      Seats
+                      <SortIndicator column="seats" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors text-right"
+                    onClick={() => handleSort("applications")}
+                  >
+                    <div className="flex items-center justify-end">
+                      Applications
+                      <SortIndicator column="applications" />
+                    </div>
+                  </TableHead>
+                  <TableHead
+                    className="cursor-pointer select-none hover:bg-muted/50 transition-colors"
+                    onClick={() => handleSort("status")}
+                  >
+                    <div className="flex items-center">
+                      Status
+                      <SortIndicator column="status" />
+                    </div>
+                  </TableHead>
                   <TableHead>Scholarships</TableHead>
                   <TableHead className="w-12"></TableHead>
                 </TableRow>
