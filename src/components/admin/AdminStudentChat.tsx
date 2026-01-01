@@ -77,7 +77,7 @@ export function AdminStudentChat({ studentProfileId, studentName, onClose }: Adm
           content,
           message_type,
           created_at,
-          sender:profiles!conversation_messages_sender_id_fkey (
+          sender:profiles!conversation_messages_sender_profile_fkey (
             id,
             full_name,
             avatar_url
@@ -133,7 +133,7 @@ export function AdminStudentChat({ studentProfileId, studentName, onClose }: Adm
               content,
               message_type,
               created_at,
-              sender:profiles!conversation_messages_sender_id_fkey (
+              sender:profiles!conversation_messages_sender_profile_fkey (
                 id,
                 full_name,
                 avatar_url
@@ -170,22 +170,44 @@ export function AdminStudentChat({ studentProfileId, studentName, onClose }: Adm
 
     setSending(true);
     try {
-      const { error: msgError } = await supabase.from("conversation_messages").insert({
-        conversation_id: conversationId,
-        sender_id: profile.id,
-        content,
-        message_type: "text",
-      });
+      const { data: inserted, error: msgError } = await supabase
+        .from("conversation_messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_id: profile.id,
+          content,
+          message_type: "text",
+        })
+        .select("id, conversation_id, sender_id, content, message_type, created_at")
+        .single();
 
       if (msgError) throw msgError;
 
+      // Optimistically add so the admin immediately sees what was sent.
+      if (inserted) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === inserted.id)) return prev;
+          return [
+            ...prev,
+            {
+              ...inserted,
+              sender: {
+                id: profile.id,
+                full_name: profile.full_name ?? null,
+                avatar_url: profile.avatar_url ?? null,
+              },
+            } as unknown as ChatMessage,
+          ];
+        });
+      }
+
       setMessageContent("");
       textareaRef.current?.focus();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to send message:", err);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: err?.message ? `Failed to send message: ${err.message}` : "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
