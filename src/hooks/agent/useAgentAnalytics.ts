@@ -53,7 +53,7 @@ export const useAgentAnalytics = (tenantId?: string | null, agentId?: string | n
 
       const { data: commissions, error: commsError } = await supabase
         .from("commissions")
-        .select("amount_cents, status, created_at, due_date")
+        .select("amount_cents, status, created_at")
         .eq("tenant_id", tenantId);
 
       if (commsError) throw commsError;
@@ -67,9 +67,9 @@ export const useAgentAnalytics = (tenantId?: string | null, agentId?: string | n
         ["conditional_offer", "unconditional_offer", "cas_loa", "visa"].includes(app.status || "")
       ).length;
 
-      // Forecast: Pending commissions
+      // Forecast: Pending commissions (not yet approved/paid)
       const commissionForecast = commissions
-        .filter(c => c.status !== "paid" && c.status !== "cancelled")
+        .filter(c => c.status === "pending")
         .reduce((sum, c) => sum + (c.amount_cents || 0), 0) / 100;
 
       // Pipeline
