@@ -3,6 +3,7 @@ export interface ApplicationFormData {
     fullName: string;
     email: string;
     phone: string;
+    whatsappNumber: string;
     dateOfBirth: string;
     nationality: string;
     passportNumber: string;

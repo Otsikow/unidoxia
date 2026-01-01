@@ -41,6 +41,7 @@ import {
   GraduationCap,
   History,
   Loader2,
+  MessageCircle,
   Maximize2,
   MessageSquare,
   Minimize2,
@@ -108,6 +109,7 @@ interface StudentProfile {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  whatsapp_number: string | null;
   current_country: string | null;
   nationality: string | null;
   date_of_birth: string | null;
@@ -213,6 +215,13 @@ const AdminStudentDetail = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = useState<boolean>(false);
 
+  const buildWhatsAppLink = (phoneNumber?: string | null) => {
+    if (!phoneNumber) return null;
+    const cleaned = phoneNumber.replace(/[^\d+]/g, "");
+    const normalized = cleaned.startsWith("+") ? cleaned.slice(1) : cleaned;
+    return normalized ? `https://wa.me/${normalized}` : null;
+  };
+
   /* ------------------------------------------------------------------------ */
   /*                              Data Fetching                               */
   /* ------------------------------------------------------------------------ */
@@ -238,6 +247,7 @@ const AdminStudentDetail = () => {
           preferred_name,
           contact_email,
           contact_phone,
+          whatsapp_number,
           current_country,
           nationality,
           date_of_birth,
@@ -825,6 +835,29 @@ const AdminStudentDetail = () => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phone</span>
                 <span className="font-medium">{student.contact_phone ?? "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">WhatsApp</span>
+                {student.whatsapp_number ? (
+                  (() => {
+                    const whatsappLink = buildWhatsAppLink(student.whatsapp_number);
+                    return whatsappLink ? (
+                      <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-primary hover:underline flex items-center gap-1"
+                      >
+                        {student.whatsapp_number}
+                        <MessageCircle className="h-4 w-4" />
+                      </a>
+                    ) : (
+                      <span className="font-medium">{student.whatsapp_number}</span>
+                    );
+                  })()
+                ) : (
+                  <span className="font-medium">—</span>
+                )}
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Email</span>
