@@ -31,6 +31,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PerformanceMetrics from "./PerformanceMetrics";
 import {
   Users,
   FileText,
@@ -400,6 +401,9 @@ export default function AgentDashboardOverview() {
           variant="warning"
         />
       </div>
+
+      {/* Automated Performance Metrics */}
+      <PerformanceMetrics />
 
       {/* Quick Actions & Referral Link */}
       <div className="grid gap-6 lg:grid-cols-2">
