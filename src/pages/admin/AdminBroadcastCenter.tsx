@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { Tables } from "@/integrations/supabase/types";
+import { NotificationTypes, createNotification } from "@/lib/notifications";
 
 const AdminBroadcastCenter = () => {
   const { profile } = useAuth();
@@ -64,29 +65,42 @@ const AdminBroadcastCenter = () => {
       }
 
       const notificationTitle = title.trim() || "Admin broadcast";
-      const payload = userRecords.map((user) => ({
-        user_id: user.id,
-        tenant_id: tenantId,
-        title: notificationTitle,
-        content: message.trim(),
-        type: "email",
-        action_url: referenceLink || null,
-        metadata: {
-          channel: "email",
-          recipientEmail: user.email,
-          recipientName: user.full_name,
-          subject: notificationTitle,
-          scheduled: scheduleEnabled,
-        },
-      }));
+      const sendResults = await Promise.allSettled(
+        userRecords.map(async (user) => {
+          const { error } = await createNotification({
+            userId: user.id,
+            tenantId,
+            type: NotificationTypes.GENERAL,
+            title: notificationTitle,
+            content: message.trim(),
+            actionUrl: referenceLink || undefined,
+            metadata: {
+              channel: "email",
+              recipientEmail: user.email,
+              recipientName: user.full_name,
+              subject: notificationTitle,
+              scheduled: scheduleEnabled,
+            },
+          });
 
-      const { error: insertError } = await supabase.from("notifications").insert(payload);
-      if (insertError) throw insertError;
+          if (error) throw error;
+        })
+      );
+
+      const failed = sendResults.filter((result) => result.status === "rejected").length;
+      const succeeded = userRecords.length - failed;
+
+      if (succeeded === 0) {
+        throw new Error("No notifications were queued. Please try again.");
+      }
 
       setLastBroadcastTimestamp(new Date().toISOString());
       toast({
         title: "Bulk email queued",
-        description: `${userRecords.length} recipients will receive this announcement via the email channel.`,
+        description:
+          failed > 0
+            ? `${succeeded} recipients queued successfully. ${failed} recipients could not be queued.`
+            : `${userRecords.length} recipients will receive this announcement via the email channel.`,
       });
     } catch (err) {
       console.error("Failed to send broadcast", err);
