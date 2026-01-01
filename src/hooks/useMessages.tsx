@@ -646,12 +646,12 @@ export function useMessages() {
         },
         async (payload) => {
           const newMessage = payload.new as any;
-          
+
           // Check if user is a participant in this conversation
           const isParticipant = conversationsRef.current.some(
             (c) => c.id === newMessage.conversation_id
           );
-          
+
           if (!isParticipant) return;
 
           // Fetch sender info for the message
@@ -720,6 +720,56 @@ export function useMessages() {
           const convs = await fetchConversationsFromDb();
           conversationsRef.current = convs;
           setConversations(convs);
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversation_messages",
+        },
+        (payload) => {
+          const updatedMessage = payload.new as any;
+
+          // Check if user is a participant in this conversation
+          const isParticipant = conversationsRef.current.some(
+            (c) => c.id === updatedMessage.conversation_id
+          );
+
+          if (!isParticipant) return;
+
+          // Update the message in our local state (handles deletions and edits)
+          const updateMessageInList = (msgs: Message[]) =>
+            msgs.map((m) =>
+              m.id === updatedMessage.id
+                ? {
+                    ...m,
+                    content: updatedMessage.content,
+                    edited_at: updatedMessage.edited_at,
+                    deleted_at: updatedMessage.deleted_at,
+                    attachments: updatedMessage.attachments ?? m.attachments,
+                    metadata: updatedMessage.metadata ?? m.metadata,
+                  }
+                : m
+            );
+
+          setMessagesById((prev) => {
+            const existing = prev[updatedMessage.conversation_id];
+            if (!existing) return prev;
+
+            const updated = updateMessageInList(existing);
+            messagesRef.current = { ...prev, [updatedMessage.conversation_id]: updated };
+            return messagesRef.current;
+          });
+
+          // If this is the current conversation, update visible messages
+          setCurrentConversationState((currentId) => {
+            if (currentId === updatedMessage.conversation_id) {
+              setMessages((prev) => updateMessageInList(prev));
+            }
+            return currentId;
+          });
         }
       )
       .subscribe();
@@ -1236,6 +1286,100 @@ export function useMessages() {
     // TODO: Implement conversation removal
   }, []);
 
+  /**
+   * Delete a message (soft delete by setting deleted_at)
+   * This works like WhatsApp's "Delete for Everyone" - the message is marked as deleted
+   * and all participants see "This message was deleted"
+   */
+  const deleteMessage = useCallback(
+    async (messageId: string, conversationId: string) => {
+      if (!messageId || !conversationId || !currentUserId) return false;
+
+      // Find the message to verify ownership
+      const messageToDelete = messagesRef.current[conversationId]?.find(
+        (m) => m.id === messageId
+      );
+
+      if (!messageToDelete) {
+        toast({
+          title: "Message not found",
+          description: "The message could not be found.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Only allow deleting own messages
+      if (messageToDelete.sender_id !== currentUserId) {
+        toast({
+          title: "Cannot delete",
+          description: "You can only delete your own messages.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const deletedAt = new Date().toISOString();
+
+      // Optimistic update - mark as deleted locally
+      const updateMessages = (msgs: Message[]) =>
+        msgs.map((m) =>
+          m.id === messageId ? { ...m, deleted_at: deletedAt } : m
+        );
+
+      setMessagesById((prev) => {
+        const updated = updateMessages(prev[conversationId] ?? []);
+        messagesRef.current = { ...prev, [conversationId]: updated };
+        return messagesRef.current;
+      });
+
+      setMessages((prev) => updateMessages(prev));
+
+      if (usingMockMessaging) {
+        return true;
+      }
+
+      try {
+        const { error } = await supabase
+          .from("conversation_messages")
+          .update({ deleted_at: deletedAt })
+          .eq("id", messageId)
+          .eq("sender_id", currentUserId); // Extra safety: only delete own messages
+
+        if (error) {
+          throw error;
+        }
+
+        return true;
+      } catch (error: any) {
+        console.error("Failed to delete message:", error);
+
+        // Rollback optimistic update
+        const rollbackMessages = (msgs: Message[]) =>
+          msgs.map((m) =>
+            m.id === messageId ? { ...m, deleted_at: null } : m
+          );
+
+        setMessagesById((prev) => {
+          const updated = rollbackMessages(prev[conversationId] ?? []);
+          messagesRef.current = { ...prev, [conversationId]: updated };
+          return messagesRef.current;
+        });
+
+        setMessages((prev) => rollbackMessages(prev));
+
+        toast({
+          title: "Delete failed",
+          description: parseDbError(error),
+          variant: "destructive",
+        });
+
+        return false;
+      }
+    },
+    [currentUserId, toast, usingMockMessaging]
+  );
+
   return {
     conversations,
     currentConversation,
@@ -1252,6 +1396,7 @@ export function useMessages() {
     fetchConversations,
     markConversationAsRead,
     removeConversation,
+    deleteMessage,
     // Recovery functions
     retryPendingMessages,
     getPendingMessageCount,

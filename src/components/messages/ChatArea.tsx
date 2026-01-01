@@ -1,7 +1,23 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { MessageInput } from './MessageInput';
@@ -13,7 +29,7 @@ import type {
   MessageAttachment,
 } from '@/hooks/useMessages';
 import { useAuth } from '@/hooks/useAuth';
-import { ArrowLeft, Loader2, FileText, AudioLines, Download, Play, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, FileText, AudioLines, Download, Play, Image as ImageIcon, MoreVertical, Trash2, Ban } from 'lucide-react';
 import type { UserPresence } from '@/hooks/usePresence';
 import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { getConversationDisplayName } from '@/lib/messaging/conversationDisplay';
@@ -31,6 +47,7 @@ interface ChatAreaProps {
   onBack?: () => void;
   showBackButton?: boolean;
   onMarkConversationRead?: (conversationId: string) => void;
+  onDeleteMessage?: (messageId: string, conversationId: string) => Promise<boolean>;
 }
 
 export function ChatArea({
@@ -46,6 +63,7 @@ export function ChatArea({
   onBack,
   showBackButton,
   onMarkConversationRead,
+  onDeleteMessage,
 }: ChatAreaProps) {
   const { user } = useAuth();
 
@@ -56,6 +74,11 @@ export function ChatArea({
     useIntersectionObserver<HTMLDivElement>({
       threshold: 0.35,
     });
+
+  // State for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<{ id: string; conversationId: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /* ---------------- Scroll Handling ---------------- */
   useEffect(() => {
@@ -303,6 +326,31 @@ export function ChatArea({
     [conversation, user?.id]
   );
 
+  /* ---------------- Delete Handlers ---------------- */
+  const handleDeleteClick = (messageId: string) => {
+    if (!conversation?.id) return;
+    setMessageToDelete({ id: messageId, conversationId: conversation.id });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!messageToDelete || !onDeleteMessage) return;
+
+    setIsDeleting(true);
+    try {
+      await onDeleteMessage(messageToDelete.id, messageToDelete.conversationId);
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setMessageToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setMessageToDelete(null);
+  };
+
   /* ---------------- Loading / Empty ---------------- */
   if (loading) {
     return (
@@ -350,6 +398,7 @@ export function ChatArea({
             const prev = index > 0 ? messages[index - 1] : null;
             const isOwn = message.sender_id === user?.id;
             const receipt = getMessageReceiptDetails(message);
+            const isDeleted = !!message.deleted_at;
 
             return (
               <div key={message.id}>
@@ -363,7 +412,7 @@ export function ChatArea({
 
                 <div
                   className={cn(
-                    'flex gap-3',
+                    'flex gap-3 group',
                     isOwn ? 'justify-end' : 'justify-start'
                   )}
                 >
@@ -380,42 +429,82 @@ export function ChatArea({
                     </Avatar>
                   )}
 
+                  {/* Delete menu for own messages (shown before bubble on right side) */}
+                  {isOwn && !isDeleted && onDeleteMessage && (
+                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(message.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete for everyone
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  )}
+
                   <div
                     className={cn(
                       'rounded-2xl px-4 py-3 max-w-[70%]',
-                      isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
+                      isDeleted
+                        ? 'bg-muted/50 border border-dashed border-muted-foreground/30'
+                        : isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
                     )}
                   >
-                    {/* Message Attachments */}
-                    {message.attachments && message.attachments.length > 0 && (
-                      <div className="flex flex-col gap-2 mb-2">
-                        {message.attachments.map((attachment) =>
-                          renderAttachment(attachment, isOwn)
-                        )}
+                    {isDeleted ? (
+                      /* Deleted message placeholder */
+                      <div className="flex items-center gap-2 text-muted-foreground italic">
+                        <Ban className="h-4 w-4" />
+                        <span>This message was deleted</span>
                       </div>
-                    )}
+                    ) : (
+                      <>
+                        {/* Message Attachments */}
+                        {message.attachments && message.attachments.length > 0 && (
+                          <div className="flex flex-col gap-2 mb-2">
+                            {message.attachments.map((attachment) =>
+                              renderAttachment(attachment, isOwn)
+                            )}
+                          </div>
+                        )}
 
-                    {/* Message Text Content */}
-                    {message.content && message.content.trim() && (
-                      <p className="whitespace-pre-wrap">
-                        {message.content}
-                      </p>
+                        {/* Message Text Content */}
+                        {message.content && message.content.trim() && (
+                          <p className="whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        )}
+                      </>
                     )}
 
                     <div
                       className={cn(
                         'mt-1 text-xs flex flex-col',
-                        isOwn
-                          ? 'items-end text-primary-foreground/70'
-                          : 'text-muted-foreground'
+                        isDeleted
+                          ? 'text-muted-foreground'
+                          : isOwn
+                            ? 'items-end text-primary-foreground/70'
+                            : 'text-muted-foreground'
                       )}
                     >
                       <span>
                         {formatMessageTime(message.created_at)}
                       </span>
-                      {receipt && (
+                      {!isDeleted && receipt && (
                         <span
                           className={cn(
                             'leading-none',
@@ -428,6 +517,8 @@ export function ChatArea({
                       )}
                     </div>
                   </div>
+
+                  {/* Delete menu for other's messages (shown after bubble on left side) - not applicable, users can only delete their own */}
                 </div>
               </div>
             );
@@ -445,6 +536,37 @@ export function ChatArea({
         onStopTyping={onStopTyping}
         disabled={loading}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete message?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This message will be deleted for everyone in this conversation. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete} disabled={isDeleting}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete for everyone'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

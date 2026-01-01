@@ -44,6 +44,7 @@ export default function PartnerMessagesPage() {
     startTyping,
     stopTyping,
     fetchConversations,
+    deleteMessage,
   } = useAgentMessages();
 
   const { getUserPresence, isUserOnline } = usePresence();
@@ -280,6 +281,7 @@ export default function PartnerMessagesPage() {
                       isUserOnline={isUserOnline}
                       onBack={() => setCurrentConversation(null)}
                       showBackButton={Boolean(currentConversation)}
+                      onDeleteMessage={deleteMessage}
                     />
                   </div>
 

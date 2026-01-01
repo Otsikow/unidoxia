@@ -79,6 +79,7 @@ export default function MessagesDashboard() {
     getOrCreateConversation,
     fetchConversations,
     markConversationAsRead,
+    deleteMessage,
     retryPendingMessages,
     getPendingMessageCount,
   } = useMessages();
@@ -600,6 +601,7 @@ export default function MessagesDashboard() {
                 ? () => markConversationAsRead(currentConversation.id)
                 : undefined
             }
+            onDeleteMessage={deleteMessage}
           />
         </div>
       </div>

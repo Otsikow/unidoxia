@@ -27,6 +27,7 @@ export function useAgentMessages() {
     fetchConversations,
     markConversationAsRead,
     removeConversation,
+    deleteMessage,
     error,
   } = messaging;
 
@@ -60,5 +61,6 @@ export function useAgentMessages() {
     fetchConversations,
     markConversationAsRead,
     removeConversation,
+    deleteMessage,
   };
 }

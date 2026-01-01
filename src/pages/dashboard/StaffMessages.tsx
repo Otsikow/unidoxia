@@ -82,6 +82,7 @@ export default function StaffMessages() {
     startTyping: startPartnerTyping,
     stopTyping: stopPartnerTyping,
     markConversationAsRead: markPartnerConversationAsRead,
+    deleteMessage: deletePartnerMessage,
     error: partnerError,
   } = partnerMessaging;
 
@@ -97,6 +98,7 @@ export default function StaffMessages() {
     stopTyping: stopStaffStopTyping,
     getOrCreateConversation: getStaffConversation,
     markConversationAsRead: markStaffConversationAsRead,
+    deleteMessage: deleteStaffMessage,
     error: staffError,
   } = staffMessaging;
 
@@ -327,6 +329,7 @@ export default function StaffMessages() {
     enableNewChat = false,
     onNewChat,
     onMarkConversationRead,
+    onDeleteMessage,
   }: {
     conversations: Conversation[];
     currentConversationId: string | null;
@@ -342,6 +345,7 @@ export default function StaffMessages() {
     enableNewChat?: boolean;
     onNewChat?: () => void;
     onMarkConversationRead?: () => void;
+    onDeleteMessage?: (messageId: string, conversationId: string) => Promise<boolean>;
   }) => (
     <div className="flex h-full w-full gap-4">
       <div className="w-full max-w-full md:w-80 lg:w-96 xl:w-[420px] flex-shrink-0">
@@ -369,6 +373,7 @@ export default function StaffMessages() {
           isUserOnline={isUserOnline}
           onBack={onBack}
           onMarkConversationRead={onMarkConversationRead}
+          onDeleteMessage={onDeleteMessage}
         />
       </div>
       {currentConversationId && (
@@ -386,6 +391,7 @@ export default function StaffMessages() {
             onBack={onBack}
             showBackButton
             onMarkConversationRead={onMarkConversationRead}
+            onDeleteMessage={onDeleteMessage}
           />
         </div>
       )}
@@ -471,6 +477,7 @@ export default function StaffMessages() {
                 onStartTyping: handlePartnerStartTyping,
                 onStopTyping: handlePartnerStopTyping,
                 onMarkConversationRead: handlePartnerMarkRead,
+                onDeleteMessage: deletePartnerMessage,
                 messages: partnerMessages,
                 typingUsers: partnerTypingUsers,
                 loading: partnerLoading,
@@ -501,6 +508,7 @@ export default function StaffMessages() {
               onStartTyping: handleStaffStartTyping,
               onStopTyping: handleStaffStopTyping,
               onMarkConversationRead: handleStaffMarkRead,
+              onDeleteMessage: deleteStaffMessage,
               messages: staffMessages,
               typingUsers: staffTypingUsers,
               loading: staffLoading,
