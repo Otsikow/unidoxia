@@ -51,9 +51,11 @@ import {
   User,
   X,
   XCircle,
+  PenTool,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ApplicationReview } from "@/components/application/ApplicationReview";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -209,6 +211,10 @@ const AdminStudentDetail = () => {
 
   // Document tab state
   const [activeDocTab, setActiveDocTab] = useState<string>("pending");
+
+  // Review Dialog State
+  const [reviewDialogOpen, setReviewDialogOpen] = useState<boolean>(false);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
 
   // Chat history state
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -949,8 +955,24 @@ const AdminStudentDetail = () => {
                   <div className="space-y-3">
                     {student.applications.map((app) => (
                       <div key={app.id} className="rounded-lg border p-3 space-y-1">
-                        <p className="text-sm font-medium">{app.program?.university?.name ?? "Unknown"}</p>
-                        <p className="text-xs text-muted-foreground">{app.program?.name ?? "Unknown Program"}</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-sm font-medium">{app.program?.university?.name ?? "Unknown"}</p>
+                            <p className="text-xs text-muted-foreground">{app.program?.name ?? "Unknown Program"}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => {
+                              setSelectedApplicationId(app.id);
+                              setReviewDialogOpen(true);
+                            }}
+                            title="Review Application"
+                          >
+                            <PenTool className="h-3 w-3" />
+                          </Button>
+                        </div>
                         <Badge variant="outline" className="text-xs">
                           {app.status?.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) ?? "Unknown"}
                         </Badge>
@@ -1382,6 +1404,19 @@ const AdminStudentDetail = () => {
               Send Message
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Dialog */}
+      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          {selectedApplicationId && (
+            <ApplicationReview
+              applicationId={selectedApplicationId}
+              readOnly={false}
+              defaultStage="admin_review"
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
