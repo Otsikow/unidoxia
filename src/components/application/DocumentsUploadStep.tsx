@@ -2,8 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileText, Upload, CheckCircle2, X, AlertCircle } from 'lucide-react';
+import { FileText, Upload, CheckCircle2, X, AlertCircle, Loader2, ShieldCheck, AlertTriangle, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 
 interface Documents {
   passport_photo: File | null;
@@ -24,6 +26,11 @@ export type ExistingDocumentMap = Partial<
     }
   >
 >;
+
+interface VerificationResult {
+  status: 'Verified' | 'Suspicious' | 'Invalid';
+  reason: string;
+}
 
 interface DocumentsUploadStepProps {
   data: Documents;
@@ -83,6 +90,33 @@ export default function DocumentsUploadStep({
   onBack,
   existingDocuments,
 }: DocumentsUploadStepProps) {
+  const [verifying, setVerifying] = useState<Partial<Record<keyof Documents, boolean>>>({});
+  const [verificationResults, setVerificationResults] = useState<Partial<Record<keyof Documents, VerificationResult>>>({});
+
+  const verifyDocument = async (key: keyof Documents, file: File) => {
+    setVerifying(prev => ({ ...prev, [key]: true }));
+    try {
+      const { data: result, error } = await supabase.functions.invoke('verify-document', {
+        body: {
+          documentType: key,
+          fileName: file.name,
+          fileSize: file.size,
+        }
+      });
+
+      if (error) throw error;
+
+      setVerificationResults(prev => ({
+        ...prev,
+        [key]: result
+      }));
+    } catch (error) {
+      console.error('Verification failed:', error);
+    } finally {
+      setVerifying(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
   const handleFileChange = (key: keyof Documents, file: File | null) => {
     if (file) {
       // Validate file size
@@ -96,9 +130,24 @@ export default function DocumentsUploadStep({
         alert('File type not supported. Please upload PDF, DOC, DOCX, JPG, or PNG files.');
         return;
       }
+
+      // Trigger verification
+      verifyDocument(key, file);
+    } else {
+      // Clear verification result if file removed
+      setVerificationResults(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
 
-    onChange({ ...data, [key]: file });
+    onChange({
+      ...data,
+      [key]: file,
+      // Store verification status in data object to be accessible in parent
+      [`${key}_verificationStatus` as keyof Documents]: undefined // Reset status on new file
+    });
   };
 
   const removeFile = (key: keyof Documents) => {
@@ -114,9 +163,14 @@ export default function DocumentsUploadStep({
   const isValid = () => {
     // Check if all required documents are uploaded
     const requiredDocs = DOCUMENT_TYPES.filter((doc) => doc.required);
-    return requiredDocs.every(
+    const allRequiredUploaded = requiredDocs.every(
       (doc) => data[doc.key] !== null || Boolean(existingDocuments?.[doc.key]),
     );
+
+    // Check if any document is marked as Invalid
+    const hasInvalidDocs = Object.values(verificationResults).some(r => r?.status === 'Invalid');
+
+    return allRequiredUploaded && !hasInvalidDocs;
   };
 
   const uploadedCount = DOCUMENT_TYPES.reduce((count, docType) => {
@@ -150,9 +204,15 @@ export default function DocumentsUploadStep({
             const hasFile = file !== null;
             const existingDocument = existingDocuments?.[docType.key];
             const hasDocument = hasFile || Boolean(existingDocument);
+            const verification = verificationResults[docType.key];
+            const isVerifying = verifying[docType.key];
 
             return (
-              <Card key={docType.key} className="border-2">
+              <Card key={docType.key} className={`border-2 ${
+                verification?.status === 'Invalid' ? 'border-red-200 bg-red-50 dark:bg-red-950/20' :
+                verification?.status === 'Suspicious' ? 'border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20' :
+                ''
+              }`}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-1 flex-1">
@@ -168,30 +228,54 @@ export default function DocumentsUploadStep({
                         {docType.description}
                       </CardDescription>
                     </div>
-                    {hasDocument && (
+                    {hasDocument && !verification && (
                       <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
                     )}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {hasFile ? (
-                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <FileText className="h-8 w-8 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium text-sm">{file.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatFileSize(file.size)}
-                          </p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 bg-background border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <FileText className="h-8 w-8 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium text-sm">{file.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatFileSize(file.size)}
+                            </p>
+                          </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile(docType.key)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(docType.key)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+
+                      {/* AI Verification Status */}
+                      {isVerifying ? (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Running AI Verification...
+                        </div>
+                      ) : verification ? (
+                        <div className={`p-3 rounded-md border text-sm ${
+                          verification.status === 'Verified' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300' :
+                          verification.status === 'Suspicious' ? 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' :
+                          'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
+                        }`}>
+                          <div className="flex items-center gap-2 font-medium mb-1">
+                            {verification.status === 'Verified' && <ShieldCheck className="h-4 w-4" />}
+                            {verification.status === 'Suspicious' && <AlertTriangle className="h-4 w-4" />}
+                            {verification.status === 'Invalid' && <XCircle className="h-4 w-4" />}
+                            AI Status: {verification.status}
+                          </div>
+                          <p className="opacity-90">{verification.reason}</p>
+                        </div>
+                      ) : null}
                     </div>
                   ) : existingDocument ? (
                     <div className="flex flex-col gap-3 rounded-lg border bg-muted/50 p-4">

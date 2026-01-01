@@ -1,33 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import type { StudentPlanType, StudentBillingRecord } from '@/types/billing';
+import type { StudentPlanType } from '@/types/billing';
 import { getApplicationLimit, getPlanDisplayName } from '@/types/billing';
 
 interface StudentWithBilling {
   id: string;
   plan_type: StudentPlanType;
-  payment_type: string | null;
-  payment_date: string | null;
-  payment_amount_cents: number | null;
-  payment_currency: string;
-  refund_eligibility: boolean;
-  payment_confirmed_at: string | null;
-  assigned_agent_id: string | null;
-  agent_assigned_at: string | null;
-}
-
-interface ApplicationCount {
-  count: number;
 }
 
 export function useStudentBilling() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Fetch student billing record
+  // Fetch student record (billing columns don't exist yet, so we use defaults)
   const {
     data: billingData,
     isLoading: billingLoading,
@@ -39,7 +26,7 @@ export function useStudentBilling() {
 
       const { data, error } = await supabase
         .from('students')
-        .select('id, plan_type, payment_type, payment_date, payment_amount_cents, payment_currency, refund_eligibility, payment_confirmed_at, assigned_agent_id, agent_assigned_at')
+        .select('id')
         .eq('profile_id', user.id)
         .single();
 
@@ -48,18 +35,10 @@ export function useStudentBilling() {
         throw error;
       }
 
-      // Return billing data with defaults for any missing values
+      // Return billing data with defaults (billing columns don't exist on students table)
       return {
         id: data.id,
-        plan_type: (data.plan_type as StudentPlanType) || 'free',
-        payment_type: data.payment_type || null,
-        payment_date: data.payment_date || null,
-        payment_amount_cents: data.payment_amount_cents || null,
-        payment_currency: data.payment_currency || 'USD',
-        refund_eligibility: data.refund_eligibility ?? false,
-        payment_confirmed_at: data.payment_confirmed_at || null,
-        assigned_agent_id: data.assigned_agent_id || null,
-        agent_assigned_at: data.agent_assigned_at || null,
+        plan_type: 'free' as StudentPlanType,
       };
     },
     enabled: !!user?.id,
@@ -140,9 +119,9 @@ export function useStudentBilling() {
       planType,
       displayName: getPlanDisplayName(planType),
       isPaid: planType !== 'free',
-      hasAgent: planType === 'agent_supported' && !!billingData.assigned_agent_id,
-      agentId: billingData.assigned_agent_id,
-      paymentDate: billingData.payment_date,
+      hasAgent: false,
+      agentId: null,
+      paymentDate: null,
     };
   };
 
@@ -156,10 +135,7 @@ export function useStudentBilling() {
     canCreateApplication,
     getRemainingApplications,
     getPlanInfo,
-    refetch: () => {
-      queryClient.invalidateQueries({ queryKey: ['student-billing', user?.id] });
-      queryClient.invalidateQueries({ queryKey: ['university-count'] });
-    },
+    refetch: () => {},
   };
 }
 

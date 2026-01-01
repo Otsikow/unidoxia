@@ -55,7 +55,9 @@ import {
   Phone,
   Plus,
   Search,
+  PenTool,
 } from 'lucide-react';
+import { ApplicationReview } from '@/components/application/ApplicationReview';
 
 type StatusFilter = 'all' | 'pending' | 'submitted' | 'offer' | 'rejected';
 
@@ -862,6 +864,8 @@ const Applications = () => {
                       </div>
                       {renderTimeline(detailedApplication?.timeline_json ?? selectedApplication.timeline_json)}
                     </div>
+
+                    <ApplicationReview applicationId={selectedApplication.id} readOnly={true} />
                   </div>
                 )}
               </>
