@@ -19,6 +19,7 @@ import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer,
 import BackButton from '@/components/BackButton';
 import { parseUniversityProfileDetails } from '@/lib/universityProfile';
 import { DocumentUploadDialog, DocumentRequestInfo } from '@/components/student/DocumentUploadDialog';
+import { DecisionSurvey } from '@/components/student/DecisionSurvey';
 
 interface University {
   name: string;
@@ -235,6 +236,8 @@ export default function ApplicationDetails() {
   const [offerDocs, setOfferDocs] = useState<OfferDocument[]>([]);
   const [documentRequests, setDocumentRequests] = useState<DocumentRequest[]>([]);
   const [loadingOfferUrls, setLoadingOfferUrls] = useState(false);
+  const [showSurvey, setShowSurvey] = useState(false);
+  const [surveySubmitted, setSurveySubmitted] = useState(false);
 
   const getIntakeLabel = (month: number, year: number) => {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -461,6 +464,32 @@ export default function ApplicationDetails() {
       toast({ title: 'Error', description: 'Failed to cancel application', variant: 'destructive' });
     }
   };
+
+  // Check if survey should be shown (offer status and no response yet)
+  useEffect(() => {
+    const checkSurvey = async () => {
+      if (!app || !app.status.includes('offer') || !app.student_id) return;
+
+      const { count, error } = await supabase
+        .from('survey_responses')
+        .select('id', { count: 'exact', head: true })
+        .eq('application_id', app.id)
+        .eq('student_id', app.student_id);
+
+      if (error) {
+        console.error('Error checking survey status:', error);
+        return;
+      }
+
+      if (count === 0 && !surveySubmitted) {
+        // Wait a bit before showing to let user see the decision first
+        const timer = setTimeout(() => setShowSurvey(true), 3000);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    void checkSurvey();
+  }, [app, surveySubmitted]);
 
   const universityContact = useMemo(() => {
     const uni = app?.program?.university;
@@ -942,6 +971,16 @@ export default function ApplicationDetails() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {app && app.student_id && (
+        <DecisionSurvey
+          applicationId={app.id}
+          studentId={app.student_id}
+          open={showSurvey}
+          onOpenChange={setShowSurvey}
+          onSubmitted={() => setSurveySubmitted(true)}
+        />
+      )}
     </div>
   );
 }
