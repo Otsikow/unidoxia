@@ -78,6 +78,7 @@ import {
 } from "@/lib/applicationStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { logDocumentAuditEvent } from "@/lib/auditLogger";
+import type { ApplicationCategorization } from "@/lib/applicationCategorization";
 import {
   buildMissingRpcError,
   isRpcMissingError,
@@ -185,6 +186,7 @@ export interface ExtendedApplication {
   timelineJson: TimelineEvent[] | null;
   student: StudentDetails | null;
   documents: ApplicationDocument[];
+  categorization: ApplicationCategorization;
 }
 
 export interface ApplicationReviewDialogProps {

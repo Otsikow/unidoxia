@@ -25,6 +25,10 @@ import { UniversityHeader } from "./UniversityHeader";
 import { StatePlaceholder } from "../common/StatePlaceholder";
 import { LoadingState } from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
+import {
+  categorizeApplication,
+  type ApplicationCategorization,
+} from "@/lib/applicationCategorization";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -118,6 +122,7 @@ export interface UniversityApplication {
   lastDocumentUploadedAt?: string | null;
   documentSummaries?: { type: string; uploadedAt: string }[];
   agentId?: string | null;
+  categorization: ApplicationCategorization;
 }
 
 export interface UniversityDocumentRequest {
@@ -399,12 +404,25 @@ export const fetchUniversityDashboardData = async (
       applications = rows.map((app) => {
         const program = programMap.get(app.program_id);
         const student = app.student_id ? studentMap.get(app.student_id) : undefined;
-        
+
         // Determine best student name: preferred_name > legal_name > profile_name
-        const studentName = student?.preferred_name 
-          || student?.legal_name 
-          || student?.profile_name 
+        const studentName = student?.preferred_name
+          || student?.legal_name
+          || student?.profile_name
           || "Unknown Student";
+
+        const categorization = categorizeApplication({
+          programLevel: program?.level ?? null,
+          programName: program?.name ?? null,
+          universityCountry: university?.country ?? null,
+          studentNationality: student?.nationality ?? null,
+          studentCurrentCountry: student?.current_country ?? null,
+          status: app.status ?? "unknown",
+          createdAt: app.created_at,
+          lastUpdatedAt: app.updated_at ?? app.created_at,
+          documentsCount: 0,
+          agentId: app.agent_id ?? null,
+        });
 
         return {
           id: app.id,
@@ -425,6 +443,7 @@ export const fetchUniversityDashboardData = async (
           documentsCount: 0,
           lastDocumentUploadedAt: null,
           documentSummaries: [],
+          categorization,
         };
       });
     }
@@ -472,11 +491,29 @@ export const fetchUniversityDashboardData = async (
       // Merge document summary data into applications
       applications = applications.map((app) => {
         const summary = docSummary.get(app.id);
+        const documentsCount = summary?.count ?? 0;
+        const lastDocumentUploadedAt = summary?.lastUploaded ?? null;
+
+        const categorization = categorizeApplication({
+          programLevel: app.programLevel,
+          programName: app.programName,
+          universityCountry: university?.country ?? null,
+          studentNationality: app.studentNationality ?? null,
+          studentCurrentCountry: app.studentCurrentCountry ?? null,
+          status: app.status,
+          createdAt: app.createdAt,
+          lastUpdatedAt: lastDocumentUploadedAt ?? app.createdAt,
+          lastDocumentAt: lastDocumentUploadedAt,
+          documentsCount,
+          agentId: app.agentId ?? null,
+        });
+
         return {
           ...app,
-          documentsCount: summary?.count ?? 0,
-          lastDocumentUploadedAt: summary?.lastUploaded ?? null,
+          documentsCount,
+          lastDocumentUploadedAt,
           documentSummaries: summary?.summaries ?? [],
+          categorization,
         };
       });
     }
