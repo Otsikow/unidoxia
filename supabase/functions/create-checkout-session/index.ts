@@ -147,9 +147,39 @@ serve(async (req) => {
       .single();
 
     if (studentError || !student) {
-      console.error("Student lookup failed", studentError);
-      return new Response(JSON.stringify({ error: "Student profile not found" }), {
-        status: 404,
+      console.error("Student lookup failed", {
+        userId: authContext.userId,
+        error: studentError?.message,
+        code: studentError?.code,
+        details: studentError?.details,
+        hint: studentError?.hint,
+      });
+
+      // Provide specific error messages based on error type
+      let errorMessage = "Student profile not found";
+      let statusCode = 404;
+
+      if (studentError) {
+        // Database or permission error
+        if (studentError.code === 'PGRST116') {
+          errorMessage = "Student profile not found. Please complete your profile setup first.";
+        } else if (studentError.code?.startsWith('42501') || studentError.message?.includes('permission')) {
+          errorMessage = "Access denied. Please ensure you have the correct permissions.";
+          statusCode = 403;
+        } else if (studentError.message?.includes('timeout') || studentError.message?.includes('network')) {
+          errorMessage = "Database connection error. Please try again in a moment.";
+          statusCode = 503;
+        } else {
+          errorMessage = `Failed to retrieve student profile: ${studentError.message}`;
+          statusCode = 500;
+        }
+      }
+
+      return new Response(JSON.stringify({
+        error: errorMessage,
+        code: studentError?.code,
+      }), {
+        status: statusCode,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -218,10 +248,39 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("create-checkout-session error", error);
-    const message = error instanceof Error ? error.message : "Unexpected error";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
+    console.error("create-checkout-session error", {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+
+    let errorMessage = "An unexpected error occurred while creating the checkout session";
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      // Handle specific error types
+      if (error.message.includes('Stripe')) {
+        errorMessage = "Payment provider error. Please try again or contact support.";
+        statusCode = 503;
+      } else if (error.message.includes('Invalid plan')) {
+        errorMessage = "Invalid plan selected. Please choose a valid plan.";
+        statusCode = 400;
+      } else if (error.message.includes('JSON') || error.message.includes('parse')) {
+        errorMessage = "Invalid request format. Please check your request and try again.";
+        statusCode = 400;
+      } else if (error.message.includes('network') || error.message.includes('timeout')) {
+        errorMessage = "Network error. Please check your connection and try again.";
+        statusCode = 503;
+      } else {
+        errorMessage = `Checkout session creation failed: ${error.message}`;
+      }
+    }
+
+    return new Response(JSON.stringify({
+      error: errorMessage,
+      details: error instanceof Error ? error.message : undefined,
+    }), {
+      status: statusCode,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

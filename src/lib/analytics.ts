@@ -55,12 +55,44 @@ export async function logAnalyticsEvent(
     } as any);
 
     if (error) {
-      throw error;
+      // Log detailed error information even in production for monitoring
+      console.error('Analytics event insertion failed', {
+        eventName,
+        userId,
+        tenantId,
+        error: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      });
+
+      // Don't throw - analytics failures shouldn't break user experience
+      // But we need to know about them for debugging
+      if (import.meta.env.DEV) {
+        console.warn('Analytics event details:', {
+          eventData: augmentedProperties,
+          pageUrl: typeof window !== 'undefined' ? window.location.href : undefined,
+        });
+      }
     }
   } catch (error) {
+    // Catch unexpected errors (network, auth, etc.)
+    console.error('Analytics event logging error:', {
+      eventName,
+      error: error instanceof Error ? error.message : String(error),
+      userId,
+    });
+
+    // Log additional details in development
     if (import.meta.env.DEV) {
-      console.warn('Failed to log analytics event:', error);
+      console.warn('Analytics error details:', {
+        stack: error instanceof Error ? error.stack : undefined,
+        properties,
+      });
     }
+
+    // Analytics failures should never break the user experience
+    // Errors are logged but not propagated
   }
 }
 

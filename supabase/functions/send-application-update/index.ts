@@ -16,30 +16,79 @@ interface RequestBody {
 const sendEmail = async (to: string[], subject: string, html: string) => {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) {
-    console.error("RESEND_API_KEY is not set");
-    return;
-  }
-
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: "UniDoxia <info@unidoxia.com>",
-      to,
+    const error = new Error("Email service not configured: RESEND_API_KEY is not set");
+    console.error("CRITICAL: RESEND_API_KEY is not set", {
+      recipients: to,
       subject,
-      html,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Resend API error: ${error}`);
+    });
+    throw error;
   }
 
-  return await response.json();
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "UniDoxia <info@unidoxia.com>",
+        to,
+        subject,
+        html,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { message: errorText };
+      }
+
+      console.error("Resend API error", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+        recipients: to,
+        subject,
+      });
+
+      // Provide specific error messages based on status code
+      let errorMessage = `Email delivery failed: ${errorData.message || errorText}`;
+      if (response.status === 429) {
+        errorMessage = "Email rate limit exceeded. Please try again later.";
+      } else if (response.status === 401 || response.status === 403) {
+        errorMessage = "Email service authentication failed. Please contact support.";
+      } else if (response.status >= 500) {
+        errorMessage = "Email service temporarily unavailable. The system will retry automatically.";
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    console.log("Email sent successfully", {
+      recipients: to,
+      subject,
+      emailId: result.id,
+    });
+    return result;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Email")) {
+      // Re-throw our formatted errors
+      throw error;
+    }
+    // Handle network errors
+    console.error("Email sending network error", {
+      error: error instanceof Error ? error.message : String(error),
+      recipients: to,
+      subject,
+    });
+    throw new Error(`Email network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 };
 
 function getStatusMessage(status: string, programName: string, universityName: string): { subject: string; body: string } {
@@ -189,7 +238,24 @@ serve(async (req: Request): Promise<Response> => {
         .single();
 
     if (appError || !appData) {
-        throw new Error(`Failed to fetch application data: ${appError?.message || 'Not found'}`);
+        console.error("Failed to fetch application data", {
+            applicationId,
+            error: appError?.message,
+            code: appError?.code,
+            details: appError?.details,
+        });
+
+        let errorMessage = 'Application not found';
+        if (appError) {
+            if (appError.code === 'PGRST116') {
+                errorMessage = `Application ${applicationId} not found. It may have been deleted.`;
+            } else if (appError.code?.startsWith('42501') || appError.message?.includes('permission')) {
+                errorMessage = 'Access denied to application data.';
+            } else {
+                errorMessage = `Failed to fetch application data: ${appError.message}`;
+            }
+        }
+        throw new Error(errorMessage);
     }
 
     // 2. Permission Check
@@ -250,7 +316,11 @@ serve(async (req: Request): Promise<Response> => {
     const status = newStatus || appData.status;
 
     if (!studentEmail) {
-        throw new Error("Student email not found");
+        console.error("Student email not found", {
+            applicationId,
+            studentId: appData.student_id,
+        });
+        throw new Error("Cannot send notification: Student email address not found in profile");
     }
 
     // Determine email content
@@ -277,17 +347,76 @@ serve(async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    await sendEmail([studentEmail], emailSubject, html);
+    try {
+      await sendEmail([studentEmail], emailSubject, html);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+      return new Response(JSON.stringify({
+        success: true,
+        sentTo: studentEmail,
+        subject: emailSubject,
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } catch (emailError) {
+      // Email sending failed, but we've already validated data
+      console.error("Email delivery failed", {
+        applicationId,
+        studentEmail,
+        subject: emailSubject,
+        error: emailError instanceof Error ? emailError.message : String(emailError),
+      });
+
+      // Return appropriate status based on error type
+      const errorMessage = emailError instanceof Error ? emailError.message : "Email delivery failed";
+      let statusCode = 500;
+
+      if (errorMessage.includes('rate limit')) {
+        statusCode = 429;
+      } else if (errorMessage.includes('not configured') || errorMessage.includes('authentication')) {
+        statusCode = 503;
+      } else if (errorMessage.includes('network')) {
+        statusCode = 503;
+      }
+
+      return new Response(JSON.stringify({
+        error: errorMessage,
+        type: 'email_delivery_error',
+      }), {
+        status: statusCode,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
   } catch (error: any) {
-    console.error("Error sending application update email:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    console.error("Error in send-application-update handler:", {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+
+    // Determine error type and appropriate status code
+    let statusCode = 500;
+    let errorType = 'internal_error';
+
+    if (error.message.includes('not found') || error.message.includes('Not found')) {
+      statusCode = 404;
+      errorType = 'not_found';
+    } else if (error.message.includes('Unauthorized') || error.message.includes('permission')) {
+      statusCode = 403;
+      errorType = 'permission_denied';
+    } else if (error.message.includes('email')) {
+      errorType = 'email_error';
+    } else if (error.message.includes('applicationId is required')) {
+      statusCode = 400;
+      errorType = 'validation_error';
+    }
+
+    return new Response(JSON.stringify({
+      error: error.message || 'An unexpected error occurred',
+      type: errorType,
+    }), {
+      status: statusCode,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

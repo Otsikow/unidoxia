@@ -107,7 +107,16 @@ serve(async (req) => {
           .single();
 
         if (paymentError) {
-          console.error("Failed to record payment", paymentError);
+          console.error("CRITICAL: Failed to record payment for session", {
+            sessionId: session.id,
+            studentId,
+            planCode,
+            error: paymentError.message,
+            code: paymentError.code,
+            details: paymentError.details,
+          });
+          // Continue processing to avoid webhook retry loops, but log for manual review
+          // Payment was successful in Stripe but failed to record in database
         }
 
         // Update student plan
@@ -144,9 +153,24 @@ serve(async (req) => {
           .eq("id", studentId);
 
         if (updateError) {
-          console.error("Failed to update student plan", updateError);
+          console.error("CRITICAL: Failed to update student plan after successful payment", {
+            studentId,
+            planCode,
+            paymentRecorded: !paymentError,
+            paymentId: payment?.id,
+            error: updateError.message,
+            code: updateError.code,
+            details: updateError.details,
+            hint: updateError.hint,
+          });
+          // This is a critical error - payment was recorded but student plan wasn't updated
+          // Manual intervention required to reconcile the state
         } else {
-          console.log(`Successfully upgraded student ${studentId} to ${planCode}`);
+          console.log(`Successfully upgraded student ${studentId} to ${planCode}`, {
+            paymentId: payment?.id,
+            planCode,
+            amountCents,
+          });
         }
 
         break;
@@ -156,10 +180,14 @@ serve(async (req) => {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const studentId = paymentIntent.metadata?.student_id;
         
-        console.log(`Payment failed for student ${studentId}`);
-        
+        console.log(`Payment failed for student ${studentId}`, {
+          paymentIntentId: paymentIntent.id,
+          amount: paymentIntent.amount,
+          errorMessage: paymentIntent.last_payment_error?.message,
+        });
+
         // Record failed payment attempt
-        await supabase.from("payments").insert({
+        const { error: failedPaymentError } = await supabase.from("payments").insert({
           amount_cents: paymentIntent.amount,
           currency: paymentIntent.currency.toUpperCase(),
           status: "failed",
@@ -168,8 +196,19 @@ serve(async (req) => {
           metadata: {
             plan_code: paymentIntent.metadata?.plan_code,
             error: paymentIntent.last_payment_error?.message,
+            error_code: paymentIntent.last_payment_error?.code,
+            decline_code: paymentIntent.last_payment_error?.decline_code,
           },
         });
+
+        if (failedPaymentError) {
+          console.error("Failed to record failed payment attempt", {
+            studentId,
+            paymentIntentId: paymentIntent.id,
+            error: failedPaymentError.message,
+            code: failedPaymentError.code,
+          });
+        }
         
         break;
       }

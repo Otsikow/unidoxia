@@ -11,7 +11,68 @@ serve(async (req) => {
   }
 
   try {
-    const { documentType, fileName, fileSize } = await req.json()
+    // Validate request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('Invalid JSON in request body', {
+        error: parseError instanceof Error ? parseError.message : String(parseError),
+      });
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid request format. Expected JSON body.',
+          details: 'Request body must be valid JSON',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+
+    const { documentType, fileName, fileSize } = requestBody;
+
+    // Validate required fields
+    if (!documentType || typeof documentType !== 'string') {
+      return new Response(
+        JSON.stringify({
+          error: 'Validation error',
+          details: 'documentType is required and must be a string',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+
+    if (!fileName || typeof fileName !== 'string') {
+      return new Response(
+        JSON.stringify({
+          error: 'Validation error',
+          details: 'fileName is required and must be a string',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
+
+    // Validate fileSize if provided
+    if (fileSize !== undefined && (typeof fileSize !== 'number' || fileSize < 0)) {
+      return new Response(
+        JSON.stringify({
+          error: 'Validation error',
+          details: 'fileSize must be a positive number',
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      );
+    }
 
     // Mock AI Verification Logic
     // In a real scenario, this would call OpenAI, AWS Textract, or Google Cloud Document AI
@@ -61,12 +122,35 @@ serve(async (req) => {
       },
     )
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Document verification error:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+    });
+
+    let errorMessage = 'Document verification failed';
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      if (error.message.includes('timeout') || error.message.includes('network')) {
+        errorMessage = 'Network timeout during verification. Please try again.';
+        statusCode = 503;
+      } else if (error.message.includes('parse') || error.message.includes('JSON')) {
+        errorMessage = 'Invalid request format. Please check your input.';
+        statusCode = 400;
+      } else {
+        errorMessage = `Verification error: ${error.message}`;
+      }
+    }
+
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({
+        error: errorMessage,
+        details: error instanceof Error ? error.message : 'An unexpected error occurred',
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: statusCode,
       },
     )
   }

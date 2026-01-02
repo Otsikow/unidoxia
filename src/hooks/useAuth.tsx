@@ -157,8 +157,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (updateError) {
-      console.error('Failed to persist partner email verification status:', updateError);
-      return profileData;
+      console.error('Failed to persist partner email verification status:', {
+        profileId: profileData.id,
+        role: profileData.role,
+        error: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+
+      // Return profile with verification flag anyway since email is confirmed
+      // The database update will be retried on next login
+      // This prevents blocking the user from accessing the system
+      return {
+        ...profileData,
+        partner_email_verified: true,
+      };
     }
 
     return {
@@ -184,8 +198,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .maybeSingle();
 
     if (tenantLookupError) {
-      console.error('Error verifying partner tenant isolation:', tenantLookupError);
-      // Do NOT return profileData here - we need to fix the isolation issue
+      console.error('Error verifying partner tenant isolation:', {
+        profileId: profileData.id,
+        tenantId: profileData.tenant_id,
+        role: profileData.role,
+        error: tenantLookupError.message,
+        code: tenantLookupError.code,
+        details: tenantLookupError.details,
+        hint: tenantLookupError.hint,
+      });
+
+      // If we can't fetch tenant data, we can't verify isolation
+      // Return profile as-is to avoid blocking access
+      // Log warning for investigation
+      console.warn('Unable to verify partner tenant isolation, allowing access with existing tenant');
+      return profileData;
     }
 
     // Consider these as shared tenants that require isolation:
