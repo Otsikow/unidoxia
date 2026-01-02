@@ -24,9 +24,12 @@ import {
   Briefcase,
   Globe,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  User,
+  BookOpen,
+  Ban
 } from 'lucide-react';
-import { useAIRecommendations, StudentProfile } from '@/hooks/useAIRecommendations';
+import { useAIRecommendations, StudentProfile, ProgramEligibilityStatus } from '@/hooks/useAIRecommendations';
 import { Link } from 'react-router-dom';
 
 type VisaEligibilityResult = {
@@ -67,13 +70,19 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     academic_scores: {
       gpa: 3.6,
       ielts: 7.5,
-      toefl: 102
+      toefl: 102,
+      waec_english: 'B3'
     },
     experience: {
       years: 2,
       internships: 1,
       leadership_roles: true
     },
+    age: 22,
+    subjects: ['Computer Science', 'Mathematics'],
+    study_gap_years: 1,
+    previous_visa_refusals: 0,
+    academic_progression: 'steady',
     preferences: {
       countries: ['Canada', 'United Kingdom', 'Australia'],
       budget_range: [25000, 75000],
@@ -96,7 +105,7 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     'Build AI research career'
   ];
 
-  type AcademicScoreKey = keyof StudentProfile['academic_scores'];
+  type AcademicScoreKey = Exclude<keyof StudentProfile['academic_scores'], 'waec_english'>;
 
   const handleProfileUpdate = (updater: (prev: StudentProfile) => StudentProfile) => {
     setProfile(prev => updater(prev));
@@ -113,6 +122,17 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     }));
   };
 
+  const handleWaecChange = (value: string) => {
+    const cleaned = value.trim().toUpperCase();
+    handleProfileUpdate(prev => ({
+      ...prev,
+      academic_scores: {
+        ...prev.academic_scores,
+        waec_english: cleaned || undefined
+      }
+    }));
+  };
+
   const handleFilterChange = <K extends keyof Filters>(key: K, value: Filters[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
@@ -124,6 +144,47 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
         ...prev.experience,
         years: value[0]
       }
+    }));
+  };
+
+  const handleAgeChange = (value: number[]) => {
+    handleProfileUpdate(prev => ({
+      ...prev,
+      age: value[0]
+    }));
+  };
+
+  const handleStudyGapChange = (value: number[]) => {
+    handleProfileUpdate(prev => ({
+      ...prev,
+      study_gap_years: value[0]
+    }));
+  };
+
+  const handleVisaRefusalChange = (value: string) => {
+    const numeric = parseInt(value, 10);
+    handleProfileUpdate(prev => ({
+      ...prev,
+      previous_visa_refusals: value === '' || Number.isNaN(numeric) ? undefined : numeric
+    }));
+  };
+
+  const handleProgressionChange = (value: StudentProfile['academic_progression']) => {
+    handleProfileUpdate(prev => ({
+      ...prev,
+      academic_progression: value
+    }));
+  };
+
+  const handleSubjectChange = (value: string) => {
+    const subjects = value
+      .split(',')
+      .map(subject => subject.trim())
+      .filter(Boolean);
+
+    handleProfileUpdate(prev => ({
+      ...prev,
+      subjects
     }));
   };
 
@@ -295,6 +356,18 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     return 'text-destructive bg-destructive/10';
   };
 
+  const getEligibilityColor = (status: ProgramEligibilityStatus) => {
+    switch (status) {
+      case 'Eligible – Auto Proceed':
+        return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200';
+      case 'Borderline – Agent Review Required':
+        return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200';
+      case 'Ineligible – Block & Explain':
+      default:
+        return 'bg-destructive/10 text-destructive';
+    }
+  };
+
   const getVisaColor = (eligibility: string) => {
     switch (eligibility) {
       case 'High': return 'text-success bg-success-light dark:bg-success/20';
@@ -409,6 +482,80 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
                     min={0}
                     step={0.5}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" /> Age
+                  </Label>
+                  <Slider
+                    value={[profile.age ?? 18]}
+                    onValueChange={handleAgeChange}
+                    max={50}
+                    min={16}
+                    step={1}
+                  />
+                  <p className="text-xs text-muted-foreground">Age: {profile.age ?? 'N/A'}</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>WAEC English Grade</Label>
+                  <Input
+                    value={profile.academic_scores.waec_english ?? ''}
+                    onChange={(e) => handleWaecChange(e.target.value)}
+                    placeholder="B3"
+                  />
+                  <p className="text-xs text-muted-foreground">Use if IELTS is unavailable</p>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" /> Key subjects studied
+                  </Label>
+                  <Input
+                    value={(profile.subjects || []).join(', ')}
+                    onChange={(e) => handleSubjectChange(e.target.value)}
+                    placeholder="Computer Science, Mathematics"
+                  />
+                  <p className="text-xs text-muted-foreground">Comma-separated subjects to validate prerequisites</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" /> Study Gap ({profile.study_gap_years ?? 0} yrs)
+                  </Label>
+                  <Slider
+                    value={[profile.study_gap_years ?? 0]}
+                    onValueChange={handleStudyGapChange}
+                    max={10}
+                    min={0}
+                    step={0.5}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Ban className="h-4 w-4 text-primary" /> Visa refusals
+                  </Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={profile.previous_visa_refusals ?? ''}
+                    onChange={(e) => handleVisaRefusalChange(e.target.value)}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Academic progression</Label>
+                  <Select
+                    value={profile.academic_progression ?? 'steady'}
+                    onValueChange={(value) => handleProgressionChange(value as StudentProfile['academic_progression'])}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select progression" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="strong">Strong</SelectItem>
+                      <SelectItem value="steady">Steady</SelectItem>
+                      <SelectItem value="weak">Weak</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Used to flag weak academic progression</p>
                 </div>
               </div>
 
@@ -666,6 +813,24 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
                             <span className="truncate">Ranking: {program.university.ranking?.world_rank || 'N/A'}</span>
                           </div>
                         </div>
+
+                        {program.eligibility && (
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <Badge className={`${getEligibilityColor(program.eligibility.status)} text-xs`}>
+                                {program.eligibility.status}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">Non-negotiable checks</span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                              {program.eligibility.reasons.map((reason, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {reason}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         <div className="space-y-2">
                           <h4 className="font-medium text-xs sm:text-sm">Why this course matches you:</h4>

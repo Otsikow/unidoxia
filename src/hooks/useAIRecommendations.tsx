@@ -26,6 +26,7 @@ export interface ProgramRecommendation {
   entry_requirements: unknown;
   ielts_overall?: number;
   toefl_overall?: number;
+  eligibility?: ProgramEligibilityResult;
 }
 
 export interface StudentProfile {
@@ -35,12 +36,18 @@ export interface StudentProfile {
     toefl?: number;
     gre?: number;
     gmat?: number;
+    waec_english?: string;
   };
+  age?: number;
   experience?: {
     years?: number;
     internships?: number;
     leadership_roles?: boolean;
   };
+  subjects?: string[];
+  study_gap_years?: number;
+  previous_visa_refusals?: number;
+  academic_progression?: 'strong' | 'steady' | 'weak';
   preferences: {
     countries: string[];
     budget_range: [number, number];
@@ -55,10 +62,22 @@ interface ProgramEntryRequirements {
   min_gpa?: number;
   min_ielts?: number;
   min_toefl?: number;
+  max_age?: number;
   min_experience_years?: number;
   focus_areas?: string[];
   preferred_backgrounds?: string[];
   career_paths?: string[];
+  prerequisite_subjects?: string[];
+}
+
+export type ProgramEligibilityStatus =
+  | 'Eligible – Auto Proceed'
+  | 'Borderline – Agent Review Required'
+  | 'Ineligible – Block & Explain';
+
+export interface ProgramEligibilityResult {
+  status: ProgramEligibilityStatus;
+  reasons: string[];
 }
 
 const parseEntryRequirements = (entryRequirements: unknown): ProgramEntryRequirements => {
@@ -73,6 +92,105 @@ const parseEntryRequirements = (entryRequirements: unknown): ProgramEntryRequire
     }
   }
   return {};
+};
+
+const WAEC_PASS_GRADES = ['A1', 'B2', 'B3', 'C4', 'C5', 'C6'];
+
+const evaluateProgramEligibility = (
+  program: ProgramRecommendation,
+  profile: StudentProfile,
+  requirements: ProgramEntryRequirements
+): ProgramEligibilityResult => {
+  const ineligible: string[] = [];
+  const borderline: string[] = [];
+
+  // GPA / class requirements
+  if (typeof requirements.min_gpa === 'number') {
+    if (typeof profile.academic_scores.gpa !== 'number') {
+      borderline.push(`GPA data missing for ${requirements.min_gpa} minimum`);
+    } else if (profile.academic_scores.gpa < requirements.min_gpa - 0.2) {
+      ineligible.push(`Minimum GPA ${requirements.min_gpa} not met`);
+    } else if (profile.academic_scores.gpa < requirements.min_gpa) {
+      borderline.push(`GPA slightly below ${requirements.min_gpa} requirement`);
+    }
+  }
+
+  // Subject prerequisites
+  const requiredSubjects = requirements.prerequisite_subjects || requirements.focus_areas || [];
+  if (requiredSubjects.length > 0) {
+    const subjects = (profile.subjects || []).map(subject => subject.toLowerCase());
+    if (subjects.length === 0) {
+      borderline.push('Subject prerequisites need verification');
+    } else if (!requiredSubjects.some(subject => subjects.includes(subject.toLowerCase()))) {
+      ineligible.push('Subject prerequisites not satisfied');
+    }
+  }
+
+  // English language requirements (IELTS / WAEC)
+  const requiredIELTS = program.ielts_overall ?? requirements.min_ielts;
+  if (typeof requiredIELTS === 'number') {
+    const ieltsScore = profile.academic_scores.ielts;
+    const waecGrade = profile.academic_scores.waec_english?.toUpperCase();
+    const waecPass = waecGrade ? WAEC_PASS_GRADES.includes(waecGrade) : false;
+
+    if (typeof ieltsScore === 'number' && ieltsScore >= requiredIELTS) {
+      // Pass
+    } else if (waecPass && requiredIELTS <= 6.5) {
+      borderline.push('WAEC English used to meet language requirement');
+    } else {
+      ineligible.push(`English requirement (${requiredIELTS} IELTS) not met`);
+    }
+  }
+
+  // Age limits
+  const maxAge = requirements.max_age ?? 45;
+  if (typeof profile.age === 'number') {
+    if (profile.age > maxAge) {
+      ineligible.push(`Age exceeds maximum of ${maxAge}`);
+    } else if (profile.age >= maxAge - 2) {
+      borderline.push('Age close to upper limit—visa risk');
+    }
+  }
+
+  // Visa-risk flags
+  if (typeof profile.study_gap_years === 'number') {
+    if (profile.study_gap_years >= 5) {
+      ineligible.push('Study gap too long for visa approval');
+    } else if (profile.study_gap_years >= 3) {
+      borderline.push('Long study gap—justify with work or certifications');
+    }
+  }
+
+  if (typeof profile.previous_visa_refusals === 'number') {
+    if (profile.previous_visa_refusals >= 3) {
+      ineligible.push('Multiple previous visa refusals');
+    } else if (profile.previous_visa_refusals >= 1) {
+      borderline.push('Prior visa refusal—requires strong SOP and evidence');
+    }
+  }
+
+  if (profile.academic_progression === 'weak') {
+    borderline.push('Academic progression flagged as weak');
+  }
+
+  if (ineligible.length > 0) {
+    return {
+      status: 'Ineligible – Block & Explain',
+      reasons: ineligible
+    };
+  }
+
+  if (borderline.length > 0) {
+    return {
+      status: 'Borderline – Agent Review Required',
+      reasons: borderline
+    };
+  }
+
+  return {
+    status: 'Eligible – Auto Proceed',
+    reasons: ['Meets minimum program and visa checks']
+  };
 };
 
 export const useAIRecommendations = () => {
@@ -238,6 +356,8 @@ export const useAIRecommendations = () => {
           addScore(5, 'Top-ranked university match');
         }
 
+        const eligibility = evaluateProgramEligibility(program as ProgramRecommendation, profile, requirements);
+
         return {
           ...program,
           university: {
@@ -245,7 +365,8 @@ export const useAIRecommendations = () => {
             ranking: program.university.ranking as UniversityRanking | undefined
           },
           match_score: Math.min(score, 100),
-          match_reasons: Array.from(new Set(reasons))
+          match_reasons: Array.from(new Set(reasons)),
+          eligibility
         };
       }) || [];
 
