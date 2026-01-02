@@ -28,6 +28,7 @@ import { useUniversityDashboard } from "@/components/university/layout/Universit
 import { ApplicationReviewDialog } from "@/components/university/applications/ApplicationReviewDialog";
 import { useExtendedApplication } from "@/hooks/useExtendedApplication";
 import { useToast } from "@/hooks/use-toast";
+import type { ApplicationRiskBand } from "@/lib/applicationCategorization";
 
 const formatDate = (value: string | null) => {
   if (!value) return "—";
@@ -58,6 +59,12 @@ const formatTimeAgo = (date: Date | null) => {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
   return date.toLocaleDateString();
+};
+
+const RISK_BADGE_STYLES: Record<ApplicationRiskBand, string> = {
+  Low: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  Medium: "border-amber-200 bg-amber-50 text-amber-800",
+  High: "border-red-200 bg-red-50 text-red-800",
 };
 
 const ApplicationsPage = () => {
@@ -457,6 +464,7 @@ const ApplicationsPage = () => {
                     <th className="py-2">Application</th>
                     <th className="py-2">Student</th>
                     <th className="py-2">Course</th>
+                    <th className="py-2">Tags</th>
                     <th className="py-2">Status</th>
                     <th className="py-2 text-right">Actions</th>
                     <th className="py-2 text-right">Submitted</th>
@@ -520,6 +528,25 @@ const ApplicationsPage = () => {
                           <span className="text-xs text-muted-foreground">
                             {app.programLevel}
                           </span>
+                        </div>
+                      </td>
+                      <td className="py-3">
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="outline" className="text-[11px]">
+                            {app.categorization.level}
+                          </Badge>
+                          <Badge variant="outline" className="text-[11px]">
+                            {app.categorization.route}
+                          </Badge>
+                          <Badge variant="outline" className="text-[11px]">
+                            {app.categorization.geography}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className={`text-[11px] ${RISK_BADGE_STYLES[app.categorization.riskBand]}`}
+                          >
+                            {app.categorization.riskBand} risk
+                          </Badge>
                         </div>
                       </td>
                       <td className="py-3">

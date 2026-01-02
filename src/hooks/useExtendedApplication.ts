@@ -15,6 +15,7 @@ import {
   isRpcUnavailable,
   markRpcMissing,
 } from "@/lib/supabaseRpc";
+import { categorizeApplication } from "@/lib/applicationCategorization";
 
 const STORAGE_BUCKET = "student-documents";
 
@@ -65,6 +66,22 @@ const mapTestScoresFromDB = (scores: any[]): TestScore[] =>
     subscores: score.subscores_json ?? undefined,
     reportUrl: score.report_url ?? null,
   }));
+
+const getLatestDocumentTimestamp = (documents: ApplicationDocument[]): string | null => {
+  let latest: string | null = null;
+
+  for (const doc of documents) {
+    if (!doc.uploadedAt) continue;
+    const docDate = new Date(doc.uploadedAt);
+    if (Number.isNaN(docDate.getTime())) continue;
+
+    if (!latest || docDate > new Date(latest)) {
+      latest = doc.uploadedAt;
+    }
+  }
+
+  return latest;
+};
 
 /* ======================================================
    Hook
@@ -478,6 +495,21 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
       /* ---------------------------
          Final Assembly
       --------------------------- */
+      const latestDocumentUploadedAt = getLatestDocumentTimestamp(documents);
+      const categorization = categorizeApplication({
+        programLevel: program?.level ?? null,
+        programName: program?.name ?? null,
+        universityCountry: null,
+        studentNationality: studentDetails?.nationality ?? null,
+        studentCurrentCountry: studentDetails?.currentCountry ?? null,
+        status: appData.status ?? "unknown",
+        createdAt: appData.created_at ?? null,
+        lastUpdatedAt: appData.updated_at ?? appData.submitted_at ?? appData.created_at ?? null,
+        lastDocumentAt: latestDocumentUploadedAt,
+        documentsCount: documents.length,
+        agentId: appData.agent_id ?? null,
+      });
+
       const extended: ExtendedApplication = {
         id: appData.id,
         appNumber: appData.app_number ?? "—",
@@ -500,6 +532,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
         timelineJson: parseTimelineJson(appData.timeline_json),
         student: studentDetails,
         documents,
+        categorization,
       };
 
       console.log("[useExtendedApplication] Application fully loaded:", {
@@ -548,13 +581,29 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
     (newStatus: string, timelineEvent?: TimelineEvent) => {
       setExtendedApplication((prev) => {
         if (!prev) return prev;
+        const updatedAt = new Date().toISOString();
+        const latestDocumentUploadedAt = getLatestDocumentTimestamp(prev.documents);
+        const categorization = categorizeApplication({
+          programLevel: prev.programLevel,
+          programName: prev.programName,
+          universityCountry: null,
+          studentNationality: prev.studentNationality ?? null,
+          studentCurrentCountry: prev.student?.currentCountry ?? prev.student?.address?.country ?? null,
+          status: newStatus,
+          createdAt: prev.createdAt,
+          lastUpdatedAt: updatedAt,
+          lastDocumentAt: latestDocumentUploadedAt,
+          documentsCount: prev.documents.length,
+          agentId: prev.agentId ?? null,
+        });
         return {
           ...prev,
           status: newStatus,
-          updatedAt: new Date().toISOString(),
+          updatedAt,
           timelineJson: timelineEvent
             ? [...(prev.timelineJson ?? []), timelineEvent]
             : prev.timelineJson,
+          categorization,
         };
       });
     },
