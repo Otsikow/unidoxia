@@ -20,7 +20,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, user, loading: authLoading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -132,18 +132,22 @@ const Login = () => {
         title: 'Login failed',
         description: error instanceof Error ? error.message : 'An error occurred during login',
       });
-      setLoading(false);
     } else {
       toast({
         title: 'Welcome back!',
         description: 'Successfully logged in. Redirecting...',
       });
-      // Role-based redirect will be handled by useAuth hook
-      // Just wait a moment for the profile to load
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1500);
+
+      // Ensure profile data is hydrated before we leave the page to avoid
+      // any dashboard flicker or reload requirements.
+      setIsRedirecting(true);
+      await refreshProfile();
+
+      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/dashboard';
+      navigate(redirectTo, { replace: true });
     }
+
+    setLoading(false);
   };
 
     if (isRedirecting) {
