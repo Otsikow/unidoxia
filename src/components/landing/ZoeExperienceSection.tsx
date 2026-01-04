@@ -453,7 +453,7 @@ export function ZoeExperienceSection() {
                     <img
                       src={zoePortrait}
                       alt={t("pages.index.aiSearch.zoeAlt", "Portrait of Zoe, the Bridge intelligence guide")}
-                      className="h-auto w-full max-w-[320px] rounded-2xl object-cover drop-shadow-xl"
+                      className="h-auto w-full max-w-[320px] rounded-2xl object-cover drop-shadow-xl animate-ken-burns will-change-transform"
                       loading="lazy"
                     />
                     <div className="space-y-1">

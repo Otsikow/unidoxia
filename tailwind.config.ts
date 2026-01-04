@@ -139,6 +139,10 @@ export default {
           from: { transform: "translateY(-100%)" },
           to: { transform: "translateY(0)" },
         },
+        "ken-burns": {
+          "0%": { transform: "scale(1) translateY(0)" },
+          "100%": { transform: "scale(1.08) translateY(-8px)" },
+        },
         "shimmer": {
           "0%": { backgroundPosition: "-1000px 0" },
           "100%": { backgroundPosition: "1000px 0" },
@@ -180,6 +184,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out",
         "slide-in-up": "slide-in-up 0.4s ease-out",
         "slide-in-down": "slide-in-down 0.4s ease-out",
+        "ken-burns": "ken-burns 18s ease-in-out infinite alternate",
         "shimmer": "shimmer 2s linear infinite",
         "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
         "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
