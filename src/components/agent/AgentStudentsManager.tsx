@@ -58,7 +58,6 @@ import { useAgentProfileCompletion } from "@/hooks/useAgentProfileCompletion";
 import { cn } from "@/lib/utils";
 import AgentInviteCodeManager from "./AgentInviteCodeManager";
 import InviteStudentDialog from "@/components/students/InviteStudentDialog";
-import BackButton from "@/components/BackButton";
 import { AgentProfileCompletionCard } from "./AgentProfileCompletionCard";
 
 type SortableColumn = "country" | "status";
@@ -277,7 +276,6 @@ export default function AgentStudentsManager() {
   return (
     <div className="space-y-6 min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <BackButton variant="ghost" size="sm" fallback="/dashboard" />
         <div className="rounded-lg border bg-background/80 px-3 py-2 shadow-sm text-sm">
           <p className="font-semibold text-foreground">Students dashboard</p>
           <p className="text-muted-foreground">Manage your roster and invites.</p>
