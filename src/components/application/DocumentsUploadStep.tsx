@@ -297,9 +297,12 @@ export default function DocumentsUploadStep({
                             {verification.status === 'Verified' && <ShieldCheck className="h-4 w-4" />}
                             {verification.status === 'Suspicious' && <AlertTriangle className="h-4 w-4" />}
                             {verification.status === 'Invalid' && <XCircle className="h-4 w-4" />}
-                            AI Status: {verification.status}
+                            AI Pre-check: {verification.status}
                           </div>
                           <p className="opacity-90">{verification.reason}</p>
+                          <p className="mt-1 text-xs opacity-80">
+                            Final verification is completed by admin/staff before university review.
+                          </p>
                         </div>
                       ) : null}
                     </div>
