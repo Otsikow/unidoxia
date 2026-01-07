@@ -70,8 +70,10 @@ import {
   RefreshCw,
   Sparkles,
   Users,
+  Eye,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { StudentProfileSheet } from "@/components/admin/StudentProfileSheet";
 
 interface ApplicationRow {
   id: string;
@@ -165,6 +167,11 @@ const AdminAdmissionsOversight = () => {
   const [selectedApplication, setSelectedApplication] = useState<ApplicationRow | null>(null);
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState<boolean>(false);
   const [assignmentLoading, setAssignmentLoading] = useState<boolean>(false);
+
+  // Student profile sheet state
+  const [profileSheetOpen, setProfileSheetOpen] = useState<boolean>(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
 
   const fetchApplications = useCallback(async () => {
     if (!tenantId) {
@@ -406,6 +413,14 @@ const AdminAdmissionsOversight = () => {
     setAssignmentDialogOpen(true);
   };
 
+  const openStudentProfile = (application: ApplicationRow) => {
+    if (application.student?.id) {
+      setSelectedStudentId(application.student.id);
+      setSelectedApplicationId(application.id);
+      setProfileSheetOpen(true);
+    }
+  };
+
   const handleAssignment = async () => {
     if (!selectedApplication?.student?.id) {
       toast({
@@ -602,12 +617,16 @@ const AdminAdmissionsOversight = () => {
       return (
         <TableRow key={application.id} className="align-top">
           <TableCell className="min-w-[160px]">
-            <div className="space-y-1">
-              <p className="font-medium">
+            <button
+              type="button"
+              onClick={() => openStudentProfile(application)}
+              className="text-left space-y-1 hover:bg-muted/50 -m-2 p-2 rounded-lg transition-colors cursor-pointer w-full"
+            >
+              <p className="font-medium text-primary hover:underline">
                 {application.student?.legal_name ?? application.student?.profile?.full_name ?? "Unknown student"}
               </p>
               <p className="text-xs text-muted-foreground">{application.app_number ?? application.id}</p>
-            </div>
+            </button>
           </TableCell>
           <TableCell className="min-w-[140px]">
             <div className="space-y-1">
@@ -665,6 +684,10 @@ const AdminAdmissionsOversight = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onSelect={() => openStudentProfile(application)}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    View student profile
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={() =>
                       window.dispatchEvent(
@@ -1082,6 +1105,14 @@ const AdminAdmissionsOversight = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Student Profile Sheet */}
+      <StudentProfileSheet
+        open={profileSheetOpen}
+        onOpenChange={setProfileSheetOpen}
+        studentId={selectedStudentId}
+        applicationId={selectedApplicationId}
+      />
     </div>
   );
 };
