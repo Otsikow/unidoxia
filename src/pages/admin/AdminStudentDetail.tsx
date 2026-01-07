@@ -239,9 +239,6 @@ const AdminStudentDetail = () => {
           passport_expiry,
           visa_history_json,
           created_at,
-          status,
-          status_reason,
-          status_changed_at,
           profile:profiles (
             id,
             full_name,
