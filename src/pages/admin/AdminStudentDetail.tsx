@@ -598,7 +598,7 @@ const AdminStudentDetail = () => {
           )}
 
           {/* Document Status Cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card 
               className={`cursor-pointer transition-all ${docTab === "pending" ? "ring-2 ring-amber-500" : ""}`}
               onClick={() => setDocTab("pending")}
@@ -659,7 +659,7 @@ const AdminStudentDetail = () => {
             </CardHeader>
             <CardContent>
               <Tabs value={docTab} onValueChange={setDocTab}>
-                <TabsList className="mb-4">
+                <TabsList className="mb-4 flex-wrap h-auto gap-1">
                   <TabsTrigger value="pending" className="gap-2">
                     <Clock className="h-4 w-4" /> Pending ({documentStats.pending})
                   </TabsTrigger>
@@ -680,22 +680,22 @@ const AdminStudentDetail = () => {
                     filteredDocuments.map((doc) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 rounded-lg bg-muted">
+                        <div className="flex items-center gap-4 min-w-0 flex-1">
+                          <div className="p-3 rounded-lg bg-muted shrink-0">
                             <FileText className="h-5 w-5 text-muted-foreground" />
                           </div>
-                          <div>
-                            <p className="font-medium">{getDocLabel(doc.document_type)}</p>
-                            <p className="text-sm text-muted-foreground">{doc.file_name}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium truncate">{getDocLabel(doc.document_type)}</p>
+                            <p className="text-sm text-muted-foreground truncate">{doc.file_name}</p>
                             <p className="text-xs text-muted-foreground">
                               {formatFileSize(doc.file_size)} • Uploaded {format(new Date(doc.created_at), "MMM d, yyyy")}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge 
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <Badge
                             variant={
                               doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
                                 ? "default"
