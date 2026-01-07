@@ -35,6 +35,7 @@ import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
+  Ban,
   BookOpen,
   Check,
   CheckCircle2,
@@ -49,14 +50,35 @@ import {
   MessageSquare,
   Maximize2,
   Minimize2,
+  MoreVertical,
   Plane,
   RefreshCw,
+  RotateCcw,
   Send,
+  Trash2,
   User,
   X,
   XCircle,
   PenTool,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { logSecurityEvent } from "@/lib/securityLogger";
 
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { ApplicationReview } from "@/components/application/ApplicationReview";
@@ -105,6 +127,9 @@ interface StudentProfile {
   passport_expiry: string | null;
   visa_history_json: any[];
   created_at: string;
+  status: "active" | "suspended" | "deleted" | null;
+  status_reason: string | null;
+  status_changed_at: string | null;
   profile: {
     id: string;
     full_name: string | null;
@@ -183,6 +208,13 @@ const AdminStudentDetail = () => {
 
   const [docTab, setDocTab] = useState("pending");
 
+  // Account management state
+  const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false);
+  const [actionReason, setActionReason] = useState("");
+  const [actionLoading, setActionLoading] = useState(false);
+
   /* ------------------------------ Data Load ------------------------------ */
 
   const loadData = useCallback(async () => {
@@ -207,6 +239,9 @@ const AdminStudentDetail = () => {
           passport_expiry,
           visa_history_json,
           created_at,
+          status,
+          status_reason,
+          status_changed_at,
           profile:profiles (
             id,
             full_name,
@@ -358,6 +393,150 @@ const AdminStudentDetail = () => {
     }
   };
 
+  /* ------------------------------ Account Management ------------------------------ */
+
+  const handleSuspendStudent = async () => {
+    if (!student || !profile?.id) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("students")
+        .update({
+          status: "suspended",
+          status_reason: actionReason || "Suspended by admin",
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", student.id);
+
+      if (error) throw error;
+
+      await logSecurityEvent({
+        eventType: "custom",
+        description: `Admin suspended student account: ${studentName}`,
+        severity: "high",
+        metadata: {
+          studentId: student.id,
+          studentName,
+          reason: actionReason,
+        },
+        alert: true,
+      });
+
+      toast({
+        title: "Student suspended",
+        description: `${studentName}'s account has been suspended.`,
+      });
+
+      setSuspendDialogOpen(false);
+      setActionReason("");
+      loadData();
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Failed to suspend student account",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    if (!student || !profile?.id) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("students")
+        .update({
+          status: "deleted",
+          status_reason: actionReason || "Deleted by admin",
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", student.id);
+
+      if (error) throw error;
+
+      await logSecurityEvent({
+        eventType: "custom",
+        description: `Admin deleted student account: ${studentName}`,
+        severity: "high",
+        metadata: {
+          studentId: student.id,
+          studentName,
+          reason: actionReason,
+        },
+        alert: true,
+      });
+
+      toast({
+        title: "Student deleted",
+        description: `${studentName}'s account has been deleted.`,
+      });
+
+      setDeleteDialogOpen(false);
+      setActionReason("");
+      navigate("/admin/students");
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Failed to delete student account",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReactivateStudent = async () => {
+    if (!student || !profile?.id) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("students")
+        .update({
+          status: "active",
+          status_reason: null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", student.id);
+
+      if (error) throw error;
+
+      await logSecurityEvent({
+        eventType: "custom",
+        description: `Admin reactivated student account: ${studentName}`,
+        severity: "medium",
+        metadata: {
+          studentId: student.id,
+          studentName,
+        },
+        alert: false,
+      });
+
+      toast({
+        title: "Student reactivated",
+        description: `${studentName}'s account has been reactivated.`,
+      });
+
+      setReactivateDialogOpen(false);
+      loadData();
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Failed to reactivate student account",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   /* ------------------------------ Derived Values ------------------------------ */
 
   const studentName = student?.preferred_name || student?.legal_name || student?.profile?.full_name || "Student";
@@ -429,14 +608,72 @@ const AdminStudentDetail = () => {
         </div>
         <div className="flex items-center gap-2">
           {statusBadge}
+          {student.status === "suspended" ? (
+            <Badge variant="destructive" className="gap-1">
+              <Ban className="h-3 w-3" />
+              Suspended
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="gap-1 border-green-500 text-green-600">
+              <CheckCircle2 className="h-3 w-3" />
+              Active
+            </Badge>
+          )}
           <Button variant="outline" onClick={() => setChatOpen(true)}>
             <MessageSquare className="h-4 w-4 mr-2" /> Message
           </Button>
           <Button variant="ghost" size="icon" onClick={loadData}>
             <RefreshCw className="h-4 w-4" />
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {student.status === "suspended" ? (
+                <DropdownMenuItem onClick={() => setReactivateDialogOpen(true)}>
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reactivate Account
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => setSuspendDialogOpen(true)}
+                  className="text-amber-600"
+                >
+                  <Ban className="h-4 w-4 mr-2" />
+                  Suspend Account
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setDeleteDialogOpen(true)}
+                className="text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+
+      {/* Suspended Alert */}
+      {student.status === "suspended" && (
+        <Alert className="border-destructive bg-destructive/10">
+          <Ban className="h-4 w-4 text-destructive" />
+          <AlertTitle className="text-destructive">Account Suspended</AlertTitle>
+          <AlertDescription>
+            This student account is currently suspended.
+            {student.status_reason && (
+              <span className="block mt-1 text-muted-foreground">
+                Reason: {student.status_reason}
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -895,6 +1132,103 @@ const AdminStudentDetail = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Suspend Student Dialog */}
+      <AlertDialog open={suspendDialogOpen} onOpenChange={setSuspendDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Suspend Student Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to suspend{" "}
+              <span className="font-semibold">{studentName}</span>'s account?
+              The student will not be able to access their account until reactivated.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium">Reason for suspension (optional)</label>
+            <Textarea
+              placeholder="Enter reason for suspension..."
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActionReason("")}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspendStudent}
+              disabled={actionLoading}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Suspend Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Student Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Student Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete{" "}
+              <span className="font-semibold">{studentName}</span>'s account?
+              This action will remove the student from the system. This cannot be easily undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <label className="text-sm font-medium">Reason for deletion (optional)</label>
+            <Textarea
+              placeholder="Enter reason for deletion..."
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+              className="mt-2"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setActionReason("")}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteStudent}
+              disabled={actionLoading}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reactivate Student Dialog */}
+      <AlertDialog open={reactivateDialogOpen} onOpenChange={setReactivateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reactivate Student Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to reactivate{" "}
+              <span className="font-semibold">{studentName}</span>'s account?
+              The student will regain access to their account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReactivateStudent}
+              disabled={actionLoading}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Reactivate Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
