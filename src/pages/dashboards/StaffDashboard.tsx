@@ -58,41 +58,7 @@ import StaffMessagesTable from "@/components/staff/StaffMessagesTable";
 import StaffTasksBoard from "@/components/staff/StaffTasksBoard";
 import StaffZoeInsightsTab from "@/components/staff/StaffZoeInsightsTab";
 import { StaffTaskComposerProvider } from "@/components/staff/StaffTaskComposerProvider";
-
-const personalOverviewKpis = [
-  {
-    title: "Students Assigned",
-    value: "32",
-    description: "vs. last week",
-    icon: Users,
-    trend: { value: 12, isPositive: true },
-    to: "/dashboard/students",
-  },
-  {
-    title: "Applications Processed",
-    value: "18",
-    description: "Completed in the last 7 days",
-    icon: FileText,
-    trend: { value: 8, isPositive: true },
-    to: "/dashboard/applications",
-  },
-  {
-    title: "Tasks Pending",
-    value: "7",
-    description: "2 flagged as urgent",
-    icon: CheckSquare,
-    trend: { value: 5, isPositive: false },
-    to: "/dashboard/tasks",
-  },
-  {
-    title: "Approvals Today",
-    value: "5",
-    description: "Across student finances",
-    icon: AlarmClock,
-    trend: { value: 3, isPositive: true },
-    to: "/dashboard/payments",
-  },
-];
+import { useStaffStudents } from "@/hooks/useStaffData";
 
 const applicationProgressData = [
   { status: "Submitted", value: 12 },
@@ -160,6 +126,47 @@ export default function StaffDashboard() {
   const [updatingCommissionId, setUpdatingCommissionId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Fetch actual student count from the database
+  const { data: studentsData } = useStaffStudents(1);
+  const studentCount = studentsData?.total ?? 0;
+
+  const personalOverviewKpis = useMemo(
+    () => [
+      {
+        title: "Students Assigned",
+        value: String(studentCount),
+        description: "Total students in system",
+        icon: Users,
+        to: "/dashboard/students",
+      },
+      {
+        title: "Applications Processed",
+        value: "18",
+        description: "Completed in the last 7 days",
+        icon: FileText,
+        trend: { value: 8, isPositive: true },
+        to: "/dashboard/applications",
+      },
+      {
+        title: "Tasks Pending",
+        value: "7",
+        description: "2 flagged as urgent",
+        icon: CheckSquare,
+        trend: { value: 5, isPositive: false },
+        to: "/dashboard/tasks",
+      },
+      {
+        title: "Approvals Today",
+        value: "5",
+        description: "Across student finances",
+        icon: AlarmClock,
+        trend: { value: 3, isPositive: true },
+        to: "/dashboard/payments",
+      },
+    ],
+    [studentCount],
+  );
 
   const financeQuery = useQuery({
     queryKey: ["staff-dashboard", "finance"],
