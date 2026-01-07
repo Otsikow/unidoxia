@@ -1672,23 +1672,29 @@ export default function NewApplication() {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[min(92vw,34rem)] sm:max-w-lg p-6 sm:p-8">
           <DialogHeader>
-            <div className="flex justify-center mb-4">
-              <div className="rounded-full bg-green-100 p-3">
-                <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="flex justify-center mb-4 sm:mb-5">
+              <div className="rounded-full bg-green-100/90 p-3 sm:p-4 shadow-sm">
+                <CheckCircle className="h-8 w-8 sm:h-9 sm:w-9 text-green-600" />
               </div>
             </div>
-            <DialogTitle className="text-center text-2xl">Application Submitted!</DialogTitle>
-            <DialogDescription className="text-center space-y-4">
-              <p>
+            <DialogTitle className="text-center text-xl sm:text-2xl">
+              Application Submitted!
+            </DialogTitle>
+            <DialogDescription className="text-center space-y-4 text-sm sm:text-base">
+              <p className="text-muted-foreground">
                 Your application has been successfully submitted. You will receive updates via
                 email and notifications.
               </p>
               {trackingCode && (
-                <div className="bg-muted p-4 rounded-lg">
-                  <p className="text-sm font-medium mb-1">Application Tracking ID</p>
-                  <p className="text-lg font-mono font-bold">{trackingCode}</p>
+                <div className="bg-muted/70 border border-muted-foreground/10 p-4 sm:p-5 rounded-xl">
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1">
+                    Application Tracking ID
+                  </p>
+                  <p className="text-lg sm:text-xl font-mono font-semibold tracking-wide">
+                    {trackingCode}
+                  </p>
                   <p className="text-xs text-muted-foreground mt-2">
                     Use this ID anytime in your dashboard to instantly open your application status.
                   </p>
@@ -1696,7 +1702,7 @@ export default function NewApplication() {
               )}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
             <Button
               onClick={() => navigate(viewApplicationUrl)}
               className="flex-1"
