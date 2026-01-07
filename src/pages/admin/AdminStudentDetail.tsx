@@ -24,42 +24,34 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import {
   AlertCircle,
   AlertTriangle,
   ArrowLeft,
   Ban,
   BookOpen,
-  Check,
   CheckCircle2,
   Clock,
   Download,
   Eye,
   FileText,
   GraduationCap,
-  History,
   Loader2,
-  MessageCircle,
   MessageSquare,
   Maximize2,
   Minimize2,
   MoreVertical,
-  Plane,
   RefreshCw,
   RotateCcw,
-  Send,
   Trash2,
   User,
-  X,
   XCircle,
-  PenTool,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -81,7 +73,6 @@ import {
 import { logSecurityEvent } from "@/lib/securityLogger";
 
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
-import { ApplicationReview } from "@/components/application/ApplicationReview";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -171,12 +162,23 @@ const REQUIRED_DOCUMENTS = [
 ];
 
 const getDocLabel = (t: string) =>
-  DOCUMENT_LABELS[t] ?? t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  DOCUMENT_LABELS[t] ?? (t ? t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "Unknown Document");
 
 const formatFileSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const formatDateSafe = (dateStr: string | null | undefined, formatStr: string = "MMM d, yyyy") => {
+  if (!dateStr) return "—";
+  try {
+    const date = new Date(dateStr);
+    if (!isValid(date)) return "—";
+    return format(date, formatStr);
+  } catch (e) {
+    return "—";
+  }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -218,6 +220,7 @@ const AdminStudentDetail = () => {
   /* ------------------------------ Data Load ------------------------------ */
 
   const loadData = useCallback(async () => {
+    if (!studentId) return;
     try {
       setLoading(true);
       setError(null);
@@ -309,7 +312,7 @@ const AdminStudentDetail = () => {
   }, [documents]);
 
   const missingDocuments = useMemo(() => {
-    const uploadedTypes = documents.map((d) => d.document_type.toLowerCase());
+    const uploadedTypes = documents.map((d) => d.document_type ? d.document_type.toLowerCase() : "");
     return REQUIRED_DOCUMENTS.filter((req) => !uploadedTypes.includes(req));
   }, [documents]);
 
@@ -568,7 +571,11 @@ const AdminStudentDetail = () => {
   if (loading) {
     return (
       <div className="space-y-6 p-6">
-        <Skeleton className="h-8 w-32" />
+        <div className="flex items-center gap-2 mb-4">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <h2 className="text-xl font-semibold">Loading student profile...</h2>
+        </div>
+        <Skeleton className="h-8 w-48" />
         <Skeleton className="h-24 w-full" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Skeleton className="h-96" />
@@ -694,7 +701,7 @@ const AdminStudentDetail = () => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date of Birth</span>
                 <span className="font-medium">
-                  {student.date_of_birth ? format(new Date(student.date_of_birth), "MMM d, yyyy") : "—"}
+                  {formatDateSafe(student.date_of_birth)}
                 </span>
               </div>
               <Separator />
@@ -761,7 +768,7 @@ const AdminStudentDetail = () => {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Passport Expiry</span>
                 <span className="font-medium">
-                  {student.passport_expiry ? format(new Date(student.passport_expiry), "MMM d, yyyy") : "—"}
+                  {formatDateSafe(student.passport_expiry)}
                 </span>
               </div>
             </CardContent>
@@ -781,7 +788,7 @@ const AdminStudentDetail = () => {
                     <p className="font-medium">{edu.institution_name}</p>
                     <p className="text-sm text-muted-foreground">{edu.level} • {edu.country}</p>
                     <p className="text-xs text-muted-foreground">
-                      {format(new Date(edu.start_date), "yyyy")} - {edu.end_date ? format(new Date(edu.end_date), "yyyy") : "Present"}
+                      {formatDateSafe(edu.start_date, "yyyy")} - {edu.end_date ? formatDateSafe(edu.end_date, "yyyy") : "Present"}
                       {edu.gpa && ` • GPA: ${edu.gpa}`}
                     </p>
                   </div>
@@ -927,7 +934,7 @@ const AdminStudentDetail = () => {
                             <p className="font-medium truncate">{getDocLabel(doc.document_type)}</p>
                             <p className="text-sm text-muted-foreground truncate">{doc.file_name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {formatFileSize(doc.file_size)} • Uploaded {format(new Date(doc.created_at), "MMM d, yyyy")}
+                              {formatFileSize(doc.file_size)} • Uploaded {formatDateSafe(doc.created_at)}
                             </p>
                           </div>
                         </div>
