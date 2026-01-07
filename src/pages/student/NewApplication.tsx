@@ -1105,12 +1105,17 @@ export default function NewApplication() {
         if (legalName) updateStudent.legal_name = legalName;
         if (contactEmail) updateStudent.contact_email = contactEmail;
         if (contactPhone) updateStudent.contact_phone = contactPhone;
-        if (whatsappNumber) updateStudent.whatsapp_number = whatsappNumber;
         if (nationality) updateStudent.nationality = nationality;
         if (passportNumber) updateStudent.passport_number = passportNumber;
         if (currentCountry) updateStudent.current_country = currentCountry;
         if (dateOfBirth) updateStudent.date_of_birth = dateOfBirth;
-        if (addressText) updateStudent.address = { street: addressText };
+        if (addressText || whatsappNumber || contactPhone) {
+          updateStudent.address = {
+            ...(addressText ? { street: addressText } : {}),
+            ...(contactPhone ? { phone: contactPhone } : {}),
+            ...(whatsappNumber ? { whatsapp: whatsappNumber } : {}),
+          };
+        }
 
         if (Object.keys(updateStudent).length > 0) {
           const { error: stuErr } = await supabase
