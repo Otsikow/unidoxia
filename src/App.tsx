@@ -663,6 +663,7 @@ const App = () => {
                           <Route path="documents" element={<Documents />} />
                           <Route path="applications" element={<Applications />} />
                           <Route path="applications/new" element={<NewApplication />} />
+                          <Route path="new-application" element={<Navigate to="/student/applications/new" replace />} />
                           <Route path="applications/track/:id" element={<ApplicationTracking />} />
                           <Route path="applications/:id" element={<ApplicationDetails />} />
                           <Route path="messages" element={<StudentMessages />} />
