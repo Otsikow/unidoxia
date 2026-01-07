@@ -122,7 +122,7 @@ const buildNavigatorSteps = (
         ? 'AI stored your SOP so agents can annotate instantly.'
         : 'AI will coach you through each paragraph once you start writing.',
       actionLabel: sopDoc ? 'Review SOP' : 'Launch SOP generator',
-      actionHref: '/student/sop',
+      actionHref: '/student/profile#sop',
       icon: ScrollText,
       lastUpdated: getRecordTimestamp(sopDoc ?? null),
     },
@@ -376,6 +376,8 @@ export default function StudentOnboarding() {
         }
       }
 
+      const sopDone = documentsList.some((doc) => doc.document_type === 'personal_statement');
+
       // Build checklist
       const items: ChecklistItem[] = [
         {
@@ -426,6 +428,14 @@ export default function StudentOnboarding() {
           completed: documentsCount >= 2,
           icon: FileCheck,
           link: '/student/documents',
+        },
+        {
+          id: 'sop',
+          title: 'Complete Statement of Purpose',
+          description: 'Generate and save your SOP using the AI writer',
+          completed: sopDone,
+          icon: ScrollText,
+          link: '/student/profile#sop',
         },
       ];
 
