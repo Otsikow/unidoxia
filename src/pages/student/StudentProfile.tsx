@@ -10,6 +10,7 @@ import { PersonalInfoTab } from '@/components/student/profile/PersonalInfoTab';
 import { EducationTab } from '@/components/student/profile/EducationTab';
 import { TestScoresTab } from '@/components/student/profile/TestScoresTab';
 import { FinancesTab } from '@/components/student/profile/FinancesTab';
+import { SopTab } from '@/components/student/profile/SopTab';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import type { Tables } from '@/integrations/supabase/types';
@@ -62,18 +63,29 @@ export default function StudentProfile() {
         !!record.finances_json &&
         Object.keys(record.finances_json as Record<string, unknown>).length > 0;
 
-      const [{ count: educationCount }, { count: testScoresCount }, { count: documentsCount }] =
+      const [
+        { count: educationCount },
+        { count: testScoresCount },
+        { count: documentsCount },
+        { count: sopCount },
+      ] =
         await Promise.all([
           supabase.from('education_records').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
           supabase.from('test_scores').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
           supabase.from('student_documents').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
+          supabase
+            .from('student_documents')
+            .select('*', { count: 'exact', head: true })
+            .eq('student_id', record.id)
+            .eq('document_type', 'personal_statement'),
         ]);
 
       const educationDone = (educationCount || 0) > 0;
       const testsDone = (testScoresCount || 0) > 0;
       const documentsDone = (documentsCount || 0) >= 2;
+      const sopDone = (sopCount || 0) > 0;
 
-      const items = [personalDone, educationDone, testsDone, financesDone, documentsDone];
+      const items = [personalDone, educationDone, testsDone, financesDone, documentsDone, sopDone];
       const done = items.filter(Boolean).length;
       const percent = Math.round((done / items.length) * 100);
 
@@ -114,6 +126,13 @@ export default function StudentProfile() {
           description: 'Upload passport and transcripts in Documents',
           completed: documentsDone,
           link: '/student/documents',
+        },
+        {
+          id: 'sop',
+          title: 'Statement of Purpose',
+          description: 'Generate and save your SOP',
+          completed: sopDone,
+          link: '/student/profile#sop',
         },
       ]);
 
@@ -194,7 +213,7 @@ export default function StudentProfile() {
   // Handle URL hash for tab selection
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['personal', 'education', 'tests', 'finances'].includes(hash)) {
+    if (hash && ['personal', 'education', 'tests', 'finances', 'sop'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -234,7 +253,7 @@ export default function StudentProfile() {
 
   // Update URL hash when tab changes
   useEffect(() => {
-    if (['personal', 'education', 'tests', 'finances'].includes(activeTab)) {
+    if (['personal', 'education', 'tests', 'finances', 'sop'].includes(activeTab)) {
       window.location.hash = activeTab;
     }
   }, [activeTab]);
@@ -329,7 +348,7 @@ export default function StudentProfile() {
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                {completeness}% complete • {completedSteps} of 5 steps completed
+                {completeness}% complete • {completedSteps} of {checklist.length || 6} steps completed
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -397,20 +416,23 @@ export default function StudentProfile() {
           </Card>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2 h-auto p-1 sm:p-2">
-              <TabsTrigger value="personal" className="text-sm sm:text-base">
-                Personal Info
-              </TabsTrigger>
-              <TabsTrigger value="education" className="text-sm sm:text-base">
-                Education
-              </TabsTrigger>
-              <TabsTrigger value="tests" className="text-sm sm:text-base">
-                Test Scores
-              </TabsTrigger>
-              <TabsTrigger value="finances" className="text-sm sm:text-base">
-                Finances
-              </TabsTrigger>
-            </TabsList>
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 h-auto p-1 sm:p-2">
+                <TabsTrigger value="personal" className="text-sm sm:text-base">
+                  Personal Info
+                </TabsTrigger>
+                <TabsTrigger value="education" className="text-sm sm:text-base">
+                  Education
+                </TabsTrigger>
+                <TabsTrigger value="tests" className="text-sm sm:text-base">
+                  Test Scores
+                </TabsTrigger>
+                <TabsTrigger value="finances" className="text-sm sm:text-base">
+                  Finances
+                </TabsTrigger>
+                <TabsTrigger value="sop" className="text-sm sm:text-base">
+                  SOP
+                </TabsTrigger>
+              </TabsList>
 
             <TabsContent value="personal" className="space-y-4 animate-fade-in">
                 <PersonalInfoTab student={studentRecord} onUpdate={refreshStudentData} />
@@ -426,6 +448,10 @@ export default function StudentProfile() {
 
             <TabsContent value="finances" className="space-y-4 animate-fade-in">
                 <FinancesTab student={studentRecord} onUpdate={refreshStudentData} />
+            </TabsContent>
+
+            <TabsContent value="sop" className="space-y-4 animate-fade-in">
+                <SopTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
             </TabsContent>
           </Tabs>
       </div>
