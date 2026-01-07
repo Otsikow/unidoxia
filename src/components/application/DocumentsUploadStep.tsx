@@ -173,6 +173,32 @@ export default function DocumentsUploadStep({
     return allRequiredUploaded && !hasInvalidDocs;
   };
 
+  const requiredDocs = DOCUMENT_TYPES.filter((doc) => doc.required);
+  const missingRequiredDocs = requiredDocs.filter(
+    (doc) => data[doc.key] === null && !existingDocuments?.[doc.key],
+  );
+  const invalidDocs = DOCUMENT_TYPES.filter(
+    (doc) => verificationResults[doc.key]?.status === 'Invalid',
+  );
+  const blockingIssues: string[] = [];
+
+  if (missingRequiredDocs.length > 0) {
+    blockingIssues.push(
+      ...missingRequiredDocs.map((doc) => `Upload ${doc.label} (required).`),
+    );
+  }
+
+  if (invalidDocs.length > 0) {
+    blockingIssues.push(
+      ...invalidDocs.map((doc) => {
+        const reason = verificationResults[doc.key]?.reason;
+        return `Replace ${doc.label} (marked invalid${reason ? `: ${reason}` : ''}).`;
+      }),
+    );
+  }
+
+  const isReadyToReview = isValid();
+
   const uploadedCount = DOCUMENT_TYPES.reduce((count, docType) => {
     const hasFile = data[docType.key] !== null;
     const hasExisting = Boolean(existingDocuments?.[docType.key]);
@@ -376,10 +402,20 @@ export default function DocumentsUploadStep({
             <Button variant="outline" onClick={onBack}>
               Back
             </Button>
-            <Button onClick={onNext} disabled={!isValid()}>
+            <Button onClick={onNext} disabled={!isReadyToReview}>
               Continue to Review
             </Button>
           </div>
+          {!isReadyToReview && blockingIssues.length > 0 && (
+            <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-200">
+              <p className="font-medium">To continue, please:</p>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                {blockingIssues.map((issue) => (
+                  <li key={issue}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
