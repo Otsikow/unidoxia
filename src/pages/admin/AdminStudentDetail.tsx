@@ -222,9 +222,8 @@ const AdminStudentDetail = () => {
       setLoading(true);
       setError(null);
 
-      const { data: studentData, error: studentErr } = await supabase
-        .from("students")
-        .select(`
+      // Define base query without status columns which might be missing in some environments
+      const baseQuery = `
           id,
           profile_id,
           legal_name,
@@ -239,9 +238,6 @@ const AdminStudentDetail = () => {
           passport_expiry,
           visa_history_json,
           created_at,
-          status,
-          status_reason,
-          status_changed_at,
           profile:profiles (
             id,
             full_name,
@@ -255,9 +251,35 @@ const AdminStudentDetail = () => {
               university:universities ( name )
             )
           )
-        `)
-        .eq("id", studentId)
-        .maybeSingle();
+      `;
+
+      // Try fetching with status columns first (preferred)
+      // We use a try/catch block here to handle the case where the columns don't exist
+      let studentData = null;
+      let studentErr = null;
+
+      try {
+        const { data, error } = await supabase
+          .from("students")
+          .select(`${baseQuery}, status, status_reason, status_changed_at`)
+          .eq("id", studentId)
+          .maybeSingle();
+
+        if (error) throw error;
+        studentData = data;
+      } catch (e) {
+        console.warn("Failed to fetch student with status columns, retrying with base fields...", e);
+
+        // Fallback: fetch without status columns
+        const { data, error } = await supabase
+          .from("students")
+          .select(baseQuery)
+          .eq("id", studentId)
+          .maybeSingle();
+
+        studentErr = error;
+        studentData = data;
+      }
 
       if (studentErr) throw studentErr;
       if (!studentData) {
