@@ -334,16 +334,14 @@ export default function SoPGenerator({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="h-6 w-6 text-primary" />
-            Statement of Purpose Generator
-          </h2>
-          <p className="text-muted-foreground">
-            AI-powered tool to help you craft a compelling statement of purpose
-          </p>
-        </div>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+          <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+          <span>Statement of Purpose Generator</span>
+        </h2>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">
+          AI-powered tool to help you craft a compelling statement of purpose
+        </p>
       </div>
 
       <Tabs
@@ -529,8 +527,8 @@ export default function SoPGenerator({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-2 w-full sm:w-auto sm:flex-1 sm:max-w-xs">
                   <Label>Target Word Count: {formData.wordCount}</Label>
                   <input
                     type="range"
@@ -549,7 +547,7 @@ export default function SoPGenerator({
                 <Button
                   onClick={generateSOP}
                   disabled={loading}
-                  className="ml-4"
+                  className="w-full sm:w-auto"
                 >
                   {loading ? (
                     <>
@@ -570,8 +568,8 @@ export default function SoPGenerator({
 
         <TabsContent value="edit" className="space-y-6">
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
+            <CardHeader className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div>
                   <CardTitle>Edit Your Statement of Purpose</CardTitle>
                   <CardDescription>
@@ -585,28 +583,30 @@ export default function SoPGenerator({
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" onClick={copyToClipboard}>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm" onClick={copyToClipboard} className="flex-1 min-w-[100px] sm:flex-none">
                     <Copy className="h-4 w-4 mr-2" />
                     Copy
                   </Button>
-                  <Button variant="outline" onClick={downloadSOP}>
+                  <Button variant="outline" size="sm" onClick={downloadSOP} className="flex-1 min-w-[100px] sm:flex-none">
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
                   <Button
                     variant="secondary"
+                    size="sm"
                     onClick={enhanceSOP}
                     disabled={enhancing || !editedSOP.trim()}
+                    className="flex-1 min-w-[140px] sm:flex-none"
                   >
                     {enhancing ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <Sparkles className="h-4 w-4 mr-2" />
                     )}
-                    {enhancing ? "Enhancing..." : "Make this stronger"}
+                    {enhancing ? "Enhancing..." : "Make stronger"}
                   </Button>
-                  <Button onClick={saveSOP} disabled={saving}>
+                  <Button size="sm" onClick={saveSOP} disabled={saving} className="flex-1 min-w-[100px] sm:flex-none">
                     {saving ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
