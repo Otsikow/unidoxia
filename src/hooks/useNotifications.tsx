@@ -79,7 +79,7 @@ export function useNotifications() {
       // Fetch notifications - using existing notifications table
       const { data, error: fetchError } = await supabase
         .from('notifications')
-        .select('id, tenant_id, user_id, type, title, content, created_at, read, metadata, action_url')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -92,10 +92,10 @@ export function useNotifications() {
         tenant_id: n.tenant_id,
         user_id: n.user_id,
         type: n.type,
-        title: n.title,
-        content: n.content,
+        title: n.title ?? n.subject,
+        content: n.content ?? n.body ?? n.message ?? '',
         read: !!n.read,
-        metadata: (n.metadata as Record<string, any>) || {},
+        metadata: (n.metadata as Record<string, any>) || (n.payload as Record<string, any>) || {},
         action_url: n.action_url,
         created_at: n.created_at,
       }));
@@ -240,10 +240,10 @@ export function useNotifications() {
               tenant_id: raw.tenant_id,
               user_id: raw.user_id,
               type: raw.type,
-              title: raw.title,
-              content: raw.content,
+              title: raw.title ?? raw.subject,
+              content: raw.content ?? raw.body ?? raw.message ?? '',
               read: !!raw.read,
-              metadata: (raw.metadata as Record<string, any>) || {},
+              metadata: (raw.metadata as Record<string, any>) || (raw.payload as Record<string, any>) || {},
               action_url: raw.action_url,
               created_at: raw.created_at,
             };
@@ -261,10 +261,10 @@ export function useNotifications() {
               tenant_id: raw.tenant_id,
               user_id: raw.user_id,
               type: raw.type,
-              title: raw.title,
-              content: raw.content,
+              title: raw.title ?? raw.subject,
+              content: raw.content ?? raw.body ?? raw.message ?? '',
               read: !!raw.read,
-              metadata: (raw.metadata as Record<string, any>) || {},
+              metadata: (raw.metadata as Record<string, any>) || (raw.payload as Record<string, any>) || {},
               action_url: raw.action_url,
               created_at: raw.created_at,
             };
