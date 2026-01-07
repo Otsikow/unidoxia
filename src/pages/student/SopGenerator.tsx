@@ -308,7 +308,7 @@ export default function SopGenerator() {
   /* ------------------------------------------------------------------------ */
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
+    <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
       <BackButton fallback="/dashboard" />
 
       <SoPGenerator
