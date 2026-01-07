@@ -36,8 +36,8 @@ const extractFormData = (student: Tables<'students'>) => {
     passport_number: student.passport_number || '',
     passport_expiry: student.passport_expiry || '',
     contact_email: student.contact_email || '',
-    contact_phone: addressData?.phone || '',
-    whatsapp_number: addressData?.whatsapp || addressData?.phone || '+',
+    contact_phone: student.contact_phone || addressData?.phone || '',
+    whatsapp_number: addressData?.whatsapp || addressData?.phone || student.contact_phone || '+',
     current_country: student.current_country || '',
     address_line1: addressData?.line1 || '',
     address_line2: addressData?.line2 || '',
@@ -82,10 +82,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           passport_number: formData.passport_number,
           passport_expiry: formData.passport_expiry,
           contact_email: formData.contact_email,
-          whatsapp_number:
-            formData.whatsapp_number.trim() && formData.whatsapp_number.trim() !== '+'
-              ? formData.whatsapp_number.trim()
-              : null,
+          contact_phone: formData.contact_phone,
           current_country: formData.current_country,
           address: {
             line1: formData.address_line1,
@@ -93,7 +90,11 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
-            phone: formData.contact_phone
+            phone: formData.contact_phone,
+            whatsapp:
+              formData.whatsapp_number.trim() && formData.whatsapp_number.trim() !== '+'
+                ? formData.whatsapp_number.trim()
+                : null
           }
         })
         .eq('id', student.id)
