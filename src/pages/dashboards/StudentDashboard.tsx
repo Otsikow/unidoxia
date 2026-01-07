@@ -249,7 +249,7 @@ const StudentDashboard = () => {
 
       const notificationsPromise = supabase
         .from('notifications')
-        .select('id, title, content, type, created_at, read')
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(5);
@@ -368,8 +368,8 @@ const StudentDashboard = () => {
         } else {
           const mapped = (data ?? []).map((item) => ({
             id: item.id,
-            title: item.title || 'Notification',
-            content: item.content || '',
+            title: item.title || item.subject || 'Notification',
+            content: item.content || item.body || item.message || '',
             created_at: item.created_at,
             read: !!item.read,
             type: item.type || 'general',
@@ -444,8 +444,8 @@ const StudentDashboard = () => {
 
     const normalizeNotification = (raw: Record<string, unknown>): Notification => ({
       id: (raw.id as string) ?? '',
-      title: (raw.title as string) || 'Notification',
-      content: (raw.content as string) || '',
+      title: (raw.title as string) || (raw.subject as string) || 'Notification',
+      content: (raw.content as string) || (raw.body as string) || (raw.message as string) || '',
       created_at: (raw.created_at as string) || new Date().toISOString(),
       read: Boolean(raw.read),
       type: (raw.type as string) || 'general',

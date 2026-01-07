@@ -85,10 +85,13 @@ type SupabaseNotificationRow = {
   user_id: string;
   type: string | null;
   title: string | null;
+  subject?: string | null;
   content: string | null;
+  body?: string | null;
   created_at: string;
   read: boolean | null;
   metadata: unknown;
+  payload?: unknown;
   action_url: string | null;
 };
 
@@ -186,7 +189,7 @@ const AdminNotifications = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from("notifications")
-        .select("id, tenant_id, user_id, type, title, content, created_at, read, metadata, action_url")
+        .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(200);
@@ -195,13 +198,18 @@ const AdminNotifications = () => {
 
       const rows = (data as SupabaseNotificationRow[] | null) ?? [];
       const mapped: AdminNotification[] = rows.map((row) => {
-        const metadata = parseMetadata(row.metadata);
+        const metadata = parseMetadata(row.metadata ?? row.payload);
         const metadataType = getMetadataString(metadata, "type");
         const metadataTitle = getMetadataString(metadata, "title") || "Notification";
         const metadataMessage = getMetadataString(metadata, "message");
         const type = row.type && row.type.length > 0 ? row.type : metadataType || "general";
-        const title = row.title && row.title.length > 0 ? row.title : metadataTitle;
-        const message = row.content && row.content.length > 0 ? row.content : metadataMessage;
+        const title = row.title && row.title.length > 0 ? row.title : row.subject || metadataTitle;
+        const message =
+          row.content && row.content.length > 0
+            ? row.content
+            : row.body && row.body.length > 0
+              ? row.body
+              : metadataMessage;
         return {
           id: row.id,
           title,
@@ -248,13 +256,18 @@ const AdminNotifications = () => {
         (payload) => {
           if (payload.eventType === "INSERT") {
             const row = payload.new as SupabaseNotificationRow;
-            const metadata = parseMetadata(row.metadata);
+            const metadata = parseMetadata(row.metadata ?? row.payload);
             const metadataType = getMetadataString(metadata, "type");
             const metadataTitle = getMetadataString(metadata, "title") || "Notification";
             const metadataMessage = getMetadataString(metadata, "message");
             const type = row.type && row.type.length > 0 ? row.type : metadataType || "general";
-            const title = row.title && row.title.length > 0 ? row.title : metadataTitle;
-            const message = row.content && row.content.length > 0 ? row.content : metadataMessage;
+            const title = row.title && row.title.length > 0 ? row.title : row.subject || metadataTitle;
+            const message =
+              row.content && row.content.length > 0
+                ? row.content
+                : row.body && row.body.length > 0
+                  ? row.body
+                  : metadataMessage;
             const notification: AdminNotification = {
               id: row.id,
               title,

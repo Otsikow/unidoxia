@@ -201,7 +201,7 @@ export default function NotificationCenter() {
       const [baseNotifications, resolvedStudent] = await Promise.all([
         supabase
           .from("notifications")
-          .select("id, title, content, type, read, created_at, action_url, metadata")
+          .select("*")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(100),
@@ -218,13 +218,13 @@ export default function NotificationCenter() {
 
       const mapped: Notification[] = (data || []).map((n) => ({
         id: n.id,
-        title: n.title || "Notification",
-        message: n.content || "",
+        title: n.title || n.subject || "Notification",
+        message: n.content || n.body || n.message || "",
         type: (n.type as Notification["type"]) || "info",
         read: !!n.read,
         created_at: n.created_at,
         action_url: n.action_url || undefined,
-        metadata: (n.metadata as Record<string, unknown>) || {},
+        metadata: (n.metadata as Record<string, unknown>) || (n.payload as Record<string, unknown>) || {},
       }));
 
       let merged: Notification[] = mapped;
@@ -288,13 +288,13 @@ export default function NotificationCenter() {
               const raw = payload.new as Record<string, unknown>;
               const newNotification: Notification = {
                 id: raw.id as string,
-                title: (raw.title as string) || "Notification",
-                message: (raw.content as string) || "",
+                title: (raw.title as string) || (raw.subject as string) || "Notification",
+                message: (raw.content as string) || (raw.body as string) || (raw.message as string) || "",
                 type: (raw.type as Notification["type"]) || "info",
                 read: !!raw.read,
                 created_at: raw.created_at as string,
                 action_url: (raw.action_url as string) || undefined,
-                metadata: (raw.metadata as Record<string, unknown>) || {},
+                metadata: (raw.metadata as Record<string, unknown>) || (raw.payload as Record<string, unknown>) || {},
               };
 
               applyNotificationState((prev) => [newNotification, ...prev.filter((n) => n.id !== newNotification.id)]);
