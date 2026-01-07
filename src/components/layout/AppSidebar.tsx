@@ -110,7 +110,7 @@ const menuItems = {
       url: "/admin/featured-universities",
       icon: Sparkles,
     },
-    { title: "Courses", url: "/dashboard/courses", icon: BookOpen },
+    { title: "Courses", url: "/admin/programs", icon: BookOpen },
     { title: "Applications", url: "/dashboard/applications", icon: FileText },
     { title: "Agents", url: "/dashboard/agents", icon: Share2 },
     { title: "Notifications", url: "/admin/notifications", icon: Bell },
