@@ -183,9 +183,6 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
-          status,
-          status_reason,
-          status_changed_at,
           profile:profiles!students_profile_id_fkey (
             full_name,
             email
@@ -210,7 +207,6 @@ const AdminStudents = () => {
         `
         )
         .eq("tenant_id", tenantId)
-        .neq("status", "deleted")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
