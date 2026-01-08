@@ -218,13 +218,13 @@ export default function NotificationCenter() {
 
       const mapped: Notification[] = (data || []).map((n) => ({
         id: n.id,
-        title: n.title || n.subject || "Notification",
-        message: n.content || n.body || n.message || "",
+        title: n.title || "Notification",
+        message: n.content || "",
         type: (n.type as Notification["type"]) || "info",
         read: !!n.read,
         created_at: n.created_at,
         action_url: n.action_url || undefined,
-        metadata: (n.metadata as Record<string, unknown>) || (n.payload as Record<string, unknown>) || {},
+        metadata: (n.metadata as Record<string, unknown>) || {},
       }));
 
       let merged: Notification[] = mapped;
