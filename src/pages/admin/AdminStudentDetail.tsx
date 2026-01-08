@@ -422,14 +422,11 @@ const AdminStudentDetail = () => {
     setActionLoading(true);
     try {
       const { error } = await supabase
-        .from("students")
+        .from("profiles")
         .update({
-          status: "suspended",
-          status_reason: actionReason || "Suspended by admin",
-          status_changed_at: new Date().toISOString(),
-          status_changed_by: profile.id,
+          active: false,
         })
-        .eq("id", student.id);
+        .eq("id", student.profile_id);
 
       if (error) throw error;
 
@@ -470,14 +467,11 @@ const AdminStudentDetail = () => {
     setActionLoading(true);
     try {
       const { error } = await supabase
-        .from("students")
+        .from("profiles")
         .update({
-          status: "deleted",
-          status_reason: actionReason || "Deleted by admin",
-          status_changed_at: new Date().toISOString(),
-          status_changed_by: profile.id,
+          active: false,
         })
-        .eq("id", student.id);
+        .eq("id", student.profile_id);
 
       if (error) throw error;
 
@@ -518,14 +512,11 @@ const AdminStudentDetail = () => {
     setActionLoading(true);
     try {
       const { error } = await supabase
-        .from("students")
+        .from("profiles")
         .update({
-          status: "active",
-          status_reason: null,
-          status_changed_at: new Date().toISOString(),
-          status_changed_by: profile.id,
+          active: true,
         })
-        .eq("id", student.id);
+        .eq("id", student.profile_id);
 
       if (error) throw error;
 

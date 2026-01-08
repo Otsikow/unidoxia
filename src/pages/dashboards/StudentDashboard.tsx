@@ -368,8 +368,8 @@ const StudentDashboard = () => {
         } else {
           const mapped = (data ?? []).map((item) => ({
             id: item.id,
-            title: item.title || item.subject || 'Notification',
-            content: item.content || item.body || item.message || '',
+            title: item.title || 'Notification',
+            content: item.content || '',
             created_at: item.created_at,
             read: !!item.read,
             type: item.type || 'general',

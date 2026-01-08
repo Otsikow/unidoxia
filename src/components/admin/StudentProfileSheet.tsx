@@ -120,8 +120,8 @@ interface StudentProfile {
 interface TestScore {
   id: string;
   test_type: string;
-  overall_score: number | null;
-  sub_scores: Record<string, any> | null;
+  total_score: number | null;
+  subscores_json: unknown;
   test_date: string | null;
 }
 
@@ -600,7 +600,7 @@ export function StudentProfileSheet({
                           <div key={score.id} className="flex items-center justify-between text-sm">
                             <span className="font-medium uppercase">{score.test_type}</span>
                             <div className="flex items-center gap-2">
-                              <Badge variant="secondary">{score.overall_score ?? "—"}</Badge>
+                              <Badge variant="secondary">{score.total_score ?? "—"}</Badge>
                               {score.test_date && (
                                 <span className="text-xs text-muted-foreground">
                                   {format(new Date(score.test_date), "MMM yyyy")}
