@@ -201,6 +201,17 @@ const AdminStudentDetail = () => {
   const previewRef = useRef<HTMLDivElement>(null);
   const [fullscreen, setFullscreen] = useState(false);
 
+  // Listen for fullscreen change events (e.g., when user presses Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
+
   const [chatOpen, setChatOpen] = useState(false);
   const [reviewDoc, setReviewDoc] = useState<StudentDocument | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
@@ -1010,14 +1021,25 @@ const AdminStudentDetail = () => {
             <DialogDescription>{previewDoc?.file_name}</DialogDescription>
           </DialogHeader>
 
-          <div ref={previewRef} className="min-h-[60vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+          <div ref={previewRef} className="relative min-h-[60vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+            {/* Close button visible in fullscreen mode */}
+            {fullscreen && (
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute top-4 right-4 z-50 bg-background/80 hover:bg-background shadow-lg"
+                onClick={toggleFullscreen}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            )}
             {previewLoading ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : previewUrl ? (
               previewDoc?.mime_type === "application/pdf" ? (
-                <iframe src={previewUrl} className="w-full h-[60vh] border-0" />
+                <iframe src={previewUrl} className={`w-full border-0 ${fullscreen ? "h-screen" : "h-[60vh]"}`} />
               ) : (
-                <img src={previewUrl} className="max-w-full max-h-[60vh] object-contain" alt={previewDoc?.file_name} />
+                <img src={previewUrl} className={`object-contain ${fullscreen ? "max-w-full max-h-screen" : "max-w-full max-h-[60vh]"}`} alt={previewDoc?.file_name} />
               )
             ) : (
               <p className="text-muted-foreground">Unable to load preview</p>
