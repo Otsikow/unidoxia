@@ -27,6 +27,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useStudentRecord } from "@/hooks/useStudentRecord";
 import { validateFileUpload } from "@/lib/fileUpload";
 import { logError, formatErrorForToast } from "@/lib/errorUtils";
+import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 
 import {
   FileText,
@@ -73,6 +74,7 @@ const DOCUMENT_TYPES = [
   { value: "passport_photo", label: "Passport Photo", required: true },
   { value: "transcript", label: "Academic Transcript", required: true },
   { value: "cv", label: "CV / Resume", required: true },
+  { value: "english_proficiency", label: "Statement of English Proficiency", required: true },
   { value: "ielts", label: "IELTS Score", required: false },
   { value: "toefl", label: "TOEFL Score", required: false },
   { value: "sop", label: "Statement of Purpose", required: false },
@@ -81,9 +83,6 @@ const DOCUMENT_TYPES = [
   { value: "financial_document", label: "Financial Document", required: false },
   { value: "other", label: "Other", required: false },
 ] as const;
-
-// Required core documents that students should upload
-const REQUIRED_DOCUMENTS = DOCUMENT_TYPES.filter((t) => t.required);
 
 // Helper to get document type label from value
 const getDocumentTypeLabel = (value: string): string => {
@@ -669,7 +668,11 @@ export default function Documents() {
         }
 
         // Find required documents that are either not uploaded or rejected
-        const notUploaded = REQUIRED_DOCUMENTS.filter((t) => !latestDocByType.has(t.value));
+        const notUploaded = getMissingRequiredStudentDocuments(
+          Array.from(latestDocByType.values()).map((doc) => ({
+            document_type: doc.document_type,
+          })),
+        );
         
         // Find rejected documents (from all document types, not just required)
         // Include both admin-rejected and university-rejected documents
@@ -761,12 +764,12 @@ export default function Documents() {
                   )}
                   <div className="grid gap-3 sm:grid-cols-2">
                     {notUploaded.map((docType) => {
-                      const isUploading = uploading && pendingDocType === docType.value;
+                      const isUploading = uploading && pendingDocType === docType.type;
 
                       return (
                         <button
-                          key={docType.value}
-                          onClick={() => handleOutstandingDocClick(docType.value)}
+                          key={docType.type}
+                          onClick={() => handleOutstandingDocClick(docType.type)}
                           disabled={uploading}
                           className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-amber-300 dark:border-amber-600 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                           type="button"

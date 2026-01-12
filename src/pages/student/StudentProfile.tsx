@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PersonalInfoTab } from '@/components/student/profile/PersonalInfoTab';
@@ -13,8 +14,12 @@ import { FinancesTab } from '@/components/student/profile/FinancesTab';
 import { SopTab } from '@/components/student/profile/SopTab';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
+import {
+  getMissingRequiredStudentDocuments,
+  type RequiredStudentDocument,
+} from '@/lib/studentDocuments';
 import type { Tables } from '@/integrations/supabase/types';
-import { Circle, CheckCircle, Loader2, ChevronRight } from 'lucide-react';
+import { Circle, CheckCircle, Loader2, ChevronRight, AlertTriangle } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
@@ -48,6 +53,8 @@ export default function StudentProfile() {
     { id: string; title: string; description: string; completed: boolean; link: string }[]
   >([]);
   const [isCalculatingCompleteness, setIsCalculatingCompleteness] = useState(false);
+  const [missingDocuments, setMissingDocuments] = useState<RequiredStudentDocument[]>([]);
+  const [missingDocumentsLoading, setMissingDocumentsLoading] = useState(true);
   const hasRedirectedRef = useRef(false);
   const hasInitializedRef = useRef(false);
 
@@ -123,7 +130,7 @@ export default function StudentProfile() {
         {
           id: 'documents',
           title: 'Documents',
-          description: 'Upload passport and transcripts in Documents',
+          description: 'Upload your passport, passport photo, transcript, SOP, CV, and English proficiency statement',
           completed: documentsDone,
           link: '/student/documents',
         },
@@ -146,6 +153,28 @@ export default function StudentProfile() {
       setIsCalculatingCompleteness(false);
     }
   }, []);
+
+  const loadMissingDocuments = useCallback(
+    async (studentId: string) => {
+      setMissingDocumentsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('student_documents')
+          .select('document_type')
+          .eq('student_id', studentId);
+
+        if (error) throw error;
+
+        setMissingDocuments(getMissingRequiredStudentDocuments(data ?? []));
+      } catch (error) {
+        logError(error, 'StudentProfile.loadMissingDocuments');
+        toast(formatErrorForToast(error, 'Failed to load missing documents'));
+      } finally {
+        setMissingDocumentsLoading(false);
+      }
+    },
+    [toast],
+  );
 
   // Refresh data by invalidating the query and refetching
   const refreshStudentData = useCallback(async () => {
@@ -250,6 +279,11 @@ export default function StudentProfile() {
       });
     }
   }, [studentRecord, studentRecordLoading, studentRecordError, handleError, toast, clearError, navigate, recalcCompleteness]);
+
+  useEffect(() => {
+    if (!studentRecord?.id) return;
+    void loadMissingDocuments(studentRecord.id);
+  }, [studentRecord?.id, loadMissingDocuments, isFetching]);
 
   // Update URL hash when tab changes
   useEffect(() => {
@@ -360,12 +394,54 @@ export default function StudentProfile() {
               </div>
               {completeness < 100 && (
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Tip: Upload documents like passport and transcripts in the{' '}
+                  Tip: Upload your passport, passport photo, transcript, SOP, CV, and English
+                  proficiency statement in the{' '}
                   <Link className="underline" to="/student/documents">
                     Documents
                   </Link>{' '}
                   section to improve completeness.
                 </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow animate-fade-in">
+            <CardHeader>
+              <CardTitle className="text-lg sm:text-xl flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                Missing Required Documents
+              </CardTitle>
+              <CardDescription>
+                Track the core documents all universities require so you can complete your profile.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {missingDocumentsLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Checking document status...
+                </div>
+              ) : missingDocuments.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  All required documents are on file. You are ready for submissions.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Upload the remaining documents in{' '}
+                    <Link className="underline" to="/student/documents">
+                      Documents
+                    </Link>
+                    .
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {missingDocuments.map((doc) => (
+                      <Badge key={doc.type} variant="outline" className="border-amber-500 text-amber-600">
+                        {doc.label}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
