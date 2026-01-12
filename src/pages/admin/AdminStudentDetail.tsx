@@ -29,6 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 
 import { format } from "date-fns";
 import {
@@ -162,13 +163,6 @@ const DOCUMENT_LABELS: Record<string, string> = {
   english_proficiency: "English Proficiency",
   financial_document: "Financial Document",
 };
-
-const REQUIRED_DOCUMENTS = [
-  "passport",
-  "transcript",
-  "sop",
-  "cv",
-];
 
 const getDocLabel = (t: string) =>
   DOCUMENT_LABELS[t] ?? t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -341,10 +335,10 @@ const AdminStudentDetail = () => {
     return { pending, approved, rejected };
   }, [documents]);
 
-  const missingDocuments = useMemo(() => {
-    const uploadedTypes = documents.map((d) => d.document_type.toLowerCase());
-    return REQUIRED_DOCUMENTS.filter((req) => !uploadedTypes.includes(req));
-  }, [documents]);
+  const missingDocuments = useMemo(
+    () => getMissingRequiredStudentDocuments(documents),
+    [documents],
+  );
 
   const filteredDocuments = useMemo(() => {
     switch (docTab) {
@@ -849,8 +843,8 @@ const AdminStudentDetail = () => {
               <AlertDescription className="mt-2">
                 <div className="flex flex-wrap gap-2">
                   {missingDocuments.map((doc) => (
-                    <Badge key={doc} variant="outline" className="border-amber-500 text-amber-600">
-                      {getDocLabel(doc)}
+                    <Badge key={doc.type} variant="outline" className="border-amber-500 text-amber-600">
+                      {doc.label}
                     </Badge>
                   ))}
                 </div>
