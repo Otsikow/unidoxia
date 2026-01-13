@@ -305,7 +305,7 @@ export default function Checkout() {
               <Button
                 className="w-full"
                 size="lg"
-                disabled={isProcessing}
+                disabled={!isConfirmed || isProcessing}
                 onClick={handleStripeCheckout}
               >
                 {isProcessing ? (
@@ -320,6 +320,11 @@ export default function Checkout() {
                   </>
                 )}
               </Button>
+              {!isConfirmed && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Please confirm the one-time, non-refundable payment to continue.
+                </p>
+              )}
 
               <p className="text-xs text-center text-muted-foreground">
                 By completing this purchase, you agree to our{' '}
