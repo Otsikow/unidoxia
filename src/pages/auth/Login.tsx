@@ -164,9 +164,9 @@ const Login = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
         <SEO
-          title="Login - UniDoxia"
-          description="Access your UniDoxia account to manage your university applications, connect with agents, and track your progress."
-          keywords="login, sign in, student account, agent portal, university partner login"
+          title="Sign in to UniDoxia.com"
+          description="Sign in to UniDoxia.com to manage applications, connect with agents, and track your progress."
+          keywords="UniDoxia.com login, sign in, student account, agent portal, university partner login"
         />
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-1 text-center">
@@ -182,9 +182,9 @@ const Login = () => {
             <div className="flex justify-center mb-4">
               <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-24 w-24 rounded-lg object-contain dark:brightness-0 dark:invert" />
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome to UniDoxia</CardTitle>
+            <CardTitle className="text-2xl font-bold">Sign in to UniDoxia.com</CardTitle>
             <CardDescription>
-              Sign in to your UniDoxia account
+              Access your UniDoxia account to manage applications, connect with agents, and track every step.
             </CardDescription>
           </CardHeader>
         <form onSubmit={handleSubmit}>
