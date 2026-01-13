@@ -37,6 +37,32 @@ export default function Pricing() {
   const [searchParams] = useSearchParams();
   const [loadingPlan, setLoadingPlan] = useState<StudentPlanType | null>(null);
 
+  const getDemoFallback = (error: unknown, data: unknown): boolean => {
+    if (data && typeof data === 'object' && 'demo' in data && data.demo === true) {
+      return true;
+    }
+
+    if (!error || typeof error !== 'object') return false;
+
+    const contextBody = (error as { context?: { body?: unknown } }).context?.body;
+    if (!contextBody) return false;
+
+    if (typeof contextBody === 'string') {
+      try {
+        const parsed = JSON.parse(contextBody) as { demo?: boolean };
+        return parsed.demo === true;
+      } catch {
+        return false;
+      }
+    }
+
+    if (typeof contextBody === 'object' && 'demo' in contextBody) {
+      return contextBody.demo === true;
+    }
+
+    return false;
+  };
+
   // Check for payment status from URL
   const paymentStatus = searchParams.get('payment');
   if (paymentStatus === 'cancelled') {
@@ -74,11 +100,14 @@ export default function Pricing() {
           successUrl: `${window.location.origin}/student/dashboard?payment=success`,
           cancelUrl: `${window.location.origin}/pricing?payment=cancelled`,
         },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (error) {
         // If Stripe not configured, fallback to demo checkout
-        if (data?.demo) {
+        if (getDemoFallback(error, data)) {
           navigate(`/student/checkout?plan=${planId}`);
           return;
         }
@@ -94,6 +123,10 @@ export default function Pricing() {
       }
     } catch (error) {
       console.error('Checkout error:', error);
+      if (getDemoFallback(error, null)) {
+        navigate(`/student/checkout?plan=${planId}`);
+        return;
+      }
       // Fallback to internal checkout page
       navigate(`/student/checkout?plan=${planId}`);
     } finally {
