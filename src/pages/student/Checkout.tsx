@@ -305,7 +305,7 @@ export default function Checkout() {
               <Button
                 className="w-full"
                 size="lg"
-                disabled={!isConfirmed || isProcessing}
+                disabled={isProcessing}
                 onClick={handleStripeCheckout}
               >
                 {isProcessing ? (
