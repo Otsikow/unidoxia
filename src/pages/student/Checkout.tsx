@@ -39,6 +39,32 @@ export default function Checkout() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  const getDemoFallback = (error: unknown, data: unknown): boolean => {
+    if (data && typeof data === 'object' && 'demo' in data && data.demo === true) {
+      return true;
+    }
+
+    if (!error || typeof error !== 'object') return false;
+
+    const contextBody = (error as { context?: { body?: unknown } }).context?.body;
+    if (!contextBody) return false;
+
+    if (typeof contextBody === 'string') {
+      try {
+        const parsed = JSON.parse(contextBody) as { demo?: boolean };
+        return parsed.demo === true;
+      } catch {
+        return false;
+      }
+    }
+
+    if (typeof contextBody === 'object' && 'demo' in contextBody) {
+      return contextBody.demo === true;
+    }
+
+    return false;
+  };
+
   // Redirect if no plan selected
   useEffect(() => {
     if (!planId || !plan || plan.price === 0) {
@@ -68,6 +94,13 @@ export default function Checkout() {
     setIsProcessing(true);
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error('Please log in to continue');
+      }
+
       // Call edge function to create Stripe checkout session
       const { data, error } = await supabase.functions.invoke('create-checkout-session', {
         body: {
@@ -75,10 +108,13 @@ export default function Checkout() {
           successUrl: `${window.location.origin}/student/dashboard?payment=success`,
           cancelUrl: `${window.location.origin}/student/checkout?plan=${plan.id}&payment=cancelled`,
         },
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
       });
 
       if (error) {
-        if (data?.demo) {
+        if (getDemoFallback(error, data)) {
           // Demo mode - simulate payment
           await handleDemoPayment();
           return;
@@ -101,6 +137,10 @@ export default function Checkout() {
       throw new Error('Unable to create checkout session');
     } catch (error) {
       console.error('Checkout error:', error);
+      if (getDemoFallback(error, null)) {
+        await handleDemoPayment();
+        return;
+      }
       toast({
         title: 'Payment unavailable',
         description: 'Stripe checkout could not be started. Please try again or contact support.',
