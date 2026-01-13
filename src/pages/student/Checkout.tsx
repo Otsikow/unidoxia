@@ -38,26 +38,6 @@ export default function Checkout() {
   
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [studentId, setStudentId] = useState<string | null>(null);
-
-  // Fetch student ID
-  useEffect(() => {
-    const fetchStudentId = async () => {
-      if (!user?.id) return;
-      
-      const { data, error } = await supabase
-        .from('students')
-        .select('id')
-        .eq('profile_id', user.id)
-        .single();
-      
-      if (data) {
-        setStudentId(data.id);
-      }
-    };
-    
-    fetchStudentId();
-  }, [user?.id]);
 
   // Redirect if no plan selected
   useEffect(() => {
@@ -76,7 +56,7 @@ export default function Checkout() {
       return;
     }
 
-    if (!user || !studentId || !plan) {
+    if (!user || !plan) {
       toast({
         title: 'Error',
         description: 'Unable to process payment. Please try again.',
