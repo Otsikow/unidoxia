@@ -77,7 +77,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     ],
     isPopular: true,
     paymentLabel: 'One-Time Payment',
-    stripePriceId: 'price_self_service',
+    stripePriceId: 'price_1SpAHh4wNWAbnULpZh7NqzqB',
   },
   {
     id: 'agent_supported',

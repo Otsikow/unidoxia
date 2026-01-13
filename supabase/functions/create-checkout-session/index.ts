@@ -16,6 +16,7 @@ interface PlanConfig {
   priceInCents: number;
   currency: string;
   description: string;
+  stripePriceId?: string;
 }
 
 const PLAN_CONFIGS: Record<PlanCode, PlanConfig> = {
@@ -24,6 +25,7 @@ const PLAN_CONFIGS: Record<PlanCode, PlanConfig> = {
     priceInCents: 4900, // $49.00 USD
     currency: "usd",
     description: "Apply to unlimited universities independently - One-time payment",
+    stripePriceId: "price_1SpAHh4wNWAbnULpZh7NqzqB",
   },
   agent_supported: {
     name: "Agent-Supported Plan",
@@ -174,12 +176,12 @@ serve(async (req) => {
     });
 
     // Create Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      customer_email: authContext.email,
-      line_items: [
-        {
+    const lineItem = plan.stripePriceId
+      ? {
+          price: plan.stripePriceId,
+          quantity: 1,
+        }
+      : {
           price_data: {
             currency: plan.currency,
             product_data: {
@@ -189,8 +191,13 @@ serve(async (req) => {
             unit_amount: plan.priceInCents,
           },
           quantity: 1,
-        },
-      ],
+        };
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+      customer_email: authContext.email,
+      line_items: [lineItem],
       success_url: `${successUrl}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl,
       metadata: {
