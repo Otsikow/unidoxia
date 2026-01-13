@@ -78,23 +78,36 @@ export default function Checkout() {
       });
 
       if (error) {
+        if (data?.demo) {
+          // Demo mode - simulate payment
+          await handleDemoPayment();
+          return;
+        }
         throw error;
       }
 
       if (data?.url) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
-      } else if (data?.demo) {
+        return;
+      }
+
+      if (data?.demo) {
         // Demo mode - simulate payment
         await handleDemoPayment();
-      } else {
-        throw new Error('Unable to create checkout session');
+        return;
       }
+
+      throw new Error('Unable to create checkout session');
     } catch (error) {
       console.error('Checkout error:', error);
-      
-      // Fallback to demo payment
-      await handleDemoPayment();
+      toast({
+        title: 'Payment unavailable',
+        description: 'Stripe checkout could not be started. Please try again or contact support.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
