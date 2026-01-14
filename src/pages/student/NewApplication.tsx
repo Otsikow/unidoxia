@@ -307,7 +307,6 @@ export default function NewApplication() {
   // Application limit check for students
   const { 
     canCreate: canCreateApplication, 
-    remainingApplications, 
     planInfo 
   } = useApplicationLimitCheck();
 
@@ -1469,7 +1468,7 @@ export default function NewApplication() {
     );
   }
 
-  // University limit check for students on Free plan
+  // Application limit check for students on Free plan
   if (isStudent && !canCreateApplication) {
     return (
       <div className="container mx-auto py-8 max-w-3xl space-y-6">
@@ -1477,16 +1476,17 @@ export default function NewApplication() {
 
         <Alert variant="destructive" className="border-amber-200 bg-amber-50 dark:bg-amber-950/30">
           <AlertTriangle className="h-5 w-5" />
-          <AlertTitle className="text-lg">University Limit Reached</AlertTitle>
+          <AlertTitle className="text-lg">Application Limit Reached</AlertTitle>
           <AlertDescription className="mt-3 space-y-4">
             <p>
-              You have reached the maximum of <strong>1 university</strong> on the Free plan.
+              You have used your <strong>1 free application</strong>.
             </p>
             <p className="text-sm">
               Current plan: <strong>{planInfo.displayName}</strong>
             </p>
             <p>
-              Upgrade to Self-Service ($49) or Agent-Supported ($200) to apply to unlimited universities.
+              Upgrade to Self-Service ($49) to submit unlimited applications, or choose Agent-Supported ($200) for
+              dedicated help with your applications.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
               <Button asChild>

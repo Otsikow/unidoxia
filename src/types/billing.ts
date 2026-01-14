@@ -44,16 +44,16 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: 'Free Access',
     price: 0,
     currency: 'USD',
-    description: 'Get started with one university',
+    description: 'Get started with one application',
     features: [
-      'Register and apply to one university only',
+      'Register and submit one application only',
       'Access to course discovery',
       'Basic profile creation',
       'AI-powered Zoe chatbot assistance',
     ],
     limitations: [
       'No agent support',
-      'Maximum 1 university',
+      'Maximum 1 application',
     ],
     paymentLabel: 'Free',
   },
@@ -153,18 +153,18 @@ export function formatPlanPrice(plan: PricingPlan): string {
 
 export function getPlanDisplayName(planType: StudentPlanType): string {
   const names: Record<StudentPlanType, string> = {
-    free: 'Free — 1 University Only',
+    free: 'Free — 1 Application Only',
     self_service: 'Self-Service — Unlimited Universities (One-Time Payment)',
     agent_supported: 'Agent-Supported — Full Guidance (One-Time Payment)',
   };
   return names[planType];
 }
 
-// Returns the maximum number of universities a student can apply to based on their plan
-// Free plan: 1 university, Paid plans: unlimited (null)
+// Returns the maximum number of applications a student can submit based on their plan
+// Free plan: 1 application, Paid plans: unlimited (null)
 export function getApplicationLimit(planType: StudentPlanType): number | null {
   if (planType === 'free') {
-    return 1; // Free plan can only apply to 1 university
+    return 1; // Free plan can only submit 1 application
   }
-  return null; // Paid plans: unlimited universities
+  return null; // Paid plans: unlimited applications
 }

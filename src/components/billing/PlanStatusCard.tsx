@@ -30,7 +30,7 @@ interface PlanStatusCardProps {
 }
 
 export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
-  const { billingLoading, getPlanInfo, getRemainingApplications, universityCount } = useStudentBilling();
+  const { billingLoading, getPlanInfo, getRemainingApplications, applicationCount } = useStudentBilling();
   const planInfo = getPlanInfo();
   const remaining = getRemainingApplications();
 
@@ -55,7 +55,7 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
         </Badge>
         {planInfo.planType === 'free' && remaining !== null && (
           <span className="text-xs text-muted-foreground">
-            ({remaining} universit{remaining !== 1 ? 'ies' : 'y'} left)
+            ({remaining} application{remaining !== 1 ? 's' : ''} left)
           </span>
         )}
       </div>
@@ -80,12 +80,12 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
               </p>
               {planInfo.planType === 'free' && (
                 <p className="text-xs mt-0.5 opacity-80">
-                  {universityCount} of 1 university used
+                  {applicationCount} of 1 application used
                 </p>
               )}
               {planInfo.planType !== 'free' && (
                 <p className="text-xs mt-0.5 opacity-80">
-                  {universityCount} universit{universityCount !== 1 ? 'ies' : 'y'} applied to
+                  {applicationCount} application{applicationCount !== 1 ? 's' : ''} submitted
                 </p>
               )}
             </div>
