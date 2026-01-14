@@ -292,7 +292,7 @@ export function StudentPayments() {
                       </div>
                       <Button 
                         size="sm" 
-                        onClick={() => navigate(`/student/checkout?plan=${plan.id}`)}
+                        onClick={() => navigate(`/pricing`)}
                       >
                         Upgrade
                         <ArrowUpRight className="h-3 w-3 ml-1" />

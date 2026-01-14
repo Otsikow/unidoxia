@@ -76,9 +76,26 @@ serve(async (req) => {
         const studentId = session.metadata?.student_id;
         const userId = session.metadata?.user_id;
         const planCode = session.metadata?.plan_code as "self_service" | "agent_supported";
+        const tenantId = session.metadata?.tenant_id;
         
         if (!studentId || !planCode) {
           console.error("Missing metadata in session", session.metadata);
+          break;
+        }
+
+        // If tenant_id not in metadata, fetch from student record
+        let resolvedTenantId = tenantId;
+        if (!resolvedTenantId) {
+          const { data: studentData } = await supabase
+            .from("students")
+            .select("tenant_id")
+            .eq("id", studentId)
+            .single();
+          resolvedTenantId = studentData?.tenant_id;
+        }
+
+        if (!resolvedTenantId) {
+          console.error("Could not resolve tenant_id for student", studentId);
           break;
         }
 
@@ -88,10 +105,11 @@ serve(async (req) => {
           ? session.payment_intent 
           : session.payment_intent?.id;
 
-        // Record payment
+        // Record payment with tenant_id
         const { data: payment, error: paymentError } = await supabase
           .from("payments")
           .insert({
+            tenant_id: resolvedTenantId,
             amount_cents: amountCents,
             currency: currency,
             status: "succeeded",
@@ -101,6 +119,7 @@ serve(async (req) => {
               plan_code: planCode,
               session_id: session.id,
               customer_email: session.customer_email,
+              student_id: studentId,
             },
           })
           .select("id")
@@ -123,11 +142,11 @@ serve(async (req) => {
 
         // For agent_supported plan, assign an agent
         if (planCode === "agent_supported") {
-          // Find an available agent to assign
+          // Find an available active agent to assign (using 'active' column, not 'status')
           const { data: availableAgent } = await supabase
             .from("agents")
             .select("id")
-            .eq("status", "active")
+            .eq("active", true)
             .order("created_at", { ascending: true })
             .limit(1)
             .single();
@@ -155,21 +174,39 @@ serve(async (req) => {
       case "payment_intent.payment_failed": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         const studentId = paymentIntent.metadata?.student_id;
+        const tenantId = paymentIntent.metadata?.tenant_id;
         
         console.log(`Payment failed for student ${studentId}`);
         
-        // Record failed payment attempt
-        await supabase.from("payments").insert({
-          amount_cents: paymentIntent.amount,
-          currency: paymentIntent.currency.toUpperCase(),
-          status: "failed",
-          purpose: "plan_upgrade",
-          stripe_payment_intent: paymentIntent.id,
-          metadata: {
-            plan_code: paymentIntent.metadata?.plan_code,
-            error: paymentIntent.last_payment_error?.message,
-          },
-        });
+        // Resolve tenant_id if not in metadata
+        let resolvedTenantId = tenantId;
+        if (!resolvedTenantId && studentId) {
+          const { data: studentData } = await supabase
+            .from("students")
+            .select("tenant_id")
+            .eq("id", studentId)
+            .single();
+          resolvedTenantId = studentData?.tenant_id;
+        }
+
+        if (resolvedTenantId) {
+          // Record failed payment attempt with tenant_id
+          await supabase.from("payments").insert({
+            tenant_id: resolvedTenantId,
+            amount_cents: paymentIntent.amount,
+            currency: paymentIntent.currency.toUpperCase(),
+            status: "failed",
+            purpose: "plan_upgrade",
+            stripe_payment_intent: paymentIntent.id,
+            metadata: {
+              plan_code: paymentIntent.metadata?.plan_code,
+              error: paymentIntent.last_payment_error?.message,
+              student_id: studentId,
+            },
+          });
+        } else {
+          console.error("Could not resolve tenant_id for failed payment", paymentIntent.id);
+        }
         
         break;
       }

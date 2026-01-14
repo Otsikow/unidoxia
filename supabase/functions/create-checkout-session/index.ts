@@ -19,19 +19,24 @@ interface PlanConfig {
   stripePriceId?: string;
 }
 
+// Get Price IDs from environment variables (configured via secrets)
+const STRIPE_SELF_SERVICE_PRICE_ID = Deno.env.get("STRIPE_SELF_SERVICE_PRICE_ID");
+const STRIPE_AGENT_SUPPORTED_PRICE_ID = Deno.env.get("STRIPE_AGENT_SUPPORTED_PRICE_ID");
+
 const PLAN_CONFIGS: Record<PlanCode, PlanConfig> = {
   self_service: {
     name: "Self-Service Plan",
     priceInCents: 4900, // $49.00 USD
     currency: "usd",
     description: "Apply to unlimited universities independently - One-time payment",
-    stripePriceId: "price_1SpAHh4wNWAbnULpZh7NqzqB",
+    stripePriceId: STRIPE_SELF_SERVICE_PRICE_ID,
   },
   agent_supported: {
     name: "Agent-Supported Plan",
     priceInCents: 20000, // $200.00 USD
     currency: "usd",
     description: "Full guidance from application to visa - One-time payment",
+    stripePriceId: STRIPE_AGENT_SUPPORTED_PRICE_ID,
   },
 };
 
@@ -141,10 +146,10 @@ serve(async (req) => {
 
     const plan = PLAN_CONFIGS[planCode];
 
-    // Fetch student profile
+    // Fetch student profile with tenant_id
     const { data: student, error: studentError } = await supabase
       .from("students")
-      .select("id, plan_type")
+      .select("id, plan_type, tenant_id")
       .eq("profile_id", authContext.userId)
       .single();
 
@@ -204,12 +209,14 @@ serve(async (req) => {
         student_id: student.id,
         user_id: authContext.userId,
         plan_code: planCode,
+        tenant_id: student.tenant_id,
       },
       payment_intent_data: {
         metadata: {
           student_id: student.id,
           user_id: authContext.userId,
           plan_code: planCode,
+          tenant_id: student.tenant_id,
         },
       },
     });

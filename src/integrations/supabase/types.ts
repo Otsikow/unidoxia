@@ -2402,6 +2402,8 @@ export type Database = {
       students: {
         Row: {
           address: Json | null
+          agent_assigned_at: string | null
+          assigned_agent_id: string | null
           consent_flags_json: Json | null
           contact_email: string | null
           contact_phone: string | null
@@ -2416,9 +2418,16 @@ export type Database = {
           nationality: string | null
           passport_expiry: string | null
           passport_number: string | null
+          payment_amount_cents: number | null
+          payment_confirmed_at: string | null
+          payment_currency: string | null
+          payment_date: string | null
+          payment_type: string | null
+          plan_type: string | null
           preferred_name: string | null
           profile_completeness: number | null
           profile_id: string
+          refund_eligibility: boolean | null
           tenant_id: string
           test_scores: Json | null
           updated_at: string | null
@@ -2426,6 +2435,8 @@ export type Database = {
         }
         Insert: {
           address?: Json | null
+          agent_assigned_at?: string | null
+          assigned_agent_id?: string | null
           consent_flags_json?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -2440,9 +2451,16 @@ export type Database = {
           nationality?: string | null
           passport_expiry?: string | null
           passport_number?: string | null
+          payment_amount_cents?: number | null
+          payment_confirmed_at?: string | null
+          payment_currency?: string | null
+          payment_date?: string | null
+          payment_type?: string | null
+          plan_type?: string | null
           preferred_name?: string | null
           profile_completeness?: number | null
           profile_id: string
+          refund_eligibility?: boolean | null
           tenant_id: string
           test_scores?: Json | null
           updated_at?: string | null
@@ -2450,6 +2468,8 @@ export type Database = {
         }
         Update: {
           address?: Json | null
+          agent_assigned_at?: string | null
+          assigned_agent_id?: string | null
           consent_flags_json?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -2464,15 +2484,29 @@ export type Database = {
           nationality?: string | null
           passport_expiry?: string | null
           passport_number?: string | null
+          payment_amount_cents?: number | null
+          payment_confirmed_at?: string | null
+          payment_currency?: string | null
+          payment_date?: string | null
+          payment_type?: string | null
+          plan_type?: string | null
           preferred_name?: string | null
           profile_completeness?: number | null
           profile_id?: string
+          refund_eligibility?: boolean | null
           tenant_id?: string
           test_scores?: Json | null
           updated_at?: string | null
           visa_history_json?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "students_assigned_agent_id_fkey"
+            columns: ["assigned_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "students_profile_id_fkey"
             columns: ["profile_id"]
