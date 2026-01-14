@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -9,6 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Sheet,
   SheetContent,
   SheetDescription,
@@ -18,19 +25,31 @@ import {
 
 import { useAuth } from "@/hooks/useAuth";
 import { AccountInspector } from "@/components/admin/AccountInspector";
+import { formatPlanPrice, getPlanById, getPlanDisplayName } from "@/types/billing";
 
-import {
-  CheckCircle2,
-  FileText,
-  Mail,
-  Phone,
-  Shield,
-  UserRoundX,
-} from "lucide-react";
+import { Mail, Shield } from "lucide-react";
+import type { StudentPlanType } from "@/types/billing";
 
 interface RoleSummary {
   role: string;
   users: number;
+}
+
+interface PlanRosterRow {
+  id: string;
+  plan_type: string | null;
+  payment_amount_cents: number | null;
+  payment_currency: string | null;
+  payment_confirmed_at: string | null;
+  assigned_agent_id: string | null;
+  created_at: string | null;
+  profile: Tables<"profiles"> | null;
+}
+
+interface AgentOption {
+  id: string;
+  name: string;
+  email: string | null;
 }
 
 const AdminUsers = () => {
@@ -42,6 +61,11 @@ const AdminUsers = () => {
   const [roleSummary, setRoleSummary] = useState<RoleSummary[]>([]);
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
+  const [planRows, setPlanRows] = useState<PlanRosterRow[]>([]);
+  const [planLoading, setPlanLoading] = useState(true);
+  const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
+  const [agentsLoading, setAgentsLoading] = useState(false);
+
   const [selectedUser, setSelectedUser] = useState<Tables<"profiles"> | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -52,6 +76,8 @@ const AdminUsers = () => {
 
   const [isStatusUpdating, setIsStatusUpdating] = useState(false);
   const [isOpeningDocument, setIsOpeningDocument] = useState<string | null>(null);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [isSavingAssignment, setIsSavingAssignment] = useState(false);
 
   /* ---------------- Load Users ---------------- */
   useEffect(() => {
@@ -103,6 +129,133 @@ const AdminUsers = () => {
     };
   }, [tenantId]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    const loadStudentPlans = async () => {
+      if (!tenantId) {
+        setPlanRows([]);
+        setPlanLoading(false);
+        return;
+      }
+
+      try {
+        setPlanLoading(true);
+        const { data, error } = await supabase
+          .from("students")
+          .select(
+            `
+            id,
+            plan_type,
+            payment_amount_cents,
+            payment_currency,
+            payment_confirmed_at,
+            assigned_agent_id,
+            created_at,
+            profiles:profiles (
+              id,
+              full_name,
+              email,
+              role,
+              created_at,
+              active,
+              phone,
+              country,
+              timezone,
+              onboarded
+            )
+          `
+          )
+          .eq("tenant_id", tenantId)
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (error) throw error;
+        if (!mounted) return;
+
+        setPlanRows(
+          (data ?? []).map((row) => ({
+            id: row.id,
+            plan_type: row.plan_type,
+            payment_amount_cents: row.payment_amount_cents,
+            payment_currency: row.payment_currency,
+            payment_confirmed_at: row.payment_confirmed_at,
+            assigned_agent_id: row.assigned_agent_id,
+            created_at: row.created_at,
+            profile: (row as any).profiles ?? null,
+          }))
+        );
+      } catch (err) {
+        console.error("Failed to load student plan roster", err);
+      } finally {
+        if (mounted) setPlanLoading(false);
+      }
+    };
+
+    loadStudentPlans();
+    return () => {
+      mounted = false;
+    };
+  }, [tenantId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadAgents = async () => {
+      if (!tenantId) {
+        setAgentOptions([]);
+        return;
+      }
+
+      try {
+        setAgentsLoading(true);
+        const { data, error } = await supabase
+          .from("agents")
+          .select(
+            `
+            id,
+            company_name,
+            profiles:profiles (
+              full_name,
+              email
+            )
+          `
+          )
+          .eq("tenant_id", tenantId)
+          .eq("active", true)
+          .eq("verification_status", "verified")
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        if (!mounted) return;
+
+        setAgentOptions(
+          (data ?? []).map((agent) => ({
+            id: agent.id,
+            name:
+              agent.company_name ||
+              (agent as any).profiles?.full_name ||
+              "Unnamed agent",
+            email: (agent as any).profiles?.email ?? null,
+          }))
+        );
+      } catch (err) {
+        console.error("Failed to load agents", err);
+      } finally {
+        if (mounted) setAgentsLoading(false);
+      }
+    };
+
+    loadAgents();
+    return () => {
+      mounted = false;
+    };
+  }, [tenantId]);
+
+  useEffect(() => {
+    setSelectedAgentId(studentRecord?.assigned_agent_id ?? null);
+  }, [studentRecord]);
+
   const filteredRows = selectedRole
     ? rows.filter((u) => u.role === selectedRole)
     : rows;
@@ -120,7 +273,7 @@ const AdminUsers = () => {
       const { data: student } = await supabase
         .from("students")
         .select(
-          "id, legal_name, preferred_name, contact_email, contact_phone, nationality, current_country, profile_completeness, created_at"
+          "id, legal_name, preferred_name, contact_email, contact_phone, nationality, current_country, profile_completeness, created_at, plan_type, payment_amount_cents, payment_currency, payment_confirmed_at, assigned_agent_id, agent_assigned_at"
         )
         .eq("profile_id", user.id)
         .maybeSingle();
@@ -150,6 +303,45 @@ const AdminUsers = () => {
       console.error("Failed to load student details", err);
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const saveAgentAssignment = async () => {
+    if (!studentRecord) return;
+    setIsSavingAssignment(true);
+
+    try {
+      const { error } = await supabase
+        .from("students")
+        .update({
+          assigned_agent_id: selectedAgentId,
+          agent_assigned_at: selectedAgentId ? new Date().toISOString() : null,
+        })
+        .eq("id", studentRecord.id);
+
+      if (error) throw error;
+
+      setStudentRecord((prev) =>
+        prev
+          ? {
+              ...prev,
+              assigned_agent_id: selectedAgentId,
+              agent_assigned_at: selectedAgentId ? new Date().toISOString() : null,
+            }
+          : prev
+      );
+
+      setPlanRows((prev) =>
+        prev.map((row) =>
+          row.id === studentRecord.id
+            ? { ...row, assigned_agent_id: selectedAgentId }
+            : row
+        )
+      );
+    } catch (err) {
+      console.error("Failed to assign agent", err);
+    } finally {
+      setIsSavingAssignment(false);
     }
   };
 
@@ -192,6 +384,56 @@ const AdminUsers = () => {
     } finally {
       setIsOpeningDocument(null);
     }
+  };
+
+  const planSummary = useMemo(() => {
+    const summary = new Map<string, { total: number; needsAgent: number }>();
+
+    planRows.forEach((row) => {
+      const planType = (row.plan_type || "free") as StudentPlanType;
+      const entry = summary.get(planType) ?? { total: 0, needsAgent: 0 };
+      entry.total += 1;
+
+      const isPaidAgentPlan =
+        planType === "agent_supported" &&
+        (row.payment_amount_cents || 0) >= 20000 &&
+        !!row.payment_confirmed_at;
+
+      if (isPaidAgentPlan && !row.assigned_agent_id) {
+        entry.needsAgent += 1;
+      }
+
+      summary.set(planType, entry);
+    });
+
+    return Array.from(summary.entries()).map(([planType, stats]) => ({
+      planType: planType as StudentPlanType,
+      total: stats.total,
+      needsAgent: stats.needsAgent,
+    }));
+  }, [planRows]);
+
+  const formatPaymentAmount = (amount: number | null, currency: string | null) => {
+    if (!amount || !currency) return "Not paid";
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+    }).format(amount / 100);
+  };
+
+  const isPaidAgentPlan = (record: Tables<"students"> | null) => {
+    if (!record) return false;
+    return (
+      (record.plan_type || "free") === "agent_supported" &&
+      (record.payment_amount_cents || 0) >= 20000 &&
+      !!record.payment_confirmed_at
+    );
+  };
+
+  const getAgentLabel = (agentId: string | null) => {
+    if (!agentId) return "Unassigned";
+    return agentOptions.find((agent) => agent.id === agentId)?.name ?? "Assigned";
   };
 
   /* ---------------- Render ---------------- */
@@ -245,6 +487,94 @@ const AdminUsers = () => {
                 <span className="uppercase text-xs ml-1">{r.role}</span>
               </button>
             ))}
+        </CardContent>
+      </Card>
+
+      {/* Student Plan Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Student plan overview</CardTitle>
+          <CardDescription>
+            Track plan coverage and agent assignments for paid students.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-wrap gap-2">
+            {planLoading && <Skeleton className="h-9 w-32" />}
+            {!planLoading &&
+              planSummary.map((summary) => (
+                <div
+                  key={summary.planType}
+                  className="rounded-full border px-4 py-2 text-xs"
+                >
+                  <span className="font-semibold">{summary.total}</span>{" "}
+                  <span className="uppercase">{summary.planType}</span>
+                  {summary.needsAgent > 0 && (
+                    <span className="ml-2 text-destructive">
+                      {summary.needsAgent} need agents
+                    </span>
+                  )}
+                </div>
+              ))}
+          </div>
+
+          {planLoading ? (
+            <Skeleton className="h-24 w-full" />
+          ) : planRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No student plans found.</p>
+          ) : (
+            <div className="rounded-lg border">
+              <div className="grid grid-cols-4 gap-3 border-b bg-muted/40 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <span>Student</span>
+                <span>Plan</span>
+                <span>Payment</span>
+                <span>Agent status</span>
+              </div>
+              <div className="divide-y">
+                {planRows.map((row) => {
+                  const planType = (row.plan_type || "free") as StudentPlanType;
+                  const paymentStatus = row.payment_confirmed_at
+                    ? `${formatPaymentAmount(row.payment_amount_cents, row.payment_currency)} paid`
+                    : "Not confirmed";
+                  const needsAgent =
+                    planType === "agent_supported" &&
+                    (row.payment_amount_cents || 0) >= 20000 &&
+                    !!row.payment_confirmed_at &&
+                    !row.assigned_agent_id;
+
+                  return (
+                    <div
+                      key={row.id}
+                      className="grid grid-cols-4 gap-3 px-4 py-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {row.profile?.full_name || "Student profile"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {row.profile?.email || "No email on file"}
+                        </p>
+                      </div>
+                      <div>
+                        <Badge variant={planType === "free" ? "secondary" : "default"}>
+                          {getPlanDisplayName(planType)}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground">{paymentStatus}</div>
+                      <div className="text-xs">
+                        <span>{getAgentLabel(row.assigned_agent_id)}</span>
+                        {needsAgent && (
+                          <Badge className="ml-2" variant="destructive">
+                            Needs agent
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -302,6 +632,95 @@ const AdminUsers = () => {
               </div>
 
               <Separator />
+
+              {studentRecord && (
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-xs uppercase text-muted-foreground">
+                      Plan & billing
+                    </Label>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">
+                        {getPlanDisplayName(
+                          (studentRecord.plan_type || "free") as StudentPlanType
+                        )}
+                      </Badge>
+                      {getPlanById(
+                        (studentRecord.plan_type || "free") as StudentPlanType
+                      ) && (
+                        <span className="text-xs text-muted-foreground">
+                          {formatPlanPrice(
+                            getPlanById(
+                              (studentRecord.plan_type || "free") as StudentPlanType
+                            )!
+                          )}{" "}
+                          one-time
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Payment status:{" "}
+                      {studentRecord.payment_confirmed_at
+                        ? `${formatPaymentAmount(
+                            studentRecord.payment_amount_cents,
+                            studentRecord.payment_currency
+                          )} confirmed`
+                        : "Not confirmed"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs uppercase text-muted-foreground">
+                      Agent assignment
+                    </Label>
+                    <Select
+                      value={selectedAgentId ?? "unassigned"}
+                      onValueChange={(value) =>
+                        setSelectedAgentId(value === "unassigned" ? null : value)
+                      }
+                      disabled={
+                        agentsLoading ||
+                        isSavingAssignment ||
+                        !isPaidAgentPlan(studentRecord)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an agent" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {agentOptions.map((agent) => (
+                          <SelectItem key={agent.id} value={agent.id}>
+                            {agent.name}
+                            {agent.email ? ` (${agent.email})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={saveAgentAssignment}
+                      disabled={
+                        isSavingAssignment ||
+                        !isPaidAgentPlan(studentRecord)
+                      }
+                    >
+                      {isSavingAssignment ? "Saving..." : "Save agent assignment"}
+                    </Button>
+                    {(studentRecord.plan_type || "free") !== "agent_supported" && (
+                      <p className="text-xs text-muted-foreground">
+                        Agent assignments are only available for the $200
+                        Agent-Supported plan.
+                      </p>
+                    )}
+                    {(studentRecord.plan_type || "free") === "agent_supported" &&
+                      !studentRecord.payment_confirmed_at && (
+                        <p className="text-xs text-muted-foreground">
+                          Assignments unlock once the $200 payment is confirmed.
+                        </p>
+                      )}
+                  </div>
+                </div>
+              )}
 
               <div className="grid gap-2">
                 <Button
