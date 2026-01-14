@@ -44,40 +44,33 @@ export function useStudentBilling() {
     enabled: !!user?.id,
   });
 
-  // Fetch count of distinct universities the student has applied to (non-draft applications)
+  // Fetch count of applications the student has submitted (non-draft applications)
   const {
-    data: universityCount,
+    data: applicationCount,
     isLoading: countLoading,
   } = useQuery({
-    queryKey: ['university-count', billingData?.id],
+    queryKey: ['application-count', billingData?.id],
     queryFn: async (): Promise<number> => {
       if (!billingData?.id) return 0;
 
-      // Get applications with their program's university to count distinct universities
+      // Get applications for this student (exclude drafts)
       const { data, error } = await supabase
         .from('applications')
-        .select('program:programs(university_id)')
+        .select('id')
         .eq('student_id', billingData.id)
         .neq('status', 'draft');
 
       if (error) {
-        console.error('Error fetching university count:', error);
+        console.error('Error fetching application count:', error);
         return 0;
       }
 
-      // Count distinct universities
-      const uniqueUniversityIds = new Set(
-        data
-          ?.map((app) => (app.program as { university_id?: string } | null)?.university_id)
-          .filter((id): id is string => !!id)
-      );
-
-      return uniqueUniversityIds.size;
+      return data?.length ?? 0;
     },
     enabled: !!billingData?.id,
   });
 
-  // Check if student can create new application (based on university limit for unpaid students)
+  // Check if student can create new application (based on application limit for unpaid students)
   const canCreateApplication = (): boolean => {
     if (!billingData) return false;
 
@@ -87,11 +80,11 @@ export function useStudentBilling() {
     // Unlimited for paid plans
     if (limit === null) return true;
 
-    // Check against university limit for free plan (1 university max)
-    return (universityCount || 0) < limit;
+    // Check against application limit for free plan (1 application max)
+    return (applicationCount || 0) < limit;
   };
 
-  // Get remaining universities for free plan
+  // Get remaining applications for free plan
   const getRemainingApplications = (): number | null => {
     if (!billingData) return null;
 
@@ -100,7 +93,7 @@ export function useStudentBilling() {
 
     if (limit === null) return null; // unlimited
 
-    return Math.max(0, limit - (universityCount || 0));
+    return Math.max(0, limit - (applicationCount || 0));
   };
 
   // Get plan display info
@@ -130,7 +123,7 @@ export function useStudentBilling() {
     billingData,
     billingLoading,
     billingError,
-    universityCount: universityCount || 0,
+    applicationCount: applicationCount || 0,
     countLoading,
     canCreateApplication,
     getRemainingApplications,
@@ -149,9 +142,9 @@ export function useApplicationLimitCheck() {
       const planInfo = getPlanInfo();
 
       toast({
-        title: 'University Limit Reached',
+        title: 'Application Limit Reached',
         description: planInfo.planType === 'free'
-          ? 'You have reached the maximum of 1 university on the Free plan. Upgrade to apply to more universities.'
+          ? 'You have used your free application. Upgrade to Self-Service ($49) for unlimited applications or choose Agent-Supported ($200) for guided support.'
           : 'Unable to create new application. Please contact support.',
         variant: 'destructive',
       });
