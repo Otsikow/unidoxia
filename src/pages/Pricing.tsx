@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,12 +65,32 @@ export default function Pricing() {
 
   // Check for payment status from URL
   const paymentStatus = searchParams.get('payment');
-  if (paymentStatus === 'cancelled') {
+  const paymentNoticeHandled = useRef(false);
+
+  useEffect(() => {
+    if (paymentStatus !== 'cancelled' || paymentNoticeHandled.current) {
+      return;
+    }
+
+    paymentNoticeHandled.current = true;
+
     toast({
       title: 'Payment Cancelled',
       description: 'Your payment was cancelled. You can try again when ready.',
     });
-  }
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('payment');
+    const nextSearch = nextParams.toString();
+
+    navigate(
+      {
+        pathname: '/pricing',
+        search: nextSearch ? `?${nextSearch}` : '',
+      },
+      { replace: true }
+    );
+  }, [navigate, paymentStatus, searchParams, toast]);
 
   const handleSelectPlan = async (planId: StudentPlanType) => {
     if (!user) {
