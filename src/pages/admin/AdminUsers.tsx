@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Sheet,
   SheetContent,
@@ -41,6 +50,8 @@ interface PlanRosterRow {
   payment_amount_cents: number | null;
   payment_currency: string | null;
   payment_confirmed_at: string | null;
+  payment_date: string | null;
+  payment_type: string | null;
   assigned_agent_id: string | null;
   created_at: string | null;
   profile: Tables<"profiles"> | null;
@@ -48,6 +59,7 @@ interface PlanRosterRow {
 
 interface AgentOption {
   id: string;
+  profileId: string | null;
   name: string;
   email: string | null;
 }
@@ -65,6 +77,23 @@ const AdminUsers = () => {
   const [planLoading, setPlanLoading] = useState(true);
   const [agentOptions, setAgentOptions] = useState<AgentOption[]>([]);
   const [agentsLoading, setAgentsLoading] = useState(false);
+  const [assignmentMap, setAssignmentMap] = useState<
+    Record<string, { counselorId: string | null; assignedAt: string | null }>
+  >({});
+  const [assignmentSelections, setAssignmentSelections] = useState<
+    Record<string, string | null>
+  >({});
+  const [savingAssignmentId, setSavingAssignmentId] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [summaryMetrics, setSummaryMetrics] = useState({
+    totalUsers: 0,
+    freeUsers: 0,
+    selfServiceUsers: 0,
+    agentSupportedUsers: 0,
+    awaitingAgentAllocation: 0,
+    activeAgents: 0,
+    assignedStudents: 0,
+  });
 
   const [selectedUser, setSelectedUser] = useState<Tables<"profiles"> | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -78,6 +107,10 @@ const AdminUsers = () => {
   const [isOpeningDocument, setIsOpeningDocument] = useState<string | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [isSavingAssignment, setIsSavingAssignment] = useState(false);
+  const [planFilter, setPlanFilter] = useState<string>("all");
+  const [paymentFilter, setPaymentFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("subscribed");
+  const [searchTerm, setSearchTerm] = useState("");
 
   /* ---------------- Load Users ---------------- */
   useEffect(() => {
@@ -132,6 +165,101 @@ const AdminUsers = () => {
   useEffect(() => {
     let mounted = true;
 
+    const loadSummary = async () => {
+      if (!tenantId) {
+        setSummaryMetrics({
+          totalUsers: 0,
+          freeUsers: 0,
+          selfServiceUsers: 0,
+          agentSupportedUsers: 0,
+          awaitingAgentAllocation: 0,
+          activeAgents: 0,
+          assignedStudents: 0,
+        });
+        setSummaryLoading(false);
+        return;
+      }
+
+      try {
+        setSummaryLoading(true);
+
+        const [
+          totalUsers,
+          freeUsers,
+          selfServiceUsers,
+          agentSupportedUsers,
+          awaitingAgentAllocation,
+          activeAgents,
+          assignedStudents,
+        ] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId),
+          supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .eq("plan_type", "free"),
+          supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .eq("plan_type", "self_service"),
+          supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .eq("plan_type", "agent_supported"),
+          supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .eq("plan_type", "agent_supported")
+            .not("payment_confirmed_at", "is", null)
+            .is("assigned_agent_id", null),
+          supabase
+            .from("agents")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .eq("active", true)
+            .eq("verification_status", "verified"),
+          supabase
+            .from("students")
+            .select("id", { count: "exact", head: true })
+            .eq("tenant_id", tenantId)
+            .not("assigned_agent_id", "is", null),
+        ]);
+
+        if (!mounted) return;
+
+        const safeCount = (value: number | null | undefined) => value ?? 0;
+
+        setSummaryMetrics({
+          totalUsers: safeCount(totalUsers.count),
+          freeUsers: safeCount(freeUsers.count),
+          selfServiceUsers: safeCount(selfServiceUsers.count),
+          agentSupportedUsers: safeCount(agentSupportedUsers.count),
+          awaitingAgentAllocation: safeCount(awaitingAgentAllocation.count),
+          activeAgents: safeCount(activeAgents.count),
+          assignedStudents: safeCount(assignedStudents.count),
+        });
+      } catch (err) {
+        console.error("Failed to load admin summary metrics", err);
+      } finally {
+        if (mounted) setSummaryLoading(false);
+      }
+    };
+
+    loadSummary();
+    return () => {
+      mounted = false;
+    };
+  }, [tenantId]);
+
+  useEffect(() => {
+    let mounted = true;
+
     const loadStudentPlans = async () => {
       if (!tenantId) {
         setPlanRows([]);
@@ -150,6 +278,8 @@ const AdminUsers = () => {
             payment_amount_cents,
             payment_currency,
             payment_confirmed_at,
+            payment_date,
+            payment_type,
             assigned_agent_id,
             created_at,
             profiles:profiles (
@@ -167,8 +297,7 @@ const AdminUsers = () => {
           `
           )
           .eq("tenant_id", tenantId)
-          .order("created_at", { ascending: false })
-          .limit(50);
+          .order("created_at", { ascending: false });
 
         if (error) throw error;
         if (!mounted) return;
@@ -180,6 +309,8 @@ const AdminUsers = () => {
             payment_amount_cents: row.payment_amount_cents,
             payment_currency: row.payment_currency,
             payment_confirmed_at: row.payment_confirmed_at,
+            payment_date: row.payment_date,
+            payment_type: row.payment_type,
             assigned_agent_id: row.assigned_agent_id,
             created_at: row.created_at,
             profile: (row as any).profiles ?? null,
@@ -216,6 +347,7 @@ const AdminUsers = () => {
             id,
             company_name,
             profiles:profiles (
+              id,
               full_name,
               email
             )
@@ -232,6 +364,7 @@ const AdminUsers = () => {
         setAgentOptions(
           (data ?? []).map((agent) => ({
             id: agent.id,
+            profileId: (agent as any).profiles?.id ?? null,
             name:
               agent.company_name ||
               (agent as any).profiles?.full_name ||
@@ -253,12 +386,91 @@ const AdminUsers = () => {
   }, [tenantId]);
 
   useEffect(() => {
-    setSelectedAgentId(studentRecord?.assigned_agent_id ?? null);
-  }, [studentRecord]);
+    let mounted = true;
+
+    const loadAssignments = async () => {
+      if (!tenantId || planRows.length === 0) {
+        setAssignmentMap({});
+        return;
+      }
+
+      try {
+        const studentIds = planRows.map((row) => row.id);
+        const { data, error } = await supabase
+          .from("student_assignments")
+          .select("student_id, counselor_id, assigned_at")
+          .in("student_id", studentIds);
+
+        if (error) throw error;
+        if (!mounted) return;
+
+        const map: Record<string, { counselorId: string | null; assignedAt: string | null }> =
+          {};
+        (data ?? []).forEach((row) => {
+          map[row.student_id] = {
+            counselorId: row.counselor_id,
+            assignedAt: row.assigned_at,
+          };
+        });
+
+        setAssignmentMap(map);
+      } catch (err) {
+        console.error("Failed to load student assignments", err);
+      }
+    };
+
+    loadAssignments();
+    return () => {
+      mounted = false;
+    };
+  }, [planRows, tenantId]);
+
+  useEffect(() => {
+    setAssignmentSelections((prev) => {
+      const next = { ...prev };
+      planRows.forEach((row) => {
+        if (next[row.id] !== undefined) return;
+        const assignment = assignmentMap[row.id];
+        const assignedAgent =
+          assignment?.counselorId
+            ? agentByProfileId.get(assignment.counselorId)?.id ?? null
+            : null;
+        next[row.id] = assignedAgent ?? row.assigned_agent_id ?? null;
+      });
+      return next;
+    });
+  }, [planRows, assignmentMap, agentByProfileId]);
+
+  useEffect(() => {
+    if (!studentRecord) {
+      setSelectedAgentId(null);
+      return;
+    }
+    const assignment = assignmentMap[studentRecord.id];
+    const assignedAgent =
+      assignment?.counselorId
+        ? agentByProfileId.get(assignment.counselorId)?.id ?? null
+        : null;
+    setSelectedAgentId(assignedAgent ?? studentRecord.assigned_agent_id ?? null);
+  }, [studentRecord, assignmentMap, agentByProfileId]);
 
   const filteredRows = selectedRole
     ? rows.filter((u) => u.role === selectedRole)
     : rows;
+
+  const agentById = useMemo(
+    () => new Map(agentOptions.map((agent) => [agent.id, agent])),
+    [agentOptions]
+  );
+  const agentByProfileId = useMemo(
+    () =>
+      new Map(
+        agentOptions
+          .filter((agent) => agent.profileId)
+          .map((agent) => [agent.profileId as string, agent])
+      ),
+    [agentOptions]
+  );
 
   /* ---------------- Select User ---------------- */
   const handleSelectUser = async (user: Tables<"profiles">) => {
@@ -309,40 +521,8 @@ const AdminUsers = () => {
   const saveAgentAssignment = async () => {
     if (!studentRecord) return;
     setIsSavingAssignment(true);
-
-    try {
-      const { error } = await supabase
-        .from("students")
-        .update({
-          assigned_agent_id: selectedAgentId,
-          agent_assigned_at: selectedAgentId ? new Date().toISOString() : null,
-        })
-        .eq("id", studentRecord.id);
-
-      if (error) throw error;
-
-      setStudentRecord((prev) =>
-        prev
-          ? {
-              ...prev,
-              assigned_agent_id: selectedAgentId,
-              agent_assigned_at: selectedAgentId ? new Date().toISOString() : null,
-            }
-          : prev
-      );
-
-      setPlanRows((prev) =>
-        prev.map((row) =>
-          row.id === studentRecord.id
-            ? { ...row, assigned_agent_id: selectedAgentId }
-            : row
-        )
-      );
-    } catch (err) {
-      console.error("Failed to assign agent", err);
-    } finally {
-      setIsSavingAssignment(false);
-    }
+    await updateAgentAssignment(studentRecord.id, selectedAgentId);
+    setIsSavingAssignment(false);
   };
 
   /* ---------------- Status Update ---------------- */
@@ -386,6 +566,92 @@ const AdminUsers = () => {
     }
   };
 
+  const resolveAssignedAgentId = (row: PlanRosterRow) => {
+    const assignment = assignmentMap[row.id];
+    if (assignment?.counselorId) {
+      return agentByProfileId.get(assignment.counselorId)?.id ?? row.assigned_agent_id;
+    }
+    return row.assigned_agent_id;
+  };
+
+  const getAgentLabel = (row: PlanRosterRow) => {
+    const assignment = assignmentMap[row.id];
+    if (assignment?.counselorId) {
+      const agent = agentByProfileId.get(assignment.counselorId);
+      return agent?.name ?? "Assigned";
+    }
+    if (!row.assigned_agent_id) return "Unassigned";
+    return agentById.get(row.assigned_agent_id)?.name ?? "Assigned";
+  };
+
+  const updateAgentAssignment = async (studentId: string, agentId: string | null) => {
+    try {
+      const assignmentTimestamp = agentId ? new Date().toISOString() : null;
+      const { error } = await supabase
+        .from("students")
+        .update({
+          assigned_agent_id: agentId,
+          agent_assigned_at: assignmentTimestamp,
+        })
+        .eq("id", studentId);
+
+      if (error) throw error;
+
+      const counselorId = agentId ? agentById.get(agentId)?.profileId ?? null : null;
+      const { error: deleteError } = await supabase
+        .from("student_assignments")
+        .delete()
+        .eq("student_id", studentId);
+
+      if (deleteError) throw deleteError;
+
+      if (counselorId) {
+        const { error: insertError } = await supabase
+          .from("student_assignments")
+          .insert({
+            student_id: studentId,
+            counselor_id: counselorId,
+            assigned_at: assignmentTimestamp,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      setPlanRows((prev) =>
+        prev.map((row) =>
+          row.id === studentId ? { ...row, assigned_agent_id: agentId } : row
+        )
+      );
+      setAssignmentMap((prev) => {
+        const next = { ...prev };
+        if (counselorId) {
+          next[studentId] = { counselorId, assignedAt: assignmentTimestamp };
+        } else {
+          delete next[studentId];
+        }
+        return next;
+      });
+      setAssignmentSelections((prev) => ({ ...prev, [studentId]: agentId }));
+      setStudentRecord((prev) =>
+        prev?.id === studentId
+          ? {
+              ...prev,
+              assigned_agent_id: agentId,
+              agent_assigned_at: assignmentTimestamp,
+            }
+          : prev
+      );
+    } catch (err) {
+      console.error("Failed to assign agent", err);
+    }
+  };
+
+  const handleAssignmentSave = async (studentId: string) => {
+    setSavingAssignmentId(studentId);
+    await updateAgentAssignment(studentId, assignmentSelections[studentId] ?? null);
+    setSavingAssignmentId(null);
+  };
+
   const planSummary = useMemo(() => {
     const summary = new Map<string, { total: number; needsAgent: number }>();
 
@@ -399,7 +665,10 @@ const AdminUsers = () => {
         (row.payment_amount_cents || 0) >= 20000 &&
         !!row.payment_confirmed_at;
 
-      if (isPaidAgentPlan && !row.assigned_agent_id) {
+      const hasAssignedAgent =
+        assignmentMap[row.id]?.counselorId || row.assigned_agent_id;
+
+      if (isPaidAgentPlan && !hasAssignedAgent) {
         entry.needsAgent += 1;
       }
 
@@ -411,7 +680,7 @@ const AdminUsers = () => {
       total: stats.total,
       needsAgent: stats.needsAgent,
     }));
-  }, [planRows]);
+  }, [planRows, assignmentMap]);
 
   const formatPaymentAmount = (amount: number | null, currency: string | null) => {
     if (!amount || !currency) return "Not paid";
@@ -431,10 +700,88 @@ const AdminUsers = () => {
     );
   };
 
-  const getAgentLabel = (agentId: string | null) => {
-    if (!agentId) return "Unassigned";
-    return agentOptions.find((agent) => agent.id === agentId)?.name ?? "Assigned";
+  const formatDate = (value: string | null) => {
+    if (!value) return "—";
+    return new Date(value).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
+
+  const getPaymentStatus = (row: PlanRosterRow) => {
+    const planType = (row.plan_type || "free") as StudentPlanType;
+    if (planType === "free") return "Unpaid";
+    return row.payment_confirmed_at ? "Paid" : "Past due";
+  };
+
+  const getSubscriptionStatus = (row: PlanRosterRow) => {
+    const planType = (row.plan_type || "free") as StudentPlanType;
+    if (planType === "free") return "Active";
+    return row.payment_confirmed_at ? "Active" : "Trial";
+  };
+
+  const subscriptionRows = useMemo(
+    () =>
+      planRows.map((row) => {
+        const planType = (row.plan_type || "free") as StudentPlanType;
+        const plan = getPlanById(planType);
+        return {
+          ...row,
+          planType,
+          plan,
+          paymentStatus: getPaymentStatus(row),
+          subscriptionStatus: getSubscriptionStatus(row),
+          subscribedAt: row.created_at || row.profile?.created_at || null,
+          lastPaymentAt: row.payment_confirmed_at || row.payment_date || null,
+          stripePriceId: plan?.stripePriceId ?? "N/A",
+        };
+      }),
+    [planRows]
+  );
+
+  const filteredSubscriptionRows = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const planOrder = ["free", "self_service", "agent_supported"];
+
+    const filtered = subscriptionRows.filter((row) => {
+      const name = row.profile?.full_name?.toLowerCase() ?? "";
+      const email = row.profile?.email?.toLowerCase() ?? "";
+      const matchesSearch =
+        term.length === 0 || name.includes(term) || email.includes(term);
+
+      const matchesPlan =
+        planFilter === "all" || row.planType === planFilter;
+
+      const matchesPayment =
+        paymentFilter === "all" || row.paymentStatus.toLowerCase() === paymentFilter;
+
+      return matchesSearch && matchesPlan && matchesPayment;
+    });
+
+    return filtered.sort((a, b) => {
+      if (sortBy === "plan") {
+        return planOrder.indexOf(a.planType) - planOrder.indexOf(b.planType);
+      }
+      if (sortBy === "payment") {
+        const aDate = a.lastPaymentAt ? new Date(a.lastPaymentAt).getTime() : 0;
+        const bDate = b.lastPaymentAt ? new Date(b.lastPaymentAt).getTime() : 0;
+        return bDate - aDate;
+      }
+      const aDate = a.subscribedAt ? new Date(a.subscribedAt).getTime() : 0;
+      const bDate = b.subscribedAt ? new Date(b.subscribedAt).getTime() : 0;
+      return bDate - aDate;
+    });
+  }, [subscriptionRows, searchTerm, planFilter, paymentFilter, sortBy]);
+
+  const agentAllocationRows = useMemo(
+    () =>
+      subscriptionRows.filter(
+        (row) => row.planType === "agent_supported" && !!row.payment_confirmed_at
+      ),
+    [subscriptionRows]
+  );
+
 
   /* ---------------- Render ---------------- */
   return (
@@ -462,6 +809,54 @@ const AdminUsers = () => {
 
       <AccountInspector />
 
+      {/* Summary Metrics */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Admin subscription summary</CardTitle>
+          <CardDescription>
+            At-a-glance counts for subscriptions, agents, and allocations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {summaryLoading ? (
+            <Skeleton className="h-20 w-full" />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">Total users</p>
+                <p className="text-2xl font-semibold">{summaryMetrics.totalUsers}</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">Free users</p>
+                <p className="text-2xl font-semibold">{summaryMetrics.freeUsers}</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">$49 subscribers</p>
+                <p className="text-2xl font-semibold">{summaryMetrics.selfServiceUsers}</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">$200 subscribers</p>
+                <p className="text-2xl font-semibold">{summaryMetrics.agentSupportedUsers}</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">$200 awaiting agent</p>
+                <p className="text-2xl font-semibold">
+                  {summaryMetrics.awaitingAgentAllocation}
+                </p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">Active agents</p>
+                <p className="text-2xl font-semibold">{summaryMetrics.activeAgents}</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <p className="text-xs uppercase text-muted-foreground">Assigned students</p>
+                <p className="text-2xl font-semibold">{summaryMetrics.assignedStudents}</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Role Distribution */}
       <Card>
         <CardHeader>
@@ -487,6 +882,218 @@ const AdminUsers = () => {
                 <span className="uppercase text-xs ml-1">{r.role}</span>
               </button>
             ))}
+        </CardContent>
+      </Card>
+
+      {/* Subscription & Payment Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Subscription & payment overview</CardTitle>
+          <CardDescription>
+            Review plan coverage, payment status, and Stripe references by user.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-4">
+            <Input
+              placeholder="Search by name or email"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+            />
+            <Select value={planFilter} onValueChange={setPlanFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by plan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All plans</SelectItem>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="self_service">$49 plan</SelectItem>
+                <SelectItem value="agent_supported">$200 plan</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={paymentFilter} onValueChange={setPaymentFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Payment status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All payments</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="unpaid">Unpaid</SelectItem>
+                <SelectItem value="past due">Past due</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="subscribed">Date subscribed</SelectItem>
+                <SelectItem value="payment">Last payment date</SelectItem>
+                <SelectItem value="plan">Subscription tier</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {planLoading ? (
+            <Skeleton className="h-32 w-full" />
+          ) : filteredSubscriptionRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No users match your filters yet.
+            </p>
+          ) : (
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Plan</TableHead>
+                    <TableHead>Subscription</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Stripe reference</TableHead>
+                    <TableHead>Dates</TableHead>
+                    <TableHead>Agent</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSubscriptionRows.map((row) => {
+                    const paymentVariant =
+                      row.paymentStatus === "Paid"
+                        ? "default"
+                        : row.paymentStatus === "Past due"
+                          ? "destructive"
+                          : "secondary";
+                    const subscriptionVariant =
+                      row.subscriptionStatus === "Active"
+                        ? "default"
+                        : row.subscriptionStatus === "Trial"
+                          ? "secondary"
+                          : "outline";
+                    const assignedAgentId = resolveAssignedAgentId(row);
+
+                    return (
+                      <TableRow key={row.id}>
+                        <TableCell>
+                          <div className="font-medium">
+                            {row.profile?.full_name || "Student profile"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {row.profile?.email || "No email on file"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-xs uppercase">
+                          {row.profile?.role || "student"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={row.planType === "free" ? "secondary" : "default"}
+                          >
+                            {getPlanDisplayName(row.planType)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={subscriptionVariant}>
+                            {row.subscriptionStatus}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={paymentVariant}>{row.paymentStatus}</Badge>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          <div>Customer: Not synced</div>
+                          <div>Subscription: N/A</div>
+                          <div>Price: {row.stripePriceId}</div>
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          <div>Subscribed: {formatDate(row.subscribedAt)}</div>
+                          <div>Last payment: {formatDate(row.lastPaymentAt)}</div>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {assignedAgentId
+                            ? agentById.get(assignedAgentId)?.name ?? "Assigned"
+                            : "Unassigned"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Agent Allocation */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Agent allocation</CardTitle>
+          <CardDescription>
+            Assign or reassign primary agents for $200 subscribers.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {planLoading ? (
+            <Skeleton className="h-24 w-full" />
+          ) : agentAllocationRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No paid $200 subscribers available for assignment.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {agentAllocationRows.map((row) => {
+                const selectedAssignment = assignmentSelections[row.id] ?? null;
+                return (
+                  <div
+                    key={row.id}
+                    className="flex flex-col gap-3 rounded-lg border p-4 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {row.profile?.full_name || "Student profile"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {row.profile?.email || "No email on file"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Current agent: {getAgentLabel(row)}
+                      </p>
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                      <Select
+                        value={selectedAssignment ?? "unassigned"}
+                        onValueChange={(value) =>
+                          setAssignmentSelections((prev) => ({
+                            ...prev,
+                            [row.id]: value === "unassigned" ? null : value,
+                          }))
+                        }
+                        disabled={agentsLoading || savingAssignmentId === row.id}
+                      >
+                        <SelectTrigger className="min-w-[220px]">
+                          <SelectValue placeholder="Select an agent" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
+                          {agentOptions.map((agent) => (
+                            <SelectItem key={agent.id} value={agent.id}>
+                              {agent.name}
+                              {agent.email ? ` (${agent.email})` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        onClick={() => handleAssignmentSave(row.id)}
+                        disabled={savingAssignmentId === row.id}
+                      >
+                        {savingAssignmentId === row.id ? "Saving..." : "Save"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -533,6 +1140,7 @@ const AdminUsers = () => {
               <div className="divide-y">
                 {planRows.map((row) => {
                   const planType = (row.plan_type || "free") as StudentPlanType;
+                  const assignedAgentId = resolveAssignedAgentId(row);
                   const paymentStatus = row.payment_confirmed_at
                     ? `${formatPaymentAmount(row.payment_amount_cents, row.payment_currency)} paid`
                     : "Not confirmed";
@@ -540,7 +1148,7 @@ const AdminUsers = () => {
                     planType === "agent_supported" &&
                     (row.payment_amount_cents || 0) >= 20000 &&
                     !!row.payment_confirmed_at &&
-                    !row.assigned_agent_id;
+                    !assignedAgentId;
 
                   return (
                     <div
@@ -562,7 +1170,7 @@ const AdminUsers = () => {
                       </div>
                       <div className="text-xs text-muted-foreground">{paymentStatus}</div>
                       <div className="text-xs">
-                        <span>{getAgentLabel(row.assigned_agent_id)}</span>
+                        <span>{getAgentLabel(row)}</span>
                         {needsAgent && (
                           <Badge className="ml-2" variant="destructive">
                             Needs agent

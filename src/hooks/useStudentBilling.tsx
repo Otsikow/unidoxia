@@ -8,13 +8,16 @@ import { getApplicationLimit, getPlanDisplayName } from '@/types/billing';
 interface StudentWithBilling {
   id: string;
   plan_type: StudentPlanType;
+  payment_confirmed_at: string | null;
+  payment_date: string | null;
+  assigned_agent_id: string | null;
 }
 
 export function useStudentBilling() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Fetch student record (billing columns don't exist yet, so we use defaults)
+  // Fetch student record with billing fields
   const {
     data: billingData,
     isLoading: billingLoading,
@@ -26,7 +29,7 @@ export function useStudentBilling() {
 
       const { data, error } = await supabase
         .from('students')
-        .select('id')
+        .select('id, plan_type, payment_confirmed_at, payment_date, assigned_agent_id')
         .eq('profile_id', user.id)
         .single();
 
@@ -35,10 +38,13 @@ export function useStudentBilling() {
         throw error;
       }
 
-      // Return billing data with defaults (billing columns don't exist on students table)
+      // Return billing data with defaults
       return {
         id: data.id,
-        plan_type: 'free' as StudentPlanType,
+        plan_type: (data.plan_type || 'free') as StudentPlanType,
+        payment_confirmed_at: data.payment_confirmed_at,
+        payment_date: data.payment_date,
+        assigned_agent_id: data.assigned_agent_id,
       };
     },
     enabled: !!user?.id,
@@ -112,9 +118,9 @@ export function useStudentBilling() {
       planType,
       displayName: getPlanDisplayName(planType),
       isPaid: planType !== 'free',
-      hasAgent: false,
-      agentId: null,
-      paymentDate: null,
+      hasAgent: Boolean(billingData.assigned_agent_id),
+      agentId: billingData.assigned_agent_id,
+      paymentDate: billingData.payment_confirmed_at || billingData.payment_date,
     };
   };
 
