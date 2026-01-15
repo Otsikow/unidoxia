@@ -425,6 +425,20 @@ const AdminUsers = () => {
     };
   }, [planRows, tenantId]);
 
+  const agentById = useMemo(
+    () => new Map(agentOptions.map((agent) => [agent.id, agent])),
+    [agentOptions]
+  );
+  const agentByProfileId = useMemo(
+    () =>
+      new Map(
+        agentOptions
+          .filter((agent) => agent.profileId)
+          .map((agent) => [agent.profileId as string, agent])
+      ),
+    [agentOptions]
+  );
+
   useEffect(() => {
     setAssignmentSelections((prev) => {
       const next = { ...prev };
@@ -457,20 +471,6 @@ const AdminUsers = () => {
   const filteredRows = selectedRole
     ? rows.filter((u) => u.role === selectedRole)
     : rows;
-
-  const agentById = useMemo(
-    () => new Map(agentOptions.map((agent) => [agent.id, agent])),
-    [agentOptions]
-  );
-  const agentByProfileId = useMemo(
-    () =>
-      new Map(
-        agentOptions
-          .filter((agent) => agent.profileId)
-          .map((agent) => [agent.profileId as string, agent])
-      ),
-    [agentOptions]
-  );
 
   /* ---------------- Select User ---------------- */
   const handleSelectUser = async (user: Tables<"profiles">) => {
