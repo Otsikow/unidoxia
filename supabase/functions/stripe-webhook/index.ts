@@ -12,6 +12,7 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL");
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
 const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
 if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured");
@@ -20,6 +21,61 @@ if (!supabaseUrl || !supabaseServiceKey) {
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: { persistSession: false },
 });
+
+const sendEmail = async (to: string[], subject: string, html: string) => {
+  if (!resendApiKey) {
+    console.error("RESEND_API_KEY is not set");
+    return;
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify({
+      from: "UniDoxia <info@unidoxia.com>",
+      to,
+      subject,
+      html,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Resend API error: ${error}`);
+  }
+};
+
+const getAdminEmailRecipients = async () => {
+  const { data: admins, error } = await supabase
+    .from("profiles")
+    .select("id, email, full_name")
+    .eq("role", "admin")
+    .not("email", "is", null);
+
+  if (error) {
+    console.error("Failed to load admin recipients", error);
+    return [];
+  }
+
+  const adminIds = (admins ?? []).map((admin) => admin.id);
+  if (adminIds.length === 0) return [];
+
+  const { data: preferences } = await supabase
+    .from("notification_preferences")
+    .select("profile_id, email_notifications")
+    .in("profile_id", adminIds);
+
+  const preferenceMap = new Map(
+    (preferences ?? []).map((row) => [row.profile_id, row.email_notifications])
+  );
+
+  return (admins ?? [])
+    .filter((admin) => preferenceMap.get(admin.id) !== false)
+    .map((admin) => admin.email as string);
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -166,6 +222,59 @@ serve(async (req) => {
           console.error("Failed to update student plan", updateError);
         } else {
           console.log(`Successfully upgraded student ${studentId} to ${planCode}`);
+        }
+
+        try {
+          const recipients = await getAdminEmailRecipients();
+          if (recipients.length > 0) {
+            const { data: studentData } = await supabase
+              .from("students")
+              .select("profile_id, legal_name, preferred_name")
+              .eq("id", studentId)
+              .single();
+
+            let studentName = "Student";
+            let studentRole = "student";
+            if (studentData) {
+              studentName = studentData.legal_name || studentData.preferred_name || "Student";
+            }
+
+            if (studentData?.profile_id) {
+              const { data: profileData } = await supabase
+                .from("profiles")
+                .select("full_name, role")
+                .eq("id", studentData.profile_id)
+                .single();
+              if (profileData?.full_name) studentName = profileData.full_name;
+              if (profileData?.role) studentRole = profileData.role;
+            }
+
+            const planLabel =
+              planCode === "self_service"
+                ? "$49"
+                : planCode === "agent_supported"
+                  ? "$200"
+                  : "$0";
+
+            const amountDisplay = `${currency} ${(amountCents / 100).toFixed(2)}`;
+            const paidAt = new Date().toISOString();
+
+            const html = `
+              <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1>Payment confirmed</h1>
+                <p><strong>User:</strong> ${studentName}</p>
+                <p><strong>Role:</strong> ${studentRole}</p>
+                <p><strong>Plan:</strong> ${planLabel}</p>
+                <p><strong>Amount:</strong> ${amountDisplay}</p>
+                <p><strong>Timestamp:</strong> ${paidAt}</p>
+                <p>View details in the admin payments dashboard.</p>
+              </div>
+            `;
+
+            await sendEmail(recipients, "Admin alert: payment confirmed", html);
+          }
+        } catch (notifyError) {
+          console.error("Failed to send admin payment notification email", notifyError);
         }
 
         break;
