@@ -1250,6 +1250,19 @@ export default function NewApplication() {
       }
 
       if (!createdApplication) {
+        if (
+          lastError &&
+          typeof lastError.message === "string" &&
+          lastError.message.includes("APPLICATION_LIMIT_REACHED")
+        ) {
+          toast({
+            title: "Application Limit Reached",
+            description:
+              "You have used your free application. Upgrade to Self-Service ($49) for unlimited applications or choose Agent-Supported ($200) for guided support.",
+            variant: "destructive",
+          });
+          return;
+        }
         throw lastError || new Error('Failed to create application');
       }
 
