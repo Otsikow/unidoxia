@@ -205,12 +205,14 @@ serve(async (req: Request): Promise<Response> => {
     // We assume the caller is authorized if they have a valid token. The risk is spamming.
     // We can add a check: if type is 'submitted', ensure user.id matches the student linked to application.
 
+    let studentProfileId: string | null = null;
     if (type === 'submitted') {
         const { data: studentProfile } = await adminClient
             .from('students')
             .select('profile_id')
             .eq('id', appData.student_id)
             .single();
+        studentProfileId = studentProfile?.profile_id ?? null;
 
         if (studentProfile?.profile_id !== user.id) {
              // Allow agents to submit on behalf of students
@@ -236,6 +238,30 @@ serve(async (req: Request): Promise<Response> => {
                     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
                   });
              }
+        }
+    }
+
+    if (!studentProfileId) {
+        const { data: studentProfile } = await adminClient
+            .from('students')
+            .select('profile_id')
+            .eq('id', appData.student_id)
+            .single();
+        studentProfileId = studentProfile?.profile_id ?? null;
+    }
+
+    if (studentProfileId) {
+        const { data: preferences } = await adminClient
+            .from('notification_preferences')
+            .select('email_notifications, application_updates')
+            .eq('profile_id', studentProfileId)
+            .maybeSingle();
+
+        if (preferences && (!preferences.email_notifications || !preferences.application_updates)) {
+            return new Response(JSON.stringify({ success: true, skipped: 'email_preferences_disabled' }), {
+                status: 200,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
         }
     }
 
