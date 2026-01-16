@@ -782,6 +782,35 @@ const AdminUsers = () => {
     [subscriptionRows]
   );
 
+  const scrollToSection = (id: string) => {
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const handleSummaryNavigation = ({
+    sectionId,
+    plan,
+    role,
+  }: {
+    sectionId: string;
+    plan?: string;
+    role?: string | null;
+  }) => {
+    if (plan) {
+      setPlanFilter(plan);
+      setPaymentFilter("all");
+      setSearchTerm("");
+    }
+
+    if (role !== undefined) {
+      setSelectedRole(role);
+    }
+
+    scrollToSection(sectionId);
+  };
+
 
   /* ---------------- Render ---------------- */
   return (
@@ -822,43 +851,108 @@ const AdminUsers = () => {
             <Skeleton className="h-20 w-full" />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-lg border p-4">
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "subscription-overview",
+                    plan: "all",
+                    role: null,
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">Total users</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.totalUsers}</p>
-              </div>
-              <div className="rounded-lg border p-4">
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "subscription-overview",
+                    plan: "free",
+                    role: null,
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">Free users</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.freeUsers}</p>
-              </div>
-              <div className="rounded-lg border p-4">
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "subscription-overview",
+                    plan: "self_service",
+                    role: null,
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">$49 subscribers</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.selfServiceUsers}</p>
-              </div>
-              <div className="rounded-lg border p-4">
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "subscription-overview",
+                    plan: "agent_supported",
+                    role: null,
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">$200 subscribers</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.agentSupportedUsers}</p>
-              </div>
-              <div className="rounded-lg border p-4">
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "agent-allocation",
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">$200 awaiting agent</p>
                 <p className="text-2xl font-semibold">
                   {summaryMetrics.awaitingAgentAllocation}
                 </p>
-              </div>
-              <div className="rounded-lg border p-4">
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "role-distribution",
+                    role: "agent",
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">Active agents</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.activeAgents}</p>
-              </div>
-              <div className="rounded-lg border p-4">
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  handleSummaryNavigation({
+                    sectionId: "student-plan-overview",
+                  })
+                }
+                className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
+              >
                 <p className="text-xs uppercase text-muted-foreground">Assigned students</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.assignedStudents}</p>
-              </div>
+              </button>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Role Distribution */}
-      <Card>
+      <Card id="role-distribution">
         <CardHeader>
           <CardTitle>Role distribution</CardTitle>
           <CardDescription>Accounts grouped by role.</CardDescription>
@@ -886,7 +980,7 @@ const AdminUsers = () => {
       </Card>
 
       {/* Subscription & Payment Overview */}
-      <Card>
+      <Card id="subscription-overview">
         <CardHeader>
           <CardTitle>Subscription & payment overview</CardTitle>
           <CardDescription>
@@ -1024,7 +1118,7 @@ const AdminUsers = () => {
       </Card>
 
       {/* Agent Allocation */}
-      <Card>
+      <Card id="agent-allocation">
         <CardHeader>
           <CardTitle>Agent allocation</CardTitle>
           <CardDescription>
@@ -1098,7 +1192,7 @@ const AdminUsers = () => {
       </Card>
 
       {/* Student Plan Overview */}
-      <Card>
+      <Card id="student-plan-overview">
         <CardHeader>
           <CardTitle>Student plan overview</CardTitle>
           <CardDescription>
