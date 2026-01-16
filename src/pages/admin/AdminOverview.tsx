@@ -218,17 +218,21 @@ const AdminOverview = () => {
               interactive
                 ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 : undefined,
+              item.key === "pendingVerifications" ? "relative" : undefined,
             )}
           >
+            {item.key === "pendingVerifications" && value > 0 && (
+              <Badge
+                variant="outline"
+                className="absolute right-2 top-2 z-10 text-[9px] uppercase tracking-wide text-amber-600 sm:right-3 sm:top-3 sm:text-[10px]"
+              >
+                {t("admin.overview.badges.actionRequired", { defaultValue: "Action" })}
+              </Badge>
+            )}
             <CardHeader className="p-3 sm:p-4 pb-1 sm:pb-2 flex flex-row items-start justify-between gap-1">
               <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground leading-tight">
                 {t(item.labelKey, { defaultValue: item.defaultLabel })}
               </CardTitle>
-              {item.key === "pendingVerifications" && value > 0 && (
-                <Badge variant="outline" className="text-[9px] sm:text-[10px] uppercase tracking-wide text-amber-600 shrink-0 hidden sm:inline-flex">
-                  {t("admin.overview.badges.actionRequired", { defaultValue: "Action" })}
-                </Badge>
-              )}
             </CardHeader>
             <CardContent className="p-3 sm:p-4 pt-0">
               {metricsQuery.isLoading ? <Skeleton className="h-6 sm:h-8 w-16 sm:w-24" /> : <p className="text-lg sm:text-2xl font-semibold tracking-tight">{display}</p>}
