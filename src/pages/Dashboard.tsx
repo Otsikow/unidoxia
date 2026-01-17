@@ -139,7 +139,11 @@ const Dashboard = () => {
     const target = getUniversityRouteForPartnerView(params.get('view'));
     return <Navigate to={target} replace />;
   }
-  if (resolvedRole === 'staff' || resolvedRole === 'admin')
+  if (resolvedRole === 'admin') {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (resolvedRole === 'staff')
     return (
       <Suspense
         fallback={
