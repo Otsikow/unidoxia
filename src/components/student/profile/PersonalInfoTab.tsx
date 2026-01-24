@@ -39,6 +39,8 @@ const extractFormData = (student: Tables<'students'>) => {
     contact_phone: student.contact_phone || addressData?.phone || '',
     whatsapp_number: addressData?.whatsapp || addressData?.phone || student.contact_phone || '+',
     current_country: student.current_country || '',
+    preferred_course: student.preferred_course || '',
+    preferred_country: student.preferred_country || '',
     address_line1: addressData?.line1 || '',
     address_line2: addressData?.line2 || '',
     city: addressData?.city || '',
@@ -84,6 +86,8 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           contact_email: formData.contact_email,
           contact_phone: formData.contact_phone,
           current_country: formData.current_country,
+          preferred_course: formData.preferred_course,
+          preferred_country: formData.preferred_country,
           address: {
             line1: formData.address_line1,
             line2: formData.address_line2,
@@ -314,6 +318,39 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="hover:shadow-md transition-shadow">
+        <CardHeader>
+          <CardTitle>Study Preferences</CardTitle>
+          <CardDescription>
+            Share the course and country you are most interested in.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="preferred_course">Preferred Course</Label>
+              <Input
+                id="preferred_course"
+                name="preferred_course"
+                value={formData.preferred_course}
+                onChange={handleChange}
+                placeholder="e.g., Business Administration"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="preferred_country">Preferred Country</Label>
+              <Input
+                id="preferred_country"
+                name="preferred_country"
+                value={formData.preferred_country}
+                onChange={handleChange}
+                placeholder="e.g., Canada"
               />
             </div>
           </div>

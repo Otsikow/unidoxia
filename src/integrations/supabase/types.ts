@@ -2424,6 +2424,8 @@ export type Database = {
           payment_date: string | null
           payment_type: string | null
           plan_type: string | null
+          preferred_country: string | null
+          preferred_course: string | null
           preferred_name: string | null
           profile_completeness: number | null
           profile_id: string
@@ -2457,6 +2459,8 @@ export type Database = {
           payment_date?: string | null
           payment_type?: string | null
           plan_type?: string | null
+          preferred_country?: string | null
+          preferred_course?: string | null
           preferred_name?: string | null
           profile_completeness?: number | null
           profile_id: string
@@ -2490,6 +2494,8 @@ export type Database = {
           payment_date?: string | null
           payment_type?: string | null
           plan_type?: string | null
+          preferred_country?: string | null
+          preferred_course?: string | null
           preferred_name?: string | null
           profile_completeness?: number | null
           profile_id?: string
