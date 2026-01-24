@@ -2427,6 +2427,7 @@ export type Database = {
           preferred_country: string | null
           preferred_course: string | null
           preferred_name: string | null
+          preferred_study_area: string | null
           profile_completeness: number | null
           profile_id: string
           refund_eligibility: boolean | null
@@ -2462,6 +2463,7 @@ export type Database = {
           preferred_country?: string | null
           preferred_course?: string | null
           preferred_name?: string | null
+          preferred_study_area?: string | null
           profile_completeness?: number | null
           profile_id: string
           refund_eligibility?: boolean | null
@@ -2497,6 +2499,7 @@ export type Database = {
           preferred_country?: string | null
           preferred_course?: string | null
           preferred_name?: string | null
+          preferred_study_area?: string | null
           profile_completeness?: number | null
           profile_id?: string
           refund_eligibility?: boolean | null

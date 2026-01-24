@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -10,6 +11,26 @@ import { Loader2 } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
+import { COUNTRIES } from '@/lib/countries';
+
+// Common study areas/disciplines
+const STUDY_AREAS = [
+  'Business & Management',
+  'Computer Science & IT',
+  'Engineering',
+  'Medicine & Health Sciences',
+  'Law',
+  'Arts & Humanities',
+  'Social Sciences',
+  'Natural Sciences',
+  'Education',
+  'Architecture & Design',
+  'Media & Communications',
+  'Agriculture & Environmental Sciences',
+  'Hospitality & Tourism',
+  'Finance & Accounting',
+  'Other'
+] as const;
 
 interface PersonalInfoTabProps {
   student: Tables<'students'>;
@@ -39,8 +60,9 @@ const extractFormData = (student: Tables<'students'>) => {
     contact_phone: student.contact_phone || addressData?.phone || '',
     whatsapp_number: addressData?.whatsapp || addressData?.phone || student.contact_phone || '+',
     current_country: student.current_country || '',
-    preferred_course: student.preferred_course || '',
-    preferred_country: student.preferred_country || '',
+    preferred_course: (student as any).preferred_course || '',
+    preferred_study_area: (student as any).preferred_study_area || '',
+    preferred_country: (student as any).preferred_country || '',
     address_line1: addressData?.line1 || '',
     address_line2: addressData?.line2 || '',
     city: addressData?.city || '',
@@ -87,6 +109,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           contact_phone: formData.contact_phone,
           current_country: formData.current_country,
           preferred_course: formData.preferred_course,
+          preferred_study_area: formData.preferred_study_area,
           preferred_country: formData.preferred_country,
           address: {
             line1: formData.address_line1,
@@ -328,7 +351,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
         <CardHeader>
           <CardTitle>Study Preferences</CardTitle>
           <CardDescription>
-            Share the course and country you are most interested in.
+            Tell us about your study goals so we can better support your journey.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -340,19 +363,54 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
                 name="preferred_course"
                 value={formData.preferred_course}
                 onChange={handleChange}
-                placeholder="e.g., Business Administration"
+                placeholder="e.g., MBA, Computer Science, Nursing"
               />
+              <p className="text-xs text-muted-foreground">
+                The specific program or degree you want to pursue
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="preferred_country">Preferred Country</Label>
-              <Input
-                id="preferred_country"
-                name="preferred_country"
-                value={formData.preferred_country}
-                onChange={handleChange}
-                placeholder="e.g., Canada"
-              />
+              <Label htmlFor="preferred_study_area">Preferred Study Area</Label>
+              <Select
+                value={formData.preferred_study_area}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_study_area: value }))}
+              >
+                <SelectTrigger id="preferred_study_area">
+                  <SelectValue placeholder="Select a study area" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STUDY_AREAS.map((area) => (
+                    <SelectItem key={area} value={area}>
+                      {area}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                The broader field or discipline
+              </p>
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="preferred_country">Preferred Country</Label>
+            <Select
+              value={formData.preferred_country}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_country: value }))}
+            >
+              <SelectTrigger id="preferred_country">
+                <SelectValue placeholder="Select a country" />
+              </SelectTrigger>
+              <SelectContent>
+                {COUNTRIES.map((country) => (
+                  <SelectItem key={country} value={country}>
+                    {country}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Your preferred destination for studying abroad
+            </p>
           </div>
         </CardContent>
       </Card>
