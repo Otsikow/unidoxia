@@ -9,6 +9,11 @@ export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
   { type: 'passport_photo', label: 'Passport Photo', acceptableTypes: ['passport_photo'] },
   { type: 'transcript', label: 'Academic Transcript', acceptableTypes: ['transcript'] },
   { type: 'sop', label: 'Statement of Purpose', acceptableTypes: ['sop', 'personal_statement'] },
+  {
+    type: 'reference_letter',
+    label: 'Letter of Reference',
+    acceptableTypes: ['lor', 'recommendation_letter', 'reference_letter', 'letter_of_reference'],
+  },
   { type: 'cv', label: 'CV / Resume', acceptableTypes: ['cv'] },
   {
     type: 'english_proficiency',
