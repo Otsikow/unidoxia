@@ -160,6 +160,9 @@ const DOCUMENT_LABELS: Record<string, string> = {
   cv: "CV / Resume",
   degree_certificate: "Degree Certificate",
   recommendation_letter: "Recommendation Letter",
+  lor: "Letter of Reference",
+  reference_letter: "Letter of Reference",
+  letter_of_reference: "Letter of Reference",
   english_proficiency: "English Proficiency",
   financial_document: "Financial Document",
 };
