@@ -73,6 +73,7 @@ const DOCUMENT_TYPES = [
   { value: "passport", label: "Passport", required: true },
   { value: "passport_photo", label: "Passport Photo", required: true },
   { value: "transcript", label: "Academic Transcript", required: true },
+  { value: "degree_certificate", label: "Academic Certificate", required: true },
   { value: "cv", label: "CV / Resume", required: true },
   { value: "english_proficiency", label: "Statement of English Proficiency", required: true },
   { value: "ielts", label: "IELTS Score", required: false },
