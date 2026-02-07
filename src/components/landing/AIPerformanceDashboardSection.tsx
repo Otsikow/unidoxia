@@ -1,14 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MetricConfig {
   label: string;
   value: string;
   helper: string;
   trend?: "up" | "down" | "neutral";
+}
+
+interface LiveExecutiveMetrics {
+  applications_this_week: number;
+  applications_vs_last_week_percent: number;
+  conversion_rate_percent: number;
+  conversion_delta_points: number;
+  best_performing_agents: string;
+  countries_with_most_leads: string;
 }
 
 const trendClassMap: Record<NonNullable<MetricConfig["trend"]>, string> = {
@@ -19,6 +30,47 @@ const trendClassMap: Record<NonNullable<MetricConfig["trend"]>, string> = {
 
 export function AIPerformanceDashboardSection() {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+
+  const { data: liveMetrics } = useQuery({
+    queryKey: ["landing-ai-executive-metrics"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_public_ai_executive_metrics");
+
+      if (error) {
+        throw error;
+      }
+
+      const firstRow = Array.isArray(data) ? data[0] : data;
+      return (firstRow ?? null) as LiveExecutiveMetrics | null;
+    },
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("landing-ai-executive-metrics-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["landing-ai-executive-metrics"] });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "offers" },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["landing-ai-executive-metrics"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const titleParts = useMemo(
     () =>
@@ -30,11 +82,48 @@ export function AIPerformanceDashboardSection() {
     [t]
   );
 
-  const metrics = useMemo(
-    () =>
-      (t("pages.index.aiExecutiveDashboard.metrics", { returnObjects: true }) as MetricConfig[]) ?? [],
-    [t]
-  );
+  const metrics = useMemo(() => {
+    const translatedMetrics =
+      (t("pages.index.aiExecutiveDashboard.metrics", { returnObjects: true }) as MetricConfig[]) ?? [];
+
+    if (!liveMetrics || translatedMetrics.length < 4) {
+      return translatedMetrics;
+    }
+
+    return translatedMetrics.map((metric, index) => {
+      if (index === 0) {
+        return {
+          ...metric,
+          value: new Intl.NumberFormat().format(liveMetrics.applications_this_week),
+          trend: liveMetrics.applications_vs_last_week_percent >= 0 ? "up" : "down",
+        };
+      }
+
+      if (index === 1) {
+        return {
+          ...metric,
+          value: `${liveMetrics.conversion_rate_percent}%`,
+          trend: liveMetrics.conversion_delta_points >= 0 ? "up" : "down",
+        };
+      }
+
+      if (index === 2) {
+        return {
+          ...metric,
+          value: liveMetrics.best_performing_agents,
+        };
+      }
+
+      if (index === 3) {
+        return {
+          ...metric,
+          value: liveMetrics.countries_with_most_leads,
+        };
+      }
+
+      return metric;
+    });
+  }, [liveMetrics, t]);
 
   const insights = useMemo(
     () =>
