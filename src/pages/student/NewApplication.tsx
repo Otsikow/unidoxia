@@ -154,7 +154,8 @@ const mergeLegacyFormData = (
     'nationality',
     'passportNumber',
     'currentCountry',
-    'address',
+    'homeAddress',
+    'correspondentAddress',
   ];
 
   const personalInfo = { ...current.personalInfo };
@@ -165,6 +166,11 @@ const mergeLegacyFormData = (
       if (typeof rawValue === 'string') {
         personalInfo[field] = rawValue;
       }
+    }
+
+    const legacyAddress = legacyPersonal.address;
+    if (typeof legacyAddress === 'string' && !personalInfo.homeAddress) {
+      personalInfo.homeAddress = legacyAddress;
     }
   }
 
@@ -326,7 +332,8 @@ export default function NewApplication() {
       nationality: '',
       passportNumber: '',
       currentCountry: '',
-      address: '',
+      homeAddress: '',
+      correspondentAddress: '',
     },
     educationHistory: [],
     programSelection: {
@@ -568,7 +575,11 @@ export default function NewApplication() {
           nationality: studentData.nationality || '',
           passportNumber: studentData.passport_number || '',
           currentCountry: studentData.current_country || '',
-          address: (studentData.address as any)?.street || '',
+          homeAddress:
+            (studentData.address as any)?.home_address ||
+            (studentData.address as any)?.street ||
+            '',
+          correspondentAddress: (studentData.address as any)?.correspondent_address || '',
         },
       }));
 
@@ -1049,7 +1060,8 @@ export default function NewApplication() {
         const passportNumber = personal.passportNumber?.trim() ?? '';
         const currentCountry = personal.currentCountry?.trim() ?? '';
         const dateOfBirth = personal.dateOfBirth?.trim() ?? '';
-        const addressText = personal.address?.trim() ?? '';
+        const homeAddressText = personal.homeAddress?.trim() ?? '';
+        const correspondentAddressText = personal.correspondentAddress?.trim() ?? '';
 
         const educationRecords = (formDataRef.current.educationHistory ?? []).map((rec) => ({
           id: rec.id,
@@ -1074,7 +1086,13 @@ export default function NewApplication() {
             p_nationality: nationality || null,
             p_passport_number: passportNumber || null,
             p_current_country: currentCountry || null,
-            p_address: addressText ? ({ street: addressText } as any) : null,
+            p_address:
+              homeAddressText || correspondentAddressText
+                ? ({
+                    ...(homeAddressText ? { home_address: homeAddressText, street: homeAddressText } : {}),
+                    ...(correspondentAddressText ? { correspondent_address: correspondentAddressText } : {}),
+                  } as any)
+                : null,
             p_education_records: educationRecords as any,
           },
         );
@@ -1108,9 +1126,10 @@ export default function NewApplication() {
         if (passportNumber) updateStudent.passport_number = passportNumber;
         if (currentCountry) updateStudent.current_country = currentCountry;
         if (dateOfBirth) updateStudent.date_of_birth = dateOfBirth;
-        if (addressText || whatsappNumber || contactPhone) {
+        if (homeAddressText || correspondentAddressText || whatsappNumber || contactPhone) {
           updateStudent.address = {
-            ...(addressText ? { street: addressText } : {}),
+            ...(homeAddressText ? { home_address: homeAddressText, street: homeAddressText } : {}),
+            ...(correspondentAddressText ? { correspondent_address: correspondentAddressText } : {}),
             ...(contactPhone ? { phone: contactPhone } : {}),
             ...(whatsappNumber ? { whatsapp: whatsappNumber } : {}),
           };
