@@ -3187,6 +3187,17 @@ export type Database = {
           name: string
         }[]
       }
+      get_public_ai_executive_metrics: {
+        Args: never
+        Returns: {
+          applications_this_week: number
+          applications_vs_last_week_percent: number
+          best_performing_agents: string
+          conversion_delta_points: number
+          conversion_rate_percent: number
+          countries_with_most_leads: string
+        }[]
+      }
       get_student_details_for_application: {
         Args: { p_application_id: string }
         Returns: {
