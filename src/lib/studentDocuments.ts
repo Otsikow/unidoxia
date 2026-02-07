@@ -8,6 +8,11 @@ export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
   { type: 'passport', label: 'Passport', acceptableTypes: ['passport'] },
   { type: 'passport_photo', label: 'Passport Photo', acceptableTypes: ['passport_photo'] },
   { type: 'transcript', label: 'Academic Transcript', acceptableTypes: ['transcript'] },
+  {
+    type: 'degree_certificate',
+    label: 'Academic Certificate',
+    acceptableTypes: ['degree_certificate', 'academic_certificate', 'certificate'],
+  },
   { type: 'sop', label: 'Statement of Purpose', acceptableTypes: ['sop', 'personal_statement'] },
   {
     type: 'reference_letter',
