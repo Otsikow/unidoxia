@@ -8,7 +8,8 @@ export interface ApplicationFormData {
     nationality: string;
     passportNumber: string;
     currentCountry: string;
-    address: string;
+    homeAddress: string;
+    correspondentAddress: string;
   };
   educationHistory: Array<{
     id: string;

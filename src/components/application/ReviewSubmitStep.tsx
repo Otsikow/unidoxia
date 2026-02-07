@@ -208,6 +208,14 @@ export default function ReviewSubmitStep({
               <p className="font-medium text-muted-foreground">Current Country</p>
               <p>{formData.personalInfo.currentCountry}</p>
             </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Home Address</p>
+              <p>{formData.personalInfo.homeAddress || 'Not provided'}</p>
+            </div>
+            <div>
+              <p className="font-medium text-muted-foreground">Correspondent Address</p>
+              <p>{formData.personalInfo.correspondentAddress || 'Not provided'}</p>
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -15,7 +15,8 @@ interface PersonalInfo {
   nationality: string;
   passportNumber: string;
   currentCountry: string;
-  address: string;
+  homeAddress: string;
+  correspondentAddress: string;
 }
 
 interface PersonalInfoStepProps {
@@ -186,17 +187,32 @@ export default function PersonalInfoStep({ data, onChange, onNext }: PersonalInf
         </div>
 
         {/* Address */}
-        <div className="space-y-2">
-          <Label htmlFor="address" className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Current Address
-          </Label>
-          <Input
-            id="address"
-            value={data.address}
-            onChange={(e) => handleChange('address', e.target.value)}
-            placeholder="Street address, City, State/Province"
-          />
+        <div className="grid grid-cols-1 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="homeAddress" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Home Address
+            </Label>
+            <Input
+              id="homeAddress"
+              value={data.homeAddress}
+              onChange={(e) => handleChange('homeAddress', e.target.value)}
+              placeholder="Street address, City, State/Province"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="correspondentAddress" className="flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              Correspondent Address
+            </Label>
+            <Input
+              id="correspondentAddress"
+              value={data.correspondentAddress}
+              onChange={(e) => handleChange('correspondentAddress', e.target.value)}
+              placeholder="Address for letters and official communication"
+            />
+          </div>
         </div>
 
         {/* Action Button */}
