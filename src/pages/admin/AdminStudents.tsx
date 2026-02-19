@@ -183,6 +183,9 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          status,
+          status_reason,
+          status_changed_at,
           profile:profiles!students_profile_id_fkey (
             full_name,
             email
@@ -356,6 +359,18 @@ const AdminStudents = () => {
 
       if (error) throw error;
 
+      const { error: studentError } = await supabase
+        .from("students")
+        .update({
+          status: "suspended",
+          status_reason: actionReason || null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", selectedStudent.id);
+
+      if (studentError) throw studentError;
+
       await logSecurityEvent({
         eventType: "custom",
         description: `Admin suspended student account: ${getStudentName(selectedStudent)}`,
@@ -402,6 +417,18 @@ const AdminStudents = () => {
 
       if (error) throw error;
 
+      const { error: studentError } = await supabase
+        .from("students")
+        .update({
+          status: "deleted",
+          status_reason: actionReason || null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", selectedStudent.id);
+
+      if (studentError) throw studentError;
+
       await logSecurityEvent({
         eventType: "custom",
         description: `Admin deleted student account: ${getStudentName(selectedStudent)}`,
@@ -447,6 +474,18 @@ const AdminStudents = () => {
         .eq("id", selectedStudent.profile_id);
 
       if (error) throw error;
+
+      const { error: studentError } = await supabase
+        .from("students")
+        .update({
+          status: "active",
+          status_reason: null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", selectedStudent.id);
+
+      if (studentError) throw studentError;
 
       await logSecurityEvent({
         eventType: "custom",
