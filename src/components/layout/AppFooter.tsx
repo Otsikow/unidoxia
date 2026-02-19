@@ -17,14 +17,11 @@ import {
   Linkedin,
   Facebook,
   Instagram,
-  CreditCard,
-  DollarSign,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { PRICING_PLANS, formatPlanPrice } from "@/types/billing";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -275,41 +272,6 @@ export function AppFooter() {
                 </Link>
               </li>
             </ul>
-          </div>
-
-          {/* Pricing Section */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {t("layout.footer.headings.pricing", { defaultValue: "Pricing" })}
-            </h3>
-            <div className="space-y-3">
-              <Link 
-                to="/pricing" 
-                className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-              >
-                <CreditCard className="h-4 w-4" />
-                {t("layout.footer.pricing.viewPlans", { defaultValue: "View All Plans" })}
-              </Link>
-              <div className="space-y-2 text-sm">
-                {PRICING_PLANS.map((plan) => (
-                  <div key={plan.id} className="flex items-center justify-between">
-                    <span className="text-muted-foreground">{plan.name}</span>
-                    <span className="font-medium">{formatPlanPrice(plan)}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="pt-2 border-t border-border/50">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {t("layout.footer.pricing.terms", { 
-                    defaultValue: "All payments are one-time and non-refundable. No subscriptions or hidden fees." 
-                  })}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Shield className="h-3.5 w-3.5 text-green-600" />
-                <span>{t("layout.footer.pricing.secure", { defaultValue: "Secure payments via Stripe" })}</span>
-              </div>
-            </div>
           </div>
 
           <div>
