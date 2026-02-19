@@ -438,6 +438,18 @@ const AdminStudentDetail = () => {
 
       if (error) throw error;
 
+      const { error: studentError } = await supabase
+        .from("students")
+        .update({
+          status: "suspended",
+          status_reason: actionReason || null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", student.id);
+
+      if (studentError) throw studentError;
+
       await logSecurityEvent({
         eventType: "custom",
         description: `Admin suspended student account: ${studentName}`,
@@ -483,6 +495,18 @@ const AdminStudentDetail = () => {
 
       if (error) throw error;
 
+      const { error: studentError } = await supabase
+        .from("students")
+        .update({
+          status: "deleted",
+          status_reason: actionReason || null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", student.id);
+
+      if (studentError) throw studentError;
+
       await logSecurityEvent({
         eventType: "custom",
         description: `Admin deleted student account: ${studentName}`,
@@ -527,6 +551,18 @@ const AdminStudentDetail = () => {
         .eq("id", student.profile_id);
 
       if (error) throw error;
+
+      const { error: studentError } = await supabase
+        .from("students")
+        .update({
+          status: "active",
+          status_reason: null,
+          status_changed_at: new Date().toISOString(),
+          status_changed_by: profile.id,
+        })
+        .eq("id", student.id);
+
+      if (studentError) throw studentError;
 
       await logSecurityEvent({
         eventType: "custom",
