@@ -17,15 +17,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   DollarSign,
   Calendar,
-  CreditCard,
   Download,
   ExternalLink,
-  ArrowUpRight,
-  Shield,
   Check,
   AlertCircle,
   Zap,
@@ -36,8 +32,6 @@ import { LoadingState } from "@/components/LoadingState";
 import { useToast } from "@/hooks/use-toast";
 import { useStudentBilling } from "@/hooks/useStudentBilling";
 import { 
-  PRICING_PLANS, 
-  PAYMENT_TERMS,
   formatPlanPrice, 
   getPlanById,
   type StudentPlanType 
@@ -268,106 +262,6 @@ export function StudentPayments() {
               )}
             </div>
 
-            {/* Upgrade Options */}
-            {planInfo.planType !== 'agent_supported' && (
-              <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
-                <h4 className="font-semibold">Upgrade Your Plan</h4>
-                <p className="text-sm text-muted-foreground">
-                  Get more features and unlimited applications.
-                </p>
-                
-                <div className="space-y-3">
-                  {PRICING_PLANS.filter(p => {
-                    if (planInfo.planType === 'free') return p.id !== 'free';
-                    if (planInfo.planType === 'self_service') return p.id === 'agent_supported';
-                    return false;
-                  }).map((plan) => (
-                    <div 
-                      key={plan.id} 
-                      className="flex items-center justify-between p-3 rounded-lg border bg-background"
-                    >
-                      <div>
-                        <p className="font-medium">{plan.name}</p>
-                        <p className="text-sm text-muted-foreground">{formatPlanPrice(plan)}</p>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => navigate(`/pricing`)}
-                      >
-                        Upgrade
-                        <ArrowUpRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-
-                <Link 
-                  to="/pricing" 
-                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-                >
-                  View all plans
-                  <ArrowUpRight className="h-3 w-3" />
-                </Link>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* PRICING OVERVIEW */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Pricing Overview
-          </CardTitle>
-          <CardDescription>
-            All UniDoxia plans and their features
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            {PRICING_PLANS.map((plan) => (
-              <div 
-                key={plan.id}
-                className={`p-4 rounded-lg border ${
-                  plan.id === planInfo.planType 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-border'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">{plan.name}</h4>
-                  {plan.id === planInfo.planType && (
-                    <Badge variant="outline" className="text-xs">Current</Badge>
-                  )}
-                </div>
-                <p className="text-2xl font-bold mb-1">{formatPlanPrice(plan)}</p>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {plan.price > 0 ? 'One-time payment' : 'Free forever'}
-                </p>
-                <ul className="space-y-1">
-                  {plan.features.slice(0, 3).map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs">
-                      <Check className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          <Separator className="my-6" />
-
-          {/* Payment Terms */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            {PAYMENT_TERMS.items.slice(0, 4).map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-green-600" />
-                <span>{item}</span>
-              </div>
-            ))}
           </div>
         </CardContent>
       </Card>
@@ -453,9 +347,7 @@ export function StudentPayments() {
             <div className="text-center py-12">
               <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
               <p className="text-muted-foreground mb-4">No transactions yet</p>
-              <Link to="/pricing">
-                <Button variant="outline">View Pricing Plans</Button>
-              </Link>
+              <p className="text-sm text-muted-foreground">Your payment history will appear here once you make a payment.</p>
             </div>
           ) : (
             <div className="w-full overflow-x-auto">
