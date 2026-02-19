@@ -35,7 +35,8 @@ export function AIPerformanceDashboardSection() {
   const { data: liveMetrics } = useQuery({
     queryKey: ["landing-ai-executive-metrics"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_public_ai_executive_metrics");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc("get_public_ai_executive_metrics");
 
       if (error) {
         throw error;
