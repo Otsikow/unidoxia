@@ -401,22 +401,12 @@ const AdminStudents = () => {
     if (!selectedStudent || !profile?.id) return;
     setActionLoading(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          active: false,
-        })
-        .eq("id", selectedStudent.profile_id);
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { userId: selectedStudent.profile_id },
+      });
 
       if (error) throw error;
-
-      const { error: studentError } = await supabase
-        .from("students")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .update({ updated_at: new Date().toISOString() } as any)
-        .eq("id", selectedStudent.id);
-
-      if (studentError) throw studentError;
+      if (data?.error) throw new Error(data.error);
 
       await logSecurityEvent({
         eventType: "custom",
@@ -439,11 +429,11 @@ const AdminStudents = () => {
       setSelectedStudent(null);
       setActionReason("");
       void fetchStudents();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       toast({
         title: "Error",
-        description: "Failed to delete student account",
+        description: e?.message || "Failed to delete student account",
         variant: "destructive",
       });
     } finally {
