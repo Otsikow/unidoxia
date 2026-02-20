@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Create user client to verify the caller is authenticated
+    // Verify the caller is authenticated
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -33,7 +33,6 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    // Verify the caller's identity
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -42,42 +41,56 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { userId } = await req.json();
+    const body = await req.json();
+    const { userId } = body;
 
-    // Check if the caller is deleting their own account OR is an admin
-    const { data: callerProfile } = await supabaseAdmin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    if (!userId) {
+      return new Response(JSON.stringify({ error: "userId is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    const isAdmin = callerProfile?.role === "admin" || callerProfile?.role === "staff";
     const isSelf = user.id === userId;
 
+    // Check admin/staff via profile role OR user_roles table
+    const [{ data: callerProfile }, { data: callerRoles }] = await Promise.all([
+      supabaseAdmin.from("profiles").select("role").eq("id", user.id).single(),
+      supabaseAdmin.from("user_roles").select("role").eq("user_id", user.id),
+    ]);
+
+    const adminRoles = ["admin", "staff"];
+    const isAdmin =
+      adminRoles.includes(callerProfile?.role ?? "") ||
+      (callerRoles ?? []).some((r: { role: string }) => adminRoles.includes(r.role));
+
+    console.log(`Delete request: caller=${user.id}, target=${userId}, isSelf=${isSelf}, isAdmin=${isAdmin}, callerRole=${callerProfile?.role}`);
+
     if (!isSelf && !isAdmin) {
-      return new Response(JSON.stringify({ error: "Forbidden: You can only delete your own account" }), {
+      return new Response(JSON.stringify({ error: "Forbidden: insufficient permissions" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Delete the auth user (cascades to profiles via FK)
+    // Delete the auth user — cascades to profiles, students, etc. via FK ON DELETE CASCADE
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
-      console.error("Error deleting user:", deleteError);
+      console.error("Error deleting user:", deleteError.message);
       return new Response(JSON.stringify({ error: deleteError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    console.log(`Successfully deleted user: ${userId}`);
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err) {
-    console.error("Unexpected error:", err);
+  } catch (err: any) {
+    console.error("Unexpected error:", err?.message ?? err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
