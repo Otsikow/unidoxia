@@ -89,34 +89,29 @@ const AccountTab = ({ profile }: AccountTabProps) => {
     setIsDeleting(true);
 
     try {
-      // Note: In a production environment, you would typically:
-      // 1. Delete all user data from various tables
-      // 2. Delete uploaded files from storage
-      // 3. Finally delete the auth user
-      // This might be better handled by a database function or backend API
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No active session');
 
-      // For now, we'll just delete the auth user which will cascade to profiles
-      const { error } = await supabase.auth.admin.deleteUser(profile.id);
+      const response = await supabase.functions.invoke('delete-user', {
+        body: { userId: profile.id },
+      });
 
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       toast({
         title: 'Account deleted',
         description: 'Your account has been permanently deleted',
       });
 
-      // Sign out and redirect
       setTimeout(() => {
         signOut();
         navigate('/');
       }, 2000);
     } catch (error: any) {
       console.error('Error deleting account:', error);
-      
-      // If admin API is not available, show a message to contact support
       toast({
-        title: 'Cannot delete account',
-        description: 'Please contact support to delete your account',
+        title: 'Deletion failed',
+        description: error.message || 'Failed to delete account. Please try again.',
         variant: 'destructive',
       });
     } finally {
