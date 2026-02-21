@@ -27,6 +27,24 @@ interface UseUserRolesResult {
   hasRole: (role: AppRole | AppRole[]) => boolean;
 }
 
+const USER_ROLES_TIMEOUT_MS = 12000;
+
+const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`Timed out after ${timeoutMs}ms while loading user roles`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+};
+
 export const useUserRoles = (): UseUserRolesResult => {
   const { user, profile } = useAuth();
   const userId = user?.id ?? null;
@@ -76,11 +94,14 @@ export const useUserRoles = (): UseUserRolesResult => {
         setLoading(true);
       }
 
-      const { data, error: fetchError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: true });
+      const { data, error: fetchError } = await withTimeout(
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true }),
+        USER_ROLES_TIMEOUT_MS
+      );
 
       if (!isActive) return;
 
@@ -113,11 +134,14 @@ export const useUserRoles = (): UseUserRolesResult => {
 
     setLoading(true);
 
-    const { data, error: fetchError } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: true });
+    const { data, error: fetchError } = await withTimeout(
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+      USER_ROLES_TIMEOUT_MS
+    );
 
     if (fetchError) {
       console.error("Error refreshing user roles:", fetchError);
