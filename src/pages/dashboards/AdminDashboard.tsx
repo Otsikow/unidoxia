@@ -76,7 +76,6 @@ export default function AdminDashboard() {
     revenue: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [isAdminUser, setIsAdminUser] = useState(false);
   const [pendingDocuments, setPendingDocuments] = useState<AdminDocumentReview[]>([]);
   const [documentNotes, setDocumentNotes] = useState<Record<string, string>>({});
   const [documentMessages, setDocumentMessages] = useState<Record<string, string>>({});
@@ -84,6 +83,7 @@ export default function AdminDashboard() {
   const [updatingDocumentId, setUpdatingDocumentId] = useState<string | null>(null);
   const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(null);
   const [downloadingDocumentId, setDownloadingDocumentId] = useState<string | null>(null);
+  const isAdminUser = profile?.role === 'admin';
 
   const metricCards = [
     {
@@ -311,83 +311,77 @@ export default function AdminDashboard() {
     }
   };
 
-  // Check if user has admin privileges
-  useEffect(() => {
-    const checkAccess = async () => {
-      if (!profile) return;
-
-      const { data: userRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', profile.id);
-
-      const hasAdminRole = userRoles?.some((ur) => ur.role === 'admin');
-      const hasAdminAccess = hasAdminRole || userRoles?.some((ur) => ur.role === 'staff');
-
-      setIsAdminUser(Boolean(hasAdminRole));
-
-      if (!hasAdminAccess) {
-        navigate('/dashboard');
-      }
-    };
-
-    checkAccess();
-  }, [profile, navigate]);
-
   // Fetch dashboard metrics
   useEffect(() => {
+    let isMounted = true;
+
     const fetchMetrics = async () => {
       try {
-        setLoading(true);
+        if (isMounted) {
+          setLoading(true);
+        }
 
-        // Fetch total students
-        const { count: studentsCount } = await supabase
-          .from('students')
-          .select('*', { count: 'exact', head: true });
+        const [
+          { count: studentsCount, error: studentsError },
+          { count: applicationsCount, error: applicationsError },
+          { count: universitiesCount, error: universitiesError },
+          { count: agentsCount, error: agentsError },
+          { data: paymentsData, error: paymentsError },
+        ] = await Promise.all([
+          supabase
+            .from('students')
+            .select('*', { count: 'exact', head: true }),
+          supabase
+            .from('applications')
+            .select('*', { count: 'exact', head: true }),
+          supabase
+            .from('universities')
+            .select('*', { count: 'exact', head: true })
+            .eq('active', true),
+          supabase
+            .from('agents')
+            .select('*', { count: 'exact', head: true })
+            .eq('active', true),
+          supabase
+            .from('payments')
+            .select('amount_cents')
+            .eq('status', 'succeeded'),
+        ]);
 
-        // Fetch total applications
-        const { count: applicationsCount } = await supabase
-          .from('applications')
-          .select('*', { count: 'exact', head: true });
+        if (!isMounted) return;
 
-        // Fetch partner universities
-        const { count: universitiesCount } = await supabase
-          .from('universities')
-          .select('*', { count: 'exact', head: true })
-          .eq('active', true);
+        if (studentsError) console.error('Error fetching student count:', studentsError);
+        if (applicationsError) console.error('Error fetching application count:', applicationsError);
+        if (universitiesError) console.error('Error fetching university count:', universitiesError);
+        if (agentsError) console.error('Error fetching agent count:', agentsError);
+        if (paymentsError) console.error('Error fetching revenue data:', paymentsError);
 
-        // Fetch agents
-        const { count: agentsCount } = await supabase
-          .from('agents')
-          .select('*', { count: 'exact', head: true })
-          .eq('active', true);
-
-        // Fetch revenue from payments
-        const { data: paymentsData } = await supabase
-          .from('payments')
-          .select('amount_cents')
-          .eq('status', 'succeeded');
-
-        const totalRevenue = paymentsData?.reduce(
+        const totalRevenue = (paymentsData ?? []).reduce(
           (sum, payment) => sum + (payment.amount_cents || 0),
           0
-        ) || 0;
+        );
 
-        setMetrics({
-          totalStudents: studentsCount || 0,
-          totalApplications: applicationsCount || 0,
-          partnerUniversities: universitiesCount || 0,
-          agents: agentsCount || 0,
-          revenue: totalRevenue / 100, // Convert cents to dollars
-        });
+        setMetrics((prev) => ({
+          totalStudents: studentsError ? prev.totalStudents : studentsCount || 0,
+          totalApplications: applicationsError ? prev.totalApplications : applicationsCount || 0,
+          partnerUniversities: universitiesError ? prev.partnerUniversities : universitiesCount || 0,
+          agents: agentsError ? prev.agents : agentsCount || 0,
+          revenue: paymentsError ? prev.revenue : totalRevenue / 100, // Convert cents to dollars
+        }));
       } catch (error) {
         console.error('Error fetching metrics:', error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchMetrics();
+    void fetchMetrics();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   useEffect(() => {

@@ -51,16 +51,67 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
     lastUpdated: null,
   });
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const isMountedRef = useRef(true);
+  const isFetchingRef = useRef(false);
+  const queueRefreshRef = useRef(false);
+  const hasLoadedInitialRef = useRef(false);
+  const refreshDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchAnalytics = useCallback(async () => {
+  const fetchAnalytics = useCallback(async (options: { background?: boolean } = {}) => {
+    if (isFetchingRef.current) {
+      queueRefreshRef.current = true;
+      return;
+    }
+
+    isFetchingRef.current = true;
+
+    const shouldShowLoading = !options.background || !hasLoadedInitialRef.current;
+
     try {
-      setAnalyticsLoading(true);
+      if (shouldShowLoading && isMountedRef.current) {
+        setAnalyticsLoading(true);
+      }
 
-      // Fetch top countries
-      const { data: studentsData } = await supabase
-        .from('students')
-        .select('nationality');
-      
+      const [
+        { data: studentsData, error: studentsError },
+        { data: applicationsData, error: applicationsError },
+        { count: featuredCount, error: featuredCountError },
+        { data: featuredUpdated, error: featuredUpdatedError },
+      ] = await Promise.all([
+        supabase
+          .from('students')
+          .select('nationality'),
+        supabase
+          .from('applications')
+          .select(`
+            agent_id,
+            program_id,
+            agents (
+              profiles (
+                full_name
+              )
+            ),
+            programs (
+              name
+            )
+          `),
+        supabase
+          .from('universities')
+          .select('*', { count: 'exact', head: true })
+          .eq('featured', true),
+        supabase
+          .from('universities')
+          .select('updated_at')
+          .eq('featured', true)
+          .order('updated_at', { ascending: false })
+          .limit(1),
+      ]);
+
+      if (studentsError) throw studentsError;
+      if (applicationsError) throw applicationsError;
+      if (featuredCountError) throw featuredCountError;
+      if (featuredUpdatedError) throw featuredUpdatedError;
+
       const countryCounts = studentsData?.reduce((acc: { [key: string]: number }, student) => {
         if (student.nationality) {
           acc[student.nationality] = (acc[student.nationality] || 0) + 1;
@@ -72,22 +123,6 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
         .map(([name, count]) => ({ name, count: count as number }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
-
-      setTopCountries(topCountriesData);
-
-      // Fetch top agents by applications
-      const { data: applicationsData } = await supabase
-        .from('applications')
-        .select(`
-          agent_id,
-          agents (
-            profile_id,
-            profiles (
-              full_name
-            )
-          )
-        `)
-        .not('agent_id', 'is', null);
 
       const agentCounts = applicationsData?.reduce((acc: { [key: string]: { name: string, count: number } }, app: any) => {
         if (app.agent_id && app.agents?.profiles?.full_name) {
@@ -105,19 +140,7 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
         .slice(0, 5)
         .map(agent => ({ name: agent.name, applications: agent.count }));
 
-      setTopAgents(topAgentsData);
-
-      // Fetch top programs
-      const { data: programsData } = await supabase
-        .from('applications')
-        .select(`
-          program_id,
-          programs (
-            name
-          )
-        `);
-
-      const programCounts = programsData?.reduce((acc: { [key: string]: { name: string, count: number } }, app: any) => {
+      const programCounts = applicationsData?.reduce((acc: { [key: string]: { name: string, count: number } }, app: any) => {
         if (app.program_id && app.programs?.name) {
           const programName = app.programs.name;
           if (!acc[app.program_id]) {
@@ -133,39 +156,58 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
         .slice(0, 5)
         .map(program => ({ name: program.name, applications: program.count }));
 
+      if (!isMountedRef.current) return;
+
+      setTopCountries(topCountriesData);
+      setTopAgents(topAgentsData);
       setTopPrograms(topProgramsData);
-
-      // Featured university analytics
-      const { count: featuredCount } = await supabase
-        .from('universities')
-        .select('*', { count: 'exact', head: true })
-        .eq('featured', true);
-
-      const { data: featuredUpdated } = await supabase
-        .from('universities')
-        .select('updated_at')
-        .eq('featured', true)
-        .order('updated_at', { ascending: false })
-        .limit(1);
-
       setShowcaseStats({
         count: featuredCount || 0,
         lastUpdated: featuredUpdated?.[0]?.updated_at ?? null,
       });
+      hasLoadedInitialRef.current = true;
 
     } catch (error) {
       console.error('Error fetching analytics:', error);
     } finally {
-      setAnalyticsLoading(false);
+      if (isMountedRef.current) {
+        setAnalyticsLoading(false);
+      }
+
+      isFetchingRef.current = false;
+
+      if (queueRefreshRef.current && isMountedRef.current) {
+        queueRefreshRef.current = false;
+        void fetchAnalytics({ background: true });
+      }
     }
   }, []);
 
   useEffect(() => {
-    fetchAnalytics();
+    isMountedRef.current = true;
+    void fetchAnalytics();
+
+    return () => {
+      isMountedRef.current = false;
+      if (refreshDebounceRef.current) {
+        clearTimeout(refreshDebounceRef.current);
+        refreshDebounceRef.current = null;
+      }
+    };
   }, [fetchAnalytics]);
 
   // Real-time subscriptions
   useEffect(() => {
+    const scheduleRefresh = () => {
+      if (refreshDebounceRef.current) {
+        clearTimeout(refreshDebounceRef.current);
+      }
+
+      refreshDebounceRef.current = setTimeout(() => {
+        void fetchAnalytics({ background: true });
+      }, 800);
+    };
+
     if (channelRef.current) {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
@@ -176,17 +218,17 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'students' },
-        () => fetchAnalytics()
+        scheduleRefresh
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'applications' },
-        () => fetchAnalytics()
+        scheduleRefresh
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'universities' },
-        () => fetchAnalytics()
+        scheduleRefresh
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
@@ -197,6 +239,11 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
     channelRef.current = channel;
 
     return () => {
+      if (refreshDebounceRef.current) {
+        clearTimeout(refreshDebounceRef.current);
+        refreshDebounceRef.current = null;
+      }
+
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
