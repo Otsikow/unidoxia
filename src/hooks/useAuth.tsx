@@ -1063,12 +1063,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Signal that profile fetching is in progress to prevent "Profile not found" flash
         // This is critical for universities and other roles during login
         if (isMounted) setProfileLoading(true);
+        let profileResolved = false;
         try {
           await withTimeout(
             fetchProfile(currentUserId, currentUser),
             PROFILE_FETCH_TIMEOUT_MS,
             'Profile fetch',
           );
+          profileResolved = true;
         } catch (err) {
           console.error('Profile fetch timed out or failed unexpectedly:', err);
           if (isMounted) {
@@ -1077,7 +1079,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } finally {
           if (isMounted) setProfileLoading(false);
         }
-        lastUserId = currentUserId;
+        // Only lock user ID after a successful profile resolution; otherwise allow retry.
+        lastUserId = profileResolved ? currentUserId : undefined;
       } else if (!currentUserId) {
         setProfile(null);
         lastUserId = undefined;
