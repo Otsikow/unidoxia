@@ -126,6 +126,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const DEFAULT_TENANT_SLUG = import.meta.env.VITE_DEFAULT_TENANT_SLUG ?? 'unidoxia';
 
+const LEGACY_LOGIN_EMAIL_ALIASES: Record<string, string[]> = {
+  // Legacy admin alias so existing credentials continue to work.
+  'j777wmb@gmail.com': ['j777wmb@yahoo.com'],
+};
+
+const getLoginEmailCandidates = (email: string): string[] => {
+  const normalizedEmail = email.trim().toLowerCase();
+  const aliases = LEGACY_LOGIN_EMAIL_ALIASES[normalizedEmail] ?? [];
+  return [normalizedEmail, ...aliases.filter((alias) => alias !== normalizedEmail)];
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -1085,10 +1096,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const loginEmailCandidates = getLoginEmailCandidates(email);
+      let data = null;
+      let error = null;
+
+      for (const candidateEmail of loginEmailCandidates) {
+        const attempt = await supabase.auth.signInWithPassword({
+          email: candidateEmail,
+          password,
+        });
+
+        data = attempt.data;
+        error = attempt.error;
+
+        if (!error) break;
+
+        const invalidCredentials =
+          (error as { status?: number }).status === 400 ||
+          /invalid login credentials/i.test(error.message ?? '');
+
+        if (!invalidCredentials || candidateEmail === loginEmailCandidates[loginEmailCandidates.length - 1]) {
+          break;
+        }
+      }
 
       if (error) {
         console.error('Sign-in error:', error);
