@@ -19,8 +19,10 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   const location = useLocation();
   const [isRepairing, setIsRepairing] = useState(false);
   const [repairError, setRepairError] = useState<string | null>(null);
-  // Include profileLoading to prevent "Profile not found" flash during authentication
-  const loading = authLoading || profileLoading || rolesLoading;
+  const normalizedAllowedRoles = allowedRoles ?? [];
+  const requiresRoleCheck = normalizedAllowedRoles.length > 0;
+  // Only block on role loading when this route enforces role-based access.
+  const loading = authLoading || profileLoading || (requiresRoleCheck && rolesLoading);
 
   const isStudent = profile?.role === "student" || user?.user_metadata?.role === "student";
   const isAgent = profile?.role === "agent" || user?.user_metadata?.role === "agent";
@@ -182,8 +184,8 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     );
   }
 
-  if (allowedRoles && allowedRoles.length > 0) {
-    const hasRequiredRole = roles.some((role) => allowedRoles.includes(role));
+  if (requiresRoleCheck) {
+    const hasRequiredRole = roles.some((role) => normalizedAllowedRoles.includes(role));
     if (!hasRequiredRole) {
       return <Navigate to="/" replace />;
     }

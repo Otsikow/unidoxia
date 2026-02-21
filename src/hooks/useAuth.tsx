@@ -137,6 +137,31 @@ const getLoginEmailCandidates = (email: string): string[] => {
   return [normalizedEmail, ...aliases.filter((alias) => alias !== normalizedEmail)];
 };
 
+const AUTH_BOOTSTRAP_TIMEOUT_MS = 15000;
+const PROFILE_FETCH_TIMEOUT_MS = 20000;
+
+const withTimeout = async <T,>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  context: string,
+): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(`${context} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -1039,7 +1064,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // This is critical for universities and other roles during login
         if (isMounted) setProfileLoading(true);
         try {
-          await fetchProfile(currentUserId, currentUser);
+          await withTimeout(
+            fetchProfile(currentUserId, currentUser),
+            PROFILE_FETCH_TIMEOUT_MS,
+            'Profile fetch',
+          );
+        } catch (err) {
+          console.error('Profile fetch timed out or failed unexpectedly:', err);
+          if (isMounted) {
+            setProfile(null);
+          }
         } finally {
           if (isMounted) setProfileLoading(false);
         }
@@ -1052,8 +1086,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const init = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await withTimeout(
+          supabase.auth.getSession(),
+          AUTH_BOOTSTRAP_TIMEOUT_MS,
+          'Auth session bootstrap',
+        );
         await handleAuthChange(session);
+      } catch (err) {
+        console.error('Auth initialization failed:', err);
+        if (isMounted) {
+          setUser(null);
+          setSession(null);
+          setProfile(null);
+          setProfileLoading(false);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
