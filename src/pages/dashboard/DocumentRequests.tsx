@@ -140,7 +140,7 @@ const DocumentRequestsPage = () => {
         if (studentIds.length > 0) {
           const { data: studentsData, error: studentError } = await supabase
             .from("students")
-            .select("id, legal_name, preferred_name, profile:profiles(full_name)")
+            .select("id, legal_name, preferred_name, profile:profiles!students_profile_id_fkey(full_name)")
             .in("id", studentIds);
 
           if (studentError) throw studentError;

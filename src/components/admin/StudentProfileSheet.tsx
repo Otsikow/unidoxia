@@ -219,7 +219,7 @@ export function StudentProfileSheet({
           visa_history_json,
           finances_json,
           created_at,
-          profile:profiles (
+          profile:profiles!students_profile_id_fkey (
             id,
             full_name,
             email

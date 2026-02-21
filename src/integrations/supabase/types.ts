@@ -2403,6 +2403,9 @@ export type Database = {
         Row: {
           address: Json | null
           agent_assigned_at: string | null
+          archive_reason: string | null
+          archived_at: string | null
+          archived_by: string | null
           assigned_agent_id: string | null
           consent_flags_json: Json | null
           contact_email: string | null
@@ -2439,6 +2442,9 @@ export type Database = {
         Insert: {
           address?: Json | null
           agent_assigned_at?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           assigned_agent_id?: string | null
           consent_flags_json?: Json | null
           contact_email?: string | null
@@ -2475,6 +2481,9 @@ export type Database = {
         Update: {
           address?: Json | null
           agent_assigned_at?: string | null
+          archive_reason?: string | null
+          archived_at?: string | null
+          archived_by?: string | null
           assigned_agent_id?: string | null
           consent_flags_json?: Json | null
           contact_email?: string | null
@@ -2509,6 +2518,20 @@ export type Database = {
           visa_history_json?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "students_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "students_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "students_assigned_agent_id_fkey"
             columns: ["assigned_agent_id"]
