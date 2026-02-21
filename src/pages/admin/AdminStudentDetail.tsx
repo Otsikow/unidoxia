@@ -213,6 +213,7 @@ const AdminStudentDetail = () => {
   const [reviewDoc, setReviewDoc] = useState<StudentDocument | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
 
   const [docTab, setDocTab] = useState("pending");
 
@@ -420,6 +421,56 @@ const AdminStudentDetail = () => {
       });
     } finally {
       setReviewLoading(false);
+    }
+  };
+
+  const handleDeleteRejectedDocument = async (doc: StudentDocument) => {
+    const isRejected =
+      doc.admin_review_status === "rejected" || doc.admin_review_status === "admin_rejected";
+
+    if (!isRejected) return;
+
+    const confirmed = window.confirm(
+      `Delete "${doc.file_name}"? This action cannot be undone.`,
+    );
+
+    if (!confirmed) return;
+
+    setDeletingDocId(doc.id);
+
+    try {
+      if (doc.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from("student-documents")
+          .remove([doc.storage_path]);
+
+        if (storageError) {
+          console.warn("Failed to delete rejected document from storage", storageError);
+        }
+      }
+
+      const { error } = await supabase
+        .from("student_documents")
+        .delete()
+        .eq("id", doc.id);
+
+      if (error) throw error;
+
+      setDocuments((prev) => prev.filter((item) => item.id !== doc.id));
+
+      toast({
+        title: "Document deleted",
+        description: "Rejected document has been deleted.",
+      });
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Failed to delete rejected document",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingDocId(null);
     }
   };
 
@@ -992,6 +1043,22 @@ const AdminStudentDetail = () => {
                           <Button variant="ghost" size="sm" onClick={() => preview(doc)}>
                             <Eye className="h-4 w-4" />
                           </Button>
+                          {(doc.admin_review_status === "rejected" ||
+                            doc.admin_review_status === "admin_rejected") && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteRejectedDocument(doc)}
+                              disabled={deletingDocId === doc.id}
+                              aria-label={`Delete ${doc.file_name}`}
+                            >
+                              {deletingDocId === doc.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              )}
+                            </Button>
+                          )}
                           {(!doc.admin_review_status || doc.admin_review_status === "pending") && (
                             <Button
                               variant="default"
