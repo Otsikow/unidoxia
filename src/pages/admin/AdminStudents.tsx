@@ -119,7 +119,7 @@ type DocumentStatusFilter =
   | "ready_for_university_review"
   | "admin_rejected";
 
-type AccountStatusFilter = "all" | "active" | "suspended";
+type AccountStatusFilter = "all" | "active" | "suspended" | "deleted";
 
 const ALL_FILTER = "all";
 
@@ -149,7 +149,7 @@ const AdminStudents = () => {
 
   // Account management state
   const [accountStatusFilter, setAccountStatusFilter] =
-    useState<AccountStatusFilter>("active");
+    useState<AccountStatusFilter>("all");
   const [selectedStudent, setSelectedStudent] = useState<StudentWithDocuments | null>(null);
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -183,6 +183,9 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          status,
+          status_reason,
+          status_changed_at,
           profile:profiles!students_profile_id_fkey (
             full_name,
             email
@@ -347,10 +350,13 @@ const AdminStudents = () => {
     if (!selectedStudent || !profile?.id) return;
     setActionLoading(true);
     try {
+      const now = new Date().toISOString();
+
       const { error } = await supabase
         .from("profiles")
         .update({
           active: false,
+          updated_at: now,
         })
         .eq("id", selectedStudent.profile_id);
 
@@ -359,7 +365,13 @@ const AdminStudents = () => {
       const { error: studentError } = await supabase
         .from("students")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .update({ updated_at: new Date().toISOString() } as any)
+        .update({
+          status: "suspended",
+          status_reason: actionReason || "Suspended by admin",
+          status_changed_at: now,
+          status_changed_by: profile.id,
+          updated_at: now,
+        } as any)
         .eq("id", selectedStudent.id);
 
       if (studentError) throw studentError;
@@ -402,7 +414,11 @@ const AdminStudents = () => {
     setActionLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("delete-user", {
-        body: { userId: selectedStudent.profile_id },
+        body: {
+          userId: selectedStudent.profile_id,
+          reason: actionReason || "Deleted by admin",
+          hardDelete: false,
+        },
       });
 
       if (error) throw error;
@@ -445,10 +461,13 @@ const AdminStudents = () => {
     if (!selectedStudent || !profile?.id) return;
     setActionLoading(true);
     try {
+      const now = new Date().toISOString();
+
       const { error } = await supabase
         .from("profiles")
         .update({
           active: true,
+          updated_at: now,
         })
         .eq("id", selectedStudent.profile_id);
 
@@ -457,7 +476,13 @@ const AdminStudents = () => {
       const { error: studentError } = await supabase
         .from("students")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .update({ updated_at: new Date().toISOString() } as any)
+        .update({
+          status: "active",
+          status_reason: null,
+          status_changed_at: now,
+          status_changed_by: profile.id,
+          updated_at: now,
+        } as any)
         .eq("id", selectedStudent.id);
 
       if (studentError) throw studentError;
@@ -591,10 +616,11 @@ const AdminStudents = () => {
                   <SelectItem value="all">All Accounts</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="deleted">Deleted</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {(searchTerm || documentStatusFilter !== "all" || applicationStatusFilter !== "all" || accountStatusFilter !== "active") && (
+            {(searchTerm || documentStatusFilter !== "all" || applicationStatusFilter !== "all" || accountStatusFilter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -602,7 +628,7 @@ const AdminStudents = () => {
                   setSearchTerm("");
                   setDocumentStatusFilter("all");
                   setApplicationStatusFilter("all");
-                  setAccountStatusFilter("active");
+                  setAccountStatusFilter("all");
                 }}
               >
                 Clear Filters

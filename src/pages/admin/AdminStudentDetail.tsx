@@ -480,10 +480,13 @@ const AdminStudentDetail = () => {
     if (!student || !profile?.id) return;
     setActionLoading(true);
     try {
+      const now = new Date().toISOString();
+
       const { error } = await supabase
         .from("profiles")
         .update({
           active: false,
+          updated_at: now,
         })
         .eq("id", student.profile_id);
 
@@ -493,7 +496,11 @@ const AdminStudentDetail = () => {
         .from("students")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .update({
-          updated_at: new Date().toISOString(),
+          status: "suspended",
+          status_reason: actionReason || "Suspended by admin",
+          status_changed_at: now,
+          status_changed_by: profile.id,
+          updated_at: now,
         } as any)
         .eq("id", student.id);
 
@@ -536,7 +543,11 @@ const AdminStudentDetail = () => {
     setActionLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("delete-user", {
-        body: { userId: student.profile_id },
+        body: {
+          userId: student.profile_id,
+          reason: actionReason || "Deleted by admin",
+          hardDelete: false,
+        },
       });
 
       if (error) throw error;
@@ -578,10 +589,13 @@ const AdminStudentDetail = () => {
     if (!student || !profile?.id) return;
     setActionLoading(true);
     try {
+      const now = new Date().toISOString();
+
       const { error } = await supabase
         .from("profiles")
         .update({
           active: true,
+          updated_at: now,
         })
         .eq("id", student.profile_id);
 
@@ -590,7 +604,13 @@ const AdminStudentDetail = () => {
       const { error: studentError } = await supabase
         .from("students")
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .update({ updated_at: new Date().toISOString() } as any)
+        .update({
+          status: "active",
+          status_reason: null,
+          status_changed_at: now,
+          status_changed_by: profile.id,
+          updated_at: now,
+        } as any)
         .eq("id", student.id);
 
       if (studentError) throw studentError;
