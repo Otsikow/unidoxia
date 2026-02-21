@@ -94,27 +94,38 @@ export const useUserRoles = (): UseUserRolesResult => {
         setLoading(true);
       }
 
-      const { data, error: fetchError } = await withTimeout(
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: true }),
-        USER_ROLES_TIMEOUT_MS
-      );
+      try {
+        const { data, error: fetchError } = await withTimeout(
+          supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", userId)
+            .order("created_at", { ascending: true }),
+          USER_ROLES_TIMEOUT_MS
+        );
 
-      if (!isActive) return;
+        if (!isActive) return;
 
-      if (fetchError) {
-        console.error("Error fetching user roles:", fetchError);
-        setError(fetchError);
+        if (fetchError) {
+          console.error("Error fetching user roles:", fetchError);
+          setError(fetchError);
+          setRoles([]);
+        } else {
+          setError(null);
+          setRoles(mapRoles(data));
+        }
+      } catch (err) {
+        if (!isActive) return;
+
+        const resolvedError = err instanceof Error ? err : new Error("Failed to load user roles");
+        console.error("Unexpected error fetching user roles:", resolvedError);
+        setError(resolvedError);
         setRoles([]);
-      } else {
-        setError(null);
-        setRoles(mapRoles(data));
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
       }
-
-      setLoading(false);
     };
 
     fetchRoles();
@@ -134,25 +145,32 @@ export const useUserRoles = (): UseUserRolesResult => {
 
     setLoading(true);
 
-    const { data, error: fetchError } = await withTimeout(
-      supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: true }),
-      USER_ROLES_TIMEOUT_MS
-    );
+    try {
+      const { data, error: fetchError } = await withTimeout(
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true }),
+        USER_ROLES_TIMEOUT_MS
+      );
 
-    if (fetchError) {
-      console.error("Error refreshing user roles:", fetchError);
-      setError(fetchError);
+      if (fetchError) {
+        console.error("Error refreshing user roles:", fetchError);
+        setError(fetchError);
+        setRoles([]);
+      } else {
+        setError(null);
+        setRoles(mapRoles(data));
+      }
+    } catch (err) {
+      const resolvedError = err instanceof Error ? err : new Error("Failed to refresh user roles");
+      console.error("Unexpected error refreshing user roles:", resolvedError);
+      setError(resolvedError);
       setRoles([]);
-    } else {
-      setError(null);
-      setRoles(mapRoles(data));
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, [mapRoles, userId]);
 
   const metadataRole = normalizeRole(user?.user_metadata?.role);
