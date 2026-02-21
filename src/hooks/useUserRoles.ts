@@ -61,8 +61,6 @@ export const useUserRoles = (): UseUserRolesResult => {
 
       const normalized = value.trim().toLowerCase();
       
-      // Map legacy 'university' role to 'partner' for backward compatibility
-      // Some older accounts may have 'university' as their role instead of 'partner'
       if (normalized === "university") {
         return "partner";
       }
@@ -95,24 +93,25 @@ export const useUserRoles = (): UseUserRolesResult => {
       }
 
       try {
-        const { data, error: fetchError } = await withTimeout(
-          supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: true }),
+        const query = supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: true });
+        const result = await withTimeout(
+          Promise.resolve(query),
           USER_ROLES_TIMEOUT_MS
         );
 
         if (!isActive) return;
 
-        if (fetchError) {
-          console.error("Error fetching user roles:", fetchError);
-          setError(fetchError);
+        if (result.error) {
+          console.error("Error fetching user roles:", result.error);
+          setError(result.error);
           setRoles([]);
         } else {
           setError(null);
-          setRoles(mapRoles(data));
+          setRoles(mapRoles(result.data));
         }
       } catch (err) {
         if (!isActive) return;
@@ -146,22 +145,23 @@ export const useUserRoles = (): UseUserRolesResult => {
     setLoading(true);
 
     try {
-      const { data, error: fetchError } = await withTimeout(
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: true }),
+      const query = supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
+      const result = await withTimeout(
+        Promise.resolve(query),
         USER_ROLES_TIMEOUT_MS
       );
 
-      if (fetchError) {
-        console.error("Error refreshing user roles:", fetchError);
-        setError(fetchError);
+      if (result.error) {
+        console.error("Error refreshing user roles:", result.error);
+        setError(result.error);
         setRoles([]);
       } else {
         setError(null);
-        setRoles(mapRoles(data));
+        setRoles(mapRoles(result.data));
       }
     } catch (err) {
       const resolvedError = err instanceof Error ? err : new Error("Failed to refresh user roles");
