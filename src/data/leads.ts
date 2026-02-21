@@ -102,7 +102,7 @@ export const getStudent = async (
           current_country,
           created_at,
           updated_at,
-          profile:profiles (
+          profile:profiles!students_profile_id_fkey (
             id,
             full_name,
             email,

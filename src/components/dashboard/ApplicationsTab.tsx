@@ -80,7 +80,7 @@ export default function ApplicationsTab() {
           created_at,
           students (
             profile_id,
-            profiles (
+            profiles!students_profile_id_fkey (
               full_name,
               email
             )

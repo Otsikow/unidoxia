@@ -91,7 +91,7 @@ export default function CommissionManagement() {
           *,
           applications (
             students (
-              profiles (
+              profiles!students_profile_id_fkey (
                 full_name
               )
             ),

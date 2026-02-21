@@ -94,7 +94,7 @@ export default function PaymentsTab() {
           created_at,
           applications (
             students (
-              profiles (
+              profiles!students_profile_id_fkey (
                 full_name
               )
             )
@@ -125,7 +125,7 @@ export default function PaymentsTab() {
           ),
           applications (
             students (
-              profiles (
+              profiles!students_profile_id_fkey (
                 full_name
               )
             )

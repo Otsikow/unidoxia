@@ -108,7 +108,7 @@ export default function ReportsTab() {
           intake_year,
           created_at,
           students (
-            profiles (
+            profiles!students_profile_id_fkey (
               full_name,
               email
             )
@@ -184,7 +184,7 @@ export default function ReportsTab() {
           created_at,
           applications (
             students (
-              profiles (
+              profiles!students_profile_id_fkey (
                 full_name,
                 email
               )
@@ -256,7 +256,7 @@ export default function ReportsTab() {
           ),
           applications (
             students (
-              profiles (
+              profiles!students_profile_id_fkey (
                 full_name
               )
             )
