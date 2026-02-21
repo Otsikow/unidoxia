@@ -241,7 +241,7 @@ const fetchOverviewData = async (tenantId: string): Promise<OverviewData> => {
         created_at,
         students:students(
           legal_name,
-          profile:profiles(
+          profile:profiles!students_profile_id_fkey(
             full_name
           )
         ),

@@ -184,7 +184,7 @@ export function AgentPayments() {
           *,
           applications (
             students (
-              profiles (
+              profiles!students_profile_id_fkey (
                 full_name
               )
             ),

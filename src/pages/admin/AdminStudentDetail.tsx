@@ -531,32 +531,37 @@ const AdminStudentDetail = () => {
     }
   };
 
-  const handleDeleteStudent = async () => {
+  const handleArchiveStudent = async () => {
     if (!student || !profile?.id) return;
     setActionLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-user", {
-        body: { userId: student.profile_id },
-      });
+      const { error } = await supabase
+        .from("students")
+        .update({
+          archived_at: new Date().toISOString(),
+          archived_by: profile.id,
+          archive_reason: actionReason || null,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", student.id);
 
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
 
       await logSecurityEvent({
         eventType: "custom",
-        description: `Admin deleted student account: ${studentName}`,
-        severity: "high",
+        description: `Admin archived student account: ${studentName}`,
+        severity: "medium",
         metadata: {
           studentId: student.id,
           studentName,
           reason: actionReason,
         },
-        alert: true,
+        alert: false,
       });
 
       toast({
-        title: "Student deleted",
-        description: `${studentName}'s account has been deleted.`,
+        title: "Student archived",
+        description: `${studentName}'s account has been archived. You can restore it anytime.`,
       });
 
       setDeleteDialogOpen(false);
@@ -566,7 +571,7 @@ const AdminStudentDetail = () => {
       console.error(e);
       toast({
         title: "Error",
-        description: e?.message || "Failed to delete student account",
+        description: e?.message || "Failed to archive student account",
         variant: "destructive",
       });
     } finally {
@@ -1288,15 +1293,15 @@ const AdminStudentDetail = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Student Account</AlertDialogTitle>
+            <AlertDialogTitle>Archive Student</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete{" "}
+              Are you sure you want to archive{" "}
               <span className="font-semibold">{studentName}</span>'s account?
-              This action will remove the student from the system. This cannot be easily undone.
+              The student will be hidden from active lists but all data is preserved. You can restore them at any time.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium">Reason for deletion (optional)</label>
+            <label className="text-sm font-medium">Reason for archiving (optional)</label>
             <Textarea
               placeholder="Enter reason for deletion..."
               value={actionReason}
@@ -1309,12 +1314,12 @@ const AdminStudentDetail = () => {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteStudent}
+              onClick={handleArchiveStudent}
               disabled={actionLoading}
               className="bg-destructive hover:bg-destructive/90"
             >
               {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Delete Account
+              Archive Student
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -160,7 +160,7 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
         id,
         legal_name,
         preferred_name,
-        profiles (
+        profiles!students_profile_id_fkey (
           full_name,
           email
         )
@@ -186,7 +186,7 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
         id,
         legal_name,
         preferred_name,
-        profiles (
+        profiles!students_profile_id_fkey (
           full_name,
           email
         )
@@ -212,7 +212,7 @@ const fetchOffersAndCas = async (): Promise<ProcessedRecord[]> => {
         id,
         legal_name,
         preferred_name,
-        profiles (
+        profiles!students_profile_id_fkey (
           full_name,
           email
         )

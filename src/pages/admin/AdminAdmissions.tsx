@@ -199,7 +199,7 @@ const AdminAdmissionsOversight = () => {
               id,
               legal_name,
               current_country,
-              profile:profiles (
+              profile:profiles!students_profile_id_fkey (
                 full_name,
                 email
               )

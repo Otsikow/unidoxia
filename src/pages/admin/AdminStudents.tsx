@@ -85,7 +85,7 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
-  status: "active" | "suspended" | "deleted" | null;
+  status: "active" | "suspended" | "deleted" | "archived" | null;
   status_reason: string | null;
   status_changed_at: string | null;
   profile: {
@@ -119,7 +119,7 @@ type DocumentStatusFilter =
   | "ready_for_university_review"
   | "admin_rejected";
 
-type AccountStatusFilter = "all" | "active" | "suspended";
+type AccountStatusFilter = "all" | "active" | "suspended" | "archived";
 
 const ALL_FILTER = "all";
 
@@ -183,6 +183,9 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          archived_at,
+          archived_by,
+          archive_reason,
           profile:profiles!students_profile_id_fkey (
             full_name,
             email
@@ -211,7 +214,13 @@ const AdminStudents = () => {
 
       if (error) throw error;
 
-      setStudents((data ?? []) as StudentWithDocuments[]);
+      // Map archived_at to status for filtering
+      const mapped = (data ?? []).map((s: any) => ({
+        ...s,
+        status: s.archived_at ? "archived" : (s.status ?? "active"),
+      }));
+
+      setStudents(mapped as StudentWithDocuments[]);
     } catch (err) {
       console.error(err);
       setError("Unable to load students at this time.");
@@ -277,7 +286,7 @@ const AdminStudents = () => {
 
       const matchesAccountStatus =
         accountStatusFilter === ALL_FILTER ||
-        (s.status ?? "active") === accountStatusFilter;
+        (accountStatusFilter === "archived" ? s.status === "archived" : s.status !== "archived" && (s.status ?? "active") === accountStatusFilter);
 
       return matchesSearch && matchesDocs && matchesApplication && matchesAccountStatus;
     });
@@ -397,32 +406,37 @@ const AdminStudents = () => {
     }
   };
 
-  const handleDeleteStudent = async () => {
+  const handleArchiveStudent = async () => {
     if (!selectedStudent || !profile?.id) return;
     setActionLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-user", {
-        body: { userId: selectedStudent.profile_id },
-      });
+      const { error } = await supabase
+        .from("students")
+        .update({
+          archived_at: new Date().toISOString(),
+          archived_by: profile.id,
+          archive_reason: actionReason || null,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", selectedStudent.id);
 
       if (error) throw error;
-      if (data?.error) throw new Error(data.error);
 
       await logSecurityEvent({
         eventType: "custom",
-        description: `Admin deleted student account: ${getStudentName(selectedStudent)}`,
-        severity: "high",
+        description: `Admin archived student account: ${getStudentName(selectedStudent)}`,
+        severity: "medium",
         metadata: {
           studentId: selectedStudent.id,
           studentName: getStudentName(selectedStudent),
           reason: actionReason,
         },
-        alert: true,
+        alert: false,
       });
 
       toast({
-        title: "Student deleted",
-        description: `${getStudentName(selectedStudent)}'s account has been deleted.`,
+        title: "Student archived",
+        description: `${getStudentName(selectedStudent)}'s account has been archived. You can restore it anytime.`,
       });
 
       setDeleteDialogOpen(false);
@@ -433,7 +447,54 @@ const AdminStudents = () => {
       console.error(e);
       toast({
         title: "Error",
-        description: e?.message || "Failed to delete student account",
+        description: e?.message || "Failed to archive student account",
+        variant: "destructive",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRestoreStudent = async () => {
+    if (!selectedStudent || !profile?.id) return;
+    setActionLoading(true);
+    try {
+      const { error } = await supabase
+        .from("students")
+        .update({
+          archived_at: null,
+          archived_by: null,
+          archive_reason: null,
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq("id", selectedStudent.id);
+
+      if (error) throw error;
+
+      await logSecurityEvent({
+        eventType: "custom",
+        description: `Admin restored student account: ${getStudentName(selectedStudent)}`,
+        severity: "medium",
+        metadata: {
+          studentId: selectedStudent.id,
+          studentName: getStudentName(selectedStudent),
+        },
+        alert: false,
+      });
+
+      toast({
+        title: "Student restored",
+        description: `${getStudentName(selectedStudent)}'s account has been restored.`,
+      });
+
+      setReactivateDialogOpen(false);
+      setSelectedStudent(null);
+      void fetchStudents();
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Failed to restore student account",
         variant: "destructive",
       });
     } finally {
@@ -591,6 +652,7 @@ const AdminStudents = () => {
                   <SelectItem value="all">All Accounts</SelectItem>
                   <SelectItem value="active">Active</SelectItem>
                   <SelectItem value="suspended">Suspended</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -739,10 +801,11 @@ const AdminStudents = () => {
                   const stats = getDocumentStats(student);
                   const hasPending = stats.pending > 0;
                   const isSuspended = student.status === "suspended";
+                  const isArchived = student.status === "archived";
                   return (
                     <TableRow
                       key={student.id}
-                      className={`cursor-pointer hover:bg-muted/50 ${hasPending ? "bg-amber-50/30 dark:bg-amber-950/10" : ""} ${isSuspended ? "opacity-60" : ""}`}
+                      className={`cursor-pointer hover:bg-muted/50 ${hasPending ? "bg-amber-50/30 dark:bg-amber-950/10" : ""} ${isSuspended || isArchived ? "opacity-60" : ""}`}
                       onClick={() => navigate(`/admin/students/${student.id}`)}
                     >
                       <TableCell>
@@ -788,7 +851,12 @@ const AdminStudents = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {isSuspended ? (
+                        {isArchived ? (
+                          <Badge variant="secondary" className="gap-1">
+                            <Trash2 className="h-3 w-3" />
+                            Archived
+                          </Badge>
+                        ) : isSuspended ? (
                           <Badge variant="destructive" className="gap-1">
                             <Ban className="h-3 w-3" />
                             Suspended
@@ -818,7 +886,7 @@ const AdminStudents = () => {
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            {isSuspended ? (
+                            {isArchived ? (
                               <DropdownMenuItem
                                 onClick={() => {
                                   setSelectedStudent(student);
@@ -826,30 +894,44 @@ const AdminStudents = () => {
                                 }}
                               >
                                 <RotateCcw className="h-4 w-4 mr-2" />
-                                Reactivate Account
+                                Restore Student
                               </DropdownMenuItem>
                             ) : (
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedStudent(student);
-                                  setSuspendDialogOpen(true);
-                                }}
-                                className="text-amber-600"
-                              >
-                                <Ban className="h-4 w-4 mr-2" />
-                                Suspend Account
-                              </DropdownMenuItem>
+                              <>
+                                {isSuspended ? (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedStudent(student);
+                                      setReactivateDialogOpen(true);
+                                    }}
+                                  >
+                                    <RotateCcw className="h-4 w-4 mr-2" />
+                                    Reactivate Account
+                                  </DropdownMenuItem>
+                                ) : (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedStudent(student);
+                                      setSuspendDialogOpen(true);
+                                    }}
+                                    className="text-amber-600"
+                                  >
+                                    <Ban className="h-4 w-4 mr-2" />
+                                    Suspend Account
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedStudent(student);
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Archive Student
+                                </DropdownMenuItem>
+                              </>
                             )}
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedStudent(student);
-                                setDeleteDialogOpen(true);
-                              }}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete Account
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -933,12 +1015,12 @@ const AdminStudents = () => {
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeleteStudent}
+              onClick={handleArchiveStudent}
               disabled={actionLoading}
               className="bg-destructive hover:bg-destructive/90"
             >
               {actionLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-              Delete Account
+              Archive Student
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

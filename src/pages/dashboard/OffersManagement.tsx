@@ -217,7 +217,7 @@ export default function OffersManagement() {
           students (
             legal_name,
             preferred_name,
-            profiles (
+            profiles!students_profile_id_fkey (
               full_name,
               email
             )
@@ -243,7 +243,7 @@ export default function OffersManagement() {
           students (
             legal_name,
             preferred_name,
-            profiles (
+            profiles!students_profile_id_fkey (
               full_name,
               email
             )
