@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { userId } = body;
+    const { userId, reason, hardDelete = false } = body;
 
     if (!userId) {
       return new Response(JSON.stringify({ error: "userId is required" }), {
@@ -73,7 +73,57 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Delete the auth user — cascades to profiles, students, etc. via FK ON DELETE CASCADE
+    const { data: targetProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, role")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const isTargetStudent = targetProfile?.role === "student";
+
+    if (!hardDelete && isAdmin && isTargetStudent) {
+      const now = new Date().toISOString();
+
+      const { error: profileUpdateError } = await supabaseAdmin
+        .from("profiles")
+        .update({ active: false, updated_at: now })
+        .eq("id", userId);
+
+      if (profileUpdateError) {
+        console.error("Error soft deleting profile:", profileUpdateError.message);
+        return new Response(JSON.stringify({ error: profileUpdateError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { error: studentUpdateError } = await supabaseAdmin
+        .from("students")
+        .update({
+          status: "deleted",
+          status_reason: reason ?? "Deleted by admin",
+          status_changed_at: now,
+          status_changed_by: user.id,
+          updated_at: now,
+        })
+        .eq("profile_id", userId);
+
+      if (studentUpdateError) {
+        console.error("Error soft deleting student:", studentUpdateError.message);
+        return new Response(JSON.stringify({ error: studentUpdateError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      console.log(`Successfully soft-deleted student user: ${userId}`);
+      return new Response(JSON.stringify({ success: true, mode: "soft" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Hard delete the auth user — cascades to profiles, students, etc. via FK ON DELETE CASCADE
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
@@ -84,8 +134,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Successfully deleted user: ${userId}`);
-    return new Response(JSON.stringify({ success: true }), {
+    console.log(`Successfully hard-deleted user: ${userId}`);
+    return new Response(JSON.stringify({ success: true, mode: "hard" }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
