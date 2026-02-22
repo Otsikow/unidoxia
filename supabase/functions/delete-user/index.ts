@@ -100,10 +100,9 @@ Deno.serve(async (req) => {
       const { error: studentUpdateError } = await supabaseAdmin
         .from("students")
         .update({
-          status: "deleted",
-          status_reason: reason ?? "Deleted by admin",
-          status_changed_at: now,
-          status_changed_by: user.id,
+          archived_at: now,
+          archived_by: user.id,
+          archive_reason: reason ?? "Deleted by admin",
           updated_at: now,
         })
         .eq("profile_id", userId);
