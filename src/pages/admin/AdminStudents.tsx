@@ -125,17 +125,13 @@ type DocumentStatusFilter =
 type AccountStatusFilter = "all" | "active" | "suspended" | "archived";
 
 const ALL_FILTER = "all";
-const DEFAULT_TENANT_ID =
-  import.meta.env.VITE_DEFAULT_TENANT_ID ??
-  "00000000-0000-0000-0000-000000000001";
-
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */
 /* -------------------------------------------------------------------------- */
 
 const AdminStudents = () => {
   const { profile } = useAuth();
-  const tenantId = profile?.tenant_id ?? DEFAULT_TENANT_ID;
+  const tenantId = profile?.tenant_id ?? null;
   const { toast } = useToast();
   const navigate = useNavigate();
 
