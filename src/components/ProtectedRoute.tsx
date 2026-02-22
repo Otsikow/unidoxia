@@ -163,13 +163,15 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // Map 'university' role to 'partner' for backward compatibility
+  // CRITICAL: Only use profile.role (from DB), NOT user_metadata.role
+  // user_metadata can be stale/wrong (e.g. admin with legacy 'partner' metadata)
   const isPartner =
     profile?.role === 'partner' ||
-    profile?.role === 'university' || 
-    user.user_metadata?.role === 'partner' ||
-    user.user_metadata?.role === 'university';
+    profile?.role === 'university';
 
-  if (isPartner && profile && !profile.partner_email_verified) {
+  // Only enforce email verification for actual partner-role profiles
+  // and only if the user's email is not confirmed at the auth level
+  if (isPartner && profile && !user.email_confirmed_at) {
     return (
       <Navigate
         to="/verify-email"
