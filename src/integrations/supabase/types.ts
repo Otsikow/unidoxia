@@ -3175,6 +3175,32 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          active: boolean | null
+          avatar_url: string | null
+          country: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          locale: string | null
+          onboarded: boolean | null
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          tenant_id: string
+          timezone: string | null
+          updated_at: string | null
+          username: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_or_create_conversation: {
         Args: {
           p_other_user_id: string
