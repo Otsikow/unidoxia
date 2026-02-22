@@ -125,6 +125,9 @@ type DocumentStatusFilter =
 type AccountStatusFilter = "all" | "active" | "suspended" | "archived";
 
 const ALL_FILTER = "all";
+const DEFAULT_TENANT_ID =
+  import.meta.env.VITE_DEFAULT_TENANT_ID ??
+  "00000000-0000-0000-0000-000000000001";
 
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */
@@ -132,7 +135,7 @@ const ALL_FILTER = "all";
 
 const AdminStudents = () => {
   const { profile } = useAuth();
-  const tenantId = profile?.tenant_id ?? null;
+  const tenantId = profile?.tenant_id ?? DEFAULT_TENANT_ID;
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -167,17 +170,11 @@ const AdminStudents = () => {
   /* ------------------------------------------------------------------------ */
 
   const fetchStudents = useCallback(async () => {
-    if (!tenantId) {
-      setStudents([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("students")
         .select(
           `
@@ -216,9 +213,15 @@ const AdminStudents = () => {
             )
           )
         `
-        )
-        .eq("tenant_id", tenantId)
-        .order("created_at", { ascending: false });
+        );
+
+      if (tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+
+      const { data, error } = await query.order("created_at", {
+        ascending: false,
+      });
 
       if (error) throw error;
 
