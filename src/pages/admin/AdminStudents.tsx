@@ -85,9 +85,8 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
-  status: "active" | "suspended" | "archived" | null;
-  status_reason: string | null;
-  status_changed_at: string | null;
+  /** Derived field – not a DB column */
+  status: "active" | "archived" | null;
   archived_at: string | null;
   archived_by: string | null;
   archive_reason: string | null;
@@ -122,7 +121,7 @@ type DocumentStatusFilter =
   | "ready_for_university_review"
   | "admin_rejected";
 
-type AccountStatusFilter = "all" | "active" | "suspended" | "archived";
+type AccountStatusFilter = "all" | "active" | "archived";
 
 const ALL_FILTER = "all";
 /* -------------------------------------------------------------------------- */
@@ -181,9 +180,6 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
-          status,
-          status_reason,
-          status_changed_at,
           archived_at,
           archived_by,
           archive_reason,
@@ -223,9 +219,7 @@ const AdminStudents = () => {
 
       const mapped = (data ?? []).map((s: any) => ({
         ...s,
-        status: s.archived_at
-          ? "archived"
-          : s.status ?? "active",
+        status: s.archived_at ? "archived" : "active",
       }));
 
       setStudents(mapped as StudentWithDocuments[]);
@@ -261,16 +255,6 @@ const AdminStudents = () => {
         .from("profiles")
         .update({ active: false, updated_at: now })
         .eq("id", selectedStudent.profile_id);
-
-      await supabase
-        .from("students")
-        .update({
-          status: "suspended",
-          status_reason: actionReason || "Suspended by admin",
-          status_changed_at: now,
-          updated_at: now,
-        })
-        .eq("id", selectedStudent.id);
 
       toast({ title: "Student suspended" });
 
@@ -367,12 +351,11 @@ const AdminStudents = () => {
                 </TableRow>
               ) : students.map((student) => {
                   const isArchived = student.status === "archived";
-                  const isSuspended = student.status === "suspended";
 
                   return (
                     <TableRow
                       key={student.id}
-                      className={`${isArchived || isSuspended ? "opacity-60" : ""}`}
+                      className={`${isArchived ? "opacity-60" : ""}`}
                     >
                       <TableCell>
                         {getStudentName(student)}
@@ -383,8 +366,6 @@ const AdminStudents = () => {
                       <TableCell>
                         {isArchived ? (
                           <Badge variant="secondary">Archived</Badge>
-                        ) : isSuspended ? (
-                          <Badge variant="destructive">Suspended</Badge>
                         ) : (
                           <Badge variant="outline">Active</Badge>
                         )}
