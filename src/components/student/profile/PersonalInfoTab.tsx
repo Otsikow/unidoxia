@@ -7,11 +7,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageCircle } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
 import { COUNTRIES } from '@/lib/countries';
+import {
+  buildInternationalNumber,
+  COUNTRY_PHONE_OPTIONS,
+  getDialCodeByCountry,
+  isLikelyValidInternational,
+  parseInternationalNumber,
+  toWhatsAppLink,
+} from '@/lib/phone';
 
 // Common study areas/disciplines
 const STUDY_AREAS = [
@@ -49,6 +57,10 @@ type AddressData = {
 
 const extractFormData = (student: Tables<'students'>) => {
   const addressData = student.address as AddressData;
+  const contactPhoneRaw = student.contact_phone || addressData?.phone || '';
+  const whatsappRaw = addressData?.whatsapp || student.whatsapp_number || addressData?.phone || student.contact_phone || '';
+  const contactPhone = parseInternationalNumber(contactPhoneRaw);
+  const whatsappPhone = parseInternationalNumber(whatsappRaw);
   return {
     legal_name: student.legal_name || '',
     preferred_name: student.preferred_name || '',
@@ -57,8 +69,10 @@ const extractFormData = (student: Tables<'students'>) => {
     passport_number: student.passport_number || '',
     passport_expiry: student.passport_expiry || '',
     contact_email: student.contact_email || '',
-    contact_phone: student.contact_phone || addressData?.phone || '',
-    whatsapp_number: addressData?.whatsapp || addressData?.phone || student.contact_phone || '+',
+    contact_phone_country_code: contactPhone.dialCode || getDialCodeByCountry(student.current_country),
+    contact_phone_local: contactPhone.localNumber,
+    whatsapp_country_code: whatsappPhone.dialCode || getDialCodeByCountry(student.current_country),
+    whatsapp_local: whatsappPhone.localNumber,
     current_country: student.current_country || '',
     preferred_course: (student as any).preferred_course || '',
     preferred_study_area: (student as any).preferred_study_area || '',
@@ -76,6 +90,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{ contactPhone?: string; whatsappNumber?: string }>({});
   
   const [formData, setFormData] = useState(() => extractFormData(student));
 
@@ -84,16 +99,53 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
     setFormData(extractFormData(student));
   }, [student]);
 
+  const validateNumbers = useCallback((data: typeof formData) => {
+    const validationErrors: { contactPhone?: string; whatsappNumber?: string } = {};
+
+    if (!isLikelyValidInternational(data.contact_phone_country_code, data.contact_phone_local)) {
+      validationErrors.contactPhone = 'Enter a valid number without leading zero. Country code is required.';
+    }
+
+    if (!isLikelyValidInternational(data.whatsapp_country_code, data.whatsapp_local)) {
+      validationErrors.whatsappNumber = 'Enter a valid WhatsApp number without leading zero. Country code is required.';
+    }
+
+    return validationErrors;
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
     }));
+
+    if (e.target.name.startsWith('contact_phone') || e.target.name.startsWith('whatsapp')) {
+      const nextData = {
+        ...formData,
+        [e.target.name]: e.target.value,
+      };
+      setErrors(validateNumbers(nextData));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationErrors = validateNumbers(formData);
+    if (validationErrors.contactPhone || validationErrors.whatsappNumber) {
+      setErrors(validationErrors);
+      toast({
+        title: 'Invalid phone format',
+        description: 'Please correct your phone and WhatsApp numbers before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
+
+    const fullContactPhone = buildInternationalNumber(formData.contact_phone_country_code, formData.contact_phone_local);
+    const fullWhatsappNumber = buildInternationalNumber(formData.whatsapp_country_code, formData.whatsapp_local);
 
     try {
       const { data, error } = await supabase
@@ -106,7 +158,8 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           passport_number: formData.passport_number,
           passport_expiry: formData.passport_expiry,
           contact_email: formData.contact_email,
-          contact_phone: formData.contact_phone,
+          contact_phone: fullContactPhone,
+          whatsapp_number: fullWhatsappNumber,
           current_country: formData.current_country,
           preferred_course: formData.preferred_course,
           preferred_study_area: formData.preferred_study_area,
@@ -117,11 +170,8 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             city: formData.city,
             postal_code: formData.postal_code,
             country: formData.country,
-            phone: formData.contact_phone,
-            whatsapp:
-              formData.whatsapp_number.trim() && formData.whatsapp_number.trim() !== '+'
-                ? formData.whatsapp_number.trim()
-                : null
+            phone: fullContactPhone,
+            whatsapp: fullWhatsappNumber || null
           }
         })
         .eq('id', student.id)
@@ -258,29 +308,88 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="contact_phone">Phone Number *</Label>
-              <Input
-                id="contact_phone"
-                name="contact_phone"
-                type="tel"
-                value={formData.contact_phone}
-                onChange={handleChange}
-                required
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-2">
+                <Select
+                  value={formData.contact_phone_country_code}
+                  onValueChange={(value) => {
+                    const nextData = { ...formData, contact_phone_country_code: value };
+                    setFormData(nextData);
+                    setErrors(validateNumbers(nextData));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country code" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRY_PHONE_OPTIONS.map((option) => (
+                      <SelectItem key={`${option.country}-${option.dialCode}`} value={option.dialCode}>
+                        {option.flag} {option.country} ({option.dialCode})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="contact_phone"
+                  name="contact_phone_local"
+                  type="tel"
+                  value={formData.contact_phone_local}
+                  onChange={handleChange}
+                  placeholder="7360961803"
+                  required
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Enter your number without the leading zero. Country code will be added automatically.
+              </p>
+              {errors.contactPhone && <p className="text-xs text-destructive">{errors.contactPhone}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="whatsapp_number">WhatsApp Number (with country code) *</Label>
-              <Input
-                id="whatsapp_number"
-                name="whatsapp_number"
-                type="tel"
-                value={formData.whatsapp_number}
-                onChange={handleChange}
-                placeholder="+233 501 234 567"
-                required
-              />
+              <Label htmlFor="whatsapp_number">WhatsApp Number *</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-2">
+                <Select
+                  value={formData.whatsapp_country_code}
+                  onValueChange={(value) => {
+                    const nextData = { ...formData, whatsapp_country_code: value };
+                    setFormData(nextData);
+                    setErrors(validateNumbers(nextData));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select country code" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COUNTRY_PHONE_OPTIONS.map((option) => (
+                      <SelectItem key={`whatsapp-${option.country}-${option.dialCode}`} value={option.dialCode}>
+                        {option.flag} {option.country} ({option.dialCode})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  id="whatsapp_number"
+                  name="whatsapp_local"
+                  type="tel"
+                  value={formData.whatsapp_local}
+                  onChange={handleChange}
+                  placeholder="7360961803"
+                  required
+                />
+              </div>
               <p className="text-sm text-muted-foreground">
-                Use your full international format so admins can message you directly.
+                Enter your number without the leading zero. Country code will be added automatically.
               </p>
+              {errors.whatsappNumber && <p className="text-xs text-destructive">{errors.whatsappNumber}</p>}
+              {isLikelyValidInternational(formData.whatsapp_country_code, formData.whatsapp_local) && (
+                <Button asChild type="button" variant="outline" className="w-full sm:w-auto">
+                  <a
+                    href={toWhatsAppLink(buildInternationalNumber(formData.whatsapp_country_code, formData.whatsapp_local))}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" /> Message on WhatsApp
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
 
