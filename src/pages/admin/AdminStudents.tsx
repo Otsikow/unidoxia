@@ -124,6 +124,13 @@ type DocumentStatusFilter =
 type AccountStatusFilter = "all" | "active" | "archived";
 
 const ALL_FILTER = "all";
+
+const normalizeSearchValue = (value: string | null | undefined) =>
+  (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */
 /* -------------------------------------------------------------------------- */
@@ -159,6 +166,32 @@ const AdminStudents = () => {
 
   const [actionReason, setActionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
+
+  const filteredStudents = useMemo(() => {
+    const normalizedQuery = normalizeSearchValue(searchTerm);
+    const queryTerms = normalizedQuery.split(/[\s,]+/).filter(Boolean);
+
+    if (!queryTerms.length) {
+      return students;
+    }
+
+    return students.filter((student) => {
+      const searchableText = normalizeSearchValue(
+        [
+          student.preferred_name,
+          student.legal_name,
+          student.profile?.full_name,
+          student.profile?.email,
+          student.contact_email,
+          student.current_country,
+        ]
+          .filter(Boolean)
+          .join(" ")
+      );
+
+      return queryTerms.every((term) => searchableText.includes(term));
+    });
+  }, [searchTerm, students]);
 
   /* ------------------------------------------------------------------------ */
   /*                                 Fetching                                 */
@@ -332,6 +365,17 @@ const AdminStudents = () => {
 
       <Card>
         <CardContent className="overflow-x-auto pt-6">
+          <div className="relative mb-4 max-w-md">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by student name, country, or email"
+              className="pl-9"
+              aria-label="Search students"
+            />
+          </div>
+
           <Table>
             <TableHeader>
               <TableRow>
@@ -349,7 +393,13 @@ const AdminStudents = () => {
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
-              ) : students.map((student) => {
+              ) : filteredStudents.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-sm text-muted-foreground">
+                    No students found for "{searchTerm.trim()}".
+                  </TableCell>
+                </TableRow>
+              ) : filteredStudents.map((student) => {
                   const isArchived = student.status === "archived";
 
                   return (
