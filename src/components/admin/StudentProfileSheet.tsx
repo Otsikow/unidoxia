@@ -187,6 +187,7 @@ export function StudentProfileSheet({
   const [previewDoc, setPreviewDoc] = useState<StudentDocument | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewFullscreen, setPreviewFullscreen] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
 
   const [chatOpen, setChatOpen] = useState(false);
@@ -778,23 +779,61 @@ export function StudentProfileSheet({
       </Sheet>
 
       {/* Document Preview Dialog */}
-      <Dialog open={!!previewDoc} onOpenChange={() => setPreviewDoc(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+      <Dialog
+        open={!!previewDoc}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setPreviewDoc(null);
+            setPreviewFullscreen(false);
+          }
+        }}
+      >
+        <DialogContent
+          className={
+            previewFullscreen
+              ? "h-screen w-screen max-w-none rounded-none border-0 p-4 sm:p-6"
+              : "max-w-5xl max-h-[92vh]"
+          }
+        >
           <DialogHeader>
-            <DialogTitle>{previewDoc && getDocLabel(previewDoc.document_type)}</DialogTitle>
-            <DialogDescription>{previewDoc?.file_name}</DialogDescription>
+            <div className="flex items-start justify-between gap-3 pr-8">
+              <div>
+                <DialogTitle>{previewDoc && getDocLabel(previewDoc.document_type)}</DialogTitle>
+                <DialogDescription>{previewDoc?.file_name}</DialogDescription>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={() => setPreviewFullscreen((prev) => !prev)}
+                aria-label={previewFullscreen ? "Exit full screen preview" : "Enter full screen preview"}
+                title={previewFullscreen ? "Exit full screen" : "Full screen"}
+              >
+                {previewFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            </div>
           </DialogHeader>
 
-          <div className="min-h-[50vh] bg-muted rounded-lg overflow-hidden flex items-center justify-center">
+          <div
+            className={
+              previewFullscreen
+                ? "h-[calc(100vh-12rem)] bg-muted rounded-lg overflow-auto flex items-center justify-center"
+                : "min-h-[50vh] max-h-[65vh] bg-muted rounded-lg overflow-auto flex items-center justify-center"
+            }
+          >
             {previewLoading ? (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             ) : previewUrl ? (
               previewDoc?.mime_type === "application/pdf" ? (
-                <iframe src={previewUrl} className="w-full h-[50vh] border-0" />
+                <iframe
+                  src={previewUrl}
+                  className={previewFullscreen ? "h-full min-h-full w-full border-0" : "w-full h-[65vh] border-0"}
+                />
               ) : (
                 <img
                   src={previewUrl}
-                  className="max-w-full max-h-[50vh] object-contain"
+                  className={previewFullscreen ? "max-w-full max-h-full object-contain" : "max-w-full max-h-[65vh] object-contain"}
                   alt={previewDoc?.file_name}
                 />
               )
