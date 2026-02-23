@@ -358,7 +358,12 @@ const AdminStudents = () => {
                       className={`${isArchived ? "opacity-60" : ""}`}
                     >
                       <TableCell>
-                        {getStudentName(student)}
+                        <button
+                          className="text-left hover:underline text-primary font-medium"
+                          onClick={() => navigate(`/admin/students/${student.id}`)}
+                        >
+                          {getStudentName(student)}
+                        </button>
                       </TableCell>
                       <TableCell>
                         {student.current_country ?? "—"}
@@ -383,6 +388,13 @@ const AdminStudents = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onClick={() => navigate(`/admin/students/${student.id}`)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Profile
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             {isArchived ? (
                               <DropdownMenuItem
                                 onClick={() => {

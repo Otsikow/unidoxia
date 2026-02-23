@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,6 +10,8 @@ import { LoadingState } from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,24 +22,136 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Ban, RotateCcw, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle2,
+  Clock,
+  Download,
+  Eye,
+  FileText,
+  GraduationCap,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  RotateCcw,
+  Trash2,
+  User,
+  XCircle,
+  AlertCircle,
+} from "lucide-react";
 import { format } from "date-fns";
 
-interface StudentDetail {
-  id: string;
-  profile_id: string;
-  legal_name: string | null;
-  preferred_name: string | null;
-  contact_email: string | null;
-  current_country: string | null;
-  created_at: string | null;
-  
-  archived_at: string | null;
-  archived_by: string | null;
-  archive_reason: string | null;
-  profile: { full_name: string | null; email: string | null } | null;
+/* -------------------------------------------------------------------------- */
+/*                                   Types                                    */
+/* -------------------------------------------------------------------------- */
+
+interface StudentBundle {
+  student: {
+    id: string;
+    profile_id: string;
+    legal_name: string | null;
+    preferred_name: string | null;
+    contact_email: string | null;
+    contact_phone: string | null;
+    current_country: string | null;
+    nationality: string | null;
+    date_of_birth: string | null;
+    passport_number: string | null;
+    passport_expiry: string | null;
+    visa_history_json: any;
+    education_history: any;
+    address: any;
+    created_at: string | null;
+    profile: {
+      id: string;
+      full_name: string | null;
+      email: string | null;
+      avatar_url: string | null;
+    } | null;
+    applications: {
+      id: string;
+      status: string | null;
+      app_number: string | null;
+      submitted_at: string | null;
+      program: {
+        id: string;
+        name: string | null;
+        level: string | null;
+        university: {
+          id: string;
+          name: string | null;
+          country: string | null;
+        } | null;
+      } | null;
+    }[];
+  };
+  documents: {
+    id: string;
+    student_id: string;
+    document_type: string;
+    file_name: string;
+    file_size: number;
+    mime_type: string;
+    storage_path: string;
+    admin_review_status: string | null;
+    admin_review_notes: string | null;
+    admin_reviewed_at: string | null;
+    admin_reviewed_by: string | null;
+    created_at: string;
+  }[];
+  education_records: {
+    id: string;
+    level: string;
+    institution_name: string;
+    country: string;
+    start_date: string;
+    end_date: string | null;
+    gpa: number | null;
+    grade_scale: string | null;
+  }[];
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                Constants                                   */
+/* -------------------------------------------------------------------------- */
+
+const DOCUMENT_LABELS: Record<string, string> = {
+  passport: "Passport",
+  passport_photo: "Passport Photo",
+  transcript: "Academic Transcript",
+  sop: "Statement of Purpose",
+  personal_statement: "Statement of Purpose",
+  cv: "CV / Resume",
+  degree_certificate: "Degree Certificate",
+  recommendation_letter: "Recommendation Letter",
+  lor: "Letter of Reference",
+  reference_letter: "Letter of Reference",
+  english_proficiency: "English Proficiency",
+  financial_document: "Financial Document",
+  ielts: "IELTS Certificate",
+};
+
+const getDocLabel = (t: string) =>
+  DOCUMENT_LABELS[t] ?? t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                Component                                   */
+/* -------------------------------------------------------------------------- */
 
 const AdminStudentDetail = () => {
   const { studentId } = useParams<{ studentId: string }>();
@@ -45,30 +159,50 @@ const AdminStudentDetail = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
 
-  const [student, setStudent] = useState<StudentDetail | null>(null);
+  const [bundle, setBundle] = useState<StudentBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [actionReason, setActionReason] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Document preview
+  const [previewDoc, setPreviewDoc] = useState<StudentBundle["documents"][0] | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  // Archive status - check from direct query since RPC doesn't include it
+  const [archivedAt, setArchivedAt] = useState<string | null>(null);
+  const [archiveReason, setArchiveReason] = useState<string | null>(null);
+
+  /* ------------------------------ Data Load ------------------------------ */
 
   const fetchStudent = useCallback(async () => {
     if (!studentId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch bundle via RPC
+      const { data, error } = await supabase.rpc("get_admin_student_review_bundle", {
+        p_student_id: studentId,
+      });
+
+      if (error) throw error;
+      setBundle(data as unknown as StudentBundle);
+
+      // Also fetch archive status separately
+      const { data: archiveData } = await supabase
         .from("students")
-        .select(
-          `id, profile_id, legal_name, preferred_name, contact_email, current_country, created_at, archived_at, archived_by, archive_reason, profile:profiles!students_profile_id_fkey (full_name, email)`
-        )
+        .select("archived_at, archive_reason")
         .eq("id", studentId)
         .maybeSingle();
 
-      if (error) throw error;
-      setStudent(data as StudentDetail | null);
+      setArchivedAt(archiveData?.archived_at ?? null);
+      setArchiveReason(archiveData?.archive_reason ?? null);
     } catch (err) {
       console.error(err);
-      toast({ title: "Error", description: "Failed to load student", variant: "destructive" });
+      toast({ title: "Error", description: "Failed to load student details", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -78,20 +212,78 @@ const AdminStudentDetail = () => {
     void fetchStudent();
   }, [fetchStudent]);
 
+  /* ------------------------------ Derived ------------------------------ */
+
+  const student = bundle?.student;
+  const documents = bundle?.documents ?? [];
+  const educationRecords = bundle?.education_records ?? [];
+
   const studentName =
     student?.preferred_name || student?.legal_name || student?.profile?.full_name || "Unknown Student";
 
-  const isArchived = !!student?.archived_at;
+  const isArchived = !!archivedAt;
+
+  const documentStats = useMemo(() => {
+    const pending = documents.filter(
+      (d) => !d.admin_review_status || d.admin_review_status === "pending"
+    ).length;
+    const approved = documents.filter(
+      (d) => d.admin_review_status === "ready_for_university_review" || d.admin_review_status === "approved"
+    ).length;
+    const rejected = documents.filter(
+      (d) => d.admin_review_status === "rejected" || d.admin_review_status === "admin_rejected"
+    ).length;
+    return { pending, approved, rejected, total: documents.length };
+  }, [documents]);
+
+  /* ------------------------------ Document Actions ------------------------------ */
+
+  const handlePreview = async (doc: StudentBundle["documents"][0]) => {
+    setPreviewDoc(doc);
+    setPreviewLoading(true);
+    const { data } = await supabase.storage
+      .from("student-documents")
+      .createSignedUrl(doc.storage_path, 3600);
+    setPreviewUrl(data?.signedUrl ?? null);
+    setPreviewLoading(false);
+  };
+
+  const handleReviewDocument = async (doc: StudentBundle["documents"][0], status: "approved" | "rejected") => {
+    if (!profile?.id) return;
+    setReviewLoading(true);
+    try {
+      const { error } = await supabase
+        .from("student_documents")
+        .update({
+          admin_review_status: status === "approved" ? "ready_for_university_review" : "admin_rejected",
+          admin_reviewed_by: profile.id,
+          admin_reviewed_at: new Date().toISOString(),
+        })
+        .eq("id", doc.id);
+
+      if (error) throw error;
+
+      toast({ title: `Document ${status}`, description: `The document has been ${status}.` });
+      setPreviewDoc(null);
+      void fetchStudent();
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Error", description: "Failed to update document status", variant: "destructive" });
+    } finally {
+      setReviewLoading(false);
+    }
+  };
+
+  /* ------------------------------ Archive/Restore ------------------------------ */
 
   const handleArchiveStudent = async () => {
     if (!student || !profile?.id) return;
     setActionLoading(true);
     try {
-      const now = new Date().toISOString();
       const { error } = await supabase
         .from("students")
         .update({
-          archived_at: now,
+          archived_at: new Date().toISOString(),
           archived_by: profile.id,
           archive_reason: actionReason || null,
         } as any)
@@ -107,11 +299,7 @@ const AdminStudentDetail = () => {
         alert: false,
       });
 
-      toast({
-        title: "Student archived",
-        description: `${studentName}'s account has been archived. You can restore it anytime.`,
-      });
-
+      toast({ title: "Student archived", description: `${studentName}'s account has been archived.` });
       setArchiveDialogOpen(false);
       setActionReason("");
       navigate("/admin/students");
@@ -133,7 +321,6 @@ const AdminStudentDetail = () => {
         .eq("id", student.id);
 
       if (error) throw error;
-
       toast({ title: "Student restored", description: `${studentName}'s account has been restored.` });
       setRestoreDialogOpen(false);
       void fetchStudent();
@@ -144,6 +331,8 @@ const AdminStudentDetail = () => {
       setActionLoading(false);
     }
   };
+
+  /* ------------------------------ Render: Loading/Empty ------------------------------ */
 
   if (loading) {
     return (
@@ -164,8 +353,11 @@ const AdminStudentDetail = () => {
     );
   }
 
+  /* ------------------------------ Render: Main ------------------------------ */
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin/students")}>
@@ -187,41 +379,347 @@ const AdminStudentDetail = () => {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Student Information</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-sm text-muted-foreground">Full Name</p>
-            <p>{student.profile?.full_name ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p>{student.profile?.email ?? student.contact_email ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Country</p>
-            <p>{student.current_country ?? "—"}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Joined</p>
-            <p>{student.created_at ? format(new Date(student.created_at), "MMM d, yyyy") : "—"}</p>
-          </div>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="overview">
+            <User className="h-4 w-4 mr-1" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="relative">
+            <FileText className="h-4 w-4 mr-1" /> Documents
+            {documentStats.pending > 0 && (
+              <span className="ml-1 h-5 w-5 rounded-full bg-amber-500 text-[10px] text-white flex items-center justify-center">
+                {documentStats.pending}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="education">
+            <GraduationCap className="h-4 w-4 mr-1" /> Education
+          </TabsTrigger>
+          <TabsTrigger value="applications">
+            <BookOpen className="h-4 w-4 mr-1" /> Applications
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <User className="h-4 w-4" /> Personal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Full Name</p>
+                <p className="font-medium">{student.profile?.full_name ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Legal Name</p>
+                <p className="font-medium">{student.legal_name ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Preferred Name</p>
+                <p className="font-medium">{student.preferred_name ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Date of Birth</p>
+                <p className="font-medium">
+                  {student.date_of_birth ? format(new Date(student.date_of_birth), "MMM d, yyyy") : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Nationality</p>
+                <p className="font-medium">{student.nationality ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Country</p>
+                <p className="font-medium">{student.current_country ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Email</p>
+                <p className="font-medium">
+                  {student.contact_email || student.profile?.email ? (
+                    <a href={`mailto:${student.contact_email || student.profile?.email}`} className="text-primary hover:underline flex items-center gap-1">
+                      <Mail className="h-3 w-3" /> {student.contact_email || student.profile?.email}
+                    </a>
+                  ) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Phone</p>
+                <p className="font-medium">
+                  {student.contact_phone ? (
+                    <a href={`tel:${student.contact_phone}`} className="text-primary hover:underline flex items-center gap-1">
+                      <Phone className="h-3 w-3" /> {student.contact_phone}
+                    </a>
+                  ) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Joined</p>
+                <p className="font-medium">
+                  {student.created_at ? format(new Date(student.created_at), "MMM d, yyyy") : "—"}
+                </p>
+              </div>
+              {student.passport_number && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Passport</p>
+                  <p className="font-medium">
+                    {student.passport_number}
+                    {student.passport_expiry && (
+                      <span className="text-muted-foreground text-xs ml-2">
+                        (Exp: {format(new Date(student.passport_expiry), "MMM yyyy")})
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Archive info */}
           {isArchived && (
-            <>
-              <div>
-                <p className="text-sm text-muted-foreground">Archived At</p>
-                <p>{student.archived_at ? format(new Date(student.archived_at), "MMM d, yyyy HH:mm") : "—"}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Archive Reason</p>
-                <p>{student.archive_reason ?? "No reason provided"}</p>
-              </div>
-            </>
+            <Card className="border-amber-500/30">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-amber-500 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" /> Archive Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Archived At</p>
+                  <p>{archivedAt ? format(new Date(archivedAt), "MMM d, yyyy HH:mm") : "—"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Reason</p>
+                  <p>{archiveReason ?? "No reason provided"}</p>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+
+          {/* Document Summary */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <FileText className="h-4 w-4" /> Document Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4 text-sm">
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold">{documentStats.total}</span> Total
+                </div>
+                <div className="flex items-center gap-1 text-amber-500">
+                  <Clock className="h-3 w-3" /> <span className="font-semibold">{documentStats.pending}</span> Pending
+                </div>
+                <div className="flex items-center gap-1 text-green-500">
+                  <CheckCircle2 className="h-3 w-3" /> <span className="font-semibold">{documentStats.approved}</span> Approved
+                </div>
+                <div className="flex items-center gap-1 text-red-500">
+                  <XCircle className="h-3 w-3" /> <span className="font-semibold">{documentStats.rejected}</span> Rejected
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Documents Tab */}
+        <TabsContent value="documents" className="space-y-4 mt-4">
+          {documents.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                No documents uploaded yet.
+              </CardContent>
+            </Card>
+          ) : (
+            documents.map((doc) => {
+              const statusColor =
+                doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
+                  ? "default"
+                  : doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected"
+                  ? "destructive"
+                  : "outline";
+
+              const statusLabel =
+                doc.admin_review_status === "ready_for_university_review"
+                  ? "Approved"
+                  : doc.admin_review_status === "admin_rejected"
+                  ? "Rejected"
+                  : doc.admin_review_status === "approved"
+                  ? "Approved"
+                  : doc.admin_review_status === "rejected"
+                  ? "Rejected"
+                  : "Pending Review";
+
+              return (
+                <Card key={doc.id}>
+                  <CardContent className="flex items-center justify-between py-4">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium text-sm">{getDocLabel(doc.document_type)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.file_name} • {formatFileSize(doc.file_size)} •{" "}
+                          {format(new Date(doc.created_at), "MMM d, yyyy")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={statusColor}>{statusLabel}</Badge>
+                      <Button variant="outline" size="sm" onClick={() => handlePreview(doc)}>
+                        <Eye className="h-4 w-4 mr-1" /> View
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </TabsContent>
+
+        {/* Education Tab */}
+        <TabsContent value="education" className="space-y-4 mt-4">
+          {educationRecords.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <GraduationCap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                No education records found.
+              </CardContent>
+            </Card>
+          ) : (
+            educationRecords.map((edu) => (
+              <Card key={edu.id}>
+                <CardContent className="py-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium">{edu.institution_name}</p>
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {edu.country}
+                      </p>
+                      <p className="text-sm mt-1">
+                        <Badge variant="outline">{edu.level}</Badge>
+                      </p>
+                    </div>
+                    <div className="text-right text-sm text-muted-foreground">
+                      <p>{format(new Date(edu.start_date), "MMM yyyy")}</p>
+                      <p>{edu.end_date ? format(new Date(edu.end_date), "MMM yyyy") : "Present"}</p>
+                      {edu.gpa && (
+                        <p className="font-medium mt-1">
+                          GPA: {edu.gpa}{edu.grade_scale ? ` / ${edu.grade_scale}` : ""}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+
+        {/* Applications Tab */}
+        <TabsContent value="applications" className="space-y-4 mt-4">
+          {(student.applications ?? []).length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                <BookOpen className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                No applications found.
+              </CardContent>
+            </Card>
+          ) : (
+            student.applications.map((app) => (
+              <Card key={app.id}>
+                <CardContent className="py-4">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-medium">{app.program?.name ?? "Unknown Program"}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {app.program?.level} • {app.program?.university?.name ?? "Unknown University"}
+                      </p>
+                      {app.app_number && (
+                        <p className="text-xs text-muted-foreground mt-1">#{app.app_number}</p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="outline">{app.status ?? "draft"}</Badge>
+                      {app.submitted_at && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Submitted {format(new Date(app.submitted_at), "MMM d, yyyy")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Document Preview Dialog */}
+      <Dialog open={!!previewDoc} onOpenChange={(o) => !o && setPreviewDoc(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {previewDoc && getDocLabel(previewDoc.document_type)} — {previewDoc?.file_name}
+            </DialogTitle>
+          </DialogHeader>
+          {previewLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : previewUrl ? (
+            <div className="space-y-4">
+              {previewDoc?.mime_type?.startsWith("image/") ? (
+                <img src={previewUrl} alt={previewDoc.file_name} className="max-h-[60vh] mx-auto rounded" />
+              ) : previewDoc?.mime_type === "application/pdf" ? (
+                <iframe src={previewUrl} className="w-full h-[60vh] rounded border" title="Document Preview" />
+              ) : (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-muted-foreground mb-4">Preview not available for this file type.</p>
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline">
+                      <Download className="h-4 w-4 mr-2" /> Download
+                    </Button>
+                  </a>
+                </div>
+              )}
+
+              {/* Review Actions */}
+              {previewDoc && (
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" /> Download
+                    </Button>
+                  </a>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={reviewLoading}
+                    onClick={() => handleReviewDocument(previewDoc, "rejected")}
+                  >
+                    <XCircle className="h-4 w-4 mr-1" /> Reject
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={reviewLoading}
+                    onClick={() => handleReviewDocument(previewDoc, "approved")}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-1" /> Approve
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">Unable to load preview.</p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Archive Dialog */}
       <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
