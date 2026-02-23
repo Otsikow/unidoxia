@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getErrorMessage, logError, formatErrorForToast } from '@/lib/errorUtils';
 import { isValidUuid } from '@/lib/validation';
 import { getApplicationStatusProgress, getApplicationStatusLabel } from '@/lib/applicationStatus';
+import { getMissingRequiredStudentDocuments } from '@/lib/studentDocuments';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,7 @@ import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StatusBadge } from '@/components/StatusBadge';
 import { LoadingState } from '@/components/LoadingState';
-import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer, MessageSquare, Mail, Phone, Globe, Upload, AlertCircle } from 'lucide-react';
+import { Calendar, DollarSign, Download, FileText, GraduationCap, MapPin, Timer, MessageSquare, Mail, Phone, Globe, Upload, AlertCircle, Clock3, CheckCircle2, XCircle } from 'lucide-react';
 import BackButton from '@/components/BackButton';
 import { parseUniversityProfileDetails } from '@/lib/universityProfile';
 import { DocumentUploadDialog, DocumentRequestInfo } from '@/components/student/DocumentUploadDialog';
@@ -515,6 +516,24 @@ export default function ApplicationDetails() {
   const taskProgress = tasks.length === 0 ? 0 : Math.round((tasks.filter(t => t.status === 'done').length / tasks.length) * 100);
   const statusProgress = getApplicationStatusProgress(app.status);
   const statusLabel = getApplicationStatusLabel(app.status);
+  const missingRequiredDocuments = getMissingRequiredStudentDocuments(docs);
+
+  const requestSummary = documentRequests.reduce(
+    (summary, request) => {
+      const rawStatus = (request.status ?? 'pending').toLowerCase();
+
+      if (['approved', 'verified', 'completed'].includes(rawStatus)) {
+        summary.approved += 1;
+      } else if (['rejected', 'declined'].includes(rawStatus)) {
+        summary.rejected += 1;
+      } else {
+        summary.pending += 1;
+      }
+
+      return summary;
+    },
+    { pending: 0, approved: 0, rejected: 0 },
+  );
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -718,6 +737,74 @@ export default function ApplicationDetails() {
         </TabsContent>
 
         <TabsContent value="documents" className="space-y-4">
+          {(missingRequiredDocuments.length > 0 || documentRequests.length > 0) && (
+            <Card className="border-amber-500/60 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/25 dark:to-orange-950/20">
+              <CardHeader className="space-y-4">
+                {missingRequiredDocuments.length > 0 && (
+                  <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="mt-0.5 h-5 w-5 text-amber-700 dark:text-amber-300" />
+                      <div className="space-y-3">
+                        <CardTitle className="text-base text-amber-900 dark:text-amber-100">
+                          Missing Required Documents
+                        </CardTitle>
+                        <div className="flex flex-wrap gap-2">
+                          {missingRequiredDocuments.map((doc) => (
+                            <Badge
+                              key={doc.type}
+                              variant="outline"
+                              className="rounded-full border-amber-600/70 bg-transparent px-3 py-1 text-amber-900 dark:text-amber-200"
+                            >
+                              {doc.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-xl border border-amber-400/60 bg-background/70 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-950/80">
+                        <Clock3 className="h-4 w-4 text-amber-700 dark:text-amber-300" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-semibold text-foreground">{requestSummary.pending}</div>
+                        <div className="text-sm text-muted-foreground">Pending</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-emerald-400/40 bg-background/70 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-950/70">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-300" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-semibold text-foreground">{requestSummary.approved}</div>
+                        <div className="text-sm text-muted-foreground">Approved</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-rose-400/40 bg-background/70 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-full bg-rose-100 p-2 dark:bg-rose-950/70">
+                        <XCircle className="h-4 w-4 text-rose-700 dark:text-rose-300" />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-semibold text-foreground">{requestSummary.rejected}</div>
+                        <div className="text-sm text-muted-foreground">Rejected</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Document requests</CardTitle>
