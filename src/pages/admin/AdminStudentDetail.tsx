@@ -36,12 +36,14 @@ import {
   CheckCircle2,
   Clock,
   Download,
+  Expand,
   Eye,
   FileText,
   GraduationCap,
   Loader2,
   Mail,
   MapPin,
+  Minimize2,
   Phone,
   RotateCcw,
   Trash2,
@@ -171,6 +173,7 @@ const AdminStudentDetail = () => {
 
   // Document preview
   const [previewDoc, setPreviewDoc] = useState<StudentBundle["documents"][0] | null>(null);
+  const [missingDocsExpanded, setMissingDocsExpanded] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
@@ -388,22 +391,57 @@ const AdminStudentDetail = () => {
 
       {/* Missing Required Documents - prominent position */}
       {missingDocuments.length > 0 && (
-        <Card className="border-amber-500/40 bg-amber-500/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
-              <AlertTriangle className="h-4 w-4" /> Missing Required Documents
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {missingDocuments.map((doc) => (
-                <Badge key={doc.type} variant="outline" className="border-amber-500/50 text-amber-400">
-                  {doc.label}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <>
+          <Card className="border-amber-500/40 bg-amber-500/5">
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
+                  <AlertTriangle className="h-4 w-4" /> Missing Required Documents ({missingDocuments.length})
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-500 hover:text-amber-400 h-7 px-2">
+                  <Expand className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {missingDocuments.map((doc) => (
+                  <Badge key={doc.type} variant="outline" className="border-amber-500/50 text-amber-400">
+                    {doc.label}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Dialog open={missingDocsExpanded} onOpenChange={setMissingDocsExpanded}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-amber-500">
+                  <AlertTriangle className="h-5 w-5" /> Missing Required Documents — {studentName}
+                </DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                The following {missingDocuments.length} document{missingDocuments.length > 1 ? "s are" : " is"} required but not yet uploaded. Please request these from the student.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 mt-2">
+                {missingDocuments.map((doc) => (
+                  <Card key={doc.type} className="border-amber-500/30 bg-amber-500/5">
+                    <CardContent className="flex items-center gap-3 p-4">
+                      <div className="rounded-lg bg-amber-500/10 p-2">
+                        <FileText className="h-5 w-5 text-amber-500" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{doc.label}</p>
+                        <p className="text-xs text-muted-foreground">Not uploaded</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
       )}
 
       {/* Tabs */}
