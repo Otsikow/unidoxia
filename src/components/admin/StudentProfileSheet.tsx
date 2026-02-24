@@ -324,16 +324,40 @@ export function StudentProfileSheet({
     if (!adminProfile?.id) return;
     setReviewLoading(true);
     try {
-      const { error } = await supabase
+      const reviewedAt = new Date().toISOString();
+      const reviewPayload =
+        status === "approved"
+          ? {
+              admin_review_status: "ready_for_university_review",
+              admin_reviewed_by: adminProfile.id,
+              admin_reviewed_at: reviewedAt,
+              verified_status: "verified",
+              verified_by: adminProfile.id,
+              verified_at: reviewedAt,
+              university_access_approved: true,
+              university_access_approved_at: reviewedAt,
+              university_access_approved_by: adminProfile.id,
+            }
+          : {
+              admin_review_status: "admin_rejected",
+              admin_reviewed_by: adminProfile.id,
+              admin_reviewed_at: reviewedAt,
+              verified_status: "rejected",
+              verified_by: adminProfile.id,
+              verified_at: reviewedAt,
+              university_access_approved: false,
+              university_access_approved_at: null,
+              university_access_approved_by: null,
+            };
+
+      const { data, error } = await supabase
         .from("student_documents")
-        .update({
-          admin_review_status: status === "approved" ? "ready_for_university_review" : "admin_rejected",
-          admin_reviewed_by: adminProfile.id,
-          admin_reviewed_at: new Date().toISOString(),
-        })
+        .update(reviewPayload)
+        .select("id")
         .eq("id", doc.id);
 
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error("Document review update was not applied");
 
       toast({
         title: `Document ${status}`,
