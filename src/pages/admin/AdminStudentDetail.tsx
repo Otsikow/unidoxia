@@ -42,6 +42,7 @@ import {
   GraduationCap,
   Loader2,
   Mail,
+  Maximize2,
   MapPin,
   Minimize2,
   Phone,
@@ -176,6 +177,7 @@ const AdminStudentDetail = () => {
   const [missingDocsExpanded, setMissingDocsExpanded] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewFullscreen, setPreviewFullscreen] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
 
   // Archive status - check from direct query since RPC doesn't include it
@@ -747,12 +749,39 @@ const AdminStudentDetail = () => {
       </Tabs>
 
       {/* Document Preview Dialog */}
-      <Dialog open={!!previewDoc} onOpenChange={(o) => !o && setPreviewDoc(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+      <Dialog
+        open={!!previewDoc}
+        onOpenChange={(o) => {
+          if (!o) {
+            setPreviewDoc(null);
+            setPreviewFullscreen(false);
+          }
+        }}
+      >
+        <DialogContent
+          className={
+            previewFullscreen
+              ? "h-screen w-screen max-w-none rounded-none border-0 p-4 sm:p-6"
+              : "max-w-4xl max-h-[90vh]"
+          }
+        >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {previewDoc && getDocLabel(previewDoc.document_type)} — {previewDoc?.file_name}
-            </DialogTitle>
+            <div className="flex items-start justify-between gap-3 pr-8">
+              <DialogTitle className="flex items-center gap-2">
+                {previewDoc && getDocLabel(previewDoc.document_type)} — {previewDoc?.file_name}
+              </DialogTitle>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                className="shrink-0"
+                onClick={() => setPreviewFullscreen((prev) => !prev)}
+                aria-label={previewFullscreen ? "Exit full screen preview" : "Enter full screen preview"}
+                title={previewFullscreen ? "Exit full screen" : "Full screen"}
+              >
+                {previewFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            </div>
           </DialogHeader>
           {previewLoading ? (
             <div className="flex items-center justify-center py-16">
@@ -761,9 +790,17 @@ const AdminStudentDetail = () => {
           ) : previewUrl ? (
             <div className="space-y-4">
               {previewDoc?.mime_type?.startsWith("image/") ? (
-                <img src={previewUrl} alt={previewDoc.file_name} className="max-h-[60vh] mx-auto rounded" />
+                <img
+                  src={previewUrl}
+                  alt={previewDoc.file_name}
+                  className={previewFullscreen ? "max-h-[75vh] mx-auto rounded" : "max-h-[60vh] mx-auto rounded"}
+                />
               ) : previewDoc?.mime_type === "application/pdf" ? (
-                <iframe src={previewUrl} className="w-full h-[60vh] rounded border" title="Document Preview" />
+                <iframe
+                  src={previewUrl}
+                  className={previewFullscreen ? "w-full h-[75vh] rounded border" : "w-full h-[60vh] rounded border"}
+                  title="Document Preview"
+                />
               ) : (
                 <div className="text-center py-8">
                   <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
