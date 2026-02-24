@@ -58,7 +58,7 @@ type AddressData = {
 const extractFormData = (student: Tables<'students'>) => {
   const addressData = student.address as AddressData;
   const contactPhoneRaw = student.contact_phone || addressData?.phone || '';
-  const whatsappRaw = addressData?.whatsapp || student.whatsapp_number || addressData?.phone || student.contact_phone || '';
+  const whatsappRaw = addressData?.whatsapp || addressData?.phone || student.contact_phone || '';
   const contactPhone = parseInternationalNumber(contactPhoneRaw);
   const whatsappPhone = parseInternationalNumber(whatsappRaw);
   return {
@@ -159,7 +159,6 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           passport_expiry: formData.passport_expiry,
           contact_email: formData.contact_email,
           contact_phone: fullContactPhone,
-          whatsapp_number: fullWhatsappNumber,
           current_country: formData.current_country,
           preferred_course: formData.preferred_course,
           preferred_study_area: formData.preferred_study_area,

@@ -386,6 +386,26 @@ const AdminStudentDetail = () => {
         </div>
       </div>
 
+      {/* Missing Required Documents - prominent position */}
+      {missingDocuments.length > 0 && (
+        <Card className="border-amber-500/40 bg-amber-500/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
+              <AlertTriangle className="h-4 w-4" /> Missing Required Documents
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {missingDocuments.map((doc) => (
+                <Badge key={doc.type} variant="outline" className="border-amber-500/50 text-amber-400">
+                  {doc.label}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -484,26 +504,6 @@ const AdminStudentDetail = () => {
               )}
             </CardContent>
           </Card>
-
-          {/* Missing Required Documents */}
-          {missingDocuments.length > 0 && (
-            <Card className="border-amber-500/40 bg-amber-500/5">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
-                  <AlertTriangle className="h-4 w-4" /> Missing Required Documents
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {missingDocuments.map((doc) => (
-                    <Badge key={doc.type} variant="outline" className="border-amber-500/50 text-amber-400">
-                      {doc.label}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {isArchived && (
             <Card className="border-amber-500/30">

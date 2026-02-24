@@ -87,7 +87,7 @@ interface StudentProfile {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  whatsapp_number: string | null;
+  
   address: Record<string, any> | null;
   nationality: string | null;
   current_country: string | null;
@@ -212,7 +212,7 @@ export function StudentProfileSheet({
           preferred_name,
           contact_email,
           contact_phone,
-          whatsapp_number,
+          
           address,
           nationality,
           current_country,
@@ -400,7 +400,7 @@ export function StudentProfileSheet({
 
   const studentName = student?.preferred_name || student?.legal_name || student?.profile?.full_name || "Student";
   const studentEmail = student?.contact_email || student?.profile?.email || "";
-  const whatsappNumber = student?.whatsapp_number || (student?.address as any)?.whatsapp || student?.contact_phone || null;
+  const whatsappNumber = (student?.address as any)?.whatsapp || student?.contact_phone || null;
 
   const overallStatus = useMemo(() => {
     if (documentStats.pending > 0) return "review_in_progress";
