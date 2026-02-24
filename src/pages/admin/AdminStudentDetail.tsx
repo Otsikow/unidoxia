@@ -296,8 +296,43 @@ const AdminStudentDetail = () => {
         .select("id")
         .eq("id", doc.id);
 
-      if (error) throw error;
-      if (!data || data.length === 0) throw new Error("Document review update was not applied");
+      const isLegacySchemaError = (err: unknown) => {
+        const candidate = err as { code?: string; message?: string; details?: string } | null;
+        if (!candidate) return false;
+        const errorText = `${candidate.message ?? ""} ${candidate.details ?? ""}`.toLowerCase();
+        return (
+          candidate.code === "42703" ||
+          (errorText.includes("column") && errorText.includes("university_access_approved"))
+        );
+      };
+
+      let appliedData = data;
+      let appliedError = error;
+
+      if (appliedError && isLegacySchemaError(appliedError)) {
+        const fallbackPayload = {
+          admin_review_status: reviewPayload.admin_review_status,
+          admin_reviewed_by: reviewPayload.admin_reviewed_by,
+          admin_reviewed_at: reviewPayload.admin_reviewed_at,
+          verified_status: reviewPayload.verified_status,
+          verified_by: reviewPayload.verified_by,
+          verified_at: reviewPayload.verified_at,
+        };
+
+        const fallbackResult = await supabase
+          .from("student_documents")
+          .update(fallbackPayload)
+          .select("id")
+          .eq("id", doc.id);
+
+        appliedData = fallbackResult.data;
+        appliedError = fallbackResult.error;
+      }
+
+      if (appliedError) throw appliedError;
+      if (!appliedData || appliedData.length === 0) {
+        throw new Error("Document review update was not applied. Please confirm your admin permissions.");
+      }
 
       toast({ title: `Document ${status}`, description: `The document has been ${status}.` });
       setPreviewDoc(null);
