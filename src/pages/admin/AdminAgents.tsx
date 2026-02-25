@@ -5,6 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   AlertTriangle,
   ArrowDownRight,
   ArrowUpRight,
@@ -16,6 +22,7 @@ import {
   Filter,
   Loader2,
   MessageSquare,
+  MoreVertical,
   PauseCircle,
   PoundSterling,
   Send,
@@ -649,13 +656,41 @@ const AdminAgents = () => {
                       </TableCell>
                       <TableCell>{getRelativeTime(agent.lastActivityAt)}</TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1" onClick={(event) => event.stopPropagation()}>
-                          <Button size="sm" variant="outline"><View className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline"><MessageSquare className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline"><PauseCircle className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline"><FileWarning className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline"><CreditCard className="h-3.5 w-3.5" /></Button>
-                          <Button size="sm" variant="outline"><Download className="h-3.5 w-3.5" /></Button>
+                        <div className="flex justify-end" onClick={(event) => event.stopPropagation()}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="icon" variant="ghost" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">Open actions menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuItem>
+                                <View className="mr-2 h-4 w-4" />
+                                View profile
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Send message
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <PauseCircle className="mr-2 h-4 w-4" />
+                                Pause account
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <FileWarning className="mr-2 h-4 w-4" />
+                                Flag compliance
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Payment details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Download className="mr-2 h-4 w-4" />
+                                Download report
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </TableCell>
                     </TableRow>
