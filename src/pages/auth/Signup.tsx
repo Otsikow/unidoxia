@@ -268,6 +268,10 @@ const ALL_COUNTRIES = [
 
 const buildCountryOptions = () => ALL_COUNTRIES;
 
+const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
+
+const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
+
 const Signup = () => {
   const [step, setStep] = useState(1);
   const totalSteps = 3;
@@ -537,6 +541,18 @@ const Signup = () => {
     if (!firstName.trim()) return toast({ variant: "destructive", title: "First name required" }), false;
     if (!lastName.trim()) return toast({ variant: "destructive", title: "Last name required" }), false;
     if (!phone.trim()) return toast({ variant: "destructive", title: "Phone required" }), false;
+
+    if (role === "student") {
+      const normalizedPhone = normalizePhoneNumber(phone.trim());
+      if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
+        return toast({
+          variant: "destructive",
+          title: "Valid WhatsApp number required",
+          description: "Include the country code (for example: +2348012345678).",
+        }), false;
+      }
+    }
+
     if (!country) return toast({ variant: "destructive", title: "Country required" }), false;
     return true;
   };
@@ -587,7 +603,7 @@ const Signup = () => {
         password,
         fullName,
         role,
-        phone,
+        phone: phone.trim(),
         country,
         username,
         referrerId: referrerInfo?.id,
@@ -747,9 +763,18 @@ const Signup = () => {
                 </div>
 
                 <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" /> Phone Number
+                  <Phone className="h-4 w-4" /> {role === "student" ? "WhatsApp Number" : "Phone Number"}
                 </Label>
-                <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={role === "student" ? "e.g. +2348012345678" : undefined}
+                />
+                {role === "student" && (
+                  <p className="text-sm text-muted-foreground">Required with country code (e.g. +1, +44, +234).</p>
+                )}
 
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country
