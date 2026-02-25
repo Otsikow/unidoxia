@@ -51,6 +51,7 @@ import {
   User,
   XCircle,
   AlertCircle,
+  MessageCircle,
 } from "lucide-react";
 import { format } from "date-fns";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
@@ -626,10 +627,30 @@ const AdminStudentDetail = () => {
                 <p className="text-sm text-muted-foreground">Phone</p>
                 <p className="font-medium">
                   {student.contact_phone ? (
-                    <a href={`tel:${student.contact_phone}`} className="text-primary hover:underline flex items-center gap-1">
+                    <a href={`tel:${student.contact_phone}`} className="text-primary hover:underline flex items-center gap-1 cursor-pointer">
                       <Phone className="h-3 w-3" /> {student.contact_phone}
                     </a>
                   ) : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">WhatsApp</p>
+                <p className="font-medium">
+                  {(() => {
+                    const whatsapp = (student.address as any)?.whatsapp || student.contact_phone || null;
+                    if (!whatsapp) return "—";
+                    const digits = whatsapp.replace(/\D/g, "");
+                    return (
+                      <a
+                        href={`https://wa.me/${digits}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-green-500 hover:underline flex items-center gap-1 cursor-pointer"
+                      >
+                        <MessageCircle className="h-3 w-3" /> {whatsapp}
+                      </a>
+                    );
+                  })()}
                 </p>
               </div>
               <div>
