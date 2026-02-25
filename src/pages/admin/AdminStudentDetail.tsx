@@ -179,6 +179,7 @@ const AdminStudentDetail = () => {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewFullscreen, setPreviewFullscreen] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
 
   // Archive status - check from direct query since RPC doesn't include it
   const [archivedAt, setArchivedAt] = useState<string | null>(null);
@@ -342,6 +343,55 @@ const AdminStudentDetail = () => {
       toast({ title: "Error", description: "Failed to update document status", variant: "destructive" });
     } finally {
       setReviewLoading(false);
+    }
+  };
+
+  const handleDeleteRejectedDocument = async (doc: StudentBundle["documents"][0]) => {
+    const isRejected = doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected";
+    if (!isRejected) return;
+
+    const confirmed = window.confirm(`Delete rejected document "${doc.file_name}"? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      setDeletingDocumentId(doc.id);
+
+      if (doc.storage_path) {
+        const { error: storageError } = await supabase.storage
+          .from("student-documents")
+          .remove([doc.storage_path]);
+
+        if (storageError) {
+          console.warn("Failed to remove rejected document from storage", storageError);
+        }
+      }
+
+      const { error: deleteError } = await supabase
+        .from("student_documents")
+        .delete()
+        .eq("id", doc.id);
+
+      if (deleteError) throw deleteError;
+
+      setBundle((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          documents: prev.documents.filter((existingDoc) => existingDoc.id !== doc.id),
+        };
+      });
+
+      if (previewDoc?.id === doc.id) {
+        setPreviewDoc(null);
+        setPreviewUrl(null);
+      }
+
+      toast({ title: "Document deleted", description: "Rejected document deleted successfully." });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error", description: "Failed to delete rejected document", variant: "destructive" });
+    } finally {
+      setDeletingDocumentId(null);
     }
   };
 
@@ -679,6 +729,9 @@ const AdminStudentDetail = () => {
                   ? "Rejected"
                   : "Pending Review";
 
+              const isRejected =
+                doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected";
+
               return (
                 <Card key={doc.id}>
                   <CardContent className="flex items-center justify-between py-4">
@@ -697,6 +750,21 @@ const AdminStudentDetail = () => {
                       <Button variant="outline" size="sm" onClick={() => handlePreview(doc)}>
                         <Eye className="h-4 w-4 mr-1" /> View
                       </Button>
+                      {isRejected && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteRejectedDocument(doc)}
+                          disabled={deletingDocumentId === doc.id}
+                        >
+                          {deletingDocumentId === doc.id ? (
+                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4 mr-1" />
+                          )}
+                          {deletingDocumentId === doc.id ? "Deleting..." : "Delete"}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
