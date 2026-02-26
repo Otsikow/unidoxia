@@ -387,7 +387,7 @@ const ar = {
       heroSubtitle: "نحن نرد عادة خلال يوم عمل واحد.",
       emailPrompt: "تفضل البريد الإلكتروني؟",
       email: "info@unidoxia.com",
-      whatsappCta: "راسلنا عبر واتساب ({{number}})",
+      whatsappCta: "راسلنا عبر واتساب",
       whatsappNumber: "+447360961803",
       imageAlt: "مستشار تعليمي محترف جاهز للمساعدة",
       formTitle: "أرسل لنا رسالة",

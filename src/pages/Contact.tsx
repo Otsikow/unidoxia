@@ -8,7 +8,6 @@ import { SEO } from "@/components/SEO";
 const Contact = () => {
   const { t } = useTranslation();
   const emailAddress = t("pages.contact.email");
-  const whatsappNumber = t("pages.contact.whatsappNumber");
   const whatsappLink = "https://wa.me/447360961803";
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -38,7 +37,7 @@ const Contact = () => {
                   >
                     <MessageCircle className="h-4 w-4" aria-hidden="true" />
                     <span className="font-medium">
-                      {t("pages.contact.whatsappCta", { number: whatsappNumber })}
+                      {t("pages.contact.whatsappCta")}
                     </span>
                   </a>
                 </div>

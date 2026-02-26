@@ -418,7 +418,7 @@ const es = {
       heroSubtitle: "Normalmente respondemos en un día hábil.",
       emailPrompt: "¿Prefieres correo electrónico?",
       email: "info@unidoxia.com",
-      whatsappCta: "Escríbenos por WhatsApp ({{number}})",
+      whatsappCta: "Escríbenos por WhatsApp",
       whatsappNumber: "+447360961803",
       imageAlt: "Asesor educativo profesional listo para ayudar",
       formTitle: "Envíanos un mensaje",
