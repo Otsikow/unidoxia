@@ -595,7 +595,7 @@ const zh = {
       heroSubtitle: "我们通常会在一个工作日内回复。",
       emailPrompt: "更喜欢电子邮件？",
       email: "info@unidoxia.com",
-      whatsappCta: "通过 WhatsApp 联系我们（{{number}}）",
+      whatsappCta: "通过 WhatsApp 联系我们",
       whatsappNumber: "+447360961803",
       imageAlt: "专业教育顾问随时准备提供帮助",
       formTitle: "给我们留言",
