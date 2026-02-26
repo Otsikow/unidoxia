@@ -98,6 +98,7 @@ interface SignUpParams {
   username: string;
   referrerId?: string;
   referrerUsername?: string;
+  referralSource?: string;
 }
 
 interface AuthContextType {
@@ -990,10 +991,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (role === 'student') {
-        await supabase.from('students').insert({
-          tenant_id: tenant.id,
-          profile_id: userId,
-        });
+        const { data: studentRecord, error: studentError } = await supabase
+          .from('students')
+          .insert({
+            tenant_id: tenant.id,
+            profile_id: userId,
+          })
+          .select('id')
+          .single();
+
+        if (studentError) {
+          console.error('Error creating student record:', studentError);
+        } else {
+          const referralSource =
+            typeof user.user_metadata?.referral_source === 'string'
+              ? user.user_metadata.referral_source.trim()
+              : '';
+
+          let referralId: string | null = null;
+          if (referrerProfileId) {
+            const { data: agentRecord, error: agentError } = await supabase
+              .from('agents')
+              .select('id')
+              .eq('profile_id', referrerProfileId)
+              .maybeSingle();
+
+            if (agentError) {
+              console.error('Error resolving referring agent:', agentError);
+            } else if (agentRecord?.id) {
+              const { data: referralRecord, error: referralError } = await supabase
+                .from('referrals')
+                .select('id')
+                .eq('agent_id', agentRecord.id)
+                .eq('active', true)
+                .limit(1)
+                .maybeSingle();
+
+              if (referralError) {
+                console.error('Error resolving referral record for attribution:', referralError);
+              } else {
+                referralId = referralRecord?.id ?? null;
+              }
+            }
+          }
+
+          if (studentRecord?.id && (referralId || referralSource)) {
+            const { error: attributionError } = await supabase.from('attributions').insert({
+              tenant_id: tenant.id,
+              student_id: studentRecord.id,
+              referral_id: referralId,
+              source: referralSource || (referrerUsername ? `Referred by @${referrerUsername}` : null),
+              touch: 'signup',
+              medium: referralId ? 'referral' : 'self-reported',
+            });
+
+            if (attributionError) {
+              console.error('Error creating attribution record:', attributionError);
+            }
+          }
+        }
       } else if (role === 'agent') {
         await supabase.from('agents').insert({
           tenant_id: tenant.id,
@@ -1205,6 +1261,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     username,
     referrerId,
     referrerUsername,
+    referralSource,
   }: SignUpParams) => {
     try {
       const redirectUrl = buildEmailRedirectUrl('/auth/callback');
@@ -1225,6 +1282,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (referrerId) {
         metadata.referrer_id = referrerId;
+      }
+
+      if (referralSource) {
+        metadata.referral_source = referralSource;
       }
 
       const authOptions = {

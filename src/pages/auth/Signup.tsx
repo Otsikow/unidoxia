@@ -298,6 +298,7 @@ const Signup = () => {
   const [referrerInfo, setReferrerInfo] = useState<{ id: string; username: string; full_name?: string } | null>(null);
   const [referrerError, setReferrerError] = useState<string | null>(null);
   const [referrerLoading, setReferrerLoading] = useState(false);
+  const [referralSource, setReferralSource] = useState("");
 
   const [role, setRole] = useState<UserRole>("student");
   const [loading, setLoading] = useState(false);
@@ -554,6 +555,15 @@ const Signup = () => {
     }
 
     if (!country) return toast({ variant: "destructive", title: "Country required" }), false;
+
+    if (role === "student" && referralSource.trim().length > 200) {
+      return toast({
+        variant: "destructive",
+        title: "Referral note is too long",
+        description: "Please keep it under 200 characters.",
+      }), false;
+    }
+
     return true;
   };
   const validateStep3 = () => {
@@ -608,6 +618,7 @@ const Signup = () => {
         username,
         referrerId: referrerInfo?.id,
         referrerUsername: referrerInfo?.username,
+        referralSource: referralSource.trim() || undefined,
       });
 
       if (error) {
@@ -731,6 +742,7 @@ const Signup = () => {
                     </button>
                   ))}
                 </div>
+
               </div>
             )}
 
@@ -791,6 +803,25 @@ const Signup = () => {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {role === "student" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="referralSource" className="flex items-center gap-2">
+                      <AtSign className="h-4 w-4" />
+                      Who referred you, or how did you hear about UniDoxia?
+                    </Label>
+                    <Input
+                      id="referralSource"
+                      value={referralSource}
+                      onChange={(e) => setReferralSource(e.target.value)}
+                      placeholder="e.g. John Doe, Instagram, school counselor"
+                      maxLength={200}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Optional: Share a person's name or the source so we can properly track referrals and reward commission.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
