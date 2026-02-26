@@ -554,7 +554,7 @@ const Signup = () => {
       }
     }
 
-    if (!country) return toast({ variant: "destructive", title: "Country required" }), false;
+    if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
 
     if (role === "student" && referralSource.trim().length > 200) {
       return toast({
@@ -789,11 +789,11 @@ const Signup = () => {
                 )}
 
                 <Label htmlFor="country" className="flex items-center gap-2">
-                  <Globe className="h-4 w-4" /> Country
+                  <Globe className="h-4 w-4" /> Country of Residence
                 </Label>
                 <Select value={country} onValueChange={setCountry}>
                   <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select your country" />
+                    <SelectValue placeholder="Select your country of residence" />
                   </SelectTrigger>
                   <SelectContent className="max-h-[300px]">
                     {countryOptions.map((c) => (
@@ -803,6 +803,9 @@ const Signup = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  This should be the country where you currently live, not your preferred study destination.
+                </p>
 
                 {role === "student" && (
                   <div className="space-y-2">
