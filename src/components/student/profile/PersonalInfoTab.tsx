@@ -11,7 +11,6 @@ import { Loader2, MessageCircle } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
-import { COUNTRIES } from '@/lib/countries';
 import {
   buildInternationalNumber,
   COUNTRY_PHONE_OPTIONS,
@@ -38,6 +37,15 @@ const STUDY_AREAS = [
   'Hospitality & Tourism',
   'Finance & Accounting',
   'Other'
+] as const;
+
+const PREFERRED_COUNTRIES = [
+  'Australia',
+  'Canada',
+  'Germany',
+  'Ireland',
+  'UK',
+  'USA',
 ] as const;
 
 interface PersonalInfoTabProps {
@@ -509,7 +517,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
                 <SelectValue placeholder="Select a country" />
               </SelectTrigger>
               <SelectContent>
-                {COUNTRIES.map((country) => (
+                {PREFERRED_COUNTRIES.map((country) => (
                   <SelectItem key={country} value={country}>
                     {country}
                   </SelectItem>
