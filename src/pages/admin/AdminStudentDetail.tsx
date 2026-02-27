@@ -55,6 +55,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
+import { Checkbox } from "@/components/ui/checkbox";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -181,6 +182,9 @@ const AdminStudentDetail = () => {
   const [previewFullscreen, setPreviewFullscreen] = useState(false);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [deletingDocumentId, setDeletingDocumentId] = useState<string | null>(null);
+  const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
+  const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
 
   // Archive status - check from direct query since RPC doesn't include it
   const [archivedAt, setArchivedAt] = useState<string | null>(null);
@@ -429,6 +433,97 @@ const AdminStudentDetail = () => {
       toast({ title: "Error", description: "Failed to delete rejected document", variant: "destructive" });
     } finally {
       setDeletingDocumentId(null);
+    }
+  };
+
+  /* ------------------------------ Download Actions ------------------------------ */
+
+  const downloadSingleDocument = async (doc: StudentBundle["documents"][0]) => {
+    setDownloadingDocId(doc.id);
+    try {
+      const { data } = await supabase.storage
+        .from("student-documents")
+        .createSignedUrl(doc.storage_path, 3600);
+
+      if (!data?.signedUrl) throw new Error("Failed to generate download URL");
+
+      const response = await fetch(data.signedUrl);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = doc.file_name || `${getDocLabel(doc.document_type)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Error", description: "Failed to download document", variant: "destructive" });
+    } finally {
+      setDownloadingDocId(null);
+    }
+  };
+
+  const handleBulkDownload = async (docsToDownload: StudentBundle["documents"]) => {
+    if (docsToDownload.length === 0) return;
+    setBulkDownloading(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const doc of docsToDownload) {
+      try {
+        const { data } = await supabase.storage
+          .from("student-documents")
+          .createSignedUrl(doc.storage_path, 3600);
+
+        if (!data?.signedUrl) { failCount++; continue; }
+
+        const response = await fetch(data.signedUrl);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = doc.file_name || `${getDocLabel(doc.document_type)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        successCount++;
+
+        // Small delay between downloads to prevent browser blocking
+        if (docsToDownload.indexOf(doc) < docsToDownload.length - 1) {
+          await new Promise((r) => setTimeout(r, 500));
+        }
+      } catch {
+        failCount++;
+      }
+    }
+
+    setBulkDownloading(false);
+    setSelectedDocIds(new Set());
+
+    if (failCount === 0) {
+      toast({ title: "Download complete", description: `${successCount} document${successCount > 1 ? "s" : ""} downloaded successfully.` });
+    } else {
+      toast({ title: "Download partially complete", description: `${successCount} downloaded, ${failCount} failed.`, variant: "destructive" });
+    }
+  };
+
+  const toggleDocSelection = (docId: string) => {
+    setSelectedDocIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(docId)) next.delete(docId);
+      else next.add(docId);
+      return next;
+    });
+  };
+
+  const toggleAllDocs = () => {
+    if (selectedDocIds.size === documents.length) {
+      setSelectedDocIds(new Set());
+    } else {
+      setSelectedDocIds(new Set(documents.map((d) => d.id)));
     }
   };
 
@@ -767,66 +862,134 @@ const AdminStudentDetail = () => {
               </CardContent>
             </Card>
           ) : (
-            documents.map((doc) => {
-              const statusColor =
-                doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
-                  ? "default"
-                  : doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected"
-                  ? "destructive"
-                  : "outline";
-
-              const statusLabel =
-                doc.admin_review_status === "ready_for_university_review"
-                  ? "Approved"
-                  : doc.admin_review_status === "admin_rejected"
-                  ? "Rejected"
-                  : doc.admin_review_status === "approved"
-                  ? "Approved"
-                  : doc.admin_review_status === "rejected"
-                  ? "Rejected"
-                  : "Pending Review";
-
-              const isRejected =
-                doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected";
-
-              return (
-                <Card key={doc.id}>
-                  <CardContent className="flex items-center justify-between py-4">
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium text-sm">{getDocLabel(doc.document_type)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {doc.file_name} • {formatFileSize(doc.file_size)} •{" "}
-                          {format(new Date(doc.created_at), "MMM d, yyyy")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={statusColor}>{statusLabel}</Badge>
-                      <Button variant="outline" size="sm" onClick={() => handlePreview(doc)}>
-                        <Eye className="h-4 w-4 mr-1" /> View
+            <>
+              {/* Bulk Actions Toolbar */}
+              <Card className="border-border/60">
+                <CardContent className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={selectedDocIds.size === documents.length && documents.length > 0}
+                      onCheckedChange={toggleAllDocs}
+                      aria-label="Select all documents"
+                    />
+                    <span className="text-sm text-muted-foreground">
+                      {selectedDocIds.size > 0
+                        ? `${selectedDocIds.size} of ${documents.length} selected`
+                        : `${documents.length} document${documents.length > 1 ? "s" : ""}`}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedDocIds.size > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={bulkDownloading}
+                        onClick={() => handleBulkDownload(documents.filter((d) => selectedDocIds.has(d.id)))}
+                      >
+                        {bulkDownloading ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <Download className="h-4 w-4 mr-1" />
+                        )}
+                        {bulkDownloading ? "Downloading..." : `Download Selected (${selectedDocIds.size})`}
                       </Button>
-                      {isRejected && (
+                    )}
+                    <Button
+                      variant="default"
+                      size="sm"
+                      disabled={bulkDownloading}
+                      onClick={() => handleBulkDownload(documents)}
+                    >
+                      {bulkDownloading ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4 mr-1" />
+                      )}
+                      {bulkDownloading ? "Downloading..." : "Download All"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {documents.map((doc) => {
+                const statusColor =
+                  doc.admin_review_status === "ready_for_university_review" || doc.admin_review_status === "approved"
+                    ? "default"
+                    : doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected"
+                    ? "destructive"
+                    : "outline";
+
+                const statusLabel =
+                  doc.admin_review_status === "ready_for_university_review"
+                    ? "Approved"
+                    : doc.admin_review_status === "admin_rejected"
+                    ? "Rejected"
+                    : doc.admin_review_status === "approved"
+                    ? "Approved"
+                    : doc.admin_review_status === "rejected"
+                    ? "Rejected"
+                    : "Pending Review";
+
+                const isRejected =
+                  doc.admin_review_status === "admin_rejected" || doc.admin_review_status === "rejected";
+
+                return (
+                  <Card key={doc.id}>
+                    <CardContent className="flex items-center justify-between py-4">
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedDocIds.has(doc.id)}
+                          onCheckedChange={() => toggleDocSelection(doc.id)}
+                          aria-label={`Select ${doc.file_name}`}
+                        />
+                        <FileText className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-sm">{getDocLabel(doc.document_type)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {doc.file_name} • {formatFileSize(doc.file_size)} •{" "}
+                            {format(new Date(doc.created_at), "MMM d, yyyy")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={statusColor}>{statusLabel}</Badge>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteRejectedDocument(doc)}
-                          disabled={deletingDocumentId === doc.id}
+                          onClick={() => downloadSingleDocument(doc)}
+                          disabled={downloadingDocId === doc.id}
+                          title="Download document"
                         >
-                          {deletingDocumentId === doc.id ? (
-                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          {downloadingDocId === doc.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
-                            <Trash2 className="h-4 w-4 mr-1" />
+                            <Download className="h-4 w-4" />
                           )}
-                          {deletingDocumentId === doc.id ? "Deleting..." : "Delete"}
                         </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
+                        <Button variant="outline" size="sm" onClick={() => handlePreview(doc)}>
+                          <Eye className="h-4 w-4 mr-1" /> View
+                        </Button>
+                        {isRejected && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteRejectedDocument(doc)}
+                            disabled={deletingDocumentId === doc.id}
+                          >
+                            {deletingDocumentId === doc.id ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 mr-1" />
+                            )}
+                            {deletingDocumentId === doc.id ? "Deleting..." : "Delete"}
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </>
           )}
         </TabsContent>
 
