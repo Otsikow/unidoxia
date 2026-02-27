@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -116,6 +117,7 @@ const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 export default function Documents() {
   const { toast } = useToast();
   const { data: studentRecord, isLoading, error } = useStudentRecord();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,6 +135,22 @@ export default function Documents() {
   const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
   const outstandingFileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingDocType, setPendingDocType] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const uploadType = searchParams.get("upload");
+    if (!uploadType) return;
+
+    const isValidType = DOCUMENT_TYPES.some((type) => type.value === uploadType);
+    if (!isValidType) return;
+
+    setDocumentType(uploadType);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete("upload");
+      return next;
+    }, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   /* ------------------------------------------------------------------------ */
   /*                               Data Loading                               */

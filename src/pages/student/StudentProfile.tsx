@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { PersonalInfoTab } from '@/components/student/profile/PersonalInfoTab';
@@ -436,9 +435,14 @@ export default function StudentProfile() {
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {missingDocuments.map((doc) => (
-                      <Badge key={doc.type} variant="outline" className="border-amber-500 text-amber-600">
+                      <Link
+                        key={doc.type}
+                        to={`/student/documents?upload=${encodeURIComponent(doc.type)}`}
+                        className="inline-flex items-center rounded-full border border-amber-500 px-3 py-1 text-sm font-semibold text-amber-600 transition-all duration-200 hover:bg-amber-500/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        aria-label={`Upload missing document: ${doc.label}`}
+                      >
                         {doc.label}
-                      </Badge>
+                      </Link>
                     ))}
                   </div>
                 </div>
