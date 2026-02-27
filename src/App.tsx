@@ -217,7 +217,7 @@ const StudentLayout = lazyWithErrorHandling(() =>
 const StudentProfile = lazyWithErrorHandling(() =>
   import("./pages/student/StudentProfile")
 );
-// Student onboarding page removed (no longer routed).
+// Student onboarding page removed (legacy path now redirects to profile).
 const Documents = lazyWithErrorHandling(() => import("./pages/student/Documents"));
 const Applications = lazyWithErrorHandling(() =>
   import("./pages/student/Applications")
@@ -658,6 +658,7 @@ const App = () => {
                         {/* STUDENT ROUTES */}
                         <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>
                           <Route index element={<Navigate to="/student/dashboard" replace />} />
+                          <Route path="onboarding" element={<Navigate to="/student/profile" replace />} />
                           <Route path="dashboard" element={<StudentProfile />} />
                           <Route path="profile" element={<StudentProfile />} />
                           <Route path="universities" element={<UniversityDirectory />} />
