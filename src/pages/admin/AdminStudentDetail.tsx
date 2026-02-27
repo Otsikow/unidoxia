@@ -230,6 +230,42 @@ const AdminStudentDetail = () => {
   const studentName =
     student?.preferred_name || student?.legal_name || student?.profile?.full_name || "Unknown Student";
 
+  const parsedName = useMemo(() => {
+    const rawName = (student?.legal_name || student?.profile?.full_name || "").trim();
+
+    if (!rawName) {
+      return {
+        firstName: "—",
+        middleName: "—",
+        surname: "—",
+      };
+    }
+
+    const parts = rawName.split(/\s+/).filter(Boolean);
+
+    if (parts.length === 1) {
+      return {
+        firstName: parts[0],
+        middleName: "—",
+        surname: "—",
+      };
+    }
+
+    if (parts.length === 2) {
+      return {
+        firstName: parts[0],
+        middleName: "—",
+        surname: parts[1],
+      };
+    }
+
+    return {
+      firstName: parts[0],
+      middleName: parts.slice(1, -1).join(" "),
+      surname: parts[parts.length - 1],
+    };
+  }, [student?.legal_name, student?.profile?.full_name]);
+
   const isArchived = !!archivedAt;
 
   const documentStats = useMemo(() => {
@@ -588,16 +624,16 @@ const AdminStudentDetail = () => {
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-muted-foreground">Full Name</p>
-                <p className="font-medium">{student.profile?.full_name ?? "—"}</p>
+                <p className="text-sm text-muted-foreground">First Name</p>
+                <p className="font-medium">{parsedName.firstName}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Legal Name</p>
-                <p className="font-medium">{student.legal_name ?? "—"}</p>
+                <p className="text-sm text-muted-foreground">Middle Name</p>
+                <p className="font-medium">{parsedName.middleName}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Preferred Name</p>
-                <p className="font-medium">{student.preferred_name ?? "—"}</p>
+                <p className="text-sm text-muted-foreground">Surname</p>
+                <p className="font-medium">{parsedName.surname}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Date of Birth</p>
