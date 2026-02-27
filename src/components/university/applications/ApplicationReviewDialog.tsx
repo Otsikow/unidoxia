@@ -405,6 +405,8 @@ const formatFileSize = (bytes: number | null | undefined) => {
   return `${s.toFixed(i === 0 ? 0 : 1)} ${u[i]}`;
 };
 
+const sanitizeFileName = (value: string) => value.replace(/[^a-zA-Z0-9._-]/g, "_");
+
 const formatDocumentType = (type: string | null) => {
   if (!type) return "Document";
   return type
@@ -533,6 +535,7 @@ export function ApplicationReviewDialog({
   // Document signed URLs
   const [documentUrls, setDocumentUrls] = useState<Record<string, string>>({});
   const [loadingUrls, setLoadingUrls] = useState(false);
+  const [bulkDownloading, setBulkDownloading] = useState(false);
 
   // Reset state when application changes
   useEffect(() => {
@@ -662,6 +665,69 @@ export function ApplicationReviewDialog({
 
     void loadSignedUrls();
   }, [open, readyDocuments]);
+
+  const handleBulkDownloadDrafts = useCallback(async () => {
+    if (!readyDocuments.length || bulkDownloading) return;
+
+    setBulkDownloading(true);
+    let downloadedCount = 0;
+
+    try {
+      for (const doc of readyDocuments) {
+        const url = documentUrls[doc.id];
+        if (!url) continue;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${doc.fileName}`);
+        }
+
+        const blob = await response.blob();
+        const objectUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const extension = doc.fileName.includes(".")
+          ? doc.fileName.slice(doc.fileName.lastIndexOf("."))
+          : "";
+        const baseName = doc.fileName.includes(".")
+          ? doc.fileName.slice(0, doc.fileName.lastIndexOf("."))
+          : doc.fileName;
+        const safeType = sanitizeFileName(formatDocumentType(doc.documentType || "document")).toLowerCase();
+        const safeBase = sanitizeFileName(baseName);
+
+        link.href = objectUrl;
+        link.download = `draft_${safeType}_${safeBase}${extension}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(objectUrl);
+        downloadedCount += 1;
+
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+
+      if (downloadedCount === 0) {
+        toast({
+          title: "No files downloaded",
+          description: "Document links are still loading. Please try again in a moment.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Bulk download complete",
+          description: `${downloadedCount} draft document(s) downloaded.`,
+        });
+      }
+    } catch (error) {
+      console.error("Bulk draft download failed:", error);
+      toast({
+        title: "Bulk download failed",
+        description: "Some documents could not be downloaded. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setBulkDownloading(false);
+    }
+  }, [bulkDownloading, documentUrls, readyDocuments, toast]);
 
   const openReview = (doc: ApplicationDocument) => {
     setReviewingDocId(doc.id);
@@ -1993,9 +2059,24 @@ export function ApplicationReviewDialog({
                               {readyDocuments.length} document(s) cleared for university review
                             </CardDescription>
                           </div>
-                          {loadingUrls && (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => void handleBulkDownloadDrafts()}
+                              disabled={readyDocuments.length === 0 || loadingUrls || bulkDownloading}
+                            >
+                              {bulkDownloading ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4 mr-1" />
+                              )}
+                              Bulk Download (Draft)
+                            </Button>
+                            {loadingUrls && (
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent>
