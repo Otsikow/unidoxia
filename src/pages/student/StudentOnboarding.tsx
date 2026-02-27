@@ -55,6 +55,20 @@ const DEFAULT_TENANT_ID = import.meta.env.VITE_DEFAULT_TENANT_ID ?? '00000000-00
 const getRecordTimestamp = (record?: { updated_at: string | null; created_at: string | null } | null) =>
   record?.updated_at ?? record?.created_at ?? null;
 
+const getWhatsappNumberFromStudent = (student: Tables<'students'> | null): string => {
+  if (!student) return '';
+
+  const address = student.address;
+  if (address && typeof address === 'object' && !Array.isArray(address)) {
+    const addressRecord = address as Record<string, unknown>;
+    if (typeof addressRecord.whatsapp === 'string' && addressRecord.whatsapp.trim()) {
+      return addressRecord.whatsapp.trim();
+    }
+  }
+
+  return student.contact_phone?.trim() ?? '';
+};
+
 const buildNavigatorSteps = (
   documents: StudentDocumentSummary[],
   applications: ApplicationSummary[],
@@ -190,6 +204,7 @@ export default function StudentOnboarding() {
   const [navigatorUpdatedAt, setNavigatorUpdatedAt] = useState<string | null>(null);
   const applicationIdsRef = useRef<string[]>([]);
   const [markingOnboarded, setMarkingOnboarded] = useState(false);
+  const hasRequiredWhatsapp = Boolean(getWhatsappNumberFromStudent(student));
 
   const markOnboardingComplete = useCallback(async () => {
     if (!user?.id || profile?.role !== 'student') {
@@ -199,6 +214,16 @@ export default function StudentOnboarding() {
 
     if (profile.onboarded) {
       navigate('/student/dashboard');
+      return;
+    }
+
+    if (!hasRequiredWhatsapp) {
+      toast({
+        title: 'WhatsApp number required',
+        description: 'Please add your WhatsApp number in your profile before completing onboarding.',
+        variant: 'destructive',
+      });
+      navigate('/student/profile');
       return;
     }
 
@@ -229,7 +254,7 @@ export default function StudentOnboarding() {
     } finally {
       setMarkingOnboarded(false);
     }
-  }, [navigate, profile?.role, profile?.onboarded, refreshProfile, toast, user?.id]);
+  }, [hasRequiredWhatsapp, navigate, profile?.role, profile?.onboarded, refreshProfile, toast, user?.id]);
 
   const resolveTenantId = useCallback(async (): Promise<string | null> => {
     try {
@@ -383,11 +408,12 @@ export default function StudentOnboarding() {
         {
           id: 'personal',
           title: 'Complete Personal Information',
-          description: 'Add your legal name, contact details, and passport information',
+          description: 'Add your legal name, WhatsApp number, contact details, and passport information',
           completed: !!(
             currentStudent?.legal_name &&
             currentStudent?.contact_email &&
-            currentStudent?.passport_number
+            currentStudent?.passport_number &&
+            getWhatsappNumberFromStudent(currentStudent)
           ),
           icon: FileText,
           link: '/student/profile',
@@ -591,7 +617,7 @@ export default function StudentOnboarding() {
             <Button
               variant="default"
               onClick={markOnboardingComplete}
-              disabled={markingOnboarded || profile?.onboarded || completeness < 60}
+              disabled={markingOnboarded || profile?.onboarded || completeness < 60 || !hasRequiredWhatsapp}
               className="w-full sm:w-auto"
             >
               {markingOnboarded ? 'Finalizing...' : profile?.onboarded ? 'Onboarding completed' : 'Finish onboarding'}
@@ -620,9 +646,16 @@ export default function StudentOnboarding() {
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Complete all steps below to unlock full access to university applications and features.
-              </p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Complete all steps below to unlock full access to university applications and features.
+                </p>
+                {!hasRequiredWhatsapp && (
+                  <p className="text-sm text-destructive">
+                    Add your WhatsApp number in your profile to finish onboarding.
+                  </p>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>
