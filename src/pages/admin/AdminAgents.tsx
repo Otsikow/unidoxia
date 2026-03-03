@@ -35,15 +35,19 @@ import BackButton from "@/components/BackButton";
 import { InviteAgencyDialog } from "@/components/admin/InviteAgencyDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
 
 type ComplianceStatus = "green" | "amber" | "red";
 type AgentFilter = "all" | "high" | "medium" | "low" | "risk" | "pending" | "highRevenue" | "declining";
 
 interface AgentRecord {
   id: string;
+  profileId: string;
   name: string;
   country: string;
+  phone: string | null;
   totalStudents: number;
   applicationsSubmitted: number;
   offersReceived: number;
@@ -130,6 +134,13 @@ const getRelativeTime = (dateString: string | null) => {
   return `${days}d ago`;
 };
 
+const normalizePhoneForWhatsApp = (phone: string | null) => {
+  if (!phone) return null;
+  const digitsOnly = phone.replace(/[^\d+]/g, "").replace(/^00/, "+");
+  const normalized = digitsOnly.startsWith("+") ? digitsOnly.slice(1) : digitsOnly;
+  return normalized.length >= 7 ? normalized : null;
+};
+
 const getComplianceStatus = (verificationStatus: string | null, hasVerificationDoc: boolean, active: boolean | null): ComplianceStatus => {
   if (!active || verificationStatus === "watchlist") return "red";
   if (verificationStatus === "verified" && hasVerificationDoc) return "green";
@@ -144,6 +155,8 @@ const complianceBadgeClass = {
 
 const AdminAgents = () => {
   const { profile } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<AgentFilter>("all");
@@ -215,6 +228,7 @@ const AdminAgents = () => {
         .from("agents")
         .select(`
           id,
+          profile_id,
           company_name,
           active,
           created_at,
@@ -222,7 +236,8 @@ const AdminAgents = () => {
           verification_document_url,
           profiles:profiles (
             full_name,
-            country
+            country,
+            phone
           )
         `)
         .eq("tenant_id", profile?.tenant_id ?? "")
@@ -365,8 +380,10 @@ const AdminAgents = () => {
 
         return {
           id: agent.id,
+          profileId: agent.profile_id,
           name: agent.company_name || (agent.profiles as { full_name?: string } | null)?.full_name || "Unnamed Agent",
           country: (agent.profiles as { country?: string } | null)?.country || "Unknown",
+          phone: (agent.profiles as { phone?: string | null } | null)?.phone || null,
           totalStudents: referredStudents.length,
           applicationsSubmitted,
           offersReceived,
@@ -470,6 +487,39 @@ const AdminAgents = () => {
   }, [fetchData, profile?.tenant_id]);
 
   const selectedAgent = useMemo(() => agents.find((agent) => agent.id === selectedAgentId) ?? null, [agents, selectedAgentId]);
+
+  const handleMessageAgent = useCallback(
+    (agent: AgentRecord) => {
+      if (!agent.profileId) {
+        toast({
+          title: "Unable to message agent",
+          description: "This agent does not have a linked messaging profile.",
+          variant: "destructive",
+        });
+        return;
+      }
+      navigate(`/dashboard/messages?contact=${encodeURIComponent(agent.profileId)}`);
+    },
+    [navigate, toast]
+  );
+
+  const handleWhatsAppAgent = useCallback(
+    (agent: AgentRecord) => {
+      const phone = normalizePhoneForWhatsApp(agent.phone);
+      if (!phone) {
+        toast({
+          title: "WhatsApp unavailable",
+          description: "No valid phone number is available for this agent.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const text = encodeURIComponent(`Hi ${agent.name}, this is the admin team from Unidoxia.`);
+      window.open(`https://wa.me/${phone}?text=${text}`, "_blank", "noopener,noreferrer");
+    },
+    [toast]
+  );
 
   const filteredAgents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -711,9 +761,13 @@ const AdminAgents = () => {
                                 <View className="mr-2 h-4 w-4" />
                                 View profile
                               </DropdownMenuItem>
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleMessageAgent(agent)}>
                                 <MessageSquare className="mr-2 h-4 w-4" />
                                 Send message
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleWhatsAppAgent(agent)}>
+                                <Send className="mr-2 h-4 w-4" />
+                                WhatsApp
                               </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <PauseCircle className="mr-2 h-4 w-4" />
