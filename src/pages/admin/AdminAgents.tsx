@@ -11,9 +11,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  ArrowUpRight,
+  Filter,
+  AlertTriangle,
+  Hourglass,
   Loader2,
   MessageSquare,
   MoreVertical,
+  Circle,
+  Coins,
+  TrendingDown,
   Send,
   Users,
 } from "lucide-react";
@@ -201,24 +208,128 @@ const AdminAgents = () => {
     );
   }, [agents, searchQuery]);
 
+  const monthlyApplications = useMemo(
+    () => agents.reduce((sum, agent) => sum + agent.applicationsSubmitted, 0),
+    [agents],
+  );
+
+  const monthlyOffers = useMemo(
+    () => agents.reduce((sum, agent) => sum + agent.offersReceived, 0),
+    [agents],
+  );
+
+  const monthlyEnrollments = useMemo(
+    () => agents.reduce((sum, agent) => sum + agent.enrolledStudents, 0),
+    [agents],
+  );
+
+  const agentsWithStudents = useMemo(
+    () => agents.filter((agent) => agent.totalStudents > 0).length,
+    [agents],
+  );
+
+  const totalStudents = useMemo(
+    () => agents.reduce((sum, agent) => sum + agent.totalStudents, 0),
+    [agents],
+  );
+
+  const totalCommissionOwed = useMemo(
+    () => agents.reduce((sum, agent) => sum + agent.commissionOwed, 0),
+    [agents],
+  );
+
+  const totalCommissionPaid = useMemo(
+    () => agents.reduce((sum, agent) => sum + agent.commissionPaid, 0),
+    [agents],
+  );
+
+  const attentionCount = useMemo(
+    () => agents.filter((agent) => agent.complianceStatus !== "green").length,
+    [agents],
+  );
+
+  const metricCards = [
+    { label: "Total active agents", value: agents.filter((agent) => agent.active).length },
+    { label: "Agents with active students", value: agentsWithStudents },
+    { label: "Total students from agents", value: totalStudents },
+    { label: "This month applications", value: monthlyApplications },
+    { label: "This month offers", value: monthlyOffers },
+    { label: "This month enrolments", value: monthlyEnrollments },
+    { label: "Commission owed (this month)", value: formatCurrency(totalCommissionOwed) },
+    { label: "Commission paid (this month)", value: formatCurrency(totalCommissionPaid) },
+    { label: "Agents requiring attention", value: attentionCount },
+  ];
+
+  const performanceBadges = [
+    { label: "All" },
+    { label: "High Performers", icon: <Circle className="h-3.5 w-3.5 fill-blue-500 text-blue-500" /> },
+    { label: "Medium Performers", icon: <Circle className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" /> },
+    { label: "Low Performers", icon: <Circle className="h-3.5 w-3.5 fill-red-500 text-red-500" /> },
+    { label: "At Risk", icon: <AlertTriangle className="h-3.5 w-3.5 text-red-400" /> },
+    { label: "Pending Approval", icon: <Hourglass className="h-3.5 w-3.5 text-amber-300" /> },
+    { label: "High Revenue", icon: <Coins className="h-3.5 w-3.5 text-emerald-300" /> },
+    { label: "Declining Performance", icon: <TrendingDown className="h-3.5 w-3.5 text-sky-300" /> },
+  ];
+
   return (
     <div className="space-y-6 pb-10">
       <BackButton variant="ghost" size="sm" fallback="/admin" />
 
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Agency Network Control Panel</h1>
-        <Button onClick={() => setInviteDialogOpen(true)}>
-          <Users className="h-4 w-4 mr-2" />
+        <div>
+          <h1 className="text-2xl font-semibold">Agency Network Control Panel</h1>
+          <p className="text-muted-foreground">
+            Revenue, conversion, compliance, and intervention command centre.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline">
+            <Filter className="h-4 w-4 mr-2" />
+            Advanced Filters
+          </Button>
+          <Button onClick={() => setInviteDialogOpen(true)}>
+            <Users className="h-4 w-4 mr-2" />
           Invite Agency
-        </Button>
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {metricCards.map((card) => (
+          <Card key={card.label}>
+            <CardHeader className="pb-3">
+              <CardDescription className="uppercase text-xs tracking-widest">{card.label}</CardDescription>
+              <CardTitle className="text-4xl">{card.value}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Badge variant="outline" className="text-emerald-400 border-emerald-500/40 gap-1">
+                <ArrowUpRight className="h-3.5 w-3.5" /> 0%
+              </Badge>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Agents</CardTitle>
-          <CardDescription>Monitor agencies and manage commission.</CardDescription>
+          <CardTitle>Agent Performance Table</CardTitle>
+          <CardDescription>
+            Use this table to monitor conversion, financial risk, compliance, and direct actions in one view.
+          </CardDescription>
+          <div className="flex flex-wrap gap-2">
+            {performanceBadges.map((badge, index) => (
+              <Badge
+                key={badge.label}
+                variant={index === 0 ? "default" : "outline"}
+                className="px-4 py-1.5 rounded-full text-base font-normal gap-2"
+              >
+                {badge.icon}
+                {badge.label}
+              </Badge>
+            ))}
+          </div>
           <Input
-            placeholder="Search agent or country"
+            placeholder="Search agent, country, or ID"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
