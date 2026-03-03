@@ -193,6 +193,33 @@ const AdminStudents = () => {
     });
   }, [searchTerm, students]);
 
+  const studentKpis = useMemo(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const total = students.length;
+    const active = students.filter((student) => student.status !== "archived").length;
+    const archived = total - active;
+    const pendingReview = students.filter((student) =>
+      student.documents.some(
+        (document) => document.admin_review_status === "awaiting_admin_review"
+      )
+    ).length;
+    const joinedThisMonth = students.filter((student) => {
+      if (!student.created_at) return false;
+      return new Date(student.created_at) >= monthStart;
+    }).length;
+
+    return {
+      total,
+      active,
+      archived,
+      pendingReview,
+      joinedThisMonth,
+      visible: filteredStudents.length,
+    };
+  }, [filteredStudents.length, students]);
+
   /* ------------------------------------------------------------------------ */
   /*                                 Fetching                                 */
   /* ------------------------------------------------------------------------ */
@@ -365,6 +392,61 @@ const AdminStudents = () => {
 
       <Card>
         <CardContent className="overflow-x-auto pt-6">
+          <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Total Students</CardDescription>
+                <CardTitle className="text-2xl">{studentKpis.total}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground">{studentKpis.visible} currently visible</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Active Accounts</CardDescription>
+                <CardTitle className="text-2xl">{studentKpis.active}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Students with active records
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Archived</CardDescription>
+                <CardTitle className="text-2xl">{studentKpis.archived}</CardTitle>
+              </CardHeader>
+              <CardContent className="text-xs text-muted-foreground">
+                Hidden from active workflows
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Pending Document Review</CardDescription>
+                <CardTitle className="text-2xl">{studentKpis.pendingReview}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+                <AlertCircle className="h-3.5 w-3.5" />
+                Students waiting for admin review
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardDescription>Joined This Month</CardDescription>
+                <CardTitle className="text-2xl">{studentKpis.joinedThisMonth}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                New student growth
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="relative mb-4 max-w-md">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
