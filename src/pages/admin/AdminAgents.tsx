@@ -59,6 +59,16 @@ interface AgentRecord {
   lastActivityAt: string | null;
   lastMonthConversionRate: number;
   pendingApproval: boolean;
+  referredStudents: ReferredStudentSummary[];
+}
+
+interface ReferredStudentSummary {
+  id: string;
+  fullName: string;
+  email: string;
+  preferredCountry: string;
+  preferredCourse: string;
+  profileCompleteness: number;
 }
 
 interface MetricCard {
@@ -233,6 +243,17 @@ const AdminAgents = () => {
         .select("agent_id, amount_cents, status, created_at, paid_at")
         .eq("tenant_id", profile?.tenant_id ?? "");
 
+      const uniqueStudentIds = Array.from(new Set((applicationsData ?? []).map((app) => app.student_id).filter(Boolean)));
+      const { data: studentsData } = uniqueStudentIds.length
+        ? await supabase
+            .from("students")
+            .select("id, legal_name, preferred_name, contact_email, preferred_country, preferred_course, profile_completeness")
+            .in("id", uniqueStudentIds)
+            .eq("tenant_id", profile?.tenant_id ?? "")
+        : { data: [] };
+
+      const studentsById = Object.fromEntries((studentsData ?? []).map((student) => [student.id, student]));
+
       const now = new Date();
       const currentMonth = getMonthDateRange(now);
       const previousMonth = getMonthDateRange(new Date(now.getFullYear(), now.getMonth() - 1, 1));
@@ -261,7 +282,22 @@ const AdminAgents = () => {
       const transformed: AgentRecord[] = (agentsData ?? []).map((agent) => {
         const agentApplications = appByAgent[agent.id] ?? [];
         const agentCommissions = commissionsByAgent[agent.id] ?? [];
-        const uniqueStudents = new Set(agentApplications.map((item) => item.student_id));
+        const uniqueStudentIdsForAgent = Array.from(new Set(agentApplications.map((item) => item.student_id).filter(Boolean)));
+        const referredStudents: ReferredStudentSummary[] = uniqueStudentIdsForAgent
+          .map((studentId) => {
+            const student = studentsById[studentId];
+            if (!student) return null;
+            return {
+              id: student.id,
+              fullName: student.legal_name || student.preferred_name || "Unnamed student",
+              email: student.contact_email || "No email",
+              preferredCountry: student.preferred_country || "Not specified",
+              preferredCourse: student.preferred_course || "Not specified",
+              profileCompleteness: student.profile_completeness ?? 0,
+            };
+          })
+          .filter((student): student is ReferredStudentSummary => Boolean(student))
+          .sort((a, b) => a.fullName.localeCompare(b.fullName));
 
         const applicationsSubmitted = agentApplications.length;
         const offersReceived = agentApplications.filter((item) => OFFER_STATUSES.has(item.status ?? "")).length;
@@ -331,7 +367,7 @@ const AdminAgents = () => {
           id: agent.id,
           name: agent.company_name || (agent.profiles as { full_name?: string } | null)?.full_name || "Unnamed Agent",
           country: (agent.profiles as { country?: string } | null)?.country || "Unknown",
-          totalStudents: uniqueStudents.size,
+          totalStudents: referredStudents.length,
           applicationsSubmitted,
           offersReceived,
           enrolledStudents,
@@ -346,6 +382,7 @@ const AdminAgents = () => {
           lastActivityAt: latestActivity,
           lastMonthConversionRate,
           pendingApproval,
+          referredStudents,
         };
       });
 
@@ -510,6 +547,11 @@ const AdminAgents = () => {
       },
     ];
   }, [agents, monthlySummary.commissionOwedCurrent]);
+
+  const referralLeaderboard = useMemo(
+    () => [...agents].sort((a, b) => b.totalStudents - a.totalStudents || b.conversionRate - a.conversionRate).slice(0, 8),
+    [agents]
+  );
 
   const smartFilters: { label: string; value: AgentFilter }[] = [
     { label: "All", value: "all" },
@@ -775,6 +817,45 @@ const AdminAgents = () => {
                     </CardContent>
                   </Card>
                 </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Referred Students & Profiles</CardTitle>
+                    <CardDescription>
+                      {selectedAgent.referredStudents.length} referred students linked to this agent for tracking, reporting, and commission review.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedAgent.referredStudents.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No referred students have been linked to this agent yet.</p>
+                    ) : (
+                      <div className="overflow-x-auto rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Student Name</TableHead>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Preferred Country</TableHead>
+                              <TableHead>Preferred Course</TableHead>
+                              <TableHead className="text-right">Profile Complete</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedAgent.referredStudents.map((student) => (
+                              <TableRow key={student.id}>
+                                <TableCell className="font-medium">{student.fullName}</TableCell>
+                                <TableCell>{student.email}</TableCell>
+                                <TableCell>{student.preferredCountry}</TableCell>
+                                <TableCell>{student.preferredCourse}</TableCell>
+                                <TableCell className="text-right">{student.profileCompleteness}%</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </CardContent>
@@ -782,24 +863,50 @@ const AdminAgents = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Automated Insights</CardTitle>
-            <CardDescription>AI-led prompts for proactive intervention and revenue control.</CardDescription>
+            <CardTitle>Referral Performance Comparison</CardTitle>
+            <CardDescription>Quickly compare referral output across agents and identify leaders or support needs.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {insights.map((insight) => (
-              <div key={insight.id} className="rounded-lg border p-3 text-sm">
-                <div className="flex items-start gap-2">
-                  {insight.tone === "positive" ? (
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-400" />
-                  ) : insight.tone === "warning" ? (
-                    <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-400" />
-                  ) : (
-                    <ShieldAlert className="mt-0.5 h-4 w-4 text-red-400" />
-                  )}
-                  <p>{insight.text}</p>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              {insights.map((insight) => (
+                <div key={insight.id} className="rounded-lg border p-3 text-sm">
+                  <div className="flex items-start gap-2">
+                    {insight.tone === "positive" ? (
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-400" />
+                    ) : insight.tone === "warning" ? (
+                      <AlertTriangle className="mt-0.5 h-4 w-4 text-amber-400" />
+                    ) : (
+                      <ShieldAlert className="mt-0.5 h-4 w-4 text-red-400" />
+                    )}
+                    <p>{insight.text}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="overflow-x-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Agent</TableHead>
+                    <TableHead className="text-right">Referred Students</TableHead>
+                    <TableHead className="text-right">Conversion</TableHead>
+                    <TableHead className="text-right">Commission Owed</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {referralLeaderboard.map((agent) => (
+                    <TableRow key={agent.id}>
+                      <TableCell className="font-medium">{agent.name}</TableCell>
+                      <TableCell className="text-right">{agent.totalStudents}</TableCell>
+                      <TableCell className="text-right">{agent.conversionRate}%</TableCell>
+                      <TableCell className="text-right">{formatCurrency(agent.commissionOwed)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
             <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
               <ShieldCheck className="mb-2 h-4 w-4 text-sky-300" />
               Performance score formula: 28% conversion, 10% response speed, 14% quality, 18% compliance, 20% revenue, 10% offer-to-enrolment.
