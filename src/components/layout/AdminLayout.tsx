@@ -34,6 +34,7 @@ import {
   Handshake,
   ScrollText,
   Home,
+  Megaphone,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -230,6 +231,14 @@ const NAV_GROUPS: NavGroup[] = [
         labelDefault: "Notifications",
         descriptionDefault: "System alerts",
         icon: Bell,
+      },
+      {
+        to: "/admin/broadcast",
+        labelKey: "admin.layout.navigation.broadcast.label",
+        descriptionKey: "admin.layout.navigation.broadcast.description",
+        labelDefault: "Communications / Broadcast Centre",
+        descriptionDefault: "Email & WhatsApp announcements",
+        icon: Megaphone,
       },
       {
         to: "/admin/logs",
