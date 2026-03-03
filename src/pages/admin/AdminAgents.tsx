@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { InviteAgencyDialog } from "@/components/admin/InviteAgencyDialog";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -50,6 +51,7 @@ interface AgentRecord {
   enrolledStudents: number;
   conversionRate: number;
   revenueGenerated: number;
+  commissionRate: number;
   commissionOwed: number;
   commissionPaid: number;
   complianceStatus: ComplianceStatus;
@@ -143,6 +145,7 @@ const complianceBadgeClass = {
 };
 
 const AdminAgents = () => {
+  const { toast } = useToast();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
@@ -151,6 +154,8 @@ const AdminAgents = () => {
   const [agents, setAgents] = useState<AgentRecord[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [commissionDrafts, setCommissionDrafts] = useState<Record<string, string>>({});
+  const [savingCommissionId, setSavingCommissionId] = useState<string | null>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const [monthlySummary, setMonthlySummary] = useState({
@@ -220,6 +225,7 @@ const AdminAgents = () => {
           created_at,
           verification_status,
           verification_document_url,
+          commission_rate_l1,
           profiles:profiles (
             full_name,
             country
@@ -315,6 +321,8 @@ const AdminAgents = () => {
         const commissionPaid =
           agentCommissions.filter((item) => item.status === "paid").reduce((sum, item) => sum + item.amount_cents / 100, 0) ?? 0;
 
+        const commissionRate = Number(agent.commission_rate_l1 ?? 0);
+
         const latestActivity = [
           ...agentApplications.map((item) => item.submitted_at || item.created_at),
           ...agentCommissions.map((item) => item.paid_at || item.created_at),
@@ -373,6 +381,7 @@ const AdminAgents = () => {
           enrolledStudents,
           conversionRate,
           revenueGenerated,
+          commissionRate,
           commissionOwed,
           commissionPaid,
           complianceStatus,
@@ -432,6 +441,13 @@ const AdminAgents = () => {
       });
 
       setAgents(transformed);
+      setCommissionDrafts((current) => {
+        const next: Record<string, string> = {};
+        transformed.forEach((agent) => {
+          next[agent.id] = current[agent.id] ?? agent.commissionRate.toFixed(2);
+        });
+        return next;
+      });
       setSelectedAgentId((current) => current ?? transformed[0]?.id ?? null);
       setLastUpdated(new Date());
     } catch (error) {
@@ -515,6 +531,52 @@ const AdminAgents = () => {
       { key: "attention", label: "Agents Requiring Attention", value: attentionNow, previousValue: previousAttention, onClick: () => setSelectedFilter("risk") },
     ];
   }, [agents, monthlySummary]);
+
+  const handleCommissionRateSave = useCallback(
+    async (agentId: string) => {
+      const rawValue = commissionDrafts[agentId] ?? "0";
+      const parsedValue = Number(rawValue);
+
+      if (!Number.isFinite(parsedValue) || parsedValue < 0) {
+        toast({
+          title: "Invalid commission rate",
+          description: "Please enter a valid non-negative number.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const roundedValue = Math.round(parsedValue * 100) / 100;
+
+      setSavingCommissionId(agentId);
+      const previousAgents = agents;
+      setAgents((current) =>
+        current.map((agent) => (agent.id === agentId ? { ...agent, commissionRate: roundedValue } : agent))
+      );
+
+      const { error } = await supabase.from("agents").update({ commission_rate_l1: roundedValue }).eq("id", agentId);
+
+      if (error) {
+        console.error("Failed to update commission rate", error);
+        setAgents(previousAgents);
+        toast({
+          title: "Save failed",
+          description: "We couldn't update the commission rate right now.",
+          variant: "destructive",
+        });
+        setSavingCommissionId(null);
+        return;
+      }
+
+      setCommissionDrafts((current) => ({ ...current, [agentId]: roundedValue.toFixed(2) }));
+      toast({
+        title: "Commission rate updated",
+        description: "The agent commission setting has been saved.",
+      });
+      setSavingCommissionId(null);
+    },
+    [agents, commissionDrafts, toast]
+  );
 
   const insights: InsightItem[] = useMemo(() => {
     const declining = agents.filter((agent) => agent.conversionRate + 4 < agent.lastMonthConversionRate).length;
@@ -647,6 +709,7 @@ const AdminAgents = () => {
                   <TableHead className="text-right">Enrolled</TableHead>
                   <TableHead className="text-right">Conversion Rate</TableHead>
                   <TableHead className="text-right">Revenue Generated</TableHead>
+                  <TableHead className="text-right">Commission Rate</TableHead>
                   <TableHead className="text-right">Commission Owed</TableHead>
                   <TableHead>Compliance</TableHead>
                   <TableHead className="text-right">Risk Score</TableHead>
@@ -658,13 +721,13 @@ const AdminAgents = () => {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8">
+                    <TableCell colSpan={15} className="text-center py-8">
                       <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading agents...
                     </TableCell>
                   </TableRow>
                 ) : filteredAgents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={14} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={15} className="text-center py-8 text-muted-foreground">
                       No agents match the selected criteria.
                     </TableCell>
                   </TableRow>
@@ -683,6 +746,33 @@ const AdminAgents = () => {
                       <TableCell className="text-right">{agent.enrolledStudents}</TableCell>
                       <TableCell className="text-right font-semibold text-sky-300">{agent.conversionRate}%</TableCell>
                       <TableCell className="text-right font-semibold text-emerald-300">{formatCurrency(agent.revenueGenerated)}</TableCell>
+                      <TableCell className="text-right" onClick={(event) => event.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-2">
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={commissionDrafts[agent.id] ?? agent.commissionRate.toFixed(2)}
+                            onChange={(event) =>
+                              setCommissionDrafts((current) => ({
+                                ...current,
+                                [agent.id]: event.target.value,
+                              }))
+                            }
+                            className="h-8 w-24 text-right"
+                            aria-label={`Commission rate for ${agent.name}`}
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8"
+                            onClick={() => void handleCommissionRateSave(agent.id)}
+                            disabled={savingCommissionId === agent.id}
+                          >
+                            {savingCommissionId === agent.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                          </Button>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">{formatCurrency(agent.commissionOwed)}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={complianceBadgeClass[agent.complianceStatus]}>
