@@ -35,7 +35,9 @@ import BackButton from "@/components/BackButton";
 import { InviteAgencyDialog } from "@/components/admin/InviteAgencyDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { useNavigate } from "react-router-dom";
 
 type ComplianceStatus = "green" | "amber" | "red";
 type AgentFilter = "all" | "high" | "medium" | "low" | "risk" | "pending" | "highRevenue" | "declining";
@@ -44,6 +46,8 @@ interface AgentRecord {
   id: string;
   name: string;
   country: string;
+  email: string | null;
+  active: boolean;
   totalStudents: number;
   applicationsSubmitted: number;
   offersReceived: number;
@@ -144,12 +148,15 @@ const complianceBadgeClass = {
 
 const AdminAgents = () => {
   const { profile } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<AgentFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [agents, setAgents] = useState<AgentRecord[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<"message" | "suspend" | "commission" | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const channelRef = useRef<RealtimeChannel | null>(null);
 
@@ -222,7 +229,8 @@ const AdminAgents = () => {
           verification_document_url,
           profiles:profiles (
             full_name,
-            country
+            country,
+            email
           )
         `)
         .eq("tenant_id", profile?.tenant_id ?? "")
@@ -367,6 +375,8 @@ const AdminAgents = () => {
           id: agent.id,
           name: agent.company_name || (agent.profiles as { full_name?: string } | null)?.full_name || "Unnamed Agent",
           country: (agent.profiles as { country?: string } | null)?.country || "Unknown",
+          email: (agent.profiles as { email?: string } | null)?.email ?? null,
+          active: Boolean(agent.active),
           totalStudents: referredStudents.length,
           applicationsSubmitted,
           offersReceived,
@@ -470,6 +480,105 @@ const AdminAgents = () => {
   }, [fetchData, profile?.tenant_id]);
 
   const selectedAgent = useMemo(() => agents.find((agent) => agent.id === selectedAgentId) ?? null, [agents, selectedAgentId]);
+
+  const handleSendMessage = useCallback(async () => {
+    if (!selectedAgent) return;
+    if (!selectedAgent.email) {
+      toast({
+        title: "No contact email",
+        description: "This agent does not have an email address on file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setActionLoading("message");
+    try {
+      const subject = encodeURIComponent(`UniDoxia update for ${selectedAgent.name}`);
+      window.location.href = `mailto:${selectedAgent.email}?subject=${subject}`;
+      toast({
+        title: "Email composer opened",
+        description: `Ready to contact ${selectedAgent.name}.`,
+      });
+      navigate("/admin/tools/chat-console");
+    } finally {
+      setActionLoading(null);
+    }
+  }, [navigate, selectedAgent, toast]);
+
+  const handleToggleAgentStatus = useCallback(async () => {
+    if (!selectedAgent) return;
+
+    setActionLoading("suspend");
+    const nextState = !selectedAgent.active;
+    const previousAgents = agents;
+    setAgents((current) => current.map((agent) => (agent.id === selectedAgent.id ? { ...agent, active: nextState } : agent)));
+
+    const { error } = await supabase.from("agents").update({ active: nextState }).eq("id", selectedAgent.id);
+
+    if (error) {
+      console.error("Failed to update agent status", error);
+      setAgents(previousAgents);
+      toast({
+        title: "Update failed",
+        description: "We couldn't update the agent status. Please try again.",
+        variant: "destructive",
+      });
+      setActionLoading(null);
+      return;
+    }
+
+    toast({
+      title: nextState ? "Agent reactivated" : "Agent suspended",
+      description: `${selectedAgent.name} is now ${nextState ? "active" : "inactive"}.`,
+    });
+
+    await fetchData();
+    setActionLoading(null);
+  }, [agents, fetchData, selectedAgent, toast]);
+
+  const handlePayCommission = useCallback(async () => {
+    if (!selectedAgent || !profile?.tenant_id) return;
+    if (selectedAgent.commissionOwed <= 0) {
+      toast({
+        title: "Nothing to pay",
+        description: "This agent has no pending or approved commission balance.",
+      });
+      return;
+    }
+
+    setActionLoading("commission");
+    const { data, error } = await supabase
+      .from("commissions")
+      .update({ status: "paid", paid_at: new Date().toISOString() })
+      .eq("tenant_id", profile.tenant_id)
+      .eq("agent_id", selectedAgent.id)
+      .in("status", ["pending", "approved"])
+      .select("id");
+
+    if (error) {
+      console.error("Failed to pay commissions", error);
+      toast({
+        title: "Payment failed",
+        description: "We couldn't mark commissions as paid. Please try again.",
+        variant: "destructive",
+      });
+      setActionLoading(null);
+      return;
+    }
+
+    const paidCount = data?.length ?? 0;
+    toast({
+      title: paidCount > 0 ? "Commission paid" : "No open commissions",
+      description:
+        paidCount > 0
+          ? `Marked ${paidCount} commission entr${paidCount === 1 ? "y" : "ies"} as paid for ${selectedAgent.name}.`
+          : "No pending or approved commission entries were found to pay.",
+    });
+
+    await fetchData();
+    setActionLoading(null);
+  }, [fetchData, profile?.tenant_id, selectedAgent, toast]);
 
   const filteredAgents = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -810,9 +919,18 @@ const AdminAgents = () => {
                     <CardContent className="space-y-3 text-sm">
                       <p className="text-muted-foreground">{selectedAgent.performanceInsight}</p>
                       <div className="flex flex-wrap gap-2">
-                        <Button size="sm" className="gap-2"><Send className="h-3.5 w-3.5" />Send Message</Button>
-                        <Button size="sm" variant="outline" className="gap-2"><PauseCircle className="h-3.5 w-3.5" />Suspend Agent</Button>
-                        <Button size="sm" variant="outline" className="gap-2"><PoundSterling className="h-3.5 w-3.5" />Pay Commission</Button>
+                        <Button size="sm" className="gap-2" onClick={() => void handleSendMessage()} disabled={actionLoading !== null || !selectedAgent.email}>
+                          {actionLoading === "message" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                          Send Message
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-2" onClick={() => void handleToggleAgentStatus()} disabled={actionLoading !== null}>
+                          {actionLoading === "suspend" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PauseCircle className="h-3.5 w-3.5" />}
+                          {selectedAgent.active ? "Suspend Agent" : "Reactivate Agent"}
+                        </Button>
+                        <Button size="sm" variant="outline" className="gap-2" onClick={() => void handlePayCommission()} disabled={actionLoading !== null || selectedAgent.commissionOwed <= 0}>
+                          {actionLoading === "commission" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <PoundSterling className="h-3.5 w-3.5" />}
+                          Pay Commission
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
