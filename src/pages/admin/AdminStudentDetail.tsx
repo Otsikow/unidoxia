@@ -1215,6 +1215,16 @@ const AdminStudentDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Chat Dialog */}
+      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+        <DialogContent className="max-w-2xl p-0" hideClose>
+          <AdminStudentChat
+            studentProfileId={student.profile_id}
+            studentName={studentName}
+            onClose={() => setChatOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
