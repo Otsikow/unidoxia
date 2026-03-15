@@ -52,7 +52,9 @@ import {
   XCircle,
   AlertCircle,
   MessageCircle,
+  MessageSquare,
 } from "lucide-react";
+import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { format } from "date-fns";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -189,6 +191,7 @@ const AdminStudentDetail = () => {
   // Archive status - check from direct query since RPC doesn't include it
   const [archivedAt, setArchivedAt] = useState<string | null>(null);
   const [archiveReason, setArchiveReason] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   /* ------------------------------ Data Load ------------------------------ */
 
@@ -620,6 +623,9 @@ const AdminStudentDetail = () => {
           {isArchived && <Badge variant="secondary">Archived</Badge>}
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setChatOpen(true)}>
+            <MessageSquare className="h-4 w-4 mr-2" /> Chat
+          </Button>
           {isArchived ? (
             <Button variant="outline" onClick={() => setRestoreDialogOpen(true)}>
               <RotateCcw className="h-4 w-4 mr-2" /> Restore
@@ -1209,6 +1215,16 @@ const AdminStudentDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Chat Dialog */}
+      <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+        <DialogContent className="max-w-2xl p-0" hideClose>
+          <AdminStudentChat
+            studentProfileId={student.profile_id}
+            studentName={studentName}
+            onClose={() => setChatOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
