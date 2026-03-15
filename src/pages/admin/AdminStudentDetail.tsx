@@ -623,6 +623,9 @@ const AdminStudentDetail = () => {
           {isArchived && <Badge variant="secondary">Archived</Badge>}
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setChatOpen(true)}>
+            <MessageSquare className="h-4 w-4 mr-2" /> Chat
+          </Button>
           {isArchived ? (
             <Button variant="outline" onClick={() => setRestoreDialogOpen(true)}>
               <RotateCcw className="h-4 w-4 mr-2" /> Restore
