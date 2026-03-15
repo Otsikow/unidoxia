@@ -191,6 +191,7 @@ const AdminStudentDetail = () => {
   // Archive status - check from direct query since RPC doesn't include it
   const [archivedAt, setArchivedAt] = useState<string | null>(null);
   const [archiveReason, setArchiveReason] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   /* ------------------------------ Data Load ------------------------------ */
 
