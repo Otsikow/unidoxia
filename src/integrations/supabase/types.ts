@@ -3357,6 +3357,7 @@ export type Database = {
           id: string
         }[]
       }
+      send_profile_completion_reminders: { Args: never; Returns: number }
       university_update_application_status: {
         Args: { p_application_id: string; p_notes?: string; p_status: string }
         Returns: Json
