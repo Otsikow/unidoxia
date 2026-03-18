@@ -629,11 +629,62 @@ export default function Documents() {
   };
 
   /* ------------------------------------------------------------------------ */
+  /*                       Personal Info Completeness                         */
+  /* ------------------------------------------------------------------------ */
+
+  const missingPersonalFields = useMemo(() => {
+    const missing: string[] = [];
+    if (!studentRecord) return missing;
+
+    if (!studentRecord.legal_name?.trim()) missing.push("Full Name");
+    if (!studentRecord.contact_email?.trim() && !profile?.email) missing.push("Email Address");
+    if (!studentRecord.contact_phone?.trim() && !profile?.phone) missing.push("Phone Number");
+    if (!studentRecord.date_of_birth) missing.push("Date of Birth");
+    if (!studentRecord.nationality?.trim()) missing.push("Nationality");
+    if (!studentRecord.current_country?.trim()) missing.push("Current Country");
+
+    return missing;
+  }, [studentRecord, profile]);
+
+  const isPersonalInfoComplete = missingPersonalFields.length === 0;
+
+  /* ------------------------------------------------------------------------ */
   /*                                   UI                                     */
   /* ------------------------------------------------------------------------ */
 
   if (loading) {
     return <div className="text-center py-10">Loading documents…</div>;
+  }
+
+  if (!isPersonalInfoComplete && studentRecord) {
+    return (
+      <div className="container mx-auto py-8 max-w-3xl space-y-6">
+        <h1 className="text-3xl font-bold">My Documents</h1>
+        <Alert variant="destructive" className="border-destructive/40 bg-destructive/5">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="text-lg font-semibold">
+            Complete Your Personal Information First
+          </AlertTitle>
+          <AlertDescription className="mt-2 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Before you can upload documents, please complete the following required fields in your profile:
+            </p>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              {missingPersonalFields.map((field) => (
+                <li key={field}>{field}</li>
+              ))}
+            </ul>
+            <div className="pt-2">
+              <Button asChild>
+                <Link to="/student/profile">
+                  Go to My Profile
+                </Link>
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
   }
 
   return (
