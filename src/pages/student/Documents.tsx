@@ -1,9 +1,12 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
+import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 import {
   Card,
