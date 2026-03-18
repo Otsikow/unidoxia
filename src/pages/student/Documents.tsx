@@ -120,6 +120,7 @@ const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
 export default function Documents() {
   const { toast } = useToast();
   const { data: studentRecord, isLoading, error } = useStudentRecord();
+  const { profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
