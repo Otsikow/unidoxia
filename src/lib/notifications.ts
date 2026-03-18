@@ -143,6 +143,7 @@ export const NotificationTypes = {
   MESSAGE: 'message' as const,
   COMMISSION: 'commission' as const,
   COURSE_RECOMMENDATION: 'course_recommendation' as const,
+  PROFILE_REMINDER: 'profile_reminder' as const,
   GENERAL: 'general' as const,
 };
 
