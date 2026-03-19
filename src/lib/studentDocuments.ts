@@ -13,11 +13,21 @@ export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
     label: 'Academic Certificate',
     acceptableTypes: ['degree_certificate', 'academic_certificate', 'certificate'],
   },
+  {
+    type: 'wassce_waec',
+    label: 'WASSCE / WAEC Results (incl. English Language)',
+    acceptableTypes: ['wassce_waec', 'wassce', 'waec', 'secondary_school_results'],
+  },
   { type: 'sop', label: 'Statement of Purpose', acceptableTypes: ['sop', 'personal_statement'] },
   {
-    type: 'reference_letter',
-    label: 'Letter of Reference',
-    acceptableTypes: ['lor', 'recommendation_letter', 'reference_letter', 'letter_of_reference'],
+    type: 'reference_letter_1',
+    label: 'Letter of Reference (1st)',
+    acceptableTypes: ['lor', 'recommendation_letter', 'reference_letter', 'letter_of_reference', 'reference_letter_1'],
+  },
+  {
+    type: 'reference_letter_2',
+    label: 'Letter of Reference (2nd)',
+    acceptableTypes: ['reference_letter_2'],
   },
   { type: 'cv', label: 'CV / Resume', acceptableTypes: ['cv'] },
   {
