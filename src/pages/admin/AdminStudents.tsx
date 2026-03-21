@@ -297,6 +297,7 @@ const AdminStudents = () => {
       const mapped = (data ?? []).map((s: any) => ({
         ...s,
         status: s.archived_at ? "archived" : "active",
+        operationalStatus: deriveStudentStatus(s),
       }));
 
       setStudents(mapped as StudentWithDocuments[]);
