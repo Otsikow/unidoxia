@@ -543,11 +543,17 @@ const AdminStudents = () => {
                         {student.current_country ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {isArchived ? (
-                          <Badge variant="secondary">Archived</Badge>
-                        ) : (
-                          <Badge variant="outline">Active</Badge>
-                        )}
+                        {(() => {
+                          const meta = getStudentStatusMeta(student.operationalStatus);
+                          return (
+                            <Badge
+                              variant={meta.variant}
+                              className={meta.className}
+                            >
+                              {meta.label}
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         {student.created_at
