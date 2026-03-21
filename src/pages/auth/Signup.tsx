@@ -541,17 +541,16 @@ const Signup = () => {
   const validateStep2 = () => {
     if (!firstName.trim()) return toast({ variant: "destructive", title: "First name required" }), false;
     if (!lastName.trim()) return toast({ variant: "destructive", title: "Last name required" }), false;
-    if (!phone.trim()) return toast({ variant: "destructive", title: "Phone required" }), false;
+    if (!phone.trim()) return toast({ variant: "destructive", title: "Phone / WhatsApp number required", description: "Please enter your phone number with country code." }), false;
 
-    if (role === "student") {
-      const normalizedPhone = normalizePhoneNumber(phone.trim());
-      if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
-        return toast({
-          variant: "destructive",
-          title: "Valid WhatsApp number required",
-          description: "Include the country code (for example: +2348012345678).",
-        }), false;
-      }
+    // Validate phone format with country code for ALL roles
+    const normalizedPhone = normalizePhoneNumber(phone.trim());
+    if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
+      return toast({
+        variant: "destructive",
+        title: role === "student" ? "Valid WhatsApp number required" : "Valid phone number required",
+        description: "Include the country code (for example: +2348012345678, +447123456789).",
+      }), false;
     }
 
     if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
@@ -572,7 +571,8 @@ const Signup = () => {
     if (usernameError && usernameCheckAvailable) {
       return toast({ variant: "destructive", title: "Username unavailable", description: usernameError }), false;
     }
-    if (!email.includes("@")) return toast({ variant: "destructive", title: "Invalid email" }), false;
+    if (!email.trim()) return toast({ variant: "destructive", title: "Email address required", description: "Please enter a valid email address." }), false;
+    if (!email.includes("@") || !email.includes(".")) return toast({ variant: "destructive", title: "Invalid email", description: "Please enter a valid email address (e.g. name@example.com)." }), false;
     
     // Validate password strength using passwordSchema
     const passwordResult = passwordSchema.safeParse(password);
@@ -776,17 +776,21 @@ const Signup = () => {
 
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone className="h-4 w-4" /> {role === "student" ? "WhatsApp Number" : "Phone Number"}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="phone"
                   type="tel"
+                  required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={role === "student" ? "e.g. +2348012345678" : undefined}
+                  placeholder={role === "student" ? "e.g. +2348012345678" : "e.g. +44123456789"}
                 />
-                {role === "student" && (
-                  <p className="text-sm text-muted-foreground">Required with country code (e.g. +1, +44, +234).</p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {role === "student" 
+                    ? "Required with country code (e.g. +1, +44, +234). We will contact you on WhatsApp." 
+                    : "Required with country code (e.g. +1, +44, +234)."}
+                </p>
 
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence
@@ -852,8 +856,9 @@ const Signup = () => {
 
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" /> Email Address
+                  <span className="text-destructive">*</span>
                 </Label>
-                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" />
 
                 <Label htmlFor="password" className="flex items-center gap-2">
                   <Lock className="h-4 w-4" /> Password
