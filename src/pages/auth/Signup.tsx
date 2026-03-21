@@ -571,7 +571,8 @@ const Signup = () => {
     if (usernameError && usernameCheckAvailable) {
       return toast({ variant: "destructive", title: "Username unavailable", description: usernameError }), false;
     }
-    if (!email.includes("@")) return toast({ variant: "destructive", title: "Invalid email" }), false;
+    if (!email.trim()) return toast({ variant: "destructive", title: "Email address required", description: "Please enter a valid email address." }), false;
+    if (!email.includes("@") || !email.includes(".")) return toast({ variant: "destructive", title: "Invalid email", description: "Please enter a valid email address (e.g. name@example.com)." }), false;
     
     // Validate password strength using passwordSchema
     const passwordResult = passwordSchema.safeParse(password);
