@@ -856,8 +856,9 @@ const Signup = () => {
 
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" /> Email Address
+                  <span className="text-destructive">*</span>
                 </Label>
-                <Input id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" />
 
                 <Label htmlFor="password" className="flex items-center gap-2">
                   <Lock className="h-4 w-4" /> Password
