@@ -465,15 +465,39 @@ const AdminStudents = () => {
             </Card>
           </div>
 
-          <div className="relative mb-4 max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search by student name, country, or email"
-              className="pl-9"
-              aria-label="Search students"
-            />
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="relative max-w-md flex-1 min-w-[200px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search by student name, country, or email"
+                className="pl-9"
+                aria-label="Search students"
+              />
+            </div>
+            <Select value={studentStatusFilter} onValueChange={setStudentStatusFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                {STUDENT_STATUS_FILTER_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {studentStatusFilter !== "all" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setStudentStatusFilter("all")}
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                Reset
+              </Button>
+            )}
           </div>
 
           <Table>
