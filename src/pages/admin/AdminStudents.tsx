@@ -158,6 +158,8 @@ const AdminStudents = () => {
     useState<DocumentStatusFilter>(ALL_FILTER);
   const [applicationStatusFilter, setApplicationStatusFilter] =
     useState<string>(ALL_FILTER);
+  const [studentStatusFilter, setStudentStatusFilter] =
+    useState<string>("all");
   const [accountStatusFilter, setAccountStatusFilter] =
     useState<AccountStatusFilter>("all");
 
