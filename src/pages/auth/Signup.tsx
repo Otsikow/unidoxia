@@ -776,17 +776,21 @@ const Signup = () => {
 
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone className="h-4 w-4" /> {role === "student" ? "WhatsApp Number" : "Phone Number"}
+                  <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="phone"
                   type="tel"
+                  required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={role === "student" ? "e.g. +2348012345678" : undefined}
+                  placeholder={role === "student" ? "e.g. +2348012345678" : "e.g. +44123456789"}
                 />
-                {role === "student" && (
-                  <p className="text-sm text-muted-foreground">Required with country code (e.g. +1, +44, +234).</p>
-                )}
+                <p className="text-sm text-muted-foreground">
+                  {role === "student" 
+                    ? "Required with country code (e.g. +1, +44, +234). We will contact you on WhatsApp." 
+                    : "Required with country code (e.g. +1, +44, +234)."}
+                </p>
 
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence
