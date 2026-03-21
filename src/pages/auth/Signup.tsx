@@ -541,17 +541,16 @@ const Signup = () => {
   const validateStep2 = () => {
     if (!firstName.trim()) return toast({ variant: "destructive", title: "First name required" }), false;
     if (!lastName.trim()) return toast({ variant: "destructive", title: "Last name required" }), false;
-    if (!phone.trim()) return toast({ variant: "destructive", title: "Phone required" }), false;
+    if (!phone.trim()) return toast({ variant: "destructive", title: "Phone / WhatsApp number required", description: "Please enter your phone number with country code." }), false;
 
-    if (role === "student") {
-      const normalizedPhone = normalizePhoneNumber(phone.trim());
-      if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
-        return toast({
-          variant: "destructive",
-          title: "Valid WhatsApp number required",
-          description: "Include the country code (for example: +2348012345678).",
-        }), false;
-      }
+    // Validate phone format with country code for ALL roles
+    const normalizedPhone = normalizePhoneNumber(phone.trim());
+    if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
+      return toast({
+        variant: "destructive",
+        title: role === "student" ? "Valid WhatsApp number required" : "Valid phone number required",
+        description: "Include the country code (for example: +2348012345678, +447123456789).",
+      }), false;
     }
 
     if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
