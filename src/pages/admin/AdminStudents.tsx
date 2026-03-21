@@ -72,6 +72,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { logSecurityEvent } from "@/lib/securityLogger";
+import {
+  deriveStudentStatus,
+  getStudentStatusMeta,
+  STUDENT_STATUS_FILTER_OPTIONS,
+  type StudentOperationalStatus,
+} from "@/lib/studentStatus";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Types                                   */
@@ -87,6 +93,8 @@ interface StudentWithDocuments {
   created_at: string | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
+  /** Derived operational status */
+  operationalStatus: StudentOperationalStatus;
   archived_at: string | null;
   archived_by: string | null;
   archive_reason: string | null;
@@ -150,6 +158,8 @@ const AdminStudents = () => {
     useState<DocumentStatusFilter>(ALL_FILTER);
   const [applicationStatusFilter, setApplicationStatusFilter] =
     useState<string>(ALL_FILTER);
+  const [studentStatusFilter, setStudentStatusFilter] =
+    useState<string>("all");
   const [accountStatusFilter, setAccountStatusFilter] =
     useState<AccountStatusFilter>("all");
 
@@ -168,30 +178,37 @@ const AdminStudents = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   const filteredStudents = useMemo(() => {
+    let result = students;
+
+    // Filter by operational status
+    if (studentStatusFilter !== "all") {
+      result = result.filter((s) => s.operationalStatus === studentStatusFilter);
+    }
+
+    // Search filter
     const normalizedQuery = normalizeSearchValue(searchTerm);
     const queryTerms = normalizedQuery.split(/[\s,]+/).filter(Boolean);
 
-    if (!queryTerms.length) {
-      return students;
+    if (queryTerms.length) {
+      result = result.filter((student) => {
+        const searchableText = normalizeSearchValue(
+          [
+            student.preferred_name,
+            student.legal_name,
+            student.profile?.full_name,
+            student.profile?.email,
+            student.contact_email,
+            student.current_country,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
+        return queryTerms.every((term) => searchableText.includes(term));
+      });
     }
 
-    return students.filter((student) => {
-      const searchableText = normalizeSearchValue(
-        [
-          student.preferred_name,
-          student.legal_name,
-          student.profile?.full_name,
-          student.profile?.email,
-          student.contact_email,
-          student.current_country,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      );
-
-      return queryTerms.every((term) => searchableText.includes(term));
-    });
-  }, [searchTerm, students]);
+    return result;
+  }, [searchTerm, students, studentStatusFilter]);
 
   const studentKpis = useMemo(() => {
     const now = new Date();
@@ -280,6 +297,7 @@ const AdminStudents = () => {
       const mapped = (data ?? []).map((s: any) => ({
         ...s,
         status: s.archived_at ? "archived" : "active",
+        operationalStatus: deriveStudentStatus(s),
       }));
 
       setStudents(mapped as StudentWithDocuments[]);
@@ -447,15 +465,39 @@ const AdminStudents = () => {
             </Card>
           </div>
 
-          <div className="relative mb-4 max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search by student name, country, or email"
-              className="pl-9"
-              aria-label="Search students"
-            />
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <div className="relative max-w-md flex-1 min-w-[200px]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search by student name, country, or email"
+                className="pl-9"
+                aria-label="Search students"
+              />
+            </div>
+            <Select value={studentStatusFilter} onValueChange={setStudentStatusFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                {STUDENT_STATUS_FILTER_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {studentStatusFilter !== "all" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setStudentStatusFilter("all")}
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                Reset
+              </Button>
+            )}
           </div>
 
           <Table>
@@ -501,11 +543,17 @@ const AdminStudents = () => {
                         {student.current_country ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {isArchived ? (
-                          <Badge variant="secondary">Archived</Badge>
-                        ) : (
-                          <Badge variant="outline">Active</Badge>
-                        )}
+                        {(() => {
+                          const meta = getStudentStatusMeta(student.operationalStatus);
+                          return (
+                            <Badge
+                              variant={meta.variant}
+                              className={meta.className}
+                            >
+                              {meta.label}
+                            </Badge>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         {student.created_at
