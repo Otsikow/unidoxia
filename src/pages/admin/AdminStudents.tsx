@@ -72,6 +72,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { logSecurityEvent } from "@/lib/securityLogger";
+import {
+  deriveStudentStatus,
+  getStudentStatusMeta,
+  STUDENT_STATUS_FILTER_OPTIONS,
+  type StudentOperationalStatus,
+} from "@/lib/studentStatus";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Types                                   */
@@ -87,6 +93,8 @@ interface StudentWithDocuments {
   created_at: string | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
+  /** Derived operational status */
+  operationalStatus: StudentOperationalStatus;
   archived_at: string | null;
   archived_by: string | null;
   archive_reason: string | null;
