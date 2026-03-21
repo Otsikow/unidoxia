@@ -178,30 +178,37 @@ const AdminStudents = () => {
   const [actionLoading, setActionLoading] = useState(false);
 
   const filteredStudents = useMemo(() => {
+    let result = students;
+
+    // Filter by operational status
+    if (studentStatusFilter !== "all") {
+      result = result.filter((s) => s.operationalStatus === studentStatusFilter);
+    }
+
+    // Search filter
     const normalizedQuery = normalizeSearchValue(searchTerm);
     const queryTerms = normalizedQuery.split(/[\s,]+/).filter(Boolean);
 
-    if (!queryTerms.length) {
-      return students;
+    if (queryTerms.length) {
+      result = result.filter((student) => {
+        const searchableText = normalizeSearchValue(
+          [
+            student.preferred_name,
+            student.legal_name,
+            student.profile?.full_name,
+            student.profile?.email,
+            student.contact_email,
+            student.current_country,
+          ]
+            .filter(Boolean)
+            .join(" ")
+        );
+        return queryTerms.every((term) => searchableText.includes(term));
+      });
     }
 
-    return students.filter((student) => {
-      const searchableText = normalizeSearchValue(
-        [
-          student.preferred_name,
-          student.legal_name,
-          student.profile?.full_name,
-          student.profile?.email,
-          student.contact_email,
-          student.current_country,
-        ]
-          .filter(Boolean)
-          .join(" ")
-      );
-
-      return queryTerms.every((term) => searchableText.includes(term));
-    });
-  }, [searchTerm, students]);
+    return result;
+  }, [searchTerm, students, studentStatusFilter]);
 
   const studentKpis = useMemo(() => {
     const now = new Date();
