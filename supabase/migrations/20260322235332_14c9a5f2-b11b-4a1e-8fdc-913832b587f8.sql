@@ -1,0 +1,1 @@
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS manual_status text DEFAULT NULL;
