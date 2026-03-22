@@ -26,6 +26,7 @@ export type StudentOperationalStatus =
   | "enrolled"
   | "visa_stage"
   | "cas_loa_issued"
+  | "admission_granted"
   | "offer_received"
   | "under_review"
   | "application_submitted"
@@ -35,6 +36,7 @@ export type StudentOperationalStatus =
   | "new_student"
   | "withdrawn"
   | "deferred"
+  | "rejected"
   | "archived";
 
 export interface StudentOperationalStatusMeta {
