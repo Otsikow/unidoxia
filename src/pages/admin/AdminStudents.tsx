@@ -259,6 +259,7 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          manual_status,
           archived_at,
           archived_by,
           archive_reason,
