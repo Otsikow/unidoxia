@@ -561,17 +561,38 @@ const AdminStudents = () => {
                         {student.current_country ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {(() => {
-                          const meta = getStudentStatusMeta(student.operationalStatus);
-                          return (
-                            <Badge
-                              variant={meta.variant}
-                              className={meta.className}
-                            >
-                              {meta.label}
-                            </Badge>
-                          );
-                        })()}
+                        <Select
+                          value={student.manual_status || "auto"}
+                          onValueChange={(val) => handleChangeStatus(student, val)}
+                        >
+                          <SelectTrigger className="w-[200px] h-8 text-xs border-0 bg-transparent hover:bg-muted/50 focus:ring-1 p-1">
+                            <SelectValue>
+                              {(() => {
+                                const meta = getStudentStatusMeta(student.operationalStatus);
+                                return (
+                                  <Badge variant={meta.variant} className={meta.className}>
+                                    {meta.label}
+                                  </Badge>
+                                );
+                              })()}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">
+                              <span className="text-muted-foreground">Auto-detect</span>
+                            </SelectItem>
+                            {MANUAL_STATUS_OPTIONS.map((opt) => {
+                              const meta = getStudentStatusMeta(opt.value);
+                              return (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <Badge variant={meta.variant} className={`${meta.className} text-xs`}>
+                                    {meta.label}
+                                  </Badge>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         {student.created_at
