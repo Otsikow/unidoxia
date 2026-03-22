@@ -202,6 +202,7 @@ interface DeriveInput {
   archived_at: string | null;
   legal_name: string | null;
   contact_email: string | null;
+  manual_status?: string | null;
   applications: { status: string | null }[];
   documents: { document_type: string }[];
 }
@@ -209,6 +210,11 @@ interface DeriveInput {
 export function deriveStudentStatus(student: DeriveInput): StudentOperationalStatus {
   // Archived overrides everything
   if (student.archived_at) return "archived";
+
+  // Manual override takes priority over auto-derivation
+  if (student.manual_status && student.manual_status in STATUS_META) {
+    return student.manual_status as StudentOperationalStatus;
+  }
 
   // Check applications – find the highest-priority app status
   const appStatuses = new Set(
