@@ -26,6 +26,7 @@ export type StudentOperationalStatus =
   | "enrolled"
   | "visa_stage"
   | "cas_loa_issued"
+  | "admission_granted"
   | "offer_received"
   | "under_review"
   | "application_submitted"
@@ -35,6 +36,7 @@ export type StudentOperationalStatus =
   | "new_student"
   | "withdrawn"
   | "deferred"
+  | "rejected"
   | "archived";
 
 export interface StudentOperationalStatusMeta {
@@ -67,6 +69,12 @@ const STATUS_META: Record<StudentOperationalStatus, StudentOperationalStatusMeta
     variant: "outline",
     className: "bg-indigo-600/20 text-indigo-400 border-indigo-500/30",
     weight: 80,
+  },
+  admission_granted: {
+    label: "Admission Granted",
+    variant: "default",
+    className: "bg-green-600/20 text-green-400 border-green-500/30",
+    weight: 75,
   },
   offer_received: {
     label: "Offer Received",
@@ -122,6 +130,12 @@ const STATUS_META: Record<StudentOperationalStatus, StudentOperationalStatusMeta
     className: "bg-yellow-600/20 text-yellow-400 border-yellow-500/30",
     weight: 5,
   },
+  rejected: {
+    label: "Rejected",
+    variant: "destructive",
+    className: "bg-red-700/20 text-red-500 border-red-600/30",
+    weight: 3,
+  },
   archived: {
     label: "Archived",
     variant: "secondary",
@@ -139,6 +153,7 @@ export const STUDENT_STATUS_FILTER_OPTIONS: { value: StudentOperationalStatus | 
   { value: "enrolled", label: "Enrolled" },
   { value: "visa_stage", label: "Visa Stage" },
   { value: "cas_loa_issued", label: "CAS / LOA Issued" },
+  { value: "admission_granted", label: "Admission Granted" },
   { value: "offer_received", label: "Offer Received" },
   { value: "under_review", label: "Under Review" },
   { value: "application_submitted", label: "Application Submitted" },
@@ -148,7 +163,25 @@ export const STUDENT_STATUS_FILTER_OPTIONS: { value: StudentOperationalStatus | 
   { value: "new_student", label: "New Student" },
   { value: "withdrawn", label: "Withdrawn" },
   { value: "deferred", label: "Deferred" },
+  { value: "rejected", label: "Rejected" },
   { value: "archived", label: "Archived" },
+];
+
+/** Statuses available for manual override by admin */
+export const MANUAL_STATUS_OPTIONS: { value: StudentOperationalStatus; label: string }[] = [
+  { value: "enrolled", label: "Enrolled" },
+  { value: "visa_stage", label: "Visa Stage" },
+  { value: "cas_loa_issued", label: "CAS / LOA Issued" },
+  { value: "admission_granted", label: "Admission Granted" },
+  { value: "offer_received", label: "Offer Received" },
+  { value: "under_review", label: "Under Review" },
+  { value: "application_submitted", label: "Application Submitted" },
+  { value: "outstanding_documents", label: "Outstanding Documents" },
+  { value: "profile_incomplete", label: "Profile Incomplete" },
+  { value: "new_student", label: "New Student" },
+  { value: "withdrawn", label: "Withdrawn" },
+  { value: "deferred", label: "Deferred" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 /* ---------- derivation --------------------------------------------------- */
@@ -169,6 +202,7 @@ interface DeriveInput {
   archived_at: string | null;
   legal_name: string | null;
   contact_email: string | null;
+  manual_status?: string | null;
   applications: { status: string | null }[];
   documents: { document_type: string }[];
 }
@@ -176,6 +210,11 @@ interface DeriveInput {
 export function deriveStudentStatus(student: DeriveInput): StudentOperationalStatus {
   // Archived overrides everything
   if (student.archived_at) return "archived";
+
+  // Manual override takes priority over auto-derivation
+  if (student.manual_status && student.manual_status in STATUS_META) {
+    return student.manual_status as StudentOperationalStatus;
+  }
 
   // Check applications – find the highest-priority app status
   const appStatuses = new Set(

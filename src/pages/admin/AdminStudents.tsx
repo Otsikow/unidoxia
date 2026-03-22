@@ -76,6 +76,7 @@ import {
   deriveStudentStatus,
   getStudentStatusMeta,
   STUDENT_STATUS_FILTER_OPTIONS,
+  MANUAL_STATUS_OPTIONS,
   type StudentOperationalStatus,
 } from "@/lib/studentStatus";
 
@@ -91,6 +92,7 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
+  manual_status: string | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
   /** Derived operational status */
@@ -257,6 +259,7 @@ const AdminStudents = () => {
           contact_email,
           current_country,
           created_at,
+          manual_status,
           archived_at,
           archived_by,
           archive_reason,
@@ -389,6 +392,21 @@ const AdminStudents = () => {
       fetchStudents();
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleChangeStatus = async (student: StudentWithDocuments, newStatus: string) => {
+    try {
+      const valueToSave = newStatus === "auto" ? null : newStatus;
+      const { error } = await supabase
+        .from("students")
+        .update({ manual_status: valueToSave })
+        .eq("id", student.id);
+      if (error) throw error;
+      toast({ title: "Status updated" });
+      fetchStudents();
+    } catch {
+      toast({ variant: "destructive", title: "Failed to update status" });
     }
   };
 
@@ -543,17 +561,38 @@ const AdminStudents = () => {
                         {student.current_country ?? "—"}
                       </TableCell>
                       <TableCell>
-                        {(() => {
-                          const meta = getStudentStatusMeta(student.operationalStatus);
-                          return (
-                            <Badge
-                              variant={meta.variant}
-                              className={meta.className}
-                            >
-                              {meta.label}
-                            </Badge>
-                          );
-                        })()}
+                        <Select
+                          value={student.manual_status || "auto"}
+                          onValueChange={(val) => handleChangeStatus(student, val)}
+                        >
+                          <SelectTrigger className="w-[200px] h-8 text-xs border-0 bg-transparent hover:bg-muted/50 focus:ring-1 p-1">
+                            <SelectValue>
+                              {(() => {
+                                const meta = getStudentStatusMeta(student.operationalStatus);
+                                return (
+                                  <Badge variant={meta.variant} className={meta.className}>
+                                    {meta.label}
+                                  </Badge>
+                                );
+                              })()}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">
+                              <span className="text-muted-foreground">Auto-detect</span>
+                            </SelectItem>
+                            {MANUAL_STATUS_OPTIONS.map((opt) => {
+                              const meta = getStudentStatusMeta(opt.value);
+                              return (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <Badge variant={meta.variant} className={`${meta.className} text-xs`}>
+                                    {meta.label}
+                                  </Badge>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell>
                         {student.created_at

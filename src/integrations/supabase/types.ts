@@ -2418,6 +2418,7 @@ export type Database = {
           guardian: Json | null
           id: string
           legal_name: string | null
+          manual_status: string | null
           nationality: string | null
           passport_expiry: string | null
           passport_number: string | null
@@ -2457,6 +2458,7 @@ export type Database = {
           guardian?: Json | null
           id?: string
           legal_name?: string | null
+          manual_status?: string | null
           nationality?: string | null
           passport_expiry?: string | null
           passport_number?: string | null
@@ -2496,6 +2498,7 @@ export type Database = {
           guardian?: Json | null
           id?: string
           legal_name?: string | null
+          manual_status?: string | null
           nationality?: string | null
           passport_expiry?: string | null
           passport_number?: string | null
