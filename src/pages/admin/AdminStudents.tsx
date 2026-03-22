@@ -395,6 +395,21 @@ const AdminStudents = () => {
     }
   };
 
+  const handleChangeStatus = async (student: StudentWithDocuments, newStatus: string) => {
+    try {
+      const valueToSave = newStatus === "auto" ? null : newStatus;
+      const { error } = await supabase
+        .from("students")
+        .update({ manual_status: valueToSave })
+        .eq("id", student.id);
+      if (error) throw error;
+      toast({ title: "Status updated" });
+      fetchStudents();
+    } catch {
+      toast({ variant: "destructive", title: "Failed to update status" });
+    }
+  };
+
   /* ------------------------------------------------------------------------ */
   /*                                  Render                                  */
   /* ------------------------------------------------------------------------ */
