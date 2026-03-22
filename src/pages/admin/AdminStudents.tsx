@@ -76,6 +76,7 @@ import {
   deriveStudentStatus,
   getStudentStatusMeta,
   STUDENT_STATUS_FILTER_OPTIONS,
+  MANUAL_STATUS_OPTIONS,
   type StudentOperationalStatus,
 } from "@/lib/studentStatus";
 
