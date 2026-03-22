@@ -70,6 +70,12 @@ const STATUS_META: Record<StudentOperationalStatus, StudentOperationalStatusMeta
     className: "bg-indigo-600/20 text-indigo-400 border-indigo-500/30",
     weight: 80,
   },
+  admission_granted: {
+    label: "Admission Granted",
+    variant: "default",
+    className: "bg-green-600/20 text-green-400 border-green-500/30",
+    weight: 75,
+  },
   offer_received: {
     label: "Offer Received",
     variant: "outline",
@@ -123,6 +129,12 @@ const STATUS_META: Record<StudentOperationalStatus, StudentOperationalStatusMeta
     variant: "secondary",
     className: "bg-yellow-600/20 text-yellow-400 border-yellow-500/30",
     weight: 5,
+  },
+  rejected: {
+    label: "Rejected",
+    variant: "destructive",
+    className: "bg-red-700/20 text-red-500 border-red-600/30",
+    weight: 3,
   },
   archived: {
     label: "Archived",
