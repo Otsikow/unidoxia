@@ -153,6 +153,7 @@ export const STUDENT_STATUS_FILTER_OPTIONS: { value: StudentOperationalStatus | 
   { value: "enrolled", label: "Enrolled" },
   { value: "visa_stage", label: "Visa Stage" },
   { value: "cas_loa_issued", label: "CAS / LOA Issued" },
+  { value: "admission_granted", label: "Admission Granted" },
   { value: "offer_received", label: "Offer Received" },
   { value: "under_review", label: "Under Review" },
   { value: "application_submitted", label: "Application Submitted" },
@@ -162,7 +163,25 @@ export const STUDENT_STATUS_FILTER_OPTIONS: { value: StudentOperationalStatus | 
   { value: "new_student", label: "New Student" },
   { value: "withdrawn", label: "Withdrawn" },
   { value: "deferred", label: "Deferred" },
+  { value: "rejected", label: "Rejected" },
   { value: "archived", label: "Archived" },
+];
+
+/** Statuses available for manual override by admin */
+export const MANUAL_STATUS_OPTIONS: { value: StudentOperationalStatus; label: string }[] = [
+  { value: "enrolled", label: "Enrolled" },
+  { value: "visa_stage", label: "Visa Stage" },
+  { value: "cas_loa_issued", label: "CAS / LOA Issued" },
+  { value: "admission_granted", label: "Admission Granted" },
+  { value: "offer_received", label: "Offer Received" },
+  { value: "under_review", label: "Under Review" },
+  { value: "application_submitted", label: "Application Submitted" },
+  { value: "outstanding_documents", label: "Outstanding Documents" },
+  { value: "profile_incomplete", label: "Profile Incomplete" },
+  { value: "new_student", label: "New Student" },
+  { value: "withdrawn", label: "Withdrawn" },
+  { value: "deferred", label: "Deferred" },
+  { value: "rejected", label: "Rejected" },
 ];
 
 /* ---------- derivation --------------------------------------------------- */
