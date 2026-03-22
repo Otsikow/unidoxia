@@ -92,6 +92,7 @@ interface StudentWithDocuments {
   contact_email: string | null;
   current_country: string | null;
   created_at: string | null;
+  manual_status: string | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
   /** Derived operational status */
