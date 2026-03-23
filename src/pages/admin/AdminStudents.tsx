@@ -303,11 +303,18 @@ const AdminStudents = () => {
 
       if (error) throw error;
 
-      const mapped = (data ?? []).map((s: any) => ({
-        ...s,
-        status: s.archived_at ? "archived" : "active",
-        operationalStatus: deriveStudentStatus(s),
-      }));
+      const mapped = (data ?? []).map((s: any) => {
+        // Get attribution source: prefer direct referral_source, then attribution records
+        const attrSource = s.referral_source || 
+          (Array.isArray(s.attributions) && s.attributions.length > 0 ? s.attributions[0]?.source : null);
+        
+        return {
+          ...s,
+          status: s.archived_at ? "archived" : "active",
+          operationalStatus: deriveStudentStatus(s),
+          attribution_source: attrSource || null,
+        };
+      });
 
       setStudents(mapped as StudentWithDocuments[]);
     } catch (err) {
