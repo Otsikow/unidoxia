@@ -555,6 +555,14 @@ const Signup = () => {
 
     if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
 
+    if (role === "student" && !referralSource.trim()) {
+      return toast({
+        variant: "destructive",
+        title: "Referral source required",
+        description: "Please tell us who referred you or how you heard about UniDoxia.",
+      }), false;
+    }
+
     if (role === "student" && referralSource.trim().length > 200) {
       return toast({
         variant: "destructive",
