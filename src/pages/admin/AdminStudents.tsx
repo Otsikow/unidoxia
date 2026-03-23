@@ -575,6 +575,11 @@ const AdminStudents = () => {
                         {student.current_country ?? "—"}
                       </TableCell>
                       <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {student.attribution_source ?? "—"}
+                        </span>
+                      </TableCell>
+                      <TableCell>
                         <Select
                           value={student.manual_status || "auto"}
                           onValueChange={(val) => handleChangeStatus(student, val)}
