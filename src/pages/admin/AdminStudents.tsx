@@ -93,6 +93,7 @@ interface StudentWithDocuments {
   current_country: string | null;
   created_at: string | null;
   manual_status: string | null;
+  referral_source: string | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
   /** Derived operational status */
@@ -121,6 +122,7 @@ interface StudentWithDocuments {
       name: string;
     } | null;
   }[];
+  attribution_source: string | null;
 }
 
 type SortField = "name" | "country" | "programme" | "joined";
