@@ -1009,10 +1009,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (studentError) {
           console.error('Error creating student record:', studentError);
         } else {
-          const referralSource =
-            typeof user.user_metadata?.referral_source === 'string'
-              ? user.user_metadata.referral_source.trim()
-              : '';
 
           let referralId: string | null = null;
           if (referrerProfileId) {
