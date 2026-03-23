@@ -589,6 +589,7 @@ const App = () => {
                         <Route path="/auth/callback" element={<PublicLayout><AuthCallback /></PublicLayout>} />
                         <Route path="/auth/forgot-password" element={<PublicLayout><ForgotPassword /></PublicLayout>} />
                         <Route path="/auth/reset-password" element={<PublicLayout><ResetPassword /></PublicLayout>} />
+                        <Route path="/auth/complete-signup" element={<CompleteSignup />} />
 
                         {/* Public Screens */}
                         <Route path="/search" element={<SearchRedirect />} />
