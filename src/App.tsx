@@ -186,6 +186,7 @@ const VerifyEmail = lazyWithErrorHandling(() => import("./pages/auth/VerifyEmail
 const AuthCallback = lazyWithErrorHandling(() => import("./pages/auth/Callback"));
 const ForgotPassword = lazyWithErrorHandling(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazyWithErrorHandling(() => import("./pages/auth/ResetPassword"));
+const CompleteSignup = lazyWithErrorHandling(() => import("./pages/auth/CompleteSignup"));
 const UniversitySearch = lazyWithErrorHandling(() => import("./pages/UniversitySearch"));
 const CourseDiscovery = lazyWithErrorHandling(() => import("./pages/CourseDiscovery"));
 const UniversityPartnership = lazyWithErrorHandling(() =>
