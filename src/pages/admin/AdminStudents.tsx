@@ -536,6 +536,7 @@ const AdminStudents = () => {
               <TableRow>
                 <TableHead>Student</TableHead>
                 <TableHead>Country</TableHead>
+                <TableHead>Referred By</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead />
