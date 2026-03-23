@@ -262,6 +262,7 @@ const AdminStudents = () => {
           current_country,
           created_at,
           manual_status,
+          referral_source,
           archived_at,
           archived_by,
           archive_reason,
@@ -285,6 +286,9 @@ const AdminStudents = () => {
               level,
               name
             )
+          ),
+          attributions (
+            source
           )
         `
         );
