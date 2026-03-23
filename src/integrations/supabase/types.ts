@@ -2434,6 +2434,7 @@ export type Database = {
           preferred_study_area: string | null
           profile_completeness: number | null
           profile_id: string
+          referral_source: string | null
           refund_eligibility: boolean | null
           tenant_id: string
           test_scores: Json | null
@@ -2474,6 +2475,7 @@ export type Database = {
           preferred_study_area?: string | null
           profile_completeness?: number | null
           profile_id: string
+          referral_source?: string | null
           refund_eligibility?: boolean | null
           tenant_id: string
           test_scores?: Json | null
@@ -2514,6 +2516,7 @@ export type Database = {
           preferred_study_area?: string | null
           profile_completeness?: number | null
           profile_id?: string
+          referral_source?: string | null
           refund_eligibility?: boolean | null
           tenant_id?: string
           test_scores?: Json | null

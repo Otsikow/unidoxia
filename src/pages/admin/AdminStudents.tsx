@@ -93,6 +93,7 @@ interface StudentWithDocuments {
   current_country: string | null;
   created_at: string | null;
   manual_status: string | null;
+  referral_source: string | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
   /** Derived operational status */
@@ -121,6 +122,7 @@ interface StudentWithDocuments {
       name: string;
     } | null;
   }[];
+  attribution_source: string | null;
 }
 
 type SortField = "name" | "country" | "programme" | "joined";
@@ -260,6 +262,7 @@ const AdminStudents = () => {
           current_country,
           created_at,
           manual_status,
+          referral_source,
           archived_at,
           archived_by,
           archive_reason,
@@ -283,6 +286,9 @@ const AdminStudents = () => {
               level,
               name
             )
+          ),
+          attributions (
+            source
           )
         `
         );
@@ -297,11 +303,18 @@ const AdminStudents = () => {
 
       if (error) throw error;
 
-      const mapped = (data ?? []).map((s: any) => ({
-        ...s,
-        status: s.archived_at ? "archived" : "active",
-        operationalStatus: deriveStudentStatus(s),
-      }));
+      const mapped = (data ?? []).map((s: any) => {
+        // Get attribution source: prefer direct referral_source, then attribution records
+        const attrSource = s.referral_source || 
+          (Array.isArray(s.attributions) && s.attributions.length > 0 ? s.attributions[0]?.source : null);
+        
+        return {
+          ...s,
+          status: s.archived_at ? "archived" : "active",
+          operationalStatus: deriveStudentStatus(s),
+          attribution_source: attrSource || null,
+        };
+      });
 
       setStudents(mapped as StudentWithDocuments[]);
     } catch (err) {
@@ -523,6 +536,7 @@ const AdminStudents = () => {
               <TableRow>
                 <TableHead>Student</TableHead>
                 <TableHead>Country</TableHead>
+                <TableHead>Referred By</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
                 <TableHead />
@@ -531,13 +545,13 @@ const AdminStudents = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={6} className="text-sm text-muted-foreground">
                     No students found for "{searchTerm.trim()}".
                   </TableCell>
                 </TableRow>
@@ -559,6 +573,11 @@ const AdminStudents = () => {
                       </TableCell>
                       <TableCell>
                         {student.current_country ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-muted-foreground">
+                          {student.attribution_source ?? "—"}
+                        </span>
                       </TableCell>
                       <TableCell>
                         <Select

@@ -991,11 +991,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (role === 'student') {
+        const referralSource =
+          typeof user.user_metadata?.referral_source === 'string'
+            ? user.user_metadata.referral_source.trim()
+            : '';
+
         const { data: studentRecord, error: studentError } = await supabase
           .from('students')
           .insert({
             tenant_id: tenant.id,
             profile_id: userId,
+            referral_source: referralSource || null,
           })
           .select('id')
           .single();
@@ -1003,10 +1009,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (studentError) {
           console.error('Error creating student record:', studentError);
         } else {
-          const referralSource =
-            typeof user.user_metadata?.referral_source === 'string'
-              ? user.user_metadata.referral_source.trim()
-              : '';
 
           let referralId: string | null = null;
           if (referrerProfileId) {

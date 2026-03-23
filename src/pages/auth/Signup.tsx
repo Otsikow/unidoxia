@@ -555,6 +555,14 @@ const Signup = () => {
 
     if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
 
+    if (role === "student" && !referralSource.trim()) {
+      return toast({
+        variant: "destructive",
+        title: "Referral source required",
+        description: "Please tell us who referred you or how you heard about UniDoxia.",
+      }), false;
+    }
+
     if (role === "student" && referralSource.trim().length > 200) {
       return toast({
         variant: "destructive",
@@ -816,6 +824,7 @@ const Signup = () => {
                     <Label htmlFor="referralSource" className="flex items-center gap-2">
                       <AtSign className="h-4 w-4" />
                       Who referred you, or how did you hear about UniDoxia?
+                      <span className="text-destructive">*</span>
                     </Label>
                     <Input
                       id="referralSource"
@@ -823,9 +832,10 @@ const Signup = () => {
                       onChange={(e) => setReferralSource(e.target.value)}
                       placeholder="e.g. John Doe, Instagram, school counselor"
                       maxLength={200}
+                      required
                     />
                     <p className="text-xs text-muted-foreground">
-                      Optional: Share a person's name or the source so we can properly track referrals and reward commission.
+                      Share a person's name or the source so we can properly track referrals and reward commission.
                     </p>
                   </div>
                 )}

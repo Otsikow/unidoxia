@@ -162,6 +162,21 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/agents/onboarding" replace state={{ from: location.pathname }} />;
   }
 
+  // Redirect students without referral_source to complete signup
+  const isCompleteSignupRoute = location.pathname === "/auth/complete-signup";
+  if (isStudent && profile && !isCompleteSignupRoute) {
+    // Check if student record has referral_source
+    const needsReferralSource = user?.user_metadata?.referral_source == null || 
+      (typeof user?.user_metadata?.referral_source === 'string' && !user.user_metadata.referral_source.trim());
+    
+    // Only redirect OAuth users (no password set = OAuth user)
+    const isOAuthUser = user?.app_metadata?.provider !== 'email' && !user?.user_metadata?.referral_source;
+    
+    if (isOAuthUser && needsReferralSource) {
+      return <Navigate to="/auth/complete-signup" replace />;
+    }
+  }
+
   // Map 'university' role to 'partner' for backward compatibility
   // CRITICAL: Only use profile.role (from DB), NOT user_metadata.role
   // user_metadata can be stale/wrong (e.g. admin with legacy 'partner' metadata)
