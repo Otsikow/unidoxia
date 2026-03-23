@@ -545,7 +545,7 @@ const AdminStudents = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5}>
+                  <TableCell colSpan={6}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
