@@ -152,6 +152,7 @@ const normalizeSearchValue = (value: string | null | undefined) =>
 const AdminStudents = () => {
   const { profile } = useAuth();
   const tenantId = profile?.tenant_id ?? null;
+  const userRole = profile?.role ?? null;
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -292,12 +293,15 @@ const AdminStudents = () => {
           )${includeAttributions ? `, attributions ( source )` : ""}
         `;
 
-    const fetchStudentRows = async (includeAttributions: boolean) => {
+    const fetchStudentRows = async (
+      includeAttributions: boolean,
+      scopeToTenant: boolean
+    ) => {
       let query = supabase
         .from("students")
         .select(buildStudentSelect(includeAttributions));
 
-      if (tenantId) {
+      if (scopeToTenant && tenantId) {
         query = query.eq("tenant_id", tenantId);
       }
 
@@ -308,15 +312,36 @@ const AdminStudents = () => {
 
     try {
       let includeAttributions = true;
-      let response = await fetchStudentRows(includeAttributions);
+      const canUseUnscopedFallback = userRole === "admin" || userRole === "staff";
+      const queryVariants = tenantId
+        ? [true, ...(canUseUnscopedFallback ? [false] : [])]
+        : [false];
+      let response: Awaited<ReturnType<typeof fetchStudentRows>> | null = null;
 
-      if (response.error) {
-        console.warn("AdminStudents: attribution join failed, retrying without attributions", response.error);
-        includeAttributions = false;
-        response = await fetchStudentRows(includeAttributions);
+      for (const scopeToTenant of queryVariants) {
+        response = await fetchStudentRows(includeAttributions, scopeToTenant);
+        if (response.error) {
+          console.warn(
+            "AdminStudents: attribution join failed, retrying without attributions",
+            response.error
+          );
+          includeAttributions = false;
+          response = await fetchStudentRows(includeAttributions, scopeToTenant);
+        }
+
+        if (response.error) throw response.error;
+
+        if ((response.data?.length ?? 0) > 0 || !scopeToTenant) {
+          if (tenantId && !scopeToTenant) {
+            console.warn(
+              "AdminStudents: tenant-scoped student query returned no rows; using unscoped fallback."
+            );
+          }
+          break;
+        }
       }
 
-      if (response.error) throw response.error;
+      if (!response) return;
 
       const mapped = (response.data ?? []).map((s: any) => {
         const referralSource =
@@ -355,7 +380,7 @@ const AdminStudents = () => {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [tenantId, userRole]);
 
   useEffect(() => {
     void fetchStudents();
