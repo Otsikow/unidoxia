@@ -13,15 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AtSign, Check } from "lucide-react";
+import { Loader2, AtSign, Check, Phone, UserCircle, Mail } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { LoadingState } from "@/components/LoadingState";
 import { SEO } from "@/components/SEO";
 
 /**
  * Post-OAuth completion page.
- * Shown to students who signed up via Google OAuth and haven't
- * provided their referral source yet.
+ * Shown to users missing required onboarding fields after sign-up.
+ * Required fields: referral source and WhatsApp number.
  */
 const CompleteSignup = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
@@ -29,7 +29,13 @@ const CompleteSignup = () => {
   const navigate = useNavigate();
 
   const [referralSource, setReferralSource] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [saving, setSaving] = useState(false);
+  const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
+  const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
+
+  const fullNameFromAuth = (profile?.full_name || (typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "") || "").trim();
+  const emailFromAuth = (profile?.email || user?.email || "").trim();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -38,14 +44,40 @@ const CompleteSignup = () => {
     }
   }, [authLoading, user, navigate]);
 
-  // Redirect if already completed (has referral_source)
   useEffect(() => {
-    if (!authLoading && profile && profile.role !== "student") {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [authLoading, profile, navigate]);
+    if (!authLoading && user && profile) {
+      const fallbackReferral = typeof user.user_metadata?.referral_source === "string"
+        ? user.user_metadata.referral_source
+        : "";
+      const fallbackWhatsapp = profile.phone || (typeof user.user_metadata?.phone === "string" ? user.user_metadata.phone : "");
 
-  if (authLoading) {
+      setReferralSource((current) => current || fallbackReferral || "");
+      setWhatsappNumber((current) => current || fallbackWhatsapp || "");
+    }
+  }, [authLoading, user, profile]);
+
+  // Redirect if already completed
+  useEffect(() => {
+    if (!authLoading && profile && user) {
+      const metadataReferral =
+        typeof user.user_metadata?.referral_source === "string"
+          ? user.user_metadata.referral_source.trim()
+          : "";
+      const profileWhatsapp = (profile.phone || "").trim();
+      const metadataWhatsapp =
+        typeof user.user_metadata?.phone === "string"
+          ? user.user_metadata.phone.trim()
+          : "";
+      const hasReferralSource = metadataReferral.length > 0;
+      const hasWhatsapp = profileWhatsapp.length > 0 || metadataWhatsapp.length > 0;
+
+      if (hasReferralSource && hasWhatsapp) {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [authLoading, profile, user, navigate]);
+
+  if (authLoading || !profile || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <LoadingState message="Loading..." size="lg" />
@@ -53,10 +85,23 @@ const CompleteSignup = () => {
     );
   }
 
+  const metadataReferral =
+    typeof user.user_metadata?.referral_source === "string"
+      ? user.user_metadata.referral_source.trim()
+      : "";
+  const profileWhatsapp = (profile.phone || "").trim();
+  const metadataWhatsapp =
+    typeof user.user_metadata?.phone === "string"
+      ? user.user_metadata.phone.trim()
+      : "";
+
+  const needsReferralSource = metadataReferral.length === 0;
+  const needsWhatsapp = profileWhatsapp.length === 0 && metadataWhatsapp.length === 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!referralSource.trim()) {
+    if (needsReferralSource && !referralSource.trim()) {
       toast({
         variant: "destructive",
         title: "Required field",
@@ -74,37 +119,72 @@ const CompleteSignup = () => {
       return;
     }
 
+    const normalizedWhatsapp = normalizePhoneNumber(whatsappNumber.trim());
+    if (needsWhatsapp && !normalizedWhatsapp) {
+      toast({
+        variant: "destructive",
+        title: "WhatsApp number required",
+        description: "Please enter your WhatsApp number with country code.",
+      });
+      return;
+    }
+
+    if (needsWhatsapp && !STUDENT_WHATSAPP_REGEX.test(normalizedWhatsapp)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid WhatsApp number",
+        description: "Include the country code (for example: +2348012345678, +447123456789).",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
-      // Get student record
-      const { data: studentRecord } = await supabase
-        .from("students")
-        .select("id, tenant_id")
-        .eq("profile_id", user!.id)
-        .maybeSingle();
+      if (needsWhatsapp) {
+        const { error: profileUpdateError } = await supabase
+          .from("profiles")
+          .update({ phone: normalizedWhatsapp })
+          .eq("id", user.id);
 
-      if (studentRecord) {
-        // Save referral_source to student record
-        const { error } = await supabase
-          .from("students")
-          .update({ referral_source: referralSource.trim() })
-          .eq("id", studentRecord.id);
-
-        if (error) throw error;
-
-        // Also create attribution record
-        await supabase.from("attributions").insert({
-          tenant_id: studentRecord.tenant_id,
-          student_id: studentRecord.id,
-          source: referralSource.trim(),
-          touch: "signup",
-          medium: "self-reported",
-        });
+        if (profileUpdateError) throw profileUpdateError;
       }
 
-      // Update user metadata
+      const finalReferralSource = needsReferralSource ? referralSource.trim() : metadataReferral;
+      const finalWhatsapp = needsWhatsapp ? normalizedWhatsapp : (profileWhatsapp || metadataWhatsapp);
+
+      if (profile.role === "student" && needsReferralSource) {
+        const { data: studentRecord } = await supabase
+          .from("students")
+          .select("id, tenant_id")
+          .eq("profile_id", user.id)
+          .maybeSingle();
+
+        if (studentRecord) {
+          const { error: studentUpdateError } = await supabase
+            .from("students")
+            .update({
+              referral_source: finalReferralSource,
+              contact_phone: finalWhatsapp || null,
+            })
+            .eq("id", studentRecord.id);
+
+          if (studentUpdateError) throw studentUpdateError;
+
+          await supabase.from("attributions").insert({
+            tenant_id: studentRecord.tenant_id,
+            student_id: studentRecord.id,
+            source: finalReferralSource,
+            touch: "signup",
+            medium: "self-reported",
+          });
+        }
+      }
+
       await supabase.auth.updateUser({
-        data: { referral_source: referralSource.trim() },
+        data: {
+          referral_source: finalReferralSource,
+          phone: finalWhatsapp,
+        },
       });
 
       toast({ title: "Thank you!", description: "Your information has been saved." });
@@ -138,13 +218,46 @@ const CompleteSignup = () => {
           />
           <CardTitle className="text-xl">One More Step</CardTitle>
           <CardDescription>
-            Before you get started, please tell us how you heard about UniDoxia.
-            This helps us reward the people who refer students to our platform.
+            We pre-filled what we already know. Please provide any missing required details to finish your account setup.
           </CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <UserCircle className="h-4 w-4" />
+                Name
+              </Label>
+              <Input value={fullNameFromAuth} disabled />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Email
+              </Label>
+              <Input value={emailFromAuth} disabled />
+            </div>
+
+            {needsWhatsapp && (
+              <div className="space-y-2">
+                <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  WhatsApp Number
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="whatsappNumber"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="e.g. +2348012345678"
+                  autoFocus={!needsReferralSource}
+                />
+              </div>
+            )}
+
+            {needsReferralSource && (
             <div className="space-y-2">
               <Label htmlFor="referralSource" className="flex items-center gap-2">
                 <AtSign className="h-4 w-4" />
@@ -163,6 +276,7 @@ const CompleteSignup = () => {
                 Share a person's name or the source so we can properly track referrals and reward commission.
               </p>
             </div>
+            )}
 
             <Button type="submit" className="w-full" disabled={saving}>
               {saving ? (

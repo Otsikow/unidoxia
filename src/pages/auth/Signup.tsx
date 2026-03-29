@@ -555,7 +555,7 @@ const Signup = () => {
 
     if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
 
-    if (role === "student" && !referralSource.trim()) {
+    if (!referralSource.trim()) {
       return toast({
         variant: "destructive",
         title: "Referral source required",
@@ -563,7 +563,7 @@ const Signup = () => {
       }), false;
     }
 
-    if (role === "student" && referralSource.trim().length > 200) {
+    if (referralSource.trim().length > 200) {
       return toast({
         variant: "destructive",
         title: "Referral note is too long",
@@ -783,7 +783,7 @@ const Signup = () => {
                 </div>
 
                 <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" /> {role === "student" ? "WhatsApp Number" : "Phone Number"}
+                  <Phone className="h-4 w-4" /> WhatsApp Number
                   <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -792,12 +792,10 @@ const Signup = () => {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={role === "student" ? "e.g. +2348012345678" : "e.g. +44123456789"}
+                  placeholder="e.g. +2348012345678"
                 />
                 <p className="text-sm text-muted-foreground">
-                  {role === "student" 
-                    ? "Required with country code (e.g. +1, +44, +234). We will contact you on WhatsApp." 
-                    : "Required with country code (e.g. +1, +44, +234)."}
+                  Required with country code (e.g. +1, +44, +234). We will contact you on WhatsApp.
                 </p>
 
                 <Label htmlFor="country" className="flex items-center gap-2">
@@ -819,26 +817,24 @@ const Signup = () => {
                   This should be the country where you currently live, not your preferred study destination.
                 </p>
 
-                {role === "student" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="referralSource" className="flex items-center gap-2">
-                      <AtSign className="h-4 w-4" />
-                      Who referred you, or how did you hear about UniDoxia?
-                      <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="referralSource"
-                      value={referralSource}
-                      onChange={(e) => setReferralSource(e.target.value)}
-                      placeholder="e.g. John Doe, Instagram, school counselor"
-                      maxLength={200}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Share a person's name or the source so we can properly track referrals and reward commission.
-                    </p>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <Label htmlFor="referralSource" className="flex items-center gap-2">
+                    <AtSign className="h-4 w-4" />
+                    Who referred you, or how did you hear about UniDoxia?
+                    <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="referralSource"
+                    value={referralSource}
+                    onChange={(e) => setReferralSource(e.target.value)}
+                    placeholder="e.g. John Doe, Instagram, school counselor"
+                    maxLength={200}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Share a person's name or the source so we can properly track referrals and reward commission.
+                  </p>
+                </div>
               </div>
             )}
 
