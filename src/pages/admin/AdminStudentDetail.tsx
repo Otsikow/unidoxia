@@ -72,6 +72,8 @@ interface StudentBundle {
     contact_email: string | null;
     contact_phone: string | null;
     current_country: string | null;
+    preferred_course: string | null;
+    preferred_country: string | null;
     nationality: string | null;
     date_of_birth: string | null;
     passport_number: string | null;
@@ -210,9 +212,23 @@ const AdminStudentDetail = () => {
       // Also fetch archive status separately
       const { data: archiveData } = await supabase
         .from("students")
-        .select("archived_at, archive_reason")
+        .select("archived_at, archive_reason, preferred_course, preferred_country")
         .eq("id", studentId)
         .maybeSingle();
+
+      if (archiveData?.preferred_course || archiveData?.preferred_country) {
+        setBundle((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            student: {
+              ...prev.student,
+              preferred_course: archiveData.preferred_course ?? null,
+              preferred_country: archiveData.preferred_country ?? null,
+            },
+          };
+        });
+      }
 
       setArchivedAt(archiveData?.archived_at ?? null);
       setArchiveReason(archiveData?.archive_reason ?? null);
@@ -749,6 +765,14 @@ const AdminStudentDetail = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Country</p>
                 <p className="font-medium">{student.current_country ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Preferred Course</p>
+                <p className="font-medium">{student.preferred_course ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Preferred Study Country</p>
+                <p className="font-medium">{student.preferred_country ?? "—"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>

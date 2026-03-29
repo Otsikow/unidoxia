@@ -91,6 +91,8 @@ interface StudentWithDocuments {
   preferred_name: string | null;
   contact_email: string | null;
   current_country: string | null;
+  preferred_course: string | null;
+  preferred_country: string | null;
   created_at: string | null;
   manual_status: string | null;
   referral_source: string | null;
@@ -203,6 +205,8 @@ const AdminStudents = () => {
             student.profile?.email,
             student.contact_email,
             student.current_country,
+            student.preferred_course,
+            student.preferred_country,
           ]
             .filter(Boolean)
             .join(" ")
@@ -260,6 +264,8 @@ const AdminStudents = () => {
           preferred_name,
           contact_email,
           current_country,
+          preferred_course,
+          preferred_country,
           created_at,
           manual_status,
           referral_source,
@@ -554,6 +560,7 @@ const AdminStudents = () => {
               <TableRow>
                 <TableHead>Student</TableHead>
                 <TableHead>Country</TableHead>
+                <TableHead>Study Preferences</TableHead>
                 <TableHead>Referred By</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Joined</TableHead>
@@ -563,13 +570,13 @@ const AdminStudents = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6}>
+                  <TableCell colSpan={7}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
                     No students found for "{searchTerm.trim()}".
                   </TableCell>
                 </TableRow>
@@ -591,6 +598,14 @@ const AdminStudents = () => {
                       </TableCell>
                       <TableCell>
                         {student.current_country ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm leading-tight">
+                          <p>{student.preferred_course ?? "—"}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {student.preferred_country ?? "—"}
+                          </p>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <span className="text-sm text-muted-foreground">
