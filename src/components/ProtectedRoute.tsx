@@ -22,7 +22,6 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   // Include profileLoading to prevent "Profile not found" flash during authentication
   const loading = authLoading || profileLoading || rolesLoading;
 
-  const isStudent = profile?.role === "student";
   const isAgent = profile?.role === "agent";
   const isAgentOnboardingRoute = location.pathname.startsWith("/agents/onboarding");
 
@@ -162,17 +161,15 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/agents/onboarding" replace state={{ from: location.pathname }} />;
   }
 
-  // Redirect students without referral_source to complete signup
+  // Redirect users with incomplete onboarding details to complete signup.
   const isCompleteSignupRoute = location.pathname === "/auth/complete-signup";
-  if (isStudent && profile && !isCompleteSignupRoute) {
-    // Check if student record has referral_source
-    const needsReferralSource = user?.user_metadata?.referral_source == null || 
-      (typeof user?.user_metadata?.referral_source === 'string' && !user.user_metadata.referral_source.trim());
-    
-    // Only redirect OAuth users (no password set = OAuth user)
-    const isOAuthUser = user?.app_metadata?.provider !== 'email' && !user?.user_metadata?.referral_source;
-    
-    if (isOAuthUser && needsReferralSource) {
+  if (profile && !isCompleteSignupRoute) {
+    const referralValue = user?.user_metadata?.referral_source;
+    const phoneValue = user?.user_metadata?.phone ?? profile.phone;
+    const hasReferralSource = typeof referralValue === "string" && referralValue.trim().length > 0;
+    const hasWhatsapp = typeof phoneValue === "string" && /^\+[1-9]\d{7,14}$/.test(phoneValue.replace(/[\s\-()]/g, "").trim());
+
+    if (!hasReferralSource || !hasWhatsapp) {
       return <Navigate to="/auth/complete-signup" replace />;
     }
   }
