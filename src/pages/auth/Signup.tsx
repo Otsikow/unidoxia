@@ -6,7 +6,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { getSiteUrl } from "@/lib/supabaseClientConfig";
-import { hasSeenOnboarding, markOnboardingSeen, type OnboardingRole } from "@/lib/onboardingStorage";
+import {
+  hasSeenOnboarding,
+  markOnboardingSeen,
+  type OnboardingRole,
+} from "@/lib/onboardingStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,10 +58,12 @@ const ROLE_OPTIONS: UserRole[] = ["student", "agent", "partner"];
 
 const isUsernameCheckUnsupported = (error: PostgrestError | null) => {
   if (!error) return false;
+
   const unsupportedCodes = new Set(["PGRST202", "PGRST204", "42P01", "42703"]);
   if (error.code && unsupportedCodes.has(error.code)) {
     return true;
   }
+
   const message = error.message?.toLowerCase() ?? "";
   return (
     message.includes("could not find the function public.is_username_available") ||
@@ -65,7 +71,6 @@ const isUsernameCheckUnsupported = (error: PostgrestError | null) => {
   );
 };
 
-// Comprehensive list of all countries sorted alphabetically
 const ALL_COUNTRIES = [
   "Afghanistan",
   "Albania",
@@ -269,7 +274,6 @@ const ALL_COUNTRIES = [
 const buildCountryOptions = () => ALL_COUNTRIES;
 
 const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
-
 const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
 
 const Signup = () => {
@@ -280,22 +284,31 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [username, setUsername] = useState("");
+
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameCheckAvailable, setUsernameCheckAvailable] = useState(true);
   const [usernameInfo, setUsernameInfo] = useState<string | null>(null);
 
   const [refParam, setRefParam] = useState<string | null>(null);
-  const [referralLookup, setReferralLookup] = useState<{ inviteCode: string | null; username: string | null }>({
+  const [referralLookup, setReferralLookup] = useState<{
+    inviteCode: string | null;
+    username: string | null;
+  }>({
     inviteCode: null,
     username: null,
   });
-  const [referrerInfo, setReferrerInfo] = useState<{ id: string; username: string; full_name?: string } | null>(null);
+  const [referrerInfo, setReferrerInfo] = useState<{
+    id: string;
+    username: string;
+    full_name?: string;
+  } | null>(null);
   const [referrerError, setReferrerError] = useState<string | null>(null);
   const [referrerLoading, setReferrerLoading] = useState(false);
   const [referralSource, setReferralSource] = useState("");
@@ -303,6 +316,7 @@ const Signup = () => {
   const [role, setRole] = useState<UserRole>("student");
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+
   const hasRedirectedRef = useRef(false);
 
   const { signUp, user, loading: authLoading } = useAuth();
@@ -320,7 +334,6 @@ const Signup = () => {
 
     const inviteCandidate = trimmed.replace(/[^A-Za-z0-9]/g, "");
     const inviteCode = inviteCandidate.length === 8 ? inviteCandidate.toUpperCase() : null;
-
     const username = formatReferralUsername(trimmed) || null;
 
     return { inviteCode, username } as const;
@@ -330,7 +343,6 @@ const Signup = () => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get("role");
 
-    // Student onboarding flow has been removed; keep agent onboarding only.
     const onboardingRole = roleParam === "agent" ? roleParam : null;
 
     if (onboardingRole && !authLoading && !user && typeof window !== "undefined") {
@@ -338,14 +350,15 @@ const Signup = () => {
       if (!hasSeen) {
         markOnboardingSeen(onboardingRole as OnboardingRole);
         navigate(
-          `/agents/onboarding?next=${encodeURIComponent(`${location.pathname}${location.search}`)}`,
+          `/agents/onboarding?next=${encodeURIComponent(
+            `${location.pathname}${location.search}`,
+          )}`,
         );
         return;
       }
     }
   }, [authLoading, location.pathname, location.search, navigate, user]);
 
-  // Redirect logged-in user
   useEffect(() => {
     if (!authLoading && user && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
@@ -354,7 +367,6 @@ const Signup = () => {
     }
   }, [authLoading, user, navigate]);
 
-  // Parse query params (role + ref)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const roleParam = params.get("role");
@@ -392,7 +404,6 @@ const Signup = () => {
     }
   }, [location.search]);
 
-  // Lookup referral info
   useEffect(() => {
     if (!referralLookup.inviteCode && !referralLookup.username) {
       setReferrerInfo(null);
@@ -403,6 +414,7 @@ const Signup = () => {
 
     let active = true;
     setReferrerLoading(true);
+
     const lookupReferrer = async () => {
       try {
         if (referralLookup.inviteCode) {
@@ -418,7 +430,7 @@ const Signup = () => {
           if (error) throw error;
 
           const agentProfile = data?.agent?.profile;
-          if (agentProfile) {
+          if (agentProfile && active) {
             setReferrerInfo(agentProfile as { id: string; username: string; full_name?: string });
             setReferrerError(null);
             return;
@@ -434,19 +446,23 @@ const Signup = () => {
 
           if (error) throw error;
 
-          if (data) {
+          if (data && active) {
             setReferrerInfo(data);
             setReferrerError(null);
             return;
           }
         }
 
-        setReferrerInfo(null);
-        setReferrerError("We could not find a matching referrer for this link or invite code.");
+        if (active) {
+          setReferrerInfo(null);
+          setReferrerError("We could not find a matching referrer for this link or invite code.");
+        }
       } catch (error) {
         console.error("Error looking up referrer", error);
-        setReferrerInfo(null);
-        setReferrerError("We could not find a matching referrer for this link or invite code.");
+        if (active) {
+          setReferrerInfo(null);
+          setReferrerError("We could not find a matching referrer for this link or invite code.");
+        }
       } finally {
         if (active) setReferrerLoading(false);
       }
@@ -459,7 +475,6 @@ const Signup = () => {
     };
   }, [referralLookup]);
 
-  // Check username availability
   useEffect(() => {
     if (!username) {
       setUsernameError(null);
@@ -482,6 +497,7 @@ const Signup = () => {
 
     setCheckingUsername(true);
     let cancel = false;
+
     const handler = setTimeout(async () => {
       const { data, error } = await supabase.rpc("is_username_available", {
         candidate: username,
@@ -524,7 +540,6 @@ const Signup = () => {
     };
   }, [username, usernameCheckAvailable]);
 
-  // OAuth (Google)
   const handleGoogleSignUp = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -533,95 +548,179 @@ const Signup = () => {
         queryParams: { access_type: "offline", prompt: "consent" },
       },
     });
-    if (error) toast({ variant: "destructive", title: "Error", description: error.message });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message,
+      });
+    }
   };
 
-  // Validation functions
-  const validateStep1 = () => !!role || toast({ variant: "destructive", title: "Role required", description: "Select your account type." });
-  const validateStep2 = () => {
-    if (!firstName.trim()) return toast({ variant: "destructive", title: "First name required" }), false;
-    if (!lastName.trim()) return toast({ variant: "destructive", title: "Last name required" }), false;
-    if (!phone.trim()) return toast({ variant: "destructive", title: "Phone / WhatsApp number required", description: "Please enter your phone number with country code." }), false;
-
-    // Validate phone format with country code for ALL roles
-    const normalizedPhone = normalizePhoneNumber(phone.trim());
-    if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
-      return toast({
+  const validateStep1 = () => {
+    if (!role) {
+      toast({
         variant: "destructive",
-        title: role === "student" ? "Valid WhatsApp number required" : "Valid phone number required",
-        description: "Include the country code (for example: +2348012345678, +447123456789).",
-      }), false;
+        title: "Role required",
+        description: "Select your account type.",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    if (!firstName.trim()) {
+      toast({ variant: "destructive", title: "First name required" });
+      return false;
     }
 
-    if (!country) return toast({ variant: "destructive", title: "Country of residence required" }), false;
+    if (!lastName.trim()) {
+      toast({ variant: "destructive", title: "Last name required" });
+      return false;
+    }
+
+    if (!phone.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Phone / WhatsApp number required",
+        description: "Please enter your phone number with country code.",
+      });
+      return false;
+    }
+
+    const normalizedPhone = normalizePhoneNumber(phone.trim());
+    if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
+      toast({
+        variant: "destructive",
+        title: "Valid WhatsApp number required",
+        description: "Include the country code (for example: +2348012345678, +447123456789).",
+      });
+      return false;
+    }
+
+    if (!country) {
+      toast({
+        variant: "destructive",
+        title: "Country of residence required",
+      });
+      return false;
+    }
 
     if (!referralSource.trim()) {
-      return toast({
+      toast({
         variant: "destructive",
         title: "Referral source required",
         description: "Please tell us who referred you or how you heard about UniDoxia.",
-      }), false;
+      });
+      return false;
     }
 
     if (referralSource.trim().length > 200) {
-      return toast({
+      toast({
         variant: "destructive",
         title: "Referral note is too long",
         description: "Please keep it under 200 characters.",
-      }), false;
+      });
+      return false;
     }
 
     return true;
   };
+
   const validateStep3 = () => {
-    if (!username.trim()) return toast({ variant: "destructive", title: "Username required" }), false;
-    if (username.length < 3) return toast({ variant: "destructive", title: "Username too short" }), false;
-    if (usernameError && usernameCheckAvailable) {
-      return toast({ variant: "destructive", title: "Username unavailable", description: usernameError }), false;
+    if (!username.trim()) {
+      toast({ variant: "destructive", title: "Username required" });
+      return false;
     }
-    if (!email.trim()) return toast({ variant: "destructive", title: "Email address required", description: "Please enter a valid email address." }), false;
-    if (!email.includes("@") || !email.includes(".")) return toast({ variant: "destructive", title: "Invalid email", description: "Please enter a valid email address (e.g. name@example.com)." }), false;
-    
-    // Validate password strength using passwordSchema
+
+    if (username.length < 3) {
+      toast({ variant: "destructive", title: "Username too short" });
+      return false;
+    }
+
+    if (usernameError && usernameCheckAvailable) {
+      toast({
+        variant: "destructive",
+        title: "Username unavailable",
+        description: usernameError,
+      });
+      return false;
+    }
+
+    if (!email.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Email address required",
+        description: "Please enter a valid email address.",
+      });
+      return false;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+      toast({
+        variant: "destructive",
+        title: "Invalid email",
+        description: "Please enter a valid email address (e.g. name@example.com).",
+      });
+      return false;
+    }
+
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
-      return toast({ 
-        variant: "destructive", 
-        title: "Weak password", 
-        description: passwordResult.error.issues[0].message 
-      }), false;
+      toast({
+        variant: "destructive",
+        title: "Weak password",
+        description: passwordResult.error.issues[0].message,
+      });
+      return false;
     }
-    
-    if (password !== confirmPassword) return toast({ variant: "destructive", title: "Passwords do not match" }), false;
+
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords do not match",
+      });
+      return false;
+    }
+
     return true;
   };
 
-  // Navigation
   const handleNext = () => {
-    if ((step === 1 && validateStep1()) || (step === 2 && validateStep2())) setStep(step + 1);
+    if ((step === 1 && validateStep1()) || (step === 2 && validateStep2())) {
+      setStep(step + 1);
+    }
   };
-  const handleBack = () => step > 1 && setStep(step - 1);
 
-  // Submit
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 3 && ((step === 1 && validateStep1()) || (step === 2 && validateStep2()))) {
-      setStep(step + 1);
+
+    if (step < 3) {
+      if ((step === 1 && validateStep1()) || (step === 2 && validateStep2())) {
+        setStep(step + 1);
+      }
       return;
     }
+
     if (!validateStep3()) return;
 
     setLoading(true);
+
     try {
-      // Combine first and last name for storage
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
-      
+
       const { error } = await signUp({
         email,
         password,
         fullName,
         role,
-        phone: phone.trim(),
+        phone: normalizePhoneNumber(phone.trim()),
         country,
         username,
         referrerId: referrerInfo?.id,
@@ -630,19 +729,29 @@ const Signup = () => {
       });
 
       if (error) {
-        toast({ variant: "destructive", title: "Signup failed", description: (error as Error).message || "An error occurred" });
+        toast({
+          variant: "destructive",
+          title: "Signup failed",
+          description: (error as Error).message || "An error occurred",
+        });
       } else {
         if (role === "agent") {
           markOnboardingSeen("agent");
         }
+
         toast({
           title: "Account created!",
           description: "Check your email to verify your account before logging in.",
         });
+
         navigate("/verify-email", { state: { email } });
       }
     } catch {
-      toast({ variant: "destructive", title: "Signup failed", description: "Unexpected error." });
+      toast({
+        variant: "destructive",
+        title: "Signup failed",
+        description: "Unexpected error.",
+      });
     } finally {
       setLoading(false);
     }
@@ -661,7 +770,7 @@ const Signup = () => {
       ? "Help students and earn commissions"
       : "Showcase courses and scholarships";
 
-  if (authLoading || redirecting)
+  if (authLoading || redirecting) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <LoadingState
@@ -670,6 +779,7 @@ const Signup = () => {
         />
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 px-4 py-8">
@@ -678,8 +788,8 @@ const Signup = () => {
         description="Create an account with UniDoxia to begin your study abroad journey. Join as a student, agent, or university partner."
         keywords="sign up, create account, student registration, agent registration, university registration, student recruitment platform"
       />
+
       <Card className="w-full max-w-3xl shadow-2xl border-2 relative overflow-hidden">
-        {/* Progress Bar */}
         <div className="absolute top-0 left-0 w-full h-1.5 bg-muted">
           <div
             className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500 ease-in-out"
@@ -697,14 +807,17 @@ const Signup = () => {
               className="px-0 text-muted-foreground hover:text-foreground"
             />
           </div>
+
           <img
             src={unidoxiaLogo}
             alt="UniDoxia Logo"
             className="mx-auto mb-4 h-20 w-20 rounded-lg object-contain dark:brightness-0 dark:invert"
           />
+
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
             Join UniDoxia
           </CardTitle>
+
           <CardDescription className="text-base">
             Step {step} of {totalSteps}:{" "}
             {step === 1
@@ -717,13 +830,13 @@ const Signup = () => {
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-6 px-4 sm:px-8">
-            {/* Step 1: Role Selection */}
             {step === 1 && (
               <div className="space-y-6">
                 <Label className="text-lg font-semibold flex items-center gap-2">
                   <UserCircle className="h-5 w-5" />
                   Select Account Type
                 </Label>
+
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {ROLE_OPTIONS.map((r) => (
                     <button
@@ -734,11 +847,12 @@ const Signup = () => {
                         "w-full rounded-2xl border-2 px-5 py-4 sm:px-6 sm:py-6 text-left transition-all hover:shadow-lg focus-visible:ring-2",
                         role === r
                           ? "border-primary bg-primary/5 shadow-md ring-primary/20"
-                          : "border-border hover:border-primary/50"
+                          : "border-border hover:border-primary/50",
                       )}
                     >
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
                         <span className="text-3xl sm:text-4xl">{getRoleIcon(r)}</span>
+
                         <div className="flex-1 space-y-2">
                           <div className="flex items-start justify-between gap-3">
                             <h3 className="font-semibold text-lg sm:text-xl">{getRoleLabel(r)}</h3>
@@ -750,11 +864,9 @@ const Signup = () => {
                     </button>
                   ))}
                 </div>
-
               </div>
             )}
 
-            {/* Step 2: Personal Info */}
             {step === 2 && (
               <div className="space-y-5">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -762,21 +874,22 @@ const Signup = () => {
                     <Label htmlFor="firstName" className="flex items-center gap-2">
                       <UserCircle className="h-4 w-4" /> First Name
                     </Label>
-                    <Input 
-                      id="firstName" 
-                      value={firstName} 
-                      onChange={(e) => setFirstName(e.target.value)} 
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Enter your first name"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="lastName" className="flex items-center gap-2">
                       <UserCircle className="h-4 w-4" /> Last Name
                     </Label>
-                    <Input 
-                      id="lastName" 
-                      value={lastName} 
-                      onChange={(e) => setLastName(e.target.value)} 
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                       placeholder="Enter your last name"
                     />
                   </div>
@@ -795,7 +908,8 @@ const Signup = () => {
                   placeholder="e.g. +2348012345678"
                 />
                 <p className="text-sm text-muted-foreground">
-                  Required with country code (e.g. +1, +44, +234). We will contact you on WhatsApp.
+                  Required with country code (e.g. +1, +44, +234). We use this as your primary
+                  WhatsApp contact.
                 </p>
 
                 <Label htmlFor="country" className="flex items-center gap-2">
@@ -814,7 +928,8 @@ const Signup = () => {
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  This should be the country where you currently live, not your preferred study destination.
+                  This should be the country where you currently live, not your preferred study
+                  destination.
                 </p>
 
                 <div className="space-y-2">
@@ -832,13 +947,13 @@ const Signup = () => {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    Share a person's name or the source so we can properly track referrals and reward commission.
+                    Share a person's name or the source so we can properly track referrals and
+                    reward commission.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Step 3: Credentials */}
             {step === 3 && (
               <div className="space-y-5">
                 <Label htmlFor="username" className="flex items-center gap-2">
@@ -864,7 +979,14 @@ const Signup = () => {
                   <Mail className="h-4 w-4" /> Email Address
                   <span className="text-destructive">*</span>
                 </Label>
-                <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" />
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                />
 
                 <Label htmlFor="password" className="flex items-center gap-2">
                   <Lock className="h-4 w-4" /> Password
@@ -925,6 +1047,7 @@ const Signup = () => {
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
               )}
+
               {step < totalSteps ? (
                 <Button type="button" onClick={handleNext}>
                   Next <ArrowRight className="ml-2 h-4 w-4" />
@@ -957,11 +1080,16 @@ const Signup = () => {
                   </div>
                 </div>
 
-                <Button variant="outline" onClick={handleGoogleSignUp} disabled={loading}>
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleGoogleSignUp}
+                  disabled={loading}
+                >
+                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                       fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92..."
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07Zm-10.56 11c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.98.66-2.23 1.06-3.71 1.06-2.85 0-5.26-1.92-6.12-4.5H2.18v2.84A10.99 10.99 0 0 0 12 23.25Zm-6.12-8.85A6.6 6.6 0 0 1 5.56 12c0-.83.14-1.64.32-2.4V6.76H2.18A10.99 10.99 0 0 0 1 12c0 1.77.42 3.45 1.18 5.24l3.7-2.84Zm6.12-6.9c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 4.09 14.97 3 12 3 7.69 3 3.96 5.48 2.18 8.76l3.7 2.84c.86-2.58 3.27-4.5 6.12-4.5Z"
                     />
                   </svg>
                   Google

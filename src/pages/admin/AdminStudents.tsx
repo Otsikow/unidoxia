@@ -268,7 +268,8 @@ const AdminStudents = () => {
           archive_reason,
           profile:profiles!students_profile_id_fkey (
             full_name,
-            email
+            email,
+            referred_by
           ),
           documents:student_documents (
             id,
@@ -304,10 +305,27 @@ const AdminStudents = () => {
       if (error) throw error;
 
       const mapped = (data ?? []).map((s: any) => {
-        // Get attribution source: prefer direct referral_source, then attribution records
-        const attrSource = s.referral_source || 
-          (Array.isArray(s.attributions) && s.attributions.length > 0 ? s.attributions[0]?.source : null);
-        
+        const referralSource =
+          typeof s.referral_source === "string" ? s.referral_source.trim() : "";
+
+        const attributionSource =
+          Array.isArray(s.attributions)
+            ? s.attributions
+                .map((entry: { source?: string | null }) =>
+                  typeof entry?.source === "string" ? entry.source.trim() : ""
+                )
+                .find(Boolean)
+            : "";
+
+        const profileReferrer =
+          typeof s.profile?.referred_by === "string" ? s.profile.referred_by.trim() : "";
+
+        // Prefer explicit referral source, then attribution records, then profile-level referrer.
+        const attrSource =
+          referralSource ||
+          attributionSource ||
+          (profileReferrer ? `Referred by @${profileReferrer}` : "");
+
         return {
           ...s,
           status: s.archived_at ? "archived" : "active",

@@ -18,6 +18,9 @@ import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { LoadingState } from "@/components/LoadingState";
 import { SEO } from "@/components/SEO";
 
+const WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
+const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
+
 /**
  * Post-OAuth completion page.
  * Shown to users missing required onboarding fields after sign-up.
@@ -31,13 +34,15 @@ const CompleteSignup = () => {
   const [referralSource, setReferralSource] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [saving, setSaving] = useState(false);
-  const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
-  const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
 
-  const fullNameFromAuth = (profile?.full_name || (typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "") || "").trim();
+  const fullNameFromAuth = (
+    profile?.full_name ||
+    (typeof user?.user_metadata?.full_name === "string" ? user.user_metadata.full_name : "") ||
+    ""
+  ).trim();
+
   const emailFromAuth = (profile?.email || user?.email || "").trim();
 
-  // Redirect if not logged in
   useEffect(() => {
     if (!authLoading && !user) {
       navigate("/auth/login", { replace: true });
@@ -46,30 +51,36 @@ const CompleteSignup = () => {
 
   useEffect(() => {
     if (!authLoading && user && profile) {
-      const fallbackReferral = typeof user.user_metadata?.referral_source === "string"
-        ? user.user_metadata.referral_source
-        : "";
-      const fallbackWhatsapp = profile.phone || (typeof user.user_metadata?.phone === "string" ? user.user_metadata.phone : "");
+      const fallbackReferral =
+        typeof user.user_metadata?.referral_source === "string"
+          ? user.user_metadata.referral_source
+          : "";
+
+      const fallbackWhatsapp =
+        profile.phone ||
+        (typeof user.user_metadata?.phone === "string" ? user.user_metadata.phone : "");
 
       setReferralSource((current) => current || fallbackReferral || "");
       setWhatsappNumber((current) => current || fallbackWhatsapp || "");
     }
   }, [authLoading, user, profile]);
 
-  // Redirect if already completed
   useEffect(() => {
     if (!authLoading && profile && user) {
       const metadataReferral =
         typeof user.user_metadata?.referral_source === "string"
           ? user.user_metadata.referral_source.trim()
           : "";
+
       const profileWhatsapp = (profile.phone || "").trim();
       const metadataWhatsapp =
         typeof user.user_metadata?.phone === "string"
           ? user.user_metadata.phone.trim()
           : "";
+
+      const normalizedWhatsapp = normalizePhoneNumber(profileWhatsapp || metadataWhatsapp);
       const hasReferralSource = metadataReferral.length > 0;
-      const hasWhatsapp = profileWhatsapp.length > 0 || metadataWhatsapp.length > 0;
+      const hasWhatsapp = WHATSAPP_REGEX.test(normalizedWhatsapp);
 
       if (hasReferralSource && hasWhatsapp) {
         navigate("/dashboard", { replace: true });
@@ -89,14 +100,17 @@ const CompleteSignup = () => {
     typeof user.user_metadata?.referral_source === "string"
       ? user.user_metadata.referral_source.trim()
       : "";
+
   const profileWhatsapp = (profile.phone || "").trim();
+
   const metadataWhatsapp =
     typeof user.user_metadata?.phone === "string"
       ? user.user_metadata.phone.trim()
       : "";
 
+  const existingWhatsapp = profileWhatsapp || metadataWhatsapp;
   const needsReferralSource = metadataReferral.length === 0;
-  const needsWhatsapp = profileWhatsapp.length === 0 && metadataWhatsapp.length === 0;
+  const needsWhatsapp = !WHATSAPP_REGEX.test(normalizePhoneNumber(existingWhatsapp));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,6 +134,7 @@ const CompleteSignup = () => {
     }
 
     const normalizedWhatsapp = normalizePhoneNumber(whatsappNumber.trim());
+
     if (needsWhatsapp && !normalizedWhatsapp) {
       toast({
         variant: "destructive",
@@ -129,16 +144,17 @@ const CompleteSignup = () => {
       return;
     }
 
-    if (needsWhatsapp && !STUDENT_WHATSAPP_REGEX.test(normalizedWhatsapp)) {
+    if (needsWhatsapp && !WHATSAPP_REGEX.test(normalizedWhatsapp)) {
       toast({
         variant: "destructive",
         title: "Invalid WhatsApp number",
-        description: "Include the country code (for example: +2348012345678, +447123456789).",
+        description: "Include the country code, for example: +2348012345678 or +447123456789.",
       });
       return;
     }
 
     setSaving(true);
+
     try {
       if (needsWhatsapp) {
         const { error: profileUpdateError } = await supabase
@@ -150,14 +166,16 @@ const CompleteSignup = () => {
       }
 
       const finalReferralSource = needsReferralSource ? referralSource.trim() : metadataReferral;
-      const finalWhatsapp = needsWhatsapp ? normalizedWhatsapp : (profileWhatsapp || metadataWhatsapp);
+      const finalWhatsapp = needsWhatsapp ? normalizedWhatsapp : existingWhatsapp;
 
       if (profile.role === "student" && needsReferralSource) {
-        const { data: studentRecord } = await supabase
+        const { data: studentRecord, error: studentFetchError } = await supabase
           .from("students")
           .select("id, tenant_id")
           .eq("profile_id", user.id)
           .maybeSingle();
+
+        if (studentFetchError) throw studentFetchError;
 
         if (studentRecord) {
           const { error: studentUpdateError } = await supabase
@@ -170,28 +188,36 @@ const CompleteSignup = () => {
 
           if (studentUpdateError) throw studentUpdateError;
 
-          await supabase.from("attributions").insert({
+          const { error: attributionError } = await supabase.from("attributions").insert({
             tenant_id: studentRecord.tenant_id,
             student_id: studentRecord.id,
             source: finalReferralSource,
             touch: "signup",
             medium: "self-reported",
           });
+
+          if (attributionError) throw attributionError;
         }
       }
 
-      await supabase.auth.updateUser({
+      const { error: metadataError } = await supabase.auth.updateUser({
         data: {
           referral_source: finalReferralSource,
           phone: finalWhatsapp,
         },
       });
 
-      toast({ title: "Thank you!", description: "Your information has been saved." });
+      if (metadataError) throw metadataError;
+
+      toast({
+        title: "Thank you!",
+        description: "Your information has been saved.",
+      });
+
       await refreshProfile();
       navigate("/dashboard", { replace: true });
     } catch (err) {
-      console.error("Error saving referral source:", err);
+      console.error("Error saving signup details:", err);
       toast({
         variant: "destructive",
         title: "Error",
@@ -252,40 +278,45 @@ const CompleteSignup = () => {
                   value={whatsappNumber}
                   onChange={(e) => setWhatsappNumber(e.target.value)}
                   placeholder="e.g. +2348012345678"
+                  maxLength={20}
                   autoFocus={!needsReferralSource}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Include country code, for example +44 or +234.
+                </p>
               </div>
             )}
 
             {needsReferralSource && (
-            <div className="space-y-2">
-              <Label htmlFor="referralSource" className="flex items-center gap-2">
-                <AtSign className="h-4 w-4" />
-                Who referred you, or how did you hear about UniDoxia?
-                <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="referralSource"
-                value={referralSource}
-                onChange={(e) => setReferralSource(e.target.value)}
-                placeholder="e.g. John Doe, Instagram, school counselor, Google search"
-                maxLength={200}
-                autoFocus
-              />
-              <p className="text-xs text-muted-foreground">
-                Share a person's name or the source so we can properly track referrals and reward commission.
-              </p>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="referralSource" className="flex items-center gap-2">
+                  <AtSign className="h-4 w-4" />
+                  Who referred you, or how did you hear about UniDoxia?
+                  <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="referralSource"
+                  value={referralSource}
+                  onChange={(e) => setReferralSource(e.target.value)}
+                  placeholder="e.g. John Doe, Instagram, school counselor, Google search"
+                  maxLength={200}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Share a person's name or the source so we can properly track referrals and reward commission.
+                </p>
+              </div>
             )}
 
             <Button type="submit" className="w-full" disabled={saving}>
               {saving ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
                 </>
               ) : (
                 <>
-                  <Check className="mr-2 h-4 w-4" /> Continue to Dashboard
+                  <Check className="mr-2 h-4 w-4" />
+                  Continue to Dashboard
                 </>
               )}
             </Button>

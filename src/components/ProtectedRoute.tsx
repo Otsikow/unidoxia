@@ -14,43 +14,38 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
-  const { user, profile, loading: authLoading, profileLoading, signOut, refreshProfile } = useAuth();
+  const { user, profile, loading: authLoading, profileLoading, signOut } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles();
   const location = useLocation();
   const [isRepairing, setIsRepairing] = useState(false);
   const [repairError, setRepairError] = useState<string | null>(null);
-  // Include profileLoading to prevent "Profile not found" flash during authentication
+
   const loading = authLoading || profileLoading || rolesLoading;
 
-  const isAgent = profile?.role === "agent";
-  const isAgentOnboardingRoute = location.pathname.startsWith("/agents/onboarding");
+  const isAgent = profile?.role === 'agent';
+  const isAgentOnboardingRoute = location.pathname.startsWith('/agents/onboarding');
 
-  /**
-   * Attempts to repair the user's account using the server-side ensure_user_profile RPC.
-   * This handles malformed accounts where profile/roles/university records are missing.
-   */
   const handleRepairAccount = async () => {
     if (!user?.id) return;
-    
+
     setIsRepairing(true);
     setRepairError(null);
-    
+
     try {
       const { data, error } = await supabase.rpc('ensure_user_profile' as any, {
         p_user_id: user.id,
       });
-      
+
       if (error) {
         console.error('Account repair failed:', error);
         setRepairError(error.message || 'Failed to repair account');
         return;
       }
-      
+
       const result = data as { success?: boolean; error?: string } | null;
+
       if (result?.success) {
         console.log('Account repaired successfully:', result);
-        // Force a hard reload to clear any stale cache and re-initialize auth state
-        // This is safer than just refreshProfile() as it resets all context
         window.location.reload();
       } else {
         setRepairError(result?.error || 'Repair did not succeed');
@@ -75,14 +70,11 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/auth/login" replace state={{ from: location.pathname }} />;
   }
 
-  // If a user has an active session but the app cannot load the associated profile,
-  // sending them to /auth/login creates a redirect loop (login auto-redirects signed-in users).
-  // Instead, provide a clear recovery path: try repair first, then sign out options.
   if (!profile) {
-    const email = user.email ?? "";
+    const email = user.email ?? '';
     const resetTarget = email
       ? `/auth/forgot-password?email=${encodeURIComponent(email)}`
-      : "/auth/forgot-password";
+      : '/auth/forgot-password';
 
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -109,13 +101,13 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
                 Signed in as <span className="font-medium text-foreground">{email}</span>
               </p>
             ) : null}
-            
+
             {repairError && (
               <p className="text-sm text-destructive text-center bg-destructive/10 p-2 rounded">
                 {repairError}
               </p>
             )}
-            
+
             <Button
               className="w-full"
               onClick={handleRepairAccount}
@@ -123,7 +115,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
             >
               {isRepairing ? 'Repairing account...' : 'Repair my account'}
             </Button>
-            
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
@@ -132,7 +124,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
                 <span className="bg-background px-2 text-muted-foreground">Or</span>
               </div>
             </div>
-            
+
             <Button
               variant="outline"
               className="w-full"
@@ -140,10 +132,11 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
             >
               Reset password
             </Button>
+
             <Button
               variant="ghost"
               className="w-full"
-              onClick={() => void signOut({ redirectTo: "/auth/login" })}
+              onClick={() => void signOut({ redirectTo: '/auth/login' })}
             >
               Go to login
             </Button>
@@ -157,35 +150,50 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     return <Navigate to="/verify-email" replace state={{ from: location.pathname }} />;
   }
 
-  if (isAgent && profile && profile.onboarded === false && !isAgentOnboardingRoute) {
+  if (isAgent && profile.onboarded === false && !isAgentOnboardingRoute) {
     return <Navigate to="/agents/onboarding" replace state={{ from: location.pathname }} />;
   }
 
-  // Redirect users missing required onboarding fields to complete signup.
-  // Required fields: referral_source and WhatsApp number.
-  const isCompleteSignupRoute = location.pathname === "/auth/complete-signup";
-  if (profile && !isCompleteSignupRoute) {
+  // Redirect users with incomplete required signup details.
+  // Required fields: referral source and WhatsApp number.
+  const isCompleteSignupRoute = location.pathname === '/auth/complete-signup';
+  if (!isCompleteSignupRoute) {
     const referralSource =
-      typeof user?.user_metadata?.referral_source === "string"
+      typeof user.user_metadata?.referral_source === 'string'
         ? user.user_metadata.referral_source.trim()
-        : "";
-    const whatsappNumber = (profile.phone ?? "").trim() || (String(user?.user_metadata?.phone ?? "").trim());
+        : '';
 
-    if (!referralSource || !whatsappNumber) {
-      return <Navigate to="/auth/complete-signup" replace state={{ from: location.pathname }} />;
+    const rawPhone =
+      typeof profile.phone === 'string' && profile.phone.trim().length > 0
+        ? profile.phone.trim()
+        : typeof user.user_metadata?.phone === 'string'
+          ? user.user_metadata.phone.trim()
+          : '';
+
+    const normalizedPhone = rawPhone.replace(/[\s\-()]/g, '');
+    const hasReferralSource = referralSource.length > 0;
+    const hasWhatsapp =
+      normalizedPhone.length > 0 &&
+      (/^\+[1-9]\d{7,14}$/.test(normalizedPhone) || /^[1-9]\d{7,14}$/.test(normalizedPhone));
+
+    if (!hasReferralSource || !hasWhatsapp) {
+      return (
+        <Navigate
+          to="/auth/complete-signup"
+          replace
+          state={{ from: location.pathname }}
+        />
+      );
     }
   }
 
   // Map 'university' role to 'partner' for backward compatibility
-  // CRITICAL: Only use profile.role (from DB), NOT user_metadata.role
-  // user_metadata can be stale/wrong (e.g. admin with legacy 'partner' metadata)
+  // Only use profile.role from DB, not user_metadata.role
   const isPartner =
-    profile?.role === 'partner' ||
-    profile?.role === 'university';
+    profile.role === 'partner' ||
+    profile.role === 'university';
 
-  // Only enforce email verification for actual partner-role profiles
-  // and only if the user's email is not confirmed at the auth level
-  if (isPartner && profile && !user.email_confirmed_at) {
+  if (isPartner && !user.email_confirmed_at) {
     return (
       <Navigate
         to="/verify-email"
