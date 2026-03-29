@@ -7,10 +7,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+async function getAuthenticatedUser(req: Request): Promise<{ user: { id: string }; error?: never } | { user?: never; error: Response }> {
+  const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return { error: new Response(JSON.stringify({ error: 'Missing or invalid Authorization header' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data?.user) {
+    return { error: new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }) };
+  }
+  return { user: data.user };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+
+  // Require authentication
+  const auth = await getAuthenticatedUser(req);
+  if (auth.error) return auth.error;
 
   try {
     const supabaseClient = createClient(
@@ -22,6 +41,21 @@ serve(async (req) => {
 
     if (!applicationId || !offerId) {
       throw new Error('Missing applicationId or offerId')
+    }
+
+    // Verify the authenticated user has permission (admin/staff or partner managing this application)
+    const { data: canManage } = await supabaseClient.rpc('can_manage_university_application', {
+      p_user_id: auth.user.id,
+      p_application_id: applicationId,
+    });
+    const { data: isAdminStaff } = await supabaseClient.rpc('is_admin_or_staff', {
+      user_id: auth.user.id,
+    });
+    if (!canManage && !isAdminStaff) {
+      return new Response(JSON.stringify({ error: 'Insufficient permissions' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Fetch Application, Student, and University details
@@ -62,9 +96,6 @@ serve(async (req) => {
     const lineHeight = fontSize * 1.5
 
     let y = height - 50
-
-    // Logo (Placeholder if not available)
-    // if (application.program.university.logo_url) { ... }
 
     // Header
     page.drawText(application.program.university.name, {
@@ -137,8 +168,7 @@ serve(async (req) => {
       y -= lineHeight * 3
     }
 
-    // Fees and Next Steps
-    // You would typically fetch this from the program or offer details
+    // Next Steps
     page.drawText('Next Steps:', {
         x: 50,
         y,
@@ -201,7 +231,7 @@ serve(async (req) => {
     const { error: updateError } = await supabaseClient
       .from('offers')
       .update({
-        letter_url: fileName, // Store the storage path
+        letter_url: fileName,
         status: 'issued'
       })
       .eq('id', offerId)

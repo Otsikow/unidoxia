@@ -191,8 +191,8 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const authError = requireAuthenticatedUser(req);
-  if (authError) return authError;
+  const authResult = await getAuthenticatedAdminOrStaff(req);
+  if (authResult instanceof Response) return authResult;
 
   try {
     const body = (await req.json()) as Partial<InviteStudentRequest> | null;
