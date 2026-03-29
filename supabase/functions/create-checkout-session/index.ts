@@ -19,67 +19,39 @@ interface PlanConfig {
   stripePriceId?: string;
 }
 
-// Get Price IDs from environment variables (configured via secrets)
 const STRIPE_SELF_SERVICE_PRICE_ID = Deno.env.get("STRIPE_SELF_SERVICE_PRICE_ID");
 const STRIPE_AGENT_SUPPORTED_PRICE_ID = Deno.env.get("STRIPE_AGENT_SUPPORTED_PRICE_ID");
 
 const PLAN_CONFIGS: Record<PlanCode, PlanConfig> = {
   self_service: {
     name: "Self-Service Plan",
-    priceInCents: 4900, // $49.00 USD
+    priceInCents: 4900,
     currency: "usd",
     description: "Apply to unlimited universities independently - One-time payment",
     stripePriceId: STRIPE_SELF_SERVICE_PRICE_ID,
   },
   agent_supported: {
     name: "Agent-Supported Plan",
-    priceInCents: 20000, // $200.00 USD
+    priceInCents: 20000,
     currency: "usd",
     description: "Full guidance from application to visa - One-time payment",
     stripePriceId: STRIPE_AGENT_SUPPORTED_PRICE_ID,
   },
 };
 
-interface AuthContext {
-  userId: string;
-  email?: string;
-}
-
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const segments = token.split(".");
-    if (segments.length !== 3) return null;
-    const payload = segments[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "="));
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-function getAuthContext(req: Request): AuthContext | Response {
-  const authHeader = req.headers.get("authorization") ?? req.headers.get("Authorization");
+async function getAuthenticatedUser(req: Request): Promise<{ user: { id: string; email?: string }; error?: never } | { user?: never; error: Response }> {
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return { error: new Response(JSON.stringify({ error: "Missing Authorization header" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }) };
   }
-
-  const token = authHeader.slice(7);
-  const payload = decodeJwtPayload(token);
-  const role = (payload?.role ?? payload?.["user_role"]) as string | undefined;
-  const subject = payload?.sub as string | undefined;
-
-  if (!payload || role !== "authenticated" || !subject) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data?.user) {
+    return { error: new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }) };
   }
-
-  const email = typeof payload.email === "string" ? payload.email : undefined;
-  return { userId: subject, email };
+  return { user: { id: data.user.id, email: data.user.email } };
 }
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -112,24 +84,16 @@ serve(async (req) => {
     });
   }
 
-  // Check Stripe key
   if (!stripeSecretKey) {
     return new Response(
-      JSON.stringify({ 
-        error: "Stripe is not configured. Please contact support.",
-        demo: true,
-      }), 
-      {
-        status: 503,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: "Stripe is not configured. Please contact support.", demo: true }),
+      { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
-  const authContext = getAuthContext(req);
-  if (authContext instanceof Response) {
-    return authContext;
-  }
+  const auth = await getAuthenticatedUser(req);
+  if (auth.error) return auth.error;
+  const authContext = auth.user;
 
   try {
     const body = (await req.json()) as RequestPayload;
@@ -146,11 +110,10 @@ serve(async (req) => {
 
     const plan = PLAN_CONFIGS[planCode];
 
-    // Fetch student profile with tenant_id
     const { data: student, error: studentError } = await supabase
       .from("students")
       .select("id, plan_type, tenant_id")
-      .eq("profile_id", authContext.userId)
+      .eq("profile_id", authContext.id)
       .single();
 
     if (studentError || !student) {
@@ -161,38 +124,21 @@ serve(async (req) => {
       });
     }
 
-    // Check if already on a paid plan
     if (student.plan_type && student.plan_type !== "free") {
       return new Response(
-        JSON.stringify({ 
-          error: "You are already on a paid plan",
-          currentPlan: student.plan_type,
-        }), 
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ error: "You are already on a paid plan", currentPlan: student.plan_type }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Initialize Stripe
-    const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: "2023-10-16",
-    });
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
 
-    // Create Stripe Checkout Session
     const lineItem = plan.stripePriceId
-      ? {
-          price: plan.stripePriceId,
-          quantity: 1,
-        }
+      ? { price: plan.stripePriceId, quantity: 1 }
       : {
           price_data: {
             currency: plan.currency,
-            product_data: {
-              name: plan.name,
-              description: plan.description,
-            },
+            product_data: { name: plan.name, description: plan.description },
             unit_amount: plan.priceInCents,
           },
           quantity: 1,
@@ -207,14 +153,14 @@ serve(async (req) => {
       cancel_url: cancelUrl,
       metadata: {
         student_id: student.id,
-        user_id: authContext.userId,
+        user_id: authContext.id,
         plan_code: planCode,
         tenant_id: student.tenant_id,
       },
       payment_intent_data: {
         metadata: {
           student_id: student.id,
-          user_id: authContext.userId,
+          user_id: authContext.id,
           plan_code: planCode,
           tenant_id: student.tenant_id,
         },
@@ -222,14 +168,8 @@ serve(async (req) => {
     });
 
     return new Response(
-      JSON.stringify({
-        sessionId: session.id,
-        url: session.url,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ sessionId: session.id, url: session.url }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("create-checkout-session error", error);

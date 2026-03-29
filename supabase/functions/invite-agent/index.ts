@@ -23,19 +23,7 @@ type HttpErrorPayload = {
   retryAfterSeconds?: number;
 };
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "="));
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-function requireAuthenticatedUser(req: Request): Response | null {
+async function getAuthenticatedAdminOrStaff(req: Request): Promise<{ userId: string } | Response> {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), {
@@ -43,20 +31,26 @@ function requireAuthenticatedUser(req: Request): Response | null {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-
-  const token = authHeader.slice(7);
-  const payload = decodeJwtPayload(token);
-  const role = (payload?.role || payload?.["user_role"]) as string | undefined;
-  const sub = payload?.sub as string | undefined;
-
-  if (!payload || role !== "authenticated" || !sub) {
+  const url = Deno.env.get("SUPABASE_URL") ?? "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const userClient = createClient(url, anonKey, { global: { headers: { Authorization: authHeader } } });
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data?.user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-
-  return null;
+  // Verify the caller is admin or staff
+  const adminClient = getSupabaseAdminClient();
+  const { data: isAdminStaff } = await adminClient.rpc("is_admin_or_staff", { user_id: data.user.id });
+  if (!isAdminStaff) {
+    return new Response(JSON.stringify({ error: "Insufficient permissions. Only admin or staff can invite agents." }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  return { userId: data.user.id };
 }
 
 function getSupabaseAdminClient() {
@@ -192,8 +186,8 @@ serve(async (req: Request): Promise<Response> => {
     });
   }
 
-  const authError = requireAuthenticatedUser(req);
-  if (authError) return authError;
+  const authResult = await getAuthenticatedAdminOrStaff(req);
+  if (authResult instanceof Response) return authResult;
 
   try {
     const body = (await req.json()) as Partial<InviteAgentRequest> | null;

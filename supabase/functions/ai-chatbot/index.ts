@@ -66,20 +66,7 @@ interface AttachmentDescription extends AttachmentPayload {
 
 const MAX_ATTACHMENT_DESCRIPTIONS = 3;
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "="));
-    return JSON.parse(json);
-  } catch (error) {
-    console.warn("Failed to decode JWT payload", error);
-    return null;
-  }
-}
-
-function authenticateRequest(req: Request): { error?: Response; context?: AuthContext } {
+async function authenticateRequest(req: Request): Promise<{ error?: Response; context?: AuthContext }> {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return {
@@ -91,11 +78,13 @@ function authenticateRequest(req: Request): { error?: Response; context?: AuthCo
   }
 
   const token = authHeader.slice(7);
-  const payload = decodeJwtPayload(token);
-  const role = (payload?.role || payload?.["user_role"]) as string | undefined;
-  const sub = payload?.sub as string | undefined;
-
-  if (!payload || role !== "authenticated" || !sub) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const userClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data?.user) {
     return {
       error: new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -104,7 +93,7 @@ function authenticateRequest(req: Request): { error?: Response; context?: AuthCo
     };
   }
 
-  return { context: { userId: sub, token, payload } };
+  return { context: { userId: data.user.id, token, payload: { sub: data.user.id, role: "authenticated" } } };
 }
 
 function normalizeLocale(input?: string | null): string | null {
@@ -358,7 +347,7 @@ serve(async (req) => {
     });
   }
 
-  const auth = authenticateRequest(req);
+  const auth = await authenticateRequest(req);
   if (auth.error) return auth.error;
 
   const { context } = auth;
