@@ -13,22 +13,26 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AtSign, Check } from "lucide-react";
+import { Loader2, AtSign, Check, Phone } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { LoadingState } from "@/components/LoadingState";
 import { SEO } from "@/components/SEO";
 
+const WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
+const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
+
 /**
  * Post-OAuth completion page.
- * Shown to students who signed up via Google OAuth and haven't
- * provided their referral source yet.
+ * Shown after sign-up when mandatory onboarding details
+ * (referral source + WhatsApp number) are missing.
  */
 const CompleteSignup = () => {
-  const { user, profile, loading: authLoading, refreshProfile } = useAuth();
+  const { user, loading: authLoading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const [referralSource, setReferralSource] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [saving, setSaving] = useState(false);
 
   // Redirect if not logged in
@@ -38,12 +42,27 @@ const CompleteSignup = () => {
     }
   }, [authLoading, user, navigate]);
 
-  // Redirect if already completed (has referral_source)
+  // Pre-fill from existing metadata and redirect when already complete.
   useEffect(() => {
-    if (!authLoading && profile && profile.role !== "student") {
-      navigate("/dashboard", { replace: true });
+    if (user?.user_metadata?.referral_source && !referralSource) {
+      setReferralSource(String(user.user_metadata.referral_source));
     }
-  }, [authLoading, profile, navigate]);
+    if (user?.user_metadata?.phone && !whatsappNumber) {
+      setWhatsappNumber(String(user.user_metadata.phone));
+    }
+  }, [user, referralSource, whatsappNumber]);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      const referral = user.user_metadata?.referral_source;
+      const whatsapp = user.user_metadata?.phone;
+      const hasReferral = typeof referral === "string" && referral.trim().length > 0;
+      const hasWhatsapp = typeof whatsapp === "string" && WHATSAPP_REGEX.test(normalizePhoneNumber(whatsapp.trim()));
+      if (hasReferral && hasWhatsapp) {
+        navigate("/dashboard", { replace: true });
+      }
+    }
+  }, [authLoading, user, navigate]);
 
   if (authLoading) {
     return (
@@ -70,6 +89,25 @@ const CompleteSignup = () => {
         variant: "destructive",
         title: "Too long",
         description: "Please keep your answer under 200 characters.",
+      });
+      return;
+    }
+
+    const normalizedWhatsapp = normalizePhoneNumber(whatsappNumber.trim());
+    if (!normalizedWhatsapp) {
+      toast({
+        variant: "destructive",
+        title: "WhatsApp number required",
+        description: "Please provide your WhatsApp number with country code.",
+      });
+      return;
+    }
+
+    if (!WHATSAPP_REGEX.test(normalizedWhatsapp)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid WhatsApp number",
+        description: "Include country code, for example +2348012345678 or +447123456789.",
       });
       return;
     }
@@ -102,9 +140,14 @@ const CompleteSignup = () => {
         });
       }
 
+      await supabase
+        .from("profiles")
+        .update({ phone: normalizedWhatsapp })
+        .eq("id", user!.id);
+
       // Update user metadata
       await supabase.auth.updateUser({
-        data: { referral_source: referralSource.trim() },
+        data: { referral_source: referralSource.trim(), phone: normalizedWhatsapp },
       });
 
       toast({ title: "Thank you!", description: "Your information has been saved." });
@@ -138,13 +181,32 @@ const CompleteSignup = () => {
           />
           <CardTitle className="text-xl">One More Step</CardTitle>
           <CardDescription>
-            Before you get started, please tell us how you heard about UniDoxia.
-            This helps us reward the people who refer students to our platform.
+            Before you get started, tell us who referred you and confirm your WhatsApp number.
+            This keeps onboarding complete and lets our team support you quickly.
           </CardDescription>
         </CardHeader>
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                WhatsApp Number
+                <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="whatsappNumber"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="e.g. +2348012345678"
+                maxLength={20}
+                autoFocus
+              />
+              <p className="text-xs text-muted-foreground">
+                Include country code (e.g. +1, +44, +234).
+              </p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="referralSource" className="flex items-center gap-2">
                 <AtSign className="h-4 w-4" />
@@ -157,7 +219,6 @@ const CompleteSignup = () => {
                 onChange={(e) => setReferralSource(e.target.value)}
                 placeholder="e.g. John Doe, Instagram, school counselor, Google search"
                 maxLength={200}
-                autoFocus
               />
               <p className="text-xs text-muted-foreground">
                 Share a person's name or the source so we can properly track referrals and reward commission.
