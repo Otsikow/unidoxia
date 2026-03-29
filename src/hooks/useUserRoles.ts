@@ -173,7 +173,6 @@ export const useUserRoles = (): UseUserRolesResult => {
     }
   }, [mapRoles, userId]);
 
-  const metadataRole = normalizeRole(user?.user_metadata?.role);
   const profileRole = normalizeRole(profile?.role);
 
   const effectiveRoles = useMemo(() => {
@@ -183,10 +182,6 @@ export const useUserRoles = (): UseUserRolesResult => {
       uniqueRoles.add(profileRole);
     }
 
-    if (metadataRole) {
-      uniqueRoles.add(metadataRole);
-    }
-
     const prioritized = Array.from(uniqueRoles).sort((a, b) => {
       const indexA = ROLE_PRIORITY.indexOf(a);
       const indexB = ROLE_PRIORITY.indexOf(b);
@@ -194,7 +189,7 @@ export const useUserRoles = (): UseUserRolesResult => {
     });
 
     return prioritized;
-  }, [metadataRole, profileRole, roles]);
+  }, [profileRole, roles]);
 
   const hasRole = useCallback(
     (requiredRoles: AppRole | AppRole[]) => {

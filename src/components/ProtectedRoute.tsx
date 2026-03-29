@@ -22,8 +22,8 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   // Include profileLoading to prevent "Profile not found" flash during authentication
   const loading = authLoading || profileLoading || rolesLoading;
 
-  const isStudent = profile?.role === "student" || user?.user_metadata?.role === "student";
-  const isAgent = profile?.role === "agent" || user?.user_metadata?.role === "agent";
+  const isStudent = profile?.role === "student";
+  const isAgent = profile?.role === "agent";
   const isAgentOnboardingRoute = location.pathname.startsWith("/agents/onboarding");
 
   /**
