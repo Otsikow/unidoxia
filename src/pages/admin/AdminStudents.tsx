@@ -253,11 +253,7 @@ const AdminStudents = () => {
     setLoading(true);
     setError(null);
 
-    try {
-      let query = supabase
-        .from("students")
-        .select(
-          `
+    const buildStudentSelect = (includeAttributions: boolean) => `
           id,
           profile_id,
           legal_name,
@@ -293,24 +289,39 @@ const AdminStudents = () => {
               level,
               name
             )
-          ),
+          )${includeAttributions ? ",
           attributions (
             source
-          )
-        `
-        );
+          )" : ""}
+        `;
+
+    const fetchStudentRows = async (includeAttributions: boolean) => {
+      let query = supabase
+        .from("students")
+        .select(buildStudentSelect(includeAttributions));
 
       if (tenantId) {
         query = query.eq("tenant_id", tenantId);
       }
 
-      const { data, error } = await query.order("created_at", {
+      return query.order("created_at", {
         ascending: false,
       });
+    };
 
-      if (error) throw error;
+    try {
+      let includeAttributions = true;
+      let response = await fetchStudentRows(includeAttributions);
 
-      const mapped = (data ?? []).map((s: any) => {
+      if (response.error) {
+        console.warn("AdminStudents: attribution join failed, retrying without attributions", response.error);
+        includeAttributions = false;
+        response = await fetchStudentRows(includeAttributions);
+      }
+
+      if (response.error) throw response.error;
+
+      const mapped = (response.data ?? []).map((s: any) => {
         const referralSource =
           typeof s.referral_source === "string" ? s.referral_source.trim() : "";
 
