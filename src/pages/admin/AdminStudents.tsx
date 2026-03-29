@@ -289,10 +289,7 @@ const AdminStudents = () => {
               level,
               name
             )
-          )${includeAttributions ? ",
-          attributions (
-            source
-          )" : ""}
+          )${includeAttributions ? `, attributions ( source )` : ""}
         `;
 
     const fetchStudentRows = async (includeAttributions: boolean) => {
