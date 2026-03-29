@@ -1,53 +1,26 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-function decodeJwtPayload(token: string): Record<string, unknown> | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(
-      payload.padEnd(payload.length + (4 - (payload.length % 4)) % 4, "="),
-    );
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-}
-
-function requireAuthenticatedUser(req: Request): Response | null {
-  const authHeader =
-    req.headers.get("authorization") || req.headers.get("Authorization");
+async function getAuthenticatedUser(req: Request): Promise<{ user: { id: string }; error?: never } | { user?: never; error: Response }> {
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(
-      JSON.stringify({ error: "Missing or invalid Authorization header" }),
-      {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return { error: new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }) };
   }
-
-  const token = authHeader.slice(7);
-  const payload = decodeJwtPayload(token);
-  const role = (payload?.role || payload?.["user_role"]) as
-    | string
-    | undefined;
-  const sub = payload?.sub as string | undefined;
-  if (!payload || role !== "authenticated" || !sub) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const userClient = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: authHeader } } });
+  const { data, error } = await userClient.auth.getUser();
+  if (error || !data?.user) {
+    return { error: new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }) };
   }
-  return null;
+  return { user: data.user };
 }
 
 const buildPrompt = (title: string, excerpt?: string, tags?: string) => {
@@ -86,8 +59,8 @@ serve(async (req) => {
     });
   }
 
-  const authError = requireAuthenticatedUser(req);
-  if (authError) return authError;
+  const auth = await getAuthenticatedUser(req);
+  if (auth.error) return auth.error;
 
   try {
     const body = await req.json();
@@ -102,10 +75,10 @@ serve(async (req) => {
       });
     }
 
-      const apiKey = Deno.env.get("LOVABLE_API_KEY");
-      if (!apiKey) {
-        throw new Error("Image generation API key is not configured");
-      }
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    if (!apiKey) {
+      throw new Error("Image generation API key is not configured");
+    }
 
     const prompt = buildPrompt(title, excerpt, tags);
 
@@ -119,12 +92,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: "google/gemini-2.5-flash-image",
-          messages: [
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
+          messages: [{ role: "user", content: prompt }],
           modalities: ["image", "text"],
         }),
       }
@@ -132,64 +100,40 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-        console.error("Image generation service error", response.status, errorText);
-        if (response.status === 429) {
-          return new Response(
-            JSON.stringify({
-              error: "Rate limit reached. Please try again soon.",
-            }),
-          {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
+      console.error("Image generation service error", response.status, errorText);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit reached. Please try again soon." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
-        if (response.status === 402) {
-          return new Response(
-            JSON.stringify({
-              error: "Payment required. Please add credits to your image generation service account.",
-            }),
-            {
-              status: 402,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            },
-          );
-        }
-
-        throw new Error(`Image generation service error: ${response.status}`);
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required. Please add credits to your image generation service account." }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
+      throw new Error(`Image generation service error: ${response.status}`);
+    }
 
     const result = await response.json();
     const imageBase64 = result?.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-      if (!imageBase64) {
-        console.error("Image generation service response missing image", result);
-        return new Response(
-          JSON.stringify({
-            error: "AI did not return an image",
-        }),
-        {
-          status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    if (!imageBase64) {
+      console.error("Image generation service response missing image", result);
+      return new Response(JSON.stringify({ error: "AI did not return an image" }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Extract base64 data from data URL format
-    const base64Data = imageBase64.startsWith("data:") 
-      ? imageBase64.split(",")[1] 
-      : imageBase64;
-    const mimeType = imageBase64.startsWith("data:") 
-      ? imageBase64.split(";")[0].split(":")[1] 
-      : "image/png";
+    const base64Data = imageBase64.startsWith("data:") ? imageBase64.split(",")[1] : imageBase64;
+    const mimeType = imageBase64.startsWith("data:") ? imageBase64.split(";")[0].split(":")[1] : "image/png";
 
-    return new Response(
-      JSON.stringify({ imageBase64: base64Data, mimeType }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return new Response(JSON.stringify({ imageBase64: base64Data, mimeType }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("generate-blog-image error", error);
     const message = error instanceof Error ? error.message : "Unknown error";
