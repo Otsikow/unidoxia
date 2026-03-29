@@ -347,7 +347,7 @@ serve(async (req) => {
     });
   }
 
-  const auth = authenticateRequest(req);
+  const auth = await authenticateRequest(req);
   if (auth.error) return auth.error;
 
   const { context } = auth;
