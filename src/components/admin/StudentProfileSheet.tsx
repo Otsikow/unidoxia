@@ -87,6 +87,8 @@ interface StudentProfile {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  preferred_course: string | null;
+  preferred_country: string | null;
   
   address: Record<string, any> | null;
   nationality: string | null;
@@ -212,6 +214,8 @@ export function StudentProfileSheet({
           preferred_name,
           contact_email,
           contact_phone,
+          preferred_course,
+          preferred_country,
           
           address,
           nationality,
@@ -580,6 +584,14 @@ export function StudentProfileSheet({
                         <div>
                           <span className="text-muted-foreground">Country</span>
                           <p className="font-medium">{student.current_country || "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Preferred Course</span>
+                          <p className="font-medium">{student.preferred_course || "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Preferred Study Country</span>
+                          <p className="font-medium">{student.preferred_country || "—"}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Phone</span>
