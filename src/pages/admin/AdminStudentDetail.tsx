@@ -197,6 +197,11 @@ const AdminStudentDetail = () => {
   const [archiveReason, setArchiveReason] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
 
+  // Upload missing document
+  const [pendingUploadDocType, setPendingUploadDocType] = useState<string | null>(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const missingDocFileInputRef = useRef<HTMLInputElement>(null);
+
   /* ------------------------------ Data Load ------------------------------ */
 
   const fetchStudent = useCallback(async () => {
