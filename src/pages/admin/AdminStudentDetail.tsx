@@ -53,11 +53,13 @@ import {
   AlertCircle,
   MessageCircle,
   MessageSquare,
+  Upload,
 } from "lucide-react";
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { format } from "date-fns";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 import { Checkbox } from "@/components/ui/checkbox";
+import { validateFileUpload } from "@/lib/fileUpload";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
