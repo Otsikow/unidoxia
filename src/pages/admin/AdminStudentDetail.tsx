@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -53,11 +53,13 @@ import {
   AlertCircle,
   MessageCircle,
   MessageSquare,
+  Upload,
 } from "lucide-react";
 import { AdminStudentChat } from "@/components/admin/AdminStudentChat";
 import { format } from "date-fns";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 import { Checkbox } from "@/components/ui/checkbox";
+import { validateFileUpload } from "@/lib/fileUpload";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -194,6 +196,11 @@ const AdminStudentDetail = () => {
   const [archivedAt, setArchivedAt] = useState<string | null>(null);
   const [archiveReason, setArchiveReason] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
+
+  // Upload missing document
+  const [pendingUploadDocType, setPendingUploadDocType] = useState<string | null>(null);
+  const [docUploading, setDocUploading] = useState(false);
+  const missingDocFileInputRef = useRef<HTMLInputElement>(null);
 
   /* ------------------------------ Data Load ------------------------------ */
 
@@ -546,6 +553,82 @@ const AdminStudentDetail = () => {
     }
   };
 
+  /* ------------------------------ Upload Missing Doc ------------------------------ */
+
+  const handleMissingDocClick = (docType: string) => {
+    setPendingUploadDocType(docType);
+    // Reset and trigger file input
+    if (missingDocFileInputRef.current) {
+      missingDocFileInputRef.current.value = "";
+      missingDocFileInputRef.current.click();
+    }
+  };
+
+  const handleMissingDocFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const docType = pendingUploadDocType;
+
+    if (!file || !docType || !studentId) {
+      setPendingUploadDocType(null);
+      e.target.value = "";
+      return;
+    }
+
+    setDocUploading(true);
+    try {
+      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(file, {
+        allowedMimeTypes: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "image/png",
+          "image/jpeg",
+          "image/jpg",
+        ],
+        allowedExtensions: ["pdf", "doc", "docx", "png", "jpg", "jpeg"],
+        maxSizeBytes: 10 * 1024 * 1024,
+      });
+
+      const ext = sanitizedFileName.split(".").pop() || "pdf";
+      const storagePath = `${studentId}/${docType}_${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("student-documents")
+        .upload(storagePath, preparedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: detectedMimeType,
+        });
+      if (uploadError) throw uploadError;
+
+      try {
+        const { error: dbError } = await supabase.from("student_documents").insert({
+          student_id: studentId,
+          document_type: docType,
+          file_name: sanitizedFileName,
+          file_size: preparedFile.size,
+          mime_type: detectedMimeType,
+          storage_path: storagePath,
+        });
+        if (dbError) throw dbError;
+      } catch (dbErr) {
+        await supabase.storage.from("student-documents").remove([storagePath]);
+        throw dbErr;
+      }
+
+      const docLabel = missingDocuments.find((d) => d.type === docType)?.label || docType;
+      toast({ title: "Document uploaded", description: `${docLabel} has been uploaded successfully.` });
+      void fetchStudent();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Failed to upload document", variant: "destructive" });
+    } finally {
+      setDocUploading(false);
+      setPendingUploadDocType(null);
+      e.target.value = "";
+    }
+  };
+
   /* ------------------------------ Archive/Restore ------------------------------ */
 
   const handleArchiveStudent = async () => {
@@ -654,6 +737,15 @@ const AdminStudentDetail = () => {
         </div>
       </div>
 
+      {/* Hidden file input for missing doc uploads */}
+      <input
+        ref={missingDocFileInputRef}
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+        className="hidden"
+        onChange={handleMissingDocFileSelect}
+      />
+
       {/* Missing Required Documents - prominent position */}
       {missingDocuments.length > 0 && (
         <>
@@ -663,16 +755,29 @@ const AdminStudentDetail = () => {
                 <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
                   <AlertTriangle className="h-4 w-4" /> Missing Required Documents ({missingDocuments.length})
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-500 hover:text-amber-400 h-7 px-2">
-                  <Expand className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {docUploading && <Loader2 className="h-4 w-4 animate-spin text-amber-500" />}
+                  <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-500 hover:text-amber-400 h-7 px-2">
+                    <Expand className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
+              <p className="text-xs text-muted-foreground mb-2">Click any document to upload it</p>
               <div className="flex flex-wrap gap-2">
                 {missingDocuments.map((doc) => (
-                  <Badge key={doc.type} variant="outline" className="border-amber-500/50 text-amber-400">
+                  <Badge
+                    key={doc.type}
+                    variant="outline"
+                    className="border-amber-500/50 text-amber-400 cursor-pointer hover:bg-amber-500/20 hover:border-amber-400 transition-colors"
+                    onClick={() => !docUploading && handleMissingDocClick(doc.type)}
+                  >
+                    <Upload className="h-3 w-3 mr-1" />
                     {doc.label}
+                    {pendingUploadDocType === doc.type && docUploading && (
+                      <Loader2 className="h-3 w-3 ml-1 animate-spin" />
+                    )}
                   </Badge>
                 ))}
               </div>
@@ -687,18 +792,26 @@ const AdminStudentDetail = () => {
                 </DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
-                The following {missingDocuments.length} document{missingDocuments.length > 1 ? "s are" : " is"} required but not yet uploaded. Please request these from the student.
+                The following {missingDocuments.length} document{missingDocuments.length > 1 ? "s are" : " is"} required but not yet uploaded. Click on any document to upload it.
               </p>
               <div className="grid gap-3 sm:grid-cols-2 mt-2">
                 {missingDocuments.map((doc) => (
-                  <Card key={doc.type} className="border-amber-500/30 bg-amber-500/5">
+                  <Card
+                    key={doc.type}
+                    className="border-amber-500/30 bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors"
+                    onClick={() => !docUploading && handleMissingDocClick(doc.type)}
+                  >
                     <CardContent className="flex items-center gap-3 p-4">
                       <div className="rounded-lg bg-amber-500/10 p-2">
-                        <FileText className="h-5 w-5 text-amber-500" />
+                        {pendingUploadDocType === doc.type && docUploading ? (
+                          <Loader2 className="h-5 w-5 text-amber-500 animate-spin" />
+                        ) : (
+                          <Upload className="h-5 w-5 text-amber-500" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium text-sm">{doc.label}</p>
-                        <p className="text-xs text-muted-foreground">Not uploaded</p>
+                        <p className="text-xs text-muted-foreground">Click to upload</p>
                       </div>
                     </CardContent>
                   </Card>
