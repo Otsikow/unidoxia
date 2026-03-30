@@ -737,6 +737,15 @@ const AdminStudentDetail = () => {
         </div>
       </div>
 
+      {/* Hidden file input for missing doc uploads */}
+      <input
+        ref={missingDocFileInputRef}
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+        className="hidden"
+        onChange={handleMissingDocFileSelect}
+      />
+
       {/* Missing Required Documents - prominent position */}
       {missingDocuments.length > 0 && (
         <>
@@ -746,16 +755,29 @@ const AdminStudentDetail = () => {
                 <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
                   <AlertTriangle className="h-4 w-4" /> Missing Required Documents ({missingDocuments.length})
                 </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-500 hover:text-amber-400 h-7 px-2">
-                  <Expand className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  {docUploading && <Loader2 className="h-4 w-4 animate-spin text-amber-500" />}
+                  <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-500 hover:text-amber-400 h-7 px-2">
+                    <Expand className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
+              <p className="text-xs text-muted-foreground mb-2">Click any document to upload it</p>
               <div className="flex flex-wrap gap-2">
                 {missingDocuments.map((doc) => (
-                  <Badge key={doc.type} variant="outline" className="border-amber-500/50 text-amber-400">
+                  <Badge
+                    key={doc.type}
+                    variant="outline"
+                    className="border-amber-500/50 text-amber-400 cursor-pointer hover:bg-amber-500/20 hover:border-amber-400 transition-colors"
+                    onClick={() => !docUploading && handleMissingDocClick(doc.type)}
+                  >
+                    <Upload className="h-3 w-3 mr-1" />
                     {doc.label}
+                    {pendingUploadDocType === doc.type && docUploading && (
+                      <Loader2 className="h-3 w-3 ml-1 animate-spin" />
+                    )}
                   </Badge>
                 ))}
               </div>
@@ -770,18 +792,26 @@ const AdminStudentDetail = () => {
                 </DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
-                The following {missingDocuments.length} document{missingDocuments.length > 1 ? "s are" : " is"} required but not yet uploaded. Please request these from the student.
+                The following {missingDocuments.length} document{missingDocuments.length > 1 ? "s are" : " is"} required but not yet uploaded. Click on any document to upload it.
               </p>
               <div className="grid gap-3 sm:grid-cols-2 mt-2">
                 {missingDocuments.map((doc) => (
-                  <Card key={doc.type} className="border-amber-500/30 bg-amber-500/5">
+                  <Card
+                    key={doc.type}
+                    className="border-amber-500/30 bg-amber-500/5 cursor-pointer hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors"
+                    onClick={() => !docUploading && handleMissingDocClick(doc.type)}
+                  >
                     <CardContent className="flex items-center gap-3 p-4">
                       <div className="rounded-lg bg-amber-500/10 p-2">
-                        <FileText className="h-5 w-5 text-amber-500" />
+                        {pendingUploadDocType === doc.type && docUploading ? (
+                          <Loader2 className="h-5 w-5 text-amber-500 animate-spin" />
+                        ) : (
+                          <Upload className="h-5 w-5 text-amber-500" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium text-sm">{doc.label}</p>
-                        <p className="text-xs text-muted-foreground">Not uploaded</p>
+                        <p className="text-xs text-muted-foreground">Click to upload</p>
                       </div>
                     </CardContent>
                   </Card>
