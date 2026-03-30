@@ -271,8 +271,7 @@ const AdminStudents = () => {
           archive_reason,
           profile:profiles!students_profile_id_fkey (
             full_name,
-            email,
-            referred_by
+            email
           ),
           documents:student_documents (
             id,
@@ -356,14 +355,10 @@ const AdminStudents = () => {
                 .find(Boolean)
             : "";
 
-        const profileReferrer =
-          typeof s.profile?.referred_by === "string" ? s.profile.referred_by.trim() : "";
-
-        // Prefer explicit referral source, then attribution records, then profile-level referrer.
+        // Prefer explicit referral source, then attribution records.
         const attrSource =
           referralSource ||
-          attributionSource ||
-          (profileReferrer ? `Referred by @${profileReferrer}` : "");
+          attributionSource;
 
         return {
           ...s,
