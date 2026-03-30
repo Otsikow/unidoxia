@@ -553,6 +553,82 @@ const AdminStudentDetail = () => {
     }
   };
 
+  /* ------------------------------ Upload Missing Doc ------------------------------ */
+
+  const handleMissingDocClick = (docType: string) => {
+    setPendingUploadDocType(docType);
+    // Reset and trigger file input
+    if (missingDocFileInputRef.current) {
+      missingDocFileInputRef.current.value = "";
+      missingDocFileInputRef.current.click();
+    }
+  };
+
+  const handleMissingDocFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    const docType = pendingUploadDocType;
+
+    if (!file || !docType || !studentId) {
+      setPendingUploadDocType(null);
+      e.target.value = "";
+      return;
+    }
+
+    setDocUploading(true);
+    try {
+      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(file, {
+        allowedMimeTypes: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "image/png",
+          "image/jpeg",
+          "image/jpg",
+        ],
+        allowedExtensions: ["pdf", "doc", "docx", "png", "jpg", "jpeg"],
+        maxSizeBytes: 10 * 1024 * 1024,
+      });
+
+      const ext = sanitizedFileName.split(".").pop() || "pdf";
+      const storagePath = `${studentId}/${docType}_${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("student-documents")
+        .upload(storagePath, preparedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: detectedMimeType,
+        });
+      if (uploadError) throw uploadError;
+
+      try {
+        const { error: dbError } = await supabase.from("student_documents").insert({
+          student_id: studentId,
+          document_type: docType,
+          file_name: sanitizedFileName,
+          file_size: preparedFile.size,
+          mime_type: detectedMimeType,
+          storage_path: storagePath,
+        });
+        if (dbError) throw dbError;
+      } catch (dbErr) {
+        await supabase.storage.from("student-documents").remove([storagePath]);
+        throw dbErr;
+      }
+
+      const docLabel = missingDocuments.find((d) => d.type === docType)?.label || docType;
+      toast({ title: "Document uploaded", description: `${docLabel} has been uploaded successfully.` });
+      void fetchStudent();
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Upload failed", description: err instanceof Error ? err.message : "Failed to upload document", variant: "destructive" });
+    } finally {
+      setDocUploading(false);
+      setPendingUploadDocType(null);
+      e.target.value = "";
+    }
+  };
+
   /* ------------------------------ Archive/Restore ------------------------------ */
 
   const handleArchiveStudent = async () => {
