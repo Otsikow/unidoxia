@@ -234,7 +234,7 @@ export function useExtendedApplication(): UseExtendedApplicationReturn {
               guardian,
               finances_json,
               visa_history_json,
-              profile:profiles (
+              profile:profiles!students_profile_id_fkey (
                 id,
                 full_name,
                 email,

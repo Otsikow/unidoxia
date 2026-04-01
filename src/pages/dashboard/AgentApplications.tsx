@@ -394,7 +394,7 @@ const AgentApplications = () => {
                 legal_name,
                 contact_email,
                 contact_phone,
-                profile:profiles (
+                profile:profiles!students_profile_id_fkey (
                   full_name,
                   email
                 )
