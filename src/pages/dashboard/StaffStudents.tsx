@@ -227,7 +227,7 @@ export default function StaffStudents() {
             applications (
               id, status, updated_at,
               program:programs ( name, university:universities ( name, country ) ),
-              agent:agents ( id, profile:profiles ( full_name ) )
+              agent:agents ( id, profile:profiles!agents_profile_id_fkey ( full_name ) )
             )
           )`
         )
