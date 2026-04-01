@@ -207,7 +207,7 @@ const AdminAdmissionsOversight = () => {
             agent:agents (
               id,
               company_name,
-              profile:profiles (
+              profile:profiles!agents_profile_id_fkey (
                 full_name,
                 email
               )
