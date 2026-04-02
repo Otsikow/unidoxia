@@ -594,6 +594,7 @@ const AdminStudents = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Student</TableHead>
+                <TableHead>WhatsApp</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>Study Preferences</TableHead>
                 <TableHead>Referred By</TableHead>
