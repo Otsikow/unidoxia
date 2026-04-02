@@ -90,12 +90,14 @@ interface StudentWithDocuments {
   legal_name: string | null;
   preferred_name: string | null;
   contact_email: string | null;
+  contact_phone: string | null;
   current_country: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
   created_at: string | null;
   manual_status: string | null;
   referral_source: string | null;
+  address: { whatsapp?: string } | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
   /** Derived operational status */
@@ -106,6 +108,7 @@ interface StudentWithDocuments {
   profile: {
     full_name: string | null;
     email: string | null;
+    phone: string | null;
   } | null;
   documents: {
     id: string;
