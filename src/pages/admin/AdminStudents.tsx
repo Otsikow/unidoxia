@@ -606,18 +606,26 @@ const AdminStudents = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="text-sm text-muted-foreground">
                     No students found for "{searchTerm.trim()}".
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.map((student) => {
                   const isArchived = student.status === "archived";
+                  const whatsappNumber =
+                    (student.address as any)?.whatsapp ||
+                    student.contact_phone ||
+                    student.profile?.phone ||
+                    null;
+                  const whatsappDigits = whatsappNumber
+                    ? whatsappNumber.replace(/\D/g, "")
+                    : null;
 
                   return (
                     <TableRow
@@ -631,6 +639,22 @@ const AdminStudents = () => {
                         >
                           {getStudentName(student)}
                         </button>
+                      </TableCell>
+                      <TableCell>
+                        {whatsappDigits ? (
+                          <a
+                            href={`https://wa.me/${whatsappDigits}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-emerald-500 hover:text-emerald-400 hover:underline text-sm"
+                            title={`WhatsApp ${whatsappNumber}`}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            {whatsappNumber}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {student.current_country ?? "—"}
