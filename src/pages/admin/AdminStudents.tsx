@@ -44,6 +44,7 @@ import {
   FileText,
   Filter,
   Loader2,
+  MessageCircle,
   MoreHorizontal,
   RefreshCw,
   RotateCcw,
@@ -90,12 +91,14 @@ interface StudentWithDocuments {
   legal_name: string | null;
   preferred_name: string | null;
   contact_email: string | null;
+  contact_phone: string | null;
   current_country: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
   created_at: string | null;
   manual_status: string | null;
   referral_source: string | null;
+  address: { whatsapp?: string } | null;
   /** Derived field – not a DB column */
   status: "active" | "archived" | null;
   /** Derived operational status */
@@ -106,6 +109,7 @@ interface StudentWithDocuments {
   profile: {
     full_name: string | null;
     email: string | null;
+    phone: string | null;
   } | null;
   documents: {
     id: string;
@@ -260,18 +264,21 @@ const AdminStudents = () => {
           legal_name,
           preferred_name,
           contact_email,
+          contact_phone,
           current_country,
           preferred_course,
           preferred_country,
           created_at,
           manual_status,
           referral_source,
+          address,
           archived_at,
           archived_by,
           archive_reason,
           profile:profiles!students_profile_id_fkey (
             full_name,
-            email
+            email,
+            phone
           ),
           documents:student_documents (
             id,
@@ -587,6 +594,7 @@ const AdminStudents = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Student</TableHead>
+                <TableHead>WhatsApp</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead>Study Preferences</TableHead>
                 <TableHead>Referred By</TableHead>
@@ -598,18 +606,26 @@ const AdminStudents = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7}>
+                  <TableCell colSpan={8}>
                     <Skeleton className="h-6 w-full" />
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-sm text-muted-foreground">
+                  <TableCell colSpan={8} className="text-sm text-muted-foreground">
                     No students found for "{searchTerm.trim()}".
                   </TableCell>
                 </TableRow>
               ) : filteredStudents.map((student) => {
                   const isArchived = student.status === "archived";
+                  const whatsappNumber =
+                    (student.address as any)?.whatsapp ||
+                    student.contact_phone ||
+                    student.profile?.phone ||
+                    null;
+                  const whatsappDigits = whatsappNumber
+                    ? whatsappNumber.replace(/\D/g, "")
+                    : null;
 
                   return (
                     <TableRow
@@ -623,6 +639,22 @@ const AdminStudents = () => {
                         >
                           {getStudentName(student)}
                         </button>
+                      </TableCell>
+                      <TableCell>
+                        {whatsappDigits ? (
+                          <a
+                            href={`https://wa.me/${whatsappDigits}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-emerald-500 hover:text-emerald-400 hover:underline text-sm"
+                            title={`WhatsApp ${whatsappNumber}`}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                            {whatsappNumber}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {student.current_country ?? "—"}
