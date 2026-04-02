@@ -264,18 +264,21 @@ const AdminStudents = () => {
           legal_name,
           preferred_name,
           contact_email,
+          contact_phone,
           current_country,
           preferred_course,
           preferred_country,
           created_at,
           manual_status,
           referral_source,
+          address,
           archived_at,
           archived_by,
           archive_reason,
           profile:profiles!students_profile_id_fkey (
             full_name,
-            email
+            email,
+            phone
           ),
           documents:student_documents (
             id,
