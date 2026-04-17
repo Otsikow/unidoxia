@@ -2,6 +2,7 @@ export type RequiredStudentDocument = {
   type: string;
   label: string;
   acceptableTypes: string[];
+  optional?: boolean;
 };
 
 export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
@@ -35,6 +36,43 @@ export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
     label: 'Statement of English Proficiency',
     acceptableTypes: ['english_proficiency', 'ielts', 'toefl', 'english_test'],
   },
+  // Optional supplementary documents — shown in the upload list, but never block "missing" checks
+  {
+    type: 'affidavit',
+    label: 'Affidavit (Optional)',
+    acceptableTypes: ['affidavit', 'affidavit_of_support', 'sworn_affidavit'],
+    optional: true,
+  },
+  {
+    type: 'birth_certificate',
+    label: 'Birth Certificate (Optional)',
+    acceptableTypes: ['birth_certificate'],
+    optional: true,
+  },
+  {
+    type: 'financial_document',
+    label: 'Financial / Bank Statement (Optional)',
+    acceptableTypes: ['financial_document', 'bank_statement', 'sponsor_letter', 'proof_of_funds'],
+    optional: true,
+  },
+  {
+    type: 'medical_report',
+    label: 'Medical Report (Optional)',
+    acceptableTypes: ['medical_report', 'health_certificate', 'vaccination_record'],
+    optional: true,
+  },
+  {
+    type: 'police_clearance',
+    label: 'Police Clearance (Optional)',
+    acceptableTypes: ['police_clearance', 'police_report', 'background_check'],
+    optional: true,
+  },
+  {
+    type: 'other_supporting',
+    label: 'Other Supporting Document (Optional)',
+    acceptableTypes: ['other', 'other_supporting', 'supporting_document', 'misc'],
+    optional: true,
+  },
 ];
 
 export const getMissingRequiredStudentDocuments = (
@@ -44,6 +82,7 @@ export const getMissingRequiredStudentDocuments = (
 
   return REQUIRED_STUDENT_DOCUMENTS.filter(
     (requirement) =>
+      !requirement.optional &&
       !requirement.acceptableTypes.some((type) => uploadedTypes.includes(type.toLowerCase())),
   );
 };
