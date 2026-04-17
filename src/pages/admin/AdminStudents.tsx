@@ -80,6 +80,7 @@ import {
   MANUAL_STATUS_OPTIONS,
   type StudentOperationalStatus,
 } from "@/lib/studentStatus";
+import { StudentInsightsCharts } from "@/components/admin/StudentInsightsCharts";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Types                                   */
@@ -553,6 +554,10 @@ const AdminStudents = () => {
                 New student growth
               </CardContent>
             </Card>
+          </div>
+
+          <div className="mb-6">
+            <StudentInsightsCharts students={students} />
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mb-4">
