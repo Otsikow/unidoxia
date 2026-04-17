@@ -88,8 +88,13 @@ const DOCUMENT_TYPES = [
   { value: "sop", label: "Statement of Purpose", required: false },
   { value: "lor", label: "Letter of Recommendation", required: false },
   { value: "portfolio", label: "Portfolio", required: false },
-  { value: "financial_document", label: "Financial Document", required: false },
-  { value: "other", label: "Other", required: false },
+  { value: "financial_document", label: "Financial / Bank Statement (Optional)", required: false },
+  { value: "affidavit", label: "Affidavit (Optional)", required: false },
+  { value: "birth_certificate", label: "Birth Certificate (Optional)", required: false },
+  { value: "medical_report", label: "Medical Report (Optional)", required: false },
+  { value: "police_clearance", label: "Police Clearance (Optional)", required: false },
+  { value: "sponsor_letter", label: "Sponsor Letter (Optional)", required: false },
+  { value: "other", label: "Other Supporting Document (Optional)", required: false },
 ] as const;
 
 // Helper to get document type label from value
