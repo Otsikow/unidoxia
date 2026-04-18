@@ -57,7 +57,28 @@ const tooltipStyle = {
   borderRadius: 8,
   color: "hsl(var(--popover-foreground))",
   fontSize: 12,
+  fontWeight: 500,
 };
+
+const tooltipItemStyle = {
+  color: "hsl(var(--popover-foreground))",
+  fontWeight: 600,
+};
+
+const tooltipLabelStyle = {
+  color: "hsl(var(--popover-foreground))",
+  fontWeight: 600,
+};
+
+// High-contrast tick color that adapts to light/dark mode
+const axisTickStyle = {
+  fontSize: 11,
+  fill: "hsl(var(--foreground))",
+  fontWeight: 500,
+};
+
+const axisStroke = "hsl(var(--foreground) / 0.4)";
+const gridStroke = "hsl(var(--foreground) / 0.15)";
 
 export const StudentInsightsCharts = ({ students }: Props) => {
   const total = students.length;
