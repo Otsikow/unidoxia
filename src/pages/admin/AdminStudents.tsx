@@ -81,6 +81,9 @@ import {
   type StudentOperationalStatus,
 } from "@/lib/studentStatus";
 import { StudentInsightsCharts } from "@/components/admin/StudentInsightsCharts";
+import { TablePagination } from "@/components/common/TablePagination";
+
+const STUDENTS_PAGE_SIZE = 20;
 
 /* -------------------------------------------------------------------------- */
 /*                                    Types                                   */
