@@ -136,11 +136,17 @@ const AdminAgents = () => {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === filteredAgents.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredAgents.map((a) => a.id)));
-    }
+    const visibleIds = paginatedAgents.map((a) => a.id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleExport = () => {
