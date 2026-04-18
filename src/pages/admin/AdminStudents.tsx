@@ -786,6 +786,14 @@ const AdminStudents = () => {
                 })}
             </TableBody>
           </Table>
+
+          <TablePagination
+            currentPage={currentPage}
+            totalItems={filteredStudents.length}
+            pageSize={STUDENTS_PAGE_SIZE}
+            onPageChange={setCurrentPage}
+            itemLabel="students"
+          />
         </CardContent>
       </Card>
     </div>
