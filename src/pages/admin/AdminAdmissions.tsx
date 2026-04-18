@@ -174,17 +174,14 @@ const AdminAdmissionsOversight = () => {
   const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null);
 
   const fetchApplications = useCallback(async () => {
-    if (!tenantId) {
-      setApplications([]);
-      setLoading(false);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
-      const { data, error: queryError } = await supabase
+      // Admin/staff oversight queries across all tenants — RLS enforces access
+      // (is_admin_or_staff bypasses tenant scoping). For other roles we fall
+      // back to the caller's tenant.
+      let query = supabase
         .from("applications")
         .select(
           `
@@ -224,9 +221,16 @@ const AdminAdmissionsOversight = () => {
             )
           `,
         )
-        .eq("tenant_id", tenantId)
         .order("submitted_at", { ascending: false, nullsFirst: false })
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(1000);
+
+      const role = (profile as { role?: string } | null)?.role;
+      if (role !== "admin" && role !== "staff" && tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+
+      const { data, error: queryError } = await query;
 
       if (queryError) {
         throw queryError;
@@ -239,21 +243,22 @@ const AdminAdmissionsOversight = () => {
     } finally {
       setLoading(false);
     }
-  }, [tenantId]);
+  }, [tenantId, profile]);
 
   const fetchStaff = useCallback(async () => {
-    if (!tenantId) {
-      setStaff([]);
-      return;
-    }
-
     try {
-      const { data, error: staffError } = await supabase
+      let query = supabase
         .from("profiles")
         .select("id, full_name, email, role")
-        .eq("tenant_id", tenantId)
         .in("role", ["admin", "staff", "counselor"])
         .order("full_name", { ascending: true, nullsFirst: false });
+
+      const role = (profile as { role?: string } | null)?.role;
+      if (role !== "admin" && role !== "staff" && tenantId) {
+        query = query.eq("tenant_id", tenantId);
+      }
+
+      const { data, error: staffError } = await query;
 
       if (staffError) {
         throw staffError;
@@ -264,7 +269,7 @@ const AdminAdmissionsOversight = () => {
       console.error("Failed to load staff", err);
       setStaff([]);
     }
-  }, [tenantId]);
+  }, [tenantId, profile]);
 
   useEffect(() => {
     void fetchApplications();
