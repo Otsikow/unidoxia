@@ -16,6 +16,9 @@ import AgentProfileDrawer from "@/components/admin/agents/AgentProfileDrawer";
 import CommissionEditorDialog from "@/components/admin/agents/CommissionEditorDialog";
 import type { AgentRecord, AgentFilters } from "@/components/admin/agents/types";
 import { DEFAULT_FILTERS } from "@/components/admin/agents/types";
+import { TablePagination } from "@/components/common/TablePagination";
+
+const AGENTS_PAGE_SIZE = 20;
 
 const AdminAgents = () => {
   const { toast } = useToast();
@@ -112,6 +115,18 @@ const AdminAgents = () => {
     });
   }, [agents, filters]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
+  const paginatedAgents = useMemo(() => {
+    const start = (currentPage - 1) * AGENTS_PAGE_SIZE;
+    return filteredAgents.slice(start, start + AGENTS_PAGE_SIZE);
+  }, [filteredAgents, currentPage]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -121,11 +136,17 @@ const AdminAgents = () => {
   };
 
   const toggleAll = () => {
-    if (selectedIds.size === filteredAgents.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredAgents.map((a) => a.id)));
-    }
+    const visibleIds = paginatedAgents.map((a) => a.id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
   };
 
   const handleExport = () => {
@@ -189,7 +210,7 @@ const AdminAgents = () => {
         </CardHeader>
         <CardContent className="p-0">
           <AgentTable
-            agents={filteredAgents}
+            agents={paginatedAgents}
             loading={loading}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
@@ -197,6 +218,15 @@ const AdminAgents = () => {
             onOpenProfile={setProfileAgent}
             onOpenCommission={setCommissionAgent}
           />
+          <div className="px-4">
+            <TablePagination
+              currentPage={currentPage}
+              totalItems={filteredAgents.length}
+              pageSize={AGENTS_PAGE_SIZE}
+              onPageChange={setCurrentPage}
+              itemLabel="agents"
+            />
+          </div>
         </CardContent>
       </Card>
 
