@@ -251,11 +251,14 @@ export const StudentInsightsCharts = ({ students }: Props) => {
                     />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} />
                 <Legend
-                  wrapperStyle={{ fontSize: 11 }}
-                  iconSize={8}
+                  wrapperStyle={{ fontSize: 12, color: "hsl(var(--foreground))", fontWeight: 500 }}
+                  iconSize={10}
                   layout="horizontal"
+                  formatter={(value) => (
+                    <span style={{ color: "hsl(var(--foreground))" }}>{value}</span>
+                  )}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -274,16 +277,16 @@ export const StudentInsightsCharts = ({ students }: Props) => {
                 layout="vertical"
                 margin={{ top: 5, right: 16, left: 8, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridStroke} />
+                <XAxis type="number" allowDecimals={false} tick={axisTickStyle} stroke={axisStroke} />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  width={80}
-                  tick={{ fontSize: 11 }}
-                  stroke="hsl(var(--muted-foreground))"
+                  width={86}
+                  tick={axisTickStyle}
+                  stroke={axisStroke}
                 />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted) / 0.3)" }} />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "hsl(var(--foreground) / 0.08)" }} />
                 <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                   {countryData.map((_, idx) => (
                     <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
@@ -303,17 +306,20 @@ export const StudentInsightsCharts = ({ students }: Props) => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={applicationFunnel}
-                margin={{ top: 5, right: 12, left: 0, bottom: 5 }}
+                margin={{ top: 5, right: 12, left: 0, bottom: 28 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                 <XAxis
                   dataKey="name"
-                  tick={{ fontSize: 10 }}
-                  stroke="hsl(var(--muted-foreground))"
+                  tick={axisTickStyle}
+                  stroke={axisStroke}
                   interval={0}
+                  angle={-20}
+                  textAnchor="end"
+                  height={50}
                 />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "hsl(var(--muted) / 0.3)" }} />
+                <YAxis allowDecimals={false} tick={axisTickStyle} stroke={axisStroke} />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "hsl(var(--foreground) / 0.08)" }} />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {applicationFunnel.map((_, idx) => (
                     <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
