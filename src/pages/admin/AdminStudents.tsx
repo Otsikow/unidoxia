@@ -636,7 +636,7 @@ const AdminStudents = () => {
                     No students found for "{searchTerm.trim()}".
                   </TableCell>
                 </TableRow>
-              ) : filteredStudents.map((student) => {
+              ) : paginatedStudents.map((student) => {
                   const isArchived = student.status === "archived";
                   const whatsappNumber =
                     (student.address as any)?.whatsapp ||
