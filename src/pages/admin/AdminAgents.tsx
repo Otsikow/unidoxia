@@ -16,6 +16,9 @@ import AgentProfileDrawer from "@/components/admin/agents/AgentProfileDrawer";
 import CommissionEditorDialog from "@/components/admin/agents/CommissionEditorDialog";
 import type { AgentRecord, AgentFilters } from "@/components/admin/agents/types";
 import { DEFAULT_FILTERS } from "@/components/admin/agents/types";
+import { TablePagination } from "@/components/common/TablePagination";
+
+const AGENTS_PAGE_SIZE = 20;
 
 const AdminAgents = () => {
   const { toast } = useToast();
