@@ -210,7 +210,7 @@ const AdminAgents = () => {
         </CardHeader>
         <CardContent className="p-0">
           <AgentTable
-            agents={filteredAgents}
+            agents={paginatedAgents}
             loading={loading}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
@@ -218,6 +218,15 @@ const AdminAgents = () => {
             onOpenProfile={setProfileAgent}
             onOpenCommission={setCommissionAgent}
           />
+          <div className="px-4">
+            <TablePagination
+              currentPage={currentPage}
+              totalItems={filteredAgents.length}
+              pageSize={AGENTS_PAGE_SIZE}
+              onPageChange={setCurrentPage}
+              itemLabel="agents"
+            />
+          </div>
         </CardContent>
       </Card>
 
