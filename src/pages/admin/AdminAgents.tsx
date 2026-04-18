@@ -115,6 +115,18 @@ const AdminAgents = () => {
     });
   }, [agents, filters]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
+  const paginatedAgents = useMemo(() => {
+    const start = (currentPage - 1) * AGENTS_PAGE_SIZE;
+    return filteredAgents.slice(start, start + AGENTS_PAGE_SIZE);
+  }, [filteredAgents, currentPage]);
+
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
