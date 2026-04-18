@@ -192,6 +192,8 @@ const AdminStudents = () => {
   const [actionReason, setActionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   const filteredStudents = useMemo(() => {
     let result = students;
 
@@ -226,6 +228,16 @@ const AdminStudents = () => {
 
     return result;
   }, [searchTerm, students, studentStatusFilter]);
+
+  // Reset to page 1 when filters/search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, studentStatusFilter]);
+
+  const paginatedStudents = useMemo(() => {
+    const start = (currentPage - 1) * STUDENTS_PAGE_SIZE;
+    return filteredStudents.slice(start, start + STUDENTS_PAGE_SIZE);
+  }, [filteredStudents, currentPage]);
 
   const studentKpis = useMemo(() => {
     const now = new Date();
