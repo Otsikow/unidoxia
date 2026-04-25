@@ -188,59 +188,13 @@ const Index = () => {
   return <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO title="UniDoxia - Your Path to International Education" description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support." keywords="study abroad, university applications, international education, AI tools, visa calculator" />
 
-      {/* ---------- HERO ---------- */}
-      <section className="hero-video-container">
-        <LandingHeader />
+      {/* ---------- PREMIUM HERO ---------- */}
+      <PremiumHero />
 
-        {/* Background image placeholder */}
-        <div 
-          className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`} 
-          style={{ backgroundImage: `url(${heroBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-          aria-hidden 
-        />
-        
-        {shouldRenderHeroVideo && (
-          <video
-            ref={heroVideoRef}
-            className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            poster={heroBackground}
-            // @ts-expect-error - fetchpriority is valid HTML attribute
-            fetchpriority="high"
-          >
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
-        )}
-
-        <div className="hero-content">
-          <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
-            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
-
-            <div className="hero-text space-y-2 md:space-y-3 text-white">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
-                <span>Guiding Students Step by Step Since 2014</span>
-              </h1>
-            </div>
-
-            <Button asChild size="lg" className="hero-cta-button bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-bold shadow-lg">
-              <Link to="/auth/signup">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Start Your Study Journey
-              </Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex justify-center px-4">
-          <p className="inline-flex items-center rounded-full bg-slate-900/80 px-5 py-3 text-center text-sm sm:text-base md:text-lg font-semibold tracking-tight text-white shadow-lg backdrop-blur-md">
-            UniDoxia connects students worldwide to trusted international study opportunities.
-          </p>
-        </div>
-      </section>
+      {/* ---------- WHY CHOOSE UNIDOXIA ---------- */}
+      <div id="why-unidoxia">
+        <WhyChooseUnidoxia />
+      </div>
 
       {/* ---------- WELCOME ---------- */}
       <section className="py-16 text-center">
