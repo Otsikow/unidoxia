@@ -93,6 +93,10 @@ export function logWhatsAppLauncherClick(): void {
   logGA4Event('whatsapp_chat_launcher_click', {
     event_category: 'engagement',
     event_label: 'zoe_whatsapp_chat_launcher',
+    cta_location: 'floating_launcher',
+    destination_channel: 'whatsapp',
+    conversion_intent: 'chat_start',
+    value: 1,
     link_url: 'https://wa.me/447360961803',
   });
 }
@@ -101,6 +105,10 @@ export function logFreeConsultationWhatsAppClick(): void {
   logGA4Event('book_free_consultation_whatsapp_click', {
     event_category: 'conversion',
     event_label: 'hero_book_free_consultation_whatsapp_cta',
+    cta_location: 'hero_section',
+    destination_channel: 'whatsapp',
+    conversion_intent: 'consultation_booking',
+    value: 1,
     link_url: 'https://wa.me/447360961803',
   });
 }
