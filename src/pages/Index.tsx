@@ -220,7 +220,7 @@ const Index = () => {
 
             <div className="hero-text space-y-2 md:space-y-3 text-white">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
-                <span>Study Abroad With Confidence</span>
+                <span>Guiding Students Step by Step Since 2014</span>
               </h1>
             </div>
 
