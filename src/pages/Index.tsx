@@ -57,54 +57,8 @@ const Index = () => {
     t
   } = useTranslation();
 
-  /* ---------- Hero Video State ---------- */
-  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(() => {
-    // Check accessibility/bandwidth preferences immediately on mount
-    if (typeof window === "undefined") return true;
-    const prefersReducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const conn = (navigator as any).connection;
-    const saveData = Boolean(conn?.saveData);
-    const effectiveType = String(conn?.effectiveType ?? "");
-    const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
-    return !(prefersReducedMotion || saveData || isSlowConnection);
-  });
-  const [heroVideoReady, setHeroVideoReady] = useState(false);
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  /* ---------- Hero Video Preload & Autoplay ---------- */
-  useEffect(() => {
-    if (!shouldRenderHeroVideo) return;
-    const videoEl = heroVideoRef.current;
-    if (!videoEl) return;
 
-    const activateVideo = () => {
-      setHeroVideoReady(true);
-      videoEl.currentTime = 0;
-      const playPromise = videoEl.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          /* Autoplay may be blocked; ignore silently */
-        });
-      }
-    };
-
-    // Trigger playback immediately on mount for instant start
-    activateVideo();
-
-    const handleCanPlay = () => {
-      setHeroVideoReady(true);
-    };
-
-    videoEl.addEventListener("loadeddata", handleCanPlay);
-    videoEl.addEventListener("canplay", handleCanPlay);
-
-    return () => {
-      videoEl.removeEventListener("loadeddata", handleCanPlay);
-      videoEl.removeEventListener("canplay", handleCanPlay);
-    };
-  }, [shouldRenderHeroVideo]);
-
-  /* ---------- Hero CTAs ---------- */
   const heroCtas = useMemo(() => [{
     key: "students",
     href: "/auth/signup?role=student",
