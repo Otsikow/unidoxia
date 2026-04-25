@@ -14,7 +14,7 @@ import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { TypewriterText } from "@/components/TypewriterText";
 import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarquee";
-import { logVisaCalculatorCardClick } from "@/lib/analytics";
+import { logFreeConsultationWhatsAppClick, logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
@@ -238,7 +238,12 @@ const Index = () => {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-[#25D366] hover:border-[#25D366] hover:text-white font-semibold w-full sm:w-auto">
-                <a href="https://wa.me/447360961803" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://wa.me/447360961803"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={logFreeConsultationWhatsAppClick}
+                >
                   Book a Free Consultation
                 </a>
               </Button>
