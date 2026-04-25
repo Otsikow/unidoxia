@@ -70,3 +70,37 @@ export function logVisaCalculatorCardClick(variant: 'card' | 'cta_button'): void
     properties: { variant },
   });
 }
+
+
+type GA4EventParams = Record<string, string | number | boolean | null | undefined>;
+
+function logGA4Event(eventName: string, params: GA4EventParams = {}): void {
+  if (typeof window === 'undefined') return;
+
+  const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
+  if (typeof gtag === 'function') {
+    gtag('event', eventName, params);
+    return;
+  }
+
+  const dataLayer = (window as typeof window & { dataLayer?: unknown[] }).dataLayer;
+  if (Array.isArray(dataLayer)) {
+    dataLayer.push({ event: eventName, ...params });
+  }
+}
+
+export function logWhatsAppLauncherClick(): void {
+  logGA4Event('whatsapp_chat_launcher_click', {
+    event_category: 'engagement',
+    event_label: 'zoe_whatsapp_chat_launcher',
+    link_url: 'https://wa.me/447360961803',
+  });
+}
+
+export function logFreeConsultationWhatsAppClick(): void {
+  logGA4Event('book_free_consultation_whatsapp_click', {
+    event_category: 'conversion',
+    event_label: 'hero_book_free_consultation_whatsapp_cta',
+    link_url: 'https://wa.me/447360961803',
+  });
+}

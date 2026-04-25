@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import ZoeTypingIndicator from "@/components/ai/ZoeTypingIndicator";
 import { generateZoeMockResponse } from "@/lib/zoe/mockResponse";
 import { v4 as uuidv4 } from "uuid";
+import { logWhatsAppLauncherClick } from "@/lib/analytics";
 
 interface Attachment {
   id: string;
@@ -856,6 +857,7 @@ export default function ZoeChatbot() {
             href="https://wa.me/447360961803"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={logWhatsAppLauncherClick}
             className="flex h-12 items-center gap-2 rounded-full bg-[#25D366] px-5 text-sm font-semibold text-white shadow-xl transition hover:translate-y-[-2px] hover:bg-[#1ebe5d] hover:shadow-2xl md:h-14 md:px-6 md:text-base"
             aria-label="Chat on WhatsApp"
           >
