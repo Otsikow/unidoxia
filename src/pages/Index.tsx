@@ -218,18 +218,31 @@ const Index = () => {
           <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
             <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
 
-            <div className="hero-text space-y-2 md:space-y-3 text-white">
+            <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
-                <span>Guiding Students Step by Step Since 2014</span>
+                <span>Study Abroad Opportunities for Students Worldwide</span>
               </h1>
+              <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-3xl mx-auto">
+                UniDoxia helps students secure admission, navigate visa processes, and access trusted universities across Europe, the UK, Canada, the USA, Australia, and beyond.
+              </p>
+              <p className="text-xs sm:text-sm text-white/70 italic">
+                Guiding students step by step since 2014.
+              </p>
             </div>
 
-            <Button asChild size="lg" className="hero-cta-button bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-bold shadow-lg">
-              <Link to="/auth/signup">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Start Your Study Journey
-              </Link>
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
+              <Button asChild size="lg" className="hero-cta-button bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-bold shadow-lg w-full sm:w-auto">
+                <Link to="/auth/signup">
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Start Your Study Journey
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white hover:text-slate-900 font-semibold w-full sm:w-auto">
+                <Link to="/contact">
+                  Book a Free Consultation
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 
