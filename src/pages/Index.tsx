@@ -18,8 +18,6 @@ import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarque
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
-import unidoxiaLogo from "@/assets/unidoxia-logo.png";
-import heroBackground from "@/assets/hero-background.jpeg";
 import studentsStudyingGroup from "@/assets/students-studying-group.png";
 import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
