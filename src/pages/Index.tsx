@@ -239,7 +239,7 @@ const Index = () => {
 
         <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex justify-center px-4">
           <p className="inline-flex items-center rounded-full bg-slate-900/80 px-5 py-3 text-center text-sm sm:text-base md:text-lg font-semibold tracking-tight text-white shadow-lg backdrop-blur-md">
-            Built for African students, universities, and trusted education agents worldwide.
+            UniDoxia connects students worldwide to trusted international study opportunities.
           </p>
         </div>
       </section>
