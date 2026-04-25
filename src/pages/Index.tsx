@@ -220,11 +220,7 @@ const Index = () => {
 
             <div className="hero-text space-y-2 md:space-y-3 text-white">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
-                <span>Apply to Global Universities.</span>
-                <br className="hidden sm:block" />
-                <span>Get Accepted.</span>
-                <br className="hidden sm:block" />
-                <span>Study Abroad with Confidence.</span>
+                <span>Study Abroad With Confidence</span>
               </h1>
             </div>
 
