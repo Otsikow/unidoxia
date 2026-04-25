@@ -1,15 +1,14 @@
 "use client";
 
 import { Link } from "react-router-dom";
-import { useMemo, lazy, Suspense } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Users, FileCheck, Clock, Calculator, ArrowRight } from "lucide-react";
-import { PremiumHero } from "@/components/landing/PremiumHero";
-import { WhyChooseUnidoxia } from "@/components/landing/WhyChooseUnidoxia";
+import { Users, FileCheck, Clock, Sparkles, Calculator, ArrowRight } from "lucide-react";
+import { LandingHeader } from "@/components/landing/LandingHeader";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
@@ -18,6 +17,8 @@ import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarque
 import { logVisaCalculatorCardClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
+import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import heroBackground from "@/assets/hero-background.jpeg";
 import studentsStudyingGroup from "@/assets/students-studying-group.png";
 import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
@@ -54,8 +55,54 @@ const Index = () => {
     t
   } = useTranslation();
 
+  /* ---------- Hero Video State ---------- */
+  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(() => {
+    // Check accessibility/bandwidth preferences immediately on mount
+    if (typeof window === "undefined") return true;
+    const prefersReducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const conn = (navigator as any).connection;
+    const saveData = Boolean(conn?.saveData);
+    const effectiveType = String(conn?.effectiveType ?? "");
+    const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
+    return !(prefersReducedMotion || saveData || isSlowConnection);
+  });
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
+  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
+  /* ---------- Hero Video Preload & Autoplay ---------- */
+  useEffect(() => {
+    if (!shouldRenderHeroVideo) return;
+    const videoEl = heroVideoRef.current;
+    if (!videoEl) return;
 
+    const activateVideo = () => {
+      setHeroVideoReady(true);
+      videoEl.currentTime = 0;
+      const playPromise = videoEl.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          /* Autoplay may be blocked; ignore silently */
+        });
+      }
+    };
+
+    // Trigger playback immediately on mount for instant start
+    activateVideo();
+
+    const handleCanPlay = () => {
+      setHeroVideoReady(true);
+    };
+
+    videoEl.addEventListener("loadeddata", handleCanPlay);
+    videoEl.addEventListener("canplay", handleCanPlay);
+
+    return () => {
+      videoEl.removeEventListener("loadeddata", handleCanPlay);
+      videoEl.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [shouldRenderHeroVideo]);
+
+  /* ---------- Hero CTAs ---------- */
   const heroCtas = useMemo(() => [{
     key: "students",
     href: "/auth/signup?role=student",
@@ -139,13 +186,59 @@ const Index = () => {
   return <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO title="UniDoxia - Your Path to International Education" description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support." keywords="study abroad, university applications, international education, AI tools, visa calculator" />
 
-      {/* ---------- PREMIUM HERO ---------- */}
-      <PremiumHero />
+      {/* ---------- HERO ---------- */}
+      <section className="hero-video-container">
+        <LandingHeader />
 
-      {/* ---------- WHY CHOOSE UNIDOXIA ---------- */}
-      <div id="why-unidoxia">
-        <WhyChooseUnidoxia />
-      </div>
+        {/* Background image placeholder */}
+        <div 
+          className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`} 
+          style={{ backgroundImage: `url(${heroBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+          aria-hidden 
+        />
+        
+        {shouldRenderHeroVideo && (
+          <video
+            ref={heroVideoRef}
+            className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            poster={heroBackground}
+            // @ts-expect-error - fetchpriority is valid HTML attribute
+            fetchpriority="high"
+          >
+            <source src="/videos/hero-video.mp4" type="video/mp4" />
+          </video>
+        )}
+
+        <div className="hero-content">
+          <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
+            <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
+
+            <div className="hero-text space-y-2 md:space-y-3 text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
+                <span>Guiding Students Step by Step Since 2014</span>
+              </h1>
+            </div>
+
+            <Button asChild size="lg" className="hero-cta-button bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-bold shadow-lg">
+              <Link to="/auth/signup">
+                <Sparkles className="mr-2 h-5 w-5" />
+                Start Your Study Journey
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex justify-center px-4">
+          <p className="inline-flex items-center rounded-full bg-slate-900/80 px-5 py-3 text-center text-sm sm:text-base md:text-lg font-semibold tracking-tight text-white shadow-lg backdrop-blur-md">
+            UniDoxia connects students worldwide to trusted international study opportunities.
+          </p>
+        </div>
+      </section>
 
       {/* ---------- WELCOME ---------- */}
       <section className="py-16 text-center">
