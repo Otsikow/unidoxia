@@ -237,10 +237,10 @@ const Index = () => {
                   Start Your Study Journey
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-white hover:text-slate-900 font-semibold w-full sm:w-auto">
-                <Link to="/contact">
+              <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-[#25D366] hover:border-[#25D366] hover:text-white font-semibold w-full sm:w-auto">
+                <a href="https://wa.me/447360961803" target="_blank" rel="noopener noreferrer">
                   Book a Free Consultation
-                </Link>
+                </a>
               </Button>
             </div>
           </div>
