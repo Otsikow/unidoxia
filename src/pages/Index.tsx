@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Users, FileCheck, Clock, Sparkles, Calculator, ArrowRight } from "lucide-react";
 import { LandingHeader } from "@/components/landing/LandingHeader";
+import { PremiumHero } from "@/components/landing/PremiumHero";
+import { WhyChooseUnidoxia } from "@/components/landing/WhyChooseUnidoxia";
 import { JourneyRibbon } from "@/components/JourneyRibbon";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
