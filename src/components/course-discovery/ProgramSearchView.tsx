@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
-import type { PostgrestFilterBuilder } from "@supabase/postgrest-js";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -282,10 +281,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
   // Utility to exclude placeholder/test universities
   // Keep this generic so the exact Supabase query builder type is preserved (avoids TS mismatches)
-  const applyRealUniversityFilters = <Q extends PostgrestFilterBuilder<any, any, any, any>>(
+  const applyRealUniversityFilters = <Q,>(
     query: Q,
   ): Q => {
-    return query
+    return (query as any)
       .not("name", "ilike", "%placeholder%")
       .not("name", "ilike", "%test university%")
       .not("name", "ilike", "%sample university%")
