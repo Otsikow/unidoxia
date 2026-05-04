@@ -91,20 +91,28 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
       const document = documents?.find((d) => d.id === documentId);
       if (!document) throw new Error('Document not found');
 
-      // Delete from storage using the full storage path
+      // Delete the database row first so it cannot reappear after refresh.
+      // Selecting the deleted id lets us detect RLS-related silent no-ops.
+      const { data: deletedRows, error: dbError } = await supabase
+        .from('student_documents')
+        .delete()
+        .eq('id', documentId)
+        .eq('student_id', document.student_id)
+        .select('id');
+
+      if (dbError) throw dbError;
+      if (!deletedRows || deletedRows.length === 0) {
+        throw new Error('Document could not be deleted. Please refresh and try again.');
+      }
+
+      // Best-effort file cleanup after the row is gone.
       const { error: storageError } = await supabase.storage
         .from('student-documents')
         .remove([document.storage_path]);
 
-      if (storageError) throw storageError;
-
-      // Delete from database
-      const { error: dbError } = await supabase
-        .from('student_documents')
-        .delete()
-        .eq('id', documentId);
-
-      if (dbError) throw dbError;
+      if (storageError) {
+        console.warn('Failed to delete file from storage:', storageError);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['userDocuments', profile.id] });
