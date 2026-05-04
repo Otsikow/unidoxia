@@ -521,7 +521,22 @@ export default function Documents() {
     try {
       setDeletingDocId(doc.id);
 
-      // Delete from storage first
+      // Delete the database row first so the document cannot reappear on refresh.
+      // Request the deleted id back because RLS can otherwise result in a silent no-op.
+      const { data: deletedRows, error: dbError } = await supabase
+        .from("student_documents")
+        .delete()
+        .eq("id", doc.id)
+        .eq("student_id", studentId)
+        .select("id");
+
+      if (dbError) throw dbError;
+      if (!deletedRows || deletedRows.length === 0) {
+        throw new Error("Document could not be deleted. Please refresh and try again.");
+      }
+
+      // Best-effort file cleanup after the row is gone; a storage cleanup failure
+      // must not make the deleted document reappear in the portal.
       if (doc.storage_path) {
         const { error: storageError } = await supabase.storage
           .from("student-documents")
@@ -529,24 +544,17 @@ export default function Documents() {
 
         if (storageError) {
           console.warn("Failed to delete file from storage:", storageError);
-          // Continue with database deletion even if storage deletion fails
         }
       }
 
-      // Delete from database
-      const { error: dbError } = await supabase
-        .from("student_documents")
-        .delete()
-        .eq("id", doc.id);
-
-      if (dbError) throw dbError;
+      setDocuments((current) => current.filter((existingDoc) => existingDoc.id !== doc.id));
 
       toast({
         title: "Document deleted",
         description: `${getDocumentTypeLabel(doc.document_type)} has been deleted.`,
       });
 
-      void loadDocuments(studentId);
+      await loadDocuments(studentId);
     } catch (err) {
       logError(err, "Documents.deleteDocument");
       toast(formatErrorForToast(err, "Failed to delete document"));
