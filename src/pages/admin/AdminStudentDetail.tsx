@@ -423,6 +423,17 @@ const AdminStudentDetail = () => {
     try {
       setDeletingDocumentId(doc.id);
 
+      const { data: deletedRows, error: deleteError } = await supabase
+        .from("student_documents")
+        .delete()
+        .eq("id", doc.id)
+        .select("id");
+
+      if (deleteError) throw deleteError;
+      if (!deletedRows || deletedRows.length === 0) {
+        throw new Error("Document could not be deleted. Please refresh and try again.");
+      }
+
       if (doc.storage_path) {
         const { error: storageError } = await supabase.storage
           .from("student-documents")
@@ -432,13 +443,6 @@ const AdminStudentDetail = () => {
           console.warn("Failed to remove rejected document from storage", storageError);
         }
       }
-
-      const { error: deleteError } = await supabase
-        .from("student_documents")
-        .delete()
-        .eq("id", doc.id);
-
-      if (deleteError) throw deleteError;
 
       setBundle((prev) => {
         if (!prev) return prev;
