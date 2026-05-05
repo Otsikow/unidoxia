@@ -214,6 +214,8 @@ const Index = () => {
           </video>
         )}
 
+        <div className="hero-overlay" aria-hidden />
+
         <div className="hero-content">
           <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
             <img src={unidoxiaLogo} alt="UniDoxia logo" className="hero-logo mb-4 h-24 sm:h-32 md:h-40 opacity-60 brightness-0 invert" />
