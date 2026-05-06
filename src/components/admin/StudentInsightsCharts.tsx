@@ -97,17 +97,36 @@ export const StudentInsightsCharts = ({ students }: Props) => {
       .sort((a, b) => b.value - a.value);
   }, [students]);
 
-  const countryData = useMemo(() => {
+  const normalizeCountry = (raw: string | null | undefined) => {
+    const v = (raw || "").trim();
+    if (!v) return "Unknown";
+    return v
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  };
+
+  const aggregateCountries = (picker: (s: InsightStudent) => string | null) => {
     const counts = new Map<string, number>();
     students.forEach((s) => {
-      const c = (s.preferred_country || s.current_country || "Unknown").trim();
-      counts.set(c, (counts.get(c) ?? 0) + 1);
+      const name = normalizeCountry(picker(s));
+      counts.set(name, (counts.get(name) ?? 0) + 1);
     });
     return Array.from(counts.entries())
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 8);
-  }, [students]);
+  };
+
+  const destinationData = useMemo(
+    () => aggregateCountries((s) => s.preferred_country),
+    [students]
+  );
+  const originData = useMemo(
+    () => aggregateCountries((s) => s.current_country),
+    [students]
+  );
 
   const applicationFunnel = useMemo(() => {
     let withApp = 0;
