@@ -239,7 +239,7 @@ const Index = () => {
                   Start Your Study Journey
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="bg-transparent border-white/40 text-white hover:bg-[#25D366] hover:border-[#25D366] hover:text-white font-semibold w-full sm:w-auto">
+              <Button asChild size="lg" variant="outline" className="bg-slate-950/50 backdrop-blur-md border-white/60 text-white hover:bg-[#25D366] hover:border-[#25D366] hover:text-white font-semibold shadow-lg w-full sm:w-auto">
                 <a
                   href="https://wa.me/447360961803"
                   target="_blank"
@@ -253,8 +253,8 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="absolute bottom-2 md:bottom-4 left-0 right-0 flex justify-center px-4">
-          <p className="inline-flex items-center rounded-full bg-slate-900/80 px-5 py-3 text-center text-sm sm:text-base md:text-lg font-semibold tracking-tight text-white shadow-lg backdrop-blur-md">
+        <div className="absolute bottom-20 sm:bottom-6 md:bottom-4 left-0 right-0 flex justify-center px-4 pointer-events-none">
+          <p className="inline-flex max-w-[92%] items-center rounded-full bg-slate-950/85 px-4 py-2.5 sm:px-5 sm:py-3 text-center text-xs sm:text-sm md:text-base lg:text-lg font-semibold tracking-tight text-white shadow-xl ring-1 ring-white/15 backdrop-blur-md">
             UniDoxia connects students worldwide to trusted international study opportunities.
           </p>
         </div>
