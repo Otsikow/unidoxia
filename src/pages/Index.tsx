@@ -253,8 +253,8 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="absolute bottom-20 sm:bottom-6 md:bottom-4 left-0 right-0 flex justify-center px-4 pointer-events-none">
-          <p className="inline-flex max-w-[92%] items-center rounded-2xl bg-slate-950/95 px-5 py-3 sm:px-6 sm:py-3.5 text-center text-sm sm:text-base md:text-lg font-bold tracking-tight text-white shadow-2xl ring-1 ring-white/25 backdrop-blur-md [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]">
+        <div className="absolute bottom-28 sm:bottom-8 md:bottom-6 left-0 right-0 flex justify-center px-4 pointer-events-none z-[3]">
+          <p className="inline-flex max-w-[92%] items-center rounded-2xl bg-slate-950/95 px-5 py-3 sm:px-6 sm:py-3.5 text-center text-sm sm:text-base md:text-lg font-bold tracking-tight text-white shadow-2xl ring-1 ring-white/30 backdrop-blur-md [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
             UniDoxia connects students worldwide to trusted international study opportunities.
           </p>
         </div>
