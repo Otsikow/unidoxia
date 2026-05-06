@@ -254,7 +254,7 @@ const Index = () => {
         </div>
 
         <div className="absolute bottom-20 sm:bottom-6 md:bottom-4 left-0 right-0 flex justify-center px-4 pointer-events-none">
-          <p className="inline-flex max-w-[92%] items-center rounded-full bg-slate-950/85 px-4 py-2.5 sm:px-5 sm:py-3 text-center text-xs sm:text-sm md:text-base lg:text-lg font-semibold tracking-tight text-white shadow-xl ring-1 ring-white/15 backdrop-blur-md">
+          <p className="inline-flex max-w-[92%] items-center rounded-2xl bg-slate-950/95 px-5 py-3 sm:px-6 sm:py-3.5 text-center text-sm sm:text-base md:text-lg font-bold tracking-tight text-white shadow-2xl ring-1 ring-white/25 backdrop-blur-md [text-shadow:0_1px_2px_rgba(0,0,0,0.6)]">
             UniDoxia connects students worldwide to trusted international study opportunities.
           </p>
         </div>
