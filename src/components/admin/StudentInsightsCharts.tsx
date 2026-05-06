@@ -242,8 +242,8 @@ export const StudentInsightsCharts = ({ students }: Props) => {
       </div>
 
       {/* Charts */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">Student Status Breakdown</CardTitle>
             <CardDescription>
@@ -284,39 +284,7 @@ export const StudentInsightsCharts = ({ students }: Props) => {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="text-base">Top Destination Countries</CardTitle>
-            <CardDescription>Where students want to study</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[280px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={countryData}
-                layout="vertical"
-                margin={{ top: 5, right: 16, left: 8, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridStroke} />
-                <XAxis type="number" allowDecimals={false} tick={axisTickStyle} stroke={axisStroke} />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={86}
-                  tick={axisTickStyle}
-                  stroke={axisStroke}
-                />
-                <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "hsl(var(--foreground) / 0.08)" }} />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                  {countryData.map((_, idx) => (
-                    <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-1">
+        <Card>
           <CardHeader>
             <CardTitle className="text-base">Application Funnel</CardTitle>
             <CardDescription>Conversion through key milestones</CardDescription>
@@ -342,6 +310,70 @@ export const StudentInsightsCharts = ({ students }: Props) => {
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {applicationFunnel.map((_, idx) => (
                     <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Top Destination Countries</CardTitle>
+            <CardDescription>Where students want to study</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={destinationData}
+                layout="vertical"
+                margin={{ top: 5, right: 16, left: 8, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridStroke} />
+                <XAxis type="number" allowDecimals={false} tick={axisTickStyle} stroke={axisStroke} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={96}
+                  tick={axisTickStyle}
+                  stroke={axisStroke}
+                />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "hsl(var(--foreground) / 0.08)" }} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                  {destinationData.map((_, idx) => (
+                    <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Top Countries of Origin</CardTitle>
+            <CardDescription>Where students are coming from</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={originData}
+                layout="vertical"
+                margin={{ top: 5, right: 16, left: 8, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridStroke} />
+                <XAxis type="number" allowDecimals={false} tick={axisTickStyle} stroke={axisStroke} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={96}
+                  tick={axisTickStyle}
+                  stroke={axisStroke}
+                />
+                <Tooltip contentStyle={tooltipStyle} itemStyle={tooltipItemStyle} labelStyle={tooltipLabelStyle} cursor={{ fill: "hsl(var(--foreground) / 0.08)" }} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                  {originData.map((_, idx) => (
+                    <Cell key={idx} fill={PIE_COLORS[(idx + 3) % PIE_COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
