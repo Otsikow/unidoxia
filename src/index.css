@@ -648,7 +648,13 @@ All colors MUST be HSL.
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 1.5rem 1rem 8rem;
+  }
+
+  @media (min-width: 640px) {
+    .hero-content {
+      padding: 2rem 2rem 6rem;
+    }
   }
 
   .hero-content-inner {
