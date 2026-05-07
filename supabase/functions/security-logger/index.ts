@@ -45,21 +45,25 @@ const ALERT_SUMMARIES: Partial<Record<EventType, string>> = {
   suspicious_activity: "Suspicious activity detected",
 };
 
-function requireAuthorizedRequest(req: Request): Response | null {
+type CallerKind = "service_role" | "user_jwt" | "anon";
+
+function authorizeRequest(req: Request): { response?: Response; caller?: CallerKind } {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return {
+      response: new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }),
+    };
   }
 
   const token = authHeader.slice(7);
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  if ((anonKey && token === anonKey) || (serviceRoleKey && token === serviceRoleKey)) {
-    return null;
+  if (serviceRoleKey && token === serviceRoleKey) {
+    return { caller: "service_role" };
   }
 
   if (token.split(".").length === 3) {
@@ -67,19 +71,48 @@ function requireAuthorizedRequest(req: Request): Response | null {
       const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
       const role = (payload?.role || payload?.["user_role"]) as string | undefined;
       const sub = payload?.sub as string | undefined;
-      if (payload && sub && ["authenticated", "service_role"].includes(role ?? "")) {
-        return null;
+      if (payload && sub && role === "authenticated") {
+        return { caller: "user_jwt" };
+      }
+      if (role === "service_role") {
+        return { caller: "service_role" };
       }
     } catch {
-      // fallthrough to unauthorized below
+      // fallthrough
     }
   }
 
-  return new Response(JSON.stringify({ error: "Unauthorized" }), {
-    status: 401,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  // Anon-key callers are treated as untrusted; they get heavily restricted access below.
+  if (anonKey && token === anonKey) {
+    return { caller: "anon" };
+  }
+
+  return {
+    response: new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    }),
+  };
 }
+
+// Per-IP in-memory rate limit for anon callers (best-effort within a single isolate)
+const ANON_RATE_LIMIT_MAX = 10;
+const ANON_RATE_LIMIT_WINDOW_MS = 60_000;
+const anonRateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function checkAnonRateLimit(ip: string | null): boolean {
+  const key = ip || "unknown";
+  const now = Date.now();
+  const bucket = anonRateBuckets.get(key);
+  if (!bucket || bucket.resetAt < now) {
+    anonRateBuckets.set(key, { count: 1, resetAt: now + ANON_RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  bucket.count += 1;
+  return bucket.count <= ANON_RATE_LIMIT_MAX;
+}
+
+const ANON_ALLOWED_EVENT_TYPES: EventType[] = ["failed_authentication"];
 
 function normalizeIdentifier(email?: string | null, ip?: string | null): string | null {
   if (email && typeof email === "string" && email.trim().length > 0) {
