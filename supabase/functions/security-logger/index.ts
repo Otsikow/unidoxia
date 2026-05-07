@@ -372,7 +372,7 @@ serve(async (req) => {
         user_id: parsed.userId,
         actor_email: parsed.actorEmail,
         event_type: parsed.eventType,
-        severity,
+        severity: effectiveSeverity,
         description: parsed.description ?? null,
         metadata,
         ip_address: ipAddress,
