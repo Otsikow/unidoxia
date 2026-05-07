@@ -358,23 +358,23 @@ const en = {
           ctas: {
             students: {
               badge: "Students",
-              title: "Apply to universities abroad with ease",
+              title: "We help you apply to universities abroad with ease",
               description:
-                "Create your profile once, upload your documents, and apply to multiple universities in the UK, Europe, Canada, the USA, and Australia from one platform.",
+                "Create your profile once, upload your documents, and apply to universities in the UK, Europe, Canada, the USA, Australia, and other leading study destinations — all from one simple platform.",
               action: "Start Application",
             },
             agents: {
               badge: "Agents",
               title: "Recruit students and earn commissions",
               description:
-                "Manage your students, submit applications, track progress, and work directly with universities — all from one dashboard.",
+                "Manage your students, submit applications, track progress, and work directly with universities — all from one powerful dashboard built to help you grow your recruitment business.",
               action: "Join as Agent",
             },
             universities: {
               badge: "Universities",
-              title: "Connect with qualified international students",
+              title: "We connect you with qualified international students",
               description:
-                "Receive ready-to-review applications, communicate with students and agents, and grow enrolments from Africa through a trusted recruitment network.",
+                "Receive ready-to-review applications from serious international students, communicate with applicants and agents, and grow enrolments through a trusted recruitment network focused on Africa and global student markets.",
               action: "Partner with Us",
             },
           },
