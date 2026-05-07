@@ -391,11 +391,11 @@ serve(async (req) => {
     const alertResult = await maybeCreateAlert(
       supabaseClient,
       parsed.eventType,
-      severity,
+      effectiveSeverity,
       parsed.tenantId ?? null,
       eventId,
       metadata,
-      parsed.alert,
+      effectiveAlert,
     );
 
     return new Response(
