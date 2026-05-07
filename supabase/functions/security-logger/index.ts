@@ -317,8 +317,9 @@ serve(async (req) => {
     });
   }
 
-  const authError = requireAuthorizedRequest(req);
-  if (authError) return authError;
+  const auth = authorizeRequest(req);
+  if (auth.response) return auth.response;
+  const caller: CallerKind = auth.caller!;
 
   try {
     const requestJson = await req.json();
