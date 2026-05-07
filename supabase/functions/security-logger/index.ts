@@ -331,6 +331,30 @@ serve(async (req) => {
     const ipAddress = parsed.ipAddress ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     const userAgent = parsed.userAgent ?? req.headers.get("user-agent") ?? null;
 
+    // Anon callers (using public anon key) are heavily restricted to prevent
+    // log flooding and forged high-severity alerts.
+    let effectiveAlert = parsed.alert;
+    let effectiveSeverity: Severity = severity;
+    if (caller === "anon") {
+      if (!ANON_ALLOWED_EVENT_TYPES.includes(parsed.eventType)) {
+        return new Response(
+          JSON.stringify({ error: "Event type not permitted for unauthenticated callers" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      if (!checkAnonRateLimit(ipAddress)) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded" }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      // Strip alert capability and clamp severity for anon callers.
+      effectiveAlert = undefined;
+      if (effectiveSeverity === "critical" || effectiveSeverity === "high") {
+        effectiveSeverity = "medium";
+      }
+    }
+
     const emailFromMetadata = typeof parsed.metadata?.email === "string" ? parsed.metadata.email : undefined;
     const identifier = normalizeIdentifier(emailFromMetadata || parsed.actorEmail || undefined, ipAddress);
 
