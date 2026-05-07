@@ -360,8 +360,8 @@ const en = {
               badge: "Students",
               title: "We help you apply to universities abroad with ease",
               description:
-                "Create your profile once, upload your documents, and apply to universities in the UK, Europe, Canada, the USA, Australia, and other leading study destinations — all from one simple platform.",
-              action: "Start Application",
+                "From choosing the right university to submitting your application, securing your offer, and preparing for your student visa, UniDoxia supports you every step of the way until you are ready to travel.",
+              action: "Register to Start",
             },
             agents: {
               badge: "Agents",
