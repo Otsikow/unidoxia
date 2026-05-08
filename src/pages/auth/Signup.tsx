@@ -765,7 +765,7 @@ const Signup = () => {
 
   const getRoleDescription = (r: UserRole) =>
     r === "student"
-      ? "Apply to universities and track applications"
+      ? "Register to get step by step guidance."
       : r === "agent"
       ? "Help students and earn commissions"
       : "Showcase courses and scholarships";
