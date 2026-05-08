@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { formatIntakeLabel } from "@/lib/intakeOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { logSecurityEvent } from "@/lib/securityLogger";
@@ -76,6 +77,8 @@ interface StudentBundle {
     current_country: string | null;
     preferred_course: string | null;
     preferred_country: string | null;
+    preferred_intake_year: number | null;
+    preferred_intake_month: number | null;
     nationality: string | null;
     date_of_birth: string | null;
     passport_number: string | null;
@@ -219,19 +222,21 @@ const AdminStudentDetail = () => {
       // Also fetch archive status separately
       const { data: archiveData } = await supabase
         .from("students")
-        .select("archived_at, archive_reason, preferred_course, preferred_country")
+        .select("archived_at, archive_reason, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month")
         .eq("id", studentId)
         .maybeSingle();
 
-      if (archiveData?.preferred_course || archiveData?.preferred_country) {
+      if (archiveData) {
         setBundle((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
             student: {
               ...prev.student,
-              preferred_course: archiveData.preferred_course ?? null,
-              preferred_country: archiveData.preferred_country ?? null,
+              preferred_course: archiveData.preferred_course ?? prev.student.preferred_course ?? null,
+              preferred_country: archiveData.preferred_country ?? prev.student.preferred_country ?? null,
+              preferred_intake_year: archiveData.preferred_intake_year ?? null,
+              preferred_intake_month: archiveData.preferred_intake_month ?? null,
             },
           };
         });
@@ -890,6 +895,22 @@ const AdminStudentDetail = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Preferred Study Country</p>
                 <p className="font-medium">{student.preferred_country ?? "—"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Preferred Intake</p>
+                <p className="font-medium">
+                  {student.preferred_intake_year && student.preferred_intake_month
+                    ? formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)
+                    : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Academic Year</p>
+                <p className="font-medium">
+                  {student.preferred_intake_year
+                    ? `${student.preferred_intake_year}/${student.preferred_intake_year + 1}`
+                    : "—"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>

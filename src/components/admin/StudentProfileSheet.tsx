@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatIntakeLabel } from "@/lib/intakeOptions";
 import {
   Sheet,
   SheetContent,
@@ -89,6 +90,8 @@ interface StudentProfile {
   contact_phone: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
+  preferred_intake_year: number | null;
+  preferred_intake_month: number | null;
   
   address: Record<string, any> | null;
   nationality: string | null;
@@ -216,6 +219,8 @@ export function StudentProfileSheet({
           contact_phone,
           preferred_course,
           preferred_country,
+          preferred_intake_year,
+          preferred_intake_month,
           
           address,
           nationality,
@@ -592,6 +597,22 @@ export function StudentProfileSheet({
                         <div>
                           <span className="text-muted-foreground">Preferred Study Country</span>
                           <p className="font-medium">{student.preferred_country || "—"}</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Preferred Intake</span>
+                          <p className="font-medium">
+                            {student.preferred_intake_year && student.preferred_intake_month
+                              ? formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)
+                              : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Academic Year</span>
+                          <p className="font-medium">
+                            {student.preferred_intake_year
+                              ? `${student.preferred_intake_year}/${student.preferred_intake_year + 1}`
+                              : "—"}
+                          </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Phone</span>
