@@ -610,11 +610,35 @@ const AdminStudents = () => {
                 ))}
               </SelectContent>
             </Select>
-            {studentStatusFilter !== "all" && (
+            <Select value={intakeYearFilter} onValueChange={setIntakeYearFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by intake year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All intake years</SelectItem>
+                {Array.from(
+                  new Set(
+                    students
+                      .map((s) => s.preferred_intake_year)
+                      .filter((y): y is number => !!y)
+                  )
+                )
+                  .sort((a, b) => a - b)
+                  .map((year) => (
+                    <SelectItem key={year} value={String(year)}>
+                      {year}/{year + 1} Academic Year
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {(studentStatusFilter !== "all" || intakeYearFilter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setStudentStatusFilter("all")}
+                onClick={() => {
+                  setStudentStatusFilter("all");
+                  setIntakeYearFilter("all");
+                }}
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1" />
                 Reset
