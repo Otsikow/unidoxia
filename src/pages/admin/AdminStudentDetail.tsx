@@ -897,6 +897,22 @@ const AdminStudentDetail = () => {
                 <p className="font-medium">{student.preferred_country ?? "—"}</p>
               </div>
               <div>
+                <p className="text-sm text-muted-foreground">Preferred Intake</p>
+                <p className="font-medium">
+                  {student.preferred_intake_year && student.preferred_intake_month
+                    ? formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)
+                    : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Academic Year</p>
+                <p className="font-medium">
+                  {student.preferred_intake_year
+                    ? `${student.preferred_intake_year}/${student.preferred_intake_year + 1}`
+                    : "—"}
+                </p>
+              </div>
+              <div>
                 <p className="text-sm text-muted-foreground">Email</p>
                 <p className="font-medium">
                   {student.contact_email || student.profile?.email ? (
