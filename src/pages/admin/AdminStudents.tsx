@@ -82,6 +82,7 @@ import {
 } from "@/lib/studentStatus";
 import { StudentInsightsCharts } from "@/components/admin/StudentInsightsCharts";
 import { TablePagination } from "@/components/common/TablePagination";
+import { formatIntakeLabel } from "@/lib/intakeOptions";
 
 const STUDENTS_PAGE_SIZE = 20;
 
@@ -99,6 +100,8 @@ interface StudentWithDocuments {
   current_country: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
+  preferred_intake_year: number | null;
+  preferred_intake_month: number | null;
   created_at: string | null;
   manual_status: string | null;
   referral_source: string | null;
@@ -177,6 +180,7 @@ const AdminStudents = () => {
     useState<string>("all");
   const [accountStatusFilter, setAccountStatusFilter] =
     useState<AccountStatusFilter>("all");
+  const [intakeYearFilter, setIntakeYearFilter] = useState<string>("all");
 
   const [sortField, setSortField] = useState<SortField>("joined");
   const [sortDirection, setSortDirection] =
@@ -202,6 +206,12 @@ const AdminStudents = () => {
       result = result.filter((s) => s.operationalStatus === studentStatusFilter);
     }
 
+    // Filter by intake year
+    if (intakeYearFilter !== "all") {
+      const year = parseInt(intakeYearFilter, 10);
+      result = result.filter((s) => s.preferred_intake_year === year);
+    }
+
     // Search filter
     const normalizedQuery = normalizeSearchValue(searchTerm);
     const queryTerms = normalizedQuery.split(/[\s,]+/).filter(Boolean);
@@ -218,6 +228,7 @@ const AdminStudents = () => {
             student.current_country,
             student.preferred_course,
             student.preferred_country,
+            student.preferred_intake_year ? String(student.preferred_intake_year) : null,
           ]
             .filter(Boolean)
             .join(" ")
@@ -227,12 +238,12 @@ const AdminStudents = () => {
     }
 
     return result;
-  }, [searchTerm, students, studentStatusFilter]);
+  }, [searchTerm, students, studentStatusFilter, intakeYearFilter]);
 
   // Reset to page 1 when filters/search change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, studentStatusFilter]);
+  }, [searchTerm, studentStatusFilter, intakeYearFilter]);
 
   const paginatedStudents = useMemo(() => {
     const start = (currentPage - 1) * STUDENTS_PAGE_SIZE;
@@ -284,6 +295,8 @@ const AdminStudents = () => {
           current_country,
           preferred_course,
           preferred_country,
+          preferred_intake_year,
+          preferred_intake_month,
           created_at,
           manual_status,
           referral_source,
@@ -598,11 +611,35 @@ const AdminStudents = () => {
                 ))}
               </SelectContent>
             </Select>
-            {studentStatusFilter !== "all" && (
+            <Select value={intakeYearFilter} onValueChange={setIntakeYearFilter}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filter by intake year" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All intake years</SelectItem>
+                {Array.from(
+                  new Set(
+                    students
+                      .map((s) => s.preferred_intake_year)
+                      .filter((y): y is number => !!y)
+                  )
+                )
+                  .sort((a, b) => a - b)
+                  .map((year) => (
+                    <SelectItem key={year} value={String(year)}>
+                      {year}/{year + 1} Academic Year
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            {(studentStatusFilter !== "all" || intakeYearFilter !== "all") && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setStudentStatusFilter("all")}
+                onClick={() => {
+                  setStudentStatusFilter("all");
+                  setIntakeYearFilter("all");
+                }}
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1" />
                 Reset
@@ -685,6 +722,14 @@ const AdminStudents = () => {
                           <p className="text-xs text-muted-foreground">
                             {student.preferred_country ?? "—"}
                           </p>
+                          {student.preferred_intake_year && student.preferred_intake_month ? (
+                            <p className="text-xs text-primary mt-0.5">
+                              {formatIntakeLabel(
+                                student.preferred_intake_year,
+                                student.preferred_intake_month
+                              )}
+                            </p>
+                          ) : null}
                         </div>
                       </TableCell>
                       <TableCell>
