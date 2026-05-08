@@ -241,6 +241,15 @@ export default function ProgramSelectionStep({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Preferred Study Year & Intake — always visible */}
+          <PreferredStudyYearAndIntake
+            intakeYear={data.intakeYear}
+            intakeMonth={data.intakeMonth}
+            onChange={(year, month) =>
+              onChange({ ...data, intakeYear: year, intakeMonth: month, intakeId: undefined })
+            }
+          />
+
           {/* Search Courses */}
           <div className="space-y-2">
             <Label htmlFor="search" className="flex items-center gap-2">
