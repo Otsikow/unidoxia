@@ -2430,6 +2430,8 @@ export type Database = {
           plan_type: string | null
           preferred_country: string | null
           preferred_course: string | null
+          preferred_intake_month: number | null
+          preferred_intake_year: number | null
           preferred_name: string | null
           preferred_study_area: string | null
           profile_completeness: number | null
@@ -2471,6 +2473,8 @@ export type Database = {
           plan_type?: string | null
           preferred_country?: string | null
           preferred_course?: string | null
+          preferred_intake_month?: number | null
+          preferred_intake_year?: number | null
           preferred_name?: string | null
           preferred_study_area?: string | null
           profile_completeness?: number | null
@@ -2512,6 +2516,8 @@ export type Database = {
           plan_type?: string | null
           preferred_country?: string | null
           preferred_course?: string | null
+          preferred_intake_month?: number | null
+          preferred_intake_year?: number | null
           preferred_name?: string | null
           preferred_study_area?: string | null
           profile_completeness?: number | null
