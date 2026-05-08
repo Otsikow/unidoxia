@@ -35,6 +35,8 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, showToolbarBackButton = true }: DashboardLayoutProps) {
+  const { user } = useAuth();
+  usePageViewTracking(user?.id);
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen w-full bg-background">
