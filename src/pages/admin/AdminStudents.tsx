@@ -179,6 +179,7 @@ const AdminStudents = () => {
     useState<string>("all");
   const [accountStatusFilter, setAccountStatusFilter] =
     useState<AccountStatusFilter>("all");
+  const [intakeYearFilter, setIntakeYearFilter] = useState<string>("all");
 
   const [sortField, setSortField] = useState<SortField>("joined");
   const [sortDirection, setSortDirection] =
