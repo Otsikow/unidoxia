@@ -218,6 +218,8 @@ export function StudentProfileSheet({
           contact_phone,
           preferred_course,
           preferred_country,
+          preferred_intake_year,
+          preferred_intake_month,
           
           address,
           nationality,
