@@ -16,6 +16,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import BackButton from "@/components/BackButton";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Home } from "lucide-react";
+import { usePageViewTracking } from "@/hooks/usePageViewTracking";
 
 const formatRoleLabel = (role?: string | null) =>
   role ? role.replace(/_/g, " ") : "User";
