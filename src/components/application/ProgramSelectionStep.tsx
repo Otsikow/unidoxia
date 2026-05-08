@@ -370,26 +370,8 @@ export default function ProgramSelectionStep({
                     </SelectContent>
                   </Select>
                 </div>
-              ) : (
-                <PreferredStudyYearAndIntake
-                  intakeYear={data.intakeYear}
-                  intakeMonth={data.intakeMonth}
-                  onChange={(year, month) =>
-                    onChange({ ...data, intakeYear: year, intakeMonth: month, intakeId: undefined })
-                  }
-                />
-              )}
+              ) : null}
             </>
-          )}
-
-          {!selectedProgram && (
-            <PreferredStudyYearAndIntake
-              intakeYear={data.intakeYear}
-              intakeMonth={data.intakeMonth}
-              onChange={(year, month) =>
-                onChange({ ...data, intakeYear: year, intakeMonth: month, intakeId: undefined })
-              }
-            />
           )}
         </CardContent>
       </Card>
