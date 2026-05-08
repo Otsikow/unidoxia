@@ -177,6 +177,8 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           preferred_course: formData.preferred_course,
           preferred_study_area: formData.preferred_study_area,
           preferred_country: formData.preferred_country,
+          preferred_intake_year: formData.preferred_intake_year || null,
+          preferred_intake_month: formData.preferred_intake_month || null,
           address: {
             line1: formData.address_line1,
             line2: formData.address_line2,
