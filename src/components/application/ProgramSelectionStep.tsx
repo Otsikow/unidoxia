@@ -362,68 +362,25 @@ export default function ProgramSelectionStep({
                   </Select>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    No specific intakes available. Please select your preferred intake period:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="intakeYear">Intake Year *</Label>
-                      <Select
-                        value={data.intakeYear.toString()}
-                        onValueChange={(v) => onChange({ ...data, intakeYear: parseInt(v) })}
-                      >
-                        <SelectTrigger id="intakeYear">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[0, 1, 2].map((offset) => {
-                            const year = new Date().getFullYear() + offset;
-                            return (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="intakeMonth">Intake Month *</Label>
-                      <Select
-                        value={data.intakeMonth.toString()}
-                        onValueChange={(v) => onChange({ ...data, intakeMonth: parseInt(v) })}
-                      >
-                        <SelectTrigger id="intakeMonth">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[
-                            'January',
-                            'February',
-                            'March',
-                            'April',
-                            'May',
-                            'June',
-                            'July',
-                            'August',
-                            'September',
-                            'October',
-                            'November',
-                            'December',
-                          ].map((month, idx) => (
-                            <SelectItem key={idx + 1} value={(idx + 1).toString()}>
-                              {month}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
+                <PreferredStudyYearAndIntake
+                  intakeYear={data.intakeYear}
+                  intakeMonth={data.intakeMonth}
+                  onChange={(year, month) =>
+                    onChange({ ...data, intakeYear: year, intakeMonth: month, intakeId: undefined })
+                  }
+                />
               )}
             </>
+          )}
+
+          {!selectedProgram && (
+            <PreferredStudyYearAndIntake
+              intakeYear={data.intakeYear}
+              intakeMonth={data.intakeMonth}
+              onChange={(year, month) =>
+                onChange({ ...data, intakeYear: year, intakeMonth: month, intakeId: undefined })
+              }
+            />
           )}
         </CardContent>
       </Card>
