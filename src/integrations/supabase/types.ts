@@ -153,7 +153,7 @@ export type Database = {
           page_url: string | null
           referrer: string | null
           session_id: string | null
-          tenant_id: string
+          tenant_id: string | null
           user_agent: string | null
           user_id: string | null
         }
@@ -167,7 +167,7 @@ export type Database = {
           page_url?: string | null
           referrer?: string | null
           session_id?: string | null
-          tenant_id: string
+          tenant_id?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -181,7 +181,7 @@ export type Database = {
           page_url?: string | null
           referrer?: string | null
           session_id?: string | null
-          tenant_id?: string
+          tenant_id?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
