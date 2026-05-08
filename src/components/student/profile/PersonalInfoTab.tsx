@@ -19,6 +19,10 @@ import {
   parseInternationalNumber,
   toWhatsAppLink,
 } from '@/lib/phone';
+import {
+  getAcademicYearOptions,
+  getIntakeOptionsForYear,
+} from '@/lib/intakeOptions';
 
 // Common study areas/disciplines
 const STUDY_AREAS = [
