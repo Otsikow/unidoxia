@@ -221,19 +221,21 @@ const AdminStudentDetail = () => {
       // Also fetch archive status separately
       const { data: archiveData } = await supabase
         .from("students")
-        .select("archived_at, archive_reason, preferred_course, preferred_country")
+        .select("archived_at, archive_reason, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month")
         .eq("id", studentId)
         .maybeSingle();
 
-      if (archiveData?.preferred_course || archiveData?.preferred_country) {
+      if (archiveData) {
         setBundle((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
             student: {
               ...prev.student,
-              preferred_course: archiveData.preferred_course ?? null,
-              preferred_country: archiveData.preferred_country ?? null,
+              preferred_course: archiveData.preferred_course ?? prev.student.preferred_course ?? null,
+              preferred_country: archiveData.preferred_country ?? prev.student.preferred_country ?? null,
+              preferred_intake_year: archiveData.preferred_intake_year ?? null,
+              preferred_intake_month: archiveData.preferred_intake_month ?? null,
             },
           };
         });
