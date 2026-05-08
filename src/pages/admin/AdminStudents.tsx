@@ -286,6 +286,8 @@ const AdminStudents = () => {
           current_country,
           preferred_course,
           preferred_country,
+          preferred_intake_year,
+          preferred_intake_month,
           created_at,
           manual_status,
           referral_source,
