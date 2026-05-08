@@ -99,6 +99,8 @@ interface StudentWithDocuments {
   current_country: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
+  preferred_intake_year: number | null;
+  preferred_intake_month: number | null;
   created_at: string | null;
   manual_status: string | null;
   referral_source: string | null;
