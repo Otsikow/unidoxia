@@ -536,6 +536,81 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
               Your preferred destination for studying abroad
             </p>
           </div>
+
+          {/* Preferred Intake Year & Month */}
+          {(() => {
+            const academicYears = getAcademicYearOptions();
+            const selectedYear =
+              academicYears.find((y) => y.startYear === formData.preferred_intake_year)?.startYear ||
+              formData.preferred_intake_year ||
+              0;
+            const intakeOptions = selectedYear ? getIntakeOptionsForYear(selectedYear) : [];
+            return (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="preferred_intake_year">Preferred Academic Year</Label>
+                  <Select
+                    value={formData.preferred_intake_year ? String(formData.preferred_intake_year) : ''}
+                    onValueChange={(value) => {
+                      const year = parseInt(value, 10);
+                      const opts = getIntakeOptionsForYear(year);
+                      const stillValid = opts.some((o) => o.month === formData.preferred_intake_month);
+                      const month = stillValid ? formData.preferred_intake_month : opts[0]?.month ?? 0;
+                      setFormData((prev) => ({
+                        ...prev,
+                        preferred_intake_year: year,
+                        preferred_intake_month: month,
+                      }));
+                    }}
+                  >
+                    <SelectTrigger id="preferred_intake_year">
+                      <SelectValue placeholder="Select academic year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {academicYears.map((y) => (
+                        <SelectItem key={y.startYear} value={String(y.startYear)}>
+                          {y.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    The academic year you plan to begin your studies
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preferred_intake_month">Preferred Intake</Label>
+                  <Select
+                    value={formData.preferred_intake_month ? String(formData.preferred_intake_month) : ''}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, preferred_intake_month: parseInt(value, 10) }))
+                    }
+                    disabled={!selectedYear}
+                  >
+                    <SelectTrigger id="preferred_intake_month">
+                      <SelectValue placeholder={selectedYear ? 'Select intake month' : 'Select academic year first'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {intakeOptions.length === 0 ? (
+                        <div className="p-3 text-center text-sm text-muted-foreground">
+                          No upcoming intakes
+                        </div>
+                      ) : (
+                        intakeOptions.map((opt) => (
+                          <SelectItem key={opt.month} value={String(opt.month)}>
+                            {opt.label}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Your preferred intake start date
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 
