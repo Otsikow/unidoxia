@@ -617,19 +617,20 @@ const AdminStudents = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All intake years</SelectItem>
-                {Array.from(
-                  new Set(
-                    students
-                      .map((s) => s.preferred_intake_year)
-                      .filter((y): y is number => !!y)
-                  )
-                )
-                  .sort((a, b) => a - b)
-                  .map((year) => (
+                {(() => {
+                  const dataYears = students
+                    .map((s) => s.preferred_intake_year)
+                    .filter((y): y is number => !!y);
+                  const academicYears = getAcademicYearOptions().map((y) => y.startYear);
+                  const merged = Array.from(new Set([...academicYears, ...dataYears])).sort(
+                    (a, b) => a - b
+                  );
+                  return merged.map((year) => (
                     <SelectItem key={year} value={String(year)}>
                       {year}/{year + 1} Academic Year
                     </SelectItem>
-                  ))}
+                  ));
+                })()}
               </SelectContent>
             </Select>
             {(studentStatusFilter !== "all" || intakeYearFilter !== "all") && (
