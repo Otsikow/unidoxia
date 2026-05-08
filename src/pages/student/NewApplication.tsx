@@ -558,9 +558,22 @@ export default function NewApplication() {
       setStudentId(studentData.id);
       void loadStudentDocuments(studentData.id);
 
-      // Pre-fill personal information
+      // Pre-fill personal information and preferred intake
+      const preferredYear = (studentData as any).preferred_intake_year;
+      const preferredMonth = (studentData as any).preferred_intake_month;
       setFormData((prev) => ({
         ...prev,
+        programSelection: {
+          ...prev.programSelection,
+          intakeYear:
+            typeof preferredYear === 'number' && preferredYear > 0
+              ? preferredYear
+              : prev.programSelection.intakeYear,
+          intakeMonth:
+            typeof preferredMonth === 'number' && preferredMonth > 0
+              ? preferredMonth
+              : prev.programSelection.intakeMonth,
+        },
         personalInfo: {
           fullName: studentData.legal_name || profile?.full_name || studentData.profile?.full_name || '',
           email: studentData.contact_email || profile?.email || studentData.profile?.email || '',
@@ -888,6 +901,31 @@ export default function NewApplication() {
 
     setHasUnsavedChanges(true);
   }, [currentStep, formData, loading]);
+
+  // Persist preferred intake year/month to the student record so it
+  // auto-prefills on future sessions and applications.
+  const intakeYear = formData.programSelection.intakeYear;
+  const intakeMonth = formData.programSelection.intakeMonth;
+  useEffect(() => {
+    if (loading || !hasHydratedFromDraft.current) return;
+    if (!studentId) return;
+    if (!intakeYear || !intakeMonth) return;
+
+    const handle = setTimeout(() => {
+      void supabase
+        .from('students')
+        .update({
+          preferred_intake_year: intakeYear,
+          preferred_intake_month: intakeMonth,
+        } as never)
+        .eq('id', studentId)
+        .then(({ error }) => {
+          if (error) logError(error, 'NewApplication.savePreferredIntake');
+        });
+    }, 800);
+
+    return () => clearTimeout(handle);
+  }, [intakeYear, intakeMonth, studentId, loading]);
 
   const isSavingDraft = backgroundSaveMutation.isPending || manualSaveMutation.isPending;
 
