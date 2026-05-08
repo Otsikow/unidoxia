@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { formatIntakeLabel } from "@/lib/intakeOptions";
 import {
   Sheet,
   SheetContent,
