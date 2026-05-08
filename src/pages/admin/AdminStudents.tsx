@@ -205,6 +205,12 @@ const AdminStudents = () => {
       result = result.filter((s) => s.operationalStatus === studentStatusFilter);
     }
 
+    // Filter by intake year
+    if (intakeYearFilter !== "all") {
+      const year = parseInt(intakeYearFilter, 10);
+      result = result.filter((s) => s.preferred_intake_year === year);
+    }
+
     // Search filter
     const normalizedQuery = normalizeSearchValue(searchTerm);
     const queryTerms = normalizedQuery.split(/[\s,]+/).filter(Boolean);
@@ -221,6 +227,7 @@ const AdminStudents = () => {
             student.current_country,
             student.preferred_course,
             student.preferred_country,
+            student.preferred_intake_year ? String(student.preferred_intake_year) : null,
           ]
             .filter(Boolean)
             .join(" ")
@@ -230,12 +237,12 @@ const AdminStudents = () => {
     }
 
     return result;
-  }, [searchTerm, students, studentStatusFilter]);
+  }, [searchTerm, students, studentStatusFilter, intakeYearFilter]);
 
   // Reset to page 1 when filters/search change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, studentStatusFilter]);
+  }, [searchTerm, studentStatusFilter, intakeYearFilter]);
 
   const paginatedStudents = useMemo(() => {
     const start = (currentPage - 1) * STUDENTS_PAGE_SIZE;
