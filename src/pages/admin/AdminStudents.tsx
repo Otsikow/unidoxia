@@ -721,6 +721,14 @@ const AdminStudents = () => {
                           <p className="text-xs text-muted-foreground">
                             {student.preferred_country ?? "—"}
                           </p>
+                          {student.preferred_intake_year && student.preferred_intake_month ? (
+                            <p className="text-xs text-primary mt-0.5">
+                              {formatIntakeLabel(
+                                student.preferred_intake_year,
+                                student.preferred_intake_month
+                              )}
+                            </p>
+                          ) : null}
                         </div>
                       </TableCell>
                       <TableCell>
