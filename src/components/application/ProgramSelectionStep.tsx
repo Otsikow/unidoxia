@@ -8,7 +8,11 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
-import { GraduationCap, MapPin, DollarSign, Calendar, Search, Loader2 } from 'lucide-react';
+import { GraduationCap, MapPin, DollarSign, Calendar, Search, Loader2, CalendarDays } from 'lucide-react';
+import {
+  getAcademicYearOptions,
+  getIntakeOptionsForYear,
+} from '@/lib/intakeOptions';
 
 interface ProgramSelection {
   programId: string;
