@@ -401,3 +401,97 @@ export default function ProgramSelectionStep({
     </div>
   );
 }
+
+interface PreferredStudyYearAndIntakeProps {
+  intakeYear: number;
+  intakeMonth: number;
+  onChange: (year: number, month: number) => void;
+}
+
+function PreferredStudyYearAndIntake({
+  intakeYear,
+  intakeMonth,
+  onChange,
+}: PreferredStudyYearAndIntakeProps) {
+  const academicYears = getAcademicYearOptions();
+
+  // Determine which academic year currently matches the saved intake.
+  const matchingAcademicYear =
+    academicYears.find((y) => y.startYear === intakeYear) ?? academicYears[0];
+  const selectedStartYear = matchingAcademicYear?.startYear ?? academicYears[0]?.startYear ?? 0;
+
+  const intakeOptions = getIntakeOptionsForYear(selectedStartYear);
+
+  const handleYearChange = (value: string) => {
+    const year = parseInt(value, 10);
+    const opts = getIntakeOptionsForYear(year);
+    // Pick the first available intake for the new year if current month no longer fits.
+    const stillValid = opts.some((o) => o.month === intakeMonth);
+    const month = stillValid ? intakeMonth : opts[0]?.month ?? 0;
+    onChange(year, month);
+  };
+
+  const handleMonthChange = (value: string) => {
+    onChange(selectedStartYear, parseInt(value, 10));
+  };
+
+  return (
+    <Card className="border-primary/20 bg-primary/5">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <CalendarDays className="h-5 w-5" />
+          Choose Your Preferred Study Year
+        </CardTitle>
+        <CardDescription>
+          Select the academic year and intake period you would like to apply for. UniDoxia
+          will use this information to recommend suitable universities and courses for your
+          preferred start date.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="preferredYear">Preferred Academic Year *</Label>
+            <Select value={selectedStartYear ? selectedStartYear.toString() : ''} onValueChange={handleYearChange}>
+              <SelectTrigger id="preferredYear">
+                <SelectValue placeholder="Select academic year" />
+              </SelectTrigger>
+              <SelectContent>
+                {academicYears.map((y) => (
+                  <SelectItem key={y.startYear} value={y.startYear.toString()}>
+                    {y.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="preferredIntake">Preferred Intake *</Label>
+            <Select
+              value={intakeMonth ? intakeMonth.toString() : ''}
+              onValueChange={handleMonthChange}
+            >
+              <SelectTrigger id="preferredIntake">
+                <SelectValue placeholder="Select intake month" />
+              </SelectTrigger>
+              <SelectContent>
+                {intakeOptions.length === 0 ? (
+                  <div className="p-3 text-center text-sm text-muted-foreground">
+                    No upcoming intakes for this year
+                  </div>
+                ) : (
+                  intakeOptions.map((opt) => (
+                    <SelectItem key={opt.month} value={opt.month.toString()}>
+                      {opt.label}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
