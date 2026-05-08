@@ -76,6 +76,8 @@ interface StudentBundle {
     current_country: string | null;
     preferred_course: string | null;
     preferred_country: string | null;
+    preferred_intake_year: number | null;
+    preferred_intake_month: number | null;
     nationality: string | null;
     date_of_birth: string | null;
     passport_number: string | null;
