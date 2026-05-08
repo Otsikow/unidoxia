@@ -74,14 +74,6 @@ const NAV_GROUPS: NavGroup[] = [
         descriptionDefault: "Key metrics & insights",
         icon: Gauge,
       },
-      {
-        to: "/admin/overview",
-        labelKey: "admin.layout.navigation.overview.label",
-        descriptionKey: "admin.layout.navigation.overview.description",
-        labelDefault: "Executive Summary",
-        descriptionDefault: "High-level overview",
-        icon: BarChart3,
-      },
     ],
   },
   {
