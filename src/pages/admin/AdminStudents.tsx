@@ -82,7 +82,7 @@ import {
 } from "@/lib/studentStatus";
 import { StudentInsightsCharts } from "@/components/admin/StudentInsightsCharts";
 import { TablePagination } from "@/components/common/TablePagination";
-import { formatIntakeLabel } from "@/lib/intakeOptions";
+import { formatIntakeLabel, getAcademicYearOptions } from "@/lib/intakeOptions";
 
 const STUDENTS_PAGE_SIZE = 20;
 
