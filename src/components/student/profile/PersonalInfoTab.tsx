@@ -89,6 +89,8 @@ const extractFormData = (student: Tables<'students'>) => {
     preferred_course: (student as any).preferred_course || '',
     preferred_study_area: (student as any).preferred_study_area || '',
     preferred_country: (student as any).preferred_country || '',
+    preferred_intake_year: (student as any).preferred_intake_year || 0,
+    preferred_intake_month: (student as any).preferred_intake_month || 0,
     address_line1: addressData?.line1 || '',
     address_line2: addressData?.line2 || '',
     city: addressData?.city || '',
