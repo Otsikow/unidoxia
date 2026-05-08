@@ -89,6 +89,8 @@ interface StudentProfile {
   contact_phone: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
+  preferred_intake_year: number | null;
+  preferred_intake_month: number | null;
   
   address: Record<string, any> | null;
   nationality: string | null;
