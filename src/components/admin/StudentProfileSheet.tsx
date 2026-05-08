@@ -599,6 +599,22 @@ export function StudentProfileSheet({
                           <p className="font-medium">{student.preferred_country || "—"}</p>
                         </div>
                         <div>
+                          <span className="text-muted-foreground">Preferred Intake</span>
+                          <p className="font-medium">
+                            {student.preferred_intake_year && student.preferred_intake_month
+                              ? formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)
+                              : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Academic Year</span>
+                          <p className="font-medium">
+                            {student.preferred_intake_year
+                              ? `${student.preferred_intake_year}/${student.preferred_intake_year + 1}`
+                              : "—"}
+                          </p>
+                        </div>
+                        <div>
                           <span className="text-muted-foreground">Phone</span>
                           <p className="font-medium">
                             {student.contact_phone ? (
