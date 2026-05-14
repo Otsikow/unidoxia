@@ -237,7 +237,7 @@ export function deriveStudentStatus(student: DeriveInput): StudentOperationalSta
   // No applications – check document & profile completeness
   const docTypes = new Set(student.documents.map((d) => d.document_type));
   const hasAllDocs = REQUIRED_STUDENT_DOCUMENTS.every((req) =>
-    req.acceptableTypes.some((t) => docTypes.has(t))
+    req.optional || req.acceptableTypes.some((t) => docTypes.has(t))
   );
 
   const profileComplete = Boolean(student.legal_name && student.contact_email);
