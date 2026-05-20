@@ -612,6 +612,7 @@ All colors MUST be HSL.
   /* Hero Video Section */
   .hero-video-container {
     position: relative;
+    --hero-video-lift: clamp(2.75rem, 6vw, 4.75rem);
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
@@ -624,9 +625,9 @@ All colors MUST be HSL.
 
   .hero-video {
     position: absolute;
-    inset: 0;
+    inset: calc(-1 * var(--hero-video-lift)) 0 0;
     width: 100%;
-    height: 100%;
+    height: calc(100% + var(--hero-video-lift));
     object-fit: cover;
     z-index: 0;
     opacity: 1;
