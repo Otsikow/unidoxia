@@ -190,13 +190,13 @@ const Index = () => {
       <section className="hero-video-container">
         <LandingHeader />
 
-        {/* Background image placeholder */}
-        <div 
-          className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`} 
-          style={{ backgroundImage: `url(${heroBackground})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
-          aria-hidden 
+        {/* Solid fallback while video loads (no background image) */}
+        <div
+          className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
+          style={{ backgroundColor: "#0e1a2b" }}
+          aria-hidden
         />
-        
+
         {shouldRenderHeroVideo && (
           <video
             ref={heroVideoRef}
@@ -206,7 +206,6 @@ const Index = () => {
             muted
             playsInline
             preload="auto"
-            poster={heroBackground}
             // @ts-expect-error - fetchpriority is valid HTML attribute
             fetchpriority="high"
           >
