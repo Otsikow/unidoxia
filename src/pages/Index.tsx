@@ -187,7 +187,7 @@ const Index = () => {
       <SEO title="UniDoxia - Your Path to International Education" description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support." keywords="study abroad, university applications, international education, AI tools, visa calculator" />
 
       {/* ---------- HERO ---------- */}
-      <section className="hero-video-container">
+      <section className="hero-video-container -mt-6 sm:-mt-10 lg:-mt-12">
         <LandingHeader />
 
         {/* Solid fallback while video loads (no background image) */}
