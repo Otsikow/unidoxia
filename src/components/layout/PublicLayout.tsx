@@ -23,6 +23,7 @@ export const PublicLayout = ({ children, contentClassName, showBackButton }: Pub
   // Determine if back button should be shown
   const isHiddenPath = HIDDEN_BACK_BUTTON_PATHS.has(location.pathname);
   const isHiddenPrefix = HIDDEN_BACK_BUTTON_PREFIXES.some((prefix) => location.pathname.startsWith(prefix));
+  const isHomePath = location.pathname === "/" || location.pathname === "/home";
   const shouldShowBackButton = showBackButton ?? (!isHiddenPath && !isHiddenPrefix);
 
   return (
@@ -41,7 +42,7 @@ export const PublicLayout = ({ children, contentClassName, showBackButton }: Pub
         </header>
       )}
       <main className={cn("flex-1 w-full", contentClassName)}>
-        <div className="page-shell py-6 sm:py-10 lg:py-12">
+        <div className={cn("page-shell", isHomePath ? "py-0" : "py-6 sm:py-10 lg:py-12")}>
           {children}
         </div>
       </main>
