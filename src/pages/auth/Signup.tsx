@@ -714,13 +714,55 @@ const Signup = () => {
 
     try {
       const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      const normalizedPhone = normalizePhoneNumber(phone.trim());
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Pre-check: prevent duplicate registrations with the same email or WhatsApp number.
+      try {
+        const { data: availability, error: availabilityError } = await supabase.rpc(
+          "check_signup_availability" as any,
+          { p_email: normalizedEmail, p_phone: normalizedPhone },
+        );
+
+        if (!availabilityError && availability) {
+          const result = availability as { email_taken?: boolean; phone_taken?: boolean };
+
+          if (result.email_taken) {
+            toast({
+              variant: "destructive",
+              title: "Account already exists",
+              description:
+                "An account is already registered with this email. Please log in instead, or reset your password if you've forgotten it.",
+            });
+            setLoading(false);
+            navigate("/auth/login", { state: { email: normalizedEmail } });
+            return;
+          }
+
+          if (result.phone_taken) {
+            toast({
+              variant: "destructive",
+              title: "WhatsApp number already in use",
+              description:
+                "This WhatsApp number is already linked to an existing account. Please log in to continue where you left off, or recover your account.",
+            });
+            setLoading(false);
+            navigate("/auth/login");
+            return;
+          }
+        }
+      } catch (precheckError) {
+        // Non-fatal: if the availability check fails, fall through to the normal signup
+        // flow. Supabase Auth still blocks duplicate emails as a safety net.
+        console.warn("Signup availability check failed:", precheckError);
+      }
 
       const { error } = await signUp({
         email,
         password,
         fullName,
         role,
-        phone: normalizePhoneNumber(phone.trim()),
+        phone: normalizedPhone,
         country,
         username,
         referrerId: referrerInfo?.id,
@@ -729,11 +771,30 @@ const Signup = () => {
       });
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Signup failed",
-          description: (error as Error).message || "An error occurred",
-        });
+        const message = (error as Error).message || "An error occurred";
+        const lower = message.toLowerCase();
+        const isDuplicate =
+          lower.includes("already registered") ||
+          lower.includes("already been registered") ||
+          lower.includes("user already") ||
+          lower.includes("duplicate") ||
+          lower.includes("already exists");
+
+        if (isDuplicate) {
+          toast({
+            variant: "destructive",
+            title: "Account already exists",
+            description:
+              "You already have an account with these details. Please log in to continue, or reset your password to recover access.",
+          });
+          navigate("/auth/login", { state: { email: normalizedEmail } });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Signup failed",
+            description: message,
+          });
+        }
       } else {
         if (role === "agent") {
           markOnboardingSeen("agent");
