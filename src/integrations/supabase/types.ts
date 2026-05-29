@@ -3139,6 +3139,10 @@ export type Database = {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean
       }
+      check_signup_availability: {
+        Args: { p_email?: string; p_phone?: string }
+        Returns: Json
+      }
       create_notification: {
         Args: {
           p_action_url?: string
