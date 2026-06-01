@@ -685,7 +685,7 @@ const App = () => {
                           <Route path="dashboard" element={<Navigate to="/admin/overview" replace />} />
                           <Route path="overview" element={<AdminOverview />} />
                           <Route path="users" element={<AdminUsers />} />
-                          <Route path="admissions" element={<AdminAdmissions />} />
+                          <Route path="admissions" element={<Navigate to="/admin/overview" replace />} />
                           <Route path="agents" element={<AdminAgentsPage />} />
                           <Route path="payments" element={<AdminPaymentsPage />} />
                           <Route path="partners" element={<AdminPartnersPage />} />
