@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 export interface AgentStudent {
   studentId: string;
   profileId: string;
+  referenceCode: string | null;
   displayName: string;
   preferredName?: string | null;
   legalName?: string | null;
