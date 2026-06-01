@@ -597,7 +597,7 @@ const AdminStudents = () => {
               <Input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search by student name, country, or email"
+                placeholder="Search by ID (UDX-…), name, country, or email"
                 className="pl-9"
                 aria-label="Search students"
               />
