@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useCallback, type KeyboardEvent } from "react";
+import { lazy, Suspense, useMemo, useCallback, type KeyboardEvent } from "react";
+import AdminStudentInsightsBlock from "@/components/admin/AdminStudentInsightsBlock";
+
+const AdminAdmissionsOversight = lazy(() => import("@/pages/admin/AdminAdmissions"));
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -442,6 +445,20 @@ const AdminOverview = () => {
           </Card>
         </div>
       </div>
+
+      {/* Student insights — consolidated from the Students page */}
+      <Separator className="my-2" />
+      <AdminStudentInsightsBlock />
+
+      {/* Admissions oversight — merged from the dedicated page */}
+      <Separator className="my-2" />
+      <Suspense
+        fallback={
+          <LoadingState message="Loading admissions oversight" size="sm" />
+        }
+      >
+        <AdminAdmissionsOversight />
+      </Suspense>
     </div>
   );
 };
