@@ -208,7 +208,8 @@ export default function AgentStudentsManager() {
         normalizedSearch.length === 0 ||
         student.displayName.toLowerCase().includes(normalizedSearch) ||
         student.email.toLowerCase().includes(normalizedSearch) ||
-        (student.username?.toLowerCase().includes(normalizedSearch) ?? false);
+        (student.username?.toLowerCase().includes(normalizedSearch) ?? false) ||
+        (student.referenceCode?.toLowerCase().includes(normalizedSearch) ?? false);
 
       const matchesStatus =
         statusFilter === "all" ||
