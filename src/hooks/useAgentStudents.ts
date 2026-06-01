@@ -84,6 +84,7 @@ const mapAgentStudent = (row: AgentStudentRow): AgentStudent | null => {
   return {
     studentId: student.id,
     profileId: student.profile_id,
+    referenceCode: (student as any).reference_code ?? null,
     displayName,
     preferredName,
     legalName,
