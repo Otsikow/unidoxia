@@ -376,7 +376,7 @@ export default function AgentStudentsManager() {
               <div className="relative flex-1 min-w-[220px]">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name, email, or username…"
+                  placeholder="Search by ID (UDX-…), name, email, or username…"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   className="pl-9"
