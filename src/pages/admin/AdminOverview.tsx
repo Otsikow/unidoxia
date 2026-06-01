@@ -445,6 +445,20 @@ const AdminOverview = () => {
           </Card>
         </div>
       </div>
+
+      {/* Student insights — consolidated from the Students page */}
+      <Separator className="my-2" />
+      <AdminStudentInsightsBlock />
+
+      {/* Admissions oversight — merged from the dedicated page */}
+      <Separator className="my-2" />
+      <Suspense
+        fallback={
+          <LoadingState message="Loading admissions oversight" size="sm" />
+        }
+      >
+        <AdminAdmissionsOversight />
+      </Suspense>
     </div>
   );
 };
