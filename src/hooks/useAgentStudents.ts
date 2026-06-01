@@ -27,6 +27,7 @@ interface AgentStudentRow {
     id: string;
     tenant_id: string;
     profile_id: string;
+    reference_code: string | null;
     legal_name: string | null;
     preferred_name: string | null;
     contact_email: string | null;
