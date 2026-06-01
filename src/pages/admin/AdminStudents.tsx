@@ -252,32 +252,8 @@ const AdminStudents = () => {
     return filteredStudents.slice(start, start + STUDENTS_PAGE_SIZE);
   }, [filteredStudents, currentPage]);
 
-  const studentKpis = useMemo(() => {
-    const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const total = students.length;
-    const active = students.filter((student) => student.status !== "archived").length;
-    const archived = total - active;
-    const pendingReview = students.filter((student) =>
-      student.documents.some(
-        (document) => document.admin_review_status === "awaiting_admin_review"
-      )
-    ).length;
-    const joinedThisMonth = students.filter((student) => {
-      if (!student.created_at) return false;
-      return new Date(student.created_at) >= monthStart;
-    }).length;
 
-    return {
-      total,
-      active,
-      archived,
-      pendingReview,
-      joinedThisMonth,
-      visible: filteredStudents.length,
-    };
-  }, [filteredStudents.length, students]);
 
   /* ------------------------------------------------------------------------ */
   /*                                 Fetching                                 */
