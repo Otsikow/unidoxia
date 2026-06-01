@@ -492,6 +492,11 @@ export default function AgentStudentsManager() {
                       >
                         <TableCell>
                           <div className="font-medium">{student.displayName}</div>
+                          {student.referenceCode && (
+                            <p className="text-xs font-mono text-muted-foreground">
+                              {student.referenceCode}
+                            </p>
+                          )}
                           {student.email !== "unknown@example.com" && (
                             <p className="text-xs text-muted-foreground">
                               @{student.username ?? student.profileId.slice(0, 6)}
