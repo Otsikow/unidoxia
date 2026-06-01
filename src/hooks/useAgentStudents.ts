@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 export interface AgentStudent {
   studentId: string;
   profileId: string;
+  referenceCode: string | null;
   displayName: string;
   preferredName?: string | null;
   legalName?: string | null;
@@ -26,6 +27,7 @@ interface AgentStudentRow {
     id: string;
     tenant_id: string;
     profile_id: string;
+    reference_code: string | null;
     legal_name: string | null;
     preferred_name: string | null;
     contact_email: string | null;
@@ -82,6 +84,7 @@ const mapAgentStudent = (row: AgentStudentRow): AgentStudent | null => {
   return {
     studentId: student.id,
     profileId: student.profile_id,
+    referenceCode: (student as any).reference_code ?? null,
     displayName,
     preferredName,
     legalName,
@@ -126,6 +129,7 @@ const fetchAgentStudents = async (
           id,
           tenant_id,
           profile_id,
+          reference_code,
           legal_name,
           preferred_name,
           contact_email,

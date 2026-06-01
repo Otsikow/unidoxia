@@ -208,7 +208,8 @@ export default function AgentStudentsManager() {
         normalizedSearch.length === 0 ||
         student.displayName.toLowerCase().includes(normalizedSearch) ||
         student.email.toLowerCase().includes(normalizedSearch) ||
-        (student.username?.toLowerCase().includes(normalizedSearch) ?? false);
+        (student.username?.toLowerCase().includes(normalizedSearch) ?? false) ||
+        (student.referenceCode?.toLowerCase().includes(normalizedSearch) ?? false);
 
       const matchesStatus =
         statusFilter === "all" ||
@@ -375,7 +376,7 @@ export default function AgentStudentsManager() {
               <div className="relative flex-1 min-w-[220px]">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name, email, or username…"
+                  placeholder="Search by ID (UDX-…), name, email, or username…"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   className="pl-9"
@@ -491,6 +492,11 @@ export default function AgentStudentsManager() {
                       >
                         <TableCell>
                           <div className="font-medium">{student.displayName}</div>
+                          {student.referenceCode && (
+                            <p className="text-xs font-mono text-muted-foreground">
+                              {student.referenceCode}
+                            </p>
+                          )}
                           {student.email !== "unknown@example.com" && (
                             <p className="text-xs text-muted-foreground">
                               @{student.username ?? student.profileId.slice(0, 6)}

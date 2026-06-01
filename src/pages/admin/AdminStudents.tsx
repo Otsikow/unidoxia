@@ -93,6 +93,7 @@ const STUDENTS_PAGE_SIZE = 20;
 interface StudentWithDocuments {
   id: string;
   profile_id: string;
+  reference_code: string | null;
   legal_name: string | null;
   preferred_name: string | null;
   contact_email: string | null;
@@ -220,6 +221,7 @@ const AdminStudents = () => {
       result = result.filter((student) => {
         const searchableText = normalizeSearchValue(
           [
+            student.reference_code,
             student.preferred_name,
             student.legal_name,
             student.profile?.full_name,
@@ -288,6 +290,7 @@ const AdminStudents = () => {
     const buildStudentSelect = (includeAttributions: boolean) => `
           id,
           profile_id,
+          reference_code,
           legal_name,
           preferred_name,
           contact_email,
@@ -594,7 +597,7 @@ const AdminStudents = () => {
               <Input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search by student name, country, or email"
+                placeholder="Search by ID (UDX-…), name, country, or email"
                 className="pl-9"
                 aria-label="Search students"
               />
@@ -697,6 +700,11 @@ const AdminStudents = () => {
                         >
                           {getStudentName(student)}
                         </button>
+                        {student.reference_code && (
+                          <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                            {student.reference_code}
+                          </p>
+                        )}
                       </TableCell>
                       <TableCell>
                         {whatsappDigits ? (
