@@ -221,6 +221,7 @@ const AdminStudents = () => {
       result = result.filter((student) => {
         const searchableText = normalizeSearchValue(
           [
+            student.reference_code,
             student.preferred_name,
             student.legal_name,
             student.profile?.full_name,
