@@ -729,7 +729,14 @@ const AdminStudentDetail = () => {
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin/students")}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </Button>
-          <h1 className="text-2xl font-semibold">{studentName}</h1>
+          <div>
+            <h1 className="text-2xl font-semibold">{studentName}</h1>
+            {student?.reference_code && (
+              <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                {student.reference_code}
+              </p>
+            )}
+          </div>
           {isArchived && <Badge variant="secondary">Archived</Badge>}
         </div>
         <div className="flex gap-2">
