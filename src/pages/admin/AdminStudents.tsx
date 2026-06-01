@@ -700,6 +700,11 @@ const AdminStudents = () => {
                         >
                           {getStudentName(student)}
                         </button>
+                        {student.reference_code && (
+                          <p className="text-xs font-mono text-muted-foreground mt-0.5">
+                            {student.reference_code}
+                          </p>
+                        )}
                       </TableCell>
                       <TableCell>
                         {whatsappDigits ? (
