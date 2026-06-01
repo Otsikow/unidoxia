@@ -2480,7 +2480,7 @@ export type Database = {
           preferred_study_area?: string | null
           profile_completeness?: number | null
           profile_id: string
-          reference_code: string
+          reference_code?: string
           referral_source?: string | null
           refund_eligibility?: boolean | null
           tenant_id: string
