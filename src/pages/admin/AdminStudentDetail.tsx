@@ -223,7 +223,7 @@ const AdminStudentDetail = () => {
       // Also fetch archive status separately
       const { data: archiveData } = await supabase
         .from("students")
-        .select("archived_at, archive_reason, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month")
+        .select("archived_at, archive_reason, reference_code, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month")
         .eq("id", studentId)
         .maybeSingle();
 
@@ -234,6 +234,7 @@ const AdminStudentDetail = () => {
             ...prev,
             student: {
               ...prev.student,
+              reference_code: archiveData.reference_code ?? prev.student.reference_code ?? null,
               preferred_course: archiveData.preferred_course ?? prev.student.preferred_course ?? null,
               preferred_country: archiveData.preferred_country ?? prev.student.preferred_country ?? null,
               preferred_intake_year: archiveData.preferred_intake_year ?? null,
