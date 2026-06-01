@@ -532,64 +532,9 @@ const AdminStudents = () => {
 
       <Card>
         <CardContent className="overflow-x-auto pt-6">
-          <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Students</CardDescription>
-                <CardTitle className="text-2xl">{studentKpis.total}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-xs text-muted-foreground">{studentKpis.visible} currently visible</p>
-              </CardContent>
-            </Card>
+          {/* Student KPIs and insights now live on the Admin Dashboard. */}
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Active Accounts</CardDescription>
-                <CardTitle className="text-2xl">{studentKpis.active}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Students with active records
-              </CardContent>
-            </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Archived</CardDescription>
-                <CardTitle className="text-2xl">{studentKpis.archived}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground">
-                Hidden from active workflows
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Pending Document Review</CardDescription>
-                <CardTitle className="text-2xl">{studentKpis.pendingReview}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Students waiting for admin review
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Joined This Month</CardDescription>
-                <CardTitle className="text-2xl">{studentKpis.joinedThisMonth}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5" />
-                New student growth
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="mb-6">
-            <StudentInsightsCharts students={students} />
-          </div>
 
           <div className="flex flex-wrap items-center gap-3 mb-4">
             <div className="relative max-w-md flex-1 min-w-[200px]">
