@@ -129,6 +129,7 @@ const fetchAgentStudents = async (
           id,
           tenant_id,
           profile_id,
+          reference_code,
           legal_name,
           preferred_name,
           contact_email,
