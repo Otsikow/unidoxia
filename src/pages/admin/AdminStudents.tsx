@@ -80,7 +80,7 @@ import {
   MANUAL_STATUS_OPTIONS,
   type StudentOperationalStatus,
 } from "@/lib/studentStatus";
-import { StudentInsightsCharts } from "@/components/admin/StudentInsightsCharts";
+
 import { TablePagination } from "@/components/common/TablePagination";
 import { formatIntakeLabel, getAcademicYearOptions } from "@/lib/intakeOptions";
 
