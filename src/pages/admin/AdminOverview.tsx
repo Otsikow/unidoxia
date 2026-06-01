@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo, useCallback, type KeyboardEvent } from "react";
+import { lazy, Suspense, useMemo, useCallback, type KeyboardEvent } from "react";
+import AdminStudentInsightsBlock from "@/components/admin/AdminStudentInsightsBlock";
+
+const AdminAdmissionsOversight = lazy(() => import("@/pages/admin/AdminAdmissions"));
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
