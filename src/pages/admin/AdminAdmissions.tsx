@@ -734,6 +734,7 @@ const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversight
 
   return (
     <div className="space-y-6">
+      {!embedded && (
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Admissions oversight</h1>
@@ -769,6 +770,7 @@ const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversight
           </Button>
         </div>
       </div>
+      )}
 
       {error ? (
         <Alert variant="destructive">
