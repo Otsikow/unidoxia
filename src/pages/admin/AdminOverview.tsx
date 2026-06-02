@@ -457,7 +457,7 @@ const AdminOverview = () => {
           <LoadingState message="Loading admissions oversight" size="sm" />
         }
       >
-        <AdminAdmissionsOversight />
+        <AdminAdmissionsOversight embedded />
       </Suspense>
     </div>
   );
