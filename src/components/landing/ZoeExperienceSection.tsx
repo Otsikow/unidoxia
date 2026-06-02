@@ -467,8 +467,27 @@ export function ZoeExperienceSection() {
                         )}
                       </p>
                     </div>
+                    <Button
+                      type="button"
+                      size="lg"
+                      className="mt-2 rounded-2xl shadow-lg"
+                      onClick={() =>
+                        window.dispatchEvent(
+                          new CustomEvent("zoe:open-chat", {
+                            detail: {
+                              prompt:
+                                "Hi Zoe! I'd like to ask a question about studying abroad.",
+                            },
+                          })
+                        )
+                      }
+                    >
+                      <MessageCircle className="mr-2 h-5 w-5" />
+                      Ask Zoe about studying abroad
+                    </Button>
                   </div>
                 </div>
+
 
                 <div className="rounded-3xl border border-primary/15 bg-primary/5 p-6">
                   <p className="text-sm font-semibold uppercase tracking-wide text-primary/80">
