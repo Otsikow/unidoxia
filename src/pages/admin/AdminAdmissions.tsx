@@ -146,7 +146,11 @@ const STATUS_TO_STAGE_INDEX: Record<string, number> = {
 
 const PIE_COLORS = ["#6366F1", "#22D3EE", "#F97316", "#10B981", "#F43F5E", "#8B5CF6", "#06B6D4"];
 
-const AdminAdmissionsOversight = () => {
+interface AdminAdmissionsOversightProps {
+  embedded?: boolean;
+}
+
+const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversightProps = {}) => {
   const { profile } = useAuth();
   const tenantId = profile?.tenant_id ?? null;
   const { toast } = useToast();
@@ -730,6 +734,7 @@ const AdminAdmissionsOversight = () => {
 
   return (
     <div className="space-y-6">
+      {!embedded && (
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Admissions oversight</h1>
@@ -765,6 +770,7 @@ const AdminAdmissionsOversight = () => {
           </Button>
         </div>
       </div>
+      )}
 
       {error ? (
         <Alert variant="destructive">
@@ -774,6 +780,7 @@ const AdminAdmissionsOversight = () => {
         </Alert>
       ) : null}
 
+      {!embedded && (
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card 
           className="cursor-pointer transition-colors hover:bg-accent/50"
@@ -836,6 +843,7 @@ const AdminAdmissionsOversight = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
       <Card>
         <CardHeader>
