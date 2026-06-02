@@ -18,9 +18,11 @@ import {
   Building2,
   CheckCircle2,
   GraduationCap,
+  MessageCircle,
   Sparkles,
   Users2,
 } from "lucide-react";
+
 
 import zoePortrait from "@/assets/zoe-portrait.png";
 
