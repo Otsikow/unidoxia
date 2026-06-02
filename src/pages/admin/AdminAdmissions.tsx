@@ -780,6 +780,7 @@ const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversight
         </Alert>
       ) : null}
 
+      {!embedded && (
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card 
           className="cursor-pointer transition-colors hover:bg-accent/50"
