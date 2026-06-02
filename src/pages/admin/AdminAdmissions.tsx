@@ -146,7 +146,11 @@ const STATUS_TO_STAGE_INDEX: Record<string, number> = {
 
 const PIE_COLORS = ["#6366F1", "#22D3EE", "#F97316", "#10B981", "#F43F5E", "#8B5CF6", "#06B6D4"];
 
-const AdminAdmissionsOversight = () => {
+interface AdminAdmissionsOversightProps {
+  embedded?: boolean;
+}
+
+const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversightProps = {}) => {
   const { profile } = useAuth();
   const tenantId = profile?.tenant_id ?? null;
   const { toast } = useToast();
