@@ -843,6 +843,7 @@ const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversight
           </CardContent>
         </Card>
       </div>
+      )}
 
       <Card>
         <CardHeader>
