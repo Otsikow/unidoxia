@@ -81,14 +81,6 @@ const NAV_GROUPS: NavGroup[] = [
     groupDefault: "Students & Agents",
     items: [
       {
-        to: "/admin/admissions",
-        labelKey: "admin.layout.navigation.admissions.label",
-        descriptionKey: "admin.layout.navigation.admissions.description",
-        labelDefault: "Admissions Oversight",
-        descriptionDefault: "Pipeline ownership",
-        icon: ScrollText,
-      },
-      {
         to: "/admin/students",
         labelKey: "admin.layout.navigation.students.label",
         descriptionKey: "admin.layout.navigation.students.description",
