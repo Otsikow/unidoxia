@@ -1075,15 +1075,31 @@ const AdminStudentDetail = () => {
                       variant="default"
                       size="sm"
                       disabled={bulkDownloading}
-                      onClick={() => handleBulkDownload(documents)}
+                      onClick={() => {
+                        const approvedDocs = documents.filter(
+                          (d) =>
+                            d.admin_review_status === "approved" ||
+                            d.admin_review_status === "ready_for_university_review",
+                        );
+                        if (approvedDocs.length === 0) {
+                          toast({
+                            title: "No approved documents",
+                            description: "Only approved documents can be downloaded in bulk.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        handleBulkDownload(approvedDocs);
+                      }}
                     >
                       {bulkDownloading ? (
                         <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                       ) : (
                         <Download className="h-4 w-4 mr-1" />
                       )}
-                      {bulkDownloading ? "Downloading..." : "Download All"}
+                      {bulkDownloading ? "Downloading..." : "Download All Approved"}
                     </Button>
+
                   </div>
                 </CardContent>
               </Card>
