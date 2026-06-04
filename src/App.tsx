@@ -266,9 +266,6 @@ const AdminOverview = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminOverview")
 );
 const AdminUsers = lazyWithErrorHandling(() => import("./pages/admin/AdminUsers"));
-const AdminAdmissions = lazyWithErrorHandling(() =>
-  import("./pages/admin/AdminAdmissions")
-);
 const AdminAgentsPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminAgents")
 );
