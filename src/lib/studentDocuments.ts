@@ -16,7 +16,7 @@ export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
   },
   {
     type: 'wassce_waec',
-    label: 'WASSCE / WAEC Results (incl. English Language)',
+    label: 'WASSCE / WAEC Results (incl. English Language, PIN & Serial Number)',
     acceptableTypes: ['wassce_waec', 'wassce', 'waec', 'secondary_school_results'],
   },
   { type: 'sop', label: 'Statement of Purpose', acceptableTypes: ['sop', 'personal_statement'] },
@@ -65,6 +65,12 @@ export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
     type: 'police_clearance',
     label: 'Police Clearance (Optional)',
     acceptableTypes: ['police_clearance', 'police_report', 'background_check'],
+    optional: true,
+  },
+  {
+    type: 'research_proposal',
+    label: 'Research Proposal (Optional)',
+    acceptableTypes: ['research_proposal', 'research_plan', 'phd_proposal'],
     optional: true,
   },
   {
