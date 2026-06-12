@@ -193,6 +193,8 @@ const AdminStudents = () => {
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const [actionReason, setActionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
