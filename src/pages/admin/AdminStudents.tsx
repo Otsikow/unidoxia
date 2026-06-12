@@ -799,6 +799,19 @@ const AdminStudents = () => {
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   Archive
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => {
+                                    setSelectedStudent(student);
+                                    setDeleteConfirmText("");
+                                    setActionReason("");
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete permanently
+                                </DropdownMenuItem>
                               </>
                             )}
                           </DropdownMenuContent>
