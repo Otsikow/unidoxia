@@ -497,9 +497,9 @@ const AdminStudents = () => {
 
       try {
         await logSecurityEvent({
-          event_type: "student_deleted",
+          eventType: "custom",
           severity: "high",
-          details: { student_id: selectedStudent.id, profile_id: selectedStudent.profile_id, reason: actionReason || null },
+          metadata: { action: "student_deleted", student_id: selectedStudent.id, profile_id: selectedStudent.profile_id, reason: actionReason || null },
         });
       } catch {
         /* non-blocking */
