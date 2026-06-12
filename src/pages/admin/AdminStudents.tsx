@@ -832,6 +832,66 @@ const AdminStudents = () => {
           />
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setDeleteConfirmText("");
+            setActionReason("");
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              Delete student permanently
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <strong>
+                {selectedStudent ? getStudentName(selectedStudent) : "this student"}
+              </strong>
+              's account, profile, documents and applications. This cannot be undone.
+              Type <span className="font-mono font-semibold">DELETE</span> to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-2">
+            <Textarea
+              placeholder="Reason (optional)"
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+            />
+            <Input
+              placeholder="Type DELETE to confirm"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteStudent();
+              }}
+              disabled={actionLoading || deleteConfirmText !== "DELETE"}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete permanently"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
