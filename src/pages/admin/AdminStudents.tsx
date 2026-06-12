@@ -477,6 +477,52 @@ const AdminStudents = () => {
     }
   };
 
+  const handleDeleteStudent = async () => {
+    if (!selectedStudent) return;
+    if (deleteConfirmText !== "DELETE") {
+      toast({
+        variant: "destructive",
+        title: "Confirmation required",
+        description: 'Type DELETE to confirm permanent deletion.',
+      });
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { userId: selectedStudent.profile_id, hardDelete: true, reason: actionReason || "Admin permanent deletion" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      try {
+        await logSecurityEvent({
+          event_type: "student_deleted",
+          severity: "high",
+          details: { student_id: selectedStudent.id, profile_id: selectedStudent.profile_id, reason: actionReason || null },
+        });
+      } catch {
+        /* non-blocking */
+      }
+
+      toast({ title: "Student deleted", description: "The account has been permanently removed." });
+      setDeleteDialogOpen(false);
+      setSelectedStudent(null);
+      setActionReason("");
+      setDeleteConfirmText("");
+      fetchStudents();
+    } catch (err: any) {
+      console.error("Delete student failed:", err);
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: err?.message ?? "Could not delete student. Please try again.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleChangeStatus = async (student: StudentWithDocuments, newStatus: string) => {
     try {
       const valueToSave = newStatus === "auto" ? null : newStatus;
