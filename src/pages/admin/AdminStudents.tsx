@@ -193,6 +193,8 @@ const AdminStudents = () => {
   const [suspendDialogOpen, setSuspendDialogOpen] = useState(false);
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   const [actionReason, setActionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
@@ -475,6 +477,52 @@ const AdminStudents = () => {
     }
   };
 
+  const handleDeleteStudent = async () => {
+    if (!selectedStudent) return;
+    if (deleteConfirmText !== "DELETE") {
+      toast({
+        variant: "destructive",
+        title: "Confirmation required",
+        description: 'Type DELETE to confirm permanent deletion.',
+      });
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-user", {
+        body: { userId: selectedStudent.profile_id, hardDelete: true, reason: actionReason || "Admin permanent deletion" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+
+      try {
+        await logSecurityEvent({
+          eventType: "custom",
+          severity: "high",
+          metadata: { action: "student_deleted", student_id: selectedStudent.id, profile_id: selectedStudent.profile_id, reason: actionReason || null },
+        });
+      } catch {
+        /* non-blocking */
+      }
+
+      toast({ title: "Student deleted", description: "The account has been permanently removed." });
+      setDeleteDialogOpen(false);
+      setSelectedStudent(null);
+      setActionReason("");
+      setDeleteConfirmText("");
+      fetchStudents();
+    } catch (err: any) {
+      console.error("Delete student failed:", err);
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: err?.message ?? "Could not delete student. Please try again.",
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleChangeStatus = async (student: StudentWithDocuments, newStatus: string) => {
     try {
       const valueToSave = newStatus === "auto" ? null : newStatus;
@@ -751,6 +799,19 @@ const AdminStudents = () => {
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   Archive
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => {
+                                    setSelectedStudent(student);
+                                    setDeleteConfirmText("");
+                                    setActionReason("");
+                                    setDeleteDialogOpen(true);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete permanently
+                                </DropdownMenuItem>
                               </>
                             )}
                           </DropdownMenuContent>
@@ -771,6 +832,66 @@ const AdminStudents = () => {
           />
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setDeleteConfirmText("");
+            setActionReason("");
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              Delete student permanently
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <strong>
+                {selectedStudent ? getStudentName(selectedStudent) : "this student"}
+              </strong>
+              's account, profile, documents and applications. This cannot be undone.
+              Type <span className="font-mono font-semibold">DELETE</span> to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3 py-2">
+            <Textarea
+              placeholder="Reason (optional)"
+              value={actionReason}
+              onChange={(e) => setActionReason(e.target.value)}
+            />
+            <Input
+              placeholder="Type DELETE to confirm"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteStudent();
+              }}
+              disabled={actionLoading || deleteConfirmText !== "DELETE"}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting…
+                </>
+              ) : (
+                "Delete permanently"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
