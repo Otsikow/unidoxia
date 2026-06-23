@@ -1354,31 +1354,61 @@ const AdminStudentDetail = () => {
               )}
 
               {/* Review Actions */}
-              {previewDoc && (
-                <div className="flex justify-end gap-2 pt-2 border-t">
-                  <a href={previewUrl} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" /> Download
-                    </Button>
-                  </a>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    disabled={reviewLoading}
-                    onClick={() => handleReviewDocument(previewDoc, "rejected")}
-                  >
-                    <XCircle className="h-4 w-4 mr-1" /> Reject
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={reviewLoading}
-                    onClick={() => handleReviewDocument(previewDoc, "approved")}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1" /> Approve
-                  </Button>
-                </div>
-              )}
+              {previewDoc && (() => {
+                const isApproved =
+                  previewDoc.admin_review_status === "approved" ||
+                  previewDoc.admin_review_status === "ready_for_university_review";
+                const isRejected =
+                  previewDoc.admin_review_status === "rejected" ||
+                  previewDoc.admin_review_status === "admin_rejected";
+                return (
+                  <div className="flex items-center justify-between gap-2 pt-3 border-t">
+                    <div className="text-xs text-muted-foreground">
+                      {isApproved ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500/10 px-2.5 py-1 font-medium text-green-700 dark:text-green-400">
+                          <CheckCircle2 className="h-3.5 w-3.5" /> Approved
+                        </span>
+                      ) : isRejected ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 font-medium text-red-700 dark:text-red-400">
+                          <XCircle className="h-3.5 w-3.5" /> Rejected
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 font-medium text-amber-700 dark:text-amber-400">
+                          Pending review
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" /> Download
+                        </Button>
+                      </a>
+                      {!isRejected && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={reviewLoading}
+                          onClick={() => handleReviewDocument(previewDoc, "rejected")}
+                        >
+                          <XCircle className="h-4 w-4 mr-1" /> Reject
+                        </Button>
+                      )}
+                      {!isApproved && (
+                        <Button
+                          size="sm"
+                          disabled={reviewLoading}
+                          onClick={() => handleReviewDocument(previewDoc, "approved")}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-1" /> Approve
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
             </div>
           ) : (
             <p className="text-center text-muted-foreground py-8">Unable to load preview.</p>
