@@ -1355,12 +1355,17 @@ const AdminStudentDetail = () => {
 
               {/* Review Actions */}
               {previewDoc && (() => {
+                const reviewStatus = (previewDoc.admin_review_status ?? "").toLowerCase();
+                const verifiedStatus = ((previewDoc as { verified_status?: string | null }).verified_status ?? "").toLowerCase();
                 const isApproved =
-                  previewDoc.admin_review_status === "approved" ||
-                  previewDoc.admin_review_status === "ready_for_university_review";
+                  reviewStatus === "approved" ||
+                  reviewStatus === "ready_for_university_review" ||
+                  verifiedStatus === "verified" ||
+                  verifiedStatus === "approved";
                 const isRejected =
-                  previewDoc.admin_review_status === "rejected" ||
-                  previewDoc.admin_review_status === "admin_rejected";
+                  reviewStatus === "rejected" ||
+                  reviewStatus === "admin_rejected" ||
+                  verifiedStatus === "rejected";
                 return (
                   <div className="flex items-center justify-between gap-2 pt-3 border-t">
                     <div className="text-xs text-muted-foreground">
