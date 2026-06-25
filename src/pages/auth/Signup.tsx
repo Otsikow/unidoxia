@@ -483,8 +483,8 @@ const Signup = () => {
       return;
     }
 
-    if (username.length < 3) {
-      setUsernameError("Username must be at least 3 characters.");
+    if (username.trim().length < 2) {
+      setUsernameError("Username must be at least 2 characters.");
       setUsernameInfo(null);
       setCheckingUsername(false);
       return;
