@@ -26,7 +26,9 @@ export const generateReferralLink = (username: string | null | undefined): strin
 };
 
 export const formatReferralUsername = (raw: string): string => {
-  return raw.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  // Relaxed: allow letters, numbers, underscore, dot, and hyphen.
+  // Strip whitespace and any other special characters so usernames remain URL-safe.
+  return raw.trim().toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9_.-]/g, '');
 };
 
 export const generateAgentInviteLink = (code: string | null | undefined): string => {
