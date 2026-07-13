@@ -14,7 +14,7 @@ interface ShareButtonsProps {
 // carry the article-specific Open Graph metadata, then redirect people to the
 // real blog article. This keeps copied links branded as unidoxia.com.
 const SHARE_ORIGIN = "https://unidoxia.com/share";
-const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}/index.html`;
+const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}.html`;
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
