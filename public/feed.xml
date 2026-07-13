@@ -2,14 +2,14 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>UniDoxia Blog</title>
-    <link>https://www.unidoxia.com/blog</link>
-    <atom:link href="https://www.unidoxia.com/feed.xml" rel="self" type="application/rss+xml" />
+    <link>https://unidoxia.com/blog</link>
+    <atom:link href="https://unidoxia.com/feed.xml" rel="self" type="application/rss+xml" />
     <description>Source-checked guidance on studying abroad — visas, scholarships, admissions, and common application mistakes.</description>
     <language>en</language>
     <item>
       <title>UK Student Visa Funds in 2026: 7 Evidence Mistakes to Avoid</title>
-      <link>https://www.unidoxia.com/blog/uk-student-visa-funds-2026-evidence-mistakes</link>
-      <guid isPermaLink="true">https://www.unidoxia.com/blog/uk-student-visa-funds-2026-evidence-mistakes</guid>
+      <link>https://unidoxia.com/blog/uk-student-visa-funds-2026-evidence-mistakes</link>
+      <guid isPermaLink="true">https://unidoxia.com/blog/uk-student-visa-funds-2026-evidence-mistakes</guid>
       <pubDate>Mon, 13 Jul 2026 08:40:30 GMT</pubDate>
       <description>Current UK Student visa maintenance figures, the 28-day rule, and seven evidence mistakes that can put an otherwise strong application at risk.</description>
     </item>

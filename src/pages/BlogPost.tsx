@@ -104,11 +104,11 @@ export default function BlogPost() {
     `Read ${data.title} on the UniDoxia blog — source-checked guidance on studying abroad.`;
 
   const canonicalPath = `/blog/${data.slug}`;
-  const canonicalUrl = `https://www.unidoxia.com${canonicalPath}`;
+  const canonicalUrl = `https://unidoxia.com${canonicalPath}`;
   const absoluteCover = data.cover_image_url
     ? (data.cover_image_url.startsWith("http")
         ? data.cover_image_url
-        : `https://www.unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
+        : `https://unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
     : undefined;
 
   const articleJsonLd = {
@@ -120,12 +120,12 @@ export default function BlogPost() {
     datePublished: data.published_at || undefined,
     dateModified: data.updated_at || data.published_at || undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
-    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://www.unidoxia.com/editorial-policy" },
+    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://unidoxia.com/editorial-policy" },
     publisher: {
       "@type": "Organization",
       name: "UniDoxia",
-      url: "https://www.unidoxia.com",
-      logo: { "@type": "ImageObject", url: "https://www.unidoxia.com/favicon.png" },
+      url: "https://unidoxia.com",
+      logo: { "@type": "ImageObject", url: "https://unidoxia.com/favicon.png" },
     },
   };
 
@@ -133,8 +133,8 @@ export default function BlogPost() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.unidoxia.com/" },
-      { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.unidoxia.com/blog" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://unidoxia.com/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://unidoxia.com/blog" },
       { "@type": "ListItem", position: 3, name: data.title, item: canonicalUrl },
     ],
   };

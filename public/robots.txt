@@ -17,4 +17,4 @@ Disallow: /signup
 Disallow: /intake-form
 Disallow: /feedback
 
-Sitemap: https://www.unidoxia.com/sitemap.xml
+Sitemap: https://unidoxia.com/sitemap.xml

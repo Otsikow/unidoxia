@@ -179,13 +179,13 @@ export default function Blog() {
           "@context": "https://schema.org",
           "@type": "Blog",
           name: "UniDoxia Blog",
-          url: "https://www.unidoxia.com/blog",
+          url: "https://unidoxia.com/blog",
           description:
             "Weekly, source-checked guidance on visa rule changes, scholarships, admissions, and common application mistakes.",
           publisher: {
             "@type": "Organization",
             name: "UniDoxia",
-            url: "https://www.unidoxia.com",
+            url: "https://unidoxia.com",
           },
         }}
       />
