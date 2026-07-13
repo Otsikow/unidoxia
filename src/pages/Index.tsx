@@ -184,7 +184,33 @@ const Index = () => {
     year: new Date().getFullYear()
   });
   return <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <SEO title="UniDoxia - Your Path to International Education" description="Connect with top universities worldwide. Streamline your study abroad journey with expert guidance, AI tools, tracking, and full support." keywords="study abroad, university applications, international education, AI tools, visa calculator" />
+      <SEO
+        title="Study Abroad Support for International Students | UniDoxia"
+        description="UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements."
+        canonicalPath="/"
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "UniDoxia",
+            url: "https://www.unidoxia.com",
+            logo: "https://www.unidoxia.com/favicon.png",
+            email: "info@unidoxia.com",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "UniDoxia",
+            url: "https://www.unidoxia.com",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: "https://www.unidoxia.com/courses?q={search_term_string}",
+              "query-input": "required name=search_term_string",
+            },
+          },
+        ]}
+      />
+
 
       {/* ---------- HERO ---------- */}
       <section className="hero-video-container">
@@ -339,6 +365,38 @@ const Index = () => {
       <Suspense fallback={<SectionLoader />}><StoryboardSection /></Suspense>
 
       <SuccessStoriesMarquee />
+
+      {/* ---------- EXPLORE / INTERNAL LINKS ---------- */}
+      <section className="container mx-auto px-4 py-16" aria-labelledby="explore-heading">
+        <div className="max-w-3xl mx-auto text-center mb-10">
+          <h2 id="explore-heading" className="text-3xl font-bold mb-3">Explore UniDoxia</h2>
+          <p className="text-muted-foreground">
+            Everything you need to plan your studies abroad — courses, scholarships,
+            visa guidance, and weekly source-checked advice.
+          </p>
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { to: "/courses", title: "Study Abroad Courses", desc: "Search programmes by country, subject, and level." },
+            { to: "/scholarships", title: "Scholarships", desc: "Discover funding opportunities for international students." },
+            { to: "/visa-calculator", title: "Visa Guidance", desc: "Estimate visa requirements and understand what's needed." },
+            { to: "/blog", title: "Student Advice Blog", desc: "Weekly, source-checked guidance on visas and admissions." },
+          ].map((c) => (
+            <Link
+              key={c.to}
+              to={c.to}
+              className="group rounded-xl border p-5 hover:border-primary/60 hover:bg-muted/40 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <h3 className="font-semibold mb-1 group-hover:text-primary">{c.title}</h3>
+              <p className="text-sm text-muted-foreground">{c.desc}</p>
+              <span className="inline-flex items-center gap-1 mt-3 text-sm text-primary">
+                Explore <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
 
       {/* ---------- FAQ ---------- */}
       <section className="container mx-auto px-4 py-20">

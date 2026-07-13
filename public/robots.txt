@@ -1,9 +1,22 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /student
+Disallow: /student/
 Disallow: /dashboard
+Disallow: /dashboard/
 Disallow: /partner
+Disallow: /partner/
 Disallow: /university
+Disallow: /university/
+Disallow: /auth/
+Disallow: /agents/
+Disallow: /onboarding/
+Disallow: /profile-settings
+Disallow: /verify-email
+Disallow: /signup
+Disallow: /intake-form
+Disallow: /feedback
 
-Sitemap: https://www.globaleducationgateway.com/sitemap.xml
+Sitemap: https://www.unidoxia.com/sitemap.xml

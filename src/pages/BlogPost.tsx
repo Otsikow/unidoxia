@@ -103,17 +103,55 @@ export default function BlogPost() {
     data.excerpt ||
     `Read ${data.title} on the UniDoxia blog — source-checked guidance on studying abroad.`;
 
+  const canonicalPath = `/blog/${data.slug}`;
+  const canonicalUrl = `https://www.unidoxia.com${canonicalPath}`;
+  const absoluteCover = data.cover_image_url
+    ? (data.cover_image_url.startsWith("http")
+        ? data.cover_image_url
+        : `https://www.unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
+    : undefined;
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: data.title,
+    description: seoDescription,
+    image: absoluteCover ? [absoluteCover] : undefined,
+    datePublished: data.published_at || undefined,
+    dateModified: data.updated_at || data.published_at || undefined,
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://www.unidoxia.com/editorial-policy" },
+    publisher: {
+      "@type": "Organization",
+      name: "UniDoxia",
+      url: "https://www.unidoxia.com",
+      logo: { "@type": "ImageObject", url: "https://www.unidoxia.com/favicon.png" },
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.unidoxia.com/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.unidoxia.com/blog" },
+      { "@type": "ListItem", position: 3, name: data.title, item: canonicalUrl },
+    ],
+  };
+
   return (
     <article className="container mx-auto px-4 py-10">
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath={`/blog/${data.slug}`}
+        canonicalPath={canonicalPath}
         ogImage={data.cover_image_url || undefined}
         ogType="article"
         publishedTime={data.published_at || undefined}
         modifiedTime={data.updated_at || undefined}
+        jsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
+
 
       <div className="mb-6">
         <Button
@@ -130,7 +168,20 @@ export default function BlogPost() {
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{data.title}</h1>
-      {data.excerpt && <p className="text-muted-foreground mb-6">{data.excerpt}</p>}
+      {data.excerpt && <p className="text-muted-foreground mb-4">{data.excerpt}</p>}
+
+      <p className="text-sm text-muted-foreground mb-6">
+        By <span className="font-medium text-foreground">UniDoxia Editorial Team</span>
+        {" · "}
+        <Link
+          to="/editorial-policy"
+          className="underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+        >
+          Editorial policy
+        </Link>
+      </p>
+
+
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-6">
         {publishedLabel && (
