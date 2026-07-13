@@ -168,7 +168,20 @@ export default function BlogPost() {
       </div>
 
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{data.title}</h1>
-      {data.excerpt && <p className="text-muted-foreground mb-6">{data.excerpt}</p>}
+      {data.excerpt && <p className="text-muted-foreground mb-4">{data.excerpt}</p>}
+
+      <p className="text-sm text-muted-foreground mb-6">
+        By <span className="font-medium text-foreground">UniDoxia Editorial Team</span>
+        {" · "}
+        <Link
+          to="/editorial-policy"
+          className="underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+        >
+          Editorial policy
+        </Link>
+      </p>
+
+
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-6">
         {publishedLabel && (
