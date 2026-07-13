@@ -278,7 +278,7 @@ export default function BlogPost() {
             prose-li:leading-[1.75] prose-li:my-1.5
             prose-ul:my-5 prose-ol:my-5
             prose-strong:text-foreground prose-strong:font-semibold
-            prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4
+            prose-a:text-primary prose-a:font-medium prose-a:underline hover:prose-a:underline prose-a:underline-offset-4
             prose-blockquote:border-l-4 prose-blockquote:border-primary/60 prose-blockquote:bg-muted/40 prose-blockquote:rounded-r-md prose-blockquote:py-1 prose-blockquote:px-5 prose-blockquote:not-italic prose-blockquote:text-foreground/90
             prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
             prose-pre:bg-muted prose-pre:border prose-pre:border-border/60
