@@ -206,7 +206,10 @@ const ScholarshipShareLanding = lazyWithErrorHandling(() =>
 );
 const Blog = lazyWithErrorHandling(() => import("./pages/Blog"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
+const About = lazyWithErrorHandling(() => import("./pages/About"));
+const EditorialPolicy = lazyWithErrorHandling(() => import("./pages/EditorialPolicy"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
+
 
 /* ==========================================================================
    LAZY IMPORTS — STUDENT
@@ -618,6 +621,10 @@ const App = () => {
                         <Route path="/visa-calculator" element={<PublicLayout><VisaCalculator /></PublicLayout>} />
 
                         <Route path="/partnership" element={<PublicLayout><UniversityPartnership /></PublicLayout>} />
+
+                        <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+                        <Route path="/editorial-policy" element={<PublicLayout><EditorialPolicy /></PublicLayout>} />
+
 
                         {/* ============================================================
                            PROTECTED ROUTES
