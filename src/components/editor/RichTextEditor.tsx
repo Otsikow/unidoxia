@@ -52,7 +52,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
 
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({
+      (StarterKit as any).configure({
         codeBlock: false,
       }),
       Image.configure({
