@@ -292,7 +292,7 @@ export default function BlogPost() {
       )}
 
       <div className="mt-12 border-t border-border/60 pt-6">
-        <ShareButtons url={canonicalUrl} title={data.title} description={data.excerpt || undefined} />
+        <ShareButtons slug={data.slug} title={data.title} description={data.excerpt || undefined} />
       </div>
 
       <aside
