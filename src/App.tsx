@@ -12,6 +12,8 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 import { AuthProvider } from "@/hooks/useAuth";
 import { NavigationHistoryProvider } from "@/hooks/useNavigationHistory";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RouteMetaRobots } from "@/components/RouteMetaRobots";
+
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
@@ -561,7 +563,9 @@ const App = () => {
                 >
                   <div className="min-h-screen flex flex-col">
                     <div className="flex-1">
+                      <RouteMetaRobots />
                       <Routes>
+
 
                         {/* ============================================================
                            PUBLIC ROUTES
