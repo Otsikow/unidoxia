@@ -171,10 +171,25 @@ export default function Blog() {
   return (
     <div className="relative">
       <SEO
-        title="Blog - UniDoxia"
-        description="Explore articles, guides, and insights on studying abroad, university admissions, and international education trends. Your resource for a successful academic journey."
-        keywords="study abroad blog, international student advice, university application tips, education articles, student recruitment trends, university marketing"
+        title="Study Abroad Blog | UniDoxia"
+        description="Weekly, source-checked guidance on visa rule changes, scholarships, admissions, and common application mistakes for international students."
+        keywords="study abroad blog, international student advice, university application tips, scholarships, student visa guidance"
+        canonicalPath="/blog"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          name: "UniDoxia Blog",
+          url: "https://www.unidoxia.com/blog",
+          description:
+            "Weekly, source-checked guidance on visa rule changes, scholarships, admissions, and common application mistakes.",
+          publisher: {
+            "@type": "Organization",
+            name: "UniDoxia",
+            url: "https://www.unidoxia.com",
+          },
+        }}
       />
+
       <section className="border-b bg-gradient-to-b from-background to-muted/40">
         <div className="container mx-auto px-4 py-12 sm:py-16">
           <div className="mx-auto max-w-3xl text-center space-y-6">
