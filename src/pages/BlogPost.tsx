@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CalendarDays, RefreshCcw, Clock, Info } from "lucide-react";
 import { SEO } from "@/components/SEO";
+import ShareButtons from "@/components/blog/ShareButtons";
 
 interface BlogPostDetail {
   id: string;
@@ -290,10 +291,14 @@ export default function BlogPost() {
         <p className="text-muted-foreground italic">No content available.</p>
       )}
 
+      <div className="mt-12 border-t border-border/60 pt-6">
+        <ShareButtons url={canonicalUrl} title={data.title} description={data.excerpt || undefined} />
+      </div>
+
       <aside
         role="note"
         aria-label="Editorial disclaimer"
-        className="mt-14 flex gap-3 rounded-lg border border-border/70 bg-muted/40 p-5 text-sm text-muted-foreground"
+        className="mt-8 flex gap-3 rounded-lg border border-border/70 bg-muted/40 p-5 text-sm text-muted-foreground"
       >
         <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
         <p className="leading-relaxed">
