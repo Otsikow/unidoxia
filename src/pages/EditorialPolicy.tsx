@@ -39,7 +39,6 @@ const EditorialPolicy = () => {
         any time, so we still ask readers to confirm the linked official source.
       </p>
 
-      <h2 className="text-2xl function-semibold mt-8 mb-3">Corrections</h2>
       <h2 className="text-2xl font-semibold mt-8 mb-3">Corrections</h2>
       <p className="text-muted-foreground">
         If you spot an error, email{" "}
@@ -47,6 +46,7 @@ const EditorialPolicy = () => {
         We update the article, refresh the source-check date, and note material
         corrections in the article itself.
       </p>
+
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">AI-assisted drafting</h2>
       <p className="text-muted-foreground">
