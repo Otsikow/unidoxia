@@ -983,7 +983,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         referrer_id: referrerProfileId,
         referred_by: referrerUsername,
         onboarded: false,
-      });
+      } as any);
+
 
       if (profileError) {
         console.error('Error creating profile:', profileError);
