@@ -1359,7 +1359,8 @@ export default function NewApplication() {
               file_size: file.size,
               mime_type: file.type,
               verification_status: verificationStatus || 'Pending',
-            }]);
+            } as any]);
+
           } catch (error) {
             console.error(`Error processing ${docType}:`, error);
           }

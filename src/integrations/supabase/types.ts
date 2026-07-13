@@ -3158,6 +3158,7 @@ export type Database = {
         }
         Returns: string
       }
+      current_user_tenant_id: { Args: never; Returns: string }
       diagnose_app_update_issue: { Args: { p_app_id: string }; Returns: Json }
       ensure_agent_team_invite_code: {
         Args: { p_agent_profile_id: string; p_regenerate?: boolean }
