@@ -52,9 +52,9 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
 
   const editor = useEditor({
     extensions: [
-      (StarterKit as any).configure({
+      StarterKit.configure({
         codeBlock: false,
-      }),
+      }) as any,
       Image.configure({
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-lg',
