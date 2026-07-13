@@ -258,6 +258,15 @@ export default function Blog() {
                 ))}
               </div>
             </div>
+          ) : isError ? (
+            <Card className="border-dashed border-border/70">
+              <CardHeader className="items-center space-y-2 text-center">
+                <CardTitle className="text-xl">We couldn’t load the blog right now</CardTitle>
+                <CardDescription>
+                  Please refresh the page or try again in a few moments.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           ) : filtered.length > 0 ? (
             <div className="space-y-10">
               <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
