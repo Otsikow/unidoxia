@@ -281,7 +281,7 @@ export default function ProgramsPage() {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .insert(basePayload);
+            .insert(basePayload as any);
           if (retryError) throw retryError;
         } else {
           throw error;
@@ -430,7 +430,7 @@ export default function ProgramsPage() {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .update(basePayload)
+            .update(basePayload as any)
             .eq("id", editProgram.id)
             .eq("university_id", universityId)
             .eq("tenant_id", tenantId);
@@ -512,7 +512,7 @@ export default function ProgramsPage() {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .update(basePayload)
+            .update(basePayload as any)
             .eq("id", editProgram.id)
             .eq("university_id", universityId)
             .eq("tenant_id", tenantId);
