@@ -154,7 +154,6 @@ export default function Blog() {
         "Connecting international students with world-class universities through verified agents and transparent application management.",
       links: [
         { label: "info@unidoxia.com", href: "mailto:info@unidoxia.com", external: true },
-        { label: "+1 (202) 555-0148", href: "tel:+12025550148", external: true },
         { label: "Book a discovery call", href: "/contact", external: false },
       ],
     },
@@ -181,12 +180,12 @@ export default function Blog() {
           <div className="mx-auto max-w-3xl text-center space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm text-muted-foreground">
               <Sparkles className="h-4 w-4" />
-              Fresh research, interviews, and platform tips every week
+              Weekly, source-checked guidance
             </div>
             <div className="space-y-3">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Insights & Guides</h1>
               <p className="text-base sm:text-lg text-muted-foreground">
-                Advice for international students, certified agents, and university partners navigating global recruitment.
+                Every week we publish source-checked updates on visa rule changes, scholarships, admissions, and the most common application mistakes — so you can plan with clarity. We share guidance, not guarantees of visa or scholarship outcomes.
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-center">
