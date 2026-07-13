@@ -72,12 +72,33 @@ export default function BlogPost() {
 
   const sanitizedHtml = useMemo(() => {
     if (!data) return null;
+    const normalize = (s: string) =>
+      s.replace(/\s+/g, " ").trim().toLowerCase();
+    const stripLeadingTitleH1 = (html: string) => {
+      // Remove a leading <h1>…</h1> only when its text matches the article
+      // title, so the page template's H1 is not duplicated by content.
+      const match = html.match(/^\s*<h1[^>]*>([\s\S]*?)<\/h1>\s*/i);
+      if (!match) return html;
+      const inner = match[1].replace(/<[^>]+>/g, "");
+      if (normalize(inner) === normalize(data.title)) {
+        return html.slice(match[0].length);
+      }
+      return html;
+    };
     if (data.content_html && data.content_html.trim().length > 0) {
-      return DOMPurify.sanitize(data.content_html);
+      return DOMPurify.sanitize(stripLeadingTitleH1(data.content_html));
     }
     if (data.content_md && data.content_md.trim().length > 0) {
-      const rendered = marked.parse(data.content_md, { async: false }) as string;
-      return DOMPurify.sanitize(rendered, { ADD_ATTR: ["target", "rel"] });
+      // Also strip a leading Markdown H1 (# Title) that matches the DB title.
+      let md = data.content_md;
+      const mdMatch = md.match(/^\s*#\s+(.+?)\s*\n/);
+      if (mdMatch && normalize(mdMatch[1]) === normalize(data.title)) {
+        md = md.slice(mdMatch[0].length);
+      }
+      const rendered = marked.parse(md, { async: false }) as string;
+      return DOMPurify.sanitize(stripLeadingTitleH1(rendered), {
+        ADD_ATTR: ["target", "rel"],
+      });
     }
     return null;
   }, [data]);
