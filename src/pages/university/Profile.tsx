@@ -670,7 +670,7 @@ const UniversityProfilePage = () => {
         // This double-filter ensures we can ONLY update universities belonging to our tenant
         const { data: updateData, error: updateError } = await supabase
           .from("universities")
-          .update(updatePayload)
+          .update(updatePayload as any)
           .eq("id", existingUniversityId)
           .eq("tenant_id", tenantId)
           .select();
@@ -736,7 +736,7 @@ const UniversityProfilePage = () => {
 
         const { data: insertData, error: insertError } = await supabase
           .from("universities")
-          .insert(insertPayload)
+          .insert(insertPayload as any)
           .select();
 
         console.log("Insert result:", { data: insertData, error: insertError });
@@ -762,7 +762,7 @@ const UniversityProfilePage = () => {
               // CRITICAL: Always filter by tenant_id to prevent cross-tenant updates
               const { data: fallbackData, error: fallbackUpdateError } = await supabase
                 .from("universities")
-                .update(updatePayload)
+                .update(updatePayload as any)
                 .eq("id", existingUni.id)
                 .eq("tenant_id", tenantId)
                 .select();

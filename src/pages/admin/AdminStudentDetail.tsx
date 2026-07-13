@@ -367,7 +367,7 @@ const AdminStudentDetail = () => {
 
       const { data, error } = await supabase
         .from("student_documents")
-        .update(reviewPayload)
+        .update(reviewPayload as any)
         .select("id")
         .eq("id", doc.id);
 

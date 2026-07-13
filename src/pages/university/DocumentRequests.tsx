@@ -439,7 +439,7 @@ const UniversityDocumentRequestsPage = () => {
 
       const { error: updateError } = await supabase
         .from('document_requests')
-        .update(updates)
+        .update(updates as any)
         .eq('id', requestId)
         .eq('tenant_id', tenantId);
 

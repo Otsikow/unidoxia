@@ -275,7 +275,7 @@ export default function ProgramsPage() {
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
 
-      const { error } = await supabase.from("programs").insert(payloadWithImage);
+      const { error } = await supabase.from("programs").insert(payloadWithImage as any);
 
       if (error) {
         if (isMissingColumnError(error)) {
@@ -344,7 +344,7 @@ export default function ProgramsPage() {
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
 
-      const { error } = await supabase.from("programs").insert(payloadWithImage);
+      const { error } = await supabase.from("programs").insert(payloadWithImage as any);
 
       if (error) {
         if (isMissingColumnError(error)) {
@@ -421,7 +421,7 @@ export default function ProgramsPage() {
 
       const { error } = await supabase
         .from("programs")
-        .update(payloadWithImage)
+        .update(payloadWithImage as any)
         .eq("id", editProgram.id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
@@ -503,7 +503,7 @@ export default function ProgramsPage() {
 
       const { error } = await supabase
         .from("programs")
-        .update(payloadWithImage)
+        .update(payloadWithImage as any)
         .eq("id", editProgram.id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
