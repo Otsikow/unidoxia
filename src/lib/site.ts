@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = "https://www.unidoxia.com";
+const DEFAULT_SITE_URL = "https://unidoxia.com";
 
 const isValidHttpUrl = (value?: string | null): value is string => {
   if (!value) return false;

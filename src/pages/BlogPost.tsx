@@ -48,7 +48,7 @@ const estimateReadingMinutes = (text: string | null | undefined) => {
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["blog", slug],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -57,12 +57,17 @@ export default function BlogPost() {
           "id, slug, title, content_html, content_md, excerpt, cover_image_url, tags, published_at, updated_at, status, seo_title, seo_description"
         )
         .eq("slug", slug)
+        .eq("status", "published")
         .limit(1)
-        .single();
-      if (error) throw error;
-      return data as BlogPostDetail;
+        .maybeSingle();
+      if (error) {
+        console.error("[blog] Failed to load article", error.message);
+        throw new Error("blog_fetch_failed");
+      }
+      return (data as BlogPostDetail | null);
     },
     enabled: Boolean(slug),
+    retry: 1,
   });
 
   const sanitizedHtml = useMemo(() => {
@@ -89,8 +94,21 @@ export default function BlogPost() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="container mx-auto px-4 py-16 max-w-2xl text-center space-y-4">
+        <h1 className="text-2xl font-semibold">We couldn’t load this article</h1>
+        <p className="text-muted-foreground">
+          Something went wrong while fetching this post. Please refresh the page or try again shortly.
+        </p>
+        <Button asChild variant="outline">
+          <Link to="/blog"><ArrowLeft className="h-4 w-4 mr-2" />Back to Blog</Link>
+        </Button>
+      </div>
+    );
+  }
+
   if (!data) return <Navigate to="/blog" replace />;
-  if (data.status !== "published") return <Navigate to="/blog" replace />;
 
   const publishedLabel = formatDate(data.published_at);
   const updatedLabel = formatDate(data.updated_at);
@@ -104,11 +122,11 @@ export default function BlogPost() {
     `Read ${data.title} on the UniDoxia blog — source-checked guidance on studying abroad.`;
 
   const canonicalPath = `/blog/${data.slug}`;
-  const canonicalUrl = `https://www.unidoxia.com${canonicalPath}`;
+  const canonicalUrl = `https://unidoxia.com${canonicalPath}`;
   const absoluteCover = data.cover_image_url
     ? (data.cover_image_url.startsWith("http")
         ? data.cover_image_url
-        : `https://www.unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
+        : `https://unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
     : undefined;
 
   const articleJsonLd = {
@@ -120,12 +138,12 @@ export default function BlogPost() {
     datePublished: data.published_at || undefined,
     dateModified: data.updated_at || data.published_at || undefined,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
-    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://www.unidoxia.com/editorial-policy" },
+    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://unidoxia.com/editorial-policy" },
     publisher: {
       "@type": "Organization",
       name: "UniDoxia",
-      url: "https://www.unidoxia.com",
-      logo: { "@type": "ImageObject", url: "https://www.unidoxia.com/favicon.png" },
+      url: "https://unidoxia.com",
+      logo: { "@type": "ImageObject", url: "https://unidoxia.com/favicon.png" },
     },
   };
 
@@ -133,8 +151,8 @@ export default function BlogPost() {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.unidoxia.com/" },
-      { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.unidoxia.com/blog" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://unidoxia.com/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://unidoxia.com/blog" },
       { "@type": "ListItem", position: 3, name: data.title, item: canonicalUrl },
     ],
   };

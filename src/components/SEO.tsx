@@ -17,7 +17,7 @@ type SEOProps = {
   jsonLd?: JsonLd | JsonLd[];
 };
 
-export const SITE_ORIGIN = "https://www.unidoxia.com";
+export const SITE_ORIGIN = "https://unidoxia.com";
 const SITE_NAME = "UniDoxia";
 
 const toAbsolute = (path?: string) => {

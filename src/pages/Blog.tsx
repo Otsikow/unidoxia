@@ -40,7 +40,7 @@ interface BlogPost {
 
 export default function Blog() {
   const [q, setQ] = useState("");
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["blog", "published"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -49,9 +49,13 @@ export default function Blog() {
         .eq("status", "published")
         .order("featured", { ascending: false })
         .order("published_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("[blog] Failed to load posts", error.message);
+        throw new Error("blog_list_fetch_failed");
+      }
       return data as BlogPost[];
     },
+    retry: 1,
   });
 
   const filtered = useMemo(() => {
@@ -179,13 +183,13 @@ export default function Blog() {
           "@context": "https://schema.org",
           "@type": "Blog",
           name: "UniDoxia Blog",
-          url: "https://www.unidoxia.com/blog",
+          url: "https://unidoxia.com/blog",
           description:
             "Weekly, source-checked guidance on visa rule changes, scholarships, admissions, and common application mistakes.",
           publisher: {
             "@type": "Organization",
             name: "UniDoxia",
-            url: "https://www.unidoxia.com",
+            url: "https://unidoxia.com",
           },
         }}
       />
@@ -254,6 +258,15 @@ export default function Blog() {
                 ))}
               </div>
             </div>
+          ) : isError ? (
+            <Card className="border-dashed border-border/70">
+              <CardHeader className="items-center space-y-2 text-center">
+                <CardTitle className="text-xl">We couldn’t load the blog right now</CardTitle>
+                <CardDescription>
+                  Please refresh the page or try again in a few moments.
+                </CardDescription>
+              </CardHeader>
+            </Card>
           ) : filtered.length > 0 ? (
             <div className="space-y-10">
               <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">

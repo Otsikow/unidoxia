@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const BASE_URL = "https://www.unidoxia.com";
+const BASE_URL = "https://unidoxia.com";
 const now = new Date().toISOString();
 
 // Only useful, indexable, public pages. Exclude auth/private/dashboards.
