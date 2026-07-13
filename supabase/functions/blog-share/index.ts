@@ -27,6 +27,7 @@ const escapeAttr = (s: string) => escapeHtml(s);
 
 const buildHtml = (opts: {
   title: string;
+  previewTitle?: string;
   description: string;
   canonical: string;
   image?: string | null;
@@ -36,6 +37,7 @@ const buildHtml = (opts: {
 }) => {
   const {
     title,
+    previewTitle = title,
     description,
     canonical,
     image,
@@ -73,12 +75,12 @@ const buildHtml = (opts: {
 
     <meta property="og:site_name" content="UniDoxia" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="${escapeAttr(title)}" />
+    <meta property="og:title" content="${escapeAttr(previewTitle)}" />
     <meta property="og:description" content="${escapeAttr(description)}" />
     <meta property="og:url" content="${escapeAttr(canonical)}" />
     ${imageTag}
 
-    <meta name="twitter:title" content="${escapeAttr(title)}" />
+    <meta name="twitter:title" content="${escapeAttr(previewTitle)}" />
     <meta name="twitter:description" content="${escapeAttr(description)}" />
 
     ${publishedTag}
@@ -88,7 +90,7 @@ const buildHtml = (opts: {
     <meta http-equiv="refresh" content="0; url=${escapeAttr(canonical)}" />
   </head>
   <body>
-    <p>Redirecting to <a href="${escapeAttr(canonical)}">${escapeHtml(title)}</a>…</p>
+    <p>Redirecting to <a href="${escapeAttr(canonical)}">${escapeHtml(previewTitle)}</a>…</p>
     <script>window.location.replace(${JSON.stringify(canonical)});</script>
   </body>
 </html>`;
@@ -147,6 +149,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    const previewTitle = data.title;
     const title = data.seo_title || `${data.title} | UniDoxia Blog`;
     const description =
       data.seo_description ||
@@ -160,6 +163,7 @@ Deno.serve(async (req) => {
 
     const html = buildHtml({
       title,
+      previewTitle,
       description,
       canonical,
       image,
