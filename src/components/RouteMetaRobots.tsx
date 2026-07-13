@@ -1,11 +1,11 @@
-import { Helmet } from "react-helmet-async";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 /**
- * Emits <meta name="robots" content="noindex,nofollow"> for authenticated
- * application areas so private routes do not compete in search results.
- * Public marketing routes (including /universities and /partnership) are
- * left indexable.
+ * Sets <meta name="robots" content="noindex,nofollow"> on authenticated
+ * application routes so private areas do not compete in search results.
+ * Public marketing routes (including /universities and /partnership) stay
+ * indexable and unaffected.
  */
 const PRIVATE_PREFIXES = [
   "/auth",
@@ -22,8 +22,8 @@ const PRIVATE_PREFIXES = [
   "/feedback",
 ];
 
-// /university/... (singular) is the authenticated university dashboard;
-// /universities (plural) is the public directory and stays indexable.
+const OWNED_ATTR = "data-managed-seo";
+
 const isPrivate = (pathname: string) => {
   if (pathname === "/university" || pathname.startsWith("/university/")) return true;
   return PRIVATE_PREFIXES.some(
@@ -33,12 +33,22 @@ const isPrivate = (pathname: string) => {
 
 export const RouteMetaRobots = () => {
   const { pathname } = useLocation();
-  if (!isPrivate(pathname)) return null;
-  return (
-    <Helmet>
-      <meta name="robots" content="noindex,nofollow" />
-    </Helmet>
-  );
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const priv = isPrivate(pathname);
+    const existing = document.head.querySelectorAll<HTMLMetaElement>('meta[name="robots"]');
+    existing.forEach((n) => n.parentNode?.removeChild(n));
+    if (priv) {
+      const m = document.createElement("meta");
+      m.setAttribute("name", "robots");
+      m.setAttribute("content", "noindex,nofollow");
+      m.setAttribute(OWNED_ATTR, "1");
+      document.head.appendChild(m);
+    }
+  }, [pathname]);
+
+  return null;
 };
 
 export default RouteMetaRobots;
