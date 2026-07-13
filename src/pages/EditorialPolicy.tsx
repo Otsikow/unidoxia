@@ -21,8 +21,8 @@ const EditorialPolicy = () => {
       />
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Editorial Policy</h1>
       <p className="text-muted-foreground mb-6">
-        This policy explains how the UniDoxia editorial team researches, writes, reviews,
-        and updates the guidance we publish for international students.
+        This policy explains how UniDoxia sources, drafts, checks, corrects, and updates
+        the guidance we publish for international students.
       </p>
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">Official sources</h2>
