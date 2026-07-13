@@ -14,7 +14,7 @@ interface ShareButtonsProps {
 // previews on WhatsApp / Facebook / LinkedIn / X / Slack / iMessage show the
 // article title, description, and cover image. Humans are auto-redirected to
 // the real article on unidoxia.com.
-const SHARE_ORIGIN = "https://gbustuntgvmwkcttjojo.supabase.co/functions/v1/blog-share";
+const SHARE_ORIGIN = "https://unidoxia.com/share";
 const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}`;
 
 const XIcon = () => (
