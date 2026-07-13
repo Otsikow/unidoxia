@@ -396,7 +396,12 @@ const Index = () => {
             </Link>
           ))}
         </div>
-      </section>
+
+
+      {/* ---------- LATEST FROM BLOG ---------- */}
+      <Suspense fallback={<SectionLoader />}><LatestFromBlog /></Suspense>
+
+
 
 
       {/* ---------- FAQ ---------- */}
