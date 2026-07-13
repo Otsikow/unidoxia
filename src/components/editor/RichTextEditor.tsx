@@ -50,7 +50,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
 
-  const editor = useEditor({
+  const editor: any = useEditor({
     extensions: [
       // @ts-expect-error — tiptap StarterKit ships its own nested @tiptap/core copy; the extension is compatible at runtime.
       StarterKit.configure({
