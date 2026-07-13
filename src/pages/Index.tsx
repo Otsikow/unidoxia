@@ -32,6 +32,7 @@ const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/Feat
 const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
 
 const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
+const LatestFromBlog = lazy(() => import("@/components/landing/LatestFromBlog"));
 const ContactForm = lazy(() => import("@/components/ContactForm").then(m => ({
   default: m.ContactForm
 })));
