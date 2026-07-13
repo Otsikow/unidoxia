@@ -52,9 +52,10 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
 
   const editor = useEditor({
     extensions: [
+      // @ts-expect-error — tiptap StarterKit ships its own nested @tiptap/core copy; the extension is compatible at runtime.
       StarterKit.configure({
         codeBlock: false,
-      }) as any,
+      }),
       Image.configure({
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded-lg',
