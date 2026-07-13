@@ -1,0 +1,33 @@
+# UniDoxia
+
+> UniDoxia supports international students with study-abroad discovery
+> and application guidance, including course search, university
+> shortlisting, scholarship discovery, and visa preparation resources.
+> We provide educational guidance, not legal advice, and we do not
+> guarantee admission, scholarship, or visa outcomes.
+
+Website: https://www.unidoxia.com
+
+## Key public pages
+- Home: https://www.unidoxia.com/
+- Study Abroad Courses: https://www.unidoxia.com/courses
+- Universities: https://www.unidoxia.com/universities
+- Scholarships: https://www.unidoxia.com/scholarships
+- Visa Calculator: https://www.unidoxia.com/visa-calculator
+- Blog: https://www.unidoxia.com/blog
+- FAQ: https://www.unidoxia.com/faq
+- Contact: https://www.unidoxia.com/contact
+- About: https://www.unidoxia.com/about
+- Editorial Policy: https://www.unidoxia.com/editorial-policy
+- Privacy: https://www.unidoxia.com/legal/privacy
+- Terms: https://www.unidoxia.com/legal/terms
+
+## Blog
+- UK Student Visa Funds in 2026 — 7 Evidence Mistakes to Avoid:
+  https://www.unidoxia.com/blog/uk-student-visa-funds-2026-evidence-mistakes
+
+## Editorial standards
+Our editorial approach — official sources, source-check dates,
+corrections, AI-assisted drafting disclosure, and no-guarantees
+policy — is described at:
+https://www.unidoxia.com/editorial-policy
