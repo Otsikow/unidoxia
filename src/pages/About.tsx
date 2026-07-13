@@ -50,8 +50,11 @@ const About = () => {
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">Editorial standards</h2>
       <p className="text-muted-foreground">
-        Our content is written and reviewed by the UniDoxia editorial team, references
-        official sources, and shows a source-check date. Read the full{" "}
+        Content is published under the UniDoxia Editorial Team byline. Technology,
+        including AI, may assist with drafting. Our publishing workflow requires
+        material factual claims to be checked against linked official sources, and
+        we ask readers to confirm current official requirements before acting. Read
+        the full{" "}
         <Link to="/editorial-policy" className="underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-ring rounded-sm">
           editorial policy
         </Link>{" "}

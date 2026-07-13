@@ -6,9 +6,7 @@ Disallow: /student
 Disallow: /student/
 Disallow: /dashboard
 Disallow: /dashboard/
-Disallow: /partner
 Disallow: /partner/
-Disallow: /university
 Disallow: /university/
 Disallow: /auth/
 Disallow: /agents/
