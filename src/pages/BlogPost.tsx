@@ -179,7 +179,7 @@ export default function BlogPost() {
   };
 
   return (
-    <article className="container mx-auto px-4 py-10">
+    <article className="container mx-auto px-4 py-10 max-w-3xl">
       <SEO
         title={seoTitle}
         description={seoDescription}
@@ -191,8 +191,7 @@ export default function BlogPost() {
         jsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
 
-
-      <div className="mb-6">
+      <div className="mb-8">
         <Button
           asChild
           variant="ghost"
@@ -206,66 +205,85 @@ export default function BlogPost() {
         </Button>
       </div>
 
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3">{data.title}</h1>
-      {data.excerpt && <p className="text-muted-foreground mb-4">{data.excerpt}</p>}
+      <header className="mb-10 space-y-5 border-b border-border/60 pb-8">
+        {(data.tags || []).length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            {data.tags.map((t) => (
+              <Badge key={t} variant="secondary" className="font-medium">
+                {t}
+              </Badge>
+            ))}
+          </div>
+        )}
 
-      <p className="text-sm text-muted-foreground mb-6">
-        By <span className="font-medium text-foreground">UniDoxia Editorial Team</span>
-        {" · "}
-        <Link
-          to="/editorial-policy"
-          className="underline underline-offset-2 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
-        >
-          Editorial policy
-        </Link>
-      </p>
+        <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.15]">
+          {data.title}
+        </h1>
 
+        {data.excerpt && (
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+            {data.excerpt}
+          </p>
+        )}
 
-
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground mb-6">
-        {publishedLabel && (
-          <span className="inline-flex items-center gap-1.5">
-            <CalendarDays className="h-4 w-4" aria-hidden="true" />
-            <span>
-              <span className="sr-only">Published on </span>
-              Published {publishedLabel}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
+          <span>
+            By <span className="font-medium text-foreground">UniDoxia Editorial Team</span>
+          </span>
+          {publishedLabel && (
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarDays className="h-4 w-4" aria-hidden="true" />
+              <span>{publishedLabel}</span>
             </span>
-          </span>
-        )}
-        {updatedLabel && (
+          )}
+          {updatedLabel && (
+            <span className="inline-flex items-center gap-1.5">
+              <RefreshCcw className="h-4 w-4" aria-hidden="true" />
+              <span>Updated {updatedLabel}</span>
+            </span>
+          )}
           <span className="inline-flex items-center gap-1.5">
-            <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-            <span>Last checked {updatedLabel}</span>
+            <Clock className="h-4 w-4" aria-hidden="true" />
+            <span>{readingMinutes} min read</span>
           </span>
-        )}
-        <span className="inline-flex items-center gap-1.5">
-          <Clock className="h-4 w-4" aria-hidden="true" />
-          <span>{readingMinutes} min read</span>
-        </span>
-      </div>
-
-      {(data.tags || []).length > 0 && (
-        <div className="flex items-center gap-2 mb-8 flex-wrap">
-          {data.tags.map((t) => (
-            <Badge key={t} variant="secondary">
-              {t}
-            </Badge>
-          ))}
+          <Link
+            to="/editorial-policy"
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            Editorial policy
+          </Link>
         </div>
-      )}
+      </header>
 
       {data.cover_image_url && (
-        <img
-          src={data.cover_image_url}
-          alt={coverAlt}
-          className="w-full max-h-[420px] object-cover rounded-lg mb-10"
-          loading="lazy"
-        />
+        <figure className="mb-10 -mx-4 sm:mx-0">
+          <img
+            src={data.cover_image_url}
+            alt={coverAlt}
+            className="w-full max-h-[460px] object-cover sm:rounded-xl shadow-sm"
+            loading="lazy"
+          />
+        </figure>
       )}
 
       {sanitizedHtml ? (
         <div
-          className="prose prose-neutral dark:prose-invert max-w-none prose-a:underline prose-a:underline-offset-2 focus-within:[&_a]:outline-none [&_a:focus-visible]:ring-2 [&_a:focus-visible]:ring-ring [&_a:focus-visible]:rounded-sm"
+          className="prose prose-lg prose-neutral dark:prose-invert max-w-none
+            prose-headings:font-semibold prose-headings:tracking-tight prose-headings:scroll-mt-24
+            prose-h2:text-2xl md:prose-h2:text-3xl prose-h2:mt-12 prose-h2:mb-4 prose-h2:pb-2 prose-h2:border-b prose-h2:border-border/60
+            prose-h3:text-xl md:prose-h3:text-2xl prose-h3:mt-10 prose-h3:mb-3
+            prose-h4:text-lg prose-h4:mt-8 prose-h4:mb-2
+            prose-p:leading-[1.8] prose-p:my-5 prose-p:text-foreground/90
+            prose-li:leading-[1.75] prose-li:my-1.5
+            prose-ul:my-5 prose-ol:my-5
+            prose-strong:text-foreground prose-strong:font-semibold
+            prose-a:text-primary prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:underline-offset-4
+            prose-blockquote:border-l-4 prose-blockquote:border-primary/60 prose-blockquote:bg-muted/40 prose-blockquote:rounded-r-md prose-blockquote:py-1 prose-blockquote:px-5 prose-blockquote:not-italic prose-blockquote:text-foreground/90
+            prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:before:content-none prose-code:after:content-none
+            prose-pre:bg-muted prose-pre:border prose-pre:border-border/60
+            prose-img:rounded-lg prose-img:shadow-sm prose-img:my-8
+            prose-hr:my-10 prose-hr:border-border/60
+            [&_a:focus-visible]:ring-2 [&_a:focus-visible]:ring-ring [&_a:focus-visible]:rounded-sm"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
       ) : (
@@ -275,14 +293,23 @@ export default function BlogPost() {
       <aside
         role="note"
         aria-label="Editorial disclaimer"
-        className="mt-12 flex gap-3 rounded-lg border border-border/70 bg-muted/40 p-4 text-sm text-muted-foreground"
+        className="mt-14 flex gap-3 rounded-lg border border-border/70 bg-muted/40 p-5 text-sm text-muted-foreground"
       >
         <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-        <p>
+        <p className="leading-relaxed">
           Visa and scholarship rules can change. Always confirm requirements on the linked official source before
           applying. UniDoxia provides educational guidance, not legal advice.
         </p>
       </aside>
+
+      <div className="mt-10 border-t border-border/60 pt-6">
+        <Button asChild variant="outline">
+          <Link to="/blog" className="inline-flex items-center gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back to all articles</span>
+          </Link>
+        </Button>
+      </div>
     </article>
   );
 }
