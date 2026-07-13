@@ -14,7 +14,13 @@ interface ShareButtonsProps {
 // previews on WhatsApp / Facebook / LinkedIn / X / Slack / iMessage show the
 // article title, description, and cover image. Humans are auto-redirected to
 // the real article on unidoxia.com.
-const SHARE_ORIGIN = "https://unidoxia.com/share";
+// NOTE: Lovable's static hosting doesn't honour `public/_redirects`, so we
+// can't cleanly proxy `unidoxia.com/share/<slug>` to the edge function.
+// Point share links directly at the edge function endpoint — crawlers then
+// receive the per-post title, description, and cover image, and humans are
+// auto-redirected to the real article on unidoxia.com.
+const SHARE_ORIGIN =
+  "https://gbustuntgvmwkcttjojo.supabase.co/functions/v1/blog-share";
 const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}`;
 
 const XIcon = () => (
