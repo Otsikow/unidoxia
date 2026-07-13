@@ -4,10 +4,18 @@ import { Check, Link2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ShareButtonsProps {
-  url: string;
+  /** Post slug — used to build a crawler-friendly share URL. */
+  slug: string;
   title: string;
   description?: string;
 }
+
+// Public share endpoint that serves per-post Open Graph metadata so link
+// previews on WhatsApp / Facebook / LinkedIn / X / Slack / iMessage show the
+// article title, description, and cover image. Humans are auto-redirected to
+// the real article on unidoxia.com.
+const SHARE_ORIGIN = "https://gbustuntgvmwkcttjojo.supabase.co/functions/v1/blog-share";
+const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}`;
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -30,9 +38,10 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
-export default function ShareButtons({ url, title, description }: ShareButtonsProps) {
+export default function ShareButtons({ slug, title, description }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
-  const encodedUrl = encodeURIComponent(url);
+  const shareUrl = buildShareUrl(slug);
+  const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedText = encodeURIComponent(description ? `${title} — ${description}` : title);
 
@@ -45,9 +54,9 @@ export default function ShareButtons({ url, title, description }: ShareButtonsPr
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Link copied to clipboard");
+      toast.success("Link copied — previews will show the article title and image.");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Could not copy link");
@@ -57,7 +66,7 @@ export default function ShareButtons({ url, title, description }: ShareButtonsPr
   const handleNativeShare = async () => {
     if (typeof navigator !== "undefined" && (navigator as any).share) {
       try {
-        await (navigator as any).share({ title, text: description, url });
+        await (navigator as any).share({ title, text: description, url: shareUrl });
       } catch {
         /* user cancelled */
       }
