@@ -474,7 +474,7 @@ export default function Documents() {
           university_access_approved: false,
           university_access_approved_at: null,
           university_access_approved_by: null,
-        })
+        } as any)
         .eq("id", doc.id);
 
       if (updateError) {

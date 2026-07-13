@@ -275,13 +275,13 @@ export default function ProgramsPage() {
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
 
-      const { error } = await supabase.from("programs").insert(payloadWithImage);
+      const { error } = await supabase.from("programs").insert(payloadWithImage as any);
 
       if (error) {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .insert(basePayload);
+            .insert(basePayload as any);
           if (retryError) throw retryError;
         } else {
           throw error;
@@ -344,13 +344,13 @@ export default function ProgramsPage() {
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
 
-      const { error } = await supabase.from("programs").insert(payloadWithImage);
+      const { error } = await supabase.from("programs").insert(payloadWithImage as any);
 
       if (error) {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .insert(basePayload);
+            .insert(basePayload as any);
           if (retryError) throw retryError;
         } else {
           throw error;
@@ -421,7 +421,7 @@ export default function ProgramsPage() {
 
       const { error } = await supabase
         .from("programs")
-        .update(payloadWithImage)
+        .update(payloadWithImage as any)
         .eq("id", editProgram.id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
@@ -430,7 +430,7 @@ export default function ProgramsPage() {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .update(basePayload)
+            .update(basePayload as any)
             .eq("id", editProgram.id)
             .eq("university_id", universityId)
             .eq("tenant_id", tenantId);
@@ -503,7 +503,7 @@ export default function ProgramsPage() {
 
       const { error } = await supabase
         .from("programs")
-        .update(payloadWithImage)
+        .update(payloadWithImage as any)
         .eq("id", editProgram.id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
@@ -512,7 +512,7 @@ export default function ProgramsPage() {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .update(basePayload)
+            .update(basePayload as any)
             .eq("id", editProgram.id)
             .eq("university_id", universityId)
             .eq("tenant_id", tenantId);

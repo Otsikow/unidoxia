@@ -123,9 +123,7 @@ export default function ProfileSettings() {
         return { direct: 0, levelTwo: 0, totalEarnings: 0 };
       }
 
-      // @ts-expect-error - Deep type instantiation
-      const { data, error } = await supabase
-        .from('referral_relations')
+      const { data, error } = await (supabase.from('referral_relations') as any)
         .select('level, amount')
         .eq('referrer_id', profile.id);
 

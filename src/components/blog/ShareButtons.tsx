@@ -4,24 +4,17 @@ import { Check, Link2, Share2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ShareButtonsProps {
-  /** Post slug — used to build a crawler-friendly share URL. */
+  /** Post slug — used to build a clean UniDoxia share URL. */
   slug: string;
   title: string;
   description?: string;
 }
 
-// Public share endpoint that serves per-post Open Graph metadata so link
-// previews on WhatsApp / Facebook / LinkedIn / X / Slack / iMessage show the
-// article title, description, and cover image. Humans are auto-redirected to
-// the real article on unidoxia.com.
-// NOTE: Lovable's static hosting doesn't honour `public/_redirects`, so we
-// can't cleanly proxy `unidoxia.com/share/<slug>` to the edge function.
-// Point share links directly at the edge function endpoint — crawlers then
-// receive the per-post title, description, and cover image, and humans are
-// auto-redirected to the real article on unidoxia.com.
-const SHARE_ORIGIN =
-  "https://gbustuntgvmwkcttjojo.supabase.co/functions/v1/blog-share";
-const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}`;
+// Clean public share URL. Static share pages under /public/share/<slug>/index.html
+// carry the article-specific Open Graph metadata, then redirect people to the
+// real blog article. This keeps copied links branded as unidoxia.com.
+const SHARE_ORIGIN = "https://unidoxia.com/share";
+const buildShareUrl = (slug: string) => `${SHARE_ORIGIN}/${encodeURIComponent(slug)}.html`;
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
@@ -62,7 +55,7 @@ export default function ShareButtons({ slug, title, description }: ShareButtonsP
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      toast.success("Link copied — previews will show the article title and image.");
+      toast.success("Article link copied.");
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error("Could not copy link");

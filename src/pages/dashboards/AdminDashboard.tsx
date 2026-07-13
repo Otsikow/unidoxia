@@ -212,7 +212,7 @@ export default function AdminDashboard() {
 
         const { error } = await supabase
           .from('student_documents')
-          .update(updatePayload)
+          .update(updatePayload as any)
           .eq('id', doc.id);
 
         if (error) throw error;
