@@ -350,7 +350,7 @@ export default function ProgramsPage() {
         if (isMissingColumnError(error)) {
           const { error: retryError } = await supabase
             .from("programs")
-            .insert(basePayload);
+            .insert(basePayload as any);
           if (retryError) throw retryError;
         } else {
           throw error;
