@@ -40,7 +40,7 @@ interface BlogPost {
 
 export default function Blog() {
   const [q, setQ] = useState("");
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["blog", "published"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -49,9 +49,13 @@ export default function Blog() {
         .eq("status", "published")
         .order("featured", { ascending: false })
         .order("published_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("[blog] Failed to load posts", error.message);
+        throw new Error("blog_list_fetch_failed");
+      }
       return data as BlogPost[];
     },
+    retry: 1,
   });
 
   const filtered = useMemo(() => {
