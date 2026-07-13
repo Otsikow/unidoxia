@@ -103,17 +103,55 @@ export default function BlogPost() {
     data.excerpt ||
     `Read ${data.title} on the UniDoxia blog — source-checked guidance on studying abroad.`;
 
+  const canonicalPath = `/blog/${data.slug}`;
+  const canonicalUrl = `https://www.unidoxia.com${canonicalPath}`;
+  const absoluteCover = data.cover_image_url
+    ? (data.cover_image_url.startsWith("http")
+        ? data.cover_image_url
+        : `https://www.unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
+    : undefined;
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: data.title,
+    description: seoDescription,
+    image: absoluteCover ? [absoluteCover] : undefined,
+    datePublished: data.published_at || undefined,
+    dateModified: data.updated_at || data.published_at || undefined,
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://www.unidoxia.com/editorial-policy" },
+    publisher: {
+      "@type": "Organization",
+      name: "UniDoxia",
+      url: "https://www.unidoxia.com",
+      logo: { "@type": "ImageObject", url: "https://www.unidoxia.com/favicon.png" },
+    },
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.unidoxia.com/" },
+      { "@type": "ListItem", position: 2, name: "Blog", item: "https://www.unidoxia.com/blog" },
+      { "@type": "ListItem", position: 3, name: data.title, item: canonicalUrl },
+    ],
+  };
+
   return (
     <article className="container mx-auto px-4 py-10">
       <SEO
         title={seoTitle}
         description={seoDescription}
-        canonicalPath={`/blog/${data.slug}`}
+        canonicalPath={canonicalPath}
         ogImage={data.cover_image_url || undefined}
         ogType="article"
         publishedTime={data.published_at || undefined}
         modifiedTime={data.updated_at || undefined}
+        jsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
+
 
       <div className="mb-6">
         <Button
