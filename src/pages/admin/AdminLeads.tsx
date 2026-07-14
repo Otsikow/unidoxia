@@ -170,7 +170,7 @@ export default function AdminLeads() {
       total: leads.length,
       newLeads: leads.filter((l) => l.stage === "New Lead").length,
       hot: leads.filter((l) => l.lead_temperature === "hot").length,
-      overdue: leads.filter((l) => l.next_follow_up_at && new Date(l.next_follow_up_at) < now && l.stage !== "Converted" && l.stage !== "Lost").length,
+      overdue: leads.filter((l) => l.next_follow_up_at && new Date(l.next_follow_up_at) < now && !TERMINAL_STAGES.has(l.stage)).length,
     };
   }, [leads]);
 
