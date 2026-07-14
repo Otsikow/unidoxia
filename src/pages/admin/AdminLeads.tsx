@@ -256,7 +256,7 @@ export default function AdminLeads() {
               </TableHeader>
               <TableBody>
                 {filtered.map((l) => {
-                  const overdue = l.next_follow_up_at && isPast(new Date(l.next_follow_up_at)) && !isToday(new Date(l.next_follow_up_at)) && l.stage !== "Converted" && l.stage !== "Lost";
+                  const overdue = l.next_follow_up_at && isPast(new Date(l.next_follow_up_at)) && !isToday(new Date(l.next_follow_up_at)) && !TERMINAL_STAGES.has(l.stage);
                   return (
                     <TableRow key={l.id} className={savingId === l.id ? "opacity-60" : ""}>
                       <TableCell className="font-mono text-xs">{l.reference_code}</TableCell>
