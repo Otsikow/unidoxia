@@ -723,6 +723,7 @@ const App = () => {
                           <Route path="universities" element={<AdminUniversitiesPage />} />
                           <Route path="students" element={<AdminStudentsPage />} />
                           <Route path="students/:studentId" element={<AdminStudentDetailPage />} />
+                          <Route path="leads" element={<AdminLeadsPage />} />
                         </Route>
 
                         {/* UNIVERSITY PARTNER ROUTES */}
