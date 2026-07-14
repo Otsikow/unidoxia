@@ -2630,6 +2630,7 @@ export type Database = {
           tenant_id: string
           title: string
           updated_at: string | null
+          website_lead_id: string | null
         }
         Insert: {
           application_id?: string | null
@@ -2644,6 +2645,7 @@ export type Database = {
           tenant_id: string
           title: string
           updated_at?: string | null
+          website_lead_id?: string | null
         }
         Update: {
           application_id?: string | null
@@ -2658,6 +2660,7 @@ export type Database = {
           tenant_id?: string
           title?: string
           updated_at?: string | null
+          website_lead_id?: string | null
         }
         Relationships: [
           {
@@ -2700,6 +2703,13 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_website_lead_id_fkey"
+            columns: ["website_lead_id"]
+            isOneToOne: false
+            referencedRelation: "website_leads"
             referencedColumns: ["id"]
           },
         ]
