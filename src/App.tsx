@@ -604,6 +604,7 @@ const App = () => {
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
+                        <Route path="/free-consultation" element={<PublicLayout><IntakeForm /></PublicLayout>} />
                         <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />
 
                         {/* University Search */}
