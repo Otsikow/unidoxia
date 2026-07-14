@@ -649,6 +649,7 @@ const App = () => {
                         <Route path="/dashboard/offers" element={<ProtectedRoute allowedRoles={["staff","partner","admin"]}><OffersManagement /></ProtectedRoute>} />
                         <Route path="/dashboard/requests" element={<ProtectedRoute allowedRoles={["partner","admin","staff"]}><PartnerDocumentRequests /></ProtectedRoute>} />
                         <Route path="/dashboard/leads" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentLeads /></ProtectedRoute>} />
+                        <Route path="/dashboard/website-leads" element={<ProtectedRoute allowedRoles={["admin","staff","counselor"]}><AdminLeadsPage /></ProtectedRoute>} />
                         <Route path="/dashboard/tasks" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffTasks /></ProtectedRoute>} />
                         <Route path="/dashboard/students" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffStudents /></ProtectedRoute>} />
                         <Route path="/dashboard/agents" element={<ProtectedRoute allowedRoles={["staff","admin"]}><AdminAgentsPage /></ProtectedRoute>} />
