@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PostgrestError } from '@supabase/supabase-js';
+// PostgrestError type no longer needed; submissions go through edge function.
 import {
   Alert,
   AlertDescription,
