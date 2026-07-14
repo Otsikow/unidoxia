@@ -336,6 +336,7 @@ const AdminStudentsPage = lazyWithErrorHandling(() =>
 const AdminStudentDetailPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminStudentDetail")
 );
+const AdminLeadsPage = lazyWithErrorHandling(() => import("./pages/admin/AdminLeads"));
 
 /* ==========================================================================
    LAZY IMPORTS — AGENTS & STAFF
