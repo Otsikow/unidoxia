@@ -49,9 +49,16 @@ const STAGES = [
   "Contacted",
   "Qualified",
   "Nurturing",
-  "Converted",
-  "Lost",
-];
+  "Not Ready",
+  "Enrolled",
+  "Lost Lead",
+] as const;
+
+const TERMINAL_STAGES: ReadonlySet<string> = new Set([
+  "Enrolled",
+  "Lost Lead",
+  "Not Ready",
+]);
 
 const db = supabase as unknown as {
   from: (t: string) => {
@@ -163,7 +170,7 @@ export default function AdminLeads() {
       total: leads.length,
       newLeads: leads.filter((l) => l.stage === "New Lead").length,
       hot: leads.filter((l) => l.lead_temperature === "hot").length,
-      overdue: leads.filter((l) => l.next_follow_up_at && new Date(l.next_follow_up_at) < now && l.stage !== "Converted" && l.stage !== "Lost").length,
+      overdue: leads.filter((l) => l.next_follow_up_at && new Date(l.next_follow_up_at) < now && !TERMINAL_STAGES.has(l.stage)).length,
     };
   }, [leads]);
 
@@ -249,7 +256,7 @@ export default function AdminLeads() {
               </TableHeader>
               <TableBody>
                 {filtered.map((l) => {
-                  const overdue = l.next_follow_up_at && isPast(new Date(l.next_follow_up_at)) && !isToday(new Date(l.next_follow_up_at)) && l.stage !== "Converted" && l.stage !== "Lost";
+                  const overdue = l.next_follow_up_at && isPast(new Date(l.next_follow_up_at)) && !isToday(new Date(l.next_follow_up_at)) && !TERMINAL_STAGES.has(l.stage);
                   return (
                     <TableRow key={l.id} className={savingId === l.id ? "opacity-60" : ""}>
                       <TableCell className="font-mono text-xs">{l.reference_code}</TableCell>
