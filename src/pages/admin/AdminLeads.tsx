@@ -49,9 +49,16 @@ const STAGES = [
   "Contacted",
   "Qualified",
   "Nurturing",
-  "Converted",
-  "Lost",
-];
+  "Not Ready",
+  "Enrolled",
+  "Lost Lead",
+] as const;
+
+const TERMINAL_STAGES: ReadonlySet<string> = new Set([
+  "Enrolled",
+  "Lost Lead",
+  "Not Ready",
+]);
 
 const db = supabase as unknown as {
   from: (t: string) => {
