@@ -4,6 +4,7 @@ import { lazy, Suspense, useMemo, useCallback, type KeyboardEvent } from "react"
 import AdminStudentInsightsBlock from "@/components/admin/AdminStudentInsightsBlock";
 
 const AdminAdmissionsOversight = lazy(() => import("@/pages/admin/AdminAdmissions"));
+import { LeadsHealthCard } from "@/pages/admin/AdminLeads";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
