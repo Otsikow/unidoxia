@@ -422,6 +422,9 @@ const AdminOverview = () => {
             </CardContent>
           </Card>
 
+          <LeadsHealthCard />
+
+
           <Card>
             <CardHeader className="p-3 sm:p-4 lg:p-6 flex flex-row items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
