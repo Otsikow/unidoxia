@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { PostgrestError } from '@supabase/supabase-js';
+// PostgrestError type no longer needed; submissions go through edge function.
 import {
   Alert,
   AlertDescription,
@@ -311,81 +311,75 @@ export default function StudentIntakeForm() {
   const onSubmit = async (values: StudentIntakeFormValues) => {
     setIsSubmitting(true);
     try {
-      let tenantId = '00000000-0000-0000-0000-000000000001';
-
-      if (user?.id) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('tenant_id')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profileData?.tenant_id) {
-          tenantId = profileData.tenant_id;
-        }
-      }
-
+      const params = new URLSearchParams(window.location.search);
       const payload = {
-        tenant_id: tenantId,
-        student_id: user?.id ?? null,
-        first_name: values.firstName,
-        last_name: values.lastName,
+        firstName: values.firstName,
+        lastName: values.lastName,
         email: values.email,
         phone: values.phone,
+        whatsapp: values.preferredContact === 'whatsapp' ? values.phone : undefined,
+        preferredContact: values.preferredContact,
         citizenship: values.citizenship,
-        current_location: values.currentLocation,
-        preferred_contact: values.preferredContact,
-        highest_education: values.highestEducation,
-        field_of_study: values.fieldOfStudy,
-        graduation_year: values.graduationYear,
-        gpa_scale: values.gpaScale,
-        english_proficiency: values.englishProficiency,
-        english_test: values.englishTest || null,
-        english_test_score: values.testScore || null,
-        preferred_destinations: values.preferredDestinations,
-        preferred_intake_year: values.preferredIntakeYear,
-        preferred_intake_season: values.preferredIntakeSeason,
-        program_level: values.programLevel,
-        study_area: values.studyArea,
-        study_mode: values.studyMode,
-        budget_range: values.budgetRange,
-        support_services: values.supportServices ?? [],
-        housing_preference: values.housingPreference ?? 'undecided',
-        scholarship_interest: values.scholarshipInterest,
-        additional_notes: values.additionalNotes || null,
-        consent_granted: values.consent
+        currentLocation: values.currentLocation,
+        highestEducation: values.highestEducation,
+        fieldOfStudy: values.fieldOfStudy,
+        schoolName: values.schoolName || undefined,
+        gradeAverage: values.gradeAverage || undefined,
+        graduationYear: values.graduationYear,
+        gpaScale: values.gpaScale,
+        englishProficiency: values.englishProficiency,
+        englishTest: values.englishTest || undefined,
+        testScore: values.testScore || undefined,
+        preferredDestinations: values.preferredDestinations,
+        preferredIntakeYear: values.preferredIntakeYear,
+        preferredIntakeSeason: values.preferredIntakeSeason,
+        programLevel: values.programLevel,
+        studyArea: values.studyArea,
+        studyMode: values.studyMode,
+        budgetRange: values.budgetRange,
+        supportServices: values.supportServices ?? [],
+        housingPreference: values.housingPreference ?? 'undecided',
+        scholarshipInterest: values.scholarshipInterest,
+        additionalNotes: values.additionalNotes || undefined,
+        consent: values.consent,
+        source: params.get('utm_source') || params.get('source') || undefined,
+        medium: params.get('utm_medium') || undefined,
+        campaign: params.get('utm_campaign') || undefined,
+        utm_term: params.get('utm_term') || undefined,
+        utm_content: params.get('utm_content') || undefined,
+        landingPage: window.location.pathname + window.location.search,
+        referrer: document.referrer || undefined,
+        website: '', // honeypot placeholder
       };
 
-      const studentIntakeTable = (supabase as unknown as {
-        from: (table: string) => {
-          insert: (values: typeof payload) => Promise<{ error: PostgrestError | null }>;
-        };
-      }).from('student_intake_forms');
+      const { data, error } = await supabase.functions.invoke('submit-website-lead', {
+        body: payload,
+      });
 
-      const { error } = await studentIntakeTable.insert(payload);
-
-      if (error) {
-        throw error;
+      if (error || !data?.success) {
+        const msg = (data as { error?: string } | null)?.error || error?.message || 'Submission failed';
+        throw new Error(msg);
       }
 
       setSubmittedData(values);
       toast({
-        title: 'Thanks! Your intake form has been submitted.',
-        description: 'Our advisors will review your profile and reach out with tailored program options shortly.'
+        title: 'Thanks! We received your details.',
+        description: `Reference ${data.reference_code}. An advisor will reach out via your preferred contact method shortly.`,
       });
 
       form.reset({ ...defaultValues });
     } catch (error) {
       console.error('Failed to submit intake form', error);
       toast({
-        title: 'We could not sync your form just yet',
-        description: 'Please try again in a moment or reach out to our support team for assistance.',
-        variant: 'destructive'
+        title: 'We could not save your form',
+        description: error instanceof Error ? error.message : 'Please try again in a moment.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   const selectedDestinations = watchAllFields.preferredDestinations ?? [];
   const requestedServices = watchAllFields.supportServices ?? [];

@@ -3039,6 +3039,177 @@ export type Database = {
           },
         ]
       }
+      website_leads: {
+        Row: {
+          assignee_id: string | null
+          budget_range: string | null
+          campaign: string | null
+          citizenship: string | null
+          consent_at: string | null
+          consent_granted: boolean
+          created_at: string
+          current_country: string | null
+          email: string | null
+          english_proficiency: string | null
+          english_test: string | null
+          english_test_score: string | null
+          field_of_study: string | null
+          first_name: string | null
+          full_name: string | null
+          gpa_scale: string | null
+          grade_average: string | null
+          graduation_year: string | null
+          highest_education: string | null
+          housing_preference: string | null
+          id: string
+          intake_season: string | null
+          intake_year: string | null
+          is_test: boolean
+          landing_page: string | null
+          last_name: string | null
+          lead_score: number
+          lead_temperature: string
+          medium: string | null
+          next_follow_up_at: string
+          notes: string | null
+          owner_id: string | null
+          passport_ready: boolean | null
+          phone: string | null
+          preferred_contact: string | null
+          preferred_destinations: string[]
+          program_level: string | null
+          proof_of_funds_ready: boolean | null
+          raw_payload: Json
+          reference_code: string | null
+          referrer: string | null
+          scholarship_interest: boolean | null
+          school_name: string | null
+          source: string | null
+          sponsor_ready: boolean | null
+          stage: string
+          study_area: string | null
+          study_mode: string | null
+          support_services: string[]
+          tenant_id: string
+          updated_at: string
+          utm_content: string | null
+          utm_term: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          budget_range?: string | null
+          campaign?: string | null
+          citizenship?: string | null
+          consent_at?: string | null
+          consent_granted?: boolean
+          created_at?: string
+          current_country?: string | null
+          email?: string | null
+          english_proficiency?: string | null
+          english_test?: string | null
+          english_test_score?: string | null
+          field_of_study?: string | null
+          first_name?: string | null
+          full_name?: string | null
+          gpa_scale?: string | null
+          grade_average?: string | null
+          graduation_year?: string | null
+          highest_education?: string | null
+          housing_preference?: string | null
+          id?: string
+          intake_season?: string | null
+          intake_year?: string | null
+          is_test?: boolean
+          landing_page?: string | null
+          last_name?: string | null
+          lead_score?: number
+          lead_temperature?: string
+          medium?: string | null
+          next_follow_up_at?: string
+          notes?: string | null
+          owner_id?: string | null
+          passport_ready?: boolean | null
+          phone?: string | null
+          preferred_contact?: string | null
+          preferred_destinations?: string[]
+          program_level?: string | null
+          proof_of_funds_ready?: boolean | null
+          raw_payload?: Json
+          reference_code?: string | null
+          referrer?: string | null
+          scholarship_interest?: boolean | null
+          school_name?: string | null
+          source?: string | null
+          sponsor_ready?: boolean | null
+          stage?: string
+          study_area?: string | null
+          study_mode?: string | null
+          support_services?: string[]
+          tenant_id?: string
+          updated_at?: string
+          utm_content?: string | null
+          utm_term?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          budget_range?: string | null
+          campaign?: string | null
+          citizenship?: string | null
+          consent_at?: string | null
+          consent_granted?: boolean
+          created_at?: string
+          current_country?: string | null
+          email?: string | null
+          english_proficiency?: string | null
+          english_test?: string | null
+          english_test_score?: string | null
+          field_of_study?: string | null
+          first_name?: string | null
+          full_name?: string | null
+          gpa_scale?: string | null
+          grade_average?: string | null
+          graduation_year?: string | null
+          highest_education?: string | null
+          housing_preference?: string | null
+          id?: string
+          intake_season?: string | null
+          intake_year?: string | null
+          is_test?: boolean
+          landing_page?: string | null
+          last_name?: string | null
+          lead_score?: number
+          lead_temperature?: string
+          medium?: string | null
+          next_follow_up_at?: string
+          notes?: string | null
+          owner_id?: string | null
+          passport_ready?: boolean | null
+          phone?: string | null
+          preferred_contact?: string | null
+          preferred_destinations?: string[]
+          program_level?: string | null
+          proof_of_funds_ready?: boolean | null
+          raw_payload?: Json
+          reference_code?: string | null
+          referrer?: string | null
+          scholarship_interest?: boolean | null
+          school_name?: string | null
+          source?: string | null
+          sponsor_ready?: boolean | null
+          stage?: string
+          study_area?: string | null
+          study_mode?: string | null
+          support_services?: string[]
+          tenant_id?: string
+          updated_at?: string
+          utm_content?: string | null
+          utm_term?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       staff_profiles: {

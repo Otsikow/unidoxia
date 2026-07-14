@@ -24,6 +24,9 @@ verify_jwt = true
 [functions.blog-share]
 verify_jwt = false
 
+[functions.submit-website-lead]
+verify_jwt = false
+
 # Note: Rate limiting and breached password checks are configured in Supabase Dashboard
 # The following settings have been removed as they are not supported in supabase/config.toml:
 # - auth.rate_limit (use Dashboard → Authentication → Rate Limits)

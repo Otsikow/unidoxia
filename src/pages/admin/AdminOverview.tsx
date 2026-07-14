@@ -4,6 +4,7 @@ import { lazy, Suspense, useMemo, useCallback, type KeyboardEvent } from "react"
 import AdminStudentInsightsBlock from "@/components/admin/AdminStudentInsightsBlock";
 
 const AdminAdmissionsOversight = lazy(() => import("@/pages/admin/AdminAdmissions"));
+import { LeadsHealthCard } from "@/pages/admin/AdminLeads";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -421,6 +422,9 @@ const AdminOverview = () => {
               </Button>
             </CardContent>
           </Card>
+
+          <LeadsHealthCard />
+
 
           <Card>
             <CardHeader className="p-3 sm:p-4 lg:p-6 flex flex-row items-start justify-between gap-2">

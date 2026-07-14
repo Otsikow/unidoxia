@@ -96,6 +96,14 @@ const NAV_GROUPS: NavGroup[] = [
         descriptionDefault: "Agency management",
         icon: Users,
       },
+      {
+        to: "/admin/leads",
+        labelKey: "admin.layout.navigation.leads.label",
+        descriptionKey: "admin.layout.navigation.leads.description",
+        labelDefault: "Website Leads",
+        descriptionDefault: "Consultation requests",
+        icon: Megaphone,
+      },
     ],
   },
   {

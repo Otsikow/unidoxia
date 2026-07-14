@@ -336,6 +336,7 @@ const AdminStudentsPage = lazyWithErrorHandling(() =>
 const AdminStudentDetailPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminStudentDetail")
 );
+const AdminLeadsPage = lazyWithErrorHandling(() => import("./pages/admin/AdminLeads"));
 
 /* ==========================================================================
    LAZY IMPORTS — AGENTS & STAFF
@@ -604,6 +605,7 @@ const App = () => {
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
+                        <Route path="/free-consultation" element={<PublicLayout><IntakeForm /></PublicLayout>} />
                         <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />
 
                         {/* University Search */}
@@ -721,6 +723,7 @@ const App = () => {
                           <Route path="universities" element={<AdminUniversitiesPage />} />
                           <Route path="students" element={<AdminStudentsPage />} />
                           <Route path="students/:studentId" element={<AdminStudentDetailPage />} />
+                          <Route path="leads" element={<AdminLeadsPage />} />
                         </Route>
 
                         {/* UNIVERSITY PARTNER ROUTES */}
