@@ -221,6 +221,12 @@ const matchesFilter = (scholarship: Scholarship, filters: ScholarshipSearchFilte
     }
   }
 
+  if (filters.applicationStatuses?.length) {
+    if (!scholarship.status || !filters.applicationStatuses.includes(scholarship.status as never)) {
+      return false;
+    }
+  }
+
   return true;
 };
 
