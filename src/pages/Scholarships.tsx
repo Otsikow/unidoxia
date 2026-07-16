@@ -304,8 +304,10 @@ const ScholarshipsPage = () => {
         ? results
         : FALLBACK_SCHOLARSHIPS;
 
-    return base.map(normalizeScholarship);
+    // Never surface closed/archived items on the public listing.
+    return base.filter(isPubliclyVisible).map(normalizeScholarship);
   }, [results, loading, error]);
+
 
   const topProfileMatches = useMemo(() => {
     if (!matchProfile) return [];
