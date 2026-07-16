@@ -84,6 +84,7 @@ export const ScholarshipFilters = ({
     if (filters.fundingTypes.length) count += 1;
     if (filters.fieldsOfStudy.length) count += 1;
     if (filters.eligibilityTags.length) count += 1;
+    if (filters.applicationStatuses.length) count += 1;
     if (filters.deadline !== "all") count += 1;
     return count;
   }, [filters]);
