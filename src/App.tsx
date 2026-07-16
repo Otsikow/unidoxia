@@ -206,6 +206,8 @@ const Scholarships = lazyWithErrorHandling(() => import("./pages/Scholarships"))
 const ScholarshipShareLanding = lazyWithErrorHandling(() =>
   import("./pages/ScholarshipShareLanding")
 );
+const ScholarshipDetail = lazyWithErrorHandling(() => import("./pages/ScholarshipDetail"));
+const ScholarshipArchive = lazyWithErrorHandling(() => import("./pages/ScholarshipArchive"));
 const Blog = lazyWithErrorHandling(() => import("./pages/Blog"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const About = lazyWithErrorHandling(() => import("./pages/About"));
@@ -619,10 +621,13 @@ const App = () => {
 
                         {/* Scholarships */}
                         <Route path="/scholarships" element={<PublicLayout><Scholarships /></PublicLayout>} />
+                        <Route path="/scholarships/share" element={<PublicLayout><ScholarshipShareLanding /></PublicLayout>} />
+                        <Route path="/scholarships/archive" element={<PublicLayout><ScholarshipArchive /></PublicLayout>} />
+                        <Route path="/scholarships/:slug" element={<PublicLayout><ScholarshipDetail /></PublicLayout>} />
 
                         {/* Pricing */}
                         <Route path="/pricing" element={<PublicLayout><Pricing /></PublicLayout>} />
-                        <Route path="/scholarships/share" element={<PublicLayout><ScholarshipShareLanding /></PublicLayout>} />
+
 
                         {/* Visa Calculator */}
                         <Route path="/visa-calculator" element={<PublicLayout><VisaCalculator /></PublicLayout>} />
