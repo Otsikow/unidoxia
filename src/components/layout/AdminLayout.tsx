@@ -134,6 +134,14 @@ const NAV_GROUPS: NavGroup[] = [
         descriptionDefault: "Homepage spotlight",
         icon: BadgeCheck,
       },
+      {
+        to: "/admin/scholarships",
+        labelKey: "admin.layout.navigation.scholarships.label",
+        descriptionKey: "admin.layout.navigation.scholarships.description",
+        labelDefault: "Scholarships",
+        descriptionDefault: "Verify & publish awards",
+        icon: BadgeCheck,
+      },
     ],
   },
   {
