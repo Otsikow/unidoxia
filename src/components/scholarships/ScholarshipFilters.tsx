@@ -207,6 +207,37 @@ export const ScholarshipFilters = ({
         </Command>
       </FilterPopover>
 
+      <FilterPopover
+        label="Status"
+        icon={ShieldCheck}
+        count={filters.applicationStatuses.length || undefined}
+      >
+        <Command>
+          <CommandGroup aria-label="Application status">
+            {PUBLIC_APPLICATION_STATUSES.map((status) => (
+              <CommandItem
+                key={status}
+                onSelect={() =>
+                  updateFilters({
+                    applicationStatuses: toggleValue(
+                      filters.applicationStatuses,
+                      status,
+                    ) as PublicApplicationStatus[],
+                  })
+                }
+              >
+                <Checkbox
+                  checked={filters.applicationStatuses.includes(status)}
+                  className="mr-2"
+                  aria-label={`Filter by ${status}`}
+                />
+                {status}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </FilterPopover>
+
       <Button
         variant="ghost"
         size="sm"
@@ -219,6 +250,7 @@ export const ScholarshipFilters = ({
             deadline: "all",
             fieldsOfStudy: [],
             eligibilityTags: [],
+            applicationStatuses: [],
           })
         }
       >
