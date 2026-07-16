@@ -26,6 +26,8 @@ import {
   SCHOLARSHIP_FIELDS,
   SCHOLARSHIP_ELIGIBILITY_TAGS,
 } from "@/data/scholarships";
+import { isPubliclyVisible, EDITORIAL_DISCLAIMER } from "@/data/scholarshipsEditorial";
+import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import {
