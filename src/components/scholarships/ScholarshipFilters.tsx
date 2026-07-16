@@ -1,5 +1,5 @@
 import { useMemo, type ComponentType, type ReactNode } from "react";
-import { Filter, Globe2, GraduationCap, DollarSign, CalendarDays, Sparkles, Users } from "lucide-react";
+import { Filter, Globe2, GraduationCap, DollarSign, CalendarDays, Sparkles, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
