@@ -11,6 +11,11 @@ const entries = [
   { path: "/universities", priority: "0.9", changefreq: "weekly" },
   { path: "/scholarships", priority: "0.9", changefreq: "weekly" },
   { path: "/visa-calculator", priority: "0.8", changefreq: "monthly" },
+  { path: "/scholarships/archive", priority: "0.5", changefreq: "monthly" },
+  { path: "/scholarships/chevening-scholarships-uk-2027-28", priority: "0.7", changefreq: "weekly" },
+  { path: "/scholarships/birmingham-postgraduate-high-fliers-scholarship-2026-27", priority: "0.7", changefreq: "weekly" },
+  { path: "/scholarships/exeter-postgraduate-taught-scholarships-nigeria-2026-27", priority: "0.7", changefreq: "weekly" },
+  { path: "/scholarships/bath-spa-africa-regional-scholarship-2026-27", priority: "0.7", changefreq: "weekly" },
   { path: "/blog", priority: "0.8", changefreq: "weekly" },
   {
     path: "/blog/uk-student-visa-funds-2026-evidence-mistakes",
