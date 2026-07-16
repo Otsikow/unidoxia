@@ -48,42 +48,75 @@ const formatAmountFromCents = (amount?: number | null, currency?: string | null)
 };
 
 const mapScholarshipRow = (row: SupabaseScholarshipRow): Scholarship => {
+  const r = row as any;
   const fallbackAward = formatAmountFromCents(row.amount_cents, row.currency);
-  const fallbackTitle = (row as any).title ?? (row as any).name ?? "Scholarship opportunity";
-  const fallbackLevel = (row as any).level ?? row.coverage_type ?? "Masters";
-  const fallbackInstitution = (row as any).institution ?? row.university_id ?? (row as any).name ?? "Host institution";
-  const fallbackCountry = (row as any).country ?? "Global";
-
   const eligibility = (row.eligibility_criteria as any) ?? {};
 
-  const steps = (row as any).application_steps ?? [];
-  const documents = (row as any).documents_required ?? [];
+  const steps: string[] = Array.isArray(r.application_steps)
+    ? r.application_steps
+    : (typeof r.application_steps === "string" ? [r.application_steps] : []);
+  const documents = r.documents_required ?? [];
+  const subjectAreas: string[] = Array.isArray(r.subject_areas) ? r.subject_areas : [];
+  const nationalities: string[] = Array.isArray(r.eligible_nationalities) ? r.eligible_nationalities : [];
+
+  const fundingType: Scholarship["fundingType"] =
+    r.funding_type?.toLowerCase().includes("full") ? "Full"
+    : r.funding_type?.toLowerCase().includes("partial") ? "Partial"
+    : (r.funding_type ?? row.coverage_type ?? "Partial");
+
+  const eligibilitySummary =
+    r.summary ?? r.academic_requirements ?? r.eligibility_summary
+    ?? (typeof row.eligibility_criteria === "string" ? row.eligibility_criteria : "Review official eligibility details.");
+
+  const tags = [
+    ...subjectAreas.slice(0, 3),
+    r.african_students_eligible ? "African students" : null,
+    r.funding_type ?? null,
+  ].filter(Boolean) as string[];
 
   return {
     id: row.id,
-    title: fallbackTitle,
-    country: fallbackCountry,
-    institution: fallbackInstitution,
-    level: fallbackLevel,
-    awardAmount: (row as any).award_amount ?? fallbackAward ?? "See official details",
-    fundingType: ((row as any).funding_type ?? row.coverage_type ?? "Partial") as Scholarship["fundingType"],
-    eligibility,
-    eligibilitySummary: (row as any).eligibility_summary ?? (typeof row.eligibility_criteria === "string" ? row.eligibility_criteria : "Review official eligibility details."),
-    deadline: (row as any).deadline ?? row.application_deadline ?? undefined,
-    description: row.description ?? "",
-    overview: (row as any).overview ?? undefined,
+    title: r.title ?? r.name ?? "Scholarship opportunity",
+    country: r.country ?? "Global",
+    institution: r.institution_name ?? r.institution ?? "Host institution",
+    level: r.study_level ?? r.level ?? row.coverage_type ?? "Masters",
+    awardAmount: r.scholarship_value ?? r.award_amount ?? fallbackAward ?? "See official details",
+    fundingType,
+    eligibility: {
+      ...eligibility,
+      nationality: nationalities.length ? nationalities : eligibility.nationality,
+      notes: r.academic_requirements ?? eligibility.notes,
+      languageRequirement: r.english_requirements ?? eligibility.languageRequirement,
+      experience: r.work_experience_requirements ?? eligibility.experience,
+      ageLimit: r.age_requirements ?? eligibility.ageLimit,
+      fieldOfStudy: subjectAreas.length ? subjectAreas : eligibility.fieldOfStudy,
+    },
+    eligibilitySummary,
+    deadline: r.deadline ?? row.application_deadline ?? undefined,
+    description: r.full_description ?? row.description ?? "",
+    overview: r.summary ?? r.overview ?? undefined,
     applicationSteps: steps,
     documentsRequired: documents,
-    officialLink: (row as any).official_link ?? "#",
-    tags: (row as any).tags ?? [],
-    aiScore: (row as any).ai_score ?? undefined,
-    languageSupport: (row as any).language_support ?? undefined,
-    logoUrl: (row as any).logo_url ?? null,
+    officialLink: r.official_application_url ?? r.official_source_url ?? r.official_link ?? "#",
+    tags: r.tags ?? tags,
+    aiScore: r.ai_score ?? undefined,
+    languageSupport: r.language_support ?? undefined,
+    logoUrl: r.institution_logo ?? r.logo_url ?? null,
     currency: row.currency ?? undefined,
-    stipendDetails: (row as any).stipend_details ?? undefined,
-    selectionProcess: (row as any).selection_process ?? undefined,
-    recommendedFor: (row as any).recommended_for ?? undefined,
-    verified: (row as any).verified ?? row.active ?? true,
+    stipendDetails: r.stipend_details ?? undefined,
+    selectionProcess: r.selection_process ?? undefined,
+    recommendedFor: r.recommended_for ?? undefined,
+    verified: r.verification_status === "Fully Verified" || r.verified === true,
+    sponsor: r.sponsor_name ?? undefined,
+    academicYear: r.academic_year ?? undefined,
+    separateApplication: r.separate_application_required ?? undefined,
+    status: r.status ?? undefined,
+    lastVerified: r.last_verified_at ?? undefined,
+    applicationOpensAt: r.opening_date ?? undefined,
+    disclaimer: r.important_conditions ?? undefined,
+    sourceUrls: r.official_source_url ? [r.official_source_url] : undefined,
+    applicantsEligible: nationalities.join(", ") || undefined,
+    benefitsSummary: r.scholarship_value ?? undefined,
   };
 };
 
