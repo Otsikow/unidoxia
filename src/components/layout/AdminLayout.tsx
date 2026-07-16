@@ -150,6 +150,14 @@ const NAV_GROUPS: NavGroup[] = [
         descriptionDefault: "Trusted source directory",
         icon: BadgeCheck,
       },
+      {
+        to: "/admin/scholarship-reports",
+        labelKey: "admin.layout.navigation.scholarshipReports.label",
+        descriptionKey: "admin.layout.navigation.scholarshipReports.description",
+        labelDefault: "Scholarship reports",
+        descriptionDefault: "Verification & coverage",
+        icon: BadgeCheck,
+      },
     ],
   },
   {
