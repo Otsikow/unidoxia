@@ -83,30 +83,37 @@ export default function BackButton({
       }
 
       try {
-        // If we have a previous entry in our custom navigation history, use it
-        if (immediatePrevious) {
-          navigateTo(immediatePrevious);
+        // Skip the "previous" entry if it's a descendant of the current page
+        // (e.g. on /blog, the previous entry is /blog/some-post that we just came from).
+        // Following it would just bounce back here — a Back button loop.
+        const currentPath = currentEntry?.pathname ?? "";
+        const isDescendantOfCurrent = (path: string) =>
+          currentPath !== "" && path !== currentPath && path.startsWith(`${currentPath}/`);
+
+        const safePrevious = previousEntries.find((entry) => !isDescendantOfCurrent(entry.pathname));
+
+        if (safePrevious) {
+          navigateTo(safePrevious);
           return;
         }
 
         // Next, try the browser history stack if available
         const canNavigateBrowserHistory = typeof window !== "undefined" && window.history.state?.idx > 0;
-        if (canNavigateBrowserHistory) {
+        if (canNavigateBrowserHistory && !isDescendantOfCurrent((window.history.state?.usr?.pathname as string) ?? "")) {
           navigate(-1);
           return;
         }
 
         // Otherwise, always use the fallback route
-        // Note: We don't rely on window.history.length because it may include
-        // external pages or pages from before the user entered our app
         handleFallbackNavigation();
       } catch (error) {
         console.error("Back navigation failed, using fallback", error);
         handleFallbackNavigation();
       }
     },
-    [disabled, handleFallbackNavigation, immediatePrevious, navigate, navigateTo, onClick],
+    [currentEntry, disabled, handleFallbackNavigation, navigate, navigateTo, onClick, previousEntries],
   );
+
 
   const handleClearHistory = React.useCallback(
     (event: Event) => {
