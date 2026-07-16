@@ -1,6 +1,10 @@
 import { Scholarship } from "@/types/scholarship";
+import {
+  EDITORIAL_SCHOLARSHIPS,
+  dedupeScholarships,
+} from "./scholarshipsEditorial";
 
-export const FALLBACK_SCHOLARSHIPS: Scholarship[] = [
+const LEGACY_SCHOLARSHIPS: Scholarship[] = [
   {
     id: "chevening-global-leaders-2025",
     title: "Chevening Global Leaders Scholarship",
