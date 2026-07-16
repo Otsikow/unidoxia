@@ -26,6 +26,8 @@ import {
   SCHOLARSHIP_FIELDS,
   SCHOLARSHIP_ELIGIBILITY_TAGS,
 } from "@/data/scholarships";
+import { isPubliclyVisible, EDITORIAL_DISCLAIMER } from "@/data/scholarshipsEditorial";
+import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import {
@@ -302,8 +304,10 @@ const ScholarshipsPage = () => {
         ? results
         : FALLBACK_SCHOLARSHIPS;
 
-    return base.map(normalizeScholarship);
+    // Never surface closed/archived items on the public listing.
+    return base.filter(isPubliclyVisible).map(normalizeScholarship);
   }, [results, loading, error]);
+
 
   const topProfileMatches = useMemo(() => {
     if (!matchProfile) return [];
@@ -328,12 +332,23 @@ const ScholarshipsPage = () => {
             wrapperClassName="mb-4"
             showHistoryMenu={false}
           />
-          <div className="mb-8">
+          <div className="mb-6">
             <h1 className="text-4xl font-bold mb-2">Find Scholarships</h1>
             <p className="text-muted-foreground">
-              Discover funding opportunities for your international education journey
+              Verified funding opportunities for African international students heading to the UK, Canada and USA.
             </p>
           </div>
+
+          <Alert className="mb-6">
+            <AlertTitle>Important notice</AlertTitle>
+            <AlertDescription className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <span>{EDITORIAL_DISCLAIMER}</span>
+              <Button asChild size="sm" variant="default" className="shrink-0">
+                <Link to="/free-consultation">Book a free consultation</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+
 
           <div className="mb-6 flex items-center gap-2 flex-wrap">
             <Button

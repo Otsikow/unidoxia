@@ -8,6 +8,17 @@ export interface ScholarshipEligibility {
   notes?: string;
 }
 
+export type ScholarshipEditorialStatus =
+  | "Researching"
+  | "Verified"
+  | "Drafted"
+  | "Approved"
+  | "Published"
+  | "Upcoming"
+  | "Expiring soon"
+  | "Closed"
+  | "Archived";
+
 export interface Scholarship {
   id: string;
   title: string;
@@ -33,6 +44,18 @@ export interface Scholarship {
   selectionProcess?: string;
   recommendedFor?: string;
   verified?: boolean;
+  // Editorial / weekly-publishing metadata (optional; used by the UniDoxia
+  // scholarship publishing workflow — see SCHOLARSHIP_PUBLISHING_SYSTEM.md).
+  sponsor?: string;
+  applicantsEligible?: string;
+  benefitsSummary?: string;
+  academicYear?: string;
+  separateApplication?: boolean;
+  status?: ScholarshipEditorialStatus;
+  lastVerified?: string; // ISO date the entry was last verified against source
+  applicationOpensAt?: string; // ISO
+  disclaimer?: string;
+  sourceUrls?: string[];
 }
 
 export interface ScholarshipSearchFilters {

@@ -195,22 +195,42 @@ export const ScholarshipCard = ({
         </div>
       </CardContent>
 
-      <CardFooter className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Clock className="h-4 w-4 text-primary" />
-          {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Rolling"}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={handleShare}>
-            <Share2 className="mr-1.5 h-4 w-4" /> Share
-          </Button>
-          <Button variant="outline" size="sm" onClick={(event) => event.stopPropagation()} asChild>
-            <a href={scholarship.officialLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1">
-              Apply <ExternalLink className="h-4 w-4" />
-            </a>
-          </Button>
+      <CardFooter className="flex flex-col items-stretch gap-3">
+        {(scholarship.status || scholarship.lastVerified) && (
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2">
+              {scholarship.status && (
+                <Badge variant="outline">{scholarship.status}</Badge>
+              )}
+              {scholarship.sponsor && scholarship.sponsor !== scholarship.institution && (
+                <span>Sponsor: {scholarship.sponsor}</span>
+              )}
+            </div>
+            {scholarship.lastVerified && (
+              <span>
+                Verified {new Date(scholarship.lastVerified).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Clock className="h-4 w-4 text-primary" />
+            {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Rolling"}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={handleShare}>
+              <Share2 className="mr-1.5 h-4 w-4" /> Share
+            </Button>
+            <Button variant="outline" size="sm" onClick={(event) => event.stopPropagation()} asChild>
+              <a href={scholarship.officialLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1">
+                Official application <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          </div>
         </div>
       </CardFooter>
+
     </Card>
   );
 };
