@@ -2070,55 +2070,202 @@ export type Database = {
       }
       scholarships: {
         Row: {
+          academic_requirements: string | null
+          academic_year: string | null
           active: boolean | null
+          admission_required_first: boolean | null
+          african_students_eligible: boolean | null
+          age_requirements: string | null
           amount_cents: number | null
           application_deadline: string | null
+          application_steps: Json | null
+          approved_by: string | null
+          books_or_research_support: boolean | null
+          canonical_url: string | null
+          country: string | null
           coverage_type: string | null
           created_at: string | null
+          created_by: string | null
           currency: string | null
+          deadline: string | null
           description: string | null
           eligibility_criteria: Json | null
+          eligible_nationalities: string[] | null
+          english_requirements: string | null
+          featured: boolean | null
+          featured_image: string | null
+          full_description: string | null
+          funding_type: string | null
           id: string
+          important_conditions: string | null
+          institution_logo: string | null
+          institution_name: string | null
+          insurance_support: boolean | null
+          internal_notes: string | null
+          last_verified_at: string | null
+          living_allowance: boolean | null
           name: string
+          number_of_awards: number | null
+          official_application_url: string | null
+          official_source_url: string | null
+          og_image: string | null
+          opening_date: string | null
           program_id: string | null
+          published_at: string | null
           renewable: boolean | null
-          tenant_id: string
+          scholarship_value: string | null
+          seo_description: string | null
+          seo_title: string | null
+          separate_application_required: boolean | null
+          slug: string | null
+          sponsor_name: string | null
+          status: string
+          study_level: string | null
+          study_start_date: string | null
+          subject_areas: string[] | null
+          summary: string | null
+          tenant_id: string | null
+          title: string | null
+          travel_allowance: boolean | null
+          tuition_coverage: boolean | null
           university_id: string | null
           updated_at: string | null
+          verification_checklist: Json | null
+          verification_status: string
+          visa_support: boolean | null
+          work_experience_requirements: string | null
         }
         Insert: {
+          academic_requirements?: string | null
+          academic_year?: string | null
           active?: boolean | null
+          admission_required_first?: boolean | null
+          african_students_eligible?: boolean | null
+          age_requirements?: string | null
           amount_cents?: number | null
           application_deadline?: string | null
+          application_steps?: Json | null
+          approved_by?: string | null
+          books_or_research_support?: boolean | null
+          canonical_url?: string | null
+          country?: string | null
           coverage_type?: string | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string | null
+          deadline?: string | null
           description?: string | null
           eligibility_criteria?: Json | null
+          eligible_nationalities?: string[] | null
+          english_requirements?: string | null
+          featured?: boolean | null
+          featured_image?: string | null
+          full_description?: string | null
+          funding_type?: string | null
           id?: string
+          important_conditions?: string | null
+          institution_logo?: string | null
+          institution_name?: string | null
+          insurance_support?: boolean | null
+          internal_notes?: string | null
+          last_verified_at?: string | null
+          living_allowance?: boolean | null
           name: string
+          number_of_awards?: number | null
+          official_application_url?: string | null
+          official_source_url?: string | null
+          og_image?: string | null
+          opening_date?: string | null
           program_id?: string | null
+          published_at?: string | null
           renewable?: boolean | null
-          tenant_id: string
+          scholarship_value?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          separate_application_required?: boolean | null
+          slug?: string | null
+          sponsor_name?: string | null
+          status?: string
+          study_level?: string | null
+          study_start_date?: string | null
+          subject_areas?: string[] | null
+          summary?: string | null
+          tenant_id?: string | null
+          title?: string | null
+          travel_allowance?: boolean | null
+          tuition_coverage?: boolean | null
           university_id?: string | null
           updated_at?: string | null
+          verification_checklist?: Json | null
+          verification_status?: string
+          visa_support?: boolean | null
+          work_experience_requirements?: string | null
         }
         Update: {
+          academic_requirements?: string | null
+          academic_year?: string | null
           active?: boolean | null
+          admission_required_first?: boolean | null
+          african_students_eligible?: boolean | null
+          age_requirements?: string | null
           amount_cents?: number | null
           application_deadline?: string | null
+          application_steps?: Json | null
+          approved_by?: string | null
+          books_or_research_support?: boolean | null
+          canonical_url?: string | null
+          country?: string | null
           coverage_type?: string | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string | null
+          deadline?: string | null
           description?: string | null
           eligibility_criteria?: Json | null
+          eligible_nationalities?: string[] | null
+          english_requirements?: string | null
+          featured?: boolean | null
+          featured_image?: string | null
+          full_description?: string | null
+          funding_type?: string | null
           id?: string
+          important_conditions?: string | null
+          institution_logo?: string | null
+          institution_name?: string | null
+          insurance_support?: boolean | null
+          internal_notes?: string | null
+          last_verified_at?: string | null
+          living_allowance?: boolean | null
           name?: string
+          number_of_awards?: number | null
+          official_application_url?: string | null
+          official_source_url?: string | null
+          og_image?: string | null
+          opening_date?: string | null
           program_id?: string | null
+          published_at?: string | null
           renewable?: boolean | null
-          tenant_id?: string
+          scholarship_value?: string | null
+          seo_description?: string | null
+          seo_title?: string | null
+          separate_application_required?: boolean | null
+          slug?: string | null
+          sponsor_name?: string | null
+          status?: string
+          study_level?: string | null
+          study_start_date?: string | null
+          subject_areas?: string[] | null
+          summary?: string | null
+          tenant_id?: string | null
+          title?: string | null
+          travel_allowance?: boolean | null
+          tuition_coverage?: boolean | null
           university_id?: string | null
           updated_at?: string | null
+          verification_checklist?: Json | null
+          verification_status?: string
+          visa_support?: boolean | null
+          work_experience_requirements?: string | null
         }
         Relationships: [
           {
@@ -3356,6 +3503,25 @@ export type Database = {
         }
         Returns: Json
       }
+      find_scholarship_duplicates: {
+        Args: {
+          p_academic_year: string
+          p_application_url: string
+          p_exclude_id?: string
+          p_institution: string
+          p_source_url: string
+          p_sponsor: string
+          p_title: string
+        }
+        Returns: {
+          academic_year: string
+          id: string
+          institution_name: string
+          match_reason: string
+          status: string
+          title: string
+        }[]
+      }
       get_admin_student_review_bundle: {
         Args: { p_student_id: string }
         Returns: Json
@@ -3549,6 +3715,7 @@ export type Database = {
         Args: { p_document_id: string; p_notes?: string; p_status: string }
         Returns: boolean
       }
+      scholarships_apply_expiry_sweep: { Args: never; Returns: number }
       search_agent_contacts: {
         Args: { search_query: string }
         Returns: {
