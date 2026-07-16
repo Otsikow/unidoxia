@@ -344,9 +344,14 @@ const ScholarshipsPage = () => {
             <AlertTitle>Important notice</AlertTitle>
             <AlertDescription className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <span>{EDITORIAL_DISCLAIMER}</span>
-              <Button asChild size="sm" variant="default" className="shrink-0">
-                <Link to="/free-consultation">Book a free consultation</Link>
-              </Button>
+              <div className="flex gap-2 shrink-0">
+                <Button asChild size="sm" variant="outline">
+                  <Link to="/scholarships/archive">View archive</Link>
+                </Button>
+                <Button asChild size="sm" variant="default">
+                  <Link to="/free-consultation">Book a free consultation</Link>
+                </Button>
+              </div>
             </AlertDescription>
           </Alert>
 
