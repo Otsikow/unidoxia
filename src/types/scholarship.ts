@@ -21,6 +21,7 @@ export type ScholarshipEditorialStatus =
 
 export interface Scholarship {
   id: string;
+  slug?: string;
   title: string;
   country: string;
   institution: string;

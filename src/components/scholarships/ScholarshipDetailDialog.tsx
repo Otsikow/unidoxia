@@ -150,6 +150,13 @@ export const ScholarshipDetailDialog = ({
                 {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
                 {isSaved ? "Saved" : "Save"}
               </Button>
+              {scholarship.slug ? (
+                <Button variant="outline" size="sm" asChild>
+                  <a href={`/scholarships/${scholarship.slug}`} className="inline-flex items-center gap-2">
+                    Full page
+                  </a>
+                </Button>
+              ) : null}
               <Button size="sm" asChild>
                 <a href={scholarship.officialLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
                   Official application

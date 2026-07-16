@@ -76,6 +76,7 @@ const mapScholarshipRow = (row: SupabaseScholarshipRow): Scholarship => {
 
   return {
     id: row.id,
+    slug: r.slug ?? undefined,
     title: r.title ?? r.name ?? "Scholarship opportunity",
     country: r.country ?? "Global",
     institution: r.institution_name ?? r.institution ?? "Host institution",
