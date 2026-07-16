@@ -15,7 +15,32 @@ The Admin Blog Management system is a fully-featured, professional content manag
 - From Staff Dashboard: Quick Actions → "Manage Blog"
 - Direct URL: `/admin/blog`
 
+## Editorial Cover Image Requirement (Mandatory)
+
+Every new UniDoxia blog post **must** ship with a professional cover image before it can be published. This is a universal editorial rule enforced by editors during the existing publication approval workflow — it does not change how posts are approved or deployed.
+
+### Image standards
+- **Format & ratio**: Photorealistic, 16:9 aspect ratio, high resolution (min 1600×900).
+- **Relevance**: Must clearly relate to the article's topic, destination, or student audience.
+- **Style**: Editorial and credible — natural lighting, realistic environments and people, professional composition. No stock-photo clichés, no AI "uncanny" artefacts.
+- **Inclusivity**: Culturally inclusive and representative of UniDoxia's international student audience.
+- **Cropping**: Centre-safe composition so the image reads well as both a listing card thumbnail and a full-width article header (avoid critical subjects near edges).
+- **Forbidden**: No embedded text or headlines baked into the image, no watermarks, no invented or fabricated university logos/crests, no misleading imagery.
+
+### Alt text (required)
+- Every cover image must have **descriptive alt text** that conveys the scene and its relevance to the article (not just the post title).
+- Keep alt text concise (roughly 8–20 words), specific, and free of "image of" / "photo of" prefixes.
+
+### Editor checklist before approving publication
+1. Cover image is present and 16:9.
+2. Image is topically relevant and culturally appropriate.
+3. No text, watermark, or fabricated logos present.
+4. Centre-safe crop verified on both card preview and article header.
+5. Descriptive alt text is filled in.
+6. Existing approval workflow (draft → review → publish) is followed as usual.
+
 ## Features
+
 
 ### 1. Dashboard View
 
