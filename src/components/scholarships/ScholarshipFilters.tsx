@@ -18,7 +18,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { ScholarshipSearchFilters } from "@/types/scholarship";
+import type { ScholarshipSearchFilters, PublicApplicationStatus } from "@/types/scholarship";
+import { PUBLIC_APPLICATION_STATUSES } from "@/types/scholarship";
 
 interface ScholarshipFiltersProps {
   filters: ScholarshipSearchFilters;
