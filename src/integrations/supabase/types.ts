@@ -2068,6 +2068,86 @@ export type Database = {
           },
         ]
       }
+      scholarship_sources: {
+        Row: {
+          country: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          last_checked_at: string | null
+          name: string
+          notes: string | null
+          organisation: string | null
+          trust_level: string
+          updated_at: string
+          website_url: string
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_checked_at?: string | null
+          name: string
+          notes?: string | null
+          organisation?: string | null
+          trust_level?: string
+          updated_at?: string
+          website_url: string
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_checked_at?: string | null
+          name?: string
+          notes?: string | null
+          organisation?: string | null
+          trust_level?: string
+          updated_at?: string
+          website_url?: string
+        }
+        Relationships: []
+      }
+      scholarship_verification_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          notes: string | null
+          scholarship_id: string
+          verified_fields: Json | null
+          verifier_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scholarship_id: string
+          verified_fields?: Json | null
+          verifier_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          scholarship_id?: string
+          verified_fields?: Json | null
+          verifier_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scholarship_verification_logs_scholarship_id_fkey"
+            columns: ["scholarship_id"]
+            isOneToOne: false
+            referencedRelation: "scholarships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scholarships: {
         Row: {
           academic_requirements: string | null
