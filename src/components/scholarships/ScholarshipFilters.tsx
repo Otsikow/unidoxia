@@ -1,5 +1,5 @@
 import { useMemo, type ComponentType, type ReactNode } from "react";
-import { Filter, Globe2, GraduationCap, DollarSign, CalendarDays, Sparkles, Users } from "lucide-react";
+import { Filter, Globe2, GraduationCap, DollarSign, CalendarDays, Sparkles, Users, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +18,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import type { ScholarshipSearchFilters } from "@/types/scholarship";
+import type { ScholarshipSearchFilters, PublicApplicationStatus } from "@/types/scholarship";
+import { PUBLIC_APPLICATION_STATUSES } from "@/types/scholarship";
 
 interface ScholarshipFiltersProps {
   filters: ScholarshipSearchFilters;
@@ -83,6 +84,7 @@ export const ScholarshipFilters = ({
     if (filters.fundingTypes.length) count += 1;
     if (filters.fieldsOfStudy.length) count += 1;
     if (filters.eligibilityTags.length) count += 1;
+    if (filters.applicationStatuses.length) count += 1;
     if (filters.deadline !== "all") count += 1;
     return count;
   }, [filters]);
@@ -205,6 +207,37 @@ export const ScholarshipFilters = ({
         </Command>
       </FilterPopover>
 
+      <FilterPopover
+        label="Status"
+        icon={ShieldCheck}
+        count={filters.applicationStatuses.length || undefined}
+      >
+        <Command>
+          <CommandGroup aria-label="Application status">
+            {PUBLIC_APPLICATION_STATUSES.map((status) => (
+              <CommandItem
+                key={status}
+                onSelect={() =>
+                  updateFilters({
+                    applicationStatuses: toggleValue(
+                      filters.applicationStatuses,
+                      status,
+                    ) as PublicApplicationStatus[],
+                  })
+                }
+              >
+                <Checkbox
+                  checked={filters.applicationStatuses.includes(status)}
+                  className="mr-2"
+                  aria-label={`Filter by ${status}`}
+                />
+                {status}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </FilterPopover>
+
       <Button
         variant="ghost"
         size="sm"
@@ -217,6 +250,7 @@ export const ScholarshipFilters = ({
             deadline: "all",
             fieldsOfStudy: [],
             eligibilityTags: [],
+            applicationStatuses: [],
           })
         }
       >

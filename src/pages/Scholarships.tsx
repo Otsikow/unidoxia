@@ -49,6 +49,7 @@ const DEFAULT_FILTERS: ScholarshipSearchFilters = {
   deadline: "all",
   fieldsOfStudy: [],
   eligibilityTags: [],
+  applicationStatuses: [],
 };
 
 const STORAGE_KEY = "unidoxia-saved-scholarships";

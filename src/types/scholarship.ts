@@ -58,6 +58,26 @@ export interface Scholarship {
   sourceUrls?: string[];
 }
 
+/**
+ * Public-facing application statuses that may be surfaced on the
+ * scholarship listing filter. Closed/Archived are intentionally
+ * excluded because they must never be presented as active.
+ */
+export type PublicApplicationStatus =
+  | "Upcoming"
+  | "Verified"
+  | "Open"
+  | "Expiring soon"
+  | "Published";
+
+export const PUBLIC_APPLICATION_STATUSES: PublicApplicationStatus[] = [
+  "Upcoming",
+  "Verified",
+  "Open",
+  "Expiring soon",
+  "Published",
+];
+
 export interface ScholarshipSearchFilters {
   countries: string[];
   levels: string[];
@@ -65,6 +85,7 @@ export interface ScholarshipSearchFilters {
   deadline: "all" | "upcoming" | "flexible" | "closed";
   fieldsOfStudy: string[];
   eligibilityTags: string[];
+  applicationStatuses: PublicApplicationStatus[];
 }
 
 export interface ScholarshipSearchResult extends Scholarship {

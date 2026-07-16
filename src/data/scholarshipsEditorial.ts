@@ -266,5 +266,27 @@ export const NON_PUBLIC_STATUSES: ReadonlySet<string> = new Set([
   "Archived",
 ]);
 
-export const isPubliclyVisible = (s: Scholarship): boolean =>
-  !s.status || !NON_PUBLIC_STATUSES.has(s.status);
+/**
+ * Public visibility guard.
+ * Excludes Closed/Archived (regardless of deadline) AND any scholarship
+ * whose deadline is a parseable fixed date earlier than today, even when
+ * the legacy record has no status. Rolling/flexible items (no parseable
+ * deadline) remain visible.
+ */
+export const isPubliclyVisible = (s: Scholarship): boolean => {
+  if (s.status && NON_PUBLIC_STATUSES.has(s.status)) return false;
+
+  const raw = (s.deadline ?? "").trim();
+  if (raw) {
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const day = new Date(parsed);
+      day.setHours(0, 0, 0, 0);
+      if (day.getTime() < today.getTime()) return false;
+    }
+  }
+
+  return true;
+};

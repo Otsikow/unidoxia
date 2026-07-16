@@ -114,6 +114,21 @@ export const ScholarshipDetailDialog = ({
                 <Badge variant="outline" className="gap-1">
                   <Layers className="h-3.5 w-3.5" /> {scholarship.level}
                 </Badge>
+                {scholarship.status ? (
+                  <Badge
+                    variant={
+                      scholarship.status === "Expiring soon"
+                        ? "destructive"
+                        : scholarship.status === "Upcoming"
+                          ? "default"
+                          : "secondary"
+                    }
+                    className="gap-1"
+                  >
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {scholarship.status}
+                  </Badge>
+                ) : null}
                 <Badge variant="outline" className="gap-1">
                   <Sparkles className="h-3.5 w-3.5" /> AI match {scholarship.aiScore ?? 80}%
                 </Badge>
@@ -137,7 +152,7 @@ export const ScholarshipDetailDialog = ({
               </Button>
               <Button size="sm" asChild>
                 <a href={scholarship.officialLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
-                  Apply now
+                  Official application
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
@@ -162,10 +177,21 @@ export const ScholarshipDetailDialog = ({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-xl border bg-muted/40 p-4">
                   <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    <Sparkles className="h-4 w-4 text-primary" /> Funding type
+                    <Sparkles className="h-4 w-4 text-primary" /> Funding
                   </h4>
                   <p className="text-base font-semibold text-foreground">{scholarship.awardAmount}</p>
-                  {scholarship.stipendDetails ? <p className="mt-1 text-sm text-muted-foreground">{scholarship.stipendDetails}</p> : null}
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Funding type:{" "}
+                    <span className="font-medium text-foreground">
+                      {scholarship.fundingType ?? "Not specified"}
+                    </span>
+                  </p>
+                  {scholarship.benefitsSummary ? (
+                    <p className="mt-1 text-sm text-muted-foreground">{scholarship.benefitsSummary}</p>
+                  ) : null}
+                  {scholarship.stipendDetails ? (
+                    <p className="mt-1 text-sm text-muted-foreground">{scholarship.stipendDetails}</p>
+                  ) : null}
                 </div>
                 <div className="rounded-xl border bg-muted/40 p-4">
                   <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -173,8 +199,65 @@ export const ScholarshipDetailDialog = ({
                   </h4>
                   <p className="text-base font-semibold text-foreground">{deadlineDate}</p>
                   <p className="text-sm text-muted-foreground">{countdownLabel}</p>
+                  {scholarship.applicationOpensAt ? (
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Applications open:{" "}
+                      <span className="font-medium text-foreground">
+                        {format(new Date(scholarship.applicationOpensAt), "PPP p")}
+                      </span>
+                    </p>
+                  ) : null}
+                </div>
+                <div className="rounded-xl border bg-muted/40 p-4">
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-primary" /> Sponsor & verification
+                  </h4>
+                  <p className="text-sm text-foreground">
+                    Sponsor:{" "}
+                    <span className="font-medium">{scholarship.sponsor ?? scholarship.institution ?? "Not specified"}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Status:{" "}
+                    <span className="font-medium text-foreground">{scholarship.status ?? "Not specified"}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Last verified:{" "}
+                    <span className="font-medium text-foreground">
+                      {scholarship.lastVerified
+                        ? format(new Date(scholarship.lastVerified), "PPP")
+                        : "Not specified"}
+                    </span>
+                  </p>
+                </div>
+                <div className="rounded-xl border bg-muted/40 p-4">
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    <FileCheck className="h-4 w-4 text-primary" /> Application
+                  </h4>
+                  <p className="text-sm text-foreground">
+                    Eligible applicants:{" "}
+                    <span className="font-medium">{scholarship.applicantsEligible ?? "Not specified"}</span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Separate scholarship application required:{" "}
+                    <span className="font-medium text-foreground">
+                      {typeof scholarship.separateApplication === "boolean"
+                        ? scholarship.separateApplication
+                          ? "Yes"
+                          : "No"
+                        : "Not specified"}
+                    </span>
+                  </p>
                 </div>
               </div>
+              {scholarship.disclaimer ? (
+                <div
+                  role="note"
+                  className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-foreground"
+                >
+                  <p className="font-semibold text-destructive">Important disclaimer</p>
+                  <p className="mt-1 text-muted-foreground">{scholarship.disclaimer}</p>
+                </div>
+              ) : null}
             </Section>
 
             <Section title="Eligibility">
