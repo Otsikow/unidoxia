@@ -326,23 +326,32 @@ const LEGACY_SCHOLARSHIPS: Scholarship[] = [
   },
 ];
 
-export const SCHOLARSHIP_FIELDS = Array.from(
-  new Set(
-    FALLBACK_SCHOLARSHIPS.flatMap((scholarship) => scholarship.eligibility.fieldOfStudy ?? [])
-      .concat(FALLBACK_SCHOLARSHIPS.flatMap((scholarship) => scholarship.tags)),
+// Merge weekly editorial entries (verified/curated) with legacy fallback
+// examples, then deduplicate on a normalized signature. Editorial entries
+// come first so they take precedence in ordering.
+export const FALLBACK_SCHOLARSHIPS: Scholarship[] = dedupeScholarships([
+  ...EDITORIAL_SCHOLARSHIPS,
+  ...LEGACY_SCHOLARSHIPS,
+]);
+
+export const SCHOLARSHIP_FIELDS: string[] = Array.from(
+  new Set<string>(
+    FALLBACK_SCHOLARSHIPS.flatMap(
+      (scholarship) => scholarship.eligibility.fieldOfStudy ?? [],
+    ).concat(FALLBACK_SCHOLARSHIPS.flatMap((scholarship) => scholarship.tags)),
   ),
 ).filter(Boolean);
 
-export const SCHOLARSHIP_COUNTRIES = Array.from(
-  new Set(FALLBACK_SCHOLARSHIPS.map((scholarship) => scholarship.country)),
+export const SCHOLARSHIP_COUNTRIES: string[] = Array.from(
+  new Set<string>(FALLBACK_SCHOLARSHIPS.map((s) => s.country)),
 ).sort();
 
-export const SCHOLARSHIP_LEVELS = Array.from(
-  new Set(FALLBACK_SCHOLARSHIPS.map((scholarship) => scholarship.level)),
+export const SCHOLARSHIP_LEVELS: string[] = Array.from(
+  new Set<string>(FALLBACK_SCHOLARSHIPS.map((s) => s.level)),
 ).sort();
 
-export const SCHOLARSHIP_FUNDING_TYPES = Array.from(
-  new Set(FALLBACK_SCHOLARSHIPS.map((scholarship) => scholarship.fundingType)),
+export const SCHOLARSHIP_FUNDING_TYPES: string[] = Array.from(
+  new Set<string>(FALLBACK_SCHOLARSHIPS.map((s) => s.fundingType)),
 );
 
 export const SCHOLARSHIP_ELIGIBILITY_TAGS = [
@@ -355,3 +364,4 @@ export const SCHOLARSHIP_ELIGIBILITY_TAGS = [
   "STEM",
   "Business",
 ];
+
