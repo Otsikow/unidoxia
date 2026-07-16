@@ -114,6 +114,21 @@ export const ScholarshipDetailDialog = ({
                 <Badge variant="outline" className="gap-1">
                   <Layers className="h-3.5 w-3.5" /> {scholarship.level}
                 </Badge>
+                {scholarship.status ? (
+                  <Badge
+                    variant={
+                      scholarship.status === "Expiring soon"
+                        ? "destructive"
+                        : scholarship.status === "Upcoming"
+                          ? "default"
+                          : "secondary"
+                    }
+                    className="gap-1"
+                  >
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {scholarship.status}
+                  </Badge>
+                ) : null}
                 <Badge variant="outline" className="gap-1">
                   <Sparkles className="h-3.5 w-3.5" /> AI match {scholarship.aiScore ?? 80}%
                 </Badge>
@@ -137,7 +152,7 @@ export const ScholarshipDetailDialog = ({
               </Button>
               <Button size="sm" asChild>
                 <a href={scholarship.officialLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
-                  Apply now
+                  Official application
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </Button>
