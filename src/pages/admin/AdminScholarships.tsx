@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, ShieldCheck, Plus, ExternalLink, Archive, Send, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { ScholarshipVerificationLog } from "@/components/scholarships/ScholarshipVerificationLog";
 
 type ScholarshipRow = {
   id: string;
@@ -460,6 +461,8 @@ export default function AdminScholarships() {
               </div>
 
               <Field label="Internal notes" className="md:col-span-2"><Textarea rows={2} value={editing.internal_notes ?? ""} onChange={(e) => setEditing({ ...editing, internal_notes: e.target.value })} /></Field>
+
+              {editing.id ? <ScholarshipVerificationLog scholarshipId={editing.id} /> : null}
             </div>
           )}
 
