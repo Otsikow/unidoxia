@@ -61,7 +61,48 @@ const About = () => {
         for details on sourcing, corrections, and AI-assisted drafting.
       </p>
 
-      <h2 className="text-2xl font-semibold mt-8 mb-3">Contact</h2>
+      <section aria-labelledby="uk-knowledge-trained-leadership" className="mt-10">
+        <h2
+          id="uk-knowledge-trained-leadership"
+          className="text-2xl font-semibold mb-3"
+        >
+          UK knowledge-trained leadership
+        </h2>
+        <p className="text-muted-foreground mb-4">
+          Eric Arthur, CEO of UniDoxia, has completed the British Council{" "}
+          <em>UK knowledge agent and counsellor training</em> and agreed to the national
+          code of ethical practice for UK education agents, having passed the
+          assessments on the UK as a study destination.
+        </p>
+        <ul className="text-muted-foreground text-sm space-y-1 mb-5">
+          <li><span className="font-medium text-foreground">Awarded to:</span> Eric Arthur (Agent)</li>
+          <li><span className="font-medium text-foreground">Certificate code:</span> 114757</li>
+          <li><span className="font-medium text-foreground">Valid until:</span> 16 July 2028</li>
+        </ul>
+        <img
+          src="/credentials/eric-arthur-uk-knowledge-training-certificate.png"
+          alt="British Council UK knowledge agent and counsellor training Certificate of completion awarded to Eric Arthur, organisation UniDoxia.com, certificate code 114757, valid until 16 July 2028."
+          loading="lazy"
+          className="w-full h-auto max-w-2xl rounded-md border"
+        />
+        <p className="mt-4">
+          <a
+            href="/credentials/eric-arthur-uk-knowledge-training-certificate.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline underline-offset-2 text-sm"
+          >
+            View certificate PDF
+          </a>
+        </p>
+        <p className="text-sm text-muted-foreground mt-4">
+          This certificate is awarded to Eric Arthur as an individual. The British
+          Council does not formally endorse, accredit or validate UniDoxia or its
+          services.
+        </p>
+      </section>
+
+      <h2 className="text-2xl font-semibold mt-10 mb-3">Contact</h2>
       <p className="text-muted-foreground">
         Email <a className="underline" href="mailto:info@unidoxia.com">info@unidoxia.com</a>{" "}
         or use our <Link to="/contact" className="underline">contact page</Link>.
