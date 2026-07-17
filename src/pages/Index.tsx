@@ -307,6 +307,34 @@ const Index = () => {
       {/* ---------- STUDY PROGRAM SEARCH ---------- */}
       <StudyProgramSearch />
 
+      {/* ---------- TRUST BAND: UK knowledge-trained guidance ---------- */}
+      <section
+        aria-labelledby="uk-knowledge-trained-heading"
+        className="border-y bg-muted/30"
+      >
+        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-center md:text-left">
+          <div className="space-y-1">
+            <h2
+              id="uk-knowledge-trained-heading"
+              className="text-lg sm:text-xl font-semibold tracking-tight"
+            >
+              UK knowledge-trained guidance
+            </h2>
+            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+              Eric Arthur, CEO of UniDoxia, has completed the British Council UK knowledge agent and counsellor training.
+            </p>
+          </div>
+          <Link
+            to="/about"
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm shrink-0"
+          >
+            View training details
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
+
+
       {/* ---------- WHY UNIDOXIA / FEATURES ---------- */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-4xl font-bold text-center mb-12">{featuresHeading}</h2>
