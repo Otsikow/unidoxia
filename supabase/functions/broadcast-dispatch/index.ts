@@ -197,13 +197,13 @@ serve(async (req) => {
               .eq("id", recipient.id);
           } else {
             try {
-              const unsubscribeFooter = `<p style=\"font-size:12px;color:#6b7280;margin-top:20px\">To unsubscribe from non-critical announcements, update your communication preferences in your UniDoxia profile settings.</p>`;
+              const unsubscribeFooter = `<p style="font-size:12px;color:#6b7280;margin-top:20px">To unsubscribe from non-critical announcements, update your communication preferences in your UniDoxia profile settings.</p>`;
               const emailHtml = `<h2>${broadcast.headline || broadcast.subject || "UniDoxia update"}</h2><p>${renderTemplateVariables(
                 (broadcast.message_body || "").replace(/\n/g, "<br />"),
                 vars,
               )}</p>${
                 broadcast.cta_url && broadcast.cta_label
-                  ? `<p><a href=\"${broadcast.cta_url}\" style=\"color:#2563eb\">${broadcast.cta_label}</a></p>`
+                  ? `<p><a href="${broadcast.cta_url}" style="color:#2563eb">${broadcast.cta_label}</a></p>`
                   : ""
               }${unsubscribeFooter}`;
 
