@@ -23,6 +23,18 @@ const entries = [
     changefreq: "monthly",
     lastmod: "2026-07-13T08:40:30Z",
   },
+  {
+    path: "/blog/4-uk-scholarships-african-students-before-autumn-2026",
+    priority: "0.7",
+    changefreq: "monthly",
+    lastmod: "2026-07-16T08:00:00Z",
+  },
+  {
+    path: "/blog/uk-student-visa-brake-2026-cameroon-sudan",
+    priority: "0.7",
+    changefreq: "monthly",
+    lastmod: "2026-07-20T09:00:00+01:00",
+  },
   { path: "/faq", priority: "0.6", changefreq: "monthly" },
   { path: "/contact", priority: "0.6", changefreq: "monthly" },
   { path: "/about", priority: "0.6", changefreq: "monthly" },
