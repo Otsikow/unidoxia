@@ -616,7 +616,7 @@ All colors MUST be HSL.
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-    min-height: 100vh;
+    min-height: min(860px, 88vh);
     overflow: hidden;
     background: radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.2), transparent 35%),
       radial-gradient(circle at 80% 30%, hsl(210 100% 75% / 0.18), transparent 40%),
@@ -650,19 +650,19 @@ All colors MUST be HSL.
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 1.5rem 1rem 11rem;
+    min-height: min(860px, 88vh);
+    padding: 1.5rem 1rem 7rem;
   }
 
   @media (min-width: 640px) {
     .hero-content {
-      padding: 2rem 2rem 8rem;
+      padding: 2rem 2rem 5rem;
     }
   }
 
   .hero-content-inner {
-    width: min(1100px, calc(100% - 2rem));
-    padding: clamp(1.5rem, 4vw, 2.75rem);
+    width: min(980px, calc(100% - 2rem));
+    padding: clamp(1.25rem, 3vw, 2rem);
     text-align: center;
   }
 
@@ -716,8 +716,20 @@ All colors MUST be HSL.
     z-index: 1;
     pointer-events: none;
     background:
-      linear-gradient(180deg, hsl(220 40% 6% / 0.55) 0%, hsl(220 40% 6% / 0.35) 35%, hsl(220 40% 6% / 0.55) 70%, hsl(220 40% 6% / 0.75) 100%),
-      radial-gradient(ellipse at center, hsl(220 40% 6% / 0.35) 0%, hsl(220 40% 6% / 0.55) 100%);
+      linear-gradient(180deg, hsl(220 40% 6% / 0.7) 0%, hsl(220 40% 6% / 0.32) 42%, hsl(220 40% 6% / 0.72) 100%),
+      radial-gradient(ellipse at center, hsl(220 40% 6% / 0.2) 0%, hsl(220 40% 6% / 0.52) 100%);
+  }
+
+  .landing-feature-card {
+    border-color: hsl(var(--border) / 0.7);
+    box-shadow: 0 10px 30px -20px hsl(var(--foreground) / 0.35);
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+  }
+
+  .landing-feature-card:hover {
+    border-color: hsl(var(--primary) / 0.35);
+    box-shadow: 0 18px 36px -24px hsl(var(--primary) / 0.45);
+    transform: translateY(-2px);
   }
 
   .hero-fallback {
