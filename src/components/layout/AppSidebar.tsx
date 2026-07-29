@@ -181,7 +181,7 @@ export function AppSidebar() {
   return (
     <Sidebar
       collapsible="icon"
-      className="relative border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out backdrop-blur supports-[backdrop-filter]:bg-sidebar/95 data-[state=expanded]:w-[clamp(14rem,18vw,16rem)] data-[state=collapsed]:w-[4.25rem]"
+      className="native-sidebar relative border-r-0 text-sidebar-foreground transition-[width] duration-200 ease-out data-[state=expanded]:w-[clamp(14rem,18vw,16rem)] data-[state=collapsed]:w-[4.25rem]"
     >
       <SidebarRail className="hidden sm:flex" />
       {/* Header */}
@@ -190,11 +190,11 @@ export function AppSidebar() {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia Logo"
-            className="h-8 w-8 md:h-10 md:w-10 rounded-md object-contain flex-shrink-0 bg-white p-1"
+            className="h-8 w-8 flex-shrink-0 rounded-[0.7rem] bg-white object-contain p-1 shadow-sm md:h-9 md:w-9"
           />
           {state !== "collapsed" && (
             <div className="min-w-0 flex-1">
-              <h2 className="font-bold text-base md:text-lg truncate">UniDoxia</h2>
+              <h2 className="truncate text-base font-semibold tracking-tight md:text-lg">UniDoxia</h2>
               <p className="text-xs text-sidebar-foreground/70 capitalize truncate">
                 {rolesLoading ? "Loading..." : formatRoleLabel(primaryRole)}
               </p>
@@ -294,11 +294,11 @@ export function AppSidebar() {
                         isActive={isActive}
                         tooltip={state === "collapsed" ? item.title : undefined}
                         className={cn(
-                          "group relative overflow-hidden border border-transparent text-sidebar-foreground",
+                          "group relative overflow-hidden rounded-[0.75rem] border border-transparent text-sidebar-foreground transition-[background-color,color] duration-150",
                           showControls && "flex-1",
                           isActive
-                            ? "bg-gradient-to-r from-primary/15 via-primary/10 to-transparent text-primary ring-1 ring-primary/40 shadow-[0_10px_30px_-15px_rgba(59,130,246,0.55)]"
-                            : "hover:border-sidebar-border/80 hover:bg-sidebar-accent/70 hover:translate-x-1",
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "hover:bg-sidebar-accent/65 hover:text-sidebar-accent-foreground",
                         )}
                       >
                         <NavLink
@@ -313,7 +313,7 @@ export function AppSidebar() {
                         >
                           <span
                             className={cn(
-                              "absolute inset-y-1 left-1 w-1 rounded-full bg-primary/80 transition-all duration-300",
+                              "absolute inset-y-2 left-1 w-0.5 rounded-full bg-primary transition-all duration-200",
                               isActive
                                 ? "opacity-100 scale-y-100"
                                 : "scale-y-0 opacity-0 group-hover:scale-y-100 group-hover:opacity-60",
@@ -323,8 +323,8 @@ export function AppSidebar() {
                           <div className="relative">
                             <item.icon
                               className={cn(
-                                "h-4 w-4 flex-shrink-0 transition-all duration-200",
-                                isActive ? "text-primary" : "group-hover:scale-110",
+                                "h-4 w-4 flex-shrink-0 transition-colors duration-150",
+                                isActive ? "text-primary" : "group-hover:text-primary",
                               )}
                             />
                             {item.title === "Notifications" && unreadCount > 0 && (
@@ -379,7 +379,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-3 md:p-4">
         <div className="space-y-2">
           {state !== "collapsed" && (
-            <div className="px-2.5 md:px-3 py-2 bg-sidebar-accent/60 rounded-lg">
+            <div className="rounded-[0.75rem] bg-sidebar-accent/55 px-2.5 py-2 md:px-3">
               <p className="text-xs md:text-sm font-medium truncate text-sidebar-foreground">
                 {profile?.full_name}
               </p>
