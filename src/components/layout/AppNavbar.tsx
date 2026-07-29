@@ -68,7 +68,7 @@ const AppNavbar = () => {
 
   return (
     <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-slide-in-down">
-      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 sm:px-6 lg:px-8 lg:py-0">
+      <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6 lg:px-8 lg:py-2">
         {/* LEFT SECTION */}
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
           {showBackButton && (
@@ -204,19 +204,19 @@ const AppNavbar = () => {
         </div>
 
         {/* CENTER NAV LINKS (Desktop) */}
-        <nav className="order-3 hidden w-full items-center justify-center gap-5 lg:order-2 lg:flex lg:w-auto">
+        <nav className="order-3 hidden w-full items-center justify-center gap-3 lg:order-2 lg:flex lg:w-auto">
           {navLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link
                 key={link.to}
                 to={link.to}
-                className="group flex flex-col items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-all duration-300 hover:text-primary"
+                className="group flex flex-col items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors duration-200 hover:text-primary"
               >
-                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:-translate-y-1 group-hover:bg-primary group-hover:text-primary-foreground">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
                   <Icon className="h-5 w-5" />
                 </span>
-                <span className="text-sm font-semibold normal-case tracking-normal">
+                <span className="text-xs font-semibold normal-case tracking-normal">
                   {t(`layout.navbar.links.${link.id}`)}
                 </span>
               </Link>
