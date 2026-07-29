@@ -8,29 +8,29 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 217 33% 17%;
+    --background: 240 5% 96%;
+    --foreground: 240 6% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 217 33% 17%;
+    --card-foreground: 240 6% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 217 33% 17%;
+    --popover-foreground: 240 6% 10%;
 
-    /* Trust Blue Primary */
-    --primary: 217 91% 35%;
+    /* Apple system blue, retained as UniDoxia's trust colour */
+    --primary: 211 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 30%;
+    --primary-hover: 211 100% 44%;
     
-    /* Soft backgrounds */
-    --secondary: 214 32% 95%;
-    --secondary-foreground: 217 33% 17%;
+    /* Grouped system surfaces */
+    --secondary: 240 5% 93%;
+    --secondary-foreground: 240 6% 14%;
 
-    --muted: 214 32% 95%;
-    --muted-foreground: 217 20% 51%;
+    --muted: 240 5% 93%;
+    --muted-foreground: 240 4% 43%;
 
-    --accent: 217 91% 95%;
-    --accent-foreground: 217 91% 35%;
+    --accent: 211 100% 95%;
+    --accent-foreground: 211 100% 42%;
 
     /* Success - Enrolled/Accepted */
     --success: 142 76% 36%;
@@ -50,12 +50,12 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 87%;
-    --input: 214 32% 87%;
-    --ring: 217 91% 35%;
+    --border: 240 6% 86%;
+    --input: 240 6% 86%;
+    --ring: 211 100% 50%;
 
     /* Radii & spacing */
-    --radius: 1rem; /* 16px card radius */
+    --radius: 1.25rem;
     --space-1: 0.25rem;
     --space-2: 0.5rem;
     --space-3: 0.75rem;
@@ -64,48 +64,48 @@ All colors MUST be HSL.
     --space-8: 2rem;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 35%) 0%, hsl(217 91% 50%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(214 32% 98%) 100%);
+    --gradient-hero: linear-gradient(145deg, hsl(211 100% 46%) 0%, hsl(221 83% 56%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(240 5% 98%) 0%, hsl(240 5% 95%) 100%);
     
     /* Elevation */
-    --shadow-sm: 0 1px 2px 0 hsl(217 33% 17% / 0.06);
-    --shadow-md: 0 8px 16px -6px hsl(217 33% 17% / 0.12);
-    --shadow-lg: 0 20px 40px -20px hsl(217 33% 17% / 0.16);
-    --shadow-card: 0 4px 12px -2px hsl(217 33% 17% / 0.08);
+    --shadow-sm: 0 1px 2px hsl(240 6% 10% / 0.05), 0 1px 8px hsl(240 6% 10% / 0.03);
+    --shadow-md: 0 10px 30px hsl(240 6% 10% / 0.08), 0 2px 8px hsl(240 6% 10% / 0.04);
+    --shadow-lg: 0 24px 60px hsl(240 6% 10% / 0.12), 0 6px 18px hsl(240 6% 10% / 0.05);
+    --shadow-card: 0 1px 2px hsl(240 6% 10% / 0.04), 0 8px 24px hsl(240 6% 10% / 0.055);
 
     /* Sidebar */
-    --sidebar-background: 217 33% 17%;
-    --sidebar-foreground: 214 32% 95%;
-    --sidebar-primary: 217 91% 35%;
+    --sidebar-background: 240 5% 97%;
+    --sidebar-foreground: 240 6% 14%;
+    --sidebar-primary: 211 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 24%;
-    --sidebar-accent-foreground: 214 32% 95%;
-    --sidebar-border: 217 33% 24%;
-    --sidebar-ring: 217 91% 35%;
+    --sidebar-accent: 211 100% 94%;
+    --sidebar-accent-foreground: 211 100% 38%;
+    --sidebar-border: 240 6% 88%;
+    --sidebar-ring: 211 100% 50%;
   }
 
   .dark {
-    --background: 217 33% 10%;
-    --foreground: 214 32% 95%;
+    --background: 240 6% 7%;
+    --foreground: 240 5% 96%;
 
-    --card: 217 33% 14%;
-    --card-foreground: 214 32% 95%;
+    --card: 240 5% 12%;
+    --card-foreground: 240 5% 96%;
 
-    --popover: 217 33% 14%;
-    --popover-foreground: 214 32% 95%;
+    --popover: 240 5% 12%;
+    --popover-foreground: 240 5% 96%;
 
-    --primary: 217 91% 50%;
+    --primary: 211 100% 56%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 55%;
+    --primary-hover: 211 100% 62%;
 
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 214 32% 95%;
+    --secondary: 240 4% 18%;
+    --secondary-foreground: 240 5% 96%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 217 20% 65%;
+    --muted: 240 4% 18%;
+    --muted-foreground: 240 5% 64%;
 
-    --accent: 217 33% 24%;
-    --accent-foreground: 214 32% 95%;
+    --accent: 211 55% 22%;
+    --accent-foreground: 211 100% 76%;
 
     --success: 142 76% 40%;
     --success-foreground: 0 0% 100%;
@@ -122,21 +122,21 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 217 33% 24%;
-    --input: 217 33% 24%;
-    --ring: 217 91% 50%;
+    --border: 240 4% 24%;
+    --input: 240 4% 24%;
+    --ring: 211 100% 58%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(217 91% 40%) 0%, hsl(217 91% 55%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(217 33% 10%) 0%, hsl(217 33% 14%) 100%);
+    --gradient-hero: linear-gradient(145deg, hsl(211 100% 38%) 0%, hsl(221 68% 48%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(240 6% 8%) 0%, hsl(240 5% 11%) 100%);
 
-    --sidebar-background: 217 33% 14%;
-    --sidebar-foreground: 214 32% 95%;
-    --sidebar-primary: 217 91% 50%;
+    --sidebar-background: 240 5% 10%;
+    --sidebar-foreground: 240 5% 94%;
+    --sidebar-primary: 211 100% 58%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 20%;
-    --sidebar-accent-foreground: 214 32% 95%;
-    --sidebar-border: 217 33% 20%;
-    --sidebar-ring: 217 91% 50%;
+    --sidebar-accent: 211 50% 22%;
+    --sidebar-accent-foreground: 211 100% 78%;
+    --sidebar-border: 240 4% 22%;
+    --sidebar-ring: 211 100% 58%;
   }
 }
 
@@ -147,6 +147,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
     font-feature-settings: "liga" 1, "kern" 1;
     text-rendering: optimizeLegibility;
     letter-spacing: -0.005em;
@@ -179,20 +180,26 @@ All colors MUST be HSL.
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-muted;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-border rounded-md;
+    @apply rounded-full bg-muted-foreground/25;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground;
+    @apply bg-muted-foreground/45;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.2);
   }
 
   /* Smooth theme transitions */
@@ -212,6 +219,32 @@ All colors MUST be HSL.
 @layer components {
   .page-shell {
     @apply mx-auto flex w-full max-w-screen-xl min-w-0 flex-col px-4 sm:px-6 lg:px-8;
+  }
+
+  .app-canvas {
+    background:
+      radial-gradient(circle at 8% 0%, hsl(var(--primary) / 0.055), transparent 32rem),
+      hsl(var(--background));
+  }
+
+  .glass-toolbar {
+    @apply border-b border-border/70 bg-background/75;
+    box-shadow: 0 1px 0 hsl(var(--foreground) / 0.025);
+    backdrop-filter: saturate(180%) blur(22px);
+    -webkit-backdrop-filter: saturate(180%) blur(22px);
+  }
+
+  .native-sidebar {
+    background: hsl(var(--sidebar-background) / 0.9);
+    box-shadow: inset -1px 0 0 hsl(var(--sidebar-border) / 0.7);
+    backdrop-filter: saturate(160%) blur(24px);
+    -webkit-backdrop-filter: saturate(160%) blur(24px);
+  }
+
+  .native-panel {
+    @apply rounded-[var(--radius)] border border-border/70 bg-card/90 shadow-card;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
   }
 
   /* Responsive container utilities */
@@ -243,7 +276,7 @@ All colors MUST be HSL.
 
   /* Responsive header section */
   .page-header {
-    @apply flex flex-col gap-3 sm:gap-4 md:flex-row md:items-start md:justify-between;
+    @apply flex flex-col gap-3 border-b border-border/70 pb-5 sm:gap-4 md:flex-row md:items-start md:justify-between;
   }
 
   .page-header-actions {
