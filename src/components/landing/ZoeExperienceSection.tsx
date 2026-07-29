@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { type ComponentType } from "react";
 import { Link } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,420 +13,113 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  Bot,
-  Building2,
+  BookOpen,
   CheckCircle2,
+  FileCheck,
   GraduationCap,
-  MessageCircle,
-  Sparkles,
-  Users2,
+  Plane,
+  Route,
 } from "lucide-react";
 
-
-import zoePortrait from "@/assets/zoe-portrait.png";
-
-interface FocusArea {
-  key: string;
-  label: string;
-  headline: string;
-  description: string;
-  highlights: string[];
-}
-
-interface InsightStat {
-  value: string;
-  label: string;
-}
-
-interface PanelCopy {
-  title: string;
-  subtitle: string;
-  previewLabel: string;
-  highlightsHeading: string;
-}
-
-interface MultiRoleConfig {
+interface ServiceCard {
   key: string;
   title: string;
   description: string;
   capabilities: string[];
+  icon: ComponentType<{ className?: string }>;
+  accent: string;
 }
 
-const fallbackFocusAreas: FocusArea[] = [
+const serviceCards: ServiceCard[] = [
   {
-    key: "stem",
-    label: "STEM",
-    headline: "Tailored pathways for technical innovators",
+    key: "course-and-apply",
+    title: "Choose your course and apply",
     description:
-      "Spotlight courses with research labs, co-ops, and funding built for scientists and engineers.",
-    highlights: [
-      "Scholarships that prioritise STEM majors and research output",
-      "Industry-aligned curricula with internships and co-op rotations",
-      "Visa guidance for high-demand technology and engineering roles",
-    ],
-  },
-  {
-    key: "scholarships",
-    label: "Scholarships",
-    headline: "Funding opportunities matched to your profile",
-    description:
-      "Identify grants, bursaries, and assistantships you can realistically secure.",
-    highlights: [
-      "Curated list of merit and need-based awards with deadlines",
-      "Eligibility insights that map to your academic background",
-      "Application tips to strengthen statements and references",
-    ],
-  },
-  {
-    key: "visa",
-    label: "Visa friendly",
-    headline: "Study routes with smooth immigration journeys",
-    description:
-      "Compare countries and institutions with favourable visa pathways.",
-    highlights: [
-      "Post-study work options and stay-back durations summarised",
-      "Documentation checklists tailored to your nationality",
-      "Advisories on financial proof, health cover, and interview prep",
-    ],
-  },
-  {
-    key: "undergraduate",
-    label: "Undergraduate",
-    headline: "Undergraduate journeys built for first-time applicants",
-    description:
-      "Understand entry requirements, prerequisites, and support services.",
-    highlights: [
-      "Step-by-step timeline from transcript evaluation to offer acceptance",
-      "Guidance on choosing majors, minors, and foundation years",
-      "Transition resources covering housing, orientation, and budgeting",
-    ],
-  },
-  {
-    key: "postgraduate",
-    label: "Postgraduate",
-    headline: "Master's and doctoral courses curated for your goals",
-    description:
-      "Compare research supervisors, cohort sizes, and funding models.",
-    highlights: [
-      "Faculty highlights with current research themes",
-      "Assistantship and fellowship availability with stipends",
-      "Interview preparation and portfolio expectations by course",
-    ],
-  },
-  {
-    key: "coop",
-    label: "Co-op & Internships",
-    headline: "Work-integrated learning with global employers",
-    description:
-      "Surface courses that blend study with hands-on professional experience.",
-    highlights: [
-      "Placement rates and employer partnerships across regions",
-      "Visa considerations for paid placements and work terms",
-      "Career services support for resumes, interviews, and networking",
-    ],
-  },
-];
-
-const fallbackStats: InsightStat[] = [
-  {
-    value: "12k+",
-    label: "AI insights generated for global applicants",
-  },
-  {
-    value: "84%",
-    label: "Students matched to at least three best-fit courses",
-  },
-  {
-    value: "50+",
-    label: "Countries covered with verified admissions data",
-  },
-];
-
-const fallbackPanelCopy: PanelCopy = {
-  title: "Preview Zoe Intelligence",
-  subtitle: "Choose a focus area to explore the insights you'll unlock.",
-  previewLabel: "Sample",
-  highlightsHeading: "What the AI prepares for you",
-};
-
-const fallbackRoles: Array<
-  MultiRoleConfig & { icon: ComponentType<{ className?: string }>; accent: string }
-> = [
-  {
-    key: "students",
-    title: "Students & families",
-    description:
-      "Zoe is a study-abroad counsellor that walks every applicant through the full UniDoxia experience.",
+      "We help you find the right study option and submit a strong application.",
     capabilities: [
-      "Answers any study-abroad question instantly in plain language.",
-      "Guides you through every task inside the UniDoxia app so nothing is missed.",
-      "Reviews uploaded transcripts, essays, and proof of funds to suggest best-fit schools.",
-      "Shares personalised counselling recommendations informed by your goals.",
+      "Discuss your goals with an experienced advisor.",
+      "Shortlist courses and universities that match your profile.",
+      "Prepare, check, and submit your application documents.",
+      "Track your applications and respond to university requests.",
     ],
     icon: GraduationCap,
     accent: "from-sky-500 to-blue-500",
   },
   {
-    key: "agents",
-    title: "Agents & counsellors",
+    key: "visa-prep",
+    title: "Prepare for your visa",
     description:
-      "Training, coaching, and on-demand answers are built into the same workspace that powers your agency.",
+      "Once you receive an offer, we guide you through the next requirements.",
     capabilities: [
-      "Delivers bite-sized training refreshers for new advisors and support staff.",
-      "Turns shared student documents into quick school shortlists you can review with clients.",
-      "Drafts outreach scripts, follow-up plans, and counselling recommendations automatically.",
-      "Flags opportunities to improve conversion using agent analytics pulled from Zoe Intelligence.",
+      "Understand your offer conditions and important deadlines.",
+      "Prepare the documents needed for your visa application.",
+      "Get practical guidance for credibility interviews and proof of funds.",
+      "Stay updated until your visa decision.",
     ],
-    icon: Users2,
+    icon: FileCheck,
     accent: "from-amber-500 to-orange-500",
   },
   {
-    key: "universities",
-    title: "Universities & partners",
+    key: "travel-arrival",
+    title: "Plan your travel and arrival",
     description:
-      "Zoe lives inside the university dashboard to keep recruitment, compliance, and service teams aligned.",
+      "We help you prepare for departure and settle into your new study destination.",
     capabilities: [
-      "Surfaces partner health alerts and suggested actions directly in the dashboard.",
-      "Summarises applicant pipelines by region with notes about policy differences.",
-      "Provides training snippets for staff onboarding so teams can self-serve answers.",
-      "Escalates issues that need human attention so you can focus on strategic relationships.",
+      "Plan your accommodation and travel arrangements.",
+      "Receive a pre-departure checklist for your destination.",
+      "Know what to bring and what to expect on arrival.",
+      "Stay connected to your advisor when you need support.",
     ],
-    icon: Building2,
+    icon: Plane,
     accent: "from-emerald-500 to-teal-500",
   },
 ];
 
-const fallbackHighlights = [
-  "Answers every study-abroad question, no matter the destination.",
-  "Guides learners, agents, and universities through the entire UniDoxia app.",
-  "Reads shared documents to recommend schools, funding, and next steps.",
+const journeyHighlights = [
+  "Choose the right course and university with expert guidance.",
+  "Prepare your visa application with clear, step-by-step support.",
+  "Travel and arrive with confidence, knowing help is always available.",
 ];
 
-const parseFocusAreas = (value: unknown): FocusArea[] | null => {
-  if (!Array.isArray(value)) return null;
-  const parsed = value
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const focus = item as Partial<FocusArea>;
-      if (!focus.key || !focus.label) return null;
-      return {
-        key: String(focus.key),
-        label: String(focus.label),
-        headline: focus.headline ? String(focus.headline) : "",
-        description: focus.description ? String(focus.description) : "",
-        highlights: Array.isArray(focus.highlights)
-          ? focus.highlights.map((highlight) => String(highlight))
-          : [],
-      } satisfies FocusArea;
-    })
-    .filter((item): item is FocusArea => Boolean(item));
-
-  return parsed.length > 0 ? parsed : null;
-};
-
-const parseStats = (value: unknown): InsightStat[] | null => {
-  if (!Array.isArray(value)) return null;
-  const parsed = value
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const stat = item as Partial<InsightStat>;
-      if (!stat.value || !stat.label) return null;
-      return {
-        value: String(stat.value),
-        label: String(stat.label),
-      } satisfies InsightStat;
-    })
-    .filter((item): item is InsightStat => Boolean(item));
-
-  return parsed.length > 0 ? parsed : null;
-};
-
-const parsePanelCopy = (value: unknown): PanelCopy | null => {
-  if (!value || typeof value !== "object") return null;
-  const panel = value as Partial<PanelCopy>;
-  if (!panel.title || !panel.subtitle || !panel.previewLabel || !panel.highlightsHeading) {
-    return null;
-  }
-
-  return {
-    title: String(panel.title),
-    subtitle: String(panel.subtitle),
-    previewLabel: String(panel.previewLabel),
-    highlightsHeading: String(panel.highlightsHeading),
-  } satisfies PanelCopy;
-};
-
-const parseRoles = (value: unknown): MultiRoleConfig[] | null => {
-  if (!Array.isArray(value)) return null;
-
-  const parsed = value
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const role = item as Partial<MultiRoleConfig>;
-      if (!role.key || !role.title) return null;
-      return {
-        key: String(role.key),
-        title: String(role.title),
-        description: role.description ? String(role.description) : "",
-        capabilities: Array.isArray(role.capabilities)
-          ? role.capabilities.map((capability) => String(capability))
-          : [],
-      } satisfies MultiRoleConfig;
-    })
-    .filter((role): role is MultiRoleConfig => Boolean(role));
-
-  return parsed.length ? parsed : null;
-};
-
-const parseHighlights = (value: unknown): string[] | null => {
-  if (!Array.isArray(value)) return null;
-  const parsed = value
-    .map((item) => (typeof item === "string" ? item : null))
-    .filter((item): item is string => Boolean(item));
-  return parsed.length ? parsed : null;
-};
-
 export function ZoeExperienceSection() {
-  const { t } = useTranslation();
-
-  const badgeLabel = t("pages.index.aiSearch.badge");
-  const heading = t("pages.index.aiSearch.heading");
-  const description = t("pages.index.aiSearch.description");
-  const subheading = t("pages.index.aiSearch.subheading");
-  const ctaLabel = t("pages.index.aiSearch.ctaLabel");
-
-  const focusAreas = useMemo(() => {
-    const raw = t("pages.index.aiSearch.focusAreas", {
-      returnObjects: true,
-    }) as unknown;
-    return parseFocusAreas(raw) ?? fallbackFocusAreas;
-  }, [t]);
-
-  const stats = useMemo(() => {
-    const raw = t("pages.index.aiSearch.stats", {
-      returnObjects: true,
-    }) as unknown;
-    return parseStats(raw) ?? fallbackStats;
-  }, [t]);
-
-  const panelCopy = useMemo(() => {
-    const raw = t("pages.index.aiSearch.panel", {
-      returnObjects: true,
-    }) as unknown;
-    return parsePanelCopy(raw) ?? fallbackPanelCopy;
-  }, [t]);
-
-  const [activeFocus, setActiveFocus] = useState<string>(() => focusAreas[0]?.key ?? fallbackFocusAreas[0].key);
-
-  useEffect(() => {
-    if (focusAreas.length === 0) return;
-    setActiveFocus((current) => (focusAreas.some((area) => area.key === current) ? current : focusAreas[0].key));
-  }, [focusAreas]);
-
-  const activeArea =
-    focusAreas.find((area) => area.key === activeFocus) ?? focusAreas[0] ?? fallbackFocusAreas[0];
-
-  const multiBadgeLabel = t("pages.index.zoeMultiRole.badge");
-  const multiHeading = t("pages.index.zoeMultiRole.heading");
-  const multiDescription = t("pages.index.zoeMultiRole.description");
-  const highlightsHeading = t("pages.index.zoeMultiRole.highlightsHeading");
-  const competitorsNote = t("pages.index.zoeMultiRole.note");
-
-  const highlightItems = useMemo(() => {
-    const fromTranslation = parseHighlights(
-      t("pages.index.zoeMultiRole.highlights", { returnObjects: true })
-    );
-    return fromTranslation ?? fallbackHighlights;
-  }, [t]);
-
-  const translationRoles = useMemo(() => {
-    const parsed = parseRoles(t("pages.index.zoeMultiRole.roles", { returnObjects: true }));
-    if (!parsed) return fallbackRoles;
-
-    return parsed.map((role) => {
-      const fallback = fallbackRoles.find((item) => item.key === role.key);
-      return {
-        ...role,
-        icon: fallback?.icon ?? Sparkles,
-        accent: fallback?.accent ?? "from-primary to-primary/80",
-      };
-    });
-  }, [t]);
-
   return (
     <section className="relative overflow-hidden border-y border-primary/10 bg-muted/40 py-24">
       <div className="container mx-auto space-y-16 px-4">
         <div className="grid items-start gap-12 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge className="bg-primary/10 text-primary">{badgeLabel}</Badge>
-              <Badge variant="outline" className="border-primary/30 text-primary">
-                {multiBadgeLabel}
-              </Badge>
-            </div>
+            <Badge className="bg-primary/10 text-primary">
+              Your UniDoxia journey
+            </Badge>
 
             <div className="space-y-4">
-              <h2 className="text-4xl font-bold leading-tight text-foreground sm:text-5xl">{heading}</h2>
-              <p className="text-lg text-muted-foreground">{description}</p>
-              <p className="text-base text-muted-foreground/90">{subheading}</p>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              {stats.map((stat) => (
-                <Card key={`${stat.label}-${stat.value}`} className="border border-primary/10 bg-background/80 shadow-sm">
-                  <CardContent className="space-y-1 p-6">
-                    <div className="text-2xl font-semibold text-primary">{stat.value}</div>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              <h2 className="text-4xl font-bold leading-tight text-foreground sm:text-5xl">
+                Personal guidance from application to arrival
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                We give you step-by-step support to choose the right course,
+                prepare your visa application, and travel with confidence.
+              </p>
             </div>
 
             <div className="space-y-6 rounded-[32px] border border-primary/20 bg-background/90 p-6 shadow-xl">
-              <div className="flex flex-wrap gap-2">
-                {focusAreas.map((area) => (
-                  <button
-                    key={area.key}
-                    type="button"
-                    onClick={() => setActiveFocus(area.key)}
-                    className={cn(
-                      "rounded-full border px-4 py-2 text-sm font-medium transition-all",
-                      activeFocus === area.key
-                        ? "border-primary bg-primary text-primary-foreground shadow"
-                        : "border-primary/20 bg-background text-foreground hover:border-primary/40 hover:bg-primary/5"
-                    )}
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary/80">
+                How we support you
+              </p>
+              <ul className="space-y-3">
+                {journeyHighlights.map((highlight, index) => (
+                  <li
+                    key={index}
+                    className="flex items-start gap-3 text-sm text-muted-foreground"
                   >
-                    {area.label}
-                  </button>
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
+                    <span>{highlight}</span>
+                  </li>
                 ))}
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primary/80">
-                    {panelCopy.previewLabel}
-                  </p>
-                  <h3 className="text-2xl font-semibold text-primary">{activeArea.headline}</h3>
-                  <p className="text-sm text-muted-foreground">{activeArea.description}</p>
-                </div>
-
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-primary/70">
-                    {panelCopy.highlightsHeading}
-                  </p>
-                  <ul className="space-y-3">
-                    {activeArea.highlights.map((highlight, index) => (
-                      <li key={`${activeArea.key}-highlight-${index}`} className="flex items-start gap-3 text-sm text-muted-foreground">
-                        <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
-                        <span>{highlight}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-
+              </ul>
               <Button asChild size="lg" className="w-full rounded-2xl">
-                <Link to="/auth/signup?feature=ai-search">{ctaLabel}</Link>
+                <Link to="/free-consultation">
+                  Start your free consultation
+                </Link>
               </Button>
             </div>
           </div>
@@ -437,71 +129,56 @@ export function ZoeExperienceSection() {
               <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <Bot className="h-6 w-6" />
+                    <Route className="h-6 w-6" />
                   </div>
                   <div>
-                    <CardTitle className="text-2xl font-semibold">{panelCopy.title}</CardTitle>
-                    <CardDescription>{panelCopy.subtitle}</CardDescription>
+                    <CardTitle className="text-2xl font-semibold">
+                      Your study journey
+                    </CardTitle>
+                    <CardDescription>
+                      From first question to final arrival
+                    </CardDescription>
                   </div>
                 </div>
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  Zoe
+                  UniDoxia
                 </Badge>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="relative overflow-hidden rounded-[28px] border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-background p-6">
                   <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.16),_transparent_55%)]" />
                   <div className="relative flex flex-col items-center gap-4 text-center">
-                    <img
-                      src={zoePortrait}
-                      alt={t("pages.index.aiSearch.zoeAlt", "Portrait of Zoe, the Bridge intelligence guide")}
-                      className="h-auto w-full max-w-[320px] rounded-2xl object-cover drop-shadow-xl animate-ken-burns will-change-transform"
-                      loading="lazy"
-                    />
+                    <div className="flex h-40 w-40 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <BookOpen className="h-20 w-20" />
+                    </div>
                     <div className="space-y-1">
-                      <p className="text-base font-semibold text-primary">Zoe, your intelligence companion</p>
+                      <p className="text-base font-semibold text-primary">
+                        Guidance at every step
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        {t(
-                          "pages.index.aiSearch.zoeCaption",
-                          "Meet Zoe – the friendly face guiding every insight and recommendation."
-                        )}
+                        Personal support for your course, visa, and travel decisions.
                       </p>
                     </div>
-                    <Button
-                      type="button"
-                      size="lg"
-                      className="mt-2 rounded-2xl shadow-lg"
-                      onClick={() =>
-                        window.dispatchEvent(
-                          new CustomEvent("zoe:open-chat", {
-                            detail: {
-                              prompt:
-                                "Hi Zoe! I'd like to ask a question about studying abroad.",
-                            },
-                          })
-                        )
-                      }
-                    >
-                      <MessageCircle className="mr-2 h-5 w-5" />
-                      Ask Zoe about studying abroad
+                    <Button asChild size="lg" className="mt-2 rounded-2xl shadow-lg">
+                      <Link to="/free-consultation">
+                        Start your free consultation
+                      </Link>
                     </Button>
                   </div>
                 </div>
 
-
                 <div className="rounded-3xl border border-primary/15 bg-primary/5 p-6">
                   <p className="text-sm font-semibold uppercase tracking-wide text-primary/80">
-                    {highlightsHeading}
+                    What you can expect
                   </p>
                   <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-                    {highlightItems.map((item) => (
+                    {journeyHighlights.map((item) => (
                       <li key={item} className="flex items-start gap-3">
-                        <Sparkles className="mt-0.5 h-4 w-4 text-primary" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
                         <span className="leading-relaxed">{item}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-4 text-xs italic text-muted-foreground">{competitorsNote}</p>
                 </div>
               </CardContent>
             </Card>
@@ -511,37 +188,55 @@ export function ZoeExperienceSection() {
         <div className="space-y-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-wide text-primary/80">{multiBadgeLabel}</p>
-              <h3 className="text-3xl font-semibold tracking-tight text-foreground">{multiHeading}</h3>
-              <p className="text-base text-muted-foreground">{multiDescription}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-primary/80">
+                Our student services
+              </p>
+              <h3 className="text-3xl font-semibold tracking-tight text-foreground">
+                Support built around your goals
+              </h3>
+              <p className="text-base text-muted-foreground">
+                Everything you need to move from application to arrival.
+              </p>
             </div>
-            <Button asChild variant="outline" size="lg" className="w-full shrink-0 rounded-2xl border-primary/30 px-6 text-foreground hover:border-primary hover:bg-primary/10 sm:w-auto md:self-auto">
-              <Link to="/auth/signup?feature=ai-search">Explore Zoe for your team</Link>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="w-full shrink-0 rounded-2xl border-primary/30 px-6 text-foreground hover:border-primary hover:bg-primary/10 sm:w-auto md:self-auto"
+            >
+              <Link to="/free-consultation">Start your free consultation</Link>
             </Button>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {translationRoles.map(({ key, title, description, capabilities, icon: Icon, accent }) => (
-              <Card key={key} className="flex h-full flex-col border border-border/60 bg-background shadow-lg">
-                <CardHeader>
-                  <div className={cn(
-                    "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white",
-                    accent
-                  )}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <CardTitle className="text-xl">{title}</CardTitle>
-                  <CardDescription>{description}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
-                  {capabilities.map((capability) => (
-                    <div key={capability} className="rounded-xl bg-muted/40 p-3">
-                      {capability}
+            {serviceCards.map(
+              ({ key, title, description, capabilities, icon: Icon, accent }) => (
+                <Card
+                  key={key}
+                  className="flex h-full flex-col border border-border/60 bg-background shadow-lg"
+                >
+                  <CardHeader>
+                    <div
+                      className={cn(
+                        "inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white",
+                        accent
+                      )}
+                    >
+                      <Icon className="h-6 w-6" />
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
+                    <CardTitle className="text-xl">{title}</CardTitle>
+                    <CardDescription>{description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm text-muted-foreground">
+                    {capabilities.map((capability) => (
+                      <div key={capability} className="rounded-xl bg-muted/40 p-3">
+                        {capability}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )
+            )}
           </div>
         </div>
       </div>
