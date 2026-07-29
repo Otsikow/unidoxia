@@ -243,14 +243,14 @@ const Index = () => {
             <img
               src={unidoxiaLogo}
               alt="UniDoxia logo"
-              className="hero-logo mb-2 h-28 sm:h-36 md:h-44 w-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] brightness-0 invert"
+              className="hero-logo mb-1 h-20 sm:h-24 md:h-28 w-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] brightness-0 invert"
             />
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.03em] [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
                 Study Abroad Opportunities for Students Worldwide
               </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/95 leading-relaxed max-w-3xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
+              <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
                 UniDoxia helps students secure admission, navigate visa processes, and access
                 trusted universities across Europe, the UK, Canada, the USA, Australia, and beyond.
               </p>
@@ -297,7 +297,7 @@ const Index = () => {
             </a>
 
             {/* Trust ribbon — in normal flow */}
-            <p className="mt-2 inline-flex max-w-full items-center rounded-2xl bg-slate-950/85 px-5 py-3 text-center text-sm sm:text-base font-semibold tracking-tight text-white shadow-2xl ring-1 ring-white/20 backdrop-blur-md">
+            <p className="mt-1 inline-flex max-w-full items-center rounded-full bg-slate-950/60 px-5 py-2.5 text-center text-xs sm:text-sm font-medium tracking-tight text-white/90 shadow-lg ring-1 ring-white/15 backdrop-blur-md">
               UniDoxia connects students worldwide to trusted international study opportunities.
             </p>
           </div>
@@ -338,9 +338,9 @@ const Index = () => {
       {/* ---------- WHY UNIDOXIA / FEATURES ---------- */}
       <section className="container mx-auto px-4 py-20">
         <h2 className="text-4xl font-bold text-center mb-12">{featuresHeading}</h2>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-5 lg:gap-6">
           {features.map((f) => (
-            <Card key={f.key} className="flex flex-col h-full overflow-hidden shadow-card">
+            <Card key={f.key} className="landing-feature-card flex flex-col h-full overflow-hidden shadow-card">
               <img
                 src={f.image}
                 alt={f.title}
@@ -348,15 +348,15 @@ const Index = () => {
                 className="h-48 w-full object-cover rounded-t-xl"
               />
               <CardContent className="p-8 flex flex-col gap-4 h-full">
-                <div className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${f.color} w-max`}>
-                  <f.icon className="h-6 w-6 text-white" />
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">
+                  <f.icon className="h-5 w-5" />
                 </div>
                 <h3 className="text-xl font-bold leading-snug">{f.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">{f.description}</p>
                 <div className="mt-auto">
                   <Button
                     asChild
-                    className={`w-full justify-between bg-gradient-to-r ${f.color} text-white shadow-lg hover:opacity-95`}
+                    className="w-full justify-between bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                   >
                     <Link to={f.href}>
                       <span>{f.action}</span>
