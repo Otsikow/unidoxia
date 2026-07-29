@@ -69,10 +69,6 @@ export default function Blog() {
     );
   }, [data, q]);
 
-  const heroPost = filtered[0];
-  const supportingPosts = filtered.slice(1, 4);
-  const remainingPosts = filtered.slice(4);
-
   const playbookSections = [
     {
       value: "students",
@@ -246,17 +242,20 @@ export default function Blog() {
           </div>
 
           {isLoading ? (
-            <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-              <Card className="hidden h-full overflow-hidden lg:block">
-                <Skeleton className="h-full w-full" />
-              </Card>
-              <div className="grid gap-4">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Card key={index} className="overflow-hidden">
-                    <Skeleton className="h-36 w-full" />
-                  </Card>
-                ))}
-              </div>
+            <div className="grid auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Card key={index} className="flex h-full flex-col overflow-hidden">
+                  <Skeleton className="aspect-[16/10] w-full rounded-none" />
+                  <CardHeader className="flex-1 space-y-3 p-5">
+                    <Skeleton className="h-5 w-2/5" />
+                    <Skeleton className="h-7 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                  </CardHeader>
+                  <CardFooter className="p-5 pt-0">
+                    <Skeleton className="h-10 w-32 rounded-xl" />
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           ) : isError ? (
             <Card className="border-dashed border-border/70">
@@ -268,113 +267,47 @@ export default function Blog() {
               </CardHeader>
             </Card>
           ) : filtered.length > 0 ? (
-            <div className="space-y-10">
-              <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-                {heroPost && (
-                  <Card className="overflow-hidden border-border/70">
-                    {heroPost.cover_image_url ? (
-                      <img
-                        src={heroPost.cover_image_url}
-                        alt={heroPost.title}
-                        className="h-72 w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-72 w-full bg-muted" />
+            <div className="grid auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {filtered.map((post) => (
+                <Card key={post.id} className="flex h-full flex-col overflow-hidden border-border/70">
+                  {post.cover_image_url ? (
+                    <img
+                      src={post.cover_image_url}
+                      alt={post.title}
+                      className="aspect-[16/10] w-full object-cover"
+                    />
+                  ) : (
+                    <div className="aspect-[16/10] w-full bg-muted" />
+                  )}
+                  <CardHeader className="flex-1 space-y-3 p-5">
+                    <div className="flex min-h-6 flex-wrap gap-2">
+                      {(post.tags || []).slice(0, 2).map((tag) => (
+                        <Badge key={tag} variant="secondary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <CardTitle className="line-clamp-2 min-h-14 text-lg leading-tight">
+                      <Link to={`/blog/${post.slug}`} className="hover:underline">
+                        {post.title}
+                      </Link>
+                    </CardTitle>
+                    {post.excerpt && (
+                      <CardDescription className="line-clamp-3 min-h-[4.5rem] text-sm leading-relaxed text-muted-foreground">
+                        {post.excerpt}
+                      </CardDescription>
                     )}
-                    <CardHeader className="space-y-4">
-                      <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-primary">
-                        {(heroPost.tags || []).slice(0, 2).map((tag) => (
-                          <Badge key={tag} variant="secondary">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="space-y-3">
-                        <CardTitle className="text-2xl leading-tight">
-                          <Link to={`/blog/${heroPost.slug}`} className="hover:underline">
-                            {heroPost.title}
-                          </Link>
-                        </CardTitle>
-                        {heroPost.excerpt && (
-                          <CardDescription className="text-base text-muted-foreground">
-                            {heroPost.excerpt}
-                          </CardDescription>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardFooter>
-                      <Button asChild className="gap-2">
-                        <Link to={`/blog/${heroPost.slug}`}>
-                          Read article
-                          <ArrowUpRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                )}
-
-                <div className="grid gap-4">
-                  {supportingPosts.map((post) => (
-                    <Card key={post.id} className="overflow-hidden border-border/70">
-                      {post.cover_image_url ? (
-                        <img src={post.cover_image_url} alt={post.title} className="h-36 w-full object-cover" />
-                      ) : (
-                        <div className="h-36 w-full bg-muted" />
-                      )}
-                      <CardHeader className="space-y-3">
-                        <CardTitle className="text-lg leading-tight">
-                          <Link to={`/blog/${post.slug}`} className="hover:underline">
-                            {post.title}
-                          </Link>
-                        </CardTitle>
-                        {post.excerpt && (
-                          <CardDescription className="line-clamp-3 text-sm text-muted-foreground">
-                            {post.excerpt}
-                          </CardDescription>
-                        )}
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {remainingPosts.length > 0 && (
-                <div className="space-y-6">
-                  <h3 className="text-lg font-semibold text-muted-foreground">More articles</h3>
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {remainingPosts.map((post) => (
-                      <Card key={post.id} className="overflow-hidden border-border/70">
-                        {post.cover_image_url ? (
-                          <img src={post.cover_image_url} alt={post.title} className="h-40 w-full object-cover" />
-                        ) : (
-                          <div className="h-40 w-full bg-muted" />
-                        )}
-                        <CardHeader className="space-y-2">
-                          <CardTitle className="line-clamp-2 text-lg">
-                            <Link to={`/blog/${post.slug}`} className="hover:underline">
-                              {post.title}
-                            </Link>
-                          </CardTitle>
-                        </CardHeader>
-                        {post.excerpt && (
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground line-clamp-3">{post.excerpt}</p>
-                          </CardContent>
-                        )}
-                        {(post.tags || []).length > 0 && (
-                          <CardFooter className="flex flex-wrap gap-2">
-                            {(post.tags || []).slice(0, 3).map((tag) => (
-                              <Badge key={tag} variant="secondary">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </CardFooter>
-                        )}
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
+                  </CardHeader>
+                  <CardFooter className="mt-auto p-5 pt-0">
+                    <Button asChild className="w-full justify-between gap-2">
+                      <Link to={`/blog/${post.slug}`}>
+                        Read article
+                        <ArrowUpRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           ) : (
             <Card className="border-dashed border-border/70">
