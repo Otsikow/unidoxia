@@ -109,7 +109,7 @@ const AdminBroadcastCenter = () => {
           .from("students")
           .select("id, profile_id, legal_name, contact_email, contact_phone, current_country, plan_type, consent_flags_json, profile:profiles!students_profile_id_fkey(id, full_name, email, phone, country, active)")
           .eq("tenant_id", tenantId),
-        db.from("offers").select("application_id").eq("tenant_id", tenantId),
+        db.from("offers").select("application_id"),
         db.from("student_documents").select("student_id, admin_review_status").eq("admin_review_status", "pending"),
         db.from("broadcast_templates").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }),
         db.from("broadcasts").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(50),
@@ -129,7 +129,11 @@ const AdminBroadcastCenter = () => {
       if (historyResult.error) throw historyResult.error;
       if (logsResult.error) throw logsResult.error;
 
-      const offerApplicationIds = new Set((offersResult.data ?? []).map((row: any) => row.application_id));
+      const offerApplicationIds = new Set<string>(
+        (offersResult.data ?? [])
+          .map((row: any) => row.application_id as string)
+          .filter((id: string | null): id is string => Boolean(id)),
+      );
 
       const applicationRows = offerApplicationIds.size > 0
         ? await db
@@ -140,9 +144,18 @@ const AdminBroadcastCenter = () => {
         : { data: [], error: null };
       if (applicationRows.error) throw applicationRows.error;
 
-      const studentIdsWithOffers = new Set((applicationRows.data ?? []).map((a: any) => a.student_id));
+      const studentIdsWithOffers = new Set<string>(
+        (applicationRows.data ?? [])
+          .map((a: any) => a.student_id as string)
+          .filter((id: string | null): id is string => Boolean(id)),
+      );
 
-      const studentIdsAwaitingDocs = new Set((docsResult.data ?? []).map((row: any) => row.student_id));
+      const studentIdsAwaitingDocs = new Set<string>(
+        (docsResult.data ?? [])
+          .map((row: any) => row.student_id as string)
+          .filter((id: string | null): id is string => Boolean(id)),
+      );
+
 
       const agents = normaliseAgentAudience(agentsResult.data ?? []);
       const students = normaliseStudentAudience(
