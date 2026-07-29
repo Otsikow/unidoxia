@@ -700,6 +700,199 @@ export type Database = {
           },
         ]
       }
+      broadcast_logs: {
+        Row: {
+          broadcast_id: string | null
+          channel: string
+          created_at: string
+          error_message: string | null
+          id: string
+          provider_message_id: string | null
+          recipient_id: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          broadcast_id?: string | null
+          channel: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          provider_message_id?: string | null
+          recipient_id?: string | null
+          status: string
+          tenant_id: string
+        }
+        Update: {
+          broadcast_id?: string | null
+          channel?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          provider_message_id?: string | null
+          recipient_id?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_logs_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcast_recipients: {
+        Row: {
+          broadcast_id: string
+          created_at: string
+          email: string | null
+          email_status: string
+          id: string
+          phone: string | null
+          recipient_id: string | null
+          tenant_id: string
+          updated_at: string
+          user_type: string | null
+          whatsapp_consent: boolean
+          whatsapp_status: string
+        }
+        Insert: {
+          broadcast_id: string
+          created_at?: string
+          email?: string | null
+          email_status?: string
+          id?: string
+          phone?: string | null
+          recipient_id?: string | null
+          tenant_id: string
+          updated_at?: string
+          user_type?: string | null
+          whatsapp_consent?: boolean
+          whatsapp_status?: string
+        }
+        Update: {
+          broadcast_id?: string
+          created_at?: string
+          email?: string | null
+          email_status?: string
+          id?: string
+          phone?: string | null
+          recipient_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+          user_type?: string | null
+          whatsapp_consent?: boolean
+          whatsapp_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "broadcast_recipients_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      broadcast_templates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          subject: string | null
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          subject?: string | null
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          subject?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      broadcasts: {
+        Row: {
+          attachments_json: Json
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          cta_url: string | null
+          filter_json: Json
+          headline: string | null
+          id: string
+          message_body: string
+          recipient_type: string
+          scheduled_for: string | null
+          send_email: boolean
+          send_whatsapp: boolean
+          sent_at: string | null
+          status: string
+          subject: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          attachments_json?: Json
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          filter_json?: Json
+          headline?: string | null
+          id?: string
+          message_body: string
+          recipient_type: string
+          scheduled_for?: string | null
+          send_email?: boolean
+          send_whatsapp?: boolean
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          attachments_json?: Json
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          cta_url?: string | null
+          filter_json?: Json
+          headline?: string | null
+          id?: string
+          message_body?: string
+          recipient_type?: string
+          scheduled_for?: string | null
+          send_email?: boolean
+          send_whatsapp?: boolean
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cas_loa: {
         Row: {
           application_id: string
@@ -3447,6 +3640,53 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_logs: {
+        Row: {
+          broadcast_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          phone: string | null
+          provider_message_id: string | null
+          recipient_id: string | null
+          status: string
+          template_name: string | null
+          tenant_id: string
+        }
+        Insert: {
+          broadcast_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          phone?: string | null
+          provider_message_id?: string | null
+          recipient_id?: string | null
+          status: string
+          template_name?: string | null
+          tenant_id: string
+        }
+        Update: {
+          broadcast_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          phone?: string | null
+          provider_message_id?: string | null
+          recipient_id?: string | null
+          status?: string
+          template_name?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_logs_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       staff_profiles: {
@@ -3553,6 +3793,12 @@ export type Database = {
       check_signup_availability: {
         Args: { p_email?: string; p_phone?: string }
         Returns: Json
+      }
+      claim_due_broadcasts: {
+        Args: { p_limit?: number }
+        Returns: {
+          id: string
+        }[]
       }
       create_notification: {
         Args: {
@@ -3758,6 +4004,7 @@ export type Database = {
         Args: { _student_id: string; _user_id: string }
         Returns: boolean
       }
+      is_broadcast_manager: { Args: { _tenant_id: string }; Returns: boolean }
       is_conversation_participant: {
         Args: { p_conversation_id: string; p_user_id?: string }
         Returns: boolean
