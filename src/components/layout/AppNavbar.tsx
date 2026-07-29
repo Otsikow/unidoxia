@@ -67,7 +67,7 @@ const AppNavbar = () => {
   const dashboardPath = isPartnerRole ? "/university" : "/dashboard";
 
   return (
-    <header className="w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-slide-in-down">
+    <header className="glass-toolbar w-full animate-slide-in-down">
       <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6 lg:px-8 lg:py-2">
         {/* LEFT SECTION */}
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
@@ -190,7 +190,7 @@ const AppNavbar = () => {
           {/* BRAND LOGO */}
           <Link
             to="/"
-            className="flex min-w-0 items-center gap-2 transition-transform duration-300 hover:scale-105"
+            className="flex min-w-0 items-center gap-2"
           >
             <img
               src={unidoxiaLogo}
@@ -211,10 +211,10 @@ const AppNavbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="group flex flex-col items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground transition-colors duration-200 hover:text-primary"
+                className="group flex items-center gap-2 rounded-[0.75rem] px-2.5 py-2 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-accent-foreground"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors duration-200 group-hover:bg-primary group-hover:text-primary-foreground">
-                  <Icon className="h-5 w-5" />
+                <span className="flex h-7 w-7 items-center justify-center rounded-[0.6rem] bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
                 </span>
                 <span className="text-xs font-semibold normal-case tracking-normal">
                   {t(`layout.navbar.links.${link.id}`)}

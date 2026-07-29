@@ -39,12 +39,12 @@ export function DashboardLayout({ children, showToolbarBackButton = true }: Dash
   usePageViewTracking(user?.id);
   return (
     <SidebarProvider defaultOpen>
-      <div className="flex min-h-screen w-full bg-background">
+      <div className="app-canvas flex min-h-screen w-full">
         <AppSidebar />
-        <SidebarInset className="bg-gradient-subtle min-w-0">
+        <SidebarInset className="min-w-0 bg-transparent">
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <SidebarToolbar showBackButton={showToolbarBackButton} />
-            <main className="flex-1 min-w-0 animate-fade-in overflow-y-auto">
+            <main className="min-w-0 flex-1 animate-fade-in overflow-y-auto">
               <div className="page-shell py-4 sm:py-6 lg:py-8">
                 {children}
               </div>
@@ -91,7 +91,7 @@ function SidebarToolbar({ showBackButton }: { showBackButton?: boolean }) {
     location.pathname !== "/";
 
   return (
-    <div className="sticky top-0 z-30 flex flex-col gap-2 sm:gap-3 border-b bg-background/80 px-2 sm:px-3 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="glass-toolbar sticky top-0 z-30 flex flex-col gap-2 px-2 py-2 sm:gap-3 sm:px-3">
       {/* Top row */}
       <div className="flex items-center gap-2">
         <SidebarTrigger
@@ -129,9 +129,9 @@ function SidebarToolbar({ showBackButton }: { showBackButton?: boolean }) {
       </div>
 
       {/* Greeting card */}
-      <div className="flex flex-col gap-2 sm:gap-3 rounded-lg sm:rounded-xl border bg-background/90 p-2 sm:p-3 shadow-sm md:flex-row md:items-center md:justify-between">
+      <div className="native-panel flex flex-col gap-2 p-2 sm:gap-3 sm:p-3 md:flex-row md:items-center md:justify-between">
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <div className="flex h-9 w-9 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs sm:text-sm font-semibold text-primary">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] bg-primary/10 text-xs font-semibold text-primary ring-1 ring-primary/10 sm:h-11 sm:w-11 sm:text-sm">
             {getInitials(profile?.full_name)}
           </div>
 
@@ -165,7 +165,7 @@ function SidebarToolbar({ showBackButton }: { showBackButton?: boolean }) {
             maxItems={5}
           />
 
-          <div className="flex items-center gap-2 sm:gap-3 rounded-md sm:rounded-lg border bg-muted/40 px-2 sm:px-3 py-1.5 sm:py-2">
+          <div className="flex items-center gap-2 rounded-[0.75rem] bg-muted/60 px-2 py-1.5 sm:gap-3 sm:px-3 sm:py-2">
             <div className="hidden sm:block space-y-0.5 text-left">
               <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
                 Theme
