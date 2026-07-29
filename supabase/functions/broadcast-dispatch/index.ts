@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { escapeHtml, renderTemplateVariables, safeHttpsUrl } from "../_shared/broadcast.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,9 +12,6 @@ interface DispatchRequest {
   broadcastId?: string;
   processScheduled?: boolean;
 }
-
-const renderTemplateVariables = (input: string, vars: Record<string, string | null | undefined>) =>
-  input.replace(/{{\s*(\w+)\s*}}/g, (_, key: string) => vars[key] ?? "");
 
 const sendEmail = async (to: string, subject: string, html: string) => {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
@@ -96,41 +94,70 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-
-    const userClient = createClient(supabaseUrl, serviceRoleKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const payload: DispatchRequest = await req.json();
+    const bearerToken = authHeader.replace(/^Bearer\s+/i, "");
+    const isServiceRequest = bearerToken === serviceRoleKey;
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
+    let requestingTenantId: string | null = null;
 
-    const {
-      data: { user },
-      error: userError,
-    } = await userClient.auth.getUser();
+    if (isServiceRequest) {
+      if (!payload.processScheduled || payload.broadcastId) {
+        return new Response(JSON.stringify({ error: "Service dispatch is restricted to scheduled broadcasts" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } else {
+      const userClient = createClient(supabaseUrl, serviceRoleKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const {
+        data: { user },
+        error: userError,
+      } = await userClient.auth.getUser();
 
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Invalid user token" }), {
-        status: 401,
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: "Invalid user token" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const [{ data: roleData, error: roleError }, { data: profileData, error: profileError }] = await Promise.all([
+        adminClient
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", ["admin", "staff"])
+          .limit(1)
+          .maybeSingle(),
+        adminClient.from("profiles").select("tenant_id").eq("id", user.id).single(),
+      ]);
+
+      if (roleError || !roleData || profileError || !profileData?.tenant_id) {
+        return new Response(JSON.stringify({ error: "Only admin/staff can dispatch broadcasts" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      requestingTenantId = profileData.tenant_id;
+    }
+
+    if (!payload.broadcastId && !payload.processScheduled) {
+      return new Response(JSON.stringify({ error: "Provide a broadcastId or request scheduled processing" }), {
+        status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: roleData, error: roleError } = await adminClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .in("role", ["admin", "staff"])
-      .limit(1)
-      .maybeSingle();
-
-    if (roleError || !roleData) {
-      return new Response(JSON.stringify({ error: "Only admin/staff can dispatch broadcasts" }), {
+    if (payload.processScheduled && !isServiceRequest) {
+      return new Response(JSON.stringify({ error: "Scheduled processing requires the service role" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const payload: DispatchRequest = await req.json();
 
     let targetBroadcastIds: string[] = [];
 
@@ -149,6 +176,10 @@ serve(async (req) => {
     }
 
     let processed = 0;
+    let failedBroadcasts = 0;
+    let sentDeliveries = 0;
+    let failedDeliveries = 0;
+    let rejectedDeliveries = 0;
 
     for (const broadcastId of targetBroadcastIds) {
       const { data: broadcast, error: broadcastError } = await adminClient
@@ -158,6 +189,12 @@ serve(async (req) => {
         .single();
 
       if (broadcastError || !broadcast) {
+        failedBroadcasts += 1;
+        continue;
+      }
+
+      if (requestingTenantId && broadcast.tenant_id !== requestingTenantId) {
+        failedBroadcasts += 1;
         continue;
       }
 
@@ -167,8 +204,19 @@ serve(async (req) => {
         .eq("broadcast_id", broadcastId);
 
       if (recipientsError || !recipients) {
+        await adminClient.from("broadcasts").update({ status: "failed" }).eq("id", broadcast.id);
+        failedBroadcasts += 1;
         continue;
       }
+
+      if (recipients.length === 0) {
+        await adminClient.from("broadcasts").update({ status: "failed" }).eq("id", broadcast.id);
+        failedBroadcasts += 1;
+        continue;
+      }
+
+      let broadcastSent = 0;
+      let broadcastFailed = 0;
 
       for (const recipient of recipients) {
         const vars = {
@@ -180,7 +228,7 @@ serve(async (req) => {
           commission_owed: "",
         };
 
-        if (broadcast.send_email) {
+        if (broadcast.send_email && recipient.email_status !== "sent") {
           if (!recipient.email) {
             await adminClient.from("broadcast_logs").insert({
               tenant_id: broadcast.tenant_id,
@@ -195,15 +243,19 @@ serve(async (req) => {
               .from("broadcast_recipients")
               .update({ email_status: "failed" })
               .eq("id", recipient.id);
+            broadcastFailed += 1;
+            failedDeliveries += 1;
           } else {
             try {
-              const unsubscribeFooter = `<p style=\"font-size:12px;color:#6b7280;margin-top:20px\">To unsubscribe from non-critical announcements, update your communication preferences in your UniDoxia profile settings.</p>`;
-              const emailHtml = `<h2>${broadcast.headline || broadcast.subject || "UniDoxia update"}</h2><p>${renderTemplateVariables(
-                (broadcast.message_body || "").replace(/\n/g, "<br />"),
-                vars,
-              )}</p>${
-                broadcast.cta_url && broadcast.cta_label
-                  ? `<p><a href=\"${broadcast.cta_url}\" style=\"color:#2563eb\">${broadcast.cta_label}</a></p>`
+              const renderedMessage = escapeHtml(renderTemplateVariables(broadcast.message_body || "", vars)).replace(
+                /\n/g,
+                "<br />",
+              );
+              const ctaUrl = safeHttpsUrl(broadcast.cta_url);
+              const unsubscribeFooter = `<p style="font-size:12px;color:#6b7280;margin-top:20px">To unsubscribe from non-critical announcements, update your communication preferences in your UniDoxia profile settings.</p>`;
+              const emailHtml = `<h2>${escapeHtml(broadcast.headline || broadcast.subject || "UniDoxia update")}</h2><p>${renderedMessage}</p>${
+                ctaUrl && broadcast.cta_label
+                  ? `<p><a href="${ctaUrl}" style="color:#2563eb">${escapeHtml(broadcast.cta_label)}</a></p>`
                   : ""
               }${unsubscribeFooter}`;
 
@@ -222,6 +274,8 @@ serve(async (req) => {
                 .from("broadcast_recipients")
                 .update({ email_status: "sent" })
                 .eq("id", recipient.id);
+              broadcastSent += 1;
+              sentDeliveries += 1;
             } catch (error) {
               await adminClient.from("broadcast_logs").insert({
                 tenant_id: broadcast.tenant_id,
@@ -236,11 +290,13 @@ serve(async (req) => {
                 .from("broadcast_recipients")
                 .update({ email_status: "failed" })
                 .eq("id", recipient.id);
+              broadcastFailed += 1;
+              failedDeliveries += 1;
             }
           }
         }
 
-        if (broadcast.send_whatsapp) {
+        if (broadcast.send_whatsapp && recipient.whatsapp_status !== "sent") {
           if (!recipient.phone) {
             await adminClient.from("broadcast_logs").insert({
               tenant_id: broadcast.tenant_id,
@@ -265,6 +321,8 @@ serve(async (req) => {
               .from("broadcast_recipients")
               .update({ whatsapp_status: "failed" })
               .eq("id", recipient.id);
+            broadcastFailed += 1;
+            failedDeliveries += 1;
           } else if (!recipient.whatsapp_consent) {
             await adminClient.from("broadcast_logs").insert({
               tenant_id: broadcast.tenant_id,
@@ -289,6 +347,7 @@ serve(async (req) => {
               .from("broadcast_recipients")
               .update({ whatsapp_status: "rejected" })
               .eq("id", recipient.id);
+            rejectedDeliveries += 1;
           } else {
             try {
               const whatsappMessage = `${broadcast.headline || broadcast.subject || "UniDoxia"}\n\n${renderTemplateVariables(
@@ -321,6 +380,8 @@ serve(async (req) => {
                 .from("broadcast_recipients")
                 .update({ whatsapp_status: "sent" })
                 .eq("id", recipient.id);
+              broadcastSent += 1;
+              sentDeliveries += 1;
             } catch (error) {
               await adminClient.from("broadcast_logs").insert({
                 tenant_id: broadcast.tenant_id,
@@ -345,20 +406,37 @@ serve(async (req) => {
                 .from("broadcast_recipients")
                 .update({ whatsapp_status: "failed" })
                 .eq("id", recipient.id);
+              broadcastFailed += 1;
+              failedDeliveries += 1;
             }
           }
         }
       }
 
+      const finalStatus = broadcastSent > 0 || broadcastFailed === 0 ? "sent" : "failed";
       await adminClient
         .from("broadcasts")
-        .update({ status: "sent", sent_at: new Date().toISOString() })
+        .update({
+          status: finalStatus,
+          sent_at: finalStatus === "sent" ? new Date().toISOString() : null,
+        })
         .eq("id", broadcast.id);
 
+      if (finalStatus === "failed") failedBroadcasts += 1;
       processed += 1;
     }
 
-    return new Response(JSON.stringify({ ok: true, processed }), {
+    return new Response(JSON.stringify({
+      ok: failedBroadcasts === 0,
+      processed,
+      failedBroadcasts,
+      deliveries: {
+        sent: sentDeliveries,
+        failed: failedDeliveries,
+        rejected: rejectedDeliveries,
+      },
+    }), {
+      status: failedBroadcasts === 0 ? 200 : 502,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
