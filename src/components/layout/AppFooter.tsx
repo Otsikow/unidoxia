@@ -107,8 +107,8 @@ export function AppFooter() {
 
   return (
     <footer className="border-t bg-background">
-      <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <img
@@ -118,7 +118,7 @@ export function AppFooter() {
               />
               <span className="font-semibold text-lg">{t("layout.footer.aboutTitle")}</span>
             </div>
-            <p className="text-sm text-muted-foreground">{t("layout.footer.aboutDescription")}</p>
+            <p className="max-w-xs text-sm text-muted-foreground">{t("layout.footer.aboutDescription")}</p>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-primary" />
               <a href="mailto:info@unidoxia.com" className="hover:underline">
@@ -126,7 +126,7 @@ export function AppFooter() {
               </a>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-1">
               <p className="text-sm font-medium">
                 {t("layout.footer.followUs", { defaultValue: "Follow UniDoxia" })}
               </p>
