@@ -251,7 +251,7 @@ const UniversityPartnership = () => {
 
       <section id="partnership-form" className="bg-muted/30 py-12">
         <div className="container mx-auto px-4">
-          <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="text-2xl">Tell us about your university</CardTitle>
