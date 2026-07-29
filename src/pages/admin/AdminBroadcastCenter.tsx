@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import {
   AlertTriangle,
@@ -22,36 +22,16 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  type AgentAudienceRow as AgentRow,
+  type PerformanceTier,
+  type StudentAudienceRow as StudentRow,
+  normaliseAgentAudience,
+  normaliseStudentAudience,
+} from "@/lib/broadcastAudience";
 
 type RecipientType = "all_agents" | "selected_agents" | "all_students" | "selected_students";
-type PerformanceTier = "all" | "high" | "medium" | "low" | "at_risk";
 type ActiveFilter = "all" | "active" | "inactive";
-
-interface AgentRow {
-  profile_id: string;
-  full_name: string;
-  email: string;
-  phone: string | null;
-  country: string | null;
-  active: boolean;
-  verification_status: string | null;
-  performance_tier: Exclude<PerformanceTier, "all">;
-  whatsapp_consent: boolean;
-}
-
-interface StudentRow {
-  profile_id: string;
-  student_id: string;
-  full_name: string;
-  email: string;
-  phone: string | null;
-  country: string | null;
-  active: boolean;
-  subscription_type: string | null;
-  has_offer: boolean;
-  awaiting_documents: boolean;
-  whatsapp_consent: boolean;
-}
 
 const BROADCAST_RECIPIENT_TYPES: { value: RecipientType; label: string }[] = [
   { value: "all_agents", label: "All Agents" },
@@ -73,12 +53,6 @@ const TEMPLATES_SEED = [
   },
 ];
 
-const parseConsent = (value: unknown): boolean => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const record = value as Record<string, unknown>;
-  return record.whatsapp === true || record.consent_whatsapp === true || record.marketing_whatsapp === true;
-};
-
 const AdminBroadcastCenter = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
@@ -86,8 +60,10 @@ const AdminBroadcastCenter = () => {
 
   const [loadingAudience, setLoadingAudience] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [retryingBroadcastId, setRetryingBroadcastId] = useState<string | null>(null);
 
-  const [recipientType, setRecipientType] = useState<RecipientType>("all_agents");
+  const [recipientType, setRecipientType] = useState<RecipientType>("all_students");
+  const [audienceLoadError, setAudienceLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [countryFilter, setCountryFilter] = useState("all");
   const [performanceFilter, setPerformanceFilter] = useState<PerformanceTier>("all");
@@ -106,7 +82,6 @@ const AdminBroadcastCenter = () => {
   const [ctaLabel, setCtaLabel] = useState("");
   const [ctaLink, setCtaLink] = useState("");
   const [scheduleAt, setScheduleAt] = useState("");
-  const [attachments, setAttachments] = useState<File[]>([]);
 
   const [agentAudience, setAgentAudience] = useState<AgentRow[]>([]);
   const [studentAudience, setStudentAudience] = useState<StudentRow[]>([]);
@@ -119,23 +94,22 @@ const AdminBroadcastCenter = () => {
   const isAgentMode = recipientType === "all_agents" || recipientType === "selected_agents";
   const isSelectedMode = recipientType === "selected_agents" || recipientType === "selected_students";
 
-  const fetchAudience = async () => {
+  const fetchAudience = useCallback(async () => {
     if (!tenantId) return;
     setLoadingAudience(true);
+    setAudienceLoadError(null);
     try {
       const db = supabase as any;
       const [agentsResult, studentsResult, offersResult, docsResult, templatesResult, historyResult, logsResult] = await Promise.all([
         db
-          .from("profiles")
-          .select("id, full_name, email, phone, country, active, role, agents(verification_status)")
-          .eq("tenant_id", tenantId)
-          .eq("role", "agent"),
+          .from("agents")
+          .select("profile_id, active, verification_status, profile:profiles!agents_profile_id_fkey(id, full_name, email, phone, country, active)")
+          .eq("tenant_id", tenantId),
         db
-          .from("profiles")
-          .select("id, full_name, email, phone, country, active, role, students(id, plan_type, consent_flags_json)")
-          .eq("tenant_id", tenantId)
-          .eq("role", "student"),
-        db.from("offers").select("application_id"),
+          .from("students")
+          .select("id, profile_id, legal_name, contact_email, contact_phone, current_country, plan_type, consent_flags_json, profile:profiles!students_profile_id_fkey(id, full_name, email, phone, country, active)")
+          .eq("tenant_id", tenantId),
+        db.from("offers").select("application_id").eq("tenant_id", tenantId),
         db.from("student_documents").select("student_id, admin_review_status").eq("admin_review_status", "pending"),
         db.from("broadcast_templates").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }),
         db.from("broadcasts").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(50),
@@ -151,53 +125,31 @@ const AdminBroadcastCenter = () => {
       if (studentsResult.error) throw studentsResult.error;
       if (offersResult.error) throw offersResult.error;
       if (docsResult.error) throw docsResult.error;
+      if (templatesResult.error) throw templatesResult.error;
+      if (historyResult.error) throw historyResult.error;
+      if (logsResult.error) throw logsResult.error;
 
       const offerApplicationIds = new Set((offersResult.data ?? []).map((row: any) => row.application_id));
 
-      const applicationRows = await db
-        .from("applications")
-        .select("id, student_id, agent_id")
-        .in("id", [...offerApplicationIds]);
+      const applicationRows = offerApplicationIds.size > 0
+        ? await db
+            .from("applications")
+            .select("id, student_id")
+            .eq("tenant_id", tenantId)
+            .in("id", [...offerApplicationIds])
+        : { data: [], error: null };
+      if (applicationRows.error) throw applicationRows.error;
 
       const studentIdsWithOffers = new Set((applicationRows.data ?? []).map((a: any) => a.student_id));
 
       const studentIdsAwaitingDocs = new Set((docsResult.data ?? []).map((row: any) => row.student_id));
 
-      const agents = (agentsResult.data ?? []).map((row: any) => {
-        const verificationStatus = row.agents?.[0]?.verification_status ?? null;
-        const performanceTier: Exclude<PerformanceTier, "all"> =
-          verificationStatus === "verified" ? "high" : verificationStatus === "pending" ? "medium" : "at_risk";
-
-        return {
-          profile_id: row.id,
-          full_name: row.full_name,
-          email: row.email,
-          phone: row.phone,
-          country: row.country,
-          active: Boolean(row.active),
-          verification_status: verificationStatus,
-          performance_tier: performanceTier,
-          whatsapp_consent: false,
-        } as AgentRow;
-      });
-
-      const students = (studentsResult.data ?? []).map((row: any) => {
-        const student = row.students?.[0];
-        const studentId = student?.id ?? "";
-        return {
-          profile_id: row.id,
-          student_id: studentId,
-          full_name: row.full_name,
-          email: row.email,
-          phone: row.phone,
-          country: row.country,
-          active: Boolean(row.active),
-          subscription_type: student?.plan_type ?? null,
-          has_offer: studentIdsWithOffers.has(studentId),
-          awaiting_documents: studentIdsAwaitingDocs.has(studentId),
-          whatsapp_consent: parseConsent(student?.consent_flags_json),
-        } as StudentRow;
-      });
+      const agents = normaliseAgentAudience(agentsResult.data ?? []);
+      const students = normaliseStudentAudience(
+        studentsResult.data ?? [],
+        studentIdsWithOffers,
+        studentIdsAwaitingDocs,
+      );
 
       setAgentAudience(agents);
       setStudentAudience(students);
@@ -206,19 +158,21 @@ const AdminBroadcastCenter = () => {
       setDeliveryLogs(logsResult.data ?? []);
     } catch (error) {
       console.error("Failed to load broadcast data", error);
+      const description = error instanceof Error ? error.message : "Please refresh the page and try again.";
+      setAudienceLoadError(description);
       toast({
         title: "Unable to load broadcast data",
-        description: "Please refresh the page and try again.",
+        description,
         variant: "destructive",
       });
     } finally {
       setLoadingAudience(false);
     }
-  };
+  }, [tenantId, toast]);
 
   useEffect(() => {
     fetchAudience();
-  }, [tenantId]);
+  }, [fetchAudience]);
 
   useEffect(() => {
     setSelectedRecipientIds(new Set());
@@ -300,12 +254,22 @@ const AdminBroadcastCenter = () => {
 
   const validate = () => {
     if (!tenantId) return "No tenant context detected.";
+    if (loadingAudience) return "Recipients are still loading. Please wait a moment.";
+    if (audienceLoadError) return "Recipient data could not be loaded. Refresh the audience before sending.";
     if (!sendEmail && !sendWhatsapp) return "Please choose at least one delivery channel.";
     if (sendEmail && !subject.trim()) return "Subject is required when email is enabled.";
     if (!messageBody.trim()) return "Message body is required.";
     if (selectedAudience.length === 0) return "No recipients match the current selection and filters.";
     if (ctaLabel && !ctaLink) return "CTA link is required when CTA label is provided.";
     if (ctaLink && !ctaLabel) return "CTA label is required when CTA link is provided.";
+    if (ctaLink) {
+      try {
+        if (new URL(ctaLink).protocol !== "https:") return "CTA links must use HTTPS.";
+      } catch {
+        return "Enter a valid CTA link.";
+      }
+    }
+    if (scheduleAt && new Date(scheduleAt).getTime() <= Date.now()) return "Scheduled time must be in the future.";
     return null;
   };
 
@@ -342,6 +306,7 @@ const AdminBroadcastCenter = () => {
     }
 
     setSubmitting(true);
+    let createdBroadcastId: string | null = null;
     try {
       const db = supabase as any;
       const scheduledFor = scheduleAt ? new Date(scheduleAt).toISOString() : null;
@@ -366,16 +331,17 @@ const AdminBroadcastCenter = () => {
           message_body: messageBody.trim(),
           cta_label: ctaLabel.trim() || null,
           cta_url: ctaLink.trim() || null,
-          attachments_json: attachments.map((file) => ({ name: file.name, size: file.size, type: file.type })),
+          attachments_json: [],
           send_email: sendEmail,
           send_whatsapp: sendWhatsapp,
           scheduled_for: scheduledFor,
-          status: scheduledFor ? "scheduled" : "sent",
+          status: scheduledFor ? "scheduled" : "processing",
         })
         .select("id")
         .single();
 
       if (broadcastError) throw broadcastError;
+      createdBroadcastId = broadcastInsert.id;
 
       const rows = selectedAudience.map((recipient) => ({
         tenant_id: tenantId,
@@ -393,17 +359,13 @@ const AdminBroadcastCenter = () => {
       if (recipientsError) throw recipientsError;
 
       if (!scheduledFor) {
-        const { error: invokeError } = await supabase.functions.invoke("broadcast-dispatch", {
+        const { data: dispatchResult, error: invokeError } = await supabase.functions.invoke("broadcast-dispatch", {
           body: { broadcastId: broadcastInsert.id },
         });
 
-        if (invokeError) {
-          console.error(invokeError);
-          toast({
-            title: "Broadcast queued, dispatch pending",
-            description: "The broadcast was saved but automatic dispatch could not be triggered.",
-            variant: "destructive",
-          });
+        if (invokeError) throw invokeError;
+        if (!dispatchResult?.ok || dispatchResult.processed !== 1) {
+          throw new Error(dispatchResult?.error || "Dispatch did not process the broadcast.");
         }
       }
 
@@ -411,7 +373,7 @@ const AdminBroadcastCenter = () => {
         title: scheduledFor ? "Broadcast scheduled" : "Broadcast queued",
         description: scheduledFor
           ? `Broadcast will be sent at ${new Date(scheduledFor).toLocaleString()}.`
-          : `${selectedAudience.length} recipients added to dispatch queue.`,
+          : `${selectedAudience.length} recipients were processed. Review Delivery Logs for channel results.`,
       });
 
       setSubject("");
@@ -420,14 +382,47 @@ const AdminBroadcastCenter = () => {
       setCtaLabel("");
       setCtaLink("");
       setScheduleAt("");
-      setAttachments([]);
       setSelectedRecipientIds(new Set());
       await fetchAudience();
     } catch (error) {
       console.error("Broadcast failed", error);
-      toast({ title: "Broadcast failed", description: "Please review your input and try again.", variant: "destructive" });
+      if (createdBroadcastId) {
+        await (supabase as any).from("broadcasts").update({ status: "failed" }).eq("id", createdBroadcastId);
+      }
+      toast({
+        title: "Broadcast failed",
+        description: error instanceof Error ? error.message : "Please review your input and try again.",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleRetry = async (broadcastId: string) => {
+    setRetryingBroadcastId(broadcastId);
+    try {
+      await (supabase as any).from("broadcasts").update({ status: "processing" }).eq("id", broadcastId);
+      const { data, error } = await supabase.functions.invoke("broadcast-dispatch", {
+        body: { broadcastId },
+      });
+      if (error) throw error;
+      if (!data?.ok || data.processed !== 1) throw new Error(data?.error || "Dispatch retry was not processed.");
+
+      toast({
+        title: "Broadcast retry completed",
+        description: `${data.deliveries?.sent ?? 0} delivery attempt(s) sent successfully.`,
+      });
+      await fetchAudience();
+    } catch (error) {
+      await (supabase as any).from("broadcasts").update({ status: "failed" }).eq("id", broadcastId);
+      toast({
+        title: "Broadcast retry failed",
+        description: error instanceof Error ? error.message : "Review Delivery Logs for details.",
+        variant: "destructive",
+      });
+    } finally {
+      setRetryingBroadcastId(null);
     }
   };
 
@@ -462,7 +457,9 @@ const AdminBroadcastCenter = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                {BROADCAST_RECIPIENT_TYPES.map((option) => (
+                {BROADCAST_RECIPIENT_TYPES.map((option) => {
+                  const count = option.value.includes("agent") ? agentAudience.length : studentAudience.length;
+                  return (
                   <button
                     key={option.value}
                     type="button"
@@ -471,9 +468,11 @@ const AdminBroadcastCenter = () => {
                       recipientType === option.value ? "border-primary bg-primary/10" : "border-border hover:bg-accent"
                     }`}
                   >
-                    {option.label}
+                    <span>{option.label}</span>
+                    <span className="mt-1 block text-xs text-muted-foreground">{count} available</span>
                   </button>
-                ))}
+                  );
+                })}
               </div>
 
               <Separator />
@@ -556,6 +555,14 @@ const AdminBroadcastCenter = () => {
                   {loadingAudience ? (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" /> Loading recipients...
+                    </div>
+                  ) : audienceLoadError ? (
+                    <div className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+                      Recipient data failed to load. Use Refresh data and try again.
+                    </div>
+                  ) : selectableAudience.length === 0 ? (
+                    <div className="rounded-md border border-dashed p-6 text-center text-sm text-muted-foreground">
+                      No {isAgentMode ? "agent" : "student"} records match these filters. Choose another audience or clear the filters.
                     </div>
                   ) : (
                     <div className="max-h-72 overflow-auto rounded-md border">
@@ -666,19 +673,7 @@ const AdminBroadcastCenter = () => {
                 </div>
               </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="space-y-1">
-                  <Label>Attachments (PDF only)</Label>
-                  <Input
-                    type="file"
-                    accept="application/pdf"
-                    multiple
-                    onChange={(event) => {
-                      const files = Array.from(event.target.files ?? []).filter((file) => file.type === "application/pdf");
-                      setAttachments(files);
-                    }}
-                  />
-                </div>
+              <div className="max-w-md">
                 <div className="space-y-1">
                   <Label>Schedule for Later (optional)</Label>
                   <Input type="datetime-local" value={scheduleAt} onChange={(e) => setScheduleAt(e.target.value)} />
@@ -734,7 +729,19 @@ const AdminBroadcastCenter = () => {
                   <div key={row.id} className="rounded-lg border p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-medium">{row.subject || row.headline || "Untitled broadcast"}</p>
-                      <Badge variant="outline">{row.status}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={row.status === "failed" ? "destructive" : "outline"}>{row.status}</Badge>
+                        {row.status === "failed" ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={retryingBroadcastId === row.id}
+                            onClick={() => handleRetry(row.id)}
+                          >
+                            {retryingBroadcastId === row.id ? <Loader2 className="h-4 w-4 animate-spin" /> : "Retry failed"}
+                          </Button>
+                        ) : null}
+                      </div>
                     </div>
                     <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                       <span>Recipient Type: {row.recipient_type}</span>
