@@ -58,7 +58,7 @@ const KPI_CONFIG = [
 ] as const;
 
 const KPI_DESTINATIONS: Partial<Record<(typeof KPI_CONFIG)[number]["key"], string>> = {
-  totalStudents: "/admin/users",
+  totalStudents: "/admin/students",
   totalAgents: "/admin/agents",
   totalUniversities: "/admin/universities",
   activeApplications: "/admin/admissions",
