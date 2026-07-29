@@ -364,7 +364,7 @@ const AdminLayout = () => {
   const sidebar = (showCollapseButton = true) => (
     <div
       className={cn(
-        "relative flex h-full flex-col border-r bg-card transition-all duration-300",
+        "native-sidebar relative flex h-full flex-col border-r-0 transition-all duration-200",
         isCollapsed && showCollapseButton ? "w-20" : "w-72"
       )}
     >
@@ -373,7 +373,7 @@ const AdminLayout = () => {
         <Button
           size="icon"
           variant="outline"
-          className="absolute -right-3 top-20 z-50 h-6 w-6 rounded-full border bg-background shadow-md hover:bg-accent hover:shadow-lg transition-all duration-200"
+          className="absolute -right-3 top-20 z-50 h-6 w-6 rounded-full border bg-background shadow-sm transition-colors duration-150 hover:bg-accent"
           onClick={() => setIsCollapsed((prev) => !prev)}
           aria-expanded={!isCollapsed}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -456,8 +456,8 @@ const AdminLayout = () => {
                         key={item.to}
                         to={item.to}
                         className={cn(
-                          "group block rounded-lg p-2 sm:p-2.5 transition touch-manipulation",
-                          isActive ? "bg-primary/10 text-primary" : "hover:bg-muted"
+                          "group block touch-manipulation rounded-[0.75rem] p-2 transition-colors sm:p-2.5",
+                          isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/75"
                         )}
                       >
                         <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
@@ -528,12 +528,12 @@ const AdminLayout = () => {
   /* ✅ Layout Wrapper                                                       */
   /* ---------------------------------------------------------------------- */
   return (
-    <div className="flex min-h-screen bg-muted/20">
+    <div className="app-canvas flex min-h-screen">
       {mobileNavSheet}
       <div className={cn("hidden md:flex shrink-0 overflow-visible", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
       <div className="flex w-full min-w-0 flex-col">
         {/* Top Header Bar with Notification Bell */}
-        <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:px-6">
+        <header className="glass-toolbar sticky top-0 z-40 flex h-14 items-center justify-between gap-2 px-4 md:px-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -557,7 +557,7 @@ const AdminLayout = () => {
           </div>
           <NotificationBell notificationsUrl="/admin/notifications" maxItems={7} />
         </header>
-        <main className="flex-1 bg-background">
+        <main className="flex-1 bg-transparent">
           <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
             <Outlet />
           </div>
