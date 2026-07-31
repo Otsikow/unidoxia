@@ -1,16 +1,10 @@
 "use client";
 
-import { lazy, Suspense, useMemo, useCallback, type KeyboardEvent } from "react";
-import AdminStudentInsightsBlock from "@/components/admin/AdminStudentInsightsBlock";
-
-const AdminAdmissionsOversight = lazy(() => import("@/pages/admin/AdminAdmissions"));
-import { LeadsHealthCard } from "@/pages/admin/AdminLeads";
+import { useCallback, useMemo, type KeyboardEvent } from "react";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -20,10 +14,19 @@ import {
   useAdminRecentActivity,
   useSystemHealth,
 } from "@/hooks/admin/useAdminOverviewData";
-import ZoeAdminInsightsPanel from "@/components/admin/ZoeAdminInsightsPanel";
 import AdminReportExportButton from "@/components/admin/AdminReportExportButton";
 import { LoadingState } from "@/components/LoadingState";
-import { AlertTriangle, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
+import {
+  Activity,
+  ArrowUpRight,
+  ChevronRight,
+  FileText,
+  GraduationCap,
+  Sparkles,
+  ShieldCheck,
+  Users,
+  Wallet,
+} from "lucide-react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -32,8 +35,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  BarChart,
-  Bar,
 } from "recharts";
 import { formatDistanceToNow } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -41,33 +42,73 @@ import type { TFunction } from "i18next";
 import { useNavigate } from "react-router-dom";
 
 /* -------------------------------------------------------------------------- */
-/* ✅ KPI Configuration                                                      */
+/* KPI configuration — four essential operations signals                      */
 /* -------------------------------------------------------------------------- */
 const KPI_CONFIG = [
-  { key: "totalStudents", labelKey: "admin.overview.kpis.totalStudents", defaultLabel: "Total Students" },
-  { key: "totalAgents", labelKey: "admin.overview.kpis.totalAgents", defaultLabel: "Total Agents" },
-  { key: "totalUniversities", labelKey: "admin.overview.kpis.totalUniversities", defaultLabel: "Total Universities" },
-  { key: "activeApplications", labelKey: "admin.overview.kpis.activeApplications", defaultLabel: "Active Applications" },
+  {
+    key: "activeApplications",
+    labelKey: "admin.overview.kpis.activeApplications",
+    defaultLabel: "Active applications",
+    to: "/admin/admissions",
+    icon: FileText,
+  },
+  {
+    key: "totalStudents",
+    labelKey: "admin.overview.kpis.totalStudents",
+    defaultLabel: "Students",
+    to: "/admin/students",
+    icon: GraduationCap,
+  },
+  {
+    key: "pendingVerifications",
+    labelKey: "admin.overview.kpis.pendingVerifications",
+    defaultLabel: "Needs review",
+    to: "/admin/agents",
+    icon: ShieldCheck,
+    accent: true,
+  },
   {
     key: "totalCommissionPaid",
     labelKey: "admin.overview.kpis.totalCommissionPaid",
-    defaultLabel: "Total Commission Paid",
+    defaultLabel: "Commission paid",
+    to: "/admin/payments",
+    icon: Wallet,
     format: "currency",
   },
-  { key: "pendingVerifications", labelKey: "admin.overview.kpis.pendingVerifications", defaultLabel: "Pending Verifications" },
 ] as const;
 
-const KPI_DESTINATIONS: Partial<Record<(typeof KPI_CONFIG)[number]["key"], string>> = {
-  totalStudents: "/admin/students",
-  totalAgents: "/admin/agents",
-  totalUniversities: "/admin/universities",
-  activeApplications: "/admin/admissions",
-  totalCommissionPaid: "/admin/payments",
-  pendingVerifications: "/admin/agents",
-};
+const ACTION_ITEMS = [
+  {
+    key: "verification",
+    labelKey: "admin.overview.actions.verification",
+    defaultLabel: "Verification queue",
+    descriptionKey: "admin.overview.actions.verificationDescription",
+    defaultDescription: "Approve agents and university partners",
+    to: "/admin/agents",
+    icon: ShieldCheck,
+  },
+  {
+    key: "leads",
+    labelKey: "admin.overview.actions.leads",
+    defaultLabel: "Website leads",
+    descriptionKey: "admin.overview.actions.leadsDescription",
+    defaultDescription: "Follow up on new consultation requests",
+    to: "/admin/leads",
+    icon: Users,
+  },
+  {
+    key: "admissions",
+    labelKey: "admin.overview.actions.admissions",
+    defaultLabel: "Admissions pipeline",
+    descriptionKey: "admin.overview.actions.admissionsDescription",
+    defaultDescription: "Review offers, interviews and decisions",
+    to: "/admin/admissions",
+    icon: FileText,
+  },
+] as const;
 
 /* -------------------------------------------------------------------------- */
-/* ✅ Utility Functions                                                      */
+/* Utilities                                                                  */
 /* -------------------------------------------------------------------------- */
 const formatValue = (value: number, format?: "currency", currency = "USD", locale = "en") => {
   if (format === "currency") {
@@ -116,216 +157,138 @@ const getHealthStyles = (status: string, t: TFunction) => {
 };
 
 /* -------------------------------------------------------------------------- */
-/* ✅ Main Component                                                         */
+/* Main component                                                             */
 /* -------------------------------------------------------------------------- */
 const AdminOverview = () => {
   const { profile } = useAuth();
   const tenantId = profile?.tenant_id;
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
   const translate = useCallback(
     (key: string, defaultValue: string, options?: Record<string, unknown>) =>
       t(key, { defaultValue, ...options }),
     [t],
   );
 
-  const openZoe = (prompt: string) =>
-    typeof window !== "undefined" &&
-    window.dispatchEvent(new CustomEvent("zoe:open-chat", { detail: { prompt } }));
-
-  /* ---------------------------------------------------------------------- */
-  /* ✅ Data Queries                                                        */
-  /* ---------------------------------------------------------------------- */
   const metricsQuery = useAdminOverviewMetrics(tenantId);
   const trendsQuery = useAdmissionsTrends(tenantId);
   const geographyQuery = useApplicationsByCountry(tenantId);
   const activityQuery = useAdminRecentActivity(tenantId);
   const healthQuery = useSystemHealth(tenantId);
-  const loadingState = metricsQuery.isLoading && !metricsQuery.data;
 
-  /* ---------------------------------------------------------------------- */
-  /* ✅ Charts                                                              */
-  /* ---------------------------------------------------------------------- */
-  const chartContent = useMemo(() => {
-    if (trendsQuery.isLoading)
-      return <LoadingState message={t("admin.overview.loading.trends", { defaultValue: "Loading admissions trends" })} size="sm" />;
-    if (!trendsQuery.data?.length)
-      return <p className="text-sm text-muted-foreground">{t("admin.overview.emptyStates.noAdmissions", { defaultValue: "No admissions activity recorded for the selected period." })}</p>;
+  const openZoe = (prompt: string) =>
+    typeof window !== "undefined" &&
+    window.dispatchEvent(new CustomEvent("zoe:open-chat", { detail: { prompt } }));
 
+  const topDestination = geographyQuery.data?.[0];
+  const healthStyles = getHealthStyles(healthQuery.data?.status ?? "unknown", t);
+  const recentActivity = useMemo(() => (activityQuery.data ?? []).slice(0, 6), [activityQuery.data]);
+
+  const momentumChart = useMemo(() => {
+    if (trendsQuery.isLoading) {
+      return (
+        <LoadingState
+          message={translate("admin.overview.loading.trends", "Loading admissions trends")}
+          size="sm"
+        />
+      );
+    }
+    if (!trendsQuery.data?.length) {
+      return (
+        <p className="text-sm text-muted-foreground">
+          {translate(
+            "admin.overview.emptyStates.noAdmissions",
+            "No admissions activity recorded for the selected period.",
+          )}
+        </p>
+      );
+    }
     return (
-      <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={trendsQuery.data}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="month" stroke="currentColor" className="text-xs text-muted-foreground" tick={{ fill: "hsl(var(--foreground))" }} />
-          <YAxis stroke="currentColor" className="text-xs text-muted-foreground" allowDecimals={false} tick={{ fill: "hsl(var(--foreground))" }} />
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={trendsQuery.data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
+          <XAxis
+            dataKey="month"
+            stroke="currentColor"
+            tickLine={false}
+            axisLine={false}
+            className="text-xs text-muted-foreground"
+            tick={{ fill: "hsl(var(--muted-foreground))" }}
+          />
+          <YAxis
+            stroke="currentColor"
+            tickLine={false}
+            axisLine={false}
+            allowDecimals={false}
+            className="text-xs text-muted-foreground"
+            tick={{ fill: "hsl(var(--muted-foreground))" }}
+          />
           <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Line type="monotone" dataKey="submitted" strokeWidth={2} stroke="hsl(var(--chart-1))"
-            name={t("admin.overview.trends.submitted", { defaultValue: "Submitted" })} />
-          <Line type="monotone" dataKey="enrolled" strokeWidth={2} stroke="hsl(var(--chart-2))"
-            name={t("admin.overview.trends.enrolled", { defaultValue: "Enrolled" })} />
+          <Line
+            type="monotone"
+            dataKey="submitted"
+            strokeWidth={2}
+            dot={false}
+            stroke="hsl(var(--chart-1))"
+            name={translate("admin.overview.trends.submitted", "Submitted")}
+          />
+          <Line
+            type="monotone"
+            dataKey="enrolled"
+            strokeWidth={2}
+            dot={false}
+            stroke="hsl(var(--chart-2))"
+            name={translate("admin.overview.trends.enrolled", "Enrolled")}
+          />
         </LineChart>
       </ResponsiveContainer>
     );
-  }, [t, trendsQuery]);
+  }, [translate, trendsQuery.data, trendsQuery.isLoading]);
 
-  const barChart = useMemo(() => {
-    if (geographyQuery.isLoading)
-      return <LoadingState message={t("admin.overview.loading.geography", { defaultValue: "Loading geographic mix" })} size="sm" />;
-    if (!geographyQuery.data?.length)
-      return <p className="text-sm text-muted-foreground">{t("admin.overview.emptyStates.noApplications", { defaultValue: "No in-flight applications available." })}</p>;
+  const secondaryFacts = [
+    {
+      key: "destination",
+      label: translate("admin.overview.facts.topDestination", "Top destination"),
+      value: topDestination?.country ?? "—",
+      hint: topDestination
+        ? translate("admin.overview.facts.applications", "{{count}} applications", {
+            count: topDestination.applications,
+          })
+        : translate("admin.overview.facts.noPipeline", "No pipeline yet"),
+    },
+    {
+      key: "agents",
+      label: translate("admin.overview.kpis.totalAgents", "Agents"),
+      value: formatValue(metricsQuery.data?.totalAgents ?? 0, undefined, undefined, i18n.language),
+      hint: translate("admin.overview.facts.agentsHint", "Active partner network"),
+    },
+    {
+      key: "universities",
+      label: translate("admin.overview.kpis.totalUniversities", "University partners"),
+      value: formatValue(
+        metricsQuery.data?.totalUniversities ?? 0,
+        undefined,
+        undefined,
+        i18n.language,
+      ),
+      hint: translate("admin.overview.facts.universitiesHint", "Institutions onboarded"),
+    },
+  ];
 
-    return (
-      <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={geographyQuery.data}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-          <XAxis dataKey="country" stroke="currentColor" className="text-xs text-muted-foreground" tick={{ fill: "hsl(var(--foreground))" }} />
-          <YAxis stroke="currentColor" className="text-xs text-muted-foreground" allowDecimals={false} tick={{ fill: "hsl(var(--foreground))" }} />
-          <Tooltip cursor={{ fill: "hsl(var(--muted))" }} />
-          <Bar dataKey="applications" fill="hsl(var(--chart-3))" radius={[6, 6, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  }, [geographyQuery, t]);
-
-  /* ---------------------------------------------------------------------- */
-  /* ✅ KPI Cards                                                           */
-  /* ---------------------------------------------------------------------- */
-  const kpiCards = (
-    <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-3">
-      {KPI_CONFIG.map((item) => {
-        const value = metricsQuery.data?.[item.key] ?? 0;
-        const display =
-          'format' in item && item.format === "currency"
-            ? formatValue(value, "currency", metricsQuery.data?.currency, i18n.language)
-            : formatValue(value, undefined, undefined, i18n.language);
-        const destination = KPI_DESTINATIONS[item.key];
-        const interactive = Boolean(destination);
-        const navigateToDestination = () => {
-          if (destination) navigate(destination);
-        };
-        const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-          if (!interactive) return;
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            navigateToDestination();
-          }
-        };
-        return (
-          <Card
-            key={item.key}
-            role={interactive ? "button" : undefined}
-            tabIndex={interactive ? 0 : undefined}
-            aria-label={interactive ? translate(item.labelKey, item.defaultLabel) : undefined}
-            onClick={navigateToDestination}
-            onKeyDown={handleKeyDown}
-            className={cn(
-              interactive
-                ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-                : undefined,
-              item.key === "pendingVerifications" ? "relative" : undefined,
-            )}
-          >
-            {item.key === "pendingVerifications" && value > 0 && (
-              <Badge
-                variant="outline"
-                className="absolute right-2 top-2 z-10 text-[9px] uppercase tracking-wide text-amber-600 sm:right-3 sm:top-3 sm:text-[10px]"
-              >
-                {t("admin.overview.badges.actionRequired", { defaultValue: "Action" })}
-              </Badge>
-            )}
-            <CardHeader className="p-3 sm:p-4 pb-1 sm:pb-2 flex flex-row items-start justify-between gap-1">
-              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground leading-tight">
-                {t(item.labelKey, { defaultValue: item.defaultLabel })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 pt-0">
-              {metricsQuery.isLoading ? <Skeleton className="h-6 sm:h-8 w-16 sm:w-24" /> : <p className="text-lg sm:text-2xl font-semibold tracking-tight">{display}</p>}
-              <p className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-muted-foreground truncate">
-                {t("admin.overview.kpis.lastUpdated", {
-                  defaultValue: "Updated {{time}}",
-                  time: metricsQuery.data?.lastUpdated
-                    ? formatDistanceToNow(new Date(metricsQuery.data.lastUpdated), { addSuffix: true })
-                    : t("admin.overview.kpis.justNow", { defaultValue: "moments ago" }),
-                })}
-              </p>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  );
-
-  /* ---------------------------------------------------------------------- */
-  /* ✅ Recent Activity                                                     */
-  /* ---------------------------------------------------------------------- */
-  const recentActivity = (
-    <Card>
-      <CardHeader className="p-3 sm:p-4 lg:p-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <CardTitle className="text-sm sm:text-base font-semibold">
-            {t("admin.overview.recentActivity.title", { defaultValue: "Recent activity" })}
-          </CardTitle>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            {t("admin.overview.recentActivity.subtitle", { defaultValue: "Latest tenant-wide audit events" })}
-          </p>
-        </div>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => openZoe(translate("admin.overview.recentActivity.prompt", "Summarize today’s critical audit events"))}
-        >
-          <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          {t("admin.overview.recentActivity.cta", { defaultValue: "Escalate with Zoe" })}
-        </Button>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="max-h-64 sm:max-h-80">
-          <div className="divide-y">
-            {activityQuery.isLoading && <LoadingState message={t("admin.overview.loading.activity", { defaultValue: "Loading activity" })} size="sm" />}
-            {!activityQuery.isLoading && (!activityQuery.data?.length) && (
-              <p className="p-4 text-sm text-muted-foreground">
-                {t("admin.overview.recentActivity.empty", { defaultValue: "No recent activity recorded." })}
-              </p>
-            )}
-            {activityQuery.data?.map((item) => (
-              <div key={item.id} className="flex items-start justify-between gap-3 p-4">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">{item.action}</p>
-                  <p className="text-xs text-muted-foreground">{item.entity}</p>
-                  {item.user?.full_name && (
-                    <p className="text-xs text-muted-foreground">
-                      {t("admin.overview.recentActivity.byUser", { defaultValue: "by {{name}}", name: item.user.full_name })}
-                    </p>
-                  )}
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                </span>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
-
-  const healthStyles = getHealthStyles(healthQuery.data?.status ?? "unknown", t);
-
-  /* ---------------------------------------------------------------------- */
-  /* ✅ Render                                                              */
-  /* ---------------------------------------------------------------------- */
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
       <div className="page-header">
         <div className="min-w-0 flex-1 space-y-1">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            {t("admin.overview.title", { defaultValue: "Operations overview" })}
+            {translate("admin.overview.title", "Operations overview")}
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            {t("admin.overview.subtitle", {
-              defaultValue: "Monitor admissions momentum, commercial health, and platform activity in one unified console.",
-            })}
+          <p className="text-xs text-muted-foreground sm:text-sm">
+            {translate(
+              "admin.overview.subtitle",
+              "Monitor admissions momentum, commercial health, and platform activity in one unified console.",
+            )}
           </p>
         </div>
         <div className="page-header-actions w-full sm:w-auto">
@@ -333,136 +296,263 @@ const AdminOverview = () => {
         </div>
       </div>
 
-      {/* Layout */}
-      <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,1fr)] xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,1fr)] 2xl:grid-cols-[minmax(0,1.6fr)_minmax(340px,1fr)]">
-        <div className="min-w-0 space-y-4 sm:space-y-6">
-          {kpiCards}
-          <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
-            <Card>
-              <CardHeader className="p-3 sm:p-4 lg:p-6">
-                <CardTitle className="text-sm sm:text-base font-semibold">
-                  {t("admin.overview.trends.title", { defaultValue: "Admissions trends" })}
+      {/* KPI panels */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {KPI_CONFIG.map((item) => {
+          const value = metricsQuery.data?.[item.key] ?? 0;
+          const display =
+            "format" in item && item.format === "currency"
+              ? formatValue(value, "currency", metricsQuery.data?.currency, i18n.language)
+              : formatValue(value, undefined, undefined, i18n.language);
+          const label = translate(item.labelKey, item.defaultLabel);
+          const go = () => navigate(item.to);
+          const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              go();
+            }
+          };
+          const Icon = item.icon;
+          const needsAttention = "accent" in item && item.accent && value > 0;
+
+          return (
+            <Card
+              key={item.key}
+              role="button"
+              tabIndex={0}
+              aria-label={label}
+              onClick={go}
+              onKeyDown={handleKeyDown}
+              className="cursor-pointer transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-4 pb-1.5">
+                <CardTitle className="text-xs font-medium leading-tight text-muted-foreground sm:text-sm">
+                  {label}
                 </CardTitle>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {t("admin.overview.trends.subtitle", { defaultValue: "Rolling six-month submission and enrollment cadence" })}
-                </p>
+                <Icon
+                  className={cn(
+                    "h-4 w-4 shrink-0",
+                    needsAttention ? "text-amber-500" : "text-muted-foreground",
+                  )}
+                />
               </CardHeader>
-              <CardContent className="p-3 sm:p-4 lg:p-6 pt-0 sm:pt-0 lg:pt-2">
-                <div className="h-[200px] sm:h-[260px]">{chartContent}</div>
+              <CardContent className="p-4 pt-0">
+                {metricsQuery.isLoading ? (
+                  <Skeleton className="h-7 w-20" />
+                ) : (
+                  <p
+                    className={cn(
+                      "text-xl font-semibold tracking-tight sm:text-2xl",
+                      needsAttention && "text-amber-600 dark:text-amber-400",
+                    )}
+                  >
+                    {display}
+                  </p>
+                )}
+                <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                  {translate("admin.overview.kpis.lastUpdated", "Updated {{time}}", {
+                    time: metricsQuery.data?.lastUpdated
+                      ? formatDistanceToNow(new Date(metricsQuery.data.lastUpdated), {
+                          addSuffix: true,
+                        })
+                      : translate("admin.overview.kpis.justNow", "moments ago"),
+                  })}
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader className="p-3 sm:p-4 lg:p-6">
-                <CardTitle className="text-sm sm:text-base font-semibold">
-                  {t("admin.overview.geography.title", { defaultValue: "Applications by country" })}
-                </CardTitle>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {t("admin.overview.geography.subtitle", { defaultValue: "Current pipeline distribution by destination" })}
-                </p>
-              </CardHeader>
-              <CardContent className="p-3 sm:p-4 lg:p-6 pt-0 sm:pt-0 lg:pt-2">
-                <div className="h-[200px] sm:h-[260px]">{barChart}</div>
-              </CardContent>
-            </Card>
-          </div>
+          );
+        })}
+      </div>
 
-          {recentActivity}
-          <ZoeAdminInsightsPanel
-            metrics={metricsQuery.data}
-            trends={trendsQuery.data}
-            geography={geographyQuery.data}
-            loading={loadingState}
-          />
-        </div>
-
-        {/* Right Column */}
-        <div className="min-w-0 space-y-3 sm:space-y-4">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
+        <div className="min-w-0 space-y-4">
+          {/* Admissions momentum */}
           <Card>
-            <CardHeader className="p-3 sm:p-4 lg:p-6">
-              <CardTitle className="text-sm sm:text-base font-semibold">
-                {t("admin.overview.quickActions.title", { defaultValue: "Quick actions" })}
+            <CardHeader className="p-4 sm:p-5">
+              <CardTitle className="text-sm font-semibold sm:text-base">
+                {translate("admin.overview.trends.title", "Admissions momentum")}
               </CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                {t("admin.overview.quickActions.subtitle", { defaultValue: "Resolve high-impact workflow blockers" })}
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                {translate(
+                  "admin.overview.trends.subtitle",
+                  "Rolling six-month submission and enrollment cadence",
+                )}
               </p>
             </CardHeader>
-            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0 flex flex-col gap-2 sm:gap-3">
-              <Button
-                variant="default"
-                size="sm"
-                className="w-full justify-start gap-2 sm:gap-3 text-xs sm:text-sm"
-                onClick={() =>
-                  openZoe(translate("admin.overview.quickActions.agentsPrompt", "List agents awaiting approval and potential risks"))
-                }
-              >
-                <Activity className="h-4 w-4 shrink-0" />
-                <span className="truncate">{t("admin.overview.quickActions.agents", { defaultValue: "Approve New Agents" })}</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 sm:gap-3 text-xs sm:text-sm"
-                onClick={() =>
-                  openZoe(translate("admin.overview.quickActions.universitiesPrompt", "Which universities are pending onboarding tasks?"))
-                }
-              >
-                <ArrowUpRight className="h-4 w-4 shrink-0" />
-                <span className="truncate">{t("admin.overview.quickActions.universities", { defaultValue: "Approve Universities" })}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 sm:gap-3 text-xs sm:text-sm"
-                onClick={() =>
-                  openZoe(translate("admin.overview.quickActions.compliancePrompt", "Show profiles flagged for compliance review"))
-                }
-              >
-                <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-                <span className="truncate">{t("admin.overview.quickActions.compliance", { defaultValue: "Review Flagged Profiles" })}</span>
-              </Button>
+            <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
+              <div className="h-[200px] sm:h-[220px]">{momentumChart}</div>
+              <div className="grid grid-cols-3 gap-2 border-t pt-4">
+                {secondaryFacts.map((fact) => (
+                  <div key={fact.key} className="min-w-0">
+                    <p className="truncate text-[11px] uppercase tracking-wide text-muted-foreground">
+                      {fact.label}
+                    </p>
+                    <p className="truncate text-sm font-semibold sm:text-base">{fact.value}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{fact.hint}</p>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
-          <LeadsHealthCard />
-
-
+          {/* Recent activity */}
           <Card>
-            <CardHeader className="p-3 sm:p-4 lg:p-6 flex flex-row items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <CardTitle className="text-sm sm:text-base font-semibold">
-                  {t("admin.overview.health.title", { defaultValue: "System health" })}
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-4 sm:p-5">
+              <div className="min-w-0">
+                <CardTitle className="text-sm font-semibold sm:text-base">
+                  {translate("admin.overview.recentActivity.title", "Recent activity")}
                 </CardTitle>
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  {t("admin.overview.health.subtitle", { defaultValue: "Security signals aggregated from the last 30 days" })}
+                <p className="text-xs text-muted-foreground sm:text-sm">
+                  {translate(
+                    "admin.overview.recentActivity.subtitle",
+                    "Latest tenant-wide audit events",
+                  )}
                 </p>
               </div>
-              <Badge className={cn(healthStyles.badge, "text-xs shrink-0")}>{healthStyles.label}</Badge>
+              <Button size="sm" variant="ghost" onClick={() => navigate("/admin/logs")}>
+                {translate("admin.overview.recentActivity.viewAll", "View all")}
+                <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+              </Button>
             </CardHeader>
-            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0 space-y-2 sm:space-y-3">
-              <div className="flex items-baseline gap-2">
-                <p className={`text-2xl sm:text-3xl font-semibold ${healthStyles.accent}`}>{healthQuery.data?.score ?? 0}</p>
-                <span className="text-[10px] sm:text-xs uppercase tracking-wide text-muted-foreground">
-                  {t("admin.overview.health.scoreLabel", { defaultValue: "risk score" })}
-                </span>
+            <CardContent className="p-0 pb-2">
+              {activityQuery.isLoading ? (
+                <div className="px-4 pb-4">
+                  <LoadingState
+                    message={translate("admin.overview.loading.activity", "Loading activity")}
+                    size="sm"
+                  />
+                </div>
+              ) : recentActivity.length === 0 ? (
+                <p className="px-4 pb-4 text-sm text-muted-foreground">
+                  {translate("admin.overview.recentActivity.empty", "No recent activity recorded.")}
+                </p>
+              ) : (
+                <ul className="divide-y">
+                  {recentActivity.map((item) => (
+                    <li key={item.id} className="flex items-start justify-between gap-3 px-4 py-3">
+                      <div className="min-w-0 space-y-0.5">
+                        <p className="truncate text-sm font-medium">{item.action}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {item.user?.full_name
+                            ? translate("admin.overview.recentActivity.entityByUser", "{{entity}} · {{name}}", {
+                                entity: item.entity,
+                                name: item.user.full_name,
+                              })
+                            : item.entity}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right rail */}
+        <div className="min-w-0 space-y-4">
+          {/* Action centre */}
+          <Card>
+            <CardHeader className="p-4 sm:p-5">
+              <CardTitle className="text-sm font-semibold sm:text-base">
+                {translate("admin.overview.actions.title", "Action centre")}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                {translate("admin.overview.actions.subtitle", "Jump straight into daily operations")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-1 p-2 pt-0 sm:p-3 sm:pt-0">
+              {ACTION_ITEMS.map((action) => {
+                const Icon = action.icon;
+                return (
+                  <button
+                    key={action.key}
+                    type="button"
+                    onClick={() => navigate(action.to)}
+                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                      <Icon className="h-4 w-4 text-foreground/70" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">
+                        {translate(action.labelKey, action.defaultLabel)}
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">
+                        {translate(action.descriptionKey, action.defaultDescription)}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  </button>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Platform status */}
+          <Card>
+            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 p-4 sm:p-5">
+              <div className="min-w-0">
+                <CardTitle className="text-sm font-semibold sm:text-base">
+                  {translate("admin.overview.health.title", "Platform status")}
+                </CardTitle>
+                <p className="text-xs text-muted-foreground sm:text-sm">
+                  {translate(
+                    "admin.overview.health.subtitle",
+                    "Security signals aggregated from the last 30 days",
+                  )}
+                </p>
               </div>
+              <Badge className={cn(healthStyles.badge, "shrink-0 text-xs")}>{healthStyles.label}</Badge>
+            </CardHeader>
+            <CardContent className="flex items-baseline gap-2 p-4 pt-0 sm:p-5 sm:pt-0">
+              <Activity className={cn("h-4 w-4", healthStyles.accent)} />
+              <p className={cn("text-2xl font-semibold", healthStyles.accent)}>
+                {healthQuery.data?.score ?? 0}
+              </p>
+              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                {translate("admin.overview.health.scoreLabel", "risk score")}
+              </span>
+            </CardContent>
+          </Card>
+
+          {/* Zoe operations briefing */}
+          <Card>
+            <CardHeader className="p-4 sm:p-5">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold sm:text-base">
+                <Sparkles className="h-4 w-4 text-primary" />
+                {translate("admin.overview.zoe.title", "Operations briefing")}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground sm:text-sm">
+                {translate(
+                  "admin.overview.zoe.subtitle",
+                  "Ask Zoe for today's priorities across admissions and verifications",
+                )}
+              </p>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() =>
+                  openZoe(
+                    translate(
+                      "admin.overview.zoe.prompt",
+                      "Give me a concise briefing of today's top operational priorities across admissions, verifications and leads.",
+                    ),
+                  )
+                }
+              >
+                {translate("admin.overview.zoe.cta", "Get today's briefing")}
+              </Button>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      {/* Student insights — consolidated from the Students page */}
-      <Separator className="my-2" />
-      <AdminStudentInsightsBlock />
-
-      {/* Admissions oversight — merged from the dedicated page */}
-      <Separator className="my-2" />
-      <Suspense
-        fallback={
-          <LoadingState message="Loading admissions oversight" size="sm" />
-        }
-      >
-        <AdminAdmissionsOversight embedded />
-      </Suspense>
     </div>
   );
 };
