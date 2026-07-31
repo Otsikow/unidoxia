@@ -80,7 +80,7 @@ describe("AdminOverview", () => {
 
     const kpis = ["Active applications", "Students", "Needs review", "Commission paid"];
     kpis.forEach((label) => {
-      expect(screen.getByRole("button", { name: label })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: label })).toBeTruthy();
     });
   });
 
