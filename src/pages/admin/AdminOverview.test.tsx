@@ -87,8 +87,8 @@ describe("AdminOverview", () => {
   it("does not embed the student insights block, admissions oversight page, or a large Zoe textarea", () => {
     const { container } = renderPage();
 
-    expect(screen.queryByText("Student insights")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Admissions oversight/i)).not.toBeInTheDocument();
+    expect(screen.queryByText("Student insights")).toBeNull();
+    expect(screen.queryByText(/Admissions oversight/i)).toBeNull();
     expect(container.querySelector("textarea")).toBeNull();
   });
 
