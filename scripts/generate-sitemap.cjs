@@ -41,6 +41,12 @@ const entries = [
     changefreq: "monthly",
     lastmod: "2026-07-27T08:00:00+00:00",
   },
+  {
+    path: "/blog/chevening-scholarships-2027-28-application-checks",
+    priority: "0.7",
+    changefreq: "monthly",
+    lastmod: "2026-08-04T22:40:00+01:00",
+  },
 
   { path: "/faq", priority: "0.6", changefreq: "monthly" },
   { path: "/contact", priority: "0.6", changefreq: "monthly" },
