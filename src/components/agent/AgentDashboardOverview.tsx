@@ -156,7 +156,10 @@ export default function AgentDashboardOverview() {
     checklist: agentChecklist,
     isLoading: completionLoading,
   } = useAgentProfileCompletion();
-  const { inviteCode, inviteLink } = useAgentInviteCode();
+  const { data: inviteCode } = useAgentInviteCode(agentProfileId);
+  const inviteLink = inviteCode
+    ? `${window.location.origin}/signup?ref=${inviteCode}`
+    : null;
 
   const apps = data?.applications ?? [];
 
