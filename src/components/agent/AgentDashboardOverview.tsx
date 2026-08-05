@@ -1,6 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -11,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -19,56 +19,41 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import PerformanceMetrics from "./PerformanceMetrics";
+import { useAgentProfileCompletion } from "@/hooks/useAgentProfileCompletion";
+import { useAgentInviteCode } from "@/hooks/useAgentInviteCode";
+import {
+  useAgentOverviewData,
+  PIPELINE_STAGES,
+  type AgentOverviewApplication,
+} from "@/hooks/agent/useAgentOverviewData";
 import {
   Users,
   FileText,
   DollarSign,
-  TrendingUp,
   UserPlus,
   GraduationCap,
   RefreshCw,
-  Search,
   Copy,
   Check,
-  ExternalLink,
+  ArrowUpRight,
+  AlertCircle,
+  CheckCircle2,
   Clock,
   Building2,
+  Search,
+  Send,
+  FilePlus2,
+  ClipboardList,
+  ShieldCheck,
 } from "lucide-react";
-import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import { getErrorMessage, logError } from "@/lib/errorUtils";
+import { formatDistanceToNowStrict, parseISO, isBefore } from "date-fns";
+import { cn } from "@/lib/utils";
 
-interface AgentApplicationStats {
-  totalStudents: number;
-  activeApplications: number;
-  totalEarnings: number;
-  pendingEarnings: number;
-  recentApplications: RecentApplication[];
-}
-
-interface RecentApplication {
-  id: string;
-  status: string;
-  createdAt: string;
-  studentName: string;
-  programName: string;
-  universityName: string;
-  appNumber: string | null;
-}
-
-const formatCurrency = (value: number) =>
+const currency = (value: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -76,475 +61,631 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-const fetchAgentStats = async (
-  agentProfileId: string,
-): Promise<AgentApplicationStats> => {
-  // Get the agent ID from profile
-  const { data: agentData, error: agentError } = await supabase
-    .from("agents")
-    .select("id")
-    .eq("profile_id", agentProfileId)
-    .maybeSingle();
-
-  if (agentError) throw agentError;
-
-  const agentId = agentData?.id;
-
-  // Count students assigned to the agent
-  let totalStudents = 0;
-  if (agentId) {
-    const { count: studentsCount, error: studentsError } = await supabase
-      .from("agent_student_links")
-      .select("id", { count: "exact", head: true })
-      .eq("agent_id", agentId);
-
-    if (!studentsError) {
-      totalStudents = studentsCount ?? 0;
-    }
+const relativeTime = (value: string | null) => {
+  if (!value) return "—";
+  try {
+    return formatDistanceToNowStrict(parseISO(value), { addSuffix: true });
+  } catch {
+    return "—";
   }
+};
 
-  // Get applications submitted by this agent
-  let activeApplications = 0;
-  let recentApplications: RecentApplication[] = [];
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
 
-  if (agentId) {
-    // Count active applications
-    const { count: appCount, error: appCountError } = await supabase
-      .from("applications")
-      .select("id", { count: "exact", head: true })
-      .eq("agent_id", agentId)
-      .not("status", "in", '("withdrawn","rejected","enrolled")');
+const intakeLabel = (app: AgentOverviewApplication) =>
+  app.intakeYear
+    ? `${app.intakeMonth ? `${MONTHS[Math.max(0, Math.min(11, app.intakeMonth - 1))]} ` : ""}${app.intakeYear}`
+    : "—";
 
-    if (!appCountError) {
-      activeApplications = appCount ?? 0;
-    }
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  hint: string;
+  icon: React.ElementType;
+  tone?: "default" | "success" | "warning" | "danger";
+  loading?: boolean;
+  onClick?: () => void;
+}
 
-    // Get recent applications with student and program info
-    const { data: appsData, error: appsError } = await supabase
-      .from("applications")
-      .select(
-        `
-        id,
-        status,
-        created_at,
-        app_number,
-        student:students (
-          id,
-          legal_name,
-          preferred_name,
-          profile:profiles!students_profile_id_fkey (
-            full_name
-          )
-        ),
-        program:programs (
-          name,
-          university:universities (
-            name
-          )
-        )
-      `
-      )
-      .eq("agent_id", agentId)
-      .order("created_at", { ascending: false })
-      .limit(5);
-
-    if (!appsError && appsData) {
-      recentApplications = appsData.map((app: any) => ({
-        id: app.id,
-        status: app.status,
-        createdAt: app.created_at,
-        appNumber: app.app_number,
-        studentName:
-          app.student?.preferred_name ||
-          app.student?.legal_name ||
-          app.student?.profile?.full_name ||
-          "Unknown Student",
-        programName: app.program?.name || "Unknown Course",
-        universityName: app.program?.university?.name || "Unknown University",
-      }));
-    }
-  }
-
-  // Get commissions
-  let totalEarnings = 0;
-  let pendingEarnings = 0;
-
-  if (agentId) {
-    const { data: commissions, error: commError } = await supabase
-      .from("commissions")
-      .select("amount, status")
-      .eq("agent_id", agentId);
-
-    if (!commError && commissions) {
-      commissions.forEach((comm: any) => {
-        const amount = comm.amount ?? 0;
-        if (comm.status === "paid") {
-          totalEarnings += amount;
-        } else if (comm.status === "approved" || comm.status === "pending") {
-          pendingEarnings += amount;
-        }
-      });
-    }
-  }
-
-  return {
-    totalStudents,
-    activeApplications,
-    totalEarnings,
-    pendingEarnings,
-    recentApplications,
-  };
+const toneClasses: Record<NonNullable<StatCardProps["tone"]>, string> = {
+  default: "bg-primary/10 text-primary",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/10 text-warning",
+  danger: "bg-destructive/10 text-destructive",
 };
 
 const StatCard = ({
   title,
   value,
-  description,
+  hint,
   icon: Icon,
-  loading = false,
-  variant = "default",
-}: {
-  title: string;
-  value: string | number;
-  description: string;
-  icon: React.ElementType;
-  loading?: boolean;
-  variant?: "default" | "success" | "warning";
-}) => {
-  const valueColorClass =
-    variant === "success"
-      ? "text-success"
-      : variant === "warning"
-      ? "text-warning"
-      : "text-foreground";
-
-  return (
-    <Card className="transition-shadow hover:shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div className="rounded-full bg-primary/10 p-2">
-          <Icon className="h-4 w-4 text-primary" />
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-1">
+  tone = "default",
+  loading,
+  onClick,
+}: StatCardProps) => (
+  <Card
+    role={onClick ? "button" : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    onClick={onClick}
+    onKeyDown={(event) => {
+      if (!onClick) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onClick();
+      }
+    }}
+    className={cn(
+      "rounded-2xl border-border/70 shadow-sm transition-all",
+      onClick &&
+        "cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+    )}
+  >
+    <CardContent className="flex items-start justify-between gap-3 p-5">
+      <div className="min-w-0 space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
         {loading ? (
-          <Skeleton className="h-8 w-24" />
+          <Skeleton className="h-8 w-20" />
         ) : (
-          <div className={`text-2xl font-bold ${valueColorClass}`}>{value}</div>
+          <p className="text-3xl font-semibold tracking-tight">{value}</p>
         )}
-        <p className="text-xs text-muted-foreground">{description}</p>
-      </CardContent>
-    </Card>
-  );
-};
+        <p className="truncate text-xs text-muted-foreground">{hint}</p>
+      </div>
+      <span className={cn("rounded-xl p-2.5", toneClasses[tone])}>
+        <Icon className="h-5 w-5" aria-hidden="true" />
+      </span>
+    </CardContent>
+  </Card>
+);
 
 export default function AgentDashboardOverview() {
   const navigate = useNavigate();
   const { profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [referralCode, setReferralCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showAllStats, setShowAllStats] = useState(false);
+  const [search, setSearch] = useState("");
+  const [stageFilter, setStageFilter] = useState<string | null>(null);
 
   const agentProfileId = profile?.id ?? null;
+  const { data, isLoading, isFetching, isError, refetch } = useAgentOverviewData(agentProfileId);
   const {
-    data: stats,
-    isLoading,
-    isError,
-    error,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ["agent-dashboard-stats", agentProfileId],
-    queryFn: () => fetchAgentStats(agentProfileId!),
-    enabled: Boolean(agentProfileId),
-    staleTime: 60_000,
-  });
+    completion: agentCompletion,
+    checklist: agentChecklist,
+    isLoading: completionLoading,
+  } = useAgentProfileCompletion();
+  const { data: inviteCode } = useAgentInviteCode(agentProfileId);
+  const inviteLink = inviteCode
+    ? `${window.location.origin}/signup?ref=${inviteCode}`
+    : null;
 
-  // Fetch or create referral code
-  useEffect(() => {
-    if (!agentProfileId) return;
+  const apps = data?.applications ?? [];
 
-    const fetchReferralCode = async () => {
-      try {
-        const { data: agentData } = await supabase
-          .from("agents")
-          .select("id, tenant_id")
-          .eq("profile_id", agentProfileId)
-          .maybeSingle();
-
-        if (!agentData?.id) return;
-
-        // Check for existing referral
-        const { data: refData } = await supabase
-          .from("referrals")
-          .select("code")
-          .eq("agent_id", agentData.id)
-          .eq("active", true)
-          .maybeSingle();
-
-        if (refData?.code) {
-          setReferralCode(refData.code);
-          return;
-        }
-
-        // Create new referral code
-        const newCode = `AG-${Math.random()
-          .toString(36)
-          .substring(2, 10)
-          .toUpperCase()}`;
-        const { error: insertError } = await supabase.from("referrals").insert({
-          code: newCode,
-          agent_id: agentData.id,
-          tenant_id: agentData.tenant_id,
-          active: true,
-        });
-
-        if (!insertError) {
-          setReferralCode(newCode);
-        }
-      } catch (err) {
-        logError(err, "AgentDashboardOverview.fetchReferralCode");
-      }
+  const metrics = useMemo(() => {
+    const count = (statuses: string[]) => apps.filter((a) => statuses.includes(a.status)).length;
+    const now = new Date();
+    const overdueTasks = (data?.tasks ?? []).filter(
+      (t) => t.dueAt && isBefore(parseISO(t.dueAt), now),
+    ).length;
+    return {
+      active: apps.filter(
+        (a) => !["withdrawn", "enrolled", "deferred"].includes(a.status),
+      ).length,
+      offers: count(["conditional_offer", "unconditional_offer"]),
+      conditional: count(["conditional_offer"]),
+      unconditional: count(["unconditional_offer"]),
+      visa: count(["visa", "cas_loa"]),
+      enrolled: count(["enrolled"]),
+      closed: count(["withdrawn", "deferred"]),
+      outstandingDocs: data?.documentRequests.length ?? 0,
+      tasksDue: data?.tasks.length ?? 0,
+      overdueTasks,
     };
+  }, [apps, data]);
 
-    void fetchReferralCode();
-  }, [agentProfileId]);
+  const pipeline = useMemo(
+    () =>
+      PIPELINE_STAGES.map((stage) => ({
+        ...stage,
+        count: apps.filter((a) => stage.statuses.includes(a.status)).length,
+      })),
+    [apps],
+  );
 
-  const handleCopyReferralLink = () => {
-    if (!referralCode) return;
-    const link = `${window.location.origin}/signup?ref=${referralCode}`;
-    navigator.clipboard.writeText(link);
-    setCopied(true);
-    toast({
-      title: "Link copied!",
-      description: "Your referral link has been copied to clipboard.",
+  const filteredApps = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return apps
+      .filter((a) => {
+        if (stageFilter) {
+          const stage = PIPELINE_STAGES.find((s) => s.key === stageFilter);
+          if (stage && !stage.statuses.includes(a.status)) return false;
+        }
+        if (!term) return true;
+        return [a.studentName, a.programName, a.universityName, a.studentRef, a.appNumber]
+          .filter(Boolean)
+          .some((field) => String(field).toLowerCase().includes(term));
+      })
+      .slice(0, 8);
+  }, [apps, search, stageFilter]);
+
+  const priorities = useMemo(() => {
+    const items: Array<{
+      id: string;
+      title: string;
+      subtitle: string;
+      due: string;
+      tone: "warning" | "danger" | "default";
+      action: () => void;
+    }> = [];
+
+    (data?.documentRequests ?? []).slice(0, 4).forEach((doc) => {
+      items.push({
+        id: `doc-${doc.id}`,
+        title: `${doc.documentType.replace(/_/g, " ")} outstanding`,
+        subtitle: doc.studentName,
+        due: doc.dueDate ? relativeTime(doc.dueDate) : "No deadline set",
+        tone: "warning",
+        action: () => navigate(`/agent/students/${doc.studentId}`),
+      });
     });
-    setTimeout(() => setCopied(false), 2000);
-  };
 
-  const formatRelativeTime = (dateStr: string | null) => {
-    if (!dateStr) return "—";
-    try {
-      return formatDistanceToNowStrict(parseISO(dateStr), { addSuffix: true });
-    } catch {
-      return "—";
-    }
+    (data?.tasks ?? []).slice(0, 4).forEach((task) => {
+      const overdue = task.dueAt ? isBefore(parseISO(task.dueAt), new Date()) : false;
+      items.push({
+        id: `task-${task.id}`,
+        title: task.title,
+        subtitle: overdue ? "Overdue task" : "Task assigned to you",
+        due: task.dueAt ? relativeTime(task.dueAt) : "No due date",
+        tone: overdue ? "danger" : "default",
+        action: () => navigate("/dashboard/tasks"),
+      });
+    });
+
+    return items.slice(0, 6);
+  }, [data, navigate]);
+
+  const handleCopyInvite = () => {
+    if (!inviteLink) return;
+    void navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    toast({ title: "Invite link copied", description: "Share it with your students." });
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (authLoading) {
     return (
-      <div className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <Skeleton className="h-4 w-32" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-20" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-28 rounded-2xl" />
+        ))}
       </div>
     );
   }
 
   if (!agentProfileId) {
     return (
-      <Card className="p-8 text-center">
-        <CardContent className="space-y-4">
-          <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-          <h3 className="text-lg font-semibold">No Agent Profile Found</h3>
-          <p className="text-muted-foreground">
-            Please ensure you are signed in with an agent account.
+      <Card className="rounded-2xl p-8 text-center">
+        <CardContent className="space-y-3">
+          <Users className="mx-auto h-10 w-10 text-muted-foreground" />
+          <h3 className="text-lg font-semibold">No agent profile found</h3>
+          <p className="text-sm text-muted-foreground">
+            Please sign in with an authorised UniDoxia partner account.
           </p>
         </CardContent>
       </Card>
     );
   }
 
+  const firstName = (profile?.full_name ?? "").split(" ")[0] || "there";
+  const verified = agentCompletion.percentage >= 100;
+
+  const primaryStats: StatCardProps[] = [
+    {
+      title: "Students",
+      value: data?.totalStudents ?? 0,
+      hint: `${data?.newStudents30d ?? 0} added in the last 30 days`,
+      icon: Users,
+      onClick: () => navigate("/dashboard/students"),
+    },
+    {
+      title: "Active applications",
+      value: metrics.active,
+      hint: "In progress across all destinations",
+      icon: FileText,
+      onClick: () => navigate("/dashboard/applications"),
+    },
+    {
+      title: "Offers received",
+      value: metrics.offers,
+      hint: `${metrics.conditional} conditional · ${metrics.unconditional} unconditional`,
+      icon: CheckCircle2,
+      tone: "success",
+      onClick: () => navigate("/dashboard/applications"),
+    },
+    {
+      title: "Visa and CAS stage",
+      value: metrics.visa,
+      hint: "Students preparing to travel",
+      icon: ShieldCheck,
+      onClick: () => navigate("/dashboard/applications"),
+    },
+    {
+      title: "Outstanding documents",
+      value: metrics.outstandingDocs,
+      hint: "Awaiting upload or resubmission",
+      icon: AlertCircle,
+      tone: "warning",
+      onClick: () => navigate("/dashboard/students"),
+    },
+    {
+      title: "Commission earned",
+      value: currency(data?.commissionPaid ?? 0),
+      hint: `${currency(data?.commissionPending ?? 0)} pending payout`,
+      icon: DollarSign,
+      onClick: () => navigate("/dashboard/commissions"),
+    },
+  ];
+
+  const secondaryStats: StatCardProps[] = [
+    {
+      title: "Enrolled students",
+      value: metrics.enrolled,
+      hint: "Successfully placed",
+      icon: GraduationCap,
+      tone: "success",
+    },
+    {
+      title: "Tasks due",
+      value: metrics.tasksDue,
+      hint: `${metrics.overdueTasks} overdue`,
+      icon: ClipboardList,
+      tone: metrics.overdueTasks ? "danger" : "default",
+      onClick: () => navigate("/dashboard/tasks"),
+    },
+    {
+      title: "Closed or withdrawn",
+      value: metrics.closed,
+      hint: "Archived this cycle",
+      icon: Clock,
+    },
+  ];
+
+  const quickActions = [
+    { label: "Add new student", icon: UserPlus, to: "/dashboard/students", primary: true },
+    { label: "Create application", icon: FilePlus2, to: "/dashboard/applications/new" },
+    { label: "Add new lead", icon: Users, to: "/dashboard/leads" },
+    { label: "Search programmes", icon: Search, to: "/courses?view=programs" },
+    { label: "Partner universities", icon: Building2, to: "/dashboard/partners" },
+    { label: "Send message", icon: Send, to: "/dashboard/messages" },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard
-          title="Total Students"
-          value={stats?.totalStudents ?? 0}
-          description="In your organization"
-          icon={Users}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Active Applications"
-          value={stats?.activeApplications ?? 0}
-          description="Currently in progress"
-          icon={FileText}
-          loading={isLoading}
-        />
-        <StatCard
-          title="Total Earnings"
-          value={formatCurrency(stats?.totalEarnings ?? 0)}
-          description="Commissions paid"
-          icon={DollarSign}
-          loading={isLoading}
-          variant="success"
-        />
-        <StatCard
-          title="Pending Earnings"
-          value={formatCurrency(stats?.pendingEarnings ?? 0)}
-          description="Awaiting payout"
-          icon={TrendingUp}
-          loading={isLoading}
-          variant="warning"
-        />
-      </div>
-
-      {/* Automated Performance Metrics */}
-      <PerformanceMetrics />
-
-      {/* Quick Actions & Referral Link */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
-            <CardDescription>Common tasks and shortcuts</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-3">
-            <Button onClick={() => navigate("/dashboard/students")} className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              Manage Students
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/universities")}
-              className="gap-2"
-            >
-              <Building2 className="h-4 w-4" />
-              Browse Universities
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/courses?view=programs")}
-              className="gap-2"
-            >
-              <GraduationCap className="h-4 w-4" />
-              Browse Courses
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/dashboard/applications")}
-              className="gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              View Applications
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate("/dashboard/commissions")}
-              className="gap-2"
-            >
-              <DollarSign className="h-4 w-4" />
-              Commission Report
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Referral Link */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base font-semibold">Your Referral Link</CardTitle>
-            <CardDescription>
-              Share this link with students to connect them to your organization
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {referralCode ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <Input
-                    value={`${window.location.origin}/signup?ref=${referralCode}`}
-                    readOnly
-                    className="font-mono text-sm"
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleCopyReferralLink}
-                    className="shrink-0"
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-success" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Your referral code: <span className="font-mono font-semibold">{referralCode}</span>
-                </p>
-              </>
-            ) : (
-              <Skeleton className="h-10 w-full" />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Applications */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="text-base font-semibold">Recent Applications</CardTitle>
-            <CardDescription>
-              Latest applications submitted by your organization
-            </CardDescription>
+      {/* Welcome */}
+      <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-1.5">
+            <h2 className="text-2xl font-semibold tracking-tight">Welcome back, {firstName}</h2>
+            <p className="text-sm text-muted-foreground">
+              Manage your students, applications and university partnerships from one place.
+            </p>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className={cn(
+                "gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+                verified
+                  ? "border-success/30 bg-success/10 text-success"
+                  : "border-warning/30 bg-warning/10 text-warning",
+              )}
+            >
+              {verified ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
+              {verified ? "Account approved" : "Verification in progress"}
+            </Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={() => void refetch()}
+              disabled={isFetching}
+            >
+              <RefreshCw className={cn("h-4 w-4", isFetching && "animate-spin")} />
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {quickActions.map(({ label, icon: Icon, to, primary }) => (
+            <Button
+              key={label}
+              variant={primary ? "default" : "outline"}
+              size="sm"
+              className="gap-2 rounded-xl"
+              onClick={() => navigate(to)}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </Button>
+          ))}
+        </div>
+      </section>
+
+      {isError && (
+        <Card className="rounded-2xl border-destructive/30 bg-destructive/5">
+          <CardContent className="flex items-center justify-between gap-4 p-5">
+            <div className="flex items-center gap-3 text-sm">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              We could not load your latest dashboard data.
+            </div>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stats */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Performance snapshot
+          </h3>
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="gap-2"
+            onClick={() => setShowAllStats((prev) => !prev)}
+            className="text-xs"
           >
-            <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-            Refresh
+            {showAllStats ? "Show less" : "View all statistics"}
           </Button>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {(showAllStats ? [...primaryStats, ...secondaryStats] : primaryStats).map((stat) => (
+            <StatCard key={stat.title} {...stat} loading={isLoading} />
+          ))}
+        </div>
+      </section>
+
+      {/* Pipeline */}
+      <Card className="rounded-2xl border-border/70 shadow-sm">
+        <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
+          <div>
+            <CardTitle className="text-base font-semibold">Application pipeline</CardTitle>
+            <CardDescription>Select a stage to filter the applications below.</CardDescription>
+          </div>
+          {stageFilter && (
+            <Button variant="ghost" size="sm" onClick={() => setStageFilter(null)}>
+              Clear filter
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {pipeline.map((stage) => {
+              const active = stageFilter === stage.key;
+              return (
+                <button
+                  key={stage.key}
+                  type="button"
+                  onClick={() => setStageFilter(active ? null : stage.key)}
+                  aria-pressed={active}
+                  className={cn(
+                    "rounded-xl border p-3 text-left transition-colors",
+                    active
+                      ? "border-primary bg-primary/10"
+                      : "border-border/70 bg-muted/30 hover:bg-muted/60",
+                  )}
+                >
+                  <p className="text-2xl font-semibold tracking-tight">
+                    {isLoading ? "—" : stage.count}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{stage.label}</p>
+                </button>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Priorities */}
+        <Card className="rounded-2xl border-border/70 shadow-sm lg:col-span-2">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-base font-semibold">Today&apos;s priorities</CardTitle>
+            <CardDescription>Documents, deadlines and tasks that need you now.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <Skeleton key={index} className="h-14 rounded-xl" />
+              ))
+            ) : priorities.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border/70 p-8 text-center">
+                <CheckCircle2 className="mx-auto h-8 w-8 text-success" />
+                <p className="mt-2 text-sm font-medium">You are all caught up</p>
+                <p className="text-xs text-muted-foreground">
+                  New document requests and tasks will appear here.
+                </p>
+              </div>
+            ) : (
+              priorities.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={item.action}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-border/70 p-3 text-left transition-colors hover:bg-muted/50"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium capitalize">{item.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-xs",
+                        item.tone === "danger"
+                          ? "bg-destructive/10 text-destructive"
+                          : item.tone === "warning"
+                            ? "bg-warning/10 text-warning"
+                            : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {item.due}
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </button>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Onboarding + invite */}
+        <div className="space-y-6">
+          <Card className="rounded-2xl border-border/70 shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-base font-semibold">Getting started</CardTitle>
+              <CardDescription>Complete your partner setup.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {completionLoading ? (
+                <Skeleton className="h-16 rounded-xl" />
+              ) : (
+                <>
+                  <div className="flex items-center justify-between text-sm font-medium">
+                    <span>Setup progress</span>
+                    <span>{agentCompletion.percentage}%</span>
+                  </div>
+                  <Progress value={agentCompletion.percentage} className="h-2" />
+                  <ul className="space-y-1.5 pt-1">
+                    {agentChecklist.slice(0, 5).map((item) => (
+                      <li key={item.label} className="flex items-center gap-2 text-sm">
+                        {item.isComplete ? (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                        ) : (
+                          <span className="h-4 w-4 shrink-0 rounded-full border border-muted-foreground/40" />
+                        )}
+                        <span
+                          className={cn(
+                            "truncate",
+                            item.isComplete && "text-muted-foreground line-through",
+                          )}
+                        >
+                          {item.label}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => navigate("/agent/settings")}
+                  >
+                    Continue setup
+                  </Button>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-2xl border-border/70 shadow-sm">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-base font-semibold">Invite students</CardTitle>
+              <CardDescription>Share your unique UniDoxia link.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {inviteLink ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Input readOnly value={inviteLink} className="font-mono text-xs" />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={handleCopyInvite}
+                      aria-label="Copy invite link"
+                    >
+                      {copied ? (
+                        <Check className="h-4 w-4 text-success" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                  {inviteCode && (
+                    <p className="text-xs text-muted-foreground">
+                      Code: <span className="font-mono font-semibold">{inviteCode}</span>
+                    </p>
+                  )}
+                </>
+              ) : (
+                <Skeleton className="h-10 w-full" />
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Applications table */}
+      <Card className="rounded-2xl border-border/70 shadow-sm">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">Recent applications</CardTitle>
+            <CardDescription>
+              {stageFilter
+                ? `Filtered by ${PIPELINE_STAGES.find((s) => s.key === stageFilter)?.label}`
+                : "Latest activity across your students"}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search applications"
+                aria-label="Search applications"
+                className="w-full pl-8 sm:w-64"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/dashboard/applications")}
+            >
+              View all
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center gap-4">
-                  <Skeleton className="h-10 flex-1" />
-                </div>
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-12 rounded-lg" />
               ))}
             </div>
-          ) : !stats?.recentApplications?.length ? (
-            <div className="py-8 text-center">
-              <FileText className="mx-auto h-12 w-12 text-muted-foreground opacity-50" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                No applications yet. Start by browsing universities and courses, then submit applications on behalf of your students.
+          ) : filteredApps.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border/70 p-10 text-center">
+              <FileText className="mx-auto h-10 w-10 text-muted-foreground opacity-60" />
+              <p className="mt-3 text-sm font-medium">No applications to show</p>
+              <p className="text-xs text-muted-foreground">
+                Add a student and submit their first application to get started.
               </p>
-              <div className="mt-4 flex flex-wrap justify-center gap-3">
-                <Button
-                  onClick={() => navigate("/universities")}
-                  className="gap-2"
-                  variant="outline"
-                >
-                  <Building2 className="h-4 w-4" />
-                  Browse Universities
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <Button size="sm" onClick={() => navigate("/dashboard/students")}>
+                  Add a student
                 </Button>
                 <Button
-                  onClick={() => navigate("/courses?view=programs")}
-                  className="gap-2"
+                  size="sm"
                   variant="outline"
+                  onClick={() => navigate("/courses?view=programs")}
                 >
-                  <GraduationCap className="h-4 w-4" />
-                  Browse Courses
+                  Search programmes
                 </Button>
               </div>
             </div>
@@ -554,41 +695,53 @@ export default function AgentDashboardOverview() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Student</TableHead>
-                    <TableHead>Course</TableHead>
-                    <TableHead>University</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Submitted</TableHead>
+                    <TableHead className="hidden md:table-cell">Destination</TableHead>
+                    <TableHead className="hidden lg:table-cell">University</TableHead>
+                    <TableHead className="hidden lg:table-cell">Programme</TableHead>
+                    <TableHead className="hidden sm:table-cell">Intake</TableHead>
+                    <TableHead>Stage</TableHead>
+                    <TableHead className="hidden sm:table-cell">Updated</TableHead>
                     <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {stats.recentApplications.map((app) => (
+                  {filteredApps.map((app) => (
                     <TableRow key={app.id}>
-                      <TableCell className="font-medium">{app.studentName}</TableCell>
-                      <TableCell className="max-w-[200px] truncate" title={app.programName}>
+                      <TableCell>
+                        <div className="min-w-0">
+                          <p className="truncate font-medium">{app.studentName}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {app.studentRef ?? app.appNumber ?? "—"}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-muted-foreground">
+                        {app.country ?? "—"}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell max-w-[180px] truncate text-muted-foreground">
+                        {app.universityName}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell max-w-[200px] truncate">
                         {app.programName}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {app.universityName}
+                      <TableCell className="hidden sm:table-cell text-muted-foreground">
+                        {intakeLabel(app)}
                       </TableCell>
                       <TableCell>
                         <StatusBadge status={app.status} />
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5" />
-                          {formatRelativeTime(app.createdAt)}
-                        </div>
+                      <TableCell className="hidden sm:table-cell text-muted-foreground">
+                        {relativeTime(app.updatedAt)}
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigate(`/student/applications/${app.id}`)}
                           className="gap-1.5"
+                          onClick={() => navigate(`/student/applications/${app.id}`)}
                         >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                          View
+                          Open
+                          <ArrowUpRight className="h-3.5 w-3.5" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -597,39 +750,6 @@ export default function AgentDashboardOverview() {
               </Table>
             </div>
           )}
-
-          {stats?.recentApplications?.length ? (
-            <div className="mt-4 flex justify-center">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/dashboard/applications")}
-                className="gap-2"
-              >
-                View All Applications
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      {/* Help Section */}
-      <Card className="bg-muted/30">
-        <CardContent className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <p className="font-medium">Need help getting started?</p>
-            <p className="text-sm text-muted-foreground">
-              Check out our resources or contact support for assistance.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate("/dashboard/resources")}>
-              View Resources
-            </Button>
-            <Button variant="ghost" asChild>
-              <a href="mailto:support@unidoxia.com">Contact Support</a>
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>
