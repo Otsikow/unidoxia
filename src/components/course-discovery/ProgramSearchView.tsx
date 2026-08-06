@@ -69,15 +69,10 @@ import imperialImg from "@/assets/university-imperial.jpg";
 import edinburghImg from "@/assets/university-edinburgh.jpg";
 import defaultUniversityImg from "@/assets/university-default.jpg";
 
+import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
+
 const PROGRAM_LEVELS = ["Undergraduate", "Postgraduate", "PHD"];
-const MAJOR_DESTINATION_COUNTRIES = [
-  "United Kingdom",
-  "United States",
-  "Canada",
-  "Australia",
-  "Germany",
-  "Ireland",
-];
+const MAJOR_DESTINATION_COUNTRIES = [...STUDY_DESTINATIONS];
 const TAB_TRIGGER_STYLES =
   "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
 const MAX_UNIVERSITY_RESULTS = 50;
