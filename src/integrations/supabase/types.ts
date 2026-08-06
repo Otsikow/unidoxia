@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_agreements: {
+        Row: {
+          agent_id: string | null
+          agreement_version: string
+          business_address: string
+          business_name: string | null
+          company_registration_number: string | null
+          confirmed_authority: boolean
+          confirmed_read: boolean
+          consented_verification: boolean
+          country_of_operation: string
+          created_at: string
+          electronic_signature: string
+          email: string
+          expires_at: string
+          full_legal_name: string
+          id: string
+          identification_number: string | null
+          pdf_sent_at: string | null
+          phone: string
+          position_title: string | null
+          profile_id: string
+          representative_name: string | null
+          signed_at: string
+          tenant_id: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          agreement_version?: string
+          business_address: string
+          business_name?: string | null
+          company_registration_number?: string | null
+          confirmed_authority?: boolean
+          confirmed_read?: boolean
+          consented_verification?: boolean
+          country_of_operation: string
+          created_at?: string
+          electronic_signature: string
+          email: string
+          expires_at?: string
+          full_legal_name: string
+          id?: string
+          identification_number?: string | null
+          pdf_sent_at?: string | null
+          phone: string
+          position_title?: string | null
+          profile_id: string
+          representative_name?: string | null
+          signed_at?: string
+          tenant_id: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          agreement_version?: string
+          business_address?: string
+          business_name?: string | null
+          company_registration_number?: string | null
+          confirmed_authority?: boolean
+          confirmed_read?: boolean
+          consented_verification?: boolean
+          country_of_operation?: string
+          created_at?: string
+          electronic_signature?: string
+          email?: string
+          expires_at?: string
+          full_legal_name?: string
+          id?: string
+          identification_number?: string | null
+          pdf_sent_at?: string | null
+          phone?: string
+          position_title?: string | null
+          profile_id?: string
+          representative_name?: string | null
+          signed_at?: string
+          tenant_id?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_agreements_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_agreements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_agreements_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_agreements_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_student_links: {
         Row: {
           agent_id: string
