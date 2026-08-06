@@ -43,14 +43,9 @@ const STUDY_AREAS = [
   'Other'
 ] as const;
 
-const PREFERRED_COUNTRIES = [
-  'Australia',
-  'Canada',
-  'Germany',
-  'Ireland',
-  'UK',
-  'USA',
-] as const;
+import { STUDY_DESTINATIONS } from '@/lib/studyDestinations';
+
+const PREFERRED_COUNTRIES = STUDY_DESTINATIONS;
 
 interface PersonalInfoTabProps {
   student: Tables<'students'>;

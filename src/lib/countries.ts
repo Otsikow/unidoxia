@@ -6,9 +6,10 @@ export const COUNTRIES = [
   'New Zealand',
   'United Kingdom',
   'United States',
-  // Asia (selected)
+  // Asia & Middle East (selected)
   'China',
   'Japan',
+  'United Arab Emirates',
   // Europe
   'Albania',
   'Andorra',
