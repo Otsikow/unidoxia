@@ -17,6 +17,7 @@ import BackButton from "@/components/BackButton";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Home } from "lucide-react";
 import { usePageViewTracking } from "@/hooks/usePageViewTracking";
+import { AgentAgreementGate } from "@/components/agent/AgentAgreementGate";
 
 const formatRoleLabel = (role?: string | null) =>
   role ? role.replace(/_/g, " ") : "User";
@@ -39,6 +40,7 @@ export function DashboardLayout({ children, showToolbarBackButton = true }: Dash
   usePageViewTracking(user?.id);
   return (
     <SidebarProvider defaultOpen>
+      <AgentAgreementGate />
       <div className="app-canvas flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="min-w-0 bg-transparent">
