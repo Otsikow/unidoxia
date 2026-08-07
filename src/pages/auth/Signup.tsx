@@ -43,6 +43,7 @@ import {
   Phone,
   Globe,
   AtSign,
+  MapPin,
 } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { cn } from "@/lib/utils";
