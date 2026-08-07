@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, DollarSign, TrendingUp, Clock, Shield } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { markOnboardingSeen } from "@/lib/onboardingStorage";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /* -------------------------- STATIC DATA -------------------------- */
 
