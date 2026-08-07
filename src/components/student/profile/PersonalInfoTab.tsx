@@ -19,6 +19,7 @@ import {
   parseInternationalNumber,
   toWhatsAppLink,
 } from '@/lib/phone';
+import { RESIDENCE_COUNTRIES } from '@/lib/residenceCountries';
 import {
   formatResidentialAddress,
   postalCodeRequired,
