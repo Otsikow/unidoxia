@@ -60,7 +60,7 @@ const AgentEarnings = () => {
   const defaultTarget = isAgent ? "/dashboard/leads" : "/auth/signup?role=agent";
   const rawTarget = nextParam ? decodeURIComponent(nextParam) : defaultTarget;
   // Never send a signed-in agent back into the onboarding flow (prevents a redirect loop).
-  const nextTarget = isAgent && rawTarget.startsWith("/agents/") ? "/dashboard/leads" : rawTarget;
+  const nextTarget = isAgent && (rawTarget.startsWith("/agents/") || rawTarget.startsWith("/auth/")) ? "/dashboard/leads" : rawTarget;
   const backHref = `/agents/onboarding?next=${encodeURIComponent(nextTarget)}`;
 
   useEffect(() => {
