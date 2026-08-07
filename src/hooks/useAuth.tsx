@@ -99,6 +99,14 @@ interface SignUpParams {
   referrerId?: string;
   referrerUsername?: string;
   referralSource?: string;
+  address?: {
+    address_line_1?: string;
+    address_line_2?: string;
+    city?: string;
+    state_region?: string;
+    postal_code?: string;
+    country_of_residence?: string;
+  };
 }
 
 interface AuthContextType {
@@ -1265,6 +1273,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     referrerId,
     referrerUsername,
     referralSource,
+    address,
   }: SignUpParams) => {
     try {
       const redirectUrl = buildEmailRedirectUrl('/auth/callback');
@@ -1289,6 +1298,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (referralSource) {
         metadata.referral_source = referralSource;
+      }
+
+      if (address) {
+        Object.entries(address).forEach(([key, value]) => {
+          if (value && value.trim()) {
+            metadata[key] = value.trim();
+          }
+        });
       }
 
       const authOptions = {
