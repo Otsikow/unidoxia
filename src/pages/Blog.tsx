@@ -47,8 +47,7 @@ export default function Blog() {
         .from("blog_posts")
         .select("id, slug, title, excerpt, cover_image_url, tags, published_at")
         .eq("status", "published")
-        .order("featured", { ascending: false })
-        .order("published_at", { ascending: false });
+        .order("published_at", { ascending: false, nullsFirst: false });
       if (error) {
         console.error("[blog] Failed to load posts", error.message);
         throw new Error("blog_list_fetch_failed");
