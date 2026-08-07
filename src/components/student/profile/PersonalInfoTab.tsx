@@ -452,53 +452,101 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address_line1">Address Line 1</Label>
-            <Input
-              id="address_line1"
-              name="address_line1"
-              value={formData.address_line1}
-              onChange={handleChange}
-            />
-          </div>
+          <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-semibold">Residential Address</h3>
+              <p className="text-xs text-muted-foreground">
+                Your current residential address. This may be used to support your university
+                applications.
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address_line2">Address Line 2</Label>
-            <Input
-              id="address_line2"
-              name="address_line2"
-              value={formData.address_line2}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="country_of_residence">Country of Residence *</Label>
+              <Select
+                value={formData.country_of_residence || undefined}
+                onValueChange={(value) => {
+                  setFormData((prev) => ({ ...prev, country_of_residence: value }));
+                  setAddressErrors((prev) => ({ ...prev, country_of_residence: undefined }));
+                }}
+              >
+                <SelectTrigger id="country_of_residence">
+                  <SelectValue placeholder="Select your country of residence" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {RESIDENCE_COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {addressErrors.country_of_residence && (
+                <p className="text-xs text-destructive">{addressErrors.country_of_residence}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address_line_1">Address Line 1 *</Label>
               <Input
-                id="city"
-                name="city"
-                value={formData.city}
+                id="address_line_1"
+                name="address_line_1"
+                value={formData.address_line_1}
                 onChange={handleChange}
+                placeholder="House number and street"
+              />
+              {addressErrors.address_line_1 && (
+                <p className="text-xs text-destructive">{addressErrors.address_line_1}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address_line_2">Address Line 2 (optional)</Label>
+              <Input
+                id="address_line_2"
+                name="address_line_2"
+                value={formData.address_line_2}
+                onChange={handleChange}
+                placeholder="Apartment, suite, district"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="postal_code">Postal Code</Label>
-              <Input
-                id="postal_code"
-                name="postal_code"
-                value={formData.postal_code}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-              />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City / Town *</Label>
+                <Input id="city" name="city" value={formData.city} onChange={handleChange} />
+                {addressErrors.city && (
+                  <p className="text-xs text-destructive">{addressErrors.city}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state_region">
+                  State / Region{stateRegionRequired(formData.country_of_residence) ? ' *' : ''}
+                </Label>
+                <Input
+                  id="state_region"
+                  name="state_region"
+                  value={formData.state_region}
+                  onChange={handleChange}
+                />
+                {addressErrors.state_region && (
+                  <p className="text-xs text-destructive">{addressErrors.state_region}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postal_code">
+                  Postal / ZIP Code{postalCodeRequired(formData.country_of_residence) ? ' *' : ''}
+                </Label>
+                <Input
+                  id="postal_code"
+                  name="postal_code"
+                  value={formData.postal_code}
+                  onChange={handleChange}
+                />
+                {addressErrors.postal_code && (
+                  <p className="text-xs text-destructive">{addressErrors.postal_code}</p>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
