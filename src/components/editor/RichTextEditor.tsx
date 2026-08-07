@@ -81,7 +81,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
       CodeBlockLowlight.configure({
         lowlight: createLowlight(),
       }),
-    ],
+    ] as any[]),
     content: value,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
