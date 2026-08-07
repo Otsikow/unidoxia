@@ -20,6 +20,15 @@ import {
   toWhatsAppLink,
 } from '@/lib/phone';
 import {
+  formatResidentialAddress,
+  postalCodeRequired,
+  stateRegionRequired,
+  trimAddress,
+  validateResidentialAddress,
+  type ResidentialAddress,
+  type ResidentialAddressErrors,
+} from '@/lib/residentialAddress';
+import {
   getAcademicYearOptions,
   getIntakeOptionsForYear,
 } from '@/lib/intakeOptions';
@@ -86,11 +95,13 @@ const extractFormData = (student: Tables<'students'>) => {
     preferred_country: (student as any).preferred_country || '',
     preferred_intake_year: (student as any).preferred_intake_year || 0,
     preferred_intake_month: (student as any).preferred_intake_month || 0,
-    address_line1: addressData?.line1 || '',
-    address_line2: addressData?.line2 || '',
-    city: addressData?.city || '',
-    postal_code: addressData?.postal_code || '',
-    country: addressData?.country || ''
+    address_line_1: (student as any).address_line_1 || addressData?.line1 || '',
+    address_line_2: (student as any).address_line_2 || addressData?.line2 || '',
+    city: (student as any).city || addressData?.city || '',
+    state_region: (student as any).state_region || '',
+    postal_code: (student as any).postal_code || addressData?.postal_code || '',
+    country_of_residence:
+      (student as any).country_of_residence || addressData?.country || student.current_country || ''
   };
 };
 
@@ -100,6 +111,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ contactPhone?: string; whatsappNumber?: string }>({});
+  const [addressErrors, setAddressErrors] = useState<ResidentialAddressErrors>({});
   
   const [formData, setFormData] = useState(() => extractFormData(student));
 
@@ -151,6 +163,26 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
       return;
     }
 
+    const addressValue: ResidentialAddress = trimAddress({
+      address_line_1: formData.address_line_1,
+      address_line_2: formData.address_line_2,
+      city: formData.city,
+      state_region: formData.state_region,
+      postal_code: formData.postal_code,
+      country_of_residence: formData.country_of_residence,
+    });
+
+    const addressValidation = validateResidentialAddress(addressValue);
+    setAddressErrors(addressValidation);
+    if (Object.keys(addressValidation).length > 0) {
+      toast({
+        title: 'Residential address incomplete',
+        description: 'Please complete the highlighted address fields before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     const fullContactPhone = buildInternationalNumber(formData.contact_phone_country_code, formData.contact_phone_local);
@@ -174,12 +206,18 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           preferred_country: formData.preferred_country,
           preferred_intake_year: formData.preferred_intake_year || null,
           preferred_intake_month: formData.preferred_intake_month || null,
+          address_line_1: addressValue.address_line_1 || null,
+          address_line_2: addressValue.address_line_2 || null,
+          city: addressValue.city || null,
+          state_region: addressValue.state_region || null,
+          postal_code: addressValue.postal_code || null,
+          country_of_residence: addressValue.country_of_residence || null,
           address: {
-            line1: formData.address_line1,
-            line2: formData.address_line2,
-            city: formData.city,
-            postal_code: formData.postal_code,
-            country: formData.country,
+            line1: addressValue.address_line_1,
+            line2: addressValue.address_line_2,
+            city: addressValue.city,
+            postal_code: addressValue.postal_code,
+            country: addressValue.country_of_residence,
             phone: fullContactPhone,
             whatsapp: fullWhatsappNumber || null
           }
