@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { RESIDENCE_COUNTRIES } from "@/lib/residenceCountries";
 import {
   Loader2,
   Eye,
@@ -73,9 +74,10 @@ const isUsernameCheckUnsupported = (error: PostgrestError | null) => {
 };
 
 
+const ALL_COUNTRIES = RESIDENCE_COUNTRIES;
+
 const buildCountryOptions = () => ALL_COUNTRIES;
 
-import { RESIDENCE_COUNTRIES } from "@/lib/residenceCountries";
 import {
   EMPTY_RESIDENTIAL_ADDRESS,
   postalCodeRequired,
@@ -85,8 +87,6 @@ import {
   type ResidentialAddress,
   type ResidentialAddressErrors,
 } from "@/lib/residentialAddress";
-
-const ALL_COUNTRIES = RESIDENCE_COUNTRIES;
 
 const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
 const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
