@@ -255,7 +255,7 @@ const Index = () => {
                 trusted universities across Europe, the UK, Canada, the USA, Australia, and beyond.
               </p>
               <p className="text-xs sm:text-sm text-white/85 italic">
-                Guiding students step by step since 2014.
+                Study Abroad with Confidence. Guiding Students Step by Step Since 2014.
               </p>
             </div>
 
