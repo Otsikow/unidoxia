@@ -273,6 +273,16 @@ const ALL_COUNTRIES = [
 
 const buildCountryOptions = () => ALL_COUNTRIES;
 
+import {
+  EMPTY_RESIDENTIAL_ADDRESS,
+  postalCodeRequired,
+  stateRegionRequired,
+  trimAddress,
+  validateResidentialAddress,
+  type ResidentialAddress,
+  type ResidentialAddressErrors,
+} from "@/lib/residentialAddress";
+
 const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
 const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
 
@@ -290,6 +300,8 @@ const Signup = () => {
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [username, setUsername] = useState("");
+  const [address, setAddress] = useState<ResidentialAddress>(EMPTY_RESIDENTIAL_ADDRESS);
+  const [addressErrors, setAddressErrors] = useState<ResidentialAddressErrors>({});
 
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -608,6 +620,18 @@ const Signup = () => {
       return false;
     }
 
+    const nextAddress = { ...address, country_of_residence: country };
+    const addressValidation = validateResidentialAddress(nextAddress);
+    setAddressErrors(addressValidation);
+    if (Object.keys(addressValidation).length > 0) {
+      toast({
+        variant: "destructive",
+        title: "Residential address incomplete",
+        description: "Please complete the highlighted address fields to continue.",
+      });
+      return false;
+    }
+
     if (!referralSource.trim()) {
       toast({
         variant: "destructive",
@@ -686,6 +710,11 @@ const Signup = () => {
     }
 
     return true;
+  };
+
+  const handleAddressChange = (field: keyof ResidentialAddress, value: string) => {
+    setAddress((prev) => ({ ...prev, [field]: value }));
+    setAddressErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
   const handleNext = () => {
@@ -768,6 +797,7 @@ const Signup = () => {
         referrerId: referrerInfo?.id,
         referrerUsername: referrerInfo?.username,
         referralSource: referralSource.trim() || undefined,
+        address: trimAddress({ ...address, country_of_residence: country }),
       });
 
       if (error) {
@@ -992,6 +1022,100 @@ const Signup = () => {
                   This should be the country where you currently live, not your preferred study
                   destination.
                 </p>
+
+                <div className="space-y-4 rounded-xl border bg-muted/30 p-4 sm:p-5">
+                  <div className="space-y-1">
+                    <h3 className="flex items-center gap-2 text-base font-semibold">
+                      <MapPin className="h-4 w-4" /> Residential Address
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Please provide your current residential address. This information may be used
+                      to support your university application and student profile.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_line_1">
+                      Address Line 1 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="address_line_1"
+                      value={address.address_line_1}
+                      onChange={(e) => handleAddressChange("address_line_1", e.target.value)}
+                      placeholder="House number and street"
+                      aria-invalid={!!addressErrors.address_line_1}
+                    />
+                    {addressErrors.address_line_1 && (
+                      <p className="text-xs text-destructive">{addressErrors.address_line_1}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_line_2">Address Line 2 (optional)</Label>
+                    <Input
+                      id="address_line_2"
+                      value={address.address_line_2}
+                      onChange={(e) => handleAddressChange("address_line_2", e.target.value)}
+                      placeholder="Apartment, suite, district"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">
+                        City / Town <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="city"
+                        value={address.city}
+                        onChange={(e) => handleAddressChange("city", e.target.value)}
+                        placeholder="e.g. Accra"
+                        aria-invalid={!!addressErrors.city}
+                      />
+                      {addressErrors.city && (
+                        <p className="text-xs text-destructive">{addressErrors.city}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="state_region">
+                        State / Region / Province
+                        {stateRegionRequired(country) && <span className="text-destructive"> *</span>}
+                      </Label>
+                      <Input
+                        id="state_region"
+                        value={address.state_region}
+                        onChange={(e) => handleAddressChange("state_region", e.target.value)}
+                        placeholder="e.g. Greater Accra"
+                        aria-invalid={!!addressErrors.state_region}
+                      />
+                      {addressErrors.state_region && (
+                        <p className="text-xs text-destructive">{addressErrors.state_region}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code">
+                      Postal Code / ZIP Code
+                      {postalCodeRequired(country) ? (
+                        <span className="text-destructive"> *</span>
+                      ) : (
+                        <span className="text-muted-foreground"> (optional)</span>
+                      )}
+                    </Label>
+                    <Input
+                      id="postal_code"
+                      value={address.postal_code}
+                      onChange={(e) => handleAddressChange("postal_code", e.target.value)}
+                      placeholder="e.g. SW1A 1AA"
+                      aria-invalid={!!addressErrors.postal_code}
+                    />
+                    {addressErrors.postal_code && (
+                      <p className="text-xs text-destructive">{addressErrors.postal_code}</p>
+                    )}
+                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="referralSource" className="flex items-center gap-2">
