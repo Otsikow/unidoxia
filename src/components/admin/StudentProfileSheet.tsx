@@ -359,9 +359,9 @@ export function StudentProfileSheet({
               university_access_approved_by: null,
             };
 
-      const { data, error } = await supabase
-        .from("student_documents")
-        .update(reviewPayload as any)
+      const { data, error } = await (supabase
+        .from("student_documents") as any)
+        .update(reviewPayload)
         .select("id")
         .eq("id", doc.id);
 

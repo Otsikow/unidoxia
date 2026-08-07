@@ -51,8 +51,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
   const [linkUrl, setLinkUrl] = useState('');
 
   const editor: any = useEditor({
-    extensions: [
-      // @ts-expect-error — tiptap StarterKit ships its own nested @tiptap/core copy; the extension is compatible at runtime.
+    extensions: ([
       StarterKit.configure({
         codeBlock: false,
       }),
@@ -82,7 +81,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Start writing..
       CodeBlockLowlight.configure({
         lowlight: createLowlight(),
       }),
-    ],
+    ] as any[]),
     content: value,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
