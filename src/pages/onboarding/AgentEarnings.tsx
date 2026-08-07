@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, CheckCircle2, DollarSign, TrendingUp, Clock, Shield } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { markOnboardingSeen } from "@/lib/onboardingStorage";
 import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /* -------------------------- STATIC DATA -------------------------- */
 
@@ -47,13 +50,60 @@ const commissionHighlights = [
 
 const AgentEarnings = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { profile, user, refreshProfile } = useAuth();
+  const { toast } = useToast();
+  const [finishing, setFinishing] = useState(false);
+
+  const isAgent = profile?.role === "agent";
   const nextParam = searchParams.get("next");
-  const nextTarget = nextParam ? decodeURIComponent(nextParam) : "/auth/signup?role=agent";
+  const defaultTarget = isAgent ? "/dashboard/leads" : "/auth/signup?role=agent";
+  const rawTarget = nextParam ? decodeURIComponent(nextParam) : defaultTarget;
+  // Never send a signed-in agent back into the onboarding flow (prevents a redirect loop).
+  const nextTarget = isAgent && (rawTarget.startsWith("/agents/") || rawTarget.startsWith("/auth/")) ? "/dashboard/leads" : rawTarget;
   const backHref = `/agents/onboarding?next=${encodeURIComponent(nextTarget)}`;
 
   useEffect(() => {
     markOnboardingSeen("agent");
   }, []);
+
+  // Finishing the flow must persist `onboarded`, otherwise the protected route
+  // bounces the agent straight back to /agents/onboarding.
+  const handleFinish = useCallback(async () => {
+    if (!isAgent || !user?.id) {
+      navigate(nextTarget);
+      return;
+    }
+
+    if (profile?.onboarded) {
+      navigate(nextTarget);
+      return;
+    }
+
+    try {
+      setFinishing(true);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ onboarded: true })
+        .eq("id", user.id);
+
+      if (error) throw error;
+
+      await refreshProfile();
+      navigate(nextTarget);
+    } catch (error) {
+      console.error("Unable to complete agent onboarding", error);
+      toast({
+        title: "Could not finish onboarding",
+        description: "Please try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setFinishing(false);
+    }
+  }, [isAgent, user?.id, profile?.onboarded, navigate, nextTarget, refreshProfile, toast]);
+
+  const ctaLabel = finishing ? "Finishing…" : isAgent ? "Go to Dashboard" : "Get Started";
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -72,13 +122,12 @@ const AgentEarnings = () => {
             </Link>
           </Button>
 
-          <Button size="default" className="gap-2" asChild>
-            <Link to={nextTarget}>
-              Get Started
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+          <Button size="default" className="gap-2" onClick={handleFinish} disabled={finishing}>
+            {ctaLabel}
+            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
+
 
         {/* Progress */}
         <OnboardingProgress
@@ -188,15 +237,21 @@ const AgentEarnings = () => {
           {/* CTA Section */}
           <div className="text-center space-y-4 pt-4">
             <p className="text-muted-foreground">
-              Ready to start earning? Create your account in less than 2 minutes.
+              {isAgent
+                ? "You're all set. Head to your dashboard and start adding students."
+                : "Ready to start earning? Create your account in less than 2 minutes."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="w-full sm:w-auto gap-2" asChild>
-                <Link to={nextTarget}>
-                  Create Your Account
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+              <Button
+                size="lg"
+                className="w-full sm:w-auto gap-2"
+                onClick={handleFinish}
+                disabled={finishing}
+              >
+                {finishing ? "Finishing…" : isAgent ? "Go to Dashboard" : "Create Your Account"}
+                <ArrowRight className="h-4 w-4" />
               </Button>
+
               <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                 <Link to="/contact">Talk to Our Team</Link>
               </Button>

@@ -23,7 +23,8 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   const loading = authLoading || profileLoading || rolesLoading;
 
   const isAgent = profile?.role === 'agent';
-  const isAgentOnboardingRoute = location.pathname.startsWith('/agents/onboarding');
+  const isAgentOnboardingRoute =
+    location.pathname.startsWith('/agents/onboarding') || location.pathname.startsWith('/agents/earnings');
 
   const handleRepairAccount = async () => {
     if (!user?.id) return;
