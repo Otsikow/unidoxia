@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { RESIDENCE_COUNTRIES } from "@/lib/residenceCountries";
 import {
   Loader2,
   Eye,
@@ -43,6 +44,7 @@ import {
   Phone,
   Globe,
   AtSign,
+  MapPin,
 } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { cn } from "@/lib/utils";
@@ -71,207 +73,20 @@ const isUsernameCheckUnsupported = (error: PostgrestError | null) => {
   );
 };
 
-const ALL_COUNTRIES = [
-  "Afghanistan",
-  "Albania",
-  "Algeria",
-  "Andorra",
-  "Angola",
-  "Antigua and Barbuda",
-  "Argentina",
-  "Armenia",
-  "Australia",
-  "Austria",
-  "Azerbaijan",
-  "Bahamas",
-  "Bahrain",
-  "Bangladesh",
-  "Barbados",
-  "Belarus",
-  "Belgium",
-  "Belize",
-  "Benin",
-  "Bhutan",
-  "Bolivia",
-  "Bosnia and Herzegovina",
-  "Botswana",
-  "Brazil",
-  "Brunei",
-  "Bulgaria",
-  "Burkina Faso",
-  "Burundi",
-  "Cabo Verde",
-  "Cambodia",
-  "Cameroon",
-  "Canada",
-  "Central African Republic",
-  "Chad",
-  "Chile",
-  "China",
-  "Colombia",
-  "Comoros",
-  "Congo (Democratic Republic)",
-  "Congo (Republic)",
-  "Costa Rica",
-  "Côte d'Ivoire",
-  "Croatia",
-  "Cuba",
-  "Cyprus",
-  "Czech Republic",
-  "Denmark",
-  "Djibouti",
-  "Dominica",
-  "Dominican Republic",
-  "Ecuador",
-  "Egypt",
-  "El Salvador",
-  "Equatorial Guinea",
-  "Eritrea",
-  "Estonia",
-  "Eswatini",
-  "Ethiopia",
-  "Fiji",
-  "Finland",
-  "France",
-  "Gabon",
-  "Gambia",
-  "Georgia",
-  "Germany",
-  "Ghana",
-  "Greece",
-  "Grenada",
-  "Guatemala",
-  "Guinea",
-  "Guinea-Bissau",
-  "Guyana",
-  "Haiti",
-  "Honduras",
-  "Hungary",
-  "Iceland",
-  "India",
-  "Indonesia",
-  "Iran",
-  "Iraq",
-  "Ireland",
-  "Israel",
-  "Italy",
-  "Jamaica",
-  "Japan",
-  "Jordan",
-  "Kazakhstan",
-  "Kenya",
-  "Kiribati",
-  "Korea (North)",
-  "Korea (South)",
-  "Kosovo",
-  "Kuwait",
-  "Kyrgyzstan",
-  "Laos",
-  "Latvia",
-  "Lebanon",
-  "Lesotho",
-  "Liberia",
-  "Libya",
-  "Liechtenstein",
-  "Lithuania",
-  "Luxembourg",
-  "Madagascar",
-  "Malawi",
-  "Malaysia",
-  "Maldives",
-  "Mali",
-  "Malta",
-  "Marshall Islands",
-  "Mauritania",
-  "Mauritius",
-  "Mexico",
-  "Micronesia",
-  "Moldova",
-  "Monaco",
-  "Mongolia",
-  "Montenegro",
-  "Morocco",
-  "Mozambique",
-  "Myanmar",
-  "Namibia",
-  "Nauru",
-  "Nepal",
-  "Netherlands",
-  "New Zealand",
-  "Nicaragua",
-  "Niger",
-  "Nigeria",
-  "North Macedonia",
-  "Norway",
-  "Oman",
-  "Pakistan",
-  "Palau",
-  "Palestine",
-  "Panama",
-  "Papua New Guinea",
-  "Paraguay",
-  "Peru",
-  "Philippines",
-  "Poland",
-  "Portugal",
-  "Qatar",
-  "Romania",
-  "Russia",
-  "Rwanda",
-  "Saint Kitts and Nevis",
-  "Saint Lucia",
-  "Saint Vincent and the Grenadines",
-  "Samoa",
-  "San Marino",
-  "São Tomé and Príncipe",
-  "Saudi Arabia",
-  "Senegal",
-  "Serbia",
-  "Seychelles",
-  "Sierra Leone",
-  "Singapore",
-  "Slovakia",
-  "Slovenia",
-  "Solomon Islands",
-  "Somalia",
-  "South Africa",
-  "South Sudan",
-  "Spain",
-  "Sri Lanka",
-  "Sudan",
-  "Suriname",
-  "Sweden",
-  "Switzerland",
-  "Syria",
-  "Taiwan",
-  "Tajikistan",
-  "Tanzania",
-  "Thailand",
-  "Timor-Leste",
-  "Togo",
-  "Tonga",
-  "Trinidad and Tobago",
-  "Tunisia",
-  "Turkey",
-  "Turkmenistan",
-  "Tuvalu",
-  "Uganda",
-  "Ukraine",
-  "United Arab Emirates",
-  "United Kingdom",
-  "United States",
-  "Uruguay",
-  "Uzbekistan",
-  "Vanuatu",
-  "Vatican City",
-  "Venezuela",
-  "Vietnam",
-  "Yemen",
-  "Zambia",
-  "Zimbabwe",
-];
+
+const ALL_COUNTRIES = RESIDENCE_COUNTRIES;
 
 const buildCountryOptions = () => ALL_COUNTRIES;
+
+import {
+  EMPTY_RESIDENTIAL_ADDRESS,
+  postalCodeRequired,
+  stateRegionRequired,
+  trimAddress,
+  validateResidentialAddress,
+  type ResidentialAddress,
+  type ResidentialAddressErrors,
+} from "@/lib/residentialAddress";
 
 const STUDENT_WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
 const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
@@ -290,6 +105,8 @@ const Signup = () => {
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [username, setUsername] = useState("");
+  const [address, setAddress] = useState<ResidentialAddress>(EMPTY_RESIDENTIAL_ADDRESS);
+  const [addressErrors, setAddressErrors] = useState<ResidentialAddressErrors>({});
 
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
@@ -608,6 +425,18 @@ const Signup = () => {
       return false;
     }
 
+    const nextAddress = { ...address, country_of_residence: country };
+    const addressValidation = validateResidentialAddress(nextAddress);
+    setAddressErrors(addressValidation);
+    if (Object.keys(addressValidation).length > 0) {
+      toast({
+        variant: "destructive",
+        title: "Residential address incomplete",
+        description: "Please complete the highlighted address fields to continue.",
+      });
+      return false;
+    }
+
     if (!referralSource.trim()) {
       toast({
         variant: "destructive",
@@ -686,6 +515,11 @@ const Signup = () => {
     }
 
     return true;
+  };
+
+  const handleAddressChange = (field: keyof ResidentialAddress, value: string) => {
+    setAddress((prev) => ({ ...prev, [field]: value }));
+    setAddressErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
   const handleNext = () => {
@@ -768,6 +602,7 @@ const Signup = () => {
         referrerId: referrerInfo?.id,
         referrerUsername: referrerInfo?.username,
         referralSource: referralSource.trim() || undefined,
+        address: trimAddress({ ...address, country_of_residence: country }),
       });
 
       if (error) {
@@ -992,6 +827,100 @@ const Signup = () => {
                   This should be the country where you currently live, not your preferred study
                   destination.
                 </p>
+
+                <div className="space-y-4 rounded-xl border bg-muted/30 p-4 sm:p-5">
+                  <div className="space-y-1">
+                    <h3 className="flex items-center gap-2 text-base font-semibold">
+                      <MapPin className="h-4 w-4" /> Residential Address
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Please provide your current residential address. This information may be used
+                      to support your university application and student profile.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_line_1">
+                      Address Line 1 <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="address_line_1"
+                      value={address.address_line_1}
+                      onChange={(e) => handleAddressChange("address_line_1", e.target.value)}
+                      placeholder="House number and street"
+                      aria-invalid={!!addressErrors.address_line_1}
+                    />
+                    {addressErrors.address_line_1 && (
+                      <p className="text-xs text-destructive">{addressErrors.address_line_1}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="address_line_2">Address Line 2 (optional)</Label>
+                    <Input
+                      id="address_line_2"
+                      value={address.address_line_2}
+                      onChange={(e) => handleAddressChange("address_line_2", e.target.value)}
+                      placeholder="Apartment, suite, district"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="city">
+                        City / Town <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        id="city"
+                        value={address.city}
+                        onChange={(e) => handleAddressChange("city", e.target.value)}
+                        placeholder="e.g. Accra"
+                        aria-invalid={!!addressErrors.city}
+                      />
+                      {addressErrors.city && (
+                        <p className="text-xs text-destructive">{addressErrors.city}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="state_region">
+                        State / Region / Province
+                        {stateRegionRequired(country) && <span className="text-destructive"> *</span>}
+                      </Label>
+                      <Input
+                        id="state_region"
+                        value={address.state_region}
+                        onChange={(e) => handleAddressChange("state_region", e.target.value)}
+                        placeholder="e.g. Greater Accra"
+                        aria-invalid={!!addressErrors.state_region}
+                      />
+                      {addressErrors.state_region && (
+                        <p className="text-xs text-destructive">{addressErrors.state_region}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="postal_code">
+                      Postal Code / ZIP Code
+                      {postalCodeRequired(country) ? (
+                        <span className="text-destructive"> *</span>
+                      ) : (
+                        <span className="text-muted-foreground"> (optional)</span>
+                      )}
+                    </Label>
+                    <Input
+                      id="postal_code"
+                      value={address.postal_code}
+                      onChange={(e) => handleAddressChange("postal_code", e.target.value)}
+                      placeholder="e.g. SW1A 1AA"
+                      aria-invalid={!!addressErrors.postal_code}
+                    />
+                    {addressErrors.postal_code && (
+                      <p className="text-xs text-destructive">{addressErrors.postal_code}</p>
+                    )}
+                  </div>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="referralSource" className="flex items-center gap-2">

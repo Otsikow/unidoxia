@@ -19,6 +19,15 @@ import {
   parseInternationalNumber,
   toWhatsAppLink,
 } from '@/lib/phone';
+import { RESIDENCE_COUNTRIES } from '@/lib/residenceCountries';
+import {
+  postalCodeRequired,
+  stateRegionRequired,
+  trimAddress,
+  validateResidentialAddress,
+  type ResidentialAddress,
+  type ResidentialAddressErrors,
+} from '@/lib/residentialAddress';
 import {
   getAcademicYearOptions,
   getIntakeOptionsForYear,
@@ -86,11 +95,13 @@ const extractFormData = (student: Tables<'students'>) => {
     preferred_country: (student as any).preferred_country || '',
     preferred_intake_year: (student as any).preferred_intake_year || 0,
     preferred_intake_month: (student as any).preferred_intake_month || 0,
-    address_line1: addressData?.line1 || '',
-    address_line2: addressData?.line2 || '',
-    city: addressData?.city || '',
-    postal_code: addressData?.postal_code || '',
-    country: addressData?.country || ''
+    address_line_1: (student as any).address_line_1 || addressData?.line1 || '',
+    address_line_2: (student as any).address_line_2 || addressData?.line2 || '',
+    city: (student as any).city || addressData?.city || '',
+    state_region: (student as any).state_region || '',
+    postal_code: (student as any).postal_code || addressData?.postal_code || '',
+    country_of_residence:
+      (student as any).country_of_residence || addressData?.country || student.current_country || ''
   };
 };
 
@@ -100,6 +111,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ contactPhone?: string; whatsappNumber?: string }>({});
+  const [addressErrors, setAddressErrors] = useState<ResidentialAddressErrors>({});
   
   const [formData, setFormData] = useState(() => extractFormData(student));
 
@@ -151,6 +163,26 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
       return;
     }
 
+    const addressValue: ResidentialAddress = trimAddress({
+      address_line_1: formData.address_line_1,
+      address_line_2: formData.address_line_2,
+      city: formData.city,
+      state_region: formData.state_region,
+      postal_code: formData.postal_code,
+      country_of_residence: formData.country_of_residence,
+    });
+
+    const addressValidation = validateResidentialAddress(addressValue);
+    setAddressErrors(addressValidation);
+    if (Object.keys(addressValidation).length > 0) {
+      toast({
+        title: 'Residential address incomplete',
+        description: 'Please complete the highlighted address fields before saving.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     const fullContactPhone = buildInternationalNumber(formData.contact_phone_country_code, formData.contact_phone_local);
@@ -174,12 +206,18 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           preferred_country: formData.preferred_country,
           preferred_intake_year: formData.preferred_intake_year || null,
           preferred_intake_month: formData.preferred_intake_month || null,
+          address_line_1: addressValue.address_line_1 || null,
+          address_line_2: addressValue.address_line_2 || null,
+          city: addressValue.city || null,
+          state_region: addressValue.state_region || null,
+          postal_code: addressValue.postal_code || null,
+          country_of_residence: addressValue.country_of_residence || null,
           address: {
-            line1: formData.address_line1,
-            line2: formData.address_line2,
-            city: formData.city,
-            postal_code: formData.postal_code,
-            country: formData.country,
+            line1: addressValue.address_line_1,
+            line2: addressValue.address_line_2,
+            city: addressValue.city,
+            postal_code: addressValue.postal_code,
+            country: addressValue.country_of_residence,
             phone: fullContactPhone,
             whatsapp: fullWhatsappNumber || null
           }
@@ -414,53 +452,101 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address_line1">Address Line 1</Label>
-            <Input
-              id="address_line1"
-              name="address_line1"
-              value={formData.address_line1}
-              onChange={handleChange}
-            />
-          </div>
+          <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
+            <div className="space-y-1">
+              <h3 className="text-base font-semibold">Residential Address</h3>
+              <p className="text-xs text-muted-foreground">
+                Your current residential address. This may be used to support your university
+                applications.
+              </p>
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address_line2">Address Line 2</Label>
-            <Input
-              id="address_line2"
-              name="address_line2"
-              value={formData.address_line2}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="country_of_residence">Country of Residence *</Label>
+              <Select
+                value={formData.country_of_residence || undefined}
+                onValueChange={(value) => {
+                  setFormData((prev) => ({ ...prev, country_of_residence: value }));
+                  setAddressErrors((prev) => ({ ...prev, country_of_residence: undefined }));
+                }}
+              >
+                <SelectTrigger id="country_of_residence">
+                  <SelectValue placeholder="Select your country of residence" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {RESIDENCE_COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {addressErrors.country_of_residence && (
+                <p className="text-xs text-destructive">{addressErrors.country_of_residence}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address_line_1">Address Line 1 *</Label>
               <Input
-                id="city"
-                name="city"
-                value={formData.city}
+                id="address_line_1"
+                name="address_line_1"
+                value={formData.address_line_1}
                 onChange={handleChange}
+                placeholder="House number and street"
+              />
+              {addressErrors.address_line_1 && (
+                <p className="text-xs text-destructive">{addressErrors.address_line_1}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="address_line_2">Address Line 2 (optional)</Label>
+              <Input
+                id="address_line_2"
+                name="address_line_2"
+                value={formData.address_line_2}
+                onChange={handleChange}
+                placeholder="Apartment, suite, district"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="postal_code">Postal Code</Label>
-              <Input
-                id="postal_code"
-                name="postal_code"
-                value={formData.postal_code}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-              />
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City / Town *</Label>
+                <Input id="city" name="city" value={formData.city} onChange={handleChange} />
+                {addressErrors.city && (
+                  <p className="text-xs text-destructive">{addressErrors.city}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state_region">
+                  State / Region{stateRegionRequired(formData.country_of_residence) ? ' *' : ''}
+                </Label>
+                <Input
+                  id="state_region"
+                  name="state_region"
+                  value={formData.state_region}
+                  onChange={handleChange}
+                />
+                {addressErrors.state_region && (
+                  <p className="text-xs text-destructive">{addressErrors.state_region}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="postal_code">
+                  Postal / ZIP Code{postalCodeRequired(formData.country_of_residence) ? ' *' : ''}
+                </Label>
+                <Input
+                  id="postal_code"
+                  name="postal_code"
+                  value={formData.postal_code}
+                  onChange={handleChange}
+                />
+                {addressErrors.postal_code && (
+                  <p className="text-xs text-destructive">{addressErrors.postal_code}</p>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>

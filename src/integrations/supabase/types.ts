@@ -2935,14 +2935,18 @@ export type Database = {
       students: {
         Row: {
           address: Json | null
+          address_line_1: string | null
+          address_line_2: string | null
           agent_assigned_at: string | null
           archive_reason: string | null
           archived_at: string | null
           archived_by: string | null
           assigned_agent_id: string | null
+          city: string | null
           consent_flags_json: Json | null
           contact_email: string | null
           contact_phone: string | null
+          country_of_residence: string | null
           created_at: string | null
           current_country: string | null
           date_of_birth: string | null
@@ -2961,6 +2965,7 @@ export type Database = {
           payment_date: string | null
           payment_type: string | null
           plan_type: string | null
+          postal_code: string | null
           preferred_country: string | null
           preferred_course: string | null
           preferred_intake_month: number | null
@@ -2972,6 +2977,7 @@ export type Database = {
           reference_code: string
           referral_source: string | null
           refund_eligibility: boolean | null
+          state_region: string | null
           tenant_id: string
           test_scores: Json | null
           updated_at: string | null
@@ -2979,14 +2985,18 @@ export type Database = {
         }
         Insert: {
           address?: Json | null
+          address_line_1?: string | null
+          address_line_2?: string | null
           agent_assigned_at?: string | null
           archive_reason?: string | null
           archived_at?: string | null
           archived_by?: string | null
           assigned_agent_id?: string | null
+          city?: string | null
           consent_flags_json?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
+          country_of_residence?: string | null
           created_at?: string | null
           current_country?: string | null
           date_of_birth?: string | null
@@ -3005,6 +3015,7 @@ export type Database = {
           payment_date?: string | null
           payment_type?: string | null
           plan_type?: string | null
+          postal_code?: string | null
           preferred_country?: string | null
           preferred_course?: string | null
           preferred_intake_month?: number | null
@@ -3016,6 +3027,7 @@ export type Database = {
           reference_code?: string
           referral_source?: string | null
           refund_eligibility?: boolean | null
+          state_region?: string | null
           tenant_id: string
           test_scores?: Json | null
           updated_at?: string | null
@@ -3023,14 +3035,18 @@ export type Database = {
         }
         Update: {
           address?: Json | null
+          address_line_1?: string | null
+          address_line_2?: string | null
           agent_assigned_at?: string | null
           archive_reason?: string | null
           archived_at?: string | null
           archived_by?: string | null
           assigned_agent_id?: string | null
+          city?: string | null
           consent_flags_json?: Json | null
           contact_email?: string | null
           contact_phone?: string | null
+          country_of_residence?: string | null
           created_at?: string | null
           current_country?: string | null
           date_of_birth?: string | null
@@ -3049,6 +3065,7 @@ export type Database = {
           payment_date?: string | null
           payment_type?: string | null
           plan_type?: string | null
+          postal_code?: string | null
           preferred_country?: string | null
           preferred_course?: string | null
           preferred_intake_month?: number | null
@@ -3060,6 +3077,7 @@ export type Database = {
           reference_code?: string
           referral_source?: string | null
           refund_eligibility?: boolean | null
+          state_region?: string | null
           tenant_id?: string
           test_scores?: Json | null
           updated_at?: string | null
