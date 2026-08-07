@@ -23,8 +23,7 @@ export default function LatestFromBlog() {
         .from("blog_posts")
         .select("id, slug, title, excerpt, cover_image_url, tags, published_at")
         .eq("status", "published")
-        .order("featured", { ascending: false })
-        .order("published_at", { ascending: false })
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(3);
       if (error) throw error;
       return (data ?? []) as BlogCard[];
