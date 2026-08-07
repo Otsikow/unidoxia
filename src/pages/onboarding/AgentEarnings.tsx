@@ -237,15 +237,21 @@ const AgentEarnings = () => {
           {/* CTA Section */}
           <div className="text-center space-y-4 pt-4">
             <p className="text-muted-foreground">
-              Ready to start earning? Create your account in less than 2 minutes.
+              {isAgent
+                ? "You're all set. Head to your dashboard and start adding students."
+                : "Ready to start earning? Create your account in less than 2 minutes."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="w-full sm:w-auto gap-2" asChild>
-                <Link to={nextTarget}>
-                  Create Your Account
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
+              <Button
+                size="lg"
+                className="w-full sm:w-auto gap-2"
+                onClick={handleFinish}
+                disabled={finishing}
+              >
+                {finishing ? "Finishing…" : isAgent ? "Go to Dashboard" : "Create Your Account"}
+                <ArrowRight className="h-4 w-4" />
               </Button>
+
               <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                 <Link to="/contact">Talk to Our Team</Link>
               </Button>
