@@ -20,6 +20,8 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Database, Json } from '@/integrations/supabase/types';
 import type { ApplicationFormData } from '@/types/application';
+import { EMPTY_EMERGENCY_CONTACT } from '@/types/application';
+
 import { normalizeEducationLevel } from '@/lib/education';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { useAgentProfileCompletion } from '@/hooks/useAgentProfileCompletion';
@@ -246,14 +248,27 @@ const mergeLegacyFormData = (
 
   const notes = typeof legacy.notes === 'string' ? legacy.notes : current.notes;
 
+  const emergencyContact = { ...current.emergencyContact };
+  const legacyEmergency = isRecord(legacy.emergencyContact) ? legacy.emergencyContact : null;
+  if (legacyEmergency) {
+    (Object.keys(emergencyContact) as Array<keyof typeof emergencyContact>).forEach((field) => {
+      const rawValue = legacyEmergency[field];
+      if (typeof rawValue === 'string' && rawValue.trim() !== '') {
+        emergencyContact[field] = rawValue;
+      }
+    });
+  }
+
   return {
     ...current,
     personalInfo,
+    emergencyContact,
     educationHistory,
     programSelection,
     documents: current.documents,
     notes,
   };
+
 };
 
 const sanitizeFormDataForDraft = (data: ApplicationFormData): ApplicationFormData => ({
@@ -335,7 +350,9 @@ export default function NewApplication() {
       homeAddress: '',
       correspondentAddress: '',
     },
+    emergencyContact: { ...EMPTY_EMERGENCY_CONTACT },
     educationHistory: [],
+
     programSelection: {
       programId: programIdFromUrl || '',
       intakeYear: new Date().getFullYear(),
@@ -594,6 +611,14 @@ export default function NewApplication() {
             '',
           correspondentAddress: (studentData.address as any)?.correspondent_address || '',
         },
+        emergencyContact: {
+          fullName: (studentData as any).emergency_contact_name || '',
+          relationship: (studentData as any).emergency_contact_relationship || '',
+          phone: (studentData as any).emergency_contact_phone || '+',
+          email: (studentData as any).emergency_contact_email || '',
+          country: (studentData as any).emergency_contact_country || '',
+        },
+
       }));
 
       // Fetch education records
@@ -1112,7 +1137,25 @@ export default function NewApplication() {
           gradeScale: rec.gradeScale,
         }));
 
+        const emergency = formDataRef.current.emergencyContact;
+        if (emergency?.fullName?.trim()) {
+          const { error: ecError } = await supabase
+            .from('students')
+            .update({
+              emergency_contact_name: emergency.fullName.trim(),
+              emergency_contact_relationship: emergency.relationship.trim() || null,
+              emergency_contact_phone: emergency.phone.trim() || null,
+              emergency_contact_email: emergency.email.trim() || null,
+              emergency_contact_country: emergency.country.trim() || null,
+            } as never)
+            .eq('id', studentId);
+          if (ecError) {
+            console.warn('[NewApplication] Emergency contact update failed:', ecError);
+          }
+        }
+
         const rpcResult = await supabase.rpc(
+
           'sync_student_profile_from_application_submit' as any,
           {
             p_student_id: studentId,
@@ -1661,6 +1704,10 @@ export default function NewApplication() {
           <PersonalInfoStep
             data={formData.personalInfo}
             onChange={(data) => setFormData((prev) => ({ ...prev, personalInfo: data }))}
+            emergencyContact={formData.emergencyContact}
+            onEmergencyContactChange={(data) =>
+              setFormData((prev) => ({ ...prev, emergencyContact: data }))
+            }
             onNext={goToNextStep}
           />
         )}

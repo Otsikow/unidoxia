@@ -2951,6 +2951,11 @@ export type Database = {
           current_country: string | null
           date_of_birth: string | null
           education_history: Json | null
+          emergency_contact_country: string | null
+          emergency_contact_email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
           finances_json: Json | null
           guardian: Json | null
           id: string
@@ -3001,6 +3006,11 @@ export type Database = {
           current_country?: string | null
           date_of_birth?: string | null
           education_history?: Json | null
+          emergency_contact_country?: string | null
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           finances_json?: Json | null
           guardian?: Json | null
           id?: string
@@ -3051,6 +3061,11 @@ export type Database = {
           current_country?: string | null
           date_of_birth?: string | null
           education_history?: Json | null
+          emergency_contact_country?: string | null
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           finances_json?: Json | null
           guardian?: Json | null
           id?: string

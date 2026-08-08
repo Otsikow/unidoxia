@@ -84,6 +84,11 @@ interface StudentBundle {
     date_of_birth: string | null;
     passport_number: string | null;
     passport_expiry: string | null;
+    emergency_contact_name?: string | null;
+    emergency_contact_relationship?: string | null;
+    emergency_contact_phone?: string | null;
+    emergency_contact_email?: string | null;
+    emergency_contact_country?: string | null;
     visa_history_json: any;
     education_history: any;
     address: any;
@@ -223,7 +228,7 @@ const AdminStudentDetail = () => {
       // Also fetch archive status separately
       const { data: archiveData } = await supabase
         .from("students")
-        .select("archived_at, archive_reason, reference_code, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month")
+        .select("archived_at, archive_reason, reference_code, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone, emergency_contact_email, emergency_contact_country")
         .eq("id", studentId)
         .maybeSingle();
 
@@ -239,6 +244,11 @@ const AdminStudentDetail = () => {
               preferred_country: archiveData.preferred_country ?? prev.student.preferred_country ?? null,
               preferred_intake_year: archiveData.preferred_intake_year ?? null,
               preferred_intake_month: archiveData.preferred_intake_month ?? null,
+              emergency_contact_name: (archiveData as any).emergency_contact_name ?? null,
+              emergency_contact_relationship: (archiveData as any).emergency_contact_relationship ?? null,
+              emergency_contact_phone: (archiveData as any).emergency_contact_phone ?? null,
+              emergency_contact_email: (archiveData as any).emergency_contact_email ?? null,
+              emergency_contact_country: (archiveData as any).emergency_contact_country ?? null,
             },
           };
         });
@@ -982,6 +992,36 @@ const AdminStudentDetail = () => {
               )}
             </CardContent>
           </Card>
+
+          {student.emergency_contact_name && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Emergency Contact</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{student.emergency_contact_name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Relationship</p>
+                  <p className="font-medium">{student.emergency_contact_relationship || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="font-medium">{student.emergency_contact_phone || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium break-all">{student.emergency_contact_email || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Country</p>
+                  <p className="font-medium">{student.emergency_contact_country || "—"}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {isArchived && (
             <Card className="border-amber-500/30">
