@@ -99,6 +99,7 @@ interface SignUpParams {
   referrerId?: string;
   referrerUsername?: string;
   referralSource?: string;
+  redirectTo?: string;
   address?: {
     address_line_1?: string;
     address_line_2?: string;
@@ -1273,10 +1274,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     referrerId,
     referrerUsername,
     referralSource,
+    redirectTo,
     address,
   }: SignUpParams) => {
     try {
-      const redirectUrl = buildEmailRedirectUrl('/auth/callback');
+      const callbackPath = redirectTo
+        ? `/auth/callback?next=${encodeURIComponent(redirectTo)}`
+        : '/auth/callback';
+      const redirectUrl = buildEmailRedirectUrl(callbackPath);
 
       const sanitizedUsername = formatReferralUsername(username);
 

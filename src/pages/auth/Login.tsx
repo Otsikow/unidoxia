@@ -11,6 +11,7 @@ import { Loader2, Eye, EyeOff } from 'lucide-react';
 import unidoxiaLogo from '@/assets/unidoxia-logo.png';
 import BackButton from '@/components/BackButton';
 import { buildEmailRedirectUrl, getSiteUrl } from '@/lib/supabaseClientConfig';
+import { getSafeAuthRedirect } from '@/lib/authRedirect';
 import { hasSeenOnboarding, markOnboardingSeen, type OnboardingRole } from '@/lib/onboardingStorage';
 import { SEO } from "@/components/SEO";
 
@@ -24,12 +25,15 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const locationState = location.state as { email?: string; from?: string } | null;
+  const nextTarget = getSafeAuthRedirect(locationState?.from);
 
   useEffect(() => {
     const emailParam = new URLSearchParams(location.search).get('email');
-    if (!emailParam) return;
-    setEmail((prev) => (prev ? prev : emailParam));
-  }, [location.search]);
+    const suggestedEmail = emailParam || locationState?.email;
+    if (!suggestedEmail) return;
+    setEmail((prev) => (prev ? prev : suggestedEmail));
+  }, [location.search, locationState?.email]);
 
   // Prefetch the dashboard route chunk while the user is on the login screen.
   // This reduces perceived latency right after successful sign-in.
@@ -72,16 +76,16 @@ const Login = () => {
   useEffect(() => {
     if (!authLoading && user) {
       setIsRedirecting(true);
-      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/dashboard';
-      navigate(redirectTo, { replace: true });
+      navigate(nextTarget, { replace: true });
     }
-  }, [authLoading, user, location.state, navigate]);
+  }, [authLoading, user, navigate, nextTarget]);
 
   const handleGoogleSignIn = async () => {
+    const callbackPath = `/auth/callback?next=${encodeURIComponent(nextTarget)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: buildEmailRedirectUrl('/dashboard') ?? `${getSiteUrl()}/dashboard`,
+        redirectTo: buildEmailRedirectUrl(callbackPath) ?? `${getSiteUrl()}${callbackPath}`,
       },
     });
 
@@ -120,6 +124,7 @@ const Login = () => {
           message: verificationEmailSent
             ? `We just sent a verification link to ${targetEmail}. Please confirm your email to finish signing in.`
             : 'We sent you a verification link. Please confirm your email to finish signing in.',
+          from: nextTarget,
         },
       });
       setLoading(false);
@@ -143,8 +148,7 @@ const Login = () => {
       setIsRedirecting(true);
       await refreshProfile();
 
-      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/dashboard';
-      navigate(redirectTo, { replace: true });
+      navigate(nextTarget, { replace: true });
     }
 
     setLoading(false);
@@ -277,7 +281,10 @@ const Login = () => {
 
             <p className="text-sm text-center text-muted-foreground">
               Don't have an account?{' '}
-              <Link to="/auth/signup" className="text-primary hover:underline font-medium">
+              <Link
+                to={`/auth/signup?role=student&next=${encodeURIComponent(nextTarget)}`}
+                className="text-primary hover:underline font-medium"
+              >
                 Sign up
               </Link>
             </p>

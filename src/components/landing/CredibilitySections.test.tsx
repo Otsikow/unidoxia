@@ -32,4 +32,21 @@ describe("homepage credibility sections", () => {
     expect(screen.getByText(/admission and visa decisions remain solely/i)).toBeTruthy();
     expect(container.textContent).not.toMatch(/verified advisors|dream university|universities love/i);
   });
+
+  it("makes every journey card actionable and preserves its post-registration destination", () => {
+    renderWithRouter(<StoryboardSection />);
+
+    expect(screen.getByRole("link", { name: /build your profile.*register or sign in/i })).toHaveAttribute(
+      "href",
+      "/auth/signup?role=student&next=%2Fstudent%2Fprofile",
+    );
+    expect(screen.getByRole("link", { name: /explore universities.*register or sign in/i })).toHaveAttribute(
+      "href",
+      "/auth/signup?role=student&next=%2Fstudent%2Funiversities",
+    );
+    expect(screen.getByRole("link", { name: /start an application.*register or sign in/i })).toHaveAttribute(
+      "href",
+      "/auth/signup?role=student&next=%2Fstudent%2Fapplications%2Fnew",
+    );
+  });
 });

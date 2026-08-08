@@ -21,6 +21,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   const [repairError, setRepairError] = useState<string | null>(null);
 
   const loading = authLoading || profileLoading || rolesLoading;
+  const requestedPath = `${location.pathname}${location.search}${location.hash}`;
 
   const isAgent = profile?.role === 'agent';
   const isAgentOnboardingRoute =
@@ -68,7 +69,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (!user) {
-    return <Navigate to="/auth/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/auth/login" replace state={{ from: requestedPath }} />;
   }
 
   if (!profile) {
@@ -148,7 +149,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   if (!user.email_confirmed_at) {
-    return <Navigate to="/verify-email" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/verify-email" replace state={{ from: requestedPath }} />;
   }
 
   if (isAgent && profile.onboarded === false && !isAgentOnboardingRoute) {
@@ -182,7 +183,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
         <Navigate
           to="/auth/complete-signup"
           replace
-          state={{ from: location.pathname }}
+          state={{ from: requestedPath }}
         />
       );
     }
