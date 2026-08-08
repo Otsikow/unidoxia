@@ -248,14 +248,27 @@ const mergeLegacyFormData = (
 
   const notes = typeof legacy.notes === 'string' ? legacy.notes : current.notes;
 
+  const emergencyContact = { ...current.emergencyContact };
+  const legacyEmergency = isRecord(legacy.emergencyContact) ? legacy.emergencyContact : null;
+  if (legacyEmergency) {
+    (Object.keys(emergencyContact) as Array<keyof typeof emergencyContact>).forEach((field) => {
+      const rawValue = legacyEmergency[field];
+      if (typeof rawValue === 'string' && rawValue.trim() !== '') {
+        emergencyContact[field] = rawValue;
+      }
+    });
+  }
+
   return {
     ...current,
     personalInfo,
+    emergencyContact,
     educationHistory,
     programSelection,
     documents: current.documents,
     notes,
   };
+
 };
 
 const sanitizeFormDataForDraft = (data: ApplicationFormData): ApplicationFormData => ({
