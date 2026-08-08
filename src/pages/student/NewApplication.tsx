@@ -1137,7 +1137,25 @@ export default function NewApplication() {
           gradeScale: rec.gradeScale,
         }));
 
+        const emergency = formDataRef.current.emergencyContact;
+        if (emergency?.fullName?.trim()) {
+          const { error: ecError } = await supabase
+            .from('students')
+            .update({
+              emergency_contact_name: emergency.fullName.trim(),
+              emergency_contact_relationship: emergency.relationship.trim() || null,
+              emergency_contact_phone: emergency.phone.trim() || null,
+              emergency_contact_email: emergency.email.trim() || null,
+              emergency_contact_country: emergency.country.trim() || null,
+            } as never)
+            .eq('id', studentId);
+          if (ecError) {
+            console.warn('[NewApplication] Emergency contact update failed:', ecError);
+          }
+        }
+
         const rpcResult = await supabase.rpc(
+
           'sync_student_profile_from_application_submit' as any,
           {
             p_student_id: studentId,
