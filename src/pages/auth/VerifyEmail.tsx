@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { buildEmailRedirectUrl } from '@/lib/supabaseClientConfig';
+import { getSafeAuthRedirect } from '@/lib/authRedirect';
 
 const VerifyEmail = () => {
   const { user } = useAuth();
@@ -14,16 +15,18 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [resending, setResending] = useState(false);
-  const messageFromState = (location.state as { message?: string } | null)?.message;
+  const locationState = location.state as { email?: string; from?: string; message?: string } | null;
+  const messageFromState = locationState?.message;
+  const nextTarget = getSafeAuthRedirect(locationState?.from);
 
-  const emailFromState = (location.state as { email?: string } | null)?.email;
+  const emailFromState = locationState?.email;
   const email = useMemo(() => emailFromState ?? user?.email ?? '', [emailFromState, user?.email]);
 
   useEffect(() => {
     if (user?.email_confirmed_at) {
-      navigate('/dashboard', { replace: true });
+      navigate(nextTarget, { replace: true });
     }
-  }, [navigate, user?.email_confirmed_at]);
+  }, [navigate, nextTarget, user?.email_confirmed_at]);
 
   const handleResend = async () => {
     if (!email) {
@@ -38,7 +41,8 @@ const VerifyEmail = () => {
     setResending(true);
 
     try {
-      const emailRedirectTo = buildEmailRedirectUrl('/auth/callback');
+      const callbackPath = `/auth/callback?next=${encodeURIComponent(nextTarget)}`;
+      const emailRedirectTo = buildEmailRedirectUrl(callbackPath);
 
       const { error } = await supabase.auth.resend({
         type: 'signup',
@@ -122,7 +126,10 @@ const VerifyEmail = () => {
             )}
           </Button>
 
-          <Button onClick={() => navigate('/auth/login')} className="w-full">
+          <Button
+            onClick={() => navigate('/auth/login', { state: { email, from: nextTarget } })}
+            className="w-full"
+          >
             Back to login
           </Button>
 

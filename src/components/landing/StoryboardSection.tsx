@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { UserPlus, Users, Award } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, UserPlus, Users, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { buildStudentSignupPath } from "@/lib/authRedirect";
 import storyboardProfile from "@/assets/university-buildings.png";
 import storyboardMatched from "@/assets/agent-student-consulting.png";
 import storyboardOffers from "@/assets/student-airport-travel.png";
@@ -11,31 +13,35 @@ interface StoryboardStepConfig {
   key: StoryboardStepKey;
   icon: typeof UserPlus;
   image: string;
+  destination: string;
 }
 
 const STEP_CONFIG: StoryboardStepConfig[] = [
-  { key: "profile", icon: UserPlus, image: storyboardProfile },
-  { key: "matched", icon: Users, image: storyboardMatched },
-  { key: "offers", icon: Award, image: storyboardOffers },
+  { key: "profile", icon: UserPlus, image: storyboardProfile, destination: "/student/profile" },
+  { key: "matched", icon: Users, image: storyboardMatched, destination: "/student/universities" },
+  { key: "offers", icon: Award, image: storyboardOffers, destination: "/student/applications/new" },
 ];
 
-const STEP_COPY: Record<StoryboardStepKey, { title: string; description: string; support: string; imageAlt: string }> = {
+const STEP_COPY: Record<StoryboardStepKey, { title: string; description: string; support: string; action: string; imageAlt: string }> = {
   profile: {
     title: "Create your profile",
     description: "Add your academic background, study preferences and contact details.",
     support: "Use clear checklists to see which information and documents are still needed.",
+    action: "Build your profile",
     imageAlt: "Student creating an international study profile",
   },
   matched: {
     title: "Explore suitable options",
     description: "Search courses and review possible matches using the information available to UniDoxia.",
     support: "Check published requirements and discuss uncertain details with an adviser or institution.",
+    action: "Explore universities",
     imageAlt: "Student reviewing course options with an education adviser",
   },
   offers: {
     title: "Apply and track progress",
     description: "Prepare applications, respond to document requests and follow status updates.",
     support: "Admission and visa decisions remain solely with the relevant institution and authority.",
+    action: "Start an application",
     imageAlt: "Student reviewing an international study application checklist",
   },
 };
@@ -69,8 +75,13 @@ const StoryboardSection = () => {
                   aria-hidden="true"
                 />
               )}
-              <Card className="h-full border-primary/20 transition-all duration-300 group-hover:-translate-y-2 group-hover:border-primary group-hover:shadow-xl">
-                <CardContent className="flex h-full flex-col gap-5 p-6 text-center">
+              <Link
+                to={buildStudentSignupPath(scene.destination)}
+                className="block h-full rounded-[var(--radius)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"
+                aria-label={`${scene.action}. Register or sign in to continue.`}
+              >
+                <Card className="h-full cursor-pointer border-primary/20 transition-all duration-300 group-hover:-translate-y-2 group-hover:border-primary group-hover:shadow-xl">
+                  <CardContent className="flex h-full flex-col gap-5 p-6 text-center">
                   <div className="relative w-full overflow-hidden rounded-xl shadow-lg ring-1 ring-primary/10">
                     <img
                       src={scene.image}
@@ -92,8 +103,13 @@ const StoryboardSection = () => {
                   <div className="mt-auto w-full rounded-lg bg-background/70 p-3 text-sm font-medium text-primary shadow-inner">
                     {scene.support}
                   </div>
-                </CardContent>
-              </Card>
+                    <span className="inline-flex items-center justify-center gap-2 font-semibold text-primary">
+                      {scene.action}
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
             </div>
           ))}
         </div>

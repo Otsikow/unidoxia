@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { Loader2, AtSign, Check, Phone, UserCircle, Mail } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { LoadingState } from "@/components/LoadingState";
 import { SEO } from "@/components/SEO";
+import { getSafeAuthRedirect } from "@/lib/authRedirect";
 
 const WHATSAPP_REGEX = /^\+[1-9]\d{7,14}$/;
 const normalizePhoneNumber = (value: string) => value.replace(/[\s\-()]/g, "");
@@ -30,6 +31,10 @@ const CompleteSignup = () => {
   const { user, profile, loading: authLoading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const nextTarget = getSafeAuthRedirect(
+    (location.state as { from?: string } | null)?.from,
+  );
 
   const [referralSource, setReferralSource] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
@@ -45,9 +50,9 @@ const CompleteSignup = () => {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate("/auth/login", { replace: true });
+      navigate("/auth/login", { replace: true, state: { from: nextTarget } });
     }
-  }, [authLoading, user, navigate]);
+  }, [authLoading, user, navigate, nextTarget]);
 
   useEffect(() => {
     if (!authLoading && user && profile) {
@@ -83,10 +88,10 @@ const CompleteSignup = () => {
       const hasWhatsapp = WHATSAPP_REGEX.test(normalizedWhatsapp);
 
       if (hasReferralSource && hasWhatsapp) {
-        navigate("/dashboard", { replace: true });
+        navigate(nextTarget, { replace: true });
       }
     }
-  }, [authLoading, profile, user, navigate]);
+  }, [authLoading, profile, user, navigate, nextTarget]);
 
   if (authLoading || !profile || !user) {
     return (
@@ -215,7 +220,7 @@ const CompleteSignup = () => {
       });
 
       await refreshProfile();
-      navigate("/dashboard", { replace: true });
+      navigate(nextTarget, { replace: true });
     } catch (err) {
       console.error("Error saving signup details:", err);
       toast({

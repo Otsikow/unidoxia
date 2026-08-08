@@ -5,7 +5,8 @@ import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import type { PostgrestError } from "@supabase/supabase-js";
-import { getSiteUrl } from "@/lib/supabaseClientConfig";
+import { buildEmailRedirectUrl, getSiteUrl } from "@/lib/supabaseClientConfig";
+import { getSafeAuthRedirect } from "@/lib/authRedirect";
 import {
   hasSeenOnboarding,
   markOnboardingSeen,
@@ -140,6 +141,10 @@ const Signup = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const nextTarget = useMemo(
+    () => getSafeAuthRedirect(new URLSearchParams(location.search).get("next")),
+    [location.search],
+  );
 
   const countryOptions = useMemo(() => buildCountryOptions(), []);
 
@@ -180,9 +185,9 @@ const Signup = () => {
     if (!authLoading && user && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
       setRedirecting(true);
-      navigate("/dashboard", { replace: true });
+      navigate(nextTarget, { replace: true });
     }
-  }, [authLoading, user, navigate]);
+  }, [authLoading, user, navigate, nextTarget]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -358,10 +363,11 @@ const Signup = () => {
   }, [username, usernameCheckAvailable]);
 
   const handleGoogleSignUp = async () => {
+    const callbackPath = `/auth/callback?next=${encodeURIComponent(nextTarget)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${getSiteUrl()}/dashboard`,
+        redirectTo: buildEmailRedirectUrl(callbackPath) ?? `${getSiteUrl()}${callbackPath}`,
         queryParams: { access_type: "offline", prompt: "consent" },
       },
     });
@@ -569,7 +575,7 @@ const Signup = () => {
                 "An account is already registered with this email. Please log in instead, or reset your password if you've forgotten it.",
             });
             setLoading(false);
-            navigate("/auth/login", { state: { email: normalizedEmail } });
+            navigate("/auth/login", { state: { email: normalizedEmail, from: nextTarget } });
             return;
           }
 
@@ -581,7 +587,7 @@ const Signup = () => {
                 "This WhatsApp number is already linked to an existing account. Please log in to continue where you left off, or recover your account.",
             });
             setLoading(false);
-            navigate("/auth/login");
+            navigate("/auth/login", { state: { from: nextTarget } });
             return;
           }
         }
@@ -602,6 +608,7 @@ const Signup = () => {
         referrerId: referrerInfo?.id,
         referrerUsername: referrerInfo?.username,
         referralSource: referralSource.trim() || undefined,
+        redirectTo: nextTarget,
         address: trimAddress({ ...address, country_of_residence: country }),
       });
 
@@ -622,7 +629,7 @@ const Signup = () => {
             description:
               "You already have an account with these details. Please log in to continue, or reset your password to recover access.",
           });
-          navigate("/auth/login", { state: { email: normalizedEmail } });
+          navigate("/auth/login", { state: { email: normalizedEmail, from: nextTarget } });
         } else {
           toast({
             variant: "destructive",
@@ -640,7 +647,7 @@ const Signup = () => {
           description: "Check your email to verify your account before logging in.",
         });
 
-        navigate("/verify-email", { state: { email } });
+        navigate("/verify-email", { state: { email, from: nextTarget } });
       }
     } catch {
       toast({

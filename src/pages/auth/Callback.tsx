@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/LoadingState";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { getSafeAuthRedirect } from "@/lib/authRedirect";
 
 type CallbackState =
   | { status: "loading" }
@@ -24,6 +25,10 @@ const AuthCallback = () => {
   const [state, setState] = useState<CallbackState>({ status: "loading" });
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const nextTarget = useMemo(
+    () => getSafeAuthRedirect(params.get("next")),
+    [params],
+  );
   const type = params.get("type") ?? getParamFromHash(location.hash, "type");
   const code = params.get("code");
 
@@ -80,7 +85,7 @@ const AuthCallback = () => {
           return;
         }
 
-        navigate("/dashboard", { replace: true });
+        navigate(nextTarget, { replace: true });
       } catch (err) {
         console.error("Auth callback failed", err);
         if (!active) return;
@@ -98,7 +103,7 @@ const AuthCallback = () => {
     return () => {
       active = false;
     };
-  }, [code, errorDescription, errorFromQuery, location.hash, navigate, type]);
+  }, [code, errorDescription, errorFromQuery, location.hash, navigate, nextTarget, type]);
 
   if (state.status === "loading") {
     return (
@@ -145,4 +150,3 @@ const AuthCallback = () => {
 };
 
 export default AuthCallback;
-
