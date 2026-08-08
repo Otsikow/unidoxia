@@ -611,6 +611,14 @@ export default function NewApplication() {
             '',
           correspondentAddress: (studentData.address as any)?.correspondent_address || '',
         },
+        emergencyContact: {
+          fullName: (studentData as any).emergency_contact_name || '',
+          relationship: (studentData as any).emergency_contact_relationship || '',
+          phone: (studentData as any).emergency_contact_phone || '+',
+          email: (studentData as any).emergency_contact_email || '',
+          country: (studentData as any).emergency_contact_country || '',
+        },
+
       }));
 
       // Fetch education records
