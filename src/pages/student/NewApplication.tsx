@@ -20,6 +20,8 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Database, Json } from '@/integrations/supabase/types';
 import type { ApplicationFormData } from '@/types/application';
+import { EMPTY_EMERGENCY_CONTACT } from '@/types/application';
+
 import { normalizeEducationLevel } from '@/lib/education';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { useAgentProfileCompletion } from '@/hooks/useAgentProfileCompletion';
