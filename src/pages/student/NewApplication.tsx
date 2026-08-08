@@ -1704,6 +1704,10 @@ export default function NewApplication() {
           <PersonalInfoStep
             data={formData.personalInfo}
             onChange={(data) => setFormData((prev) => ({ ...prev, personalInfo: data }))}
+            emergencyContact={formData.emergencyContact}
+            onEmergencyContactChange={(data) =>
+              setFormData((prev) => ({ ...prev, emergencyContact: data }))
+            }
             onNext={goToNextStep}
           />
         )}

@@ -5,6 +5,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRIES } from '@/lib/countries';
 import { User, Mail, Phone, Calendar, Globe, CreditCard, MapPin, MessageCircle } from 'lucide-react';
+import EmergencyContactSection, {
+  isEmergencyContactComplete,
+} from '@/components/application/EmergencyContactSection';
+import type { EmergencyContact } from '@/types/application';
 
 interface PersonalInfo {
   fullName: string;
@@ -22,10 +26,18 @@ interface PersonalInfo {
 interface PersonalInfoStepProps {
   data: PersonalInfo;
   onChange: (data: PersonalInfo) => void;
+  emergencyContact: EmergencyContact;
+  onEmergencyContactChange: (data: EmergencyContact) => void;
   onNext: () => void;
 }
 
-export default function PersonalInfoStep({ data, onChange, onNext }: PersonalInfoStepProps) {
+export default function PersonalInfoStep({
+  data,
+  onChange,
+  emergencyContact,
+  onEmergencyContactChange,
+  onNext,
+}: PersonalInfoStepProps) {
   const handleChange = (field: keyof PersonalInfo, value: string) => {
     onChange({ ...data, [field]: value });
   };
@@ -38,11 +50,13 @@ export default function PersonalInfoStep({ data, onChange, onNext }: PersonalInf
       data.whatsappNumber.trim() !== '' &&
       data.dateOfBirth !== '' &&
       data.nationality.trim() !== '' &&
-      data.currentCountry.trim() !== ''
+      data.currentCountry.trim() !== '' &&
+      isEmergencyContactComplete(emergencyContact)
     );
   };
 
   return (
+    <div className="space-y-6">
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -215,13 +229,16 @@ export default function PersonalInfoStep({ data, onChange, onNext }: PersonalInf
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="flex justify-end pt-4">
-          <Button onClick={onNext} disabled={!isValid()} size="lg">
-            Continue to Education History
-          </Button>
-        </div>
       </CardContent>
     </Card>
+
+    <EmergencyContactSection data={emergencyContact} onChange={onEmergencyContactChange} />
+
+    <div className="flex justify-end">
+      <Button onClick={onNext} disabled={!isValid()} size="lg" className="w-full sm:w-auto">
+        Continue to Education History
+      </Button>
+    </div>
+    </div>
   );
 }
