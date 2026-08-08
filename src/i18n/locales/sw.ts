@@ -298,9 +298,9 @@ const sw = {
           "Jisajili ili kufungua mapendekezo ya kibinafsi kuhusu udahili, ufadhili na viza yanayotolewa na AI.",
         ctaLabel: "Anza",
         stats: [
-          { value: "12k+", label: "Maarifa ya AI yaliyotolewa kwa waombaji wa kimataifa" },
-          { value: "84%", label: "Wanafunzi waliolinganishwa na angalau kozi tatu zinazofaa" },
-          { value: "50+", label: "Nchi zilizo na data ya udahili iliyothibitishwa" },
+          { value: "Tafuta", label: "Chunguza kozi na vyuo vikuu vya kimataifa" },
+          { value: "Kagua", label: "Elewa ulinganifu na mahitaji yanayowezekana" },
+          { value: "Panga", label: "Panga hatua zinazofuata" },
         ],
         panel: {
           title: "Onyesho la awali la Zoe Intelligence",

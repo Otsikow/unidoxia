@@ -1,10 +1,16 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { fileURLToPath } from "url";
 import { componentTagger } from "lovable-tagger";
+
+const configDir = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Keep generated Vite cache files inside this checkout. The dependency
+  // directory may be shared or read-only in managed development environments.
+  cacheDir: ".vite-cache",
   server: {
     host: "127.0.0.1",
     port: 8080,
@@ -12,7 +18,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(configDir, "./src"),
       // Ensure we use the ESM build of lodash to avoid missing default exports
       // when dependencies (like recharts) deep-import lodash utilities.
       lodash: "lodash-es",

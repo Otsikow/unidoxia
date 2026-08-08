@@ -461,9 +461,9 @@ const fr = {
             "Inscrivez-vous pour débloquer des recommandations personnalisées alimentées par l'IA sur les admissions, les bourses et les visas.",
           ctaLabel: "Commencer",
           stats: [
-            { value: "12k+", label: "Analyses IA générées pour des candidats internationaux" },
-            { value: "84%", label: "Étudiants assortis à au moins trois cours idéaux" },
-            { value: "50+", label: "Pays couverts avec des données d'admission vérifiées" },
+            { value: "Rechercher", label: "Explorer les formations et universités internationales" },
+            { value: "Vérifier", label: "Comprendre les correspondances et exigences possibles" },
+            { value: "Planifier", label: "Organiser les prochaines étapes" },
           ],
           panel: {
             title: "Aperçu de Zoe Intelligence",

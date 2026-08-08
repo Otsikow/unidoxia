@@ -19,20 +19,37 @@ const STEP_CONFIG: StoryboardStepConfig[] = [
   { key: "offers", icon: Award, image: storyboardOffers },
 ];
 
+const STEP_COPY: Record<StoryboardStepKey, { title: string; description: string; support: string; imageAlt: string }> = {
+  profile: {
+    title: "Create your profile",
+    description: "Add your academic background, study preferences and contact details.",
+    support: "Use clear checklists to see which information and documents are still needed.",
+    imageAlt: "Student creating an international study profile",
+  },
+  matched: {
+    title: "Explore suitable options",
+    description: "Search courses and review possible matches using the information available to UniDoxia.",
+    support: "Check published requirements and discuss uncertain details with an adviser or institution.",
+    imageAlt: "Student reviewing course options with an education adviser",
+  },
+  offers: {
+    title: "Apply and track progress",
+    description: "Prepare applications, respond to document requests and follow status updates.",
+    support: "Admission and visa decisions remain solely with the relevant institution and authority.",
+    imageAlt: "Student reviewing an international study application checklist",
+  },
+};
+
 const StoryboardSection = () => {
   const { t } = useTranslation();
 
-  const heading = t("pages.index.storyboard.heading");
-  const subheading = t("pages.index.storyboard.subheading");
+  const heading = "Your Journey in 3 Clear Steps";
+  const subheading = "Build your profile, explore suitable study options and manage your applications in one place.";
 
   const steps = STEP_CONFIG.map((step) => {
-    const baseKey = `pages.index.storyboard.steps.${step.key}`;
     return {
       ...step,
-      title: t(`${baseKey}.title`),
-      description: t(`${baseKey}.description`),
-      support: t(`${baseKey}.support`),
-      imageAlt: t(`${baseKey}.imageAlt`),
+      ...STEP_COPY[step.key],
     };
   });
 

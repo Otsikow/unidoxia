@@ -12,7 +12,6 @@ import {
   FileCheck,
   Clock,
   Sparkles,
-  Calculator,
   ArrowRight,
   MessageCircle,
   CalendarCheck,
@@ -21,13 +20,12 @@ import { LandingHeader } from "@/components/landing/LandingHeader";
 import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
 import { SEO } from "@/components/SEO";
 import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarquee";
-import { logFreeConsultationWhatsAppClick, logVisaCalculatorCardClick } from "@/lib/analytics";
+import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import agentsCta from "@/assets/agents-cta.jpeg";
 import destinationsCta from "@/assets/destinations-cta.jpeg";
-import visaEligibilityImage from "@/assets/visa-eligibility-checklist.png";
 import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
 import trackRealTimeImage from "@/assets/keeping-you-informed.png";
 import connectAgentImage from "@/assets/features/connect-agent.jpeg";
@@ -109,20 +107,22 @@ const Index = () => {
           key: "agents",
           href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
           image: agentsCta,
+          badge: "Agents",
+          title: "Manage students and applications",
+          description: "Add authorised students, organise documents and track application activity from one workspace. Commission information is shown only where supported and agreed.",
+          action: "Explore Agent Tools",
         },
         {
           key: "universities",
           href: "/partnership",
           image: destinationsCta,
+          badge: "Universities",
+          title: "Discuss international student recruitment",
+          description: "Explore a transparent recruitment relationship focused on African student markets and supported by structured application workflows.",
+          action: "Discuss a Partnership",
         },
-      ].map((cta) => ({
-        ...cta,
-        badge: t(`pages.index.hero.ctas.${cta.key}.badge`),
-        title: t(`pages.index.hero.ctas.${cta.key}.title`),
-        description: t(`pages.index.hero.ctas.${cta.key}.description`),
-        action: t(`pages.index.hero.ctas.${cta.key}.action`),
-      })),
-    [t],
+      ],
+    [],
   );
 
   /* ---------- Features ---------- */
@@ -135,6 +135,9 @@ const Index = () => {
           color: "from-blue-500 to-cyan-500",
           image: applyEasilyImage,
           href: "/auth/signup?role=student",
+          title: "Prepare Your Application With Confidence",
+          description: "Build one profile, organise your documents and prepare applications with clear guidance.",
+          action: "Start Your Application",
         },
         {
           key: "trackRealtime",
@@ -142,6 +145,9 @@ const Index = () => {
           color: "from-purple-500 to-pink-500",
           image: trackRealTimeImage,
           href: "/courses",
+          title: "Keep Track of Your Next Steps",
+          description: "Review application activity, outstanding information and status updates in one place.",
+          action: "Explore Courses",
         },
         {
           key: "connectAgents",
@@ -149,14 +155,12 @@ const Index = () => {
           color: "from-orange-500 to-red-500",
           image: connectAgentImage,
           href: "/free-consultation",
+          title: "Get Personal Guidance",
+          description: "Speak with the UniDoxia team about course discovery, application preparation and practical next steps.",
+          action: "Speak With an Adviser",
         },
-      ].map((f) => ({
-        ...f,
-        title: t(`pages.index.features.cards.${f.key}.title`),
-        description: t(`pages.index.features.cards.${f.key}.description`),
-        action: t(`pages.index.features.cards.${f.key}.action`),
-      })),
-    [t],
+      ],
+    [],
   );
 
   /* ---------- FAQ ---------- */
@@ -169,17 +173,11 @@ const Index = () => {
     [t],
   );
 
-  const featuresHeading = t("pages.index.features.heading");
-  const visaBadgeLabel = t("pages.index.visa.badge");
-  const visaTitle = t("pages.index.visa.title");
-  const visaDescription = t("pages.index.visa.description");
-  const visaButtonLabel = t("pages.index.visa.cta");
+  const featuresHeading = "Why UniDoxia";
   const faqHeading = t("pages.index.faq.heading");
   const faqSubtitle = t("pages.index.faq.subtitle");
   const contactHeading = t("pages.index.contact.heading");
   const contactSubtitle = t("pages.index.contact.subtitle");
-  const footerText = t("layout.footer.copyright", { year: new Date().getFullYear() });
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO
@@ -248,14 +246,15 @@ const Index = () => {
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.03em] [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
-                Study Abroad Opportunities for Students Worldwide
+                Global universities. Built around African students.
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
-                UniDoxia helps students secure admission, navigate visa processes, and access
-                trusted universities across Europe, the UK, Canada, the USA, Australia, and beyond.
+                Discover international courses, prepare your documents, manage applications and
+                track your next steps in one place—with guidance shaped around African applicants
+                and open to students worldwide.
               </p>
               <p className="text-xs sm:text-sm text-white/85 italic">
-                Study Abroad with Confidence. Guiding Students Step by Step Since 2014.
+                Application guidance and technology for clearer international study decisions.
               </p>
             </div>
 
@@ -298,7 +297,8 @@ const Index = () => {
 
             {/* Trust ribbon — in normal flow */}
             <p className="mt-1 inline-flex max-w-full items-center rounded-full bg-slate-950/60 px-5 py-2.5 text-center text-xs sm:text-sm font-medium tracking-tight text-white/90 shadow-lg ring-1 ring-white/15 backdrop-blur-md">
-              UniDoxia connects students worldwide to trusted international study opportunities.
+              Explore universities and study opportunities worldwide. Entry requirements,
+              availability and application routes vary by institution.
             </p>
           </div>
         </div>
@@ -370,7 +370,12 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ---------- ZOE ---------- */}
+      {/* ---------- HOW IT WORKS ---------- */}
+      <Suspense fallback={<SectionLoader />}>
+        <StoryboardSection />
+      </Suspense>
+
+      {/* ---------- ZOE AI ---------- */}
       <Suspense fallback={<SectionLoader />}>
         <ZoeExperienceSection />
       </Suspense>
@@ -380,71 +385,13 @@ const Index = () => {
         <FeaturedUniversitiesSection />
       </Suspense>
 
-      {/* ---------- STORYBOARD / HOW IT WORKS ---------- */}
-      <Suspense fallback={<SectionLoader />}>
-        <StoryboardSection />
-      </Suspense>
-
-      {/* ---------- VISA GUIDANCE ---------- */}
-      <section className="py-24 container mx-auto grid lg:grid-cols-2 gap-14 px-4 items-center">
-        <div className="space-y-6">
-          <Badge variant="secondary">{visaBadgeLabel}</Badge>
-          <h2 className="text-4xl font-bold">{visaTitle}</h2>
-          <p className="text-muted-foreground">{visaDescription}</p>
-          <Button asChild size="lg">
-            <Link to="/visa-calculator" onClick={() => logVisaCalculatorCardClick("cta_button")}>
-              <Calculator className="mr-2 h-5 w-5" />
-              {visaButtonLabel}
-            </Link>
-          </Button>
-        </div>
-        <img
-          src={visaEligibilityImage}
-          alt="Visa eligibility"
-          loading="lazy"
-          className="rounded-2xl shadow-2xl"
-        />
-      </section>
-
-      {/* ---------- SUCCESS STORIES ---------- */}
+      {/* ---------- FACTUAL TRUST ---------- */}
       <SuccessStoriesMarquee />
 
       {/* ---------- LATEST FROM BLOG ---------- */}
       <Suspense fallback={<SectionLoader />}>
         <LatestFromBlog />
       </Suspense>
-
-      {/* ---------- EXPLORE UNIDOXIA (compact) ---------- */}
-      <section className="container mx-auto px-4 py-10" aria-labelledby="explore-heading">
-        <div className="max-w-3xl mx-auto text-center mb-6">
-          <h2 id="explore-heading" className="text-2xl sm:text-3xl font-bold mb-2">
-            Explore UniDoxia
-          </h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Courses, scholarships, visa guidance, and weekly source-checked advice.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { to: "/courses", title: "Study Abroad Courses", desc: "Search programmes by country, subject, and level." },
-            { to: "/scholarships", title: "Scholarships", desc: "Discover funding opportunities for international students." },
-            { to: "/visa-calculator", title: "Visa Guidance", desc: "Estimate visa requirements and understand what's needed." },
-            { to: "/blog", title: "Student Advice Blog", desc: "Weekly, source-checked guidance on visas and admissions." },
-          ].map((c) => (
-            <Link
-              key={c.to}
-              to={c.to}
-              className="group rounded-xl border p-5 hover:border-primary/60 hover:bg-muted/40 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <h3 className="font-semibold mb-1 group-hover:text-primary">{c.title}</h3>
-              <p className="text-sm text-muted-foreground">{c.desc}</p>
-              <span className="inline-flex items-center gap-1 mt-3 text-sm text-primary">
-                Explore <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* ---------- PARTNER WITH UNIDOXIA ---------- */}
       <section className="container mx-auto px-4 py-16" aria-labelledby="partner-heading">
@@ -547,9 +494,6 @@ const Index = () => {
         </Card>
       </section>
 
-      <footer className="border-t py-12 text-center text-sm text-muted-foreground">
-        {footerText}
-      </footer>
     </div>
   );
 };

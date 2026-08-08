@@ -511,9 +511,9 @@ const pt = {
             "Crie uma conta para liberar recomendações personalizadas de admissão, bolsas e vistos alimentadas por IA.",
           ctaLabel: "Começar",
           stats: [
-            { value: "12k+", label: "Insights com IA para candidatos globais" },
-            { value: "84%", label: "Estudantes com pelo menos três cursos ideais" },
-            { value: "50+", label: "Países com dados de admissão verificados" },
+            { value: "Buscar", label: "Explore cursos e universidades internacionais" },
+            { value: "Analisar", label: "Entenda possíveis correspondências e requisitos" },
+            { value: "Planejar", label: "Organize os próximos passos" },
           ],
           panel: {
             title: "Prévia do Zoe Intelligence",
@@ -734,35 +734,6 @@ const pt = {
             disclaimer:
               "Valores ilustrativos em USD. Os custos reais variam conforme universidade, bolsas e câmbio.",
           },
-        },
-        testimonials: {
-          heading: "Histórias de sucesso",
-          items: [
-            {
-              name: "Sarah Johnson",
-              role: "Mestranda no MIT",
-              country: "EUA",
-              quote:
-                "A UniDoxia tornou meu sonho de estudar no MIT realidade. A plataforma é intuitiva e meu agente foi extremamente dedicado.",
-              rating: 5,
-            },
-            {
-              name: "Raj Patel",
-              role: "Aluno de MBA em Oxford",
-              country: "Reino Unido",
-              quote:
-                "O acompanhamento em tempo real me deu tranquilidade. Eu sempre soube em que etapa minha candidatura estava. Recomendo muito!",
-              rating: 5,
-            },
-            {
-              name: "Maria Garcia",
-              role: "Estudante de Engenharia em Stanford",
-              country: "EUA",
-              quote:
-                "Da escolha do curso ao visto aprovado, a UniDoxia me apoiou em cada etapa. Serviço excepcional!",
-              rating: 5,
-            },
-          ],
         },
         faq: {
           heading: "Perguntas frequentes",

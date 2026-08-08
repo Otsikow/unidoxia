@@ -95,12 +95,12 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
     logo_url:
       "https://upload.wikimedia.org/wikipedia/en/thumb/6/6e/University_of_Portsmouth_coat_of_arms.svg/800px-University_of_Portsmouth_coat_of_arms.svg.png",
     website: "https://www.port.ac.uk",
-    ranking: { "QS Global": "Top 600", Acceptance: "High for international" },
+    ranking: null,
     featured: true,
     featured_priority: 0,
     featured_summary:
-      "Career-focused teaching with scholarships and competitive fees for African students.",
-    featured_highlight: "Affordable undergraduate and postgraduate routes with flexible intakes",
+      "Explore the institution's published courses, entry requirements and international student information.",
+    featured_highlight: "Confirm current course availability and requirements on the official website",
     featured_image_url:
       "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80",
   },
@@ -112,12 +112,12 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
     logo_url:
       "https://upload.wikimedia.org/wikipedia/en/thumb/5/5e/Memorial_University_of_Newfoundland_coat_of_arms.svg/1024px-Memorial_University_of_Newfoundland_coat_of_arms.svg.png",
     website: "https://www.mun.ca",
-    ranking: { "QS Global": "Top 800", Tuition: "Among lowest in Canada" },
+    ranking: null,
     featured: true,
     featured_priority: 1,
     featured_summary:
-      "Public research university known for low tuition and supportive settlement services.",
-    featured_highlight: "High acceptance rates with generous international scholarships",
+      "Explore the institution's published courses, entry requirements and international student information.",
+    featured_highlight: "Confirm current fees and funding information on the official website",
     featured_image_url:
       "https://images.unsplash.com/photo-1504274066651-8d31a536b11a?auto=format&fit=crop&w=1200&q=80",
   },
@@ -129,12 +129,12 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
     logo_url:
       "https://upload.wikimedia.org/wikipedia/en/thumb/4/4b/University_of_Southern_Queensland_coat_of_arms.svg/800px-University_of_Southern_Queensland_coat_of_arms.svg.png",
     website: "https://www.usq.edu.au",
-    ranking: { "QS Global": "Top 700", "Online & On-campus": "Flexible" },
+    ranking: null,
     featured: true,
     featured_priority: 2,
     featured_summary:
-      "Practical learning pathways with budget-friendly tuition and regional campus lifestyle.",
-    featured_highlight: "High visa success support and work-integrated learning options",
+      "Explore the institution's published courses, entry requirements and international student information.",
+    featured_highlight: "Confirm current study modes and entry requirements on the official website",
     featured_image_url:
       "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
   },
@@ -146,12 +146,12 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
     logo_url:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Universit%C3%A4t_Bremen_Logo.svg/512px-Universit%C3%A4t_Bremen_Logo.svg.png",
     website: "https://www.uni-bremen.de/en",
-    ranking: { "QS Global": "Top 600", Tuition: "No tuition for most programs" },
+    ranking: null,
     featured: true,
     featured_priority: 3,
     featured_summary:
-      "Research-driven German public university with English-taught master’s options and low fees.",
-    featured_highlight: "Affordable living costs with strong international student support",
+      "Explore the institution's published courses, entry requirements and international student information.",
+    featured_highlight: "Confirm current language, fee and programme information on the official website",
     featured_image_url:
       "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1200&q=80",
   },
@@ -163,12 +163,12 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
     logo_url:
       "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Portland_State_University_logo.svg/512px-Portland_State_University_logo.svg.png",
     website: "https://www.pdx.edu",
-    ranking: { "QS Global": "Top 1000", Acceptance: "90%+" },
+    ranking: null,
     featured: true,
     featured_priority: 4,
     featured_summary:
-      "Urban university with industry-connected programs and approachable tuition for internationals.",
-    featured_highlight: "Pathway programs that welcome transfer credits and work experience",
+      "Explore the institution's published courses, entry requirements and international student information.",
+    featured_highlight: "Confirm current transfer and programme requirements on the official website",
     featured_image_url:
       "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80",
   },
@@ -213,26 +213,23 @@ export function FeaturedUniversitiesSection() {
 
   const isUsingFallback = hasError || featuredUniversities.length < 4;
 
-  const fallbackSummary = t("pages.index.featuredUniversities.fallback.summary");
+  const fallbackSummary = "Explore the institution's published programmes and international student information.";
   const fallbackNotice = hasError
-    ? t("pages.index.featuredUniversities.fallback.notice.error")
-    : t("pages.index.featuredUniversities.fallback.notice.updating");
-  const topPickLabel = t("pages.index.featuredUniversities.badges.topPick");
-  const priorityLabel = (position: number) =>
-    t("pages.index.featuredUniversities.badges.priority", { position });
+    ? "We're showing highlighted institutions while we reconnect to the featured list."
+    : "We're showing highlighted institutions while our featured list updates.";
+  const topPickLabel = "Featured";
+  const priorityLabel = (position: number) => `Display position ${position}`;
   const visitSiteLabel = t("pages.index.featuredUniversities.actions.visitSite");
-  const recommendedHighlight = t("pages.index.featuredUniversities.fallback.highlight");
-  const networkLabel = t("pages.index.featuredUniversities.network.label");
-  const networkSummary = t("pages.index.featuredUniversities.network.summary", {
-    count: universitiesToDisplay.length,
-  });
+  const recommendedHighlight = "Confirm current requirements on the official university website";
+  const networkLabel = "Universities to Explore";
+  const networkSummary = `${universitiesToDisplay.length} institutions currently highlighted for exploration`;
   const scrollLeftLabel = t("pages.index.featuredUniversities.actions.scrollLeft");
   const scrollRightLabel = t("pages.index.featuredUniversities.actions.scrollRight");
-  const sectionHeading = t("pages.index.featuredUniversities.heading");
-  const sectionDescription = t("pages.index.featuredUniversities.description");
-  const partnerCtaHeading = t("pages.index.featuredUniversities.partnerCta.heading");
-  const partnerCtaDescription = t("pages.index.featuredUniversities.partnerCta.description");
-  const partnerCtaAction = t("pages.index.featuredUniversities.partnerCta.action");
+  const sectionHeading = "Featured Universities";
+  const sectionDescription = "Explore universities and study opportunities. Availability, entry requirements and application routes vary by institution.";
+  const partnerCtaHeading = "Discuss a recruitment partnership";
+  const partnerCtaDescription = "A listing does not imply endorsement or a formal partnership. Institutions can contact UniDoxia to discuss a separate recruitment agreement.";
+  const partnerCtaAction = "Discuss a partnership";
 
   const formatWebsiteUrl = (website: string | null) => {
     if (!website) return null;
@@ -494,7 +491,7 @@ export function FeaturedUniversitiesSection() {
         <div className="mx-auto max-w-3xl space-y-6 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
             <GraduationCap className="h-4 w-4" />
-            <span>Partner Institutions</span>
+            <span>Universities to Explore</span>
           </div>
           <h2 id="featured-universities-heading" className="text-4xl font-bold tracking-tight md:text-5xl">
             {sectionHeading}

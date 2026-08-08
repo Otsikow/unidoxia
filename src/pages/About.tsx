@@ -9,7 +9,7 @@ const About = () => {
     name: "About UniDoxia",
     url: `${SITE_ORIGIN}/about`,
     description:
-      "UniDoxia supports international students with study-abroad discovery and application guidance.",
+      "UniDoxia supports international students with study-abroad discovery and application guidance, with a strong focus on African applicants.",
     publisher: {
       "@type": "Organization",
       name: "UniDoxia",
@@ -21,15 +21,24 @@ const About = () => {
     <div className="container mx-auto px-4 py-12 max-w-3xl">
       <SEO
         title="About UniDoxia | Study Abroad Support for International Students"
-        description="UniDoxia helps international students discover courses and universities, prepare applications, and understand visa and scholarship requirements — guidance, not guarantees."
+        description="UniDoxia helps international students, with a strong focus on African applicants, discover courses, prepare applications and understand next steps — guidance, not guarantees."
         canonicalPath="/about"
         jsonLd={jsonLd}
       />
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">About UniDoxia</h1>
       <p className="text-muted-foreground mb-6">
-        UniDoxia is a study-abroad support platform that helps international students
-        research courses and universities, prepare stronger applications, and understand
-        visa and scholarship requirements.
+        UniDoxia is a study-abroad support platform built around the needs of African
+        students while remaining open to international applicants worldwide. We help
+        students research courses and universities, prepare applications, and understand
+        common visa and scholarship requirements.
+      </p>
+
+      <h2 className="text-2xl font-semibold mt-8 mb-3">University listings and relationships</h2>
+      <p className="text-muted-foreground mb-4">
+        Universities may appear in UniDoxia search and featured listings so students can
+        explore study options. A listing does not mean the institution endorses UniDoxia
+        or has a formal recruitment agreement with us. Formal partnerships require a
+        separate written agreement.
       </p>
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">What we do</h2>

@@ -211,7 +211,7 @@ export const UniversityPartnershipForm = () => {
       toast({
         title: "Application received",
         description:
-          "Thank you for reaching out. Our partnerships team will follow up within two business days.",
+          "Thank you for reaching out. Our partnerships team will review your enquiry and contact you using the details provided.",
       });
 
       form.reset({

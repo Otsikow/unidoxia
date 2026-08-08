@@ -89,7 +89,7 @@ const en = {
     footer: {
       aboutTitle: "UniDoxia",
       aboutDescription:
-        "Connecting international students with world-class universities through verified agents and transparent application management.",
+        "Helping international students explore study options and manage applications, with a strong focus on African applicants.",
       contactEmailLabel: "Email us",
       followUs: "Follow UniDoxia",
       followUsSubtitle: "Follow us on X, LinkedIn, Facebook, Instagram, and our WhatsApp channel.",
@@ -374,7 +374,7 @@ const en = {
               badge: "Universities",
               title: "We connect you with qualified international students",
               description:
-                "Receive ready-to-review applications from serious international students, communicate with applicants and agents, and grow enrolments through a trusted recruitment network focused on Africa and global student markets.",
+                "Discuss transparent recruitment workflows for prospective international students and authorised agents, with a strong focus on African student markets.",
               action: "Partner with Us",
             },
           },
@@ -397,7 +397,7 @@ const en = {
             connectAgents: {
               title: "We Support You From Start to Finish",
               description:
-                "You receive personalized support from verified education experts who guide you throughout your journey—from application to admission and beyond.",
+                "Receive personalised guidance from the UniDoxia team as you prepare applications and understand your next steps.",
               action: "Speak with an advisor",
             },
           },
@@ -455,9 +455,9 @@ const en = {
             "Sign up to unlock tailored AI recommendations across admissions, scholarships, and visas.",
           ctaLabel: "Get Started",
           stats: [
-            { value: "12k+", label: "AI insights generated for global applicants" },
-            { value: "84%", label: "Students matched to at least three best-fit courses" },
-            { value: "50+", label: "Countries covered with verified admissions data" },
+            { value: "Search", label: "Explore international courses and universities" },
+            { value: "Review", label: "Understand possible matches and requirements" },
+            { value: "Plan", label: "Organise practical next steps" },
           ],
           panel: {
             title: "Preview Zoe Intelligence",
@@ -654,10 +654,10 @@ const en = {
       featuredUniversities: {
         heading: "Featured Universities",
         description:
-          "Institutions that consistently deliver an exceptional onboarding experience for UniDoxia students.",
+          "Explore universities and study opportunities. Availability, entry requirements and application routes vary by institution.",
         network: {
           label: "Featured Universities",
-          summary: "{{count}} institutions selected by our partnerships team",
+          summary: "{{count}} institutions currently highlighted for exploration",
         },
         badges: {
           topPick: "Top pick",
@@ -670,17 +670,17 @@ const en = {
         },
         fallback: {
           summary:
-            "Dedicated partners that consistently welcome UniDoxia students with tailored support.",
-          highlight: "Dedicated student success partner",
+            "Explore the institution's published programmes and international student information.",
+          highlight: "Confirm current requirements on the official university website",
           notice: {
-            error: "We're showing highlighted partners while we reconnect to the featured list.",
-            updating: "We're showing highlighted partners while our featured list updates.",
+            error: "We're showing highlighted institutions while we reconnect to the featured list.",
+            updating: "We're showing highlighted institutions while our featured list updates.",
           },
         },
         partnerCta: {
           heading: "Become a partner",
-          description: "Showcase your institution to thousands of motivated students worldwide.",
-          action: "Join the network",
+          description: "Discuss a transparent international student recruitment relationship with UniDoxia.",
+          action: "Discuss a partnership",
         },
       },
         visa: {
@@ -788,75 +788,6 @@ const en = {
             },
           ],
         },
-        testimonials: {
-          heading: "Success Stories",
-          items: [
-            {
-              name: "Sarah Johnson",
-              role: "Master's Student at MIT",
-              country: "USA",
-              quote:
-                "UniDoxia made my dream of studying at MIT a reality. The platform was intuitive, and my agent was incredibly supportive.",
-              rating: 5,
-            },
-            {
-              name: "Raj Patel",
-              role: "MBA Student at Oxford",
-              country: "UK",
-              quote:
-                "The real-time tracking feature gave me peace of mind. I always knew where my application stood. Highly recommend UniDoxia!",
-              rating: 5,
-            },
-            {
-              name: "Maria Garcia",
-              role: "Engineering Student at Stanford",
-              country: "USA",
-              quote:
-                "From finding the right course to visa approval, UniDoxia supported me every step of the way. Outstanding service!",
-              rating: 5,
-            },
-            {
-              name: "Aisha Thompson",
-              role: "MSc Data Science at Teesside University",
-              country: "UK",
-              quote:
-                "My agent tailored every step for Teesside's requirements and kept me calm during visa processing. UniDoxia turned a stressful process into a smooth journey.",
-              rating: 5,
-            },
-            {
-              name: "Daniel Wong",
-              role: "MBA Candidate at University of Toronto",
-              country: "Canada",
-              quote:
-                "UniDoxia aligned my application timeline with Canada's intake dates and coached me for the interview. The support felt personalized from start to finish.",
-              rating: 5,
-            },
-            {
-              name: "Chloe Nguyen",
-              role: "Master of Engineering at Monash University",
-              country: "Australia",
-              quote:
-                "From course selection to GTE preparation, UniDoxia guided me with clear checklists and reminders. I always knew what was next and felt fully prepared.",
-              rating: 5,
-            },
-            {
-              name: "Lukas Müller",
-              role: "Robotics Student at TU Munich",
-              country: "Germany",
-              quote:
-                "The team helped me navigate APS requirements and secured a spot at TUM. UniDoxia's detailed feedback made my SOP and documents stand out.",
-              rating: 5,
-            },
-            {
-              name: "Priya Sharma",
-              role: "Master's Student at National University of Singapore",
-              country: "Singapore",
-              quote:
-                "UniDoxia matched me with an agent who knew NUS inside out. Their scholarship tips and document checks saved me weeks of research and revisions.",
-              rating: 5,
-            },
-          ],
-        },
         faq: {
           heading: "Frequently Asked Questions",
           subtitle: "Quick answers to common questions",
@@ -888,7 +819,7 @@ const en = {
                 {
                   question: "How can our university partner with UniDoxia?",
                   answer:
-                    "Submit a partnership request through the University Portal or contact our partnerships team. We'll verify your institution and set up onboarding within a few business days.",
+                    "Submit a partnership enquiry or contact our team. Any formal relationship proceeds only after appropriate checks, agreed responsibilities and a written agreement.",
                 },
                 {
                   question: "What insights do universities receive?",
@@ -1059,7 +990,7 @@ const en = {
             {
               question: "How can our university partner with UniDoxia?",
               answer:
-                "Submit a partnership request through the University Portal or contact our partnerships team. We'll verify your institution and set up onboarding within a few business days.",
+                "Submit a partnership enquiry or contact our team. Any formal relationship proceeds only after appropriate checks, agreed responsibilities and a written agreement.",
             },
             {
               question: "What insights do universities receive?",
