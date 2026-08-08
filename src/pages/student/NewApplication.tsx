@@ -335,7 +335,9 @@ export default function NewApplication() {
       homeAddress: '',
       correspondentAddress: '',
     },
+    emergencyContact: { ...EMPTY_EMERGENCY_CONTACT },
     educationHistory: [],
+
     programSelection: {
       programId: programIdFromUrl || '',
       intakeYear: new Date().getFullYear(),
