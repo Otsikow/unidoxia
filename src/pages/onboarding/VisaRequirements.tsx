@@ -133,7 +133,7 @@ export default function OnboardingVisaRequirements() {
             </div>
             <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-muted/50 border border-border/60">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>Trusted by thousands of students</span>
+              <span>General guidance — official visa authorities make final decisions</span>
             </div>
           </div>
 

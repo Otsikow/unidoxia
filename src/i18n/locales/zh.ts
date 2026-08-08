@@ -329,9 +329,9 @@ const zh = {
             "注册账户，即可解锁基于 AI 的个性化招生、奖学金和签证推荐。",
           ctaLabel: "立即开始",
           stats: [
-            { value: "12k+", label: "为全球申请者生成的 AI 洞察" },
-            { value: "84%", label: "匹配到至少三所理想院校的学生" },
-            { value: "50+", label: "覆盖拥有认证招生数据的国家" },
+            { value: "搜索", label: "探索国际课程和大学" },
+            { value: "核对", label: "了解可能的匹配与要求" },
+            { value: "规划", label: "整理下一步行动" },
           ],
           panel: {
             title: "Zoe Intelligence 预览",
@@ -458,35 +458,6 @@ const zh = {
             disclaimer:
               "以上为美元示例，实际费用会因学校选择、奖学金与汇率变动而不同。",
           },
-        },
-        testimonials: {
-          heading: "成功故事",
-          items: [
-            {
-              name: "Sarah Johnson",
-              role: "麻省理工学院硕士生",
-              country: "美国",
-              quote:
-                "UniDoxia 让我在 MIT 学习的梦想成真。平台操作直观，我的顾问也非常专业贴心。",
-              rating: 5,
-            },
-            {
-              name: "Raj Patel",
-              role: "牛津大学 MBA 学生",
-              country: "英国",
-              quote:
-                "实时跟踪功能让我倍感安心。我随时了解申请进度，强烈推荐 UniDoxia！",
-              rating: 5,
-            },
-            {
-              name: "Maria Garcia",
-              role: "斯坦福大学工程系学生",
-              country: "美国",
-              quote:
-                "从选校到签证，UniDoxia 在每一步都给予我支持。服务非常出色！",
-              rating: 5,
-            },
-          ],
         },
         faq: {
           heading: "常见问题",

@@ -387,9 +387,9 @@ const de = {
           "Registrieren Sie sich, um maßgeschneiderte KI-Empfehlungen zu Zulassungen, Stipendien und Visa zu erhalten.",
         ctaLabel: "Jetzt starten",
         stats: [
-          { value: "12k+", label: "KI-Einblicke für Studieninteressierte weltweit" },
-          { value: "84%", label: "Studierende mit mindestens drei passenden Kursen" },
-          { value: "50+", label: "Länder mit verifizierten Zulassungsdaten" },
+          { value: "Suchen", label: "Internationale Kurse und Universitäten entdecken" },
+          { value: "Prüfen", label: "Mögliche Übereinstimmungen und Anforderungen verstehen" },
+          { value: "Planen", label: "Nächste Schritte organisieren" },
         ],
         panel: {
           title: "Zoe Intelligence entdecken",
@@ -614,35 +614,6 @@ const de = {
           disclaimer:
             "Beispielhafte USD-Beträge. Tatsächliche Kosten variieren nach Universität, Stipendium und Wechselkurs.",
         },
-      },
-      testimonials: {
-        heading: "Erfolgsgeschichten",
-        items: [
-          {
-            name: "Sarah Johnson",
-            role: "Master-Studentin am MIT",
-            country: "USA",
-            quote:
-              "UniDoxia hat meinen Traum, am MIT zu studieren, wahr gemacht. Die Plattform war intuitiv und mein Agent unglaublich unterstützend.",
-            rating: 5,
-          },
-          {
-            name: "Raj Patel",
-            role: "MBA-Student an der Universität Oxford",
-            country: "UK",
-            quote:
-              "Die Echtzeitverfolgung gab mir Sicherheit. Ich wusste immer, wo meine Bewerbung stand. UniDoxia ist sehr zu empfehlen!",
-            rating: 5,
-          },
-          {
-            name: "Maria Garcia",
-            role: "Ingenieurstudentin an der Stanford University",
-            country: "USA",
-            quote:
-              "Von der Kurssuche bis zur Visa-Genehmigung hat mich UniDoxia in jedem Schritt unterstützt. Hervorragender Service!",
-            rating: 5,
-          },
-        ],
       },
       faq: {
         heading: "Häufig gestellte Fragen",

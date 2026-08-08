@@ -168,8 +168,8 @@ const AgentOnboardingWelcome = () => {
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of agents earning commissions by connecting students 
-              with world-class universities. Simple tools, transparent payouts.
+              Manage authorised student recruitment activity, track applications and
+              access commission information where it is supported and agreed.
             </p>
           </div>
 

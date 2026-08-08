@@ -430,7 +430,7 @@ export default function Pricing() {
         <section className="text-center max-w-2xl mx-auto mb-12">
           <h2 className="text-2xl font-bold mb-4">Ready to Start Your Journey?</h2>
           <p className="text-muted-foreground mb-6">
-            Join thousands of students who have successfully applied to their dream universities through UniDoxia.
+            Choose a plan that supports your application preparation and tracking needs.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button 

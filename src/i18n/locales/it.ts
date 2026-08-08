@@ -128,9 +128,9 @@ const it = {
           "Iscriviti per sbloccare consigli personalizzati basati sull'IA su ammissioni, borse di studio e visti.",
         ctaLabel: "Inizia ora",
         stats: [
-          { value: "12k+", label: "Approfondimenti IA generati per candidati internazionali" },
-          { value: "84%", label: "Studenti abbinati ad almeno tre corsi ideali" },
-          { value: "50+", label: "Paesi coperti con dati di ammissione verificati" },
+          { value: "Cerca", label: "Esplora corsi e università internazionali" },
+          { value: "Valuta", label: "Comprendi possibili corrispondenze e requisiti" },
+          { value: "Pianifica", label: "Organizza i prossimi passi" },
         ],
         panel: {
           title: "Anteprima di Zoe Intelligence",

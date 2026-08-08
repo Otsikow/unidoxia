@@ -119,6 +119,9 @@ export function AppFooter() {
               <span className="font-semibold text-lg">{t("layout.footer.aboutTitle")}</span>
             </div>
             <p className="max-w-xs text-sm text-muted-foreground">{t("layout.footer.aboutDescription")}</p>
+            <p className="max-w-xs text-xs leading-relaxed text-muted-foreground">
+              University listings do not imply endorsement or a formal recruitment partnership.
+            </p>
             <div className="flex items-center gap-2 text-sm">
               <Mail className="h-4 w-4 text-primary" />
               <a href="mailto:info@unidoxia.com" className="hover:underline">

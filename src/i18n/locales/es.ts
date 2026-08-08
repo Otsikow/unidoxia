@@ -329,9 +329,9 @@ const es = {
           "Regístrate para desbloquear recomendaciones personalizadas con IA sobre admisiones, becas y visados.",
         ctaLabel: "Comenzar",
         stats: [
-          { value: "12k+", label: "Ideas generadas con IA para postulantes globales" },
-          { value: "84%", label: "Estudiantes con al menos tres cursos idóneos" },
-          { value: "50+", label: "Países con datos de admisión verificados" },
+          { value: "Buscar", label: "Explora cursos y universidades internacionales" },
+          { value: "Revisar", label: "Comprende posibles coincidencias y requisitos" },
+          { value: "Planificar", label: "Organiza los próximos pasos" },
         ],
         panel: {
           title: "Vista previa de Zoe Intelligence",
