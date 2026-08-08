@@ -1,3 +1,19 @@
+export interface EmergencyContact {
+  fullName: string;
+  relationship: string;
+  phone: string;
+  email: string;
+  country: string;
+}
+
+export const EMPTY_EMERGENCY_CONTACT: EmergencyContact = {
+  fullName: '',
+  relationship: '',
+  phone: '+',
+  email: '',
+  country: '',
+};
+
 export interface ApplicationFormData {
   personalInfo: {
     fullName: string;
@@ -11,6 +27,7 @@ export interface ApplicationFormData {
     homeAddress: string;
     correspondentAddress: string;
   };
+  emergencyContact: EmergencyContact;
   educationHistory: Array<{
     id: string;
     level: string;
