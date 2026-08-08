@@ -220,6 +220,40 @@ export default function ReviewSubmitStep({
         </CardContent>
       </Card>
 
+      {/* Emergency Contact Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Emergency Contact
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="font-medium text-muted-foreground">Full Name</p>
+            <p>{formData.emergencyContact.fullName || 'Not provided'}</p>
+          </div>
+          <div>
+            <p className="font-medium text-muted-foreground">Relationship</p>
+            <p>{formData.emergencyContact.relationship || 'Not provided'}</p>
+          </div>
+          <div>
+            <p className="font-medium text-muted-foreground">Phone</p>
+            <p>{formData.emergencyContact.phone || 'Not provided'}</p>
+          </div>
+          <div>
+            <p className="font-medium text-muted-foreground">Email</p>
+            <p>{formData.emergencyContact.email || 'Not provided'}</p>
+          </div>
+          <div>
+            <p className="font-medium text-muted-foreground">Country</p>
+            <p>{formData.emergencyContact.country || 'Not provided'}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+
+
       {/* Education History Section */}
       <Card>
         <CardHeader>
