@@ -486,7 +486,7 @@ const Index = () => {
         <p className="text-muted-foreground text-center mb-12">{contactSubtitle}</p>
 
         <Card className="max-w-2xl mx-auto">
-          <CardContent className="p-8">
+          <CardContent className="p-8 pt-8 sm:pt-8">
             <Suspense fallback={<SectionLoader />}>
               <ContactForm />
             </Suspense>
