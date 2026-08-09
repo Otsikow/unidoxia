@@ -241,11 +241,11 @@ export default function Blog() {
           </div>
 
           {isLoading ? (
-            <div className="grid auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid min-w-0 auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {Array.from({ length: 6 }).map((_, index) => (
                 <Card key={index} className="flex h-full flex-col overflow-hidden">
                   <Skeleton className="aspect-[16/10] w-full rounded-none" />
-                  <CardHeader className="flex-1 space-y-3 p-5">
+                  <CardHeader className="min-w-0 flex-1 space-y-3 p-5">
                     <Skeleton className="h-5 w-2/5" />
                     <Skeleton className="h-7 w-full" />
                     <Skeleton className="h-16 w-full" />
@@ -268,12 +268,12 @@ export default function Blog() {
           ) : filtered.length > 0 ? (
             <div className="grid auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((post) => (
-                <Card key={post.id} className="flex h-full flex-col overflow-hidden border-border/70">
+                <Card key={post.id} className="flex h-full min-w-0 flex-col overflow-hidden border-border/70">
                   {post.cover_image_url ? (
                     <img
                       src={post.cover_image_url}
                       alt={post.title}
-                      className="aspect-[16/10] w-full object-cover"
+                      className="aspect-[16/10] w-full bg-muted object-contain"
                     />
                   ) : (
                     <div className="aspect-[16/10] w-full bg-muted" />
@@ -286,13 +286,13 @@ export default function Blog() {
                         </Badge>
                       ))}
                     </div>
-                    <CardTitle className="line-clamp-2 min-h-14 text-lg leading-tight">
+                    <CardTitle className="break-words line-clamp-2 min-h-14 text-lg leading-tight">
                       <Link to={`/blog/${post.slug}`} className="hover:underline">
                         {post.title}
                       </Link>
                     </CardTitle>
                     {post.excerpt && (
-                      <CardDescription className="line-clamp-3 min-h-[4.5rem] text-sm leading-relaxed text-muted-foreground">
+                      <CardDescription className="break-words line-clamp-3 min-h-[4.5rem] text-sm leading-relaxed text-muted-foreground">
                         {post.excerpt}
                       </CardDescription>
                     )}
