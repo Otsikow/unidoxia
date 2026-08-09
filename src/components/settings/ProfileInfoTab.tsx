@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useUniversityBranding } from '@/hooks/useUniversityBranding';
+import { PassportAutofill } from '@/components/settings/PassportAutofill';
 
 interface ProfileInfoTabProps {
   profile: any;
@@ -426,6 +427,18 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
                 </div>
               </div>
             </div>
+          )}
+
+          {roleData?.type === 'student' && roleData.data && (
+            <PassportAutofill
+              profile={profile}
+              roleData={roleData}
+              onSaved={async () => {
+                await refreshProfile();
+                await queryClient.invalidateQueries({ queryKey: ['roleData', profile?.id] });
+                await queryClient.invalidateQueries({ queryKey: studentRecordQueryKey(user?.id) });
+              }}
+            />
           )}
 
           {roleData?.type === 'student' && roleData.data && (
