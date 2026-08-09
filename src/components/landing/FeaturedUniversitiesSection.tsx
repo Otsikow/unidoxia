@@ -18,10 +18,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import featuredPortsmouth from "@/assets/featured-portsmouth.png";
-import featuredStJohns from "@/assets/featured-st-johns-newfoundland.png";
-import featuredToowoomba from "@/assets/featured-toowoomba.png";
-import featuredBremen from "@/assets/featured-bremen.png";
+import featuredPortsmouth from "@/assets/featured-portsmouth.jpg";
+import featuredStJohns from "@/assets/featured-st-johns-newfoundland.jpg";
+import featuredToowoomba from "@/assets/featured-toowoomba.jpg";
+import featuredBremen from "@/assets/featured-bremen.jpg";
 
 // Professional stock photos for universities without custom banners
 // These are high-quality Unsplash images of university campuses and academic settings
@@ -356,21 +356,20 @@ export function FeaturedUniversitiesSection() {
                       target.src = PLACEHOLDER_BANNERS[0];
                     }}
                   />
-                  {/* Gradient overlay for better text readability */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                  {/* Logo overlay - positioned at bottom of banner */}
-                  <div className="absolute -bottom-8 left-6 z-10">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-xl border-4 border-background bg-white p-2 shadow-lg">
-                      {university.logo_url ? (
+                  {/* Logo overlay - kept inside the banner so it never obscures the name */}
+                  <div className="absolute bottom-4 left-4 z-10">
+                    <div className="relative flex h-16 w-16 items-center justify-center rounded-xl border-4 border-background bg-white p-2 shadow-lg">
+                      <Building2 aria-hidden="true" className="h-8 w-8 text-primary" />
+                      {university.logo_url && (
                         <img
                           src={university.logo_url}
                           alt={`${university.name} logo`}
-                          className="h-full w-full object-contain"
+                          className="absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] bg-white object-contain"
                           loading="lazy"
+                          onError={(event) => {
+                            event.currentTarget.style.display = "none";
+                          }}
                         />
-                      ) : (
-                        <Building2 className="h-8 w-8 text-primary" />
                       )}
                     </div>
                   </div>
@@ -394,7 +393,7 @@ export function FeaturedUniversitiesSection() {
                 </div>
 
                 {/* Content Section */}
-                <CardContent className="space-y-4 pt-12 pb-6">
+                <CardContent className="space-y-4 pb-6 pt-6">
                   {/* University name and location */}
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold leading-tight text-foreground line-clamp-2">
