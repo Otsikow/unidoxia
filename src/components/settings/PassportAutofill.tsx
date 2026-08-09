@@ -44,7 +44,8 @@ export function PassportAutofill({ profile, roleData, onSaved }: { profile: any;
     setBusy(true);
     try {
       const profileUpdate: { full_name?: string; country?: string } = {};
-      if (Object.keys(profileUpdate).length) {
+      if (extraction.full_name) profileUpdate.full_name = extraction.full_name;
+      if (extraction.nationality) profileUpdate.country = extraction.nationality;
         const { error } = await supabase.from("profiles").update(profileUpdate).eq("id", profile.id);
         if (error) throw error;
       }
