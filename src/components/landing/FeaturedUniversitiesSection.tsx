@@ -115,7 +115,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current course availability and requirements on the official website",
     featured_image_url:
-      "featuredPortsmouth",
+      featuredPortsmouth,
   },
   {
     id: "fallback-memorial",
@@ -132,7 +132,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current fees and funding information on the official website",
     featured_image_url:
-      "featuredStJohns",
+      featuredStJohns,
   },
   {
     id: "fallback-southern-queensland",
@@ -149,7 +149,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current study modes and entry requirements on the official website",
     featured_image_url:
-      "featuredToowoomba",
+      featuredToowoomba,
   },
   {
     id: "fallback-bremen",
@@ -166,7 +166,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current language, fee and programme information on the official website",
     featured_image_url:
-      "featuredBremen",
+      featuredBremen,
   },
   {
     id: "fallback-portland-state",
