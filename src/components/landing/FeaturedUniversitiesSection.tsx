@@ -343,7 +343,7 @@ export function FeaturedUniversitiesSection() {
                 )}
               >
                 {/* Banner Section */}
-                <div className="relative h-48 w-full overflow-hidden">
+                <div className="relative h-48 w-full overflow-hidden bg-background/30 p-2 sm:p-2.5">
                   {/* Always show a banner image - either custom or professional placeholder */}
                   <img
                     src={university.featured_image_url || bannerImage}
