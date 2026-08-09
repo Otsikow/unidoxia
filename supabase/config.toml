@@ -31,3 +31,6 @@ verify_jwt = false
 # The following settings have been removed as they are not supported in supabase/config.toml:
 # - auth.rate_limit (use Dashboard → Authentication → Rate Limits)
 # - auth.security.breached_passwords (use Dashboard → Authentication → Security)
+
+[functions.passport-ocr]
+verify_jwt = true
