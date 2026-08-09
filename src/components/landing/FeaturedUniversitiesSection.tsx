@@ -343,12 +343,12 @@ export function FeaturedUniversitiesSection() {
                 )}
               >
                 {/* Banner Section */}
-                <div className="relative h-48 w-full overflow-hidden bg-background/30 p-2 sm:p-2.5">
+                <div className="relative aspect-[16/9] w-full shrink-0 overflow-hidden bg-background/30 p-2 sm:p-2.5">
                   {/* Always show a banner image - either custom or professional placeholder */}
                   <img
                     src={university.featured_image_url || bannerImage}
                     alt={`${university.name} campus`}
-                    className="h-full w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="absolute inset-2 !h-[calc(100%-1rem)] !w-[calc(100%-1rem)] rounded-lg object-cover transition-transform duration-500 group-hover:scale-105 sm:inset-2.5 sm:!h-[calc(100%-1.25rem)] sm:!w-[calc(100%-1.25rem)]"
                     loading="lazy"
                     onError={(e) => {
                       // Fallback if image fails to load
