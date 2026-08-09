@@ -212,7 +212,7 @@ export function NotificationBell({
     if (Notification.permission === "granted") {
       new Notification(notification.title, {
         body: notification.message,
-        icon: "/favicon.ico",
+        icon: "/favicon.png",
         tag: notification.id,
       });
     } else if (Notification.permission !== "denied") {
@@ -220,7 +220,7 @@ export function NotificationBell({
       if (permission === "granted") {
         new Notification(notification.title, {
           body: notification.message,
-          icon: "/favicon.ico",
+          icon: "/favicon.png",
           tag: notification.id,
         });
       }
