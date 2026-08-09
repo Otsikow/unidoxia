@@ -297,7 +297,7 @@ const AdminOverview = () => {
       </div>
 
       {/* KPI panels */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {KPI_CONFIG.map((item) => {
           const value = metricsQuery.data?.[item.key] ?? 0;
           const display =
@@ -323,9 +323,9 @@ const AdminOverview = () => {
               aria-label={label}
               onClick={go}
               onKeyDown={handleKeyDown}
-              className="cursor-pointer transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              className="flex h-full min-h-[154px] cursor-pointer flex-col transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
-              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-4 pb-1.5">
+              <CardHeader className="flex min-h-[60px] flex-row items-start justify-between gap-2 space-y-0 p-4 pb-1.5">
                 <CardTitle className="text-xs font-medium leading-tight text-muted-foreground sm:text-sm">
                   {label}
                 </CardTitle>
