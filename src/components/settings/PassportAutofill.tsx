@@ -43,7 +43,7 @@ export function PassportAutofill({ profile, roleData, onSaved }: { profile: any;
     if (!extraction || !roleData?.data?.id) return;
     setBusy(true);
     try {
-      const profileUpdate: Record<string, string> = {};
+      const profileUpdate: { full_name?: string; country?: string } = {};
       if (extraction.full_name) profileUpdate.full_name = extraction.full_name;
       if (extraction.nationality) profileUpdate.country = extraction.nationality;
       if (Object.keys(profileUpdate).length) {

@@ -173,7 +173,7 @@ const Index = () => {
     [t],
   );
 
-  const featuresHeading = "Why UniDoxia";
+  const featuresHeading = "Why UniDoxia?";
   const faqHeading = t("pages.index.faq.heading");
   const faqSubtitle = t("pages.index.faq.subtitle");
   const contactHeading = t("pages.index.contact.heading");
