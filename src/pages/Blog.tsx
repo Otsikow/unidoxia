@@ -266,7 +266,7 @@ export default function Blog() {
               </CardHeader>
             </Card>
           ) : filtered.length > 0 ? (
-            <div className="grid auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid min-w-0 auto-rows-fr items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((post) => (
                 <Card key={post.id} className="flex h-full min-w-0 flex-col overflow-hidden border-border/70">
                   {post.cover_image_url ? (
