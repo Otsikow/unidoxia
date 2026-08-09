@@ -86,7 +86,7 @@ const StoryboardSection = () => {
                     <img
                       src={scene.image}
                       alt={scene.imageAlt}
-                      className="h-full w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="absolute inset-2 !h-[calc(100%-1rem)] !w-[calc(100%-1rem)] rounded-lg object-cover transition-transform duration-500 group-hover:scale-105 sm:inset-2.5 sm:!h-[calc(100%-1.25rem)] sm:!w-[calc(100%-1.25rem)]"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-primary/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   </div>
