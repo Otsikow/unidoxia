@@ -18,6 +18,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import featuredPortsmouth from "@/assets/featured-portsmouth.png";
+import featuredStJohns from "@/assets/featured-st-johns-newfoundland.png";
+import featuredToowoomba from "@/assets/featured-toowoomba.png";
+import featuredBremen from "@/assets/featured-bremen.png";
 
 // Professional stock photos for universities without custom banners
 // These are high-quality Unsplash images of university campuses and academic settings
@@ -54,7 +58,16 @@ const COUNTRY_BANNERS: Record<string, string> = {
 };
 
 // Generate consistent placeholder banner based on university name and country
-const getPlaceholderBanner = (name: string, country: string | null) => {
+const CITY_BANNERS: Record<string, string> = {
+  portsmouth: featuredPortsmouth,
+  "st johns": featuredStJohns,
+  toowoomba: featuredToowoomba,
+  bremen: featuredBremen,
+};
+
+const getPlaceholderBanner = (name: string, country: string | null, city: string | null = null) => {
+  const cityKey = city?.toLowerCase().replaceAll(".", "").replaceAll("’", "").replaceAll("'", "").trim();
+  if (cityKey && CITY_BANNERS[cityKey]) return CITY_BANNERS[cityKey];
   // First try country-specific image
   if (country) {
     const countryLower = country.toLowerCase();
@@ -102,7 +115,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current course availability and requirements on the official website",
     featured_image_url:
-      "https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1200&q=80",
+      "featuredPortsmouth",
   },
   {
     id: "fallback-memorial",
@@ -119,7 +132,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current fees and funding information on the official website",
     featured_image_url:
-      "https://images.unsplash.com/photo-1504274066651-8d31a536b11a?auto=format&fit=crop&w=1200&q=80",
+      "featuredStJohns",
   },
   {
     id: "fallback-southern-queensland",
@@ -136,7 +149,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current study modes and entry requirements on the official website",
     featured_image_url:
-      "https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1200&q=80",
+      "featuredToowoomba",
   },
   {
     id: "fallback-bremen",
@@ -153,7 +166,7 @@ const FALLBACK_UNIVERSITIES: FeaturedUniversity[] = [
       "Explore the institution's published courses, entry requirements and international student information.",
     featured_highlight: "Confirm current language, fee and programme information on the official website",
     featured_image_url:
-      "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?auto=format&fit=crop&w=1200&q=80",
+      "featuredBremen",
   },
   {
     id: "fallback-portland-state",
@@ -319,7 +332,7 @@ export function FeaturedUniversitiesSection() {
         <div ref={scrollRef} className="grid gap-6 max-md:overflow-x-auto max-md:pb-2 sm:grid-cols-2 xl:grid-cols-3">
           {universitiesToDisplay.map((university, index) => {
             const formattedWebsite = formatWebsiteUrl(university.website);
-            const bannerImage = getPlaceholderBanner(university.name, university.country);
+            const bannerImage = getPlaceholderBanner(university.name, university.country, university.city);
 
             return (
               <Card
@@ -335,7 +348,7 @@ export function FeaturedUniversitiesSection() {
                   <img
                     src={university.featured_image_url || bannerImage}
                     alt={`${university.name} campus`}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     onError={(e) => {
                       // Fallback if image fails to load
