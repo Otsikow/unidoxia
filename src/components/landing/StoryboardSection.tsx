@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, UserPlus, Users, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { buildStudentSignupPath } from "@/lib/authRedirect";
-import storyboardProfile from "@/assets/storyboard-profile-premium.png";
-import storyboardMatched from "@/assets/storyboard-matching-premium.png";
-import storyboardOffers from "@/assets/storyboard-application-premium.png";
+import storyboardProfile from "@/assets/storyboard-profile-premium.jpg";
+import storyboardMatched from "@/assets/storyboard-matching-premium.jpg";
+import storyboardOffers from "@/assets/storyboard-application-premium.jpg";
 
 type StoryboardStepKey = "profile" | "matched" | "offers";
 
@@ -82,27 +82,27 @@ const StoryboardSection = () => {
               >
                 <Card className="h-full cursor-pointer border-primary/20 transition-all duration-300 group-hover:-translate-y-2 group-hover:border-primary group-hover:shadow-xl">
                   <CardContent className="flex h-full flex-col gap-5 p-6 pt-8 text-center sm:pt-9">
-                  <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-background/40 p-2 shadow-lg ring-1 ring-primary/10 sm:p-2.5">
-                    <img
-                      src={scene.image}
-                      alt={scene.imageAlt}
-                      className="absolute inset-2 !h-[calc(100%-1rem)] !w-[calc(100%-1rem)] rounded-lg object-cover transition-transform duration-500 group-hover:scale-105 sm:inset-2.5 sm:!h-[calc(100%-1.25rem)] sm:!w-[calc(100%-1.25rem)]"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-primary/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                  </div>
-                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                    {t("pages.index.storyboard.stepLabel", { number: index + 1 })}
-                  </div>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform duration-300 group-hover:scale-110">
-                    <scene.icon className="h-6 w-6" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-xl font-semibold">{scene.title}</h3>
-                    <p className="text-sm text-muted-foreground">{scene.description}</p>
-                  </div>
-                  <div className="mt-auto w-full rounded-lg bg-background/70 p-3 text-sm font-medium text-primary shadow-inner">
-                    {scene.support}
-                  </div>
+                    <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-background/40 shadow-lg ring-1 ring-primary/10">
+                      <img
+                        src={scene.image}
+                        alt={scene.imageAlt}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-primary/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    </div>
+                    <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                      {t("pages.index.storyboard.stepLabel", { number: index + 1 })}
+                    </div>
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform duration-300 group-hover:scale-110">
+                      <scene.icon className="h-6 w-6" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold">{scene.title}</h3>
+                      <p className="text-sm text-muted-foreground">{scene.description}</p>
+                    </div>
+                    <div className="mt-auto w-full rounded-lg bg-background/70 p-3 text-sm font-medium text-primary shadow-inner">
+                      {scene.support}
+                    </div>
                     <span className="inline-flex items-center justify-center gap-2 font-semibold text-primary">
                       {scene.action}
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
