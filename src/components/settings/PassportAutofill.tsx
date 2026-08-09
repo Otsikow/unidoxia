@@ -60,7 +60,7 @@ export function PassportAutofill({ profile, roleData, onSaved }: { profile: any;
         passport_ocr_confidence: extraction.confidence,
         passport_ocr_processed_at: new Date().toISOString(),
       };
-      const { error } = await supabase.from("students").update(studentUpdate).eq("id", roleData.data.id);
+      const { error } = await (supabase.from("students") as any).update(studentUpdate).eq("id", roleData.data.id);
       if (error) throw error;
       toast({ title: "Passport details saved", description: "Please still compare every field with the passport before submitting an application." });
       setFile(null); setExtraction(null); if (inputRef.current) inputRef.current.value = ""; onSaved?.();
