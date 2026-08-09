@@ -82,11 +82,11 @@ const StoryboardSection = () => {
               >
                 <Card className="h-full cursor-pointer border-primary/20 transition-all duration-300 group-hover:-translate-y-2 group-hover:border-primary group-hover:shadow-xl">
                   <CardContent className="flex h-full flex-col gap-5 p-6 pt-8 text-center sm:pt-9">
-                  <div className="relative w-full overflow-hidden rounded-xl bg-background/40 p-2 shadow-lg ring-1 ring-primary/10 sm:p-2.5">
+                  <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-background/40 p-2 shadow-lg ring-1 ring-primary/10 sm:p-2.5">
                     <img
                       src={scene.image}
                       alt={scene.imageAlt}
-                      className="aspect-[16/10] h-auto w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full rounded-lg object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-primary/10 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                   </div>
