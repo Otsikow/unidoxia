@@ -53,7 +53,7 @@ export default function LatestFromBlog() {
         </Link>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid min-w-0 gap-6 md:grid-cols-3">
         {isLoading
           ? Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="h-72 rounded-xl bg-muted animate-pulse" />
@@ -64,18 +64,18 @@ export default function LatestFromBlog() {
                 to={`/blog/${post.slug}`}
                 className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
               >
-                <Card className="h-full overflow-hidden border-border/70 transition hover:border-primary/60">
+                <Card className="h-full min-w-0 overflow-hidden border-border/70 transition hover:border-primary/60">
                   {post.cover_image_url ? (
                     <img
                       src={post.cover_image_url}
                       alt={post.title}
                       loading="lazy"
-                      className="h-44 w-full object-cover"
+                      className="aspect-[16/10] w-full bg-muted object-contain"
                     />
                   ) : (
-                    <div className="h-44 w-full bg-muted" />
+                    <div className="aspect-[16/10] w-full bg-muted" />
                   )}
-                  <CardContent className="p-5 space-y-3">
+                  <CardContent className="min-w-0 p-5 space-y-3">
                     {(post.tags?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {post.tags!.slice(0, 2).map((tag) => (
@@ -85,11 +85,11 @@ export default function LatestFromBlog() {
                         ))}
                       </div>
                     )}
-                    <h3 className="font-semibold leading-snug line-clamp-2 group-hover:text-primary">
+                    <h3 className="break-words font-semibold leading-snug line-clamp-2 group-hover:text-primary">
                       {post.title}
                     </h3>
                     {post.excerpt && (
-                      <p className="text-sm text-muted-foreground line-clamp-3">
+                      <p className="break-words text-sm text-muted-foreground line-clamp-3">
                         {post.excerpt}
                       </p>
                     )}
