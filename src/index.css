@@ -655,10 +655,11 @@ All colors MUST be HSL.
   .hero-video-container {
     position: relative;
     --hero-video-lift: clamp(2.75rem, 6vw, 4.75rem);
+    --hero-header-safe-area: clamp(7rem, 16vw, 10rem);
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
-    min-height: min(860px, 88vh);
+    min-height: min(900px, 100svh);
     overflow: hidden;
     background: radial-gradient(circle at 20% 20%, hsl(var(--primary) / 0.2), transparent 35%),
       radial-gradient(circle at 80% 30%, hsl(210 100% 75% / 0.18), transparent 40%),
@@ -692,13 +693,18 @@ All colors MUST be HSL.
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: min(860px, 88vh);
-    padding: 1.5rem 1rem 7rem;
+    min-height: min(900px, 100svh);
+    padding: var(--hero-header-safe-area) 1rem clamp(4rem, 10vw, 7rem);
   }
 
   @media (min-width: 640px) {
+    .hero-video-container {
+      --hero-header-safe-area: clamp(8.5rem, 16vw, 11rem);
+    }
+
     .hero-content {
-      padding: 2rem 2rem 5rem;
+      padding-right: 2rem;
+      padding-left: 2rem;
     }
   }
 
@@ -709,8 +715,11 @@ All colors MUST be HSL.
   }
 
   .hero-content-inner .hero-logo {
+    display: block;
+    flex: 0 0 auto;
     margin-left: auto;
     margin-right: auto;
+    object-fit: contain;
   }
 
   .hero-cta-button {
