@@ -241,7 +241,7 @@ const Index = () => {
             <img
               src={unidoxiaLogo}
               alt="UniDoxia logo"
-              className="hero-logo mb-1 h-20 sm:h-24 md:h-28 w-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] brightness-0 invert"
+              className="hero-logo mb-1 h-16 sm:h-20 md:h-24 w-auto mt-4 sm:mt-8 md:mt-10 drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] brightness-0 invert"
             />
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
