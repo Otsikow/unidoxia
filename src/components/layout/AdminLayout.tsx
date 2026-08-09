@@ -455,6 +455,12 @@ const AdminLayout = () => {
                       <NavLink
                         key={item.to}
                         to={item.to}
+                        aria-label={t(item.labelKey, { defaultValue: item.labelDefault })}
+                        title={
+                          isCollapsed && showCollapseButton
+                            ? t(item.labelKey, { defaultValue: item.labelDefault })
+                            : undefined
+                        }
                         className={cn(
                           "group block touch-manipulation rounded-[0.75rem] p-2 transition-colors sm:p-2.5",
                           isActive ? "bg-primary/10 text-primary" : "hover:bg-muted/75"
