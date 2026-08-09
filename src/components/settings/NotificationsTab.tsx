@@ -136,7 +136,7 @@ const NotificationsTab = ({ profile }: NotificationsTabProps) => {
         setPreferences((prev) => ({ ...prev, browser_notifications: true }));
         new Notification('Notifications Enabled', {
           body: 'You will now receive browser notifications.',
-          icon: '/favicon.ico',
+          icon: '/favicon.png',
         });
         toast({
           title: 'Success',
