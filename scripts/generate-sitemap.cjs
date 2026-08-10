@@ -47,6 +47,13 @@ const entries = [
     changefreq: "monthly",
     lastmod: "2026-08-04T22:40:00+01:00",
   },
+  {
+    path: "/blog/uk-graduate-visa-2027-timing-what-to-check",
+    priority: "0.7",
+    changefreq: "monthly",
+    lastmod: "2026-08-10T08:00:00+01:00",
+  },
+
 
   { path: "/faq", priority: "0.6", changefreq: "monthly" },
   { path: "/contact", priority: "0.6", changefreq: "monthly" },
