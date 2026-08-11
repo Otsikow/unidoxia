@@ -359,13 +359,13 @@ export function InviteStudentDialog({
         throw sessionError;
       }
 
-      const accessToken = sessionData.session?.access_token;
-
       const { data, error } = await supabase.functions.invoke<{
         success?: boolean;
         studentId?: string;
         inviteType?: string;
         actionLink?: string;
+        emailSent?: boolean;
+        emailError?: string | null;
         error?: string;
       }>("invite-student", {
         body: payload,
@@ -398,17 +398,29 @@ export function InviteStudentDialog({
       const whatsAppUrl =
         shouldOfferWhatsApp && whatsAppMessage ? buildWhatsAppUrl(payload.phone!, whatsAppMessage) : null;
 
+      const emailDelivered = data?.emailSent !== false;
+
       toast({
         title: "Student invited",
-        description: values.sendWhatsApp
-          ? `${values.fullName} will receive an email. You can also send the activation link via WhatsApp.`
-          : `${values.fullName} will receive an email with next steps.`,
+        description: emailDelivered
+          ? values.sendWhatsApp
+            ? `${values.fullName} will receive an activation email. You can also send the link via WhatsApp.`
+            : `${values.fullName} will receive an activation email with next steps.`
+          : `${values.fullName} was added, but the activation email could not be delivered. Share the activation link directly.`,
+        variant: emailDelivered ? undefined : "destructive",
         action: whatsAppUrl ? (
           <ToastAction
             altText="Open WhatsApp"
             onClick={() => window.open(whatsAppUrl, "_blank", "noopener,noreferrer")}
           >
             Open WhatsApp
+          </ToastAction>
+        ) : actionLink ? (
+          <ToastAction
+            altText="Copy activation link"
+            onClick={() => navigator.clipboard?.writeText(actionLink)}
+          >
+            Copy link
           </ToastAction>
         ) : undefined,
       });
