@@ -359,6 +359,9 @@ export function InviteStudentDialog({
         throw sessionError;
       }
 
+      const accessToken = sessionData.session?.access_token;
+
+
       const { data, error } = await supabase.functions.invoke<{
         success?: boolean;
         studentId?: string;
