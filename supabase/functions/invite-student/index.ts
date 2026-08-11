@@ -287,83 +287,99 @@ serve(async (req: Request): Promise<Response> => {
     let inviteType: "invite" | "magic_link" = "invite";
     let actionLink: string | undefined = undefined;
 
-    if (existingProfile) {
-      const { error: magicLinkError } = await retry<{ data: unknown; error: Error | null }>(() =>
-        supabaseAdmin.auth.signInWithOtp({
-          email: normalizedEmail,
-          options: {
-            emailRedirectTo: redirectTo,
-            shouldCreateUser: false,
-            data: {
-              full_name: fullName,
-              role: "student",
-              tenant_id: tenantId,
-              phone: phone ?? undefined,
-            },
-          },
-        }),
-      );
+    const userMetadata = {
+      full_name: fullName,
+      role: "student",
+      tenant_id: tenantId,
+      phone: phone ?? undefined,
+    };
 
-      if (magicLinkError) {
-        console.error("Error sending magic link", magicLinkError);
-        throw magicLinkError;
-      }
-
-      inviteType = "magic_link";
-    } else {
-      const { data: inviteData, error: inviteError } = await retry<{
-        data: { user: { id: string } | null };
-        error: Error | null;
-      }>(() =>
-        supabaseAdmin.auth.admin.inviteUserByEmail(normalizedEmail, {
+    // Generate the auth link with the admin API. This never depends on the
+    // built-in auth mailer (which is rate limited and often undelivered), so
+    // the invite always succeeds even when email delivery is degraded.
+    const linkType: "invite" | "magiclink" = existingProfile ? "magiclink" : "invite";
+    const { data: linkData, error: linkError } = await retry<{
+      data: { user?: { id: string } | null; properties?: { action_link?: string } } | null;
+      error: Error | null;
+    }>(() =>
+      supabaseAdmin.auth.admin.generateLink({
+        type: linkType,
+        email: normalizedEmail,
+        options: {
           redirectTo,
-          data: {
-            full_name: fullName,
-            role: "student",
-            tenant_id: tenantId,
-            phone: phone ?? undefined,
-          },
-        }),
-      );
+          data: userMetadata,
+        },
+      }),
+    );
 
-      if (inviteError) {
-        console.error("Error inviting user", inviteError);
-        throw inviteError;
-      }
-
-      userId = inviteData.user?.id;
+    if (linkError) {
+      console.error("Error generating invite link", linkError);
+      throw linkError;
     }
 
-    if (includeActionLink) {
-      const { data: linkData, error: linkError } = await retry<{
-        data: unknown;
-        error: Error | null;
-      }>(() =>
-        supabaseAdmin.auth.admin.generateLink({
-          type: "magiclink",
-          email: normalizedEmail,
-          options: {
-            redirectTo,
-            shouldCreateUser: false,
-            data: {
-              full_name: fullName,
-              role: "student",
-              tenant_id: tenantId,
-              phone: phone ?? undefined,
-            },
-          },
-        }),
-      );
+    inviteType = existingProfile ? "magic_link" : "invite";
+    userId = userId ?? linkData?.user?.id ?? undefined;
 
-      if (linkError) {
-        console.error("Error generating action link", linkError);
-      } else {
-        const candidate = (linkData as any)?.properties?.action_link;
-        if (typeof candidate === "string" && candidate.trim().length > 0) {
-          actionLink = candidate;
+    const generatedLink = linkData?.properties?.action_link;
+    if (typeof generatedLink === "string" && generatedLink.trim().length > 0) {
+      actionLink = generatedLink;
+    }
+
+    // Branded delivery via Resend (same provider used across the platform).
+    let emailSent = false;
+    let emailError: string | null = null;
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+
+    if (actionLink && resendKey) {
+      try {
+        const safeName = escapeHtml(fullName);
+        const emailResponse = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "UniDoxia <info@unidoxia.com>",
+            to: [normalizedEmail],
+            subject: "Your UniDoxia student account is ready",
+            html: `
+              <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#0f172a">
+                <h1 style="font-size:20px;margin:0 0 16px">Hi ${safeName},</h1>
+                <p style="font-size:15px;line-height:1.6;margin:0 0 16px">
+                  You have been invited to UniDoxia, where we guide students step by step through studying abroad.
+                  Click the button below to activate your account and start your application.
+                </p>
+                <p style="margin:24px 0">
+                  <a href="${actionLink}" style="background:#0f172a;color:#ffffff;text-decoration:none;padding:12px 22px;border-radius:10px;font-size:15px;display:inline-block">
+                    Activate my account
+                  </a>
+                </p>
+                <p style="font-size:13px;line-height:1.6;color:#475569;margin:0 0 8px">
+                  If the button does not work, copy and paste this link into your browser:
+                </p>
+                <p style="font-size:12px;word-break:break-all;color:#475569;margin:0 0 24px">${actionLink}</p>
+                <p style="font-size:12px;color:#94a3b8;margin:0">This link can only be used once. If you were not expecting this invitation, you can ignore this email.</p>
+              </div>
+            `,
+          }),
+        });
+
+        if (emailResponse.ok) {
+          emailSent = true;
+        } else {
+          emailError = await emailResponse.text();
+          console.error("Resend rejected the invite email", { status: emailResponse.status, emailError });
         }
+      } catch (sendError) {
+        emailError = sendError instanceof Error ? sendError.message : String(sendError);
+        console.error("Error sending invite email", sendError);
       }
+    } else if (!resendKey) {
+      emailError = "RESEND_API_KEY is not configured";
+      console.error("RESEND_API_KEY is not configured; invite created without email");
     }
+
 
     if (!userId) {
       return new Response(JSON.stringify({ error: "Unable to determine invited user ID" }), {
