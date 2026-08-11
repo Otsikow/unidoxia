@@ -74,7 +74,6 @@ interface ZoeErrorState {
 }
 
 const STORAGE_KEY = "zoe-chat-session-id";
-const LAUNCHER_DISMISSED_KEY = "zoe-chat-launcher-dismissed";
 const CHAT_UPLOAD_BUCKET = "chat-uploads";
 const { url: SUPABASE_URL, functionsUrl: SUPABASE_FUNCTIONS_URL } =
   getSupabaseBrowserConfig();
