@@ -49,8 +49,19 @@ import {
   FilePlus2,
   ClipboardList,
   ShieldCheck,
+  BookOpen,
+  Headphones,
 } from "lucide-react";
 import { formatDistanceToNowStrict, parseISO, isBefore } from "date-fns";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip as ChartTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { cn } from "@/lib/utils";
 
 const currency = (value: number) =>
@@ -209,6 +220,24 @@ export default function AgentDashboardOverview() {
       })
       .slice(0, 8);
   }, [apps, search, stageFilter]);
+
+  const yearlyApplicationTrend = useMemo(() => {
+    const year = new Date().getFullYear();
+    const monthlyCounts = Array.from({ length: 12 }, () => 0);
+
+    apps.forEach((application) => {
+      if (!application.createdAt) return;
+      const createdAt = parseISO(application.createdAt);
+      if (Number.isNaN(createdAt.getTime()) || createdAt.getFullYear() !== year) return;
+      monthlyCounts[createdAt.getMonth()] += 1;
+    });
+
+    let cumulative = 0;
+    return MONTHS.map((month, index) => {
+      cumulative += monthlyCounts[index];
+      return { month, applications: monthlyCounts[index], total: cumulative };
+    });
+  }, [apps]);
 
   const priorities = useMemo(() => {
     const items: Array<{
@@ -629,6 +658,109 @@ export default function AgentDashboardOverview() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Business insights */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="rounded-2xl border-border/70 shadow-sm lg:col-span-2">
+          <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+            <div>
+              <CardTitle className="text-base font-semibold">Business insights</CardTitle>
+              <CardDescription>
+                Applications started in {new Date().getFullYear()}, with the cumulative trend.
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="shrink-0 rounded-full">
+              {apps.filter((app) => app.createdAt?.startsWith(String(new Date().getFullYear()))).length} this year
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 w-full" aria-label="Applications started by month">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={yearlyApplicationTrend} margin={{ top: 8, right: 8, left: -24, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
+                  <ChartTooltip
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: "1px solid hsl(var(--border))",
+                      background: "hsl(var(--card))",
+                    }}
+                    formatter={(value: number, name: string) => [
+                      value,
+                      name === "total" ? "Cumulative applications" : "New applications",
+                    ]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    dot={false}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="applications"
+                    stroke="hsl(var(--muted-foreground))"
+                    strokeWidth={2}
+                    strokeDasharray="4 4"
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <span className="h-0.5 w-5 rounded bg-primary" /> Cumulative applications
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="h-0.5 w-5 border-t-2 border-dashed border-muted-foreground" /> New each month
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border-border/70 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">Support and resources</CardTitle>
+            <CardDescription>Guidance when you need it, without leaving your workflow.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/resources")}
+              className="flex w-full items-center gap-3 rounded-xl border border-border/70 p-3 text-left transition-colors hover:bg-muted/50"
+            >
+              <span className="rounded-lg bg-primary/10 p-2 text-primary">
+                <BookOpen className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">Partner resources</span>
+                <span className="block truncate text-xs text-muted-foreground">Training, documents and recruitment tools</span>
+              </span>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/help")}
+              className="flex w-full items-center gap-3 rounded-xl border border-border/70 p-3 text-left transition-colors hover:bg-muted/50"
+            >
+              <span className="rounded-lg bg-primary/10 p-2 text-primary">
+                <Headphones className="h-4 w-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">UniDoxia support</span>
+                <span className="block truncate text-xs text-muted-foreground">Answers, tickets and direct assistance</span>
+              </span>
+              <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <div className="rounded-xl bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground">
+              Keep student records and application updates inside UniDoxia so your team has one reliable audit trail.
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Applications table */}

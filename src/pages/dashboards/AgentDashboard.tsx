@@ -132,7 +132,7 @@ export default function AgentDashboard() {
             </div>
           </div>
 
-          {isAgent && (
+          {isAgent && (agentCompletionLoading || agentCompletion.percentage < 100) && (
             <Card className="border-primary/20 bg-primary/5">
               <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
