@@ -254,7 +254,8 @@ serve(async (req: Request): Promise<Response> => {
     const normalizedEmail = normalizeEmail(email);
     const supabaseAdmin = getSupabaseAdminClient();
 
-    const redirectTo = Deno.env.get("INVITE_REDIRECT_URL") || undefined;
+    const siteUrl = (Deno.env.get("PUBLIC_SITE_URL") || "https://unidoxia.com").replace(/\/+$/, "");
+    const redirectTo = Deno.env.get("INVITE_REDIRECT_URL") || `${siteUrl}/auth/callback`;
 
     const { data: existingProfile, error: profileLookupError } = await retry<{
       data: { id: string; tenant_id: string; role: string; full_name: string; email: string; phone: string | null } | null;
