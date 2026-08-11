@@ -217,7 +217,6 @@ export default function ZoeChatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [isLauncherDismissed, setIsLauncherDismissed] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
@@ -247,13 +246,6 @@ export default function ZoeChatbot() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setIsLauncherDismissed(
-      window.sessionStorage.getItem(LAUNCHER_DISMISSED_KEY) === "1",
-    );
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
     let stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
       stored =
@@ -270,8 +262,6 @@ export default function ZoeChatbot() {
 
     const handler = (event: Event) => {
       const customEvent = event as CustomEvent<{ prompt?: string }>;
-      window.sessionStorage.removeItem(LAUNCHER_DISMISSED_KEY);
-      setIsLauncherDismissed(false);
       setIsOpen(true);
       if (customEvent.detail?.prompt) {
         setInput(customEvent.detail.prompt);
