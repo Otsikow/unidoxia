@@ -558,7 +558,7 @@ serve(async (req: Request): Promise<Response> => {
         success: true,
         studentId: studentRecord.id,
         inviteType,
-        actionLink: includeActionLink ? actionLink : actionLink,
+        actionLink,
         emailSent,
         emailError,
       }),
