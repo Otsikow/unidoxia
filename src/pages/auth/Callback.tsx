@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AlertCircle, RefreshCw, LogIn } from "lucide-react";
+import { AlertCircle, LogIn, Mail } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { LoadingState } from "@/components/LoadingState";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 import { getSafeAuthRedirect } from "@/lib/authRedirect";
 
 type CallbackState =
@@ -19,73 +22,88 @@ const getParamFromHash = (hash: string, key: string) => {
   return params.get(key);
 };
 
+const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 const AuthCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const [state, setState] = useState<CallbackState>({ status: "loading" });
+  const [email, setEmail] = useState("");
+  const [sendingLink, setSendingLink] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+  const hasFinished = useRef(false);
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
-  const nextTarget = useMemo(
-    () => getSafeAuthRedirect(params.get("next")),
-    [params],
-  );
+  const nextTarget = useMemo(() => getSafeAuthRedirect(params.get("next")), [params]);
   const type = params.get("type") ?? getParamFromHash(location.hash, "type");
   const code = params.get("code");
 
   const errorFromQuery = params.get("error") ?? getParamFromHash(location.hash, "error");
   const errorDescription =
-    params.get("error_description") ??
-    getParamFromHash(location.hash, "error_description") ??
-    params.get("error_description".replace(/_/g, "")); // defensive
+    params.get("error_description") ?? getParamFromHash(location.hash, "error_description");
 
   useEffect(() => {
+    if (hasFinished.current) return;
     let active = true;
+
+    const goToApp = () => {
+      hasFinished.current = true;
+      setState({ status: "success" });
+      // Clear the one-time token / error fragment so a refresh never replays it.
+      window.history.replaceState({}, "", `${window.location.pathname}`);
+      navigate(type === "recovery" ? "/auth/reset-password" : nextTarget, { replace: true });
+    };
+
+    // supabase-js processes the URL fragment asynchronously, so poll briefly
+    // before deciding the link failed.
+    const waitForSession = async () => {
+      for (let attempt = 0; attempt < 10; attempt += 1) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) return data.session;
+        if (!active) return null;
+        await wait(300);
+      }
+      return null;
+    };
 
     const finish = async () => {
       try {
-        if (errorFromQuery || errorDescription) {
-          const message = (errorDescription || errorFromQuery || "").replace(/\+/g, " ").trim();
-          if (!active) return;
-          setState({
-            status: "error",
-            title: "Unable to complete sign-in",
-            description:
-              message ||
-              "This link may have expired or already been used. Please request a new link or sign in again.",
-          });
-          return;
-        }
-
-        // PKCE flow (code in query)
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
+          if (error) console.warn("Code exchange failed, falling back to session check", error);
         }
 
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        // A link can be consumed more than once (email scanners, double clicks,
+        // refreshes). If a session already exists, the sign-in actually worked —
+        // never show an error in that case.
+        const session = await waitForSession();
+        if (!active) return;
 
-        const session = data.session;
-        if (!session) {
-          if (!active) return;
+        if (session) {
+          goToApp();
+          return;
+        }
+
+        if (errorFromQuery || errorDescription) {
+          const message = (errorDescription || errorFromQuery || "").replace(/\+/g, " ").trim();
           setState({
             status: "error",
-            title: "Sign-in not completed",
+            title: "This sign-in link has expired",
             description:
-              "We couldn't find an active session from this link. Please request a new invite/verification email and try again.",
+              /expired|not found|invalid/i.test(message) || !message
+                ? "Sign-in links can only be used once and expire quickly. Enter your email below and we'll send you a fresh one."
+                : message,
           });
           return;
         }
 
-        if (!active) return;
-        setState({ status: "success" });
-
-        if (type === "recovery") {
-          navigate("/auth/reset-password", { replace: true });
-          return;
-        }
-
-        navigate(nextTarget, { replace: true });
+        setState({
+          status: "error",
+          title: "Sign-in not completed",
+          description:
+            "We couldn't start a session from this link. Enter your email below and we'll send you a fresh one.",
+        });
       } catch (err) {
         console.error("Auth callback failed", err);
         if (!active) return;
@@ -93,7 +111,7 @@ const AuthCallback = () => {
         setState({
           status: "error",
           title: "Authentication error",
-          description: `${message}. Please try again, or sign in with your email and password.`,
+          description: `${message}. You can request a new link below or sign in with your email and password.`,
         });
       }
     };
@@ -103,7 +121,46 @@ const AuthCallback = () => {
     return () => {
       active = false;
     };
-  }, [code, errorDescription, errorFromQuery, location.hash, navigate, nextTarget, type]);
+  }, [code, errorDescription, errorFromQuery, navigate, nextTarget, type]);
+
+  const handleRequestNewLink = useCallback(async () => {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast({
+        title: "Enter a valid email",
+        description: "Please use the email address your invitation was sent to.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingLink(true);
+    try {
+      const { data, error } = await supabase.functions.invoke<{
+        success?: boolean;
+        message?: string;
+        error?: string;
+      }>("request-activation-link", { body: { email: trimmed } });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setLinkSent(true);
+      toast({
+        title: "Check your inbox",
+        description: data?.message ?? "If an account exists for that email, a new link is on its way.",
+      });
+    } catch (err) {
+      console.error("Failed to request a new activation link", err);
+      toast({
+        title: "Could not send a new link",
+        description: err instanceof Error ? err.message : "Please try again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingLink(false);
+    }
+  }, [email, toast]);
 
   if (state.status === "loading") {
     return (
@@ -131,13 +188,27 @@ const AuthCallback = () => {
           </div>
           <CardDescription>{state.description}</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          If this keeps happening, check your internet connection and request a new invite link.
+        <CardContent className="space-y-3">
+          <Label htmlFor="activation-email">Email address</Label>
+          <Input
+            id="activation-email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            disabled={sendingLink}
+          />
+          {linkSent ? (
+            <p className="text-sm text-muted-foreground">
+              We've sent a fresh link. Open it on this device, and remember it can only be used once.
+            </p>
+          ) : null}
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
-          <Button className="w-full gap-2" onClick={() => window.location.reload()}>
-            <RefreshCw className="h-4 w-4" />
-            Reload
+          <Button className="w-full gap-2" onClick={handleRequestNewLink} disabled={sendingLink}>
+            <Mail className="h-4 w-4" />
+            {sendingLink ? "Sending..." : "Email me a new link"}
           </Button>
           <Button variant="outline" className="w-full gap-2" onClick={() => navigate("/auth/login")}>
             <LogIn className="h-4 w-4" />
