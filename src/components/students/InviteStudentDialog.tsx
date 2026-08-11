@@ -339,9 +339,8 @@ export function InviteStudentDialog({
         payload.phone = values.phone.trim();
       }
 
-      if (values.sendWhatsApp) {
-        payload.includeActionLink = true;
-      }
+      payload.includeActionLink = true;
+
 
       if (agentProfileId) {
         payload.agentProfileId = agentProfileId;
