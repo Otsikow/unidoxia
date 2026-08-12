@@ -945,6 +945,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             .insert({
               // FROM SIGNUP: Basic identity
               name: universityName,
+              slug: String(universityName).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
               country,
               tenant_id: tenant.id,
               active: true,

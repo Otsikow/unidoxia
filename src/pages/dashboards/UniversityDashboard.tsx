@@ -417,6 +417,7 @@ export default function UniversityDashboard() {
         .from('universities')
         .insert({
           name: trimmedName,
+          slug: trimmedName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
           country: trimmedCountry,
           city: universityForm.city.trim() || null,
           website: universityForm.website.trim() || null,

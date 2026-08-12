@@ -3397,8 +3397,10 @@ export type Database = {
       }
       universities: {
         Row: {
+          academic_year: string | null
           active: boolean | null
           city: string | null
+          claimed_at: string | null
           commission_terms_json: Json | null
           country: string
           created_at: string | null
@@ -3412,20 +3414,31 @@ export type Database = {
           featured_listing_status: string | null
           featured_priority: number | null
           featured_summary: string | null
+          fee_year: string | null
           id: string
+          last_source_checked_at: string | null
+          listing_status: string
           logo_url: string | null
           name: string
+          outreach_status: string
           partnership_status: string | null
+          partnership_tier: string
           ranking: Json | null
+          slug: string
+          source_type: string
+          source_url: string | null
           submission_config_json: Json | null
           submission_mode: string | null
           tenant_id: string
           updated_at: string | null
+          verification_status: string
           website: string | null
         }
         Insert: {
+          academic_year?: string | null
           active?: boolean | null
           city?: string | null
+          claimed_at?: string | null
           commission_terms_json?: Json | null
           country: string
           created_at?: string | null
@@ -3439,20 +3452,31 @@ export type Database = {
           featured_listing_status?: string | null
           featured_priority?: number | null
           featured_summary?: string | null
+          fee_year?: string | null
           id?: string
+          last_source_checked_at?: string | null
+          listing_status?: string
           logo_url?: string | null
           name: string
+          outreach_status?: string
           partnership_status?: string | null
+          partnership_tier?: string
           ranking?: Json | null
+          slug: string
+          source_type?: string
+          source_url?: string | null
           submission_config_json?: Json | null
           submission_mode?: string | null
           tenant_id: string
           updated_at?: string | null
+          verification_status?: string
           website?: string | null
         }
         Update: {
+          academic_year?: string | null
           active?: boolean | null
           city?: string | null
+          claimed_at?: string | null
           commission_terms_json?: Json | null
           country?: string
           created_at?: string | null
@@ -3466,15 +3490,24 @@ export type Database = {
           featured_listing_status?: string | null
           featured_priority?: number | null
           featured_summary?: string | null
+          fee_year?: string | null
           id?: string
+          last_source_checked_at?: string | null
+          listing_status?: string
           logo_url?: string | null
           name?: string
+          outreach_status?: string
           partnership_status?: string | null
+          partnership_tier?: string
           ranking?: Json | null
+          slug?: string
+          source_type?: string
+          source_url?: string | null
           submission_config_json?: Json | null
           submission_mode?: string | null
           tenant_id?: string
           updated_at?: string | null
+          verification_status?: string
           website?: string | null
         }
         Relationships: [
@@ -3483,6 +3516,157 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      university_claims: {
+        Row: {
+          admin_notes: string | null
+          claimant_user_id: string | null
+          created_at: string
+          department: string
+          email_verified_at: string | null
+          first_name: string
+          id: string
+          institutional_email: string
+          job_title: string
+          last_name: string
+          phone: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          university_id: string
+          updated_at: string
+          verification_expires_at: string | null
+          verification_token_hash: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          claimant_user_id?: string | null
+          created_at?: string
+          department: string
+          email_verified_at?: string | null
+          first_name: string
+          id?: string
+          institutional_email: string
+          job_title: string
+          last_name: string
+          phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          university_id: string
+          updated_at?: string
+          verification_expires_at?: string | null
+          verification_token_hash?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          claimant_user_id?: string | null
+          created_at?: string
+          department?: string
+          email_verified_at?: string | null
+          first_name?: string
+          id?: string
+          institutional_email?: string
+          job_title?: string
+          last_name?: string
+          phone?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          university_id?: string
+          updated_at?: string
+          verification_expires_at?: string | null
+          verification_token_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "university_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "university_claims_claimant_user_id_fkey"
+            columns: ["claimant_user_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "university_claims_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "university_claims_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "university_claims_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      university_memberships: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          profile_id: string
+          role: string
+          university_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          profile_id: string
+          role?: string
+          university_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          profile_id?: string
+          role?: string
+          university_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "university_memberships_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "university_memberships_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "university_memberships_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
             referencedColumns: ["id"]
           },
         ]
@@ -4187,6 +4371,10 @@ export type Database = {
       partner_review_student_document: {
         Args: { p_document_id: string; p_notes?: string; p_status: string }
         Returns: boolean
+      }
+      review_university_claim: {
+        Args: { p_admin_notes?: string; p_claim_id: string; p_decision: string }
+        Returns: string
       }
       scholarships_apply_expiry_sweep: { Args: never; Returns: number }
       search_agent_contacts: {

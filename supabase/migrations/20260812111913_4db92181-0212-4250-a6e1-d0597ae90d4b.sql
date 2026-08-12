@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.review_university_claim(UUID, TEXT, TEXT) FROM anon;
