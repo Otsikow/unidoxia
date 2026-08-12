@@ -55,7 +55,7 @@ import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
 import { courseSearchParams, normalizeCourseSearch, parseIntake } from "@/lib/courseSearch";
 import { logAnalyticsEvent } from "@/lib/analytics";
-import { navigationStateFromCurrentPage, validateSearchCounts } from "@/lib/marketplacePresentation";
+import { navigationStateFromCurrentPage } from "@/lib/marketplacePresentation";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -79,6 +79,8 @@ const MAJOR_DESTINATION_COUNTRIES = [...STUDY_DESTINATIONS];
 const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
 const COURSES_PER_PAGE = 100;
+const SEARCH_RPC_PAGE_SIZE = 100;
+const SEARCH_RPC_MAX_RESULTS = 10_000;
 
 const DISCIPLINE_NORMALIZATION_MAP: Record<string, string> = {
   "Project Managament": "Project Management",
@@ -546,19 +548,30 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
       const normalizedQuery = normalizeCourseSearch(debouncedSearchTerm || "");
       const intake = parseIntake(selectedIntake);
-      const pageSize = 24;
-      const { data: rpcRows, error: rpcError } = await (supabase as any).rpc("search_programmes", {
+      const searchRpc = (offset: number) => (supabase as any).rpc("search_programmes", {
         p_query: normalizedQuery,
         p_country: selectedCountry === "all" ? null : selectedCountry,
         p_level: selectedLevel === "all" ? null : selectedLevel,
         p_intake_year: intake.year,
         p_intake_month: intake.month,
-        p_limit: pageSize,
-        p_offset: (page - 1) * pageSize,
+        p_limit: SEARCH_RPC_PAGE_SIZE,
+        p_offset: offset,
       });
+      const { data: firstRpcPage, error: rpcError } = await searchRpc(0);
       if (!rpcError) {
+        const total = Number(firstRpcPage?.[0]?.total_count || 0);
+        const remainingOffsets = Array.from(
+          { length: Math.max(0, Math.ceil(Math.min(total, SEARCH_RPC_MAX_RESULTS) / SEARCH_RPC_PAGE_SIZE) - 1) },
+          (_, index) => (index + 1) * SEARCH_RPC_PAGE_SIZE,
+        );
+        const remainingPages = await Promise.all(remainingOffsets.map(async (offset) => {
+          const { data, error } = await searchRpc(offset);
+          if (error) throw error;
+          return data || [];
+        }));
+        const rpcRows = [...(firstRpcPage || []), ...remainingPages.flat()];
         const universityMap = new Map<string, SearchResult>();
-        for (const row of rpcRows || []) {
+        for (const row of rpcRows) {
           const university: University = {
             id: row.university_id, name: row.university_name, country: row.university_country,
             city: row.university_city, logo_url: row.university_logo_url, website: null, description: null, slug: row.university_slug,
@@ -573,16 +586,30 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           if (existing) existing.programs.push(program);
           else universityMap.set(row.university_id, { university, programs: [program], scholarships: [], matchingCount: Number(row.university_match_count || 1) });
         }
-        const counts = validateSearchCounts(rpcRows || []);
-        const total = counts.globalCount;
-        setResults([...universityMap.values()]);
-        setSearchTotal(total);
-        setSearchUniversityTotal(counts.universityCount);
-        setSearchPage(page);
-        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
+        const completeResults = [...universityMap.values()]
+          .filter((result) => {
+            if (selectedDiscipline !== "all" && !result.programs.some((program) => program.discipline === selectedDiscipline)) return false;
+            if (maxFee && !result.programs.some((program) => program.tuition_amount != null && program.tuition_amount <= Number(maxFee))) return false;
+            return true;
+          })
+          .map((result) => ({
+            ...result,
+            programs: result.programs.filter((program) =>
+              (selectedDiscipline === "all" || program.discipline === selectedDiscipline)
+              && (!maxFee || (program.tuition_amount != null && program.tuition_amount <= Number(maxFee))),
+            ),
+          }))
+          .map((result) => ({ ...result, matchingCount: result.programs.length }))
+          .sort((a, b) => a.university.name.localeCompare(b.university.name));
+        const visibleTotal = completeResults.reduce((sum, result) => sum + result.programs.length, 0);
+        setResults(completeResults);
+        setSearchTotal(selectedDiscipline !== "all" || Boolean(maxFee) ? visibleTotal : total);
+        setSearchUniversityTotal(completeResults.length);
+        setSearchPage(1);
+        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page: 1 }));
         void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
           query: debouncedSearchTerm || "", normalized_query: normalizedQuery, destination: selectedCountry,
-          study_level: selectedLevel, intake: selectedIntake, result_count: total, page,
+          study_level: selectedLevel, intake: selectedIntake, result_count: total, university_count: completeResults.length, page: 1,
         } });
         return;
       }
@@ -1248,13 +1275,6 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     </div>
                   </Card>
                 ))}
-                {searchTotal > 24 && (
-                  <div className="flex items-center justify-center gap-3 pt-4">
-                    <Button variant="outline" disabled={searchPage <= 1} onClick={() => handleSearch(searchPage - 1)}>Previous</Button>
-                    <span className="text-sm text-muted-foreground">Page {searchPage} of {Math.ceil(searchTotal / 24)}</span>
-                    <Button variant="outline" disabled={searchPage >= Math.ceil(searchTotal / 24)} onClick={() => handleSearch(searchPage + 1)}>Next</Button>
-                  </div>
-                )}
                 </>
               )}
             </div>
