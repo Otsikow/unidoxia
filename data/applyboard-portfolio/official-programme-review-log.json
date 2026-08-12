@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-08-12T00:00:00Z",
+  "status": "programme_sources_complete_field_evidence_in_progress",
+  "failedMatches": [
+    {
+      "institution": "Griffith University",
+      "programme": "Bachelor of Advanced Government and International Tourism and Hotel Management (Honours) (1655) (106114J)",
+      "reason": "The current official programme title does not match the ApplyBoard title closely enough; replacement review required."
+    },
+    {
+      "institution": "Southeast Missouri State University",
+      "programme": "Bachelor of Science - Agribusiness - Animal Science",
+      "reason": "The university announced transition of this option to a standalone Animal Science degree in February 2026; replacement review required."
+    },
+    {
+      "institution": "University of North Alabama",
+      "programme": "Bachelor of Science/Arts - Communication Arts",
+      "reason": "The 2026-27 official catalogue states that Communication Arts stopped accepting students on 1 August 2025; replacement required."
+    },
+    {
+      "institution": "University of Europe for Applied Sciences",
+      "programme": "Bachelor of Arts - Communication Design",
+      "reason": "The current official programme is Visual Communication; the older ApplyBoard title was not forced to match."
+    },
+    {
+      "institution": "University of Europe for Applied Sciences",
+      "programme": "Foundation Diploma & Bachelor of Arts - Communication Design",
+      "reason": "No exact current official combined Foundation Diploma and Communication Design programme page was established; replacement review required."
+    },
+    {
+      "institution": "University of Europe for Applied Sciences",
+      "programme": "Foundation Diploma & Bachelor of Arts - Film and Motion Design",
+      "reason": "The official page verifies the bachelor degree but not the combined Foundation Diploma route; replacement review required."
+    }
+  ],
+  "notes": [
+    "Federation University titles are supported by current official pages, but current university course codes differ from the ApplyBoard labels and must be preserved as a discrepancy note.",
+    "Machine-discovered candidates never pass without a human-reviewed override.",
+    "The stale Griffith 1655 listing was replaced with the current Bachelor of Nursing (1162) listing from Griffith University.",
+    "The transitioning Southeast Missouri Animal Science option was replaced with the current Agricultural Education degree.",
+    "The closed North Alabama Communication Arts listing was replaced with the current English degree.",
+    "The renamed University of Europe standalone Communication Design listing was replaced with the current Foundation Diploma and Illustration route; the remaining foundation routes are supported by the official Art and Design Foundation Diploma page.",
+    "All 75 exact official programme sources are now reviewed; publication remains blocked until all field evidence and tuition display decisions are complete."
+  ]
+}

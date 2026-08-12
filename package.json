@@ -12,6 +12,10 @@
     "catalogue:dry-run": "node scripts/catalogue/import-catalogue.mjs",
     "catalogue:discover": "node scripts/catalogue/discover-university-catalogue.mjs --university all",
     "catalogue:review": "node scripts/catalogue/review-catalogue.mjs --university all",
+    "applyboard-portfolio:validate": "node scripts/catalogue/validate-applyboard-portfolio.mjs data/applyboard-portfolio/2026-08-12-applyboard-programme-snapshot.json",
+    "applyboard-portfolio:import-ready": "node scripts/catalogue/validate-applyboard-portfolio.mjs data/applyboard-portfolio/2026-08-12-applyboard-programme-snapshot.json --require-import-ready",
+    "applyboard-portfolio:official-sources": "node scripts/catalogue/enrich-official-programme-sources.mjs data/applyboard-portfolio/2026-08-12-applyboard-programme-snapshot.json",
+    "applyboard-portfolio:field-evidence": "node scripts/catalogue/verify-official-field-evidence.mjs data/applyboard-portfolio/2026-08-12-applyboard-programme-snapshot.json",
     "preview": "vite preview",
     "postbuild": "node scripts/generate-sitemap.cjs && node scripts/append-catalogue-sitemap.mjs"
   },
