@@ -9,9 +9,16 @@ if (!endpoint || !anonKey) {
 }
 
 async function fetchRows(path) {
-  const response = await fetch(`${endpoint}/rest/v1/${path}`, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } });
-  if (!response.ok) throw new Error(`Catalogue sitemap query failed: ${response.status}`);
-  return response.json();
+  // PostgREST caps unbounded responses (1000 rows by default), so page explicitly.
+  const pageSize = 1000;
+  const rows = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const response = await fetch(`${endpoint}/rest/v1/${path}&order=id.asc&limit=${pageSize}&offset=${offset}`, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } });
+    if (!response.ok) throw new Error(`Catalogue sitemap query failed: ${response.status}`);
+    const page = await response.json();
+    rows.push(...page);
+    if (page.length < pageSize) return rows;
+  }
 }
 
 const [universities, programmes] = await Promise.all([
