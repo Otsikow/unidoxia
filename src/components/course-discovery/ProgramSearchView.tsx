@@ -773,10 +773,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       return;
     }
 
-    if (!hasSearched) return;
+    // Selecting a target intake alone should also switch to filtered search results.
+    if (!hasSearched && selectedIntake === "all") return;
 
     handleSearch(1);
-  }, [handleSearch, hasInitialQuery, hasSearched]);
+  }, [handleSearch, hasInitialQuery, hasSearched, selectedIntake]);
 
   return (
     <div className={containerClasses}>
