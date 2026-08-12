@@ -27,12 +27,12 @@ export default function ProgramDeleteDialog({
     <AlertDialog open={open} onOpenChange={onClose}>
       <AlertDialogContent className="border border-border bg-background text-card-foreground">
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete course</AlertDialogTitle>
+          <AlertDialogTitle>Archive course</AlertDialogTitle>
           <AlertDialogDescription>
-            This action will permanently remove the course.  
-            It will no longer appear to agents or students in UniDoxia.  
+            This hides the course from public search while retaining its history and links to existing applications.
+            It can be reviewed or restored later.
             <br />
-            <strong>This cannot be undone.</strong>
+            <strong>Confirm that the course should no longer be publicly active.</strong>
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -46,7 +46,7 @@ export default function ProgramDeleteDialog({
             onClick={onConfirm}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {isDeleting ? "Archiving..." : "Archive course"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

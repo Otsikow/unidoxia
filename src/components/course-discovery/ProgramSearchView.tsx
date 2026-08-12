@@ -53,6 +53,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
+import { courseSearchParams, normalizeCourseSearch, parseIntake } from "@/lib/courseSearch";
+import { logAnalyticsEvent } from "@/lib/analytics";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -102,9 +104,9 @@ interface Program {
   name: string;
   level: string;
   discipline: string;
-  tuition_amount: number;
+  tuition_amount: number | null;
   tuition_currency: string;
-  duration_months: number;
+  duration_months: number | null;
   university_id: string;
   image_url?: string | null;
 }
@@ -177,7 +179,7 @@ const transformToCourseCardFormat = (
     next_intake_month: course.next_intake_month,
     next_intake_year: course.next_intake_year,
     applyUrl: course.applyUrl,
-    detailsUrl: course.detailsUrl,
+    detailsUrl: course.detailsUrl || `/courses/${course.id}`,
     instant_submission: course.instant_submission,
     is_unidoxia_partner: course.is_unidoxia_partner,
   };
@@ -190,7 +192,7 @@ export interface ProgramSearchViewProps {
 }
 
 export function ProgramSearchView({ variant = "page", showBackButton = true }: ProgramSearchViewProps) {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { profile } = useAuth();
   
   // Initialize state from URL params if available
@@ -200,6 +202,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [selectedDiscipline, setSelectedDiscipline] = useState("all");
   const [maxFee, setMaxFee] = useState("");
   const [onlyWithScholarships, setOnlyWithScholarships] = useState(false);
+  const [selectedIntake, setSelectedIntake] = useState(searchParams.get("intake") || "all");
+  const [searchPage, setSearchPage] = useState(Number(searchParams.get("page")) || 1);
+  const [searchTotal, setSearchTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
@@ -248,6 +253,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
   // Track if this is the initial load
   const isInitialMount = useRef(true);
+  const initialSearchPage = useRef(Number(searchParams.get("page")) || 1);
   const hasInitialQuery = useMemo(
     () =>
       Boolean(
@@ -310,7 +316,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
-          if (maxFee && program.tuition_amount > parseFloat(maxFee)) return false;
+          if (maxFee && (program.tuition_amount == null || program.tuition_amount > parseFloat(maxFee))) return false;
           return true;
         });
 
@@ -454,6 +460,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     selectedDiscipline !== "all",
     Boolean(maxFee),
     onlyWithScholarships,
+    selectedIntake !== "all",
   ].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -463,10 +470,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     setSelectedDiscipline("all");
     setMaxFee("");
     setOnlyWithScholarships(false);
+    setSelectedIntake("all");
+    setSearchPage(1);
+    setSearchTotal(0);
+    setSearchParams({});
     setHasSearched(false);
   };
 
-  const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(async (page = 1) => {
     setHasSearched(true);
     setLoading(true);
     try {
@@ -487,7 +498,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
-          if (maxFee && program.tuition_amount > parseFloat(maxFee)) return false;
+          if (maxFee && (program.tuition_amount == null || program.tuition_amount > parseFloat(maxFee))) return false;
           return true;
         });
 
@@ -521,7 +532,48 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         return;
       }
 
-      // Build search query - search both universities and programs
+      const normalizedQuery = normalizeCourseSearch(debouncedSearchTerm || "");
+      const intake = parseIntake(selectedIntake);
+      const pageSize = 24;
+      const { data: rpcRows, error: rpcError } = await (supabase as any).rpc("search_programmes", {
+        p_query: normalizedQuery,
+        p_country: selectedCountry === "all" ? null : selectedCountry,
+        p_level: selectedLevel === "all" ? null : selectedLevel,
+        p_intake_year: intake.year,
+        p_intake_month: intake.month,
+        p_limit: pageSize,
+        p_offset: (page - 1) * pageSize,
+      });
+      if (!rpcError) {
+        const universityMap = new Map<string, SearchResult>();
+        for (const row of rpcRows || []) {
+          const university: University = {
+            id: row.university_id, name: row.university_name, country: row.university_country,
+            city: row.university_city, logo_url: row.university_logo_url, website: null, description: null,
+          };
+          const program: Program = {
+            id: row.id, name: row.name, level: row.level, discipline: row.discipline,
+            tuition_amount: row.tuition_amount, tuition_currency: row.tuition_currency,
+            duration_months: row.duration_months, university_id: row.university_id,
+          };
+          const existing = universityMap.get(row.university_id);
+          if (existing) existing.programs.push(program);
+          else universityMap.set(row.university_id, { university, programs: [program], scholarships: [] });
+        }
+        const total = Number(rpcRows?.[0]?.total_count || 0);
+        setResults([...universityMap.values()]);
+        setSearchTotal(total);
+        setSearchPage(page);
+        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
+        void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
+          query: debouncedSearchTerm || "", normalized_query: normalizedQuery, destination: selectedCountry,
+          study_level: selectedLevel, intake: selectedIntake, result_count: total, page,
+        } });
+        return;
+      }
+      console.warn("Database catalogue search unavailable; using legacy search", rpcError);
+
+      // Legacy query fallback for environments where the migration is not applied yet.
       const searchQuery = debouncedSearchTerm?.trim().toLowerCase() || "";
       
       // Query universities
@@ -707,7 +759,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships]);
+  }, [debouncedSearchTerm, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships, selectedIntake, setSearchParams]);
 
   // Auto-search when filters change
   useEffect(() => {
@@ -715,14 +767,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     if (isInitialMount.current) {
       isInitialMount.current = false;
       if (hasInitialQuery) {
-        handleSearch();
+        handleSearch(initialSearchPage.current);
       }
       return;
     }
 
     if (!hasSearched) return;
 
-    handleSearch();
+    handleSearch(1);
   }, [handleSearch, hasInitialQuery, hasSearched]);
 
   return (
@@ -808,7 +860,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     </Select>
                   </div>
 
-                  <Button onClick={handleSearch} size="lg" className="w-full lg:w-auto">
+                  <Button onClick={() => handleSearch(1)} size="lg" className="w-full lg:w-auto">
                     <Search className="mr-2 h-4 w-4" />Search
                   </Button>
                 </div>
@@ -830,7 +882,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     )}
                   </div>
                   <CollapsibleContent className="pt-4">
-                    <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-4">
                       <div>
                         <Label>Subject</Label>
                         <Select value={selectedDiscipline} onValueChange={setSelectedDiscipline}>
@@ -852,6 +904,18 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                           onChange={(e) => setMaxFee(e.target.value)}
                         />
                       </div>
+                      <div>
+                        <Label>Target intake</Label>
+                        <Select value={selectedIntake} onValueChange={setSelectedIntake}>
+                          <SelectTrigger><SelectValue placeholder="Any future intake" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Any future intake</SelectItem>
+                            <SelectItem value="2027-01">January 2027</SelectItem>
+                            <SelectItem value="2027-05">May 2027</SelectItem>
+                            <SelectItem value="2027-09">September 2027</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="flex items-center pt-6">
                         <Checkbox
                           id="scholarships"
@@ -872,7 +936,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   {loading
                     ? t("pages.universitySearch.results.loading")
                     : hasSearched
-                      ? t("pages.universitySearch.results.found", { count: results.length })
+                      ? t("pages.universitySearch.results.found", { count: searchTotal || results.reduce((sum, result) => sum + result.programs.length, 0) })
                       : t("pages.universitySearch.results.startSearching", {
                         defaultValue: "Start searching to see universities and programs",
                       })}
@@ -1015,7 +1079,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   </CardContent>
                 </Card>
               ) : (
-                results.map((r) => (
+                <>
+                {results.map((r) => (
                   <Card key={r.university.id} className="hover:shadow-lg transition overflow-hidden">
                     <div className="flex flex-col md:flex-row">
                       <div className="md:w-64 h-48 md:h-auto bg-muted flex-shrink-0">
@@ -1089,18 +1154,15 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                       <Badge variant="outline">{p.level}</Badge>
                                       <span className="flex items-center gap-1">
-                                        <DollarSign className="h-3 w-3" /> {p.tuition_amount.toLocaleString()} {" "}
-                                        {p.tuition_currency}
+                                        <DollarSign className="h-3 w-3" /> {p.tuition_amount == null ? "Check official tuition fee" : `${p.tuition_currency} ${p.tuition_amount.toLocaleString()}`}
                                       </span>
                                       <span className="text-[11px] text-muted-foreground/90">
-                                        {p.duration_months} months
+                                        {p.duration_months == null ? "Check official duration" : `${p.duration_months} months`}
                                       </span>
                                     </div>
                                     <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                                      <Link to={getApplyUrl(p.id)}>
-                                        {isAgentOrStaff
-                                          ? t("pages.universitySearch.results.programs.submitApplication", { defaultValue: "Submit Application" })
-                                          : t("pages.universitySearch.results.programs.apply")}
+                                      <Link to={`/courses/${p.id}`} onClick={() => void logAnalyticsEvent("search_result_click", { source: "course_discovery", properties: { programme_id: p.id, university_id: r.university.id, query: searchTerm, result_position: r.programs.findIndex((item) => item.id === p.id) + 1 } })}>
+                                        View course
                                       </Link>
                                     </Button>
                                   </div>
@@ -1169,7 +1231,15 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       </div>
                     </div>
                   </Card>
-                ))
+                ))}
+                {searchTotal > 24 && (
+                  <div className="flex items-center justify-center gap-3 pt-4">
+                    <Button variant="outline" disabled={searchPage <= 1} onClick={() => handleSearch(searchPage - 1)}>Previous</Button>
+                    <span className="text-sm text-muted-foreground">Page {searchPage} of {Math.ceil(searchTotal / 24)}</span>
+                    <Button variant="outline" disabled={searchPage >= Math.ceil(searchTotal / 24)} onClick={() => handleSearch(searchPage + 1)}>Next</Button>
+                  </div>
+                )}
+                </>
               )}
             </div>
         </div>

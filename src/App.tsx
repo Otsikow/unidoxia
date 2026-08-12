@@ -191,6 +191,7 @@ const ResetPassword = lazyWithErrorHandling(() => import("./pages/auth/ResetPass
 const CompleteSignup = lazyWithErrorHandling(() => import("./pages/auth/CompleteSignup"));
 const UniversitySearch = lazyWithErrorHandling(() => import("./pages/UniversitySearch"));
 const CourseDiscovery = lazyWithErrorHandling(() => import("./pages/CourseDiscovery"));
+const CourseDetail = lazyWithErrorHandling(() => import("./pages/CourseDetail"));
 const UniversityPartnership = lazyWithErrorHandling(() =>
   import("./pages/UniversityPartnership")
 );
@@ -607,6 +608,7 @@ const App = () => {
                         {/* Public Screens */}
                         <Route path="/search" element={<SearchRedirect />} />
                         <Route path="/courses" element={<CourseDiscovery />} />
+                        <Route path="/courses/:id" element={<PublicLayout><CourseDetail /></PublicLayout>} />
                         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
                         <Route path="/faq" element={<PublicLayout><FAQ /></PublicLayout>} />
                         <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />

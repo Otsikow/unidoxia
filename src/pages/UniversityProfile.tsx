@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +40,7 @@ import {
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
 import { SEO } from "@/components/SEO";
+import { logAnalyticsEvent } from "@/lib/analytics";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -150,6 +151,10 @@ export default function UniversityProfile() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
+  const [programSearch, setProgramSearch] = useState("");
+  const [programPage, setProgramPage] = useState(1);
+  const [programTotal, setProgramTotal] = useState(0);
+  const trackedUniversityId = useRef<string | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const selectedProgramRequirements = selectedProgram
     ? parseEntryRequirements(selectedProgram.entry_requirements)
@@ -174,13 +179,7 @@ export default function UniversityProfile() {
     validTabs.includes(initialTab) ? initialTab : "about"
   );
 
-  useEffect(() => {
-    if (id) {
-      loadUniversityData(id);
-    }
-  }, [id]);
-
-  const loadUniversityData = async (universityId: string) => {
+  const loadUniversityData = useCallback(async (universityId: string, page = 1) => {
     setLoading(true);
     try {
       // Load university - fetch by ID to get the specific university
@@ -192,39 +191,52 @@ export default function UniversityProfile() {
 
       if (uniError) throw uniError;
       setUniversity(universityData);
+      if (trackedUniversityId.current !== universityData.id) {
+        trackedUniversityId.current = universityData.id;
+        void logAnalyticsEvent("university_profile_view", { source: "university_profile", properties: { university_id: universityData.id } });
+      }
       setProfileDetails(
         parseUniversityProfileDetails(universityData?.submission_config_json ?? null),
       );
+      const resolvedUniversityId = universityData.id;
 
       // MULTI-TENANT ISOLATION: Load programs ONLY for this specific university
       // Each university has its own unique programs - no data sharing between institutions
       // The university_id filter ensures complete data isolation
-      const { data: programsData, error: progError } = await supabase
+      let programsQuery = supabase
         .from("programs")
-        .select("*")
-        .eq("university_id", universityId) // Critical: Only programs belonging to THIS university
+        .select("*", { count: "exact" })
+        .eq("university_id", resolvedUniversityId)
         .eq("active", true)
+        .eq("catalogue_status", "active")
         .order("level")
-        .order("name");
+        .order("name")
+        .range((page - 1) * 24, page * 24 - 1);
+      if (selectedLevel !== "all") programsQuery = programsQuery.eq("level", selectedLevel);
+      if (selectedDiscipline !== "all") programsQuery = programsQuery.eq("discipline", selectedDiscipline);
+      const safeProgramSearch = programSearch.trim().replace(/[%_,()]/g, " ").replace(/\s+/g, " ");
+      if (safeProgramSearch) programsQuery = programsQuery.or(`name.ilike.%${safeProgramSearch}%,discipline.ilike.%${safeProgramSearch}%`);
+      const { data: programsData, error: progError, count: programCount } = await programsQuery;
 
       if (progError) throw progError;
       
       // Verification: Ensure all returned programs belong to this university
       const validatedPrograms = (programsData || []).filter(
-        (program) => program.university_id === universityId
+        (program) => program.university_id === resolvedUniversityId
       );
       setPrograms(validatedPrograms);
+      setProgramTotal(programCount || 0);
 
       // MULTI-TENANT ISOLATION: Load scholarships ONLY for this specific university
       const { data: scholarshipsData } = await supabase
         .from("scholarships")
         .select("*")
-        .eq("university_id", universityId) // Critical: Only scholarships belonging to THIS university
+        .eq("university_id", resolvedUniversityId)
         .eq("active", true);
 
       // Verification: Ensure all returned scholarships belong to this university
       const validatedScholarships = (scholarshipsData || []).filter(
-        (scholarship) => scholarship.university_id === universityId
+        (scholarship) => scholarship.university_id === resolvedUniversityId
       );
       setScholarships(validatedScholarships);
     } catch (error) {
@@ -232,13 +244,15 @@ export default function UniversityProfile() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [programSearch, selectedDiscipline, selectedLevel]);
 
-  const filteredPrograms = programs.filter((program) => {
-    const matchesLevel = selectedLevel === "all" || program.level === selectedLevel;
-    const matchesDiscipline = selectedDiscipline === "all" || program.discipline === selectedDiscipline;
-    return matchesLevel && matchesDiscipline;
-  });
+  useEffect(() => {
+    if (id) {
+      void loadUniversityData(id, programPage);
+    }
+  }, [id, loadUniversityData, programPage]);
+
+  const filteredPrograms = programs;
 
   const levels = [...new Set(programs.map((p) => p.level))];
   const disciplines = [...new Set(programs.map((p) => p.discipline))];
@@ -582,11 +596,12 @@ export default function UniversityProfile() {
                 <CardTitle>Filter Courses</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
+                <Input value={programSearch} onChange={(event) => { setProgramSearch(event.target.value); setProgramPage(1); }} placeholder="Search this university's courses" className="mb-2 w-full" />
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant={selectedLevel === "all" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedLevel("all")}
+                    onClick={() => { setSelectedLevel("all"); setProgramPage(1); }}
                   >
                     All Levels
                   </Button>
@@ -595,7 +610,7 @@ export default function UniversityProfile() {
                       key={level}
                       variant={selectedLevel === level ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setSelectedLevel(level)}
+                      onClick={() => { setSelectedLevel(level); setProgramPage(1); }}
                     >
                       {level}
                     </Button>
@@ -606,7 +621,7 @@ export default function UniversityProfile() {
                   <Button
                     variant={selectedDiscipline === "all" ? "default" : "outline"}
                     size="sm"
-                    onClick={() => setSelectedDiscipline("all")}
+                    onClick={() => { setSelectedDiscipline("all"); setProgramPage(1); }}
                   >
                     All Disciplines
                   </Button>
@@ -615,7 +630,7 @@ export default function UniversityProfile() {
                       key={discipline}
                       variant={selectedDiscipline === discipline ? "default" : "outline"}
                       size="sm"
-                      onClick={() => setSelectedDiscipline(discipline)}
+                      onClick={() => { setSelectedDiscipline(discipline); setProgramPage(1); }}
                     >
                       {discipline}
                     </Button>
@@ -885,6 +900,7 @@ export default function UniversityProfile() {
                     </CardContent>
                   </Card>
                 ))}
+                {programTotal > 24 && <div className="flex items-center justify-center gap-3 pt-4"><Button variant="outline" disabled={programPage === 1} onClick={() => setProgramPage((page) => page - 1)}>Previous</Button><span className="text-sm text-muted-foreground">Page {programPage} of {Math.ceil(programTotal / 24)}</span><Button variant="outline" disabled={programPage >= Math.ceil(programTotal / 24)} onClick={() => setProgramPage((page) => page + 1)}>Next</Button></div>}
               </div>
             )}
           </TabsContent>

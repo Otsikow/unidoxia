@@ -49,6 +49,17 @@ type UniversityRow = {
   partnership_status: string | null;
   active: boolean | null;
   city?: string | null;
+  catalogue_status?: string | null;
+  catalogue_discovered_count?: number | null;
+  catalogue_processed_count?: number | null;
+  catalogue_unresolved_count?: number | null;
+  catalogue_fee_verified_count?: number | null;
+  catalogue_intake_verified_count?: number | null;
+  catalogue_requirements_verified_count?: number | null;
+  profile_completeness_percent?: number | null;
+  last_catalogue_checked_at?: string | null;
+  outreach_status?: string | null;
+  verification_status?: string | null;
 };
 
 type ApplicationRow = {
@@ -67,6 +78,7 @@ type ProgramRow = {
   id: string;
   university_id: string;
   active: boolean | null;
+  catalogue_status?: string | null;
 };
 
 type AgentCard = {
@@ -92,6 +104,18 @@ type UniversityCard = {
   conversionRate: number;
   partnershipStatus: string;
   isActive: boolean;
+  catalogueStatus: string;
+  discovered: number;
+  processed: number;
+  unresolved: number;
+  feeVerified: number;
+  intakeVerified: number;
+  requirementsVerified: number;
+  archived: number;
+  profileCompleteness: number;
+  freshness: string | null;
+  outreachStatus: string;
+  verificationStatus: string;
 };
 
 const successStatuses = ["conditional_offer", "unconditional_offer", "cas_loa", "visa", "enrolled"];
@@ -152,10 +176,10 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
         const universityQuery = isAdminOrStaff
           ? supabase
               .from("universities")
-              .select("id, name, country, city, partnership_status, active, tenant_id")
+              .select("id, name, country, city, partnership_status, active, tenant_id, catalogue_status, catalogue_discovered_count, catalogue_processed_count, catalogue_unresolved_count, catalogue_fee_verified_count, catalogue_intake_verified_count, catalogue_requirements_verified_count, profile_completeness_percent, last_catalogue_checked_at, outreach_status, verification_status")
           : supabase
               .from("universities")
-              .select("id, name, country, city, partnership_status, active, tenant_id")
+              .select("id, name, country, city, partnership_status, active, tenant_id, catalogue_status, catalogue_discovered_count, catalogue_processed_count, catalogue_unresolved_count, catalogue_fee_verified_count, catalogue_intake_verified_count, catalogue_requirements_verified_count, profile_completeness_percent, last_catalogue_checked_at, outreach_status, verification_status")
               .eq("tenant_id", tenantId);
 
         // Applications and programs: admins/staff see all to calculate stats correctly
@@ -171,10 +195,10 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
         const programQuery = isAdminOrStaff
           ? supabase
               .from("programs")
-              .select("id, university_id, active, tenant_id")
+              .select("id, university_id, active, tenant_id, catalogue_status")
           : supabase
               .from("programs")
-              .select("id, university_id, active, tenant_id")
+              .select("id, university_id, active, tenant_id, catalogue_status")
               .eq("tenant_id", tenantId);
 
         const agentStudentLinksQuery = supabase
@@ -289,6 +313,18 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
         conversionRate: Number.isFinite(conversion) ? conversion : 0,
         partnershipStatus: (university.partnership_status ?? "pending").replace(/_/g, " "),
         isActive: university.active ?? false,
+        catalogueStatus: (university.catalogue_status ?? "not_started").replace(/_/g, " "),
+        discovered: university.catalogue_discovered_count ?? 0,
+        processed: university.catalogue_processed_count ?? 0,
+        unresolved: university.catalogue_unresolved_count ?? 0,
+        feeVerified: university.catalogue_fee_verified_count ?? 0,
+        intakeVerified: university.catalogue_intake_verified_count ?? 0,
+        requirementsVerified: university.catalogue_requirements_verified_count ?? 0,
+        archived: programs.filter((program) => program.university_id === university.id && ["archived", "discontinued"].includes(program.catalogue_status ?? "")).length,
+        profileCompleteness: university.profile_completeness_percent ?? 0,
+        freshness: university.last_catalogue_checked_at ?? null,
+        outreachStatus: (university.outreach_status ?? "not_contacted").replace(/_/g, " "),
+        verificationStatus: (university.verification_status ?? "unverified").replace(/_/g, " "),
       };
     });
   }, [universities, applications, programs]);
@@ -594,6 +630,13 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
                             <Badge variant="secondary" className="text-[10px] sm:text-xs">{university.programsOffered} programs</Badge>
                             <Badge variant="secondary" className="text-[10px] sm:text-xs">{university.submittedApplications} submitted</Badge>
                             <Badge variant="outline" className="text-[10px] sm:text-xs">{formatPercent(university.conversionRate)}</Badge>
+                            <Badge variant="outline" className="text-[10px] sm:text-xs capitalize">Catalogue: {university.catalogueStatus}</Badge>
+                          </div>
+                          <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground sm:grid-cols-3">
+                            <span>Discovered: {university.discovered}</span><span>Processed: {university.processed}</span><span>Unresolved: {university.unresolved}</span>
+                            <span>Active: {university.programsOffered}</span><span>Archived: {university.archived}</span><span>Fees missing: {Math.max(0, university.discovered - university.feeVerified)}</span>
+                            <span>Fees: {university.feeVerified}</span><span>Intakes: {university.intakeVerified}</span><span>Requirements: {university.requirementsVerified}</span>
+                            <span>Profile: {university.profileCompleteness}%</span><span className="capitalize">Outreach: {university.outreachStatus}</span><span className="capitalize">Verified: {university.verificationStatus}</span>
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-3 sm:space-y-4 text-sm p-3 sm:p-4 pt-0">

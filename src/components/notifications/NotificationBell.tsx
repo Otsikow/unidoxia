@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getSafeAuthRedirect } from "@/lib/authRedirect";
 
 interface Notification {
   id: string;
@@ -303,7 +304,7 @@ export function NotificationBell({
     }
     if (notification.action_url) {
       setOpen(false);
-      navigate(notification.action_url);
+      navigate(getSafeAuthRedirect(notification.action_url, "/notifications"));
     }
   };
 
