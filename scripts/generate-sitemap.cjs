@@ -2,7 +2,6 @@ const fs = require("fs");
 const path = require("path");
 
 const BASE_URL = "https://unidoxia.com";
-const now = new Date().toISOString();
 
 // Only useful, indexable, public pages. Exclude auth/private/dashboards.
 const entries = [
@@ -64,12 +63,14 @@ const entries = [
 ];
 
 const urls = entries
-  .map((e) => `  <url>
-    <loc>${BASE_URL}${e.path}</loc>
-    <lastmod>${e.lastmod || now}</lastmod>
-    <changefreq>${e.changefreq}</changefreq>
-    <priority>${e.priority}</priority>
-  </url>`)
+  .map((e) => [
+    `  <url>`,
+    `    <loc>${BASE_URL}${e.path}</loc>`,
+    e.lastmod ? `    <lastmod>${e.lastmod}</lastmod>` : null,
+    `    <changefreq>${e.changefreq}</changefreq>`,
+    `    <priority>${e.priority}</priority>`,
+    `  </url>`,
+  ].filter(Boolean).join("\n"))
   .join("\n");
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

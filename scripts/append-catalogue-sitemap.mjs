@@ -21,12 +21,21 @@ async function fetchRows(path) {
   }
 }
 
-const [universities, programmes] = await Promise.all([
-  fetchRows("universities?active=eq.true&listing_status=neq.archived&select=id,slug,updated_at"),
-  fetchRows("programs?active=eq.true&catalogue_status=eq.active&select=id,updated_at"),
-]);
+const universities = await fetchRows("universities?active=eq.true&listing_status=neq.archived&select=id,slug,updated_at");
+// Only courses attached to publicly visible universities belong in the sitemap.
+const universityIds = universities.map((university) => university.id);
+const programmes = universityIds.length
+  ? await fetchRows(`programs?active=eq.true&catalogue_status=eq.active&university_id=in.(${universityIds.join(",")})&select=id,updated_at`)
+  : [];
 const escapeXml = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const entry = (route, lastmod, priority) => `  <url>\n    <loc>https://unidoxia.com${escapeXml(route)}</loc>\n    <lastmod>${escapeXml(lastmod || new Date().toISOString())}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+const entry = (route, lastmod, priority) => [
+  `  <url>`,
+  `    <loc>https://unidoxia.com${escapeXml(route)}</loc>`,
+  lastmod ? `    <lastmod>${escapeXml(lastmod)}</lastmod>` : null,
+  `    <changefreq>weekly</changefreq>`,
+  `    <priority>${priority}</priority>`,
+  `  </url>`,
+].filter(Boolean).join("\n");
 const dynamic = [
   ...universities.map((university) => entry(`/universities/${university.slug || university.id}`, university.updated_at, "0.8")),
   ...programmes.map((programme) => entry(`/courses/${programme.id}`, programme.updated_at, "0.7")),
