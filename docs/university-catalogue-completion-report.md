@@ -10,7 +10,7 @@ Production effect: none — the migration and datasets have not been applied to 
 
 Official catalogue discovery and official-page classification are complete for all 1,222 unique candidates. This is not the same as production completion: unresolved fields and manual-review records remain, the migration is not yet merged/applied, and live search/profile QA has not run.
 
-| University | Discovered / classified | Import-eligible | Manual review | Archived | Verified international fee | Fee unresolved | 2027 intake records | Requirements verified | Outreach |
+| University | Discovered / classified | Import-eligible | Manual review | Archived | Verified international fee | Fee unresolved | Courses with 2027 intake | Requirements verified | Outreach |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | Teesside | 513 / 513 | 473 | 40 | 0 | 354 | 159 | 0 | 251 | Needs Work |
 | Sunderland | 166 / 166 | 163 | 2 | 1 | 0 | 165 | 2 | 164 | Needs Work |
