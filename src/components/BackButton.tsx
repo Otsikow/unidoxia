@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useNavigationHistory } from "@/hooks/useNavigationHistory";
 import { ArrowLeft, Clock, ChevronDown, Trash2 } from "lucide-react";
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 export interface BackButtonProps extends React.ComponentProps<typeof Button> {
@@ -36,6 +36,7 @@ export default function BackButton({
   ...buttonProps
 }: BackButtonProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { history, currentEntry, navigateTo, clearHistory } = useNavigationHistory();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const { t } = useTranslation();
@@ -83,6 +84,16 @@ export default function BackButton({
       }
 
       try {
+        const contextualBack = (location.state as any)?.marketplaceBack;
+        if (contextualBack?.href) {
+          navigate(contextualBack.href, {
+            state: {
+              ...(contextualBack.previousState || {}),
+              restoreScrollY: contextualBack.scrollY,
+            },
+          });
+          return;
+        }
         // Skip the "previous" entry if it's a descendant of the current page
         // (e.g. on /blog, the previous entry is /blog/some-post that we just came from).
         // Following it would just bounce back here — a Back button loop.
@@ -111,7 +122,7 @@ export default function BackButton({
         handleFallbackNavigation();
       }
     },
-    [currentEntry, disabled, handleFallbackNavigation, navigate, navigateTo, onClick, previousEntries],
+    [currentEntry, disabled, handleFallbackNavigation, location.state, navigate, navigateTo, onClick, previousEntries],
   );
 
 
