@@ -14,8 +14,8 @@
   "discovered": 543,
   "classified": 543,
   "metrics": {
-    "verified_requirements_pending": 487,
-    "needs_manual_review": 56
+    "verified_requirements_pending": 539,
+    "not_eligible": 4
   },
   "programmes": [
     {
@@ -310,7 +310,7 @@
     },
     {
       "title": "Advanced Clinical Practitioner Degree Apprenticeship | Advanced Clinical Practitioner MSc 3 years part-time",
-      "qualification": "MSc",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-science-advanced-clinical-practitioner-degree-apprenticeship-dtpuap6/",
@@ -497,9 +497,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/advanced-musculoskeletal-physiotherapy-practice-dtpssk8/",
-      "classification": "needs_manual_review",
+      "classification": "not_eligible",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "not_eligible"
     },
     {
       "title": "Aerospace Satellite Engineering (Extended Degree) BEng (Hons)",
@@ -857,7 +857,7 @@
     },
     {
       "title": "Architect Degree Apprenticeship | MArch (Master of Architecture)",
-      "qualification": "MArch",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-architecture-degree-apprenticeship-dtpara1/",
@@ -1649,7 +1649,7 @@
     },
     {
       "title": "Bar Course 1 Year Full-Time | September Start",
-      "qualification": null,
+      "qualification": "Bar Course",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-course-ft-dtfbtc6/",
@@ -1680,13 +1680,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-course-ft-dtfbtc6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Bar Course 2 Years Part-Time | September Start",
-      "qualification": null,
+      "qualification": "Bar Course",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-course-pt-dtpbtc6/",
@@ -1717,13 +1717,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-course-pt-dtpbtc6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Bar Course LLM 1 Year Full Time | September Start",
-      "qualification": "LLM",
+      "qualification": "Bar Course",
       "level": "Postgraduate",
       "discipline": "Law",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/masters-of-law-bar-course-llm-ft-dtfbte6/",
@@ -1760,7 +1760,7 @@
     },
     {
       "title": "Bar Course LLM 2 Years Part-Time | September Start",
-      "qualification": "LLM",
+      "qualification": "Bar Course",
       "level": "Postgraduate",
       "discipline": "Law",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-law-bar-course-llm-dtpbte6/",
@@ -1797,7 +1797,7 @@
     },
     {
       "title": "Bar Knowledge Course 1 Year Part Time | September Start",
-      "qualification": null,
+      "qualification": "Bar Course",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-knowledge-course-dtpbkt8/",
@@ -1828,13 +1828,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-knowledge-course-dtpbkt8/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Bar Skills Course 1 Year Part Time | September Start",
-      "qualification": null,
+      "qualification": "Bar Course",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-skills-course-dtpbsk6/",
@@ -1865,9 +1865,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bar-skills-course-dtpbsk6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Biochemistry (Extended Degree) BSc (Hons)",
@@ -4872,7 +4872,7 @@
     },
     {
       "title": "Chemistry MChem",
-      "qualification": null,
+      "qualification": "MChem",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/chemistry-uusmch1/",
@@ -4919,9 +4919,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/chemistry-uusmch1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Childhood and Early Years Studies (Extended Degree) BSc (Hons)",
@@ -5346,7 +5346,7 @@
     },
     {
       "title": "Community Specialist Practitioner (Adult Social Care Nursing) Postgraduate Diploma 1 year Full Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-adult-social-care-nursing-postgraduate-diploma-dtfnas6/",
@@ -5377,13 +5377,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-adult-social-care-nursing-postgraduate-diploma-dtfnas6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (Adult Social Care Nursing) Postgraduate Diploma 2 years Part Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-adult-social-care-nursing-postgraduate-diploma-dtpnas6/",
@@ -5414,13 +5414,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-adult-social-care-nursing-postgraduate-diploma-dtpnas6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (Children's Nursing) Postgraduate Diploma 1 year Full Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-community-childrens-nursing-postgraduate-diploma-dtfncg6/",
@@ -5451,13 +5451,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-community-childrens-nursing-postgraduate-diploma-dtfncg6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (Children's Nursing) Postgraduate Diploma 2 years Part Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-community-childrens-nursing-postgraduate-diploma-dtpncg6/",
@@ -5488,13 +5488,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-community-childrens-nursing-postgraduate-diploma-dtpncg6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (District Nursing) Postgraduate Diploma 1 year Full Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-district-nursing-postgraduate-diploma-dtfndr6/",
@@ -5525,13 +5525,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-district-nursing-postgraduate-diploma-dtfndr6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (District Nursing) Postgraduate Diploma 2 years Part Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-district-nursing-postgraduate-diploma-dtpndr6/",
@@ -5562,13 +5562,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-district-nursing-postgraduate-diploma-dtpndr6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (General Practice Nursing) Postgraduate Diploma 1 year Full Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-general-practice-nursing-postgraduate-diploma-dtfngl6/",
@@ -5599,13 +5599,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-general-practice-nursing-postgraduate-diploma-dtfngl6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner (General Practice Nursing) Postgraduate Diploma 2 years Part Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-general-practice-nursing-postgraduate-diploma-dtpngl6/",
@@ -5636,13 +5636,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/community-specialist-practitioner-general-practice-nursing-postgraduate-diploma-dtpngl6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Community Specialist Practitioner Higher Apprenticeship Full time (54 weeks) or Part time (106 weeks)",
-      "qualification": null,
+      "qualification": "Higher Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/higher-apprenticeship-in-community-specialist-practitioner-dtpcpc6/",
@@ -5675,9 +5675,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/higher-apprenticeship-in-community-specialist-practitioner-dtpcpc6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Computer Science (Extended Degree) BSc (Hons)",
@@ -7010,7 +7010,7 @@
     },
     {
       "title": "Data Protection Law and Information Governance Postgraduate Certificate 1 Year by Distance Learning | September Start",
-      "qualification": null,
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Law",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/data-protection-law-and-information-governance-dtpdpg6/",
@@ -7043,9 +7043,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/data-protection-law-and-information-governance-dtpdpg6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Data Science (Extended Degree) BSc (Hons)",
@@ -7725,7 +7725,7 @@
     },
     {
       "title": "Doctor of Business Administration (DBA) 2 Years Full-Time | October Start",
-      "qualification": null,
+      "qualification": "DBA",
       "level": "Research",
       "discipline": "Business and Management",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-business-administration-dtfbad7/",
@@ -7765,13 +7765,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-business-administration-dtfbad7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctor of Business Administration (DBA) Part-Time 3 Years Part-Time | October Start",
-      "qualification": null,
+      "qualification": "DBA",
       "level": "Research",
       "discipline": "Business and Management",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-business-administration-dtpbad7/",
@@ -7811,13 +7811,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-business-administration-dtpbad7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctor of Sport and Exercise Psychology Full Time | October Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Social Sciences",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-and-exercise-psychology-drfsep7/",
@@ -7857,13 +7857,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-and-exercise-psychology-drfsep7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctor of Sport and Exercise Psychology Part Time | October Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Social Sciences",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-and-exercise-psychology-drpsep7/",
@@ -7903,13 +7903,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-and-exercise-psychology-drpsep7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctor of Sport Full Time | October Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-drfdsp7/",
@@ -7949,13 +7949,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-drfdsp7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctor of Sport Part Time | October Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-drpdsp7/",
@@ -7995,13 +7995,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctor-of-sport-drpdsp7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctorate of Design 2 Years Full-Time | January and October Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Arts and Design",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctorate-of-design-drfdde7/",
@@ -8041,13 +8041,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctorate-of-design-drfdde7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Doctorate of Design 3 Years Part-Time | January and October Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Arts and Design",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctorate-of-design-drpdde7/",
@@ -8087,9 +8087,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/doctorate-of-design-drpdde7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Economics (Extended Degree) BSc (Hons)",
@@ -8971,7 +8971,7 @@
     },
     {
       "title": "EMBA - Executive Master of Business Administration",
-      "qualification": null,
+      "qualification": "EMBA",
       "level": "Postgraduate",
       "discipline": "Business and Management",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-business-administration-dtpmbn6/",
@@ -9004,9 +9004,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-business-administration-dtpmbn6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Engineering Management MSc 1 Year, Full-Time | September Start",
@@ -9180,7 +9180,7 @@
     },
     {
       "title": "English Language and Literature (Extended Degree) (BA Hons)",
-      "qualification": null,
+      "qualification": "BA (Hons)",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/ba-hons-english-language-and-literature-extended-degree-uusxst2egl/",
@@ -9227,9 +9227,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/ba-hons-english-language-and-literature-extended-degree-uusxst2egl/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "English Language and Literature BA (Hons)",
@@ -10181,7 +10181,7 @@
     },
     {
       "title": "Eye Movement Desensitisation & Reprocessing (EMDR) Therapy - Postgraduate Certificate",
-      "qualification": null,
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/pg-cert-eye-movement-desensitisation-and-reprocessing-dtpeym6/",
@@ -10212,9 +10212,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/pg-cert-eye-movement-desensitisation-and-reprocessing-dtpeym6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Fashion (Extended Degree) BA (Hons)",
@@ -13846,7 +13846,7 @@
     },
     {
       "title": "Interior Architecture Postgraduate Certificate 1 Semester (January to June) | January Start",
-      "qualification": null,
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/interior-architecture-pg-cert-dtfiah6/",
@@ -13879,9 +13879,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/interior-architecture-pg-cert-dtfiah6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Interior Design (Extended Degree) BA (Hons)",
@@ -15221,7 +15221,7 @@
     },
     {
       "title": "Leading Positive Behavioural Support in Organisations - Advanced Diploma",
-      "qualification": null,
+      "qualification": "Advanced Diploma",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/advanced-diploma-in-leading-positive-behavioural-support-in-organisations-newcastle-duplso4/",
@@ -15259,13 +15259,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/advanced-diploma-in-leading-positive-behavioural-support-in-organisations-newcastle-duplso4/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Leading Positive Behavioural Support in Organisations - Postgraduate Certificate",
-      "qualification": null,
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/pg-cert-leading-positive-behaioural-support-in-organisations-newcastle-dtplso6/",
@@ -15296,9 +15296,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/pg-cert-leading-positive-behaioural-support-in-organisations-newcastle-dtplso6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "MA Communication Design",
@@ -16060,7 +16060,7 @@
     },
     {
       "title": "Master of Public Health 1 Year Full-Time | September Start",
-      "qualification": null,
+      "qualification": "MPH",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-public-health-dtfpuh6/",
@@ -16093,13 +16093,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-public-health-dtfpuh6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Master of Public Health 18 Months Full-Time | January Start",
-      "qualification": null,
+      "qualification": "MPH",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-public-health-dtfpux6/",
@@ -16132,13 +16132,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-public-health-dtfpux6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Master of Public Health 2 Years Part-Time | September Start",
-      "qualification": null,
+      "qualification": "MPH",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/public-health-dtppuh6/",
@@ -16171,9 +16171,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/public-health-dtppuh6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Mathematics (Extended Degree) BSc (Hons)",
@@ -16283,7 +16283,7 @@
     },
     {
       "title": "Mathematics MMath (Hons)",
-      "qualification": null,
+      "qualification": "MMath (Hons)",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/mathematics-mmath-hons-ft-uusmim1/",
@@ -16330,9 +16330,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/mathematics-mmath-hons-ft-uusmim1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Mathematics MSc 1 Year Full-Time | September Start",
@@ -17047,7 +17047,7 @@
     },
     {
       "title": "Mental Health Law and Practice Certificate",
-      "qualification": null,
+      "qualification": "Certificate",
       "level": "Undergraduate",
       "discipline": "Law",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/mental-health-law-and-practice-dl-dudmlh6/",
@@ -17078,9 +17078,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/mental-health-law-and-practice-dl-dudmlh6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Microbiology MSc 2 Years Part-Time | September Start",
@@ -17229,7 +17229,7 @@
     },
     {
       "title": "MPA - Master of Public Administration",
-      "qualification": null,
+      "qualification": "MPA",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-public-administration-dtpmpa6/",
@@ -17262,9 +17262,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/master-of-public-administration-dtpmpa6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "MSc Artificial Intelligence Technology (with Advanced Practice)",
@@ -19494,7 +19494,7 @@
     },
     {
       "title": "Nursing Science, Registered Nurse (Learning Disability) (Extended Degree) BSc Hons Subject to Validation",
-      "qualification": null,
+      "qualification": "BSc (Hons)",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bsc-hons-nursing-science-registered-nurse-learning-disability-extended-degree-uufxsg1/",
@@ -19541,13 +19541,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bsc-hons-nursing-science-registered-nurse-learning-disability-extended-degree-uufxsg1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Nursing Science, Registered Nurse (Mental Health) (Extended Degree) BSc Hons Subject to Validation",
-      "qualification": null,
+      "qualification": "BSc (Hons)",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bsc-hons-nursing-science-registered-nurse-mental-health-extended-degree-uufxsj1/",
@@ -19594,9 +19594,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/bsc-hons-nursing-science-registered-nurse-mental-health-extended-degree-uufxsj1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Nutritional Science MSc 1 Year Full Time | September Start",
@@ -19795,7 +19795,7 @@
     },
     {
       "title": "Occupational Psychology Professional Doctorate 3 Years Part-Time | September Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Social Sciences",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/occupational-psychology-drpocp7/",
@@ -19835,9 +19835,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/occupational-psychology-drpocp7/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Occupational Therapy (Extended Degree) BSc (Hons)",
@@ -20435,7 +20435,7 @@
     },
     {
       "title": "Physics MPhys (Hons)",
-      "qualification": null,
+      "qualification": "MPhys (Hons)",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/physics-mphys-ft-uusics1/",
@@ -20482,9 +20482,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/physics-mphys-ft-uusics1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Physics with Astrophysics (Extended Degree) BSc (Hons)",
@@ -20594,7 +20594,7 @@
     },
     {
       "title": "Physics with Astrophysics MPhys (Hons)",
-      "qualification": null,
+      "qualification": "MPhys (Hons)",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/physics-with-astrophysics-mphys-ft-uusics3asr/",
@@ -20641,9 +20641,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/physics-with-astrophysics-mphys-ft-uusics3asr/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Physiotherapy (Extended Degree) BSc (Hons)",
@@ -20836,7 +20836,7 @@
     },
     {
       "title": "Pre-sessional English Language and Study Skills Upper-Intermediate | 1 Semester | Newcastle",
-      "qualification": null,
+      "qualification": "Pre-sessional English",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/presessional-english-language-and-study-skills-dofegb4/",
@@ -20869,13 +20869,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/presessional-english-language-and-study-skills-dofegb4/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Pre-sessional English Language and Study Skills Upper-Intermediate | 6 weeks | Newcastle",
-      "qualification": null,
+      "qualification": "Pre-sessional English",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/presessional-english-language-and-study-skills-dofega4/",
@@ -20908,9 +20908,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/presessional-english-language-and-study-skills-dofega4/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Preventive Conservation MA 2 Years Part-Time by Distance Learning | September Start",
@@ -21204,7 +21204,7 @@
     },
     {
       "title": "Professional Doctorate in Health, Education and Society 5 Years Part-Time | January Start",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Research",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/professional-doctorate-in-health-social-care-and-education-drphle6/",
@@ -21244,9 +21244,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/professional-doctorate-in-health-social-care-and-education-drphle6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Professional Policing (Extended Degree) BSc (Hons)",
@@ -21356,7 +21356,7 @@
     },
     {
       "title": "Professional Practice in Mental Health Law Postgraduate Certificate 1 Year by Blended Learning | September or February Start",
-      "qualification": null,
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Law",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/professional-practice-in-mental-health-law-dtdpml6/",
@@ -21389,9 +21389,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/professional-practice-in-mental-health-law-dtdpml6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Project Management MSc 1 Year Full-Time | September Start",
@@ -22586,7 +22586,7 @@
     },
     {
       "title": "Solicitor Higher Apprenticeship 6 years part time",
-      "qualification": null,
+      "qualification": "Higher Apprenticeship",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/solicitor-higher-apprenticeship-dupsor1/",
@@ -22619,13 +22619,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/solicitor-higher-apprenticeship-dupsor1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Community Public Health Nursing (Health Visiting) Higher Apprenticeship 1 Year full-time or 2 Years part-time",
-      "qualification": null,
+      "qualification": "Higher Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/ha-in-specialist-community-public-health-nursing-health-visiting-dtfhav6/",
@@ -22658,13 +22658,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/ha-in-specialist-community-public-health-nursing-health-visiting-dtfhav6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Community Public Health Nursing (Health Visiting) Postgraduate Diploma 1 year Full Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-health-visiting-graduate-diploma-dtfhvg6/",
@@ -22695,13 +22695,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-health-visiting-graduate-diploma-dtfhvg6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Community Public Health Nursing (Health Visiting) Postgraduate Diploma 2 years Part Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-health-visiting-postgraduate-diploma-dtphvg6/",
@@ -22732,13 +22732,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-health-visiting-postgraduate-diploma-dtphvg6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Community Public Health Nursing (School Nursing) Higher Apprenticeship 1 Year full-time or 2 Years part-time",
-      "qualification": null,
+      "qualification": "Higher Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/ha-in-specialist-community-public-health-nursing-school-nursing-dtfhan6/",
@@ -22771,13 +22771,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/ha-in-specialist-community-public-health-nursing-school-nursing-dtfhan6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Community Public Health Nursing (School Nursing) Postgraduate Diploma 1 year Full Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-school-nursing-postgraduate-diploma-dtfsng6/",
@@ -22808,13 +22808,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-school-nursing-postgraduate-diploma-dtfsng6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Community Public Health Nursing (School Nursing) Postgraduate Diploma 2 years Part Time | September Start",
-      "qualification": null,
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-school-nursing-postgraduate-diploma-dtpsng6/",
@@ -22845,13 +22845,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/specialist-community-public-health-nursing-school-nursing-postgraduate-diploma-dtpsng6/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Specialist Teaching Assistant Apprenticeship (STAA)",
-      "qualification": null,
+      "qualification": "Specialist Apprenticeship",
       "level": "Undergraduate",
       "discipline": "Education",
       "officialUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/teaching-and-learning-specialist-support-diphe-degree-apprenticeship-duftla1/",
@@ -22895,9 +22895,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.northumbria.ac.uk/study-at-northumbria/courses/teaching-and-learning-specialist-support-diphe-degree-apprenticeship-duftla1/",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Sport and Exercise Nutrition MSc 1 Year Full-Time | September Start",
@@ -24094,9 +24094,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://london.northumbria.ac.uk/courses/",
-      "classification": "needs_manual_review",
+      "classification": "not_eligible",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "not_eligible"
     },
     {
       "title": "Study a Degree in London | Northumbria University London",
@@ -24133,9 +24133,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://london.northumbria.ac.uk/courses/",
-      "classification": "needs_manual_review",
+      "classification": "not_eligible",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "not_eligible"
     },
     {
       "title": "Study a Degree in London | Northumbria University London",
@@ -24172,9 +24172,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://london.northumbria.ac.uk/courses/",
-      "classification": "needs_manual_review",
+      "classification": "not_eligible",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "not_eligible"
     },
     {
       "title": "Surveying (Building Surveying) MSc 2 Years | Distance Learning | Upcoming Intakes: January 2026, April 2026, July 2026",

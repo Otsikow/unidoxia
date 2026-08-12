@@ -72,6 +72,16 @@ CREATE INDEX IF NOT EXISTS programs_public_catalogue_idx
 CREATE INDEX IF NOT EXISTS programs_source_fingerprint_idx
   ON public.programs(university_id, source_fingerprint) WHERE source_fingerprint IS NOT NULL;
 
+-- University users archive programmes through the catalogue workflow. Removing
+-- the legacy hard-delete policy preserves application foreign keys and history.
+DROP POLICY IF EXISTS "Partners can delete programs" ON public.programs;
+DROP POLICY IF EXISTS "Anyone can view all active programs" ON public.programs;
+CREATE POLICY "Anyone can view active catalogue programs" ON public.programs FOR SELECT
+USING (
+  active = true AND catalogue_status = 'active'
+  AND EXISTS (SELECT 1 FROM public.universities u WHERE u.id = programs.university_id AND u.active)
+);
+
 CREATE TABLE IF NOT EXISTS public.program_intakes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   program_id UUID NOT NULL REFERENCES public.programs(id) ON DELETE CASCADE,
@@ -227,10 +237,16 @@ GRANT ALL ON public.program_intakes, public.program_fees, public.catalogue_sourc
 
 DROP POLICY IF EXISTS "public reads active programme intakes" ON public.program_intakes;
 CREATE POLICY "public reads active programme intakes" ON public.program_intakes FOR SELECT
-USING (EXISTS (SELECT 1 FROM public.programs p WHERE p.id = program_id AND p.active AND p.catalogue_status = 'active'));
+USING (EXISTS (
+  SELECT 1 FROM public.programs p JOIN public.universities u ON u.id = p.university_id
+  WHERE p.id = program_id AND p.active AND p.catalogue_status = 'active' AND u.active
+));
 DROP POLICY IF EXISTS "public reads active programme fees" ON public.program_fees;
 CREATE POLICY "public reads active programme fees" ON public.program_fees FOR SELECT
-USING (EXISTS (SELECT 1 FROM public.programs p WHERE p.id = program_id AND p.active AND p.catalogue_status = 'active'));
+USING (EXISTS (
+  SELECT 1 FROM public.programs p JOIN public.universities u ON u.id = p.university_id
+  WHERE p.id = program_id AND p.active AND p.catalogue_status = 'active' AND u.active
+));
 DROP POLICY IF EXISTS "public reads catalogue provenance" ON public.catalogue_sources;
 CREATE POLICY "public reads catalogue provenance" ON public.catalogue_sources FOR SELECT USING (true);
 

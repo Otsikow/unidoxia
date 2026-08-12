@@ -14,9 +14,8 @@
   "discovered": 166,
   "classified": 166,
   "metrics": {
-    "verified_fee_pending": 162,
+    "verified_fee_pending": 164,
     "verified_requirements_pending": 1,
-    "needs_manual_review": 2,
     "archived_or_discontinued": 1
   },
   "programmes": [
@@ -3448,7 +3447,7 @@
     },
     {
       "title": "Certificate of Higher Education in Health and Social Care",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.sunderland.ac.uk/undergraduate/certificate-he-health-social-care",
@@ -3479,13 +3478,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.sunderland.ac.uk/undergraduate/certificate-he-health-social-care",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Certificate of Higher Education in Sport",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.sunderland.ac.uk/undergraduate/certificate-he-sport",
@@ -3518,9 +3517,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.sunderland.ac.uk/undergraduate/certificate-he-sport",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "FdA Counselling",
@@ -5230,7 +5229,9 @@
       ],
       "classification": "archived_or_discontinued",
       "catalogueStatus": "discontinued",
-      "sourceHttpStatus": 404
+      "sourceHttpStatus": 404,
+      "dataStatus": "archived_or_discontinued",
+      "verificationState": "imported_unverified"
     },
     {
       "title": "MSc Data Science with Artificial Intelligence (AI)",

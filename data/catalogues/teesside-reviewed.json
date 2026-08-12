@@ -14,10 +14,9 @@
   "discovered": 513,
   "classified": 513,
   "metrics": {
-    "verified_current": 180,
-    "verified_requirements_pending": 237,
-    "verified_fee_pending": 56,
-    "needs_manual_review": 40
+    "verified_current": 187,
+    "verified_requirements_pending": 262,
+    "verified_fee_pending": 64
   },
   "programmes": [
     {
@@ -549,7 +548,7 @@
     },
     {
       "title": "Advanced Clinical Practice (Advanced Critical Care Practitioner) (Degree Apprenticeship)* MSc",
-      "qualification": "MSc",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/msc_advanced_clinical_practice_(advanced_critical_care_practitioner)_(degree_apprenticeship).cfm",
@@ -623,7 +622,7 @@
     },
     {
       "title": "Advanced Clinical Practice (Advanced Paediatric Practitioner) (Degree Apprenticeship)* MSc",
-      "qualification": "MSc",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/msc_advanced_clinical_practice_(advanced_paediatric_practitioner)_(degree_apprenticeship).cfm",
@@ -697,7 +696,7 @@
     },
     {
       "title": "Advanced Clinical Practice (Advanced Primary Care Practitioner) (Degree Apprenticeship)* MSc",
-      "qualification": "MSc",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/msc_advanced_clinical_practice_(advanced_primary_care_practitioner)_(degree_apprenticeship).cfm",
@@ -771,7 +770,7 @@
     },
     {
       "title": "Advanced Clinical Practice (Degree Apprenticeship) MSc",
-      "qualification": "MSc",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/msc_advanced_clinical_practice_(degree_apprenticeship).cfm",
@@ -808,7 +807,7 @@
     },
     {
       "title": "Advanced Clinical Practice (Midwifery) (Degree Apprenticeship)* MSc",
-      "qualification": "MSc",
+      "qualification": "Degree Apprenticeship",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/msc_advanced_clinical_practice_(midwifery)_(degree_apprenticeship).cfm",
@@ -1176,7 +1175,7 @@
     },
     {
       "title": "AI and Digital Skills for Business Impact (Apprenticeship) Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Business and Management",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/business_management_&_enterprise/cert_he_ai_and_digital_skills_for_business_impact_(apprenticeship).cfm",
@@ -1207,9 +1206,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/business_management_&_enterprise/cert_he_ai_and_digital_skills_for_business_impact_(apprenticeship).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "AI Governance and Leadership (Applied)* MSc",
@@ -2002,7 +2001,7 @@
     },
     {
       "title": "Artificial intelligence (AI) and Automation (Apprenticeship)* Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Computer Science",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/computing_&_cyber_security/cert_he_artificial_intelligence_(ai)_and_automation_(apprenticeship).cfm",
@@ -2033,9 +2032,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/computing_&_cyber_security/cert_he_artificial_intelligence_(ai)_and_automation_(apprenticeship).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Artificial Intelligence (with Advanced Practice) MSc",
@@ -2311,7 +2310,7 @@
     },
     {
       "title": "Asset Manager (Apprenticeship) Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/cert_he_asset_manager_(apprenticeship).cfm",
@@ -2342,13 +2341,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/cert_he_asset_manager_(apprenticeship).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Assistant Practitioner (Health) (Higher Apprenticeship) FdSc",
-      "qualification": "FdSc",
+      "qualification": "Higher Apprenticeship",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/fdsc_assistant_practitioner_(health)_(higher_apprenticeship).cfm",
@@ -3057,7 +3056,7 @@
     },
     {
       "title": "Business Administration (DBA) (Online) Doctorate",
-      "qualification": null,
+      "qualification": "Doctorate",
       "level": "Postgraduate",
       "discipline": "Business and Management",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/business_management_&_enterprise/doctorate_business_administration_(dba)_(online).cfm",
@@ -3090,13 +3089,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/business_management_&_enterprise/doctorate_business_administration_(dba)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Business Administration (DBA) Doctorate",
-      "qualification": null,
+      "qualification": "Doctorate",
       "level": "Postgraduate",
       "discipline": "Business and Management",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/business_management_&_enterprise/doctorate_business_administration_(dba).cfm",
@@ -3129,9 +3128,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/business_management_&_enterprise/doctorate_business_administration_(dba).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Business and Accounting (with Foundation Year) BA (Hons)",
@@ -3917,7 +3916,7 @@
     },
     {
       "title": "Business Skills (Online) Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Business and Management",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/business_management_&_enterprise/cert_he_business_skills_(online).cfm",
@@ -3948,13 +3947,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/business_management_&_enterprise/cert_he_business_skills_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Business Transformation Doctor of Professional Practice",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Postgraduate",
       "discipline": "Business and Management",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/business_management_&_enterprise/doctor_of_professional_practice_business_transformation.cfm",
@@ -3987,9 +3986,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/business_management_&_enterprise/doctor_of_professional_practice_business_transformation.cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Cancer and Molecular Diagnostics (with Advanced Practice) MSc",
@@ -4122,7 +4121,7 @@
     },
     {
       "title": "Chemical and Process Engineering (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_chemical_and_process_engineering_(top-up)_(online).cfm",
@@ -4155,9 +4154,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_chemical_and_process_engineering_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Chemical Engineering (Degree Apprenticeship) BEng (Hons)",
@@ -4695,7 +4694,7 @@
     },
     {
       "title": "Civil Engineering (Top-up) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_civil_engineering_(top-up).cfm",
@@ -4735,9 +4734,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_civil_engineering_(top-up).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Civil Engineering (with Foundation Year) BEng (Hons)",
@@ -4956,7 +4955,7 @@
     },
     {
       "title": "Clinical Psychology (DClinPsy) Doctorate",
-      "qualification": null,
+      "qualification": "Doctorate",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/psychology/doctorate_clinical_psychology_(dclinpsy).cfm",
@@ -4989,9 +4988,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/psychology/doctorate_clinical_psychology_(dclinpsy).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Clinical Research and Evidence-based Medicine PgCert",
@@ -6077,7 +6076,7 @@
     },
     {
       "title": "Corporate Responsibility and Sustainability (Apprenticeship) Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/business_management_&_enterprise/cert_he_corporate_responsibility_and_sustainability_(apprenticeship).cfm",
@@ -6108,9 +6107,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/business_management_&_enterprise/cert_he_corporate_responsibility_and_sustainability_(apprenticeship).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Counselling FdA",
@@ -7139,7 +7138,7 @@
     },
     {
       "title": "Curating and Creative Practice Doctor of Professional Practice",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/art_&_design/doctor_of_professional_practice_curating_and_creative_practice.cfm",
@@ -7179,9 +7178,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/art_&_design/doctor_of_professional_practice_curating_and_creative_practice.cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Curating MA",
@@ -7547,7 +7546,7 @@
     },
     {
       "title": "Dental Nurse Practice Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/cert_he_dental_nurse_practice.cfm",
@@ -7578,9 +7577,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/cert_he_dental_nurse_practice.cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Design (with Advanced Practice) MA",
@@ -8321,7 +8320,7 @@
     },
     {
       "title": "Doctor of Professional Practice",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_professional_practice.cfm",
@@ -8361,13 +8360,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_professional_practice.cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Doctor of Professional Practice (Online)",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_professional_practice_(online).cfm",
@@ -8400,9 +8399,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_professional_practice_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Early Childhood Studies (with Early Years Teacher Status) (Apprenticeship)* BA (Hons)",
@@ -8568,7 +8567,7 @@
     },
     {
       "title": "Early Years Teacher Status Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_early_years_teacher_status.cfm",
@@ -8865,7 +8864,7 @@
     },
     {
       "title": "Education Doctorate",
-      "qualification": null,
+      "qualification": "Professional Doctorate",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/education_&_youth/doctorate_education.cfm",
@@ -8903,9 +8902,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/education_&_youth/doctorate_education.cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Education MA",
@@ -9080,7 +9079,7 @@
     },
     {
       "title": "Electrical and Electronic Engineering (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_electrical_and_electronic_engineering_(top-up)_(online).cfm",
@@ -9113,13 +9112,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_electrical_and_electronic_engineering_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Electrical and Electronic Engineering (Top-up) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_electrical_and_electronic_engineering_(top-up).cfm",
@@ -9159,9 +9158,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_electrical_and_electronic_engineering_(top-up).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Electrical and Electronic Engineering (with Foundation Year) BEng (Hons)",
@@ -9622,7 +9621,7 @@
     },
     {
       "title": "Engineering (Electrical/Electronic Technology) (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(electrical_electronic_technology)_(top-up)_(online).cfm",
@@ -9655,13 +9654,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(electrical_electronic_technology)_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Engineering (Electrical/Electronic Technology) (top-up) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(electrical_electronic_technology)_(top-up).cfm",
@@ -9701,13 +9700,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(electrical_electronic_technology)_(top-up).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Engineering (Mechanical Technology) (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(mechanical_technology)_(top-up)_(online).cfm",
@@ -9740,13 +9739,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(mechanical_technology)_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Engineering (Mechanical Technology) (top-up) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(mechanical_technology)_(top-up).cfm",
@@ -9786,13 +9785,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(mechanical_technology)_(top-up).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Engineering (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(top-up)_(online).cfm",
@@ -9825,9 +9824,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_engineering_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "English and Creative Writing (Online) BA (Hons)",
@@ -11006,7 +11005,7 @@
     },
     {
       "title": "Forensic Radiography PgCert/PgDip/MSc",
-      "qualification": "PgCert",
+      "qualification": "PgDip",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/pgcert_pgdip_msc_forensic_radiography.cfm",
@@ -11221,7 +11220,7 @@
     },
     {
       "title": "Further Education and Skills Certificate in Education (CertEd)",
-      "qualification": null,
+      "qualification": "CertEd",
       "level": "Undergraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/education_&_youth/certificate_in_education_(certed)_further_education_and_skills.cfm",
@@ -11252,13 +11251,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/education_&_youth/certificate_in_education_(certed)_further_education_and_skills.cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Further Education and Skills Professional Graduate Certificate in Education (ProfGradCertEd)",
-      "qualification": null,
+      "qualification": "ProfGradCertEd",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/education_&_youth/professional_graduate_certificate_in_education_(profgradcerted)_further_education_and_skills.cfm",
@@ -11296,9 +11295,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/education_&_youth/professional_graduate_certificate_in_education_(profgradcerted)_further_education_and_skills.cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Games Art (with Foundation Year) BA (Hons)",
@@ -11949,7 +11948,7 @@
     },
     {
       "title": "Health and Social Care Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/cert_he_health_and_social_care.cfm",
@@ -11980,9 +11979,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/cert_he_health_and_social_care.cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Health Psychology MSc",
@@ -12076,7 +12075,7 @@
     },
     {
       "title": "Health Sciences (with Foundation Year) Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/biosciences/cert_he_health_sciences_(with_foundation_year).cfm",
@@ -12107,9 +12106,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/biosciences/cert_he_health_sciences_(with_foundation_year).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Health Sciences BSc (Hons)",
@@ -12157,7 +12156,7 @@
     },
     {
       "title": "Health Sciences Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/biosciences/cert_he_health_sciences.cfm",
@@ -12195,9 +12194,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/biosciences/cert_he_health_sciences.cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Health, Wellbeing and Social Support FdSc",
@@ -13049,7 +13048,7 @@
     },
     {
       "title": "Instrumentation and Control Engineering (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_instrumentation_and_control_engineering_(top-up)_(online).cfm",
@@ -13082,9 +13081,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_instrumentation_and_control_engineering_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Instrumentation and Control Engineering (with Advanced Practice) MSc",
@@ -14734,7 +14733,7 @@
     },
     {
       "title": "Learning and Teaching in International Contexts (Online) PGCEi",
-      "qualification": null,
+      "qualification": "PGCEi",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/education_&_youth/pgcei_learning_and_teaching_in_international_contexts_(online).cfm",
@@ -14765,9 +14764,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/education_&_youth/pgcei_learning_and_teaching_in_international_contexts_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Legal Practice LLM",
@@ -15283,7 +15282,7 @@
     },
     {
       "title": "Master of Public Administration (Applied) MPA",
-      "qualification": null,
+      "qualification": "MPA",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/politics/mpa_master_of_public_administration_(applied).cfm",
@@ -15323,13 +15322,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/politics/mpa_master_of_public_administration_(applied).cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Master of Public Administration MPA",
-      "qualification": null,
+      "qualification": "MPA",
       "level": "Postgraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/politics/mpa_master_of_public_administration.cfm",
@@ -15369,9 +15368,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/politics/mpa_master_of_public_administration.cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Master of Public Health (Applied) MPH",
@@ -15541,7 +15540,7 @@
     },
     {
       "title": "Mechanical Engineering (Top-up) (Online) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_mechanical_engineering_(top-up)_(online).cfm",
@@ -15574,13 +15573,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_mechanical_engineering_(top-up)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Mechanical Engineering (Top-up) BEng Tech (Hons)",
-      "qualification": null,
+      "qualification": "BEng Tech (Hons)",
       "level": "Undergraduate",
       "discipline": "Engineering",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_mechanical_engineering_(top-up).cfm",
@@ -15620,9 +15619,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/beng_tech_(hons)_mechanical_engineering_(top-up).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Mechanical Engineering (with Advanced Practice) MSc",
@@ -16411,7 +16410,7 @@
     },
     {
       "title": "Nursing Associate (Higher Apprenticeship) FdSc",
-      "qualification": "FdSc",
+      "qualification": "Higher Apprenticeship",
       "level": "Undergraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/fdsc_nursing_associate_(higher_apprenticeship).cfm",
@@ -17052,7 +17051,7 @@
     },
     {
       "title": "Occupational Therapy (Degree Apprenticeship) Degree Apprenticeship",
-      "qualification": null,
+      "qualification": "Degree Apprenticeship",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/degree_apprenticeship_occupational_therapy_(degree_apprenticeship).cfm",
@@ -17083,9 +17082,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/degree_apprenticeship_occupational_therapy_(degree_apprenticeship).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Occupational Therapy (Pre-registration) MSc",
@@ -17264,7 +17263,7 @@
     },
     {
       "title": "Optometry MOptom (Hons)",
-      "qualification": null,
+      "qualification": "MOptom (Hons)",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/moptom_(hons)_optometry.cfm",
@@ -17297,9 +17296,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/nursing_&_health/moptom_(hons)_optometry.cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Orthopaedics MCh",
@@ -18251,7 +18250,7 @@
     },
     {
       "title": "Primary Education (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_primary_education_(with_qts).cfm",
@@ -18834,7 +18833,7 @@
     },
     {
       "title": "Psychology (Top-up) Doctorate",
-      "qualification": null,
+      "qualification": "Doctorate",
       "level": "Postgraduate",
       "discipline": "Social Sciences",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/psychology/doctorate_psychology_(top-up).cfm",
@@ -18865,9 +18864,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/psychology/doctorate_psychology_(top-up).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Psychology (with Foundation Year) BSc (Hons)",
@@ -19218,7 +19217,7 @@
     },
     {
       "title": "Public Health (DrPH) (Online) Doctor of",
-      "qualification": null,
+      "qualification": "DrPH",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_public_health_(drph)_(online).cfm",
@@ -19251,13 +19250,13 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_public_health_(drph)_(online).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_fee_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_fee_pending"
     },
     {
       "title": "Public Health (DrPH) Doctor of",
-      "qualification": null,
+      "qualification": "DrPH",
       "level": "Postgraduate",
       "discipline": "Health and Nursing",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_public_health_(drph).cfm",
@@ -19297,9 +19296,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/postgraduate_courses/nursing_&_health/doctor_of_public_health_(drph).cfm",
-      "classification": "needs_manual_review",
-      "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "classification": "verified_current",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_current"
     },
     {
       "title": "Public Services FdA",
@@ -19340,7 +19339,7 @@
     },
     {
       "title": "Quantity Surveying (Apprenticeship) Cert HE",
-      "qualification": null,
+      "qualification": "CertHE",
       "level": "Undergraduate",
       "discipline": "Other",
       "officialUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/cert_he_quantity_surveying_(apprenticeship).cfm",
@@ -19371,9 +19370,9 @@
       "catalogueStatus": "active",
       "sourceHttpStatus": 200,
       "finalSourceUrl": "https://www.tees.ac.uk/undergraduate_courses/engineering_&_construction/cert_he_quantity_surveying_(apprenticeship).cfm",
-      "classification": "needs_manual_review",
+      "classification": "verified_requirements_pending",
       "verificationState": "imported_unverified",
-      "dataStatus": "needs_manual_review"
+      "dataStatus": "verified_requirements_pending"
     },
     {
       "title": "Quantity Surveying (Degree Apprenticeship) BSc (Hons)",
@@ -19488,7 +19487,7 @@
     },
     {
       "title": "Secondary Art and Design (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_art_and_design_(with_qts).cfm",
@@ -19534,7 +19533,7 @@
     },
     {
       "title": "Secondary Biology with Science (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_biology_with_science_(with_qts).cfm",
@@ -19580,7 +19579,7 @@
     },
     {
       "title": "Secondary Chemistry with Science (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_chemistry_with_science_(with_qts).cfm",
@@ -19626,7 +19625,7 @@
     },
     {
       "title": "Secondary Computing (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Computer Science",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_computing_(with_qts).cfm",
@@ -19672,7 +19671,7 @@
     },
     {
       "title": "Secondary Design Technology (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_design_technology_(with_qts).cfm",
@@ -19718,7 +19717,7 @@
     },
     {
       "title": "Secondary English (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_english_(with_qts).cfm",
@@ -19764,7 +19763,7 @@
     },
     {
       "title": "Secondary Geography (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_geography_(with_qts).cfm",
@@ -19810,7 +19809,7 @@
     },
     {
       "title": "Secondary History (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_history_(with_qts).cfm",
@@ -19856,7 +19855,7 @@
     },
     {
       "title": "Secondary Mathematics (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_mathematics_(with_qts).cfm",
@@ -19902,7 +19901,7 @@
     },
     {
       "title": "Secondary Physics with Science (with QTS) Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_physics_with_science_(with_qts).cfm",
@@ -19948,7 +19947,7 @@
     },
     {
       "title": "Secondary Religious Education (with QTS)* Postgraduate Certificate in Education (PGCE)",
-      "qualification": "PGCE",
+      "qualification": "PgCert",
       "level": "Postgraduate",
       "discipline": "Education",
       "officialUrl": "https://www.tees.ac.uk/postgraduate_courses/initial_teacher_training/postgraduate_certificate_in_education_(pgce)_secondary_religious_education_(with_qts).cfm",

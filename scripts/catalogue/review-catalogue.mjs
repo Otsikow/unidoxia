@@ -7,6 +7,7 @@ const args = process.argv.slice(2);
 const universityKey = value("--university") || "all";
 const concurrency = Math.max(1, Math.min(8, Number(value("--concurrency") || 4)));
 const resume = !args.includes("--no-resume");
+const reclassifyOnly = args.includes("--reclassify-only");
 const rawDirectory = value("--input") || "data/catalogue-discovery";
 const outputDirectory = value("--output") || "data/catalogues";
 const CHECKED_AT = new Date().toISOString();
@@ -23,8 +24,29 @@ const truncate = (text, length = 900) => text ? text.slice(0, length).replace(/\
 const durationMonths = (text) => { const months = /([0-9]+)\s*months?/i.exec(text || ""); if (months) return Number(months[1]); const years = /([0-9.]+)\s*years?/i.exec(text || ""); return years ? Math.round(Number(years[1]) * 12) : null; };
 
 function qualification(title = "") {
-  const awards = ["BSc (Hons)", "BA (Hons)", "BEng (Hons)", "MEng (Hons)", "LLB (Hons)", "MPharm (Hons)", "MPharm", "MBChB", "PGCE", "PgCert", "PgDip", "MArch", "MBA", "MPH", "LLM", "MRes", "MSc", "MCh", "PhD", "MA", "HND", "HNC", "FdA", "FdSc"];
-  return awards.find((award) => new RegExp(`(^|[^a-z])${award.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z]|$)`, "i").test(title)) || null;
+  const awards = [
+    ["BEng Tech (Hons)", /\bBEng\s+Tech\s*\(Hons\)/i], ["BSc (Hons)", /\bBSc\s*(?:\(Hons\)|Hons\b)/i],
+    ["BA (Hons)", /\bBA\s*(?:\(Hons\)|Hons\b)/i], ["BEng (Hons)", /\bBEng\s*(?:\(Hons\)|Hons\b)/i],
+    ["MEng (Hons)", /\bMEng\s*(?:\(Hons\)|Hons\b)/i], ["MPharm (Hons)", /\bMPharm\s*(?:\(Hons\)|Hons\b)/i],
+    ["MOptom (Hons)", /\bMOptom\s*(?:\(Hons\)|Hons\b)/i], ["MMath (Hons)", /\bMMath\s*(?:\(Hons\)|Hons\b)/i],
+    ["MPhys (Hons)", /\bMPhys\s*(?:\(Hons\)|Hons\b)/i], ["LLB (Hons)", /\bLLB\s*(?:\(Hons\)|Hons\b)/i],
+    ["Professional Doctorate", /\b(?:Doctor of Professional Practice|Professional Doctorate|Doctorate of Design|Doctor of Sport(?: and Exercise Psychology)?|Education Doctorate)\b/i],
+    ["Doctorate", /\bDoctorate\b/i],
+    ["DBA", /\b(?:DBA|Doctor of Business Administration)\b/i], ["DClinPsy", /\b(?:DClinPsy|Clinical Psychology.*Doctorate)\b/i],
+    ["DrPH", /\bDrPH\b/i], ["CertHE", /\b(?:Cert\s*HE|Certificate of Higher Education)\b/i],
+    ["ProfGradCertEd", /\bProfGradCertEd\b/i], ["CertEd", /\bCertEd\b/i], ["PGCEi", /\bPGCEi\b/i],
+    ["PgDip", /\b(?:PgDip|Postgraduate Diploma)\b/i], ["PgCert", /\b(?:PgCert|Postgraduate Certificate)\b/i],
+    ["Degree Apprenticeship", /\bDegree Apprenticeship\b/i], ["Advanced Diploma", /\bAdvanced Diploma\b/i],
+    ["Higher Apprenticeship", /\bHigher Apprenticeship\b/i], ["Specialist Apprenticeship", /\bSpecialist Teaching Assistant Apprenticeship\b/i],
+    ["Bar Course", /^Bar (?:Course|Knowledge Course|Skills Course)\b/i], ["Pre-sessional English", /^Pre-sessional English Language and Study Skills\b/i],
+    ["Certificate", /\bCertificate$/i],
+    ["MChem", /\bMChem\b/i], ["MPA", /\bMPA\b|Master of Public Administration/i], ["MPH", /\bMPH\b|Master of Public Health/i],
+    ["EMBA", /\bEMBA\b|Executive Master of Business Administration/i], ["MPharm", /\bMPharm\b/i], ["MBChB", /\bMBChB\b/i],
+    ["PGCE", /\bPGCE\b/i], ["MArch", /\bMArch\b/i], ["MBA", /\bMBA\b/i], ["LLM", /\bLLM\b/i],
+    ["MRes", /\bMRes\b/i], ["MSc", /\bMSc\b/i], ["MCh", /\bMCh\b/i], ["PhD", /\bPhD\b/i],
+    ["MA", /\bMA\b/i], ["HND", /\bHND\b/i], ["HNC", /\bHNC\b/i], ["FdA", /\bFdA\b/i], ["FdSc", /\bFdSc\b/i],
+  ];
+  return awards.find(([, pattern]) => pattern.test(title))?.[0] || null;
 }
 
 function subjectFrom(course, html) {
@@ -118,6 +140,8 @@ function extractInternationalFee(html, university) {
 
 function classify(record, httpStatus) {
   if (httpStatus === 404 || httpStatus === 410) return "archived_or_discontinued";
+  if (/^Study a Degree in London \| Northumbria University London$/i.test(record.officialTitle || record.title || "")) return "not_eligible";
+  if (/^Advanced Musculoskeletal Physiotherapy Practice/i.test(record.officialTitle || record.title || "") && /\bmodule\b/i.test(record.overview || "")) return "not_eligible";
   if (!record.officialTitle || !record.qualification) return "needs_manual_review";
   if (!record.requirements) return "verified_requirements_pending";
   if (!record.tuition) return "verified_fee_pending";
@@ -182,6 +206,22 @@ for (const key of targets) {
   const raw = JSON.parse(await readFile(path.join(rawDirectory, `${key}.json`), "utf8"));
   const outputPath = path.join(outputDirectory, `${key}-reviewed.json`);
   const checkpointPath = `${outputPath}.checkpoint`;
+  if (reclassifyOnly) {
+    const existingDataset = JSON.parse(await readFile(outputPath, "utf8"));
+    const programmes = existingDataset.programmes.map((record) => {
+      const next = { ...record, qualification: qualification(record.officialTitle || record.title) };
+      next.classification = classify(next, next.sourceHttpStatus);
+      next.dataStatus = next.classification;
+      next.verificationState = next.classification === "verified_current" ? "official_source_verified" : "imported_unverified";
+      return next;
+    });
+    const metrics = Object.fromEntries([...new Set(programmes.map((item) => item.classification))].map((status) => [status, programmes.filter((item) => item.classification === status).length]));
+    const dataset = { ...existingDataset, classified: programmes.length, metrics, programmes };
+    await writeFile(`${outputPath}.tmp`, `${JSON.stringify(dataset, null, 2)}\n`);
+    await rename(`${outputPath}.tmp`, outputPath);
+    console.log(JSON.stringify({ university: key, discovered: dataset.discovered, classified: dataset.classified, metrics, outputPath }, null, 2));
+    continue;
+  }
   let reviewed = [];
   if (resume) { try { reviewed = JSON.parse(await readFile(checkpointPath, "utf8")).programmes || []; } catch { reviewed = []; } }
   const completed = new Map(reviewed.map((item) => [item.officialUrl, item]));
