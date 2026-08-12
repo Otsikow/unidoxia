@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -29,14 +29,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BackButton from "@/components/BackButton";
-import ProgramRecommendations from "@/components/ai/ProgramRecommendations";
-import SoPGenerator from "@/components/ai/SoPGenerator";
-import InterviewPractice from "@/components/ai/InterviewPractice";
 import { CourseCard, type Course } from "@/components/student/CourseCard";
 import { SAMPLE_PROGRAMS } from "@/data/programs-sample";
 import {
@@ -45,9 +46,8 @@ import {
   DollarSign,
   Award,
   MapPin,
-  Sparkles,
-  FileText,
-  MessageSquare,
+  SlidersHorizontal,
+  ChevronDown,
   X,
   } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -73,8 +73,6 @@ import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
 
 const PROGRAM_LEVELS = ["Undergraduate", "Postgraduate", "PHD"];
 const MAJOR_DESTINATION_COUNTRIES = [...STUDY_DESTINATIONS];
-const TAB_TRIGGER_STYLES =
-  "gap-2 px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base font-semibold whitespace-nowrap min-w-[150px] md:min-w-0 snap-start rounded-xl";
 const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
 const COURSES_PER_PAGE = 100;
@@ -192,7 +190,6 @@ export interface ProgramSearchViewProps {
 }
 
 export function ProgramSearchView({ variant = "page", showBackButton = true }: ProgramSearchViewProps) {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { profile } = useAuth();
   
@@ -207,7 +204,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [results, setResults] = useState<SearchResult[]>([]);
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
   const [disciplines, setDisciplines] = useState<string[]>([]);
-  const [activeTab, setActiveTab] = useState("search");
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
 
@@ -245,16 +242,6 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     variant === "page" ? "text-4xl text-foreground" : "text-3xl",
   );
   const subheadingClass = "text-muted-foreground";
-
-  const translatedTabs = useMemo(
-    () => [
-      { value: "search", icon: Search, label: t("pages.universitySearch.tabs.search") },
-      { value: "recommendations", icon: Sparkles, label: t("pages.universitySearch.tabs.recommendations") },
-      { value: "sop", icon: FileText, label: t("pages.universitySearch.tabs.sop") },
-      { value: "interview", icon: MessageSquare, label: t("pages.universitySearch.tabs.interview") },
-    ],
-    [t],
-  );
 
   // Debounce search term for better performance
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
@@ -461,6 +448,22 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const handleCoursePageChange = (page: number) => {
     if (page < 1 || page > totalCoursePages || page === currentCoursePage) return;
     loadAllCourses(page);
+  };
+
+  const optionalFilterCount = [
+    selectedDiscipline !== "all",
+    Boolean(maxFee),
+    onlyWithScholarships,
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setSelectedCountry("all");
+    setSelectedLevel("all");
+    setSelectedDiscipline("all");
+    setMaxFee("");
+    setOnlyWithScholarships(false);
+    setHasSearched(false);
   };
 
   const handleSearch = useCallback(async () => {
@@ -740,45 +743,27 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
             wrapperClassName="mb-4"
           />
         )}
-        <div className="space-y-2">
-          <h1 className={headingClass}>{t("pages.universitySearch.hero.title")}</h1>
-          <p className={subheadingClass}>{t("pages.universitySearch.hero.subtitle")}</p>
+        <div className="mx-auto max-w-3xl space-y-3 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">
+            Find your study option
+          </p>
+          <h1 className={headingClass}>Search courses</h1>
+          <p className={subheadingClass}>
+            Search by subject, choose a destination and study level, then compare your options.
+          </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="relative overflow-hidden">
-            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-              <TabsList className="inline-flex h-auto gap-2 p-2 rounded-2xl bg-card/90 border border-border shadow-lg min-w-max md:w-full md:justify-center">
-                {translatedTabs.map((tab) => (
-                  <TabsTrigger 
-                    key={tab.value} 
-                    value={tab.value} 
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold whitespace-nowrap rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                  >
-                    <tab.icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="hidden sm:inline">{tab.label}</span>
-                    <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
-          </div>
-
-          {/* SEARCH TAB */}
-          <TabsContent value="search" className="space-y-6">
-            <Card>
-              <CardHeader>
-                  <CardTitle>{t("pages.universitySearch.filters.title")}</CardTitle>
-                  <CardDescription>{t("pages.universitySearch.filters.subtitle")}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-6">
+            <Card className="mx-auto max-w-5xl border-border/70 shadow-lg">
+              <CardContent className="space-y-4 p-4 sm:p-6">
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
                   <div>
-                      <Label>{t("pages.universitySearch.filters.fields.courseName.label")}</Label>
+                      <Label htmlFor="course-search">What do you want to study?</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                          placeholder={t("pages.universitySearch.filters.fields.courseName.placeholder")}
+                        id="course-search"
+                        placeholder="Course or university"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className={cn("pl-9", searchTerm && "pr-9")}
@@ -798,7 +783,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   </div>
 
                   <div>
-                      <Label>{t("pages.universitySearch.filters.fields.country.label")}</Label>
+                      <Label>Where?</Label>
                     <Select value={selectedCountry} onValueChange={setSelectedCountry}>
                         <SelectTrigger><SelectValue placeholder={t("pages.universitySearch.filters.fields.country.placeholder")} /></SelectTrigger>
                       <SelectContent>
@@ -811,7 +796,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   </div>
 
                   <div>
-                      <Label>{t("pages.universitySearch.filters.fields.programLevel.label")}</Label>
+                      <Label>Study level</Label>
                     <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                         <SelectTrigger><SelectValue placeholder={t("pages.universitySearch.filters.fields.programLevel.placeholder")} /></SelectTrigger>
                       <SelectContent>
@@ -823,43 +808,61 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     </Select>
                   </div>
 
-                  <div>
-                      <Label>{t("pages.universitySearch.filters.fields.discipline.label")}</Label>
-                    <Select value={selectedDiscipline} onValueChange={setSelectedDiscipline}>
-                        <SelectTrigger><SelectValue placeholder={t("pages.universitySearch.filters.fields.discipline.placeholder")} /></SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="all">{t("pages.universitySearch.filters.fields.discipline.all")}</SelectItem>
-                        {disciplines.map((d) => (
-                          <SelectItem key={d} value={d}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                      <Label>{t("pages.universitySearch.filters.fields.maxFee.label")}</Label>
-                    <Input
-                      type="number"
-                        placeholder={t("pages.universitySearch.filters.fields.maxFee.placeholder")}
-                      value={maxFee}
-                      onChange={(e) => setMaxFee(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="flex items-end">
-                    <Checkbox
-                      id="scholarships"
-                      checked={onlyWithScholarships}
-                      onCheckedChange={(checked) => setOnlyWithScholarships(!!checked)}
-                    />
-                      <Label htmlFor="scholarships" className="ml-2">
-                        {t("pages.universitySearch.filters.fields.scholarshipsOnly.label")}
-                      </Label>
-                  </div>
+                  <Button onClick={handleSearch} size="lg" className="w-full lg:w-auto">
+                    <Search className="mr-2 h-4 w-4" />Search
+                  </Button>
                 </div>
-                <Button onClick={handleSearch} className="w-full md:w-auto">
-                    <Search className="mr-2 h-4 w-4" />{t("pages.universitySearch.actions.search")}
-                </Button>
+
+                <Collapsible open={showMoreFilters} onOpenChange={setShowMoreFilters}>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-2 px-0 hover:bg-transparent">
+                        <SlidersHorizontal className="h-4 w-4" />
+                        More filters
+                        {optionalFilterCount > 0 && (
+                          <Badge variant="secondary" className="ml-1">{optionalFilterCount}</Badge>
+                        )}
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", showMoreFilters && "rotate-180")} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    {(hasSearched || optionalFilterCount > 0 || selectedCountry !== "all" || selectedLevel !== "all") && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
+                    )}
+                  </div>
+                  <CollapsibleContent className="pt-4">
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <div>
+                        <Label>Subject</Label>
+                        <Select value={selectedDiscipline} onValueChange={setSelectedDiscipline}>
+                          <SelectTrigger><SelectValue placeholder="All subjects" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All subjects</SelectItem>
+                            {disciplines.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="maximum-fee">Maximum annual tuition</Label>
+                        <Input
+                          id="maximum-fee"
+                          type="number"
+                          inputMode="numeric"
+                          placeholder="Any amount"
+                          value={maxFee}
+                          onChange={(e) => setMaxFee(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex items-center pt-6">
+                        <Checkbox
+                          id="scholarships"
+                          checked={onlyWithScholarships}
+                          onCheckedChange={(checked) => setOnlyWithScholarships(!!checked)}
+                        />
+                        <Label htmlFor="scholarships" className="ml-2">Scholarships available</Label>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </CardContent>
             </Card>
 
@@ -1169,23 +1172,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                 ))
               )}
             </div>
-          </TabsContent>
-
-          {/* AI RECOMMENDATIONS TAB */}
-          <TabsContent value="recommendations">
-            <ProgramRecommendations />
-          </TabsContent>
-
-          {/* SOP GENERATOR TAB */}
-          <TabsContent value="sop">
-            <SoPGenerator />
-          </TabsContent>
-
-          {/* INTERVIEW PRACTICE TAB */}
-          <TabsContent value="interview">
-            <InterviewPractice />
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </div>
   );
