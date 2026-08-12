@@ -339,7 +339,7 @@ export default function UniversityProfile() {
                     onClick={() => setActiveTab("programs")}
                   >
                     <GraduationCap className="h-3.5 w-3.5 mr-1.5" />
-                    {programs.length} Courses
+                    {programTotal} Courses
                   </Badge>
                   <Badge className="bg-white/20 text-white border-white/30">
                     {university.verification_status === "admin_verified" ? "Verified profile" : "Listed by UniDoxia"}
@@ -379,7 +379,7 @@ export default function UniversityProfile() {
             </TabsTrigger>
             <TabsTrigger value="programs">
               <GraduationCap className="h-4 w-4 mr-2" />
-              Programs ({programs.length})
+              Programs ({programTotal})
             </TabsTrigger>
             <TabsTrigger value="requirements">
               <FileText className="h-4 w-4 mr-2" />
@@ -444,7 +444,7 @@ export default function UniversityProfile() {
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center gap-3">
-                      <h3 className="text-3xl font-bold text-foreground">{programs.length}</h3>
+                      <h3 className="text-3xl font-bold text-foreground">{programTotal}</h3>
                       <Badge variant="secondary" className="text-sm">
                         Active
                       </Badge>
