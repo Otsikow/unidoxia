@@ -3398,7 +3398,9 @@ export type Database = {
       universities: {
         Row: {
           active: boolean | null
+          academic_year: string | null
           city: string | null
+          claimed_at: string | null
           commission_terms_json: Json | null
           country: string
           created_at: string | null
@@ -3412,20 +3414,31 @@ export type Database = {
           featured_listing_status: string | null
           featured_priority: number | null
           featured_summary: string | null
+          fee_year: string | null
           id: string
           logo_url: string | null
           name: string
+          last_source_checked_at: string | null
+          listing_status: string
+          outreach_status: string
+          partnership_tier: string
           partnership_status: string | null
           ranking: Json | null
           submission_config_json: Json | null
           submission_mode: string | null
+          slug: string
+          source_type: string
+          source_url: string | null
           tenant_id: string
           updated_at: string | null
+          verification_status: string
           website: string | null
         }
         Insert: {
           active?: boolean | null
+          academic_year?: string | null
           city?: string | null
+          claimed_at?: string | null
           commission_terms_json?: Json | null
           country: string
           created_at?: string | null
@@ -3439,20 +3452,31 @@ export type Database = {
           featured_listing_status?: string | null
           featured_priority?: number | null
           featured_summary?: string | null
+          fee_year?: string | null
           id?: string
           logo_url?: string | null
           name: string
+          last_source_checked_at?: string | null
+          listing_status?: string
+          outreach_status?: string
+          partnership_tier?: string
           partnership_status?: string | null
           ranking?: Json | null
           submission_config_json?: Json | null
           submission_mode?: string | null
+          slug?: string
+          source_type?: string
+          source_url?: string | null
           tenant_id: string
           updated_at?: string | null
+          verification_status?: string
           website?: string | null
         }
         Update: {
           active?: boolean | null
+          academic_year?: string | null
           city?: string | null
+          claimed_at?: string | null
           commission_terms_json?: Json | null
           country?: string
           created_at?: string | null
@@ -3466,15 +3490,24 @@ export type Database = {
           featured_listing_status?: string | null
           featured_priority?: number | null
           featured_summary?: string | null
+          fee_year?: string | null
           id?: string
           logo_url?: string | null
           name?: string
+          last_source_checked_at?: string | null
+          listing_status?: string
+          outreach_status?: string
+          partnership_tier?: string
           partnership_status?: string | null
           ranking?: Json | null
           submission_config_json?: Json | null
           submission_mode?: string | null
+          slug?: string
+          source_type?: string
+          source_url?: string | null
           tenant_id?: string
           updated_at?: string | null
+          verification_status?: string
           website?: string | null
         }
         Relationships: [

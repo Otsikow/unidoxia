@@ -105,6 +105,7 @@ const menuItems = {
     { title: "Dashboard", url: "/admin/overview", icon: Home },
     { title: "Users", url: "/admin/users", icon: Users },
     { title: "Universities", url: "/admin/universities", icon: Building2 },
+    { title: "University Claims", url: "/admin/university-claims", icon: GraduationCap },
     {
       title: "Featured Universities",
       url: "/admin/featured-universities",

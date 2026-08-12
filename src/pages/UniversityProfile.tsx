@@ -39,6 +39,7 @@ import {
   emptyUniversityProfileDetails,
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
+import { SEO } from "@/components/SEO";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -66,6 +67,11 @@ interface University {
   ranking: any;
   featured_image_url: string | null;
   submission_config_json: unknown;
+  slug?: string;
+  listing_status?: string;
+  verification_status?: string;
+  partnership_tier?: string;
+  last_source_checked_at?: string | null;
 }
 
 interface Program {
@@ -178,11 +184,11 @@ export default function UniversityProfile() {
     setLoading(true);
     try {
       // Load university - fetch by ID to get the specific university
-      const { data: universityData, error: uniError } = await supabase
-        .from("universities")
-        .select("*")
-        .eq("id", universityId)
-        .single();
+      const baseQuery = (supabase.from("universities") as any).select("*");
+      const lookup = universityId.includes("-") && universityId.length !== 36
+        ? baseQuery.eq("slug", universityId)
+        : baseQuery.eq("id", universityId);
+      const { data: universityData, error: uniError } = await lookup.single();
 
       if (uniError) throw uniError;
       setUniversity(universityData);
@@ -280,6 +286,7 @@ export default function UniversityProfile() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={`${university.name} - Courses and International Study | UniDoxia`} description={university.description || `Explore courses and international study information for ${university.name}.`} />
       {/* Hero Section */}
       <div className="relative min-h-[22rem] md:h-96 overflow-hidden">
         <img src={heroImage} alt={university.name} className="w-full h-full object-cover" />
@@ -319,6 +326,10 @@ export default function UniversityProfile() {
                     <GraduationCap className="h-3.5 w-3.5 mr-1.5" />
                     {programs.length} Courses
                   </Badge>
+                  <Badge className="bg-white/20 text-white border-white/30">
+                    {university.verification_status === "admin_verified" ? "Verified profile" : "Listed by UniDoxia"}
+                  </Badge>
+                  {university.partnership_tier === "partner" && <Badge className="bg-emerald-600 text-white">UniDoxia Partner</Badge>}
                   {university.website && (
                     <Button
                       variant="outline"
@@ -330,6 +341,11 @@ export default function UniversityProfile() {
                         <Globe className="h-4 w-4 mr-2" />
                         Visit Website
                       </a>
+                    </Button>
+                  )}
+                  {university.listing_status !== "claimed" && (
+                    <Button size="sm" variant="secondary" asChild>
+                      <Link to={`/universities/${university.slug || university.id}/claim`}>Claim this university</Link>
                     </Button>
                   )}
                 </div>
@@ -379,6 +395,15 @@ export default function UniversityProfile() {
               </CardContent>
             </Card>
 
+            <div className="grid gap-4 md:grid-cols-2">
+              {profileDetails.internationalStudents && <Card><CardHeader><CardTitle className="text-lg">International students</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{profileDetails.internationalStudents}</CardContent></Card>}
+              {profileDetails.tuition && <Card><CardHeader><CardTitle className="text-lg">Tuition information</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{profileDetails.tuition}</CardContent></Card>}
+              {profileDetails.accommodation && <Card><CardHeader><CardTitle className="text-lg">Accommodation</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{profileDetails.accommodation}</CardContent></Card>}
+              {profileDetails.studyLevels.length > 0 && <Card><CardHeader><CardTitle className="text-lg">Study levels</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2">{profileDetails.studyLevels.map((level) => <Badge key={level} variant="secondary">{level}</Badge>)}</CardContent></Card>}
+            </div>
+
+            {profileDetails.sources.length > 0 && <Card><CardHeader><CardTitle className="text-lg">Information sources</CardTitle><CardDescription>Official pages used to prepare this listing.</CardDescription></CardHeader><CardContent className="space-y-2">{profileDetails.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary hover:underline">{source.label || source.url}{source.checkedAt ? ` · checked ${source.checkedAt}` : ""}</a>)}</CardContent></Card>}
+
             {university.ranking && (
               <Card>
                 <CardHeader>
@@ -412,9 +437,7 @@ export default function UniversityProfile() {
                     <p className="text-xl font-semibold text-foreground">
                       Courses Offered by {university.name}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      Browse all academic courses exclusive to this university. Each course has been verified and is uniquely offered by {university.name}.
-                    </p>
+                    <p className="text-sm text-muted-foreground">Browse the currently listed courses for {university.name}. Confirm current details on the official university website before applying.</p>
                   </div>
                   <div className="flex items-center gap-2 text-primary font-medium group-hover:translate-x-1 transition-transform">
                     <span>View All Courses</span>
@@ -651,7 +674,7 @@ export default function UniversityProfile() {
                         <div className="flex items-center gap-2 text-sm">
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
                           <span>
-                            {program.tuition_amount.toLocaleString()} {program.tuition_currency}/year
+                            {program.tuition_amount > 0 ? `${program.tuition_amount.toLocaleString()} ${program.tuition_currency}/year` : "Check official tuition fee"}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
@@ -777,34 +800,9 @@ export default function UniversityProfile() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <h3 className="font-semibold">Common Requirements:</h3>
-                  <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span>Valid passport</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span>Academic transcripts and certificates</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span>English language proficiency test (IELTS/TOEFL)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span>Statement of Purpose (SOP)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span>Letters of Recommendation (LORs)</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span>Resume/CV</span>
-                    </li>
-                  </ul>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div><h3 className="font-semibold">Academic entry</h3><p className="mt-2 text-sm text-muted-foreground">{profileDetails.entryRequirements || "Check the official course page for current academic requirements."}</p></div>
+                  <div><h3 className="font-semibold">English language</h3><p className="mt-2 text-sm text-muted-foreground">{profileDetails.englishRequirements || "Check the official course page for current English-language requirements."}</p></div>
                 </div>
               </CardContent>
             </Card>
