@@ -262,7 +262,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           searchParams.get("country") ||
           searchParams.get("level") ||
           searchParams.get("discipline") ||
-          searchParams.get("maxFee")
+          searchParams.get("maxFee") ||
+          searchParams.get("intake")
       ),
     [searchParams],
   );
