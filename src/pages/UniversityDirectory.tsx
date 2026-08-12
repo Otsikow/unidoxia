@@ -36,6 +36,7 @@ import defaultUniversityImg from "@/assets/university-default.jpg";
 // Each university is a unique entity with isolated data - no cross-tenant sharing
 interface UniversityFromDB {
   id: string;
+  slug?: string | null;
   tenant_id: string | null; // Each university has its own tenant for data isolation
   name: string;
   city: string | null;
@@ -95,10 +96,10 @@ export default function UniversityDirectory() {
       setLoading(true);
       try {
         // Fetch universities - each university is a unique tenant with isolated data
-        const { data: universitiesData, error: uniError } = await supabase
+        let { data: universitiesData, error: uniError } = await supabase
           .from("universities")
           .select(
-            "id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id",
+            "id, slug, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id",
           )
           // Some seeded universities were missing the active flag. Treat null as visible
           // so that partner universities (Albert A University, John Kols University,
@@ -106,6 +107,18 @@ export default function UniversityDirectory() {
           // and agents.
           .or("active.eq.true,active.is.null")
           .order("name");
+
+        // Keep the existing directory available during a staged rollout before
+        // the additive slug migration reaches the connected database.
+        if (uniError?.code === "42703" || uniError?.message?.includes("slug")) {
+          const fallback = await supabase
+            .from("universities")
+            .select("id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id")
+            .or("active.eq.true,active.is.null")
+            .order("name");
+          universitiesData = fallback.data as typeof universitiesData;
+          uniError = fallback.error;
+        }
 
         if (uniError) throw uniError;
 
@@ -300,7 +313,7 @@ export default function UniversityDirectory() {
 
         {/* Compact Programs Card */}
         <Link
-          to={`${directoryBasePath}/${university.id}?tab=programs`}
+          to={`${directoryBasePath}/${university.slug || university.id}?tab=programs`}
           className="block rounded-lg border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-2.5 transition-all hover:border-primary/40 hover:shadow-md hover:from-primary/10 hover:to-primary/15 group"
         >
           <div className="flex items-center justify-between">
@@ -359,7 +372,7 @@ export default function UniversityDirectory() {
 
         <div className="flex flex-wrap items-center justify-end gap-1.5 mt-auto">
           <Button variant="outline" size="sm" className="h-8 text-xs px-3" asChild>
-            <Link to={`${directoryBasePath}/${university.id}`}>
+            <Link to={`${directoryBasePath}/${university.slug || university.id}`}>
               Explore
             </Link>
           </Button>

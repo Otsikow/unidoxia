@@ -200,6 +200,8 @@ const UniversityDirectory = lazyWithErrorHandling(() =>
 const UniversityProfile = lazyWithErrorHandling(() =>
   import("./pages/UniversityProfile")
 );
+const UniversityClaim = lazyWithErrorHandling(() => import("./pages/UniversityClaim"));
+const UniversityClaimVerify = lazyWithErrorHandling(() => import("./pages/UniversityClaimVerify"));
 const IntakeForm = lazyWithErrorHandling(() => import("./pages/IntakeForm"));
 const VisaCalculator = lazyWithErrorHandling(() => import("./pages/VisaCalculator"));
 const Scholarships = lazyWithErrorHandling(() => import("./pages/Scholarships"));
@@ -213,6 +215,7 @@ const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const About = lazyWithErrorHandling(() => import("./pages/About"));
 const EditorialPolicy = lazyWithErrorHandling(() => import("./pages/EditorialPolicy"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
+const AdminUniversityClaims = lazyWithErrorHandling(() => import("./pages/admin/AdminUniversityClaims"));
 
 
 /* ==========================================================================
@@ -616,6 +619,8 @@ const App = () => {
                         {/* University Search */}
                         <Route path="/universities" element={<PublicLayout><UniversityDirectory /></PublicLayout>} />
                         <Route path="/universities/:id" element={<PublicLayout><UniversityProfile /></PublicLayout>} />
+                        <Route path="/universities/:id/claim" element={<PublicLayout><UniversityClaim /></PublicLayout>} />
+                        <Route path="/university-claims/verify" element={<PublicLayout><UniversityClaimVerify /></PublicLayout>} />
 
                         {/* Blog */}
                         <Route path="/blog" element={<PublicLayout><Blog /></PublicLayout>} />
@@ -730,6 +735,7 @@ const App = () => {
                           <Route path="previews" element={<BuildPreviews />} />
                           <Route path="featured-universities" element={<FeaturedUniversitiesAdmin />} />
                           <Route path="universities" element={<AdminUniversitiesPage />} />
+                          <Route path="university-claims" element={<AdminUniversityClaims />} />
                           <Route path="students" element={<AdminStudentsPage />} />
                           <Route path="students/:studentId" element={<AdminStudentDetailPage />} />
                           <Route path="leads" element={<AdminLeadsPage />} />

@@ -25,6 +25,14 @@ export interface UniversityMediaSettings {
 export interface UniversityProfileDetails {
   tagline?: string | null;
   highlights: string[];
+  internationalStudents?: string | null;
+  tuition?: string | null;
+  scholarships?: string | null;
+  entryRequirements?: string | null;
+  englishRequirements?: string | null;
+  accommodation?: string | null;
+  studyLevels: string[];
+  sources: Array<{ url: string; label?: string | null; checkedAt?: string | null }>;
   contacts: {
     primary?: UniversityContactDetails | null;
   };
@@ -35,6 +43,8 @@ export interface UniversityProfileDetails {
 export const emptyUniversityProfileDetails: UniversityProfileDetails = {
   tagline: null,
   highlights: [],
+  studyLevels: [],
+  sources: [],
   contacts: {},
   social: {},
   media: {},
@@ -88,6 +98,16 @@ const sanitizeMedia = (value: unknown): UniversityMediaSettings => {
   };
 };
 
+const sanitizeSources = (value: unknown): UniversityProfileDetails["sources"] => {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry) => {
+    if (!isObject(entry)) return [];
+    const url = sanitizeString(entry.url);
+    if (!url) return [];
+    return [{ url, label: sanitizeString(entry.label), checkedAt: sanitizeString(entry.checkedAt) }];
+  });
+};
+
 export const parseUniversityProfileDetails = (
   rawValue: unknown,
 ): UniversityProfileDetails => {
@@ -111,6 +131,14 @@ export const parseUniversityProfileDetails = (
   const parsed: UniversityProfileDetails = {
     tagline: sanitizeString(source.tagline),
     highlights: sanitizeStringArray(source.highlights),
+    internationalStudents: sanitizeString(source.internationalStudents),
+    tuition: sanitizeString(source.tuition),
+    scholarships: sanitizeString(source.scholarships),
+    entryRequirements: sanitizeString(source.entryRequirements),
+    englishRequirements: sanitizeString(source.englishRequirements),
+    accommodation: sanitizeString(source.accommodation),
+    studyLevels: sanitizeStringArray(source.studyLevels),
+    sources: sanitizeSources(source.sources),
     contacts: {
       primary: sanitizeContact(contactsRaw.primary),
     },

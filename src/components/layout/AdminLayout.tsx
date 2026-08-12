@@ -127,6 +127,14 @@ const NAV_GROUPS: NavGroup[] = [
         icon: BookOpen,
       },
       {
+        to: "/admin/university-claims",
+        labelKey: "admin.layout.navigation.universityClaims.label",
+        descriptionKey: "admin.layout.navigation.universityClaims.description",
+        labelDefault: "Claim review",
+        descriptionDefault: "Verify profile ownership",
+        icon: ShieldCheck,
+      },
+      {
         to: "/admin/featured-universities",
         labelKey: "admin.layout.navigation.featuredUniversities.label",
         descriptionKey: "admin.layout.navigation.featuredUniversities.description",
