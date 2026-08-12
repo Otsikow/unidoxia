@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AlertCircle, CalendarDays, Clock, ExternalLink, GraduationCap, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingState } from "@/components/LoadingState";
+import { logAnalyticsEvent } from "@/lib/analytics";
 
 const monthName = (month: number) => new Intl.DateTimeFormat("en-GB", { month: "long" }).format(new Date(2000, month - 1, 1));
 
@@ -16,12 +17,19 @@ export default function CourseDetail() {
   const navigate = useNavigate();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const trackedCourseId = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase.from("programs").select(`*, universities!inner(id,name,slug,city,country,logo_url,active), program_intakes(*), program_fees(*)`).eq("id", id).eq("active", true).eq("catalogue_status", "active").maybeSingle();
-      if (!cancelled) { setCourse(data); setLoading(false); }
+      if (!cancelled) {
+        setCourse(data); setLoading(false);
+        if (data?.id && trackedCourseId.current !== data.id) {
+          trackedCourseId.current = data.id;
+          void logAnalyticsEvent("course_view", { source: "course_detail", properties: { programme_id: data.id, university_id: data.university_id } });
+        }
+      }
     })();
     return () => { cancelled = true; };
   }, [id]);

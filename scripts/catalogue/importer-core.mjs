@@ -18,10 +18,10 @@ const normaliseUrl = (value) => {
 export function normaliseProgramme(input) {
   const programme = {
     ...input,
-    name: clean(input.name),
+    name: clean(input.name ?? input.title),
     qualification: clean(input.qualification) || null,
     level: clean(input.level),
-    discipline: clean(input.discipline) || "Other",
+    discipline: clean(input.discipline ?? input.subject) || "Other",
     officialUrl: normaliseUrl(input.officialUrl),
     courseCode: clean(input.courseCode) || null,
     campus: clean(input.campus) || null,
@@ -124,6 +124,16 @@ export function planImport(dataset, existing = []) {
       items.push({ action: "error", sourceKey: programmeIdentity(result.programme), ...result });
       continue;
     }
+    if (["needs_manual_review", "source_unavailable", "not_eligible", "duplicate"].includes(input.classification)) {
+      items.push({ action: "skip", sourceKey: programmeIdentity(result.programme), ...result,
+        warnings: [...result.warnings, `classification ${input.classification} is not production-importable`] });
+      continue;
+    }
+    if (input.classification === "archived_or_discontinued") {
+      items.push({ action: "skip", sourceKey: programmeIdentity(result.programme), ...result,
+        warnings: [...result.warnings, "historical/discontinued discovery record is retained in the reviewed dataset only"] });
+      continue;
+    }
     const fingerprint = sourceFingerprint(result.programme);
     const current = existingByUrl.get(result.programme.officialUrl);
     if (!current) {
@@ -144,12 +154,23 @@ export function planImport(dataset, existing = []) {
     }
   }
 
+  const coverage = {
+    discovered: dataset.discovered ?? dataset.programmes.length,
+    classified: dataset.classified ?? dataset.programmes.filter((item) => item.classification).length,
+    productionReady: items.filter((item) => ["create", "update", "unchanged"].includes(item.action)).length,
+    feeVerified: dataset.programmes.filter((item) => item.tuition?.amount != null).length,
+    feeUnresolved: dataset.programmes.filter((item) => item.tuition?.amount == null && !["archived_or_discontinued", "not_eligible"].includes(item.classification)).length,
+    intakeVerified: dataset.programmes.filter((item) => item.intakes?.length).length,
+    requirementsVerified: dataset.programmes.filter((item) => item.requirements).length,
+    sourceUnavailable: dataset.programmes.filter((item) => item.classification === "source_unavailable").length,
+    manualReview: dataset.programmes.filter((item) => item.classification === "needs_manual_review").length,
+  };
   return {
     university: dataset.university,
     source: dataset.source,
     generatedAt: new Date().toISOString(),
     items,
     duplicates,
-    summary: items.reduce((counts, item) => ({ ...counts, [item.action]: (counts[item.action] ?? 0) + 1 }), {}),
+    summary: items.reduce((counts, item) => ({ ...counts, [item.action]: (counts[item.action] ?? 0) + 1 }), {}), coverage,
   };
 }

@@ -6,14 +6,24 @@ import { planImport } from "./importer-core.mjs";
 const args = new Set(process.argv.slice(2));
 const datasetPath = process.argv.slice(2).find((value) => !value.startsWith("--"));
 const apply = args.has("--apply");
+const argumentValue = (flag) => {
+  const index = process.argv.indexOf(flag);
+  return index >= 0 ? process.argv[index + 1] : null;
+};
+const environment = argumentValue("--environment");
 if (!datasetPath) {
-  console.error("Usage: node scripts/catalogue/import-catalogue.mjs <dataset.json> [--apply]");
+  console.error("Usage: node scripts/catalogue/import-catalogue.mjs <dataset.json> [--environment staging|production] [--apply] [--confirm-production]");
   process.exit(2);
 }
 
 const dataset = JSON.parse(await readFile(datasetPath, "utf8"));
 const endpoint = process.env.SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if ((endpoint || serviceKey) && !environment) throw new Error("Remote dry-runs and applies require --environment staging|production");
+if (environment && !["staging", "production"].includes(environment)) throw new Error("--environment must be staging or production");
+if (apply && environment === "production" && !args.has("--confirm-production")) {
+  throw new Error("Production apply requires --confirm-production after reviewing a production dry-run");
+}
 
 async function api(path, options = {}) {
   const response = await fetch(`${endpoint}/rest/v1/${path}`, {
@@ -37,8 +47,8 @@ if (endpoint && serviceKey) {
 }
 
 const plan = planImport(dataset, existing);
-console.log(JSON.stringify({ mode: apply ? "apply" : "dry_run", university: dataset.university.slug,
-  summary: plan.summary, duplicates: plan.duplicates.length }, null, 2));
+console.log(JSON.stringify({ mode: apply ? "apply" : "dry_run", environment: environment || "local_plan", university: dataset.university.slug,
+  summary: plan.summary, coverage: plan.coverage, duplicates: plan.duplicates.length }, null, 2));
 
 if (!apply) {
   if (plan.items.some((item) => item.action === "error")) process.exitCode = 1;
@@ -64,7 +74,7 @@ for (const item of plan.items) {
         official_url: p.officialUrl, academic_year: dataset.academicYear ?? null, fee_year: p.tuition?.feeYear ?? null,
         fee_basis: p.tuition?.feeBasis ?? null, international_fee_verified: Boolean(p.tuition?.amount != null),
         catalogue_status: p.catalogueStatus, verification_state: "official_source_verified",
-        data_status: p.tuition?.amount == null ? "needs_fee_review" : "current",
+        data_status: p.classification || (p.tuition?.amount == null ? "verified_fee_pending" : "verified_current"),
         source_last_checked_at: dataset.checkedAt, last_imported_at: new Date().toISOString(),
         source_fingerprint: item.fingerprint, overview: p.overview ?? null, modules: p.modules ?? [],
         career_outcomes: p.careerOutcomes ?? null, accreditation: p.accreditation ?? null,
@@ -79,8 +89,7 @@ for (const item of plan.items) {
       const [saved] = await api(path, { method: item.action === "update" ? "PATCH" : "POST", body: JSON.stringify(record) });
       item.programId = saved.id;
       if (p.intakes.length) {
-        await api(`program_intakes?program_id=eq.${saved.id}`, { method: "DELETE", prefer: "return=minimal" });
-        await api("program_intakes", { method: "POST", prefer: "return=minimal", body: JSON.stringify(p.intakes.map((intake) => ({
+        await api("program_intakes?on_conflict=program_id,intake_year,intake_month", { method: "POST", prefer: "resolution=merge-duplicates,return=minimal", body: JSON.stringify(p.intakes.map((intake) => ({
           program_id: saved.id, intake_year: intake.year, intake_month: intake.month,
           status: intake.status ?? "available", application_deadline: intake.applicationDeadline ?? null,
           source_url: intake.sourceUrl, last_checked_at: dataset.checkedAt,
@@ -121,6 +130,18 @@ await api(`catalogue_import_runs?id=eq.${run.id}`, { method: "PATCH", prefer: "r
   created_count: plan.summary.create ?? 0, updated_count: plan.summary.update ?? 0,
   unchanged_count: plan.summary.unchanged ?? 0, archived_candidate_count: plan.summary.archive_candidate ?? 0,
   failed_count: failed + (plan.summary.error ?? 0), summary: plan.summary,
+}) });
+
+await api(`universities?id=eq.${university.id}`, { method: "PATCH", prefer: "return=minimal", body: JSON.stringify({
+  catalogue_status: (plan.coverage.classified === plan.coverage.discovered && plan.coverage.manualReview === 0 && plan.coverage.sourceUnavailable === 0) ? "needs_review" : "processing",
+  catalogue_discovered_count: plan.coverage.discovered, catalogue_processed_count: plan.coverage.classified,
+  catalogue_verified_count: plan.coverage.productionReady,
+  catalogue_unresolved_count: plan.coverage.manualReview + plan.coverage.sourceUnavailable,
+  catalogue_fee_verified_count: plan.coverage.feeVerified,
+  catalogue_intake_verified_count: plan.coverage.intakeVerified,
+  catalogue_requirements_verified_count: plan.coverage.requirementsVerified,
+  catalogue_last_completed_at: new Date().toISOString(), last_catalogue_checked_at: dataset.checkedAt,
+  profile_readiness_status: "needs_review", outreach_status: "profile_incomplete",
 }) });
 
 if (failed || plan.summary.error) process.exitCode = 1;

@@ -10,8 +10,10 @@
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
     "catalogue:dry-run": "node scripts/catalogue/import-catalogue.mjs",
+    "catalogue:discover": "node scripts/catalogue/discover-university-catalogue.mjs --university all",
+    "catalogue:review": "node scripts/catalogue/review-catalogue.mjs --university all",
     "preview": "vite preview",
-    "postbuild": "node scripts/generate-sitemap.cjs"
+    "postbuild": "node scripts/generate-sitemap.cjs && node scripts/append-catalogue-sitemap.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

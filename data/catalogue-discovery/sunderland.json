@@ -1,0 +1,1674 @@
+{
+  "schemaVersion": 1,
+  "university": "University of Sunderland",
+  "discoveredAt": "2026-08-12T13:45:21.592Z",
+  "sources": [
+    "https://www.sunderland.ac.uk/sitemap.xml"
+  ],
+  "discovered": 166,
+  "uniqueCourses": 166,
+  "duplicatesRemoved": 0,
+  "errors": [],
+  "courses": [
+    {
+      "title": "Llm Commercial Law International Trade",
+      "qualification": "LLM",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/llm-commercial-law-international-trade",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llm Criminal Law Procedure",
+      "qualification": "LLM",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/llm-criminal-law-procedure",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llm International Human Rights",
+      "qualification": "LLM",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/llm-international-human-rights",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llm Law",
+      "qualification": "LLM",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/llm-law",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llm Legal Practice",
+      "qualification": "LLM",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/llm-legal-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llm Terrorism Cyber Warfare",
+      "qualification": "LLM",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/llm-terrorism-cyber-warfare",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Advancing Counselling Practice",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-advancing-counselling-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Childhood Youth Studies",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-childhood-youth-studies",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Design",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-design",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Education",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-education",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Integrative Counselling",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-integrative-counselling",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma International Education Dl",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-international-education-dl",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Investigative Management",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-investigative-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Journalism Sport Journalism",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-journalism-sport-journalism",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Marketing",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-marketing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Media Production Film Tv",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-media-production-film-tv",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Modern Music Industries",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-modern-music-industries",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma MSc Extended Award",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-msc-extended-award",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Send",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-send",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Social Work",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-social-work",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ma Visual Practice",
+      "qualification": "MA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/ma-visual-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Chinese",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-chinese",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Finance",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-finance",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Hr Management",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-hr-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Marketing",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-marketing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Master Of Business Administration",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-master-of-business-administration",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Professional Practice",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-professional-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Sports Management",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-sports-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Supply Chain Management",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-supply-chain-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Sustainability",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-sustainability",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA Top Up",
+      "qualification": "MBA",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MBA With Pgcert",
+      "qualification": "PGCE",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/mba-with-pgcert",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Advanced Engineering Design",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-advanced-engineering-design",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Biomedical Science",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-biomedical-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Computing",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-computing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Cosmetic Science",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-cosmetic-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Cybersecurity",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-cybersecurity",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Data Science Ai",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-data-science-ai",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Data Science",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-data-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Digital Marketing Analytics",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-digital-marketing-analytics",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Drug Discovery Development",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-drug-discovery-development",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Engineering Management",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-engineering-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Finance Management",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-finance-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Hr Management Cipd Accredited",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-hr-management-cipd-accredited",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Inequality Society",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-inequality-society",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc International Business Management",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-international-business-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Leadership Criminal Justice Policing",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-leadership-criminal-justice-policing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Nursing",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-nursing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Pharmaceutical Biopharmaceutical Formulations",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-pharmaceutical-biopharmaceutical-formulations",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Project Management",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-project-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Psychology Conversion",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-psychology-conversion",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Public Health Inequalities",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-public-health-inequalities",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Sport Exercise Sciences",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-sport-exercise-sciences",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Sustainable Design Manufacture",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-sustainable-design-manufacture",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Sustainable Tourism",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-sustainable-tourism",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Tourism Aviation",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-tourism-aviation",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Tourism Events",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-tourism-events",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Tourism Hospitality",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-tourism-hospitality",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "MSc Tourism Scheme Top Up Dl",
+      "qualification": "MSc",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/msc-tourism-scheme-top-up-dl",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Pgcert Leadership Change",
+      "qualification": "PGCE",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/pgcert-leadership-change",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Pgcert Medical Education",
+      "qualification": "PGCE",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/pgcert-medical-education",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Pgcert Send Leading Provision Practice Dl",
+      "qualification": "PGCE",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/pgcert-send-leading-provision-practice-dl",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Pgdip Medical Education",
+      "qualification": "PgDip",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/pgdip-medical-education",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Pgdip MSc Clinical Pharmacy",
+      "qualification": "PgDip",
+      "level": "Postgraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/postgraduate/pgdip-msc-clinical-pharmacy",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Accounting Finance Professional Exemptions",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-accounting-finance-professional-exemptions",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Accounting Financial Management Top Up",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-accounting-financial-management-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Advertising Design",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-advertising-design",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Animation Games Art",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-animation-games-art",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Applied Investigation",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-applied-investigation",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Banking Finance Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-banking-finance-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Business Financial Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-business-financial-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Business Human Resource Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-business-human-resource-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Business Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-business-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Business Management Stage 3",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-business-management-stage-3",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Business Marketing Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-business-marketing-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Business Marketing Management Stage 3",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-business-marketing-management-stage-3",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Childhood Society Studies Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-childhood-society-studies-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Childhood Studies",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-childhood-studies",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Community Youth Work",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-community-youth-work",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Counselling Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-counselling-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Education Studies",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-education-studies",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Education Studies In Service",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-education-studies-in-service",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons English Creative Professional Writing",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-english-creative-professional-writing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Events Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-events-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Fashion Design Promotion",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-fashion-design-promotion",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Fashion Journalism",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-fashion-journalism",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Fashion Product And Promotion",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-fashion-product-and-promotion",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Film Media",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-film-media",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Film Production",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-film-production",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Fine Art",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-fine-art",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Graphic Design",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-graphic-design",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Graphic Design Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-graphic-design-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Illustration Design",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-illustration-design",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Journalism",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-journalism",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Mass Communications Top Up",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-mass-communications-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Media Culture Communication",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-media-culture-communication",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Media Production",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-media-production",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Modern Music Industries",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-modern-music-industries",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Music Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-music-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Performing Arts",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-performing-arts",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Photography Video Digital Imaging",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-photography-video-digital-imaging",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Primary Education Qts",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-primary-education-qts",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Primary Send Education Qts",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-primary-send-education-qts",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Screen Performance",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-screen-performance",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Social Media Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-social-media-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Social Work",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-social-work",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Ba Hons Sports Journalism",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/ba-hons-sports-journalism",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Automotive Engineering Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-automotive-engineering-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Automotive Engineering",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-automotive-engineering",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Electronic Electrical Engineering",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-electronic-electrical-engineering",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Electronic Electrical Engineering Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-electronic-electrical-engineering-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Mechanical Engineering",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-mechanical-engineering",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Mechanical Engineering Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-mechanical-engineering-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Sustainable Design Engineering",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-sustainable-design-engineering",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Beng Hons Sustainable Design Engineering Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/beng-hons-sustainable-design-engineering-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Adult Nursing Practice",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-adult-nursing-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Animal Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-animal-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Applied Business Computing Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-applied-business-computing-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Audiology",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-audiology",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Biochemistry",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-biochemistry",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Biomedical Science",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-biomedical-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Business Intelligence Data Analytics Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-business-intelligence-data-analytics-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Cardiac Physiology",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-cardiac-physiology",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Childrens Young Peoples Nursing Practice",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-childrens-young-peoples-nursing-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Clinical Psychology",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-clinical-psychology",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Computer Science",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-computer-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Computer Systems Engineering Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-computer-systems-engineering-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Computer Systems Engineering",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-computer-systems-engineering",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Cosmetic Science",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-cosmetic-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Criminology",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-criminology",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Cybersecurity Digital Forensics",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-cybersecurity-digital-forensics",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Forensic Psychology",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-forensic-psychology",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Game Development",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-game-development",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Health Social Care",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-health-social-care",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Information And Communication Technology Top Up",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-information-and-communication-technology-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons International Tourism Hospitality Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-international-tourism-hospitality-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons International Tourism Hospitality Management Top Up",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-international-tourism-hospitality-management-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Mathematics Education Qts",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-mathematics-education-qts",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Mental Health Nursing Practice",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-mental-health-nursing-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Midwifery Practice",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-midwifery-practice",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Mobile And Web Technologies Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-mobile-and-web-technologies-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Network Systems Engineering Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-network-systems-engineering-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Nursing Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-nursing-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Occupational Therapy Accelerated",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-occupational-therapy-accelerated",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Paramedic Science Out Of Hospital Care",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-paramedic-science-out-of-hospital-care",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Pharmaceutical Science",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-pharmaceutical-science",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Physical Education Qts",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-physical-education-qts",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Physiotherapy",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-physiotherapy",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Policing Studies Top Up",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-policing-studies-top-up",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Professional Policing",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-professional-policing",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Psychology",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-psychology",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Psychology Counselling",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-psychology-counselling",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Sport Exercise Sciences",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-sport-exercise-sciences",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Sport Rehabilitation Therapy",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-sport-rehabilitation-therapy",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Bsc Hons Sports Coaching Physical Education",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/bsc-hons-sports-coaching-physical-education",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Certificate He Health Social Care",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/certificate-he-health-social-care",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Certificate He Sport",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/certificate-he-sport",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Fda Counselling",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/fda-counselling",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Fdsc Animal Management",
+      "qualification": "MA",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/fdsc-animal-management",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Fdsc Health Social Care",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/fdsc-health-social-care",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Fdsc Registered Nursing Associate",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/fdsc-registered-nursing-associate",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Fdsc Sports Coaching",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/fdsc-sports-coaching",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llb Hons Law",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/llb-hons-law",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Llb Hons Law Canadian Route",
+      "qualification": "Check official qualification",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/llb-hons-law-canadian-route",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Mbchb Medicine",
+      "qualification": "MBChB",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/mbchb-medicine",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    },
+    {
+      "title": "Mpharm Pharmacy",
+      "qualification": "MPH",
+      "level": "Undergraduate",
+      "sourceUrl": "https://www.sunderland.ac.uk/undergraduate/mpharm-pharmacy",
+      "sourceType": "official_sitemap_discovery",
+      "lastCheckedAt": "2026-08-12T13:45:21.592Z",
+      "catalogueStatus": "discovered_needs_page_parse",
+      "dataStatus": "incomplete"
+    }
+  ]
+}
