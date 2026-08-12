@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -55,6 +55,7 @@ import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
 import { courseSearchParams, normalizeCourseSearch, parseIntake } from "@/lib/courseSearch";
 import { logAnalyticsEvent } from "@/lib/analytics";
+import { navigationStateFromCurrentPage, validateSearchCounts } from "@/lib/marketplacePresentation";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -97,6 +98,7 @@ interface University {
   logo_url: string | null;
   website: string | null;
   description: string | null;
+  slug?: string | null;
 }
 
 interface Program {
@@ -109,6 +111,9 @@ interface Program {
   duration_months: number | null;
   university_id: string;
   image_url?: string | null;
+  qualification?: string | null;
+  next_intake_month?: number | null;
+  next_intake_year?: number | null;
 }
 
 interface Scholarship {
@@ -125,6 +130,7 @@ interface SearchResult {
   university: University;
   programs: Program[];
   scholarships: Scholarship[];
+  matchingCount: number;
 }
 
 // --- Helper: choose logo or fallback image ---
@@ -205,6 +211,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [selectedIntake, setSelectedIntake] = useState(searchParams.get("intake") || "all");
   const [searchPage, setSearchPage] = useState(Number(searchParams.get("page")) || 1);
   const [searchTotal, setSearchTotal] = useState(0);
+  const [searchUniversityTotal, setSearchUniversityTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
@@ -212,6 +219,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
+  const location = useLocation();
+  const returnState = () => navigationStateFromCurrentPage(`${location.pathname}${location.search}`, "Back to search results", (location.state as any) ?? null, typeof window === "undefined" ? 0 : window.scrollY);
 
   // All courses listing state
   const [allCourses, setAllCourses] = useState<(Program & { university: University })[]>([]);
@@ -522,11 +531,13 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
               university,
               programs: [program],
               scholarships: [],
+              matchingCount: 1,
             });
             return;
           }
 
           existing.programs.push(program);
+          existing.matchingCount += 1;
         });
 
         setResults(Array.from(universitiesMap.values()));
@@ -550,20 +561,23 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         for (const row of rpcRows || []) {
           const university: University = {
             id: row.university_id, name: row.university_name, country: row.university_country,
-            city: row.university_city, logo_url: row.university_logo_url, website: null, description: null,
+            city: row.university_city, logo_url: row.university_logo_url, website: null, description: null, slug: row.university_slug,
           };
           const program: Program = {
             id: row.id, name: row.name, level: row.level, discipline: row.discipline,
             tuition_amount: row.tuition_amount, tuition_currency: row.tuition_currency,
             duration_months: row.duration_months, university_id: row.university_id,
+            qualification: row.qualification, next_intake_year: row.next_intake_year, next_intake_month: row.next_intake_month,
           };
           const existing = universityMap.get(row.university_id);
           if (existing) existing.programs.push(program);
-          else universityMap.set(row.university_id, { university, programs: [program], scholarships: [] });
+          else universityMap.set(row.university_id, { university, programs: [program], scholarships: [], matchingCount: Number(row.university_match_count || 1) });
         }
-        const total = Number(rpcRows?.[0]?.total_count || 0);
+        const counts = validateSearchCounts(rpcRows || []);
+        const total = counts.globalCount;
         setResults([...universityMap.values()]);
         setSearchTotal(total);
+        setSearchUniversityTotal(counts.universityCount);
         setSearchPage(page);
         setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
         void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
@@ -744,6 +758,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           university: uni,
           programs: programs.filter((p) => p.university_id === uni.id),
           scholarships: scholarships.filter((s) => s.university_id === uni.id),
+          matchingCount: programs.filter((p) => p.university_id === uni.id).length,
         }))
         .filter(
           (r) =>
@@ -778,6 +793,13 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
     handleSearch(1);
   }, [handleSearch, hasInitialQuery, hasSearched, selectedIntake]);
+
+  useEffect(() => {
+    const restoreScrollY = Number((location.state as any)?.restoreScrollY);
+    if (!loading && Number.isFinite(restoreScrollY) && restoreScrollY > 0) {
+      window.requestAnimationFrame(() => window.scrollTo({ top: restoreScrollY, behavior: "auto" }));
+    }
+  }, [loading, location.state]);
 
   return (
     <div className={containerClasses}>
@@ -938,7 +960,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   {loading
                     ? t("pages.universitySearch.results.loading")
                     : hasSearched
-                      ? t("pages.universitySearch.results.found", { count: searchTotal || results.reduce((sum, result) => sum + result.programs.length, 0) })
+                      ? `${(searchTotal || results.reduce((sum, result) => sum + result.matchingCount, 0)).toLocaleString("en-GB")} courses across ${searchUniversityTotal || results.length} ${(searchUniversityTotal || results.length) === 1 ? "university" : "universities"}`
                       : t("pages.universitySearch.results.startSearching", {
                         defaultValue: "Start searching to see universities and programs",
                       })}
@@ -1083,9 +1105,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
               ) : (
                 <>
                 {results.map((r) => (
-                  <Card key={r.university.id} className="hover:shadow-lg transition overflow-hidden">
-                    <div className="flex flex-col md:flex-row">
-                      <div className="md:w-64 h-48 md:h-auto bg-muted flex-shrink-0">
+                  <Card key={r.university.id} className="overflow-hidden transition hover:shadow-lg">
+                    <div className="flex flex-col lg:flex-row lg:items-start">
+                      <div className="h-40 bg-muted lg:m-6 lg:mr-0 lg:h-36 lg:w-52 lg:shrink-0 lg:overflow-hidden lg:rounded-lg">
                         <img
                           src={getUniversityVisual(r.university.name, r.university.logo_url)}
                           alt={r.university.name}
@@ -1116,6 +1138,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                                 </Badge>
                               )}
                           </div>
+                          <p className="mt-2 text-sm font-medium">{r.matchingCount.toLocaleString("en-GB")} matching courses</p>
                         </CardHeader>
 
                         <CardContent className="space-y-4">
@@ -1127,9 +1150,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                             <div className="space-y-2">
                               <h4 className="font-semibold flex items-center gap-2">
                                 <GraduationCap className="h-4 w-4" />
-                                {t("pages.universitySearch.results.programs.heading", {
-                                  count: r.programs.length,
-                                })}
+                                Showing {Math.min(r.programs.length, 4)} of {r.matchingCount.toLocaleString("en-GB")}
                               </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                               {r.programs.slice(0, 4).map((p) => (
@@ -1154,16 +1175,16 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                                   <div className="flex-1 space-y-2">
                                     <p className="font-medium text-sm leading-tight">{p.name}</p>
                                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                      {p.qualification && <Badge variant="outline">{p.qualification}</Badge>}
                                       <Badge variant="outline">{p.level}</Badge>
-                                      <span className="flex items-center gap-1">
-                                        <DollarSign className="h-3 w-3" /> {p.tuition_amount == null ? "Check official tuition fee" : `${p.tuition_currency} ${p.tuition_amount.toLocaleString()}`}
-                                      </span>
+                                      <span className="flex items-center gap-1">{p.tuition_amount == null ? "Check official tuition fee" : <><DollarSign className="h-3 w-3" />{`${p.tuition_currency} ${p.tuition_amount.toLocaleString()}`}</>}</span>
                                       <span className="text-[11px] text-muted-foreground/90">
                                         {p.duration_months == null ? "Check official duration" : `${p.duration_months} months`}
                                       </span>
+                                      {p.next_intake_year && p.next_intake_month && <span>{new Intl.DateTimeFormat("en-GB", { month: "long" }).format(new Date(2000, p.next_intake_month - 1, 1))} {p.next_intake_year}</span>}
                                     </div>
                                     <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                                      <Link to={`/courses/${p.id}`} onClick={() => void logAnalyticsEvent("search_result_click", { source: "course_discovery", properties: { programme_id: p.id, university_id: r.university.id, query: searchTerm, result_position: r.programs.findIndex((item) => item.id === p.id) + 1 } })}>
+                                      <Link state={returnState()} to={`/courses/${p.id}`} onClick={() => void logAnalyticsEvent("search_result_click", { source: "course_discovery", properties: { programme_id: p.id, university_id: r.university.id, query: searchTerm, result_position: r.programs.findIndex((item) => item.id === p.id) + 1 } })}>
                                         View course
                                       </Link>
                                     </Button>
@@ -1171,13 +1192,6 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                                 </div>
                               ))}
                             </div>
-                            {r.programs.length > 4 && (
-                              <p className="text-xs text-muted-foreground">
-                                  {t("pages.universitySearch.results.programs.more", {
-                                    count: r.programs.length - 4,
-                                  })}
-                              </p>
-                            )}
                           </div>
 
                           {/* Scholarships */}
@@ -1217,8 +1231,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
                           <div className="flex gap-2 pt-4">
                               <Button asChild className="flex-1">
-                                <Link to={`/universities/${r.university.id}`}>
-                                  {t("pages.universitySearch.results.viewDetails")}
+                                <Link state={returnState()} to={`/universities/${r.university.slug || r.university.id}?tab=programs&q=${encodeURIComponent(searchTerm)}`}>
+                                  View all {r.matchingCount.toLocaleString("en-GB")} matching courses
                                 </Link>
                               </Button>
                             {r.university.website && (

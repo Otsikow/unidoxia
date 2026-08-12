@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useLocation, useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +42,7 @@ import {
 } from "@/lib/universityProfile";
 import { SEO } from "@/components/SEO";
 import { logAnalyticsEvent } from "@/lib/analytics";
+import BackButton from "@/components/BackButton";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -142,6 +143,7 @@ export default function UniversityProfile() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [university, setUniversity] = useState<University | null>(null);
@@ -152,7 +154,7 @@ export default function UniversityProfile() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<string>("all");
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("all");
-  const [programSearch, setProgramSearch] = useState("");
+  const [programSearch, setProgramSearch] = useState(searchParams.get("q") || "");
   const [programPage, setProgramPage] = useState(1);
   const [programTotal, setProgramTotal] = useState(0);
   const trackedUniversityId = useRef<string | null>(null);
@@ -302,6 +304,7 @@ export default function UniversityProfile() {
   return (
     <div className="min-h-screen bg-background">
       <SEO title={`${university.name} - Courses and International Study | UniDoxia`} description={university.description || `Explore courses and international study information for ${university.name}.`} />
+      <div className="mx-auto max-w-7xl px-4 pt-4"><BackButton fallback="/universities" label={(location.state as any)?.marketplaceBack?.label || "Back to universities"} showHistoryMenu={false} /></div>
       {/* Hero Section */}
       <div className="relative min-h-[22rem] md:h-96 overflow-hidden">
         <img src={heroImage} alt={university.name} className="w-full h-full object-cover" />
