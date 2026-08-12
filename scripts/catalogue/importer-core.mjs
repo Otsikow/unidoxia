@@ -4,6 +4,18 @@ export const CATALOGUE_STATUSES = new Set([
   "active", "intake_closed", "temporarily_unavailable", "archived", "discontinued",
 ]);
 
+// These six rows were committed as the original marketplace pilot before
+// official_url existed. Explicit mappings preserve their stable IDs (and any
+// application foreign keys) while upgrading them to their official variants.
+export const LEGACY_SEED_MAPPINGS = {
+  "teesside-university|MSc Computer Science": "Computer Science MSc",
+  "teesside-university|MSc International Management": "International Business Management MSc",
+  "university-of-sunderland|BSc (Hons) Computer Science": "BSc (Hons) Computer Science",
+  "university-of-sunderland|MSc International Business Management": "MSc International Business Management",
+  "northumbria-university|International Business Management MSc": "International Business Management MSc 1 Year Full-Time | September Start",
+  "northumbria-university|MSc Computer Science": "Computer Science MSc 1 Year Full-Time | September Start",
+};
+
 const clean = (value) => typeof value === "string" ? value.trim().replace(/\s+/g, " ") : value;
 const normaliseUrl = (value) => {
   if (!value) return null;
@@ -115,6 +127,11 @@ export function planImport(dataset, existing = []) {
 
   const { programmes, duplicates } = deduplicateProgrammes(dataset.programmes);
   const existingByUrl = new Map(existing.filter((p) => p.official_url).map((p) => [normaliseUrl(p.official_url), p]));
+  const legacyExistingByOfficialTitle = new Map();
+  for (const current of existing.filter((programme) => !programme.official_url)) {
+    const mappedTitle = LEGACY_SEED_MAPPINGS[`${dataset.university.slug}|${current.name}`];
+    if (mappedTitle) legacyExistingByOfficialTitle.set(mappedTitle.toLowerCase(), current);
+  }
   const seenExistingIds = new Set();
   const items = [];
 
@@ -135,7 +152,8 @@ export function planImport(dataset, existing = []) {
       continue;
     }
     const fingerprint = sourceFingerprint(result.programme);
-    const current = existingByUrl.get(result.programme.officialUrl);
+    const current = existingByUrl.get(result.programme.officialUrl)
+      || legacyExistingByOfficialTitle.get(result.programme.name.toLowerCase());
     if (!current) {
       items.push({ action: "create", sourceKey: programmeIdentity(result.programme), fingerprint, ...result });
       continue;

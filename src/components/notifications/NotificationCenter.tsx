@@ -62,6 +62,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getSafeAuthRedirect } from "@/lib/authRedirect";
 
 interface Notification {
   id: string;
@@ -519,7 +520,7 @@ export default function NotificationCenter() {
 
   const resolveActionUrl = (n: Notification) => {
     // If action_url is set in the notification, use it
-    if (n.action_url) return n.action_url;
+    if (n.action_url) return getSafeAuthRedirect(n.action_url, "/notifications");
     
     // Role-based URL resolution for fallback cases
     const getMessagesUrl = () => {

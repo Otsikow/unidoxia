@@ -41,4 +41,14 @@ describe("catalogue importer", () => {
     ]);
     expect(plan.summary.archive_candidate).toBe(1);
   });
+
+  it("preserves seeded production IDs by mapping them to explicit official variants", () => {
+    const official = { ...programme, name: "Computer Science MSc", officialUrl: "https://www.tees.ac.uk/computer-science-msc" };
+    const plan = planImport({
+      university: { slug: "teesside-university" }, source: { url: "https://www.tees.ac.uk/courses" }, programmes: [official],
+    }, [{ id: "seed-id", name: "MSc Computer Science", official_url: null, catalogue_status: "active", university_locked_fields: [] }]);
+    expect(plan.summary.update).toBe(1);
+    expect(plan.summary.archive_candidate).toBeUndefined();
+    expect(plan.items[0].existing.id).toBe("seed-id");
+  });
 });
