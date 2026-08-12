@@ -20,9 +20,9 @@ export interface Course {
   name: string;
   level: string;
   discipline: string;
-  duration_months: number;
+  duration_months: number | null;
   tuition_currency: string;
-  tuition_amount: number;
+  tuition_amount: number | null;
   intake_months?: number[];
   university_name: string;
   university_country: string;
@@ -97,6 +97,13 @@ export function CourseCard({ course }: CourseCardProps) {
     }
     return 'Contact for dates';
   };
+
+  const tuitionDisplay = course.tuition_amount == null
+    ? 'Check official tuition fee'
+    : `${course.tuition_currency} ${course.tuition_amount.toLocaleString()} / year`;
+  const durationDisplay = course.duration_months == null
+    ? 'Check official course duration'
+    : `${course.duration_months} months`;
 
   return (
     <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
@@ -178,16 +185,15 @@ export function CourseCard({ course }: CourseCardProps) {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <DollarSign className="h-4 w-4 flex-shrink-0" />
                 <span className="font-semibold text-foreground">
-                  {course.tuition_currency} {course.tuition_amount.toLocaleString()}
+                  {tuitionDisplay}
                 </span>
-                <span className="text-xs">/ year</span>
               </div>
 
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4 flex-shrink-0" />
                 <span>
-                  {course.duration_months} months
-                  {course.duration_months >= 12 && (
+                  {durationDisplay}
+                  {course.duration_months != null && course.duration_months >= 12 && (
                     <span className="text-xs ml-1">
                       ({Math.floor(course.duration_months / 12)}
                       {course.duration_months % 12 > 0 && `.${Math.round((course.duration_months % 12) / 12 * 10)}`} years)
@@ -255,11 +261,11 @@ export function CourseCard({ course }: CourseCardProps) {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-4 w-4" />
-                    <span>Duration: <span className="font-medium text-foreground">{course.duration_months} months</span></span>
+                    <span>Duration: <span className="font-medium text-foreground">{durationDisplay}</span></span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <DollarSign className="h-4 w-4" />
-                    <span>Tuition: <span className="font-medium text-foreground">{course.tuition_currency} {course.tuition_amount.toLocaleString()} / year</span></span>
+                    <span>Tuition: <span className="font-medium text-foreground">{tuitionDisplay}</span></span>
                   </div>
                 </div>
 

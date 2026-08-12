@@ -415,6 +415,12 @@ export default function ProgramsPage() {
         description: values.description?.trim() || null,
         active: values.active,
         is_draft: false, // Mark as published when saving
+        verification_state: "university_edited",
+        last_university_edited_at: new Date().toISOString(),
+        university_locked_fields: [
+          "name", "level", "discipline", "duration_months", "tuition_currency",
+          "tuition_amount", "entry_requirements", "description", "active",
+        ],
       };
 
       const payloadWithImage = { ...basePayload, image_url: values.imageUrl };
@@ -556,7 +562,13 @@ export default function ProgramsPage() {
     try {
       const { error } = await supabase
         .from("programs")
-        .update({ active })
+        .update({
+          active,
+          catalogue_status: active ? "active" : "temporarily_unavailable",
+          verification_state: "university_edited",
+          last_university_edited_at: new Date().toISOString(),
+          university_locked_fields: ["active", "catalogue_status"],
+        } as any)
         .eq("id", id)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
@@ -580,7 +592,7 @@ export default function ProgramsPage() {
     }
   };
 
-  /** DELETE PROGRAM */
+  /** ARCHIVE PROGRAM — preserve history and existing application integrity. */
   const handleDelete = async () => {
     if (!deleteId) return;
     if (!tenantId || !universityId) {
@@ -597,14 +609,20 @@ export default function ProgramsPage() {
     try {
       const { error } = await supabase
         .from("programs")
-        .delete()
+        .update({
+          active: false,
+          catalogue_status: "archived",
+          verification_state: "university_edited",
+          last_university_edited_at: new Date().toISOString(),
+          university_locked_fields: ["active", "catalogue_status"],
+        } as any)
         .eq("id", deleteId)
         .eq("university_id", universityId)
         .eq("tenant_id", tenantId);
 
       if (error) throw error;
 
-      toast({ title: "Course deleted" });
+      toast({ title: "Course archived", description: "The course is hidden publicly but retained for history and existing applications." });
 
       setDeleteId(null);
       await refetch();

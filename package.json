@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "test": "vitest run --passWithNoTests",
+    "catalogue:dry-run": "node scripts/catalogue/import-catalogue.mjs",
     "preview": "vite preview",
     "postbuild": "node scripts/generate-sitemap.cjs"
   },

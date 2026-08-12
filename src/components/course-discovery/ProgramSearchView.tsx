@@ -102,9 +102,9 @@ interface Program {
   name: string;
   level: string;
   discipline: string;
-  tuition_amount: number;
+  tuition_amount: number | null;
   tuition_currency: string;
-  duration_months: number;
+  duration_months: number | null;
   university_id: string;
   image_url?: string | null;
 }
@@ -177,7 +177,7 @@ const transformToCourseCardFormat = (
     next_intake_month: course.next_intake_month,
     next_intake_year: course.next_intake_year,
     applyUrl: course.applyUrl,
-    detailsUrl: course.detailsUrl,
+    detailsUrl: course.detailsUrl || `/courses/${course.id}`,
     instant_submission: course.instant_submission,
     is_unidoxia_partner: course.is_unidoxia_partner,
   };
@@ -310,7 +310,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
-          if (maxFee && program.tuition_amount > parseFloat(maxFee)) return false;
+          if (maxFee && (program.tuition_amount == null || program.tuition_amount > parseFloat(maxFee))) return false;
           return true;
         });
 
@@ -487,7 +487,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
-          if (maxFee && program.tuition_amount > parseFloat(maxFee)) return false;
+          if (maxFee && (program.tuition_amount == null || program.tuition_amount > parseFloat(maxFee))) return false;
           return true;
         });
 

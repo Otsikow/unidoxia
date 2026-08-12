@@ -4,7 +4,7 @@ import {
   MoreHorizontal,
   Eye,
   Pencil,
-  Trash2,
+  Archive,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -163,6 +163,7 @@ export default function ProgramTable({
                 <th className="px-4 py-3 text-left font-medium">Duration</th>
                 <th className="px-4 py-3 text-left font-medium">Tuition</th>
                 <th className="px-4 py-3 text-left font-medium">Intakes</th>
+                <th className="px-4 py-3 text-left font-medium">Data health</th>
                 <th className="px-4 py-3 text-center font-medium">Active</th>
                 <th className="px-4 py-3 text-center font-medium">Actions</th>
               </tr>
@@ -184,6 +185,14 @@ export default function ProgramTable({
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant="secondary">{p.level}</Badge>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      <Badge variant={p.data_status === "current" ? "secondary" : "outline"}>
+                        {p.data_status === "current" ? "Current" : (p.data_status || "Needs review").replaceAll("_", " ")}
+                      </Badge>
+                      {p.verification_state?.startsWith("university_") && <Badge className="bg-emerald-600">University reviewed</Badge>}
+                    </div>
                   </td>
                   <td className="px-4 py-3">{p.discipline ?? "—"}</td>
                   <td className="px-4 py-3">{p.duration_months} mo</td>
@@ -221,7 +230,7 @@ export default function ProgramTable({
                           className="text-destructive focus:text-destructive"
                           onClick={() => onDelete(p.id)}
                         >
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          <Archive className="mr-2 h-4 w-4" /> Archive
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

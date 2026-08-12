@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-08-12",
+  "academicYear": "2026/27",
+  "publicationRule": "Remain inactive until full traversal, verification, duplicate review and public-page QA pass.",
+  "universities": [
+    {
+      "slug": "teesside-university",
+      "name": "Teesside University",
+      "catalogues": [
+        { "level": "Undergraduate", "url": "https://www.tees.ac.uk/prospectus/ug/az.cfm" },
+        { "level": "Postgraduate", "url": "https://www.tees.ac.uk/postgraduate_courses/" }
+      ],
+      "international": "https://www.tees.ac.uk/sections/international/"
+    },
+    {
+      "slug": "university-of-sunderland",
+      "name": "University of Sunderland",
+      "catalogues": [
+        { "level": "Undergraduate", "url": "https://www.sunderland.ac.uk/undergraduate" },
+        { "level": "Postgraduate", "url": "https://www.sunderland.ac.uk/postgraduate" },
+        { "level": "All", "url": "https://www.sunderland.ac.uk/programme-specifications" }
+      ],
+      "fees": [
+        "https://www.sunderland.ac.uk/undergraduate-fees",
+        "https://www.sunderland.ac.uk/postgraduate-fees"
+      ],
+      "international": "https://www.sunderland.ac.uk/study/international/"
+    },
+    {
+      "slug": "northumbria-university",
+      "name": "Northumbria University",
+      "catalogues": [
+        { "level": "All", "url": "https://www.northumbria.ac.uk/courses/" },
+        { "level": "Undergraduate", "url": "https://www.northumbria.ac.uk/study-at-northumbria/course-search-ug/" }
+      ],
+      "international": "https://www.northumbria.ac.uk/international/"
+    }
+  ]
+}
