@@ -4900,6 +4900,12 @@ export type Database = {
         }
         Returns: Json
       }
+      user_claimed_university_ids: {
+        Args: { _user_id: string }
+        Returns: {
+          university_id: string
+        }[]
+      }
     }
     Enums: {
       app_role:
