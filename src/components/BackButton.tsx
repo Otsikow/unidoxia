@@ -59,9 +59,19 @@ export default function BackButton({
     return combined.length > 0 ? combined : "/";
   }, [currentEntry]);
 
+  /** Sensible parent route when there is no usable in-app history (e.g. /a/b/c -> /a/b). */
+  const derivedFallback = React.useMemo(() => {
+    if (fallback && fallback !== "/") return fallback;
+    const segments = location.pathname.split("/").filter(Boolean);
+    if (segments.length > 1) {
+      return `/${segments.slice(0, -1).join("/")}`;
+    }
+    return fallback || "/";
+  }, [fallback, location.pathname]);
+
   const handleFallbackNavigation = React.useCallback(() => {
-    navigate(fallback);
-  }, [fallback, navigate]);
+    navigate(derivedFallback, { replace: false });
+  }, [derivedFallback, navigate]);
 
   const handleNavigateToEntry = React.useCallback(
     (entry: typeof previousEntries[number]) => {
@@ -94,36 +104,51 @@ export default function BackButton({
           });
           return;
         }
-        // Skip the "previous" entry if it's a descendant of the current page
-        // (e.g. on /blog, the previous entry is /blog/some-post that we just came from).
-        // Following it would just bounce back here — a Back button loop.
-        const currentPath = currentEntry?.pathname ?? "";
-        const isDescendantOfCurrent = (path: string) =>
-          currentPath !== "" && path !== currentPath && path.startsWith(`${currentPath}/`);
 
-        const safePrevious = previousEntries.find((entry) => !isDescendantOfCurrent(entry.pathname));
+        const currentPath = currentEntry?.pathname ?? location.pathname;
+        // Skip entries that would bounce straight back here: the current page itself
+        // or one of its descendants (e.g. /blog -> /blog/post -> back to /blog).
+        const isUnsafe = (path: string) =>
+          path === currentPath || (currentPath !== "" && path.startsWith(`${currentPath}/`));
+
+        const safePrevious = previousEntries.find((entry) => !isUnsafe(entry.pathname));
+
+        // Prefer the real browser Back when the immediately previous in-app page is
+        // the safe target: it restores scroll and does not grow the history stack.
+        const browserIdx = typeof window !== "undefined" ? (window.history.state?.idx as number | undefined) : undefined;
+        const canGoBackInBrowser = typeof browserIdx === "number" && browserIdx > 0;
+
+        if (safePrevious && safePrevious === immediatePrevious && canGoBackInBrowser) {
+          navigate(-1);
+          return;
+        }
 
         if (safePrevious) {
           navigateTo(safePrevious);
           return;
         }
 
-        // Next, try the browser history stack if available
-        const canNavigateBrowserHistory = typeof window !== "undefined" && window.history.state?.idx > 0;
-        if (canNavigateBrowserHistory && !isDescendantOfCurrent((window.history.state?.usr?.pathname as string) ?? "")) {
-          navigate(-1);
-          return;
-        }
-
-        // Otherwise, always use the fallback route
+        // No usable in-app history: go to the fallback / parent route.
         handleFallbackNavigation();
       } catch (error) {
         console.error("Back navigation failed, using fallback", error);
         handleFallbackNavigation();
       }
     },
-    [currentEntry, disabled, handleFallbackNavigation, location.state, navigate, navigateTo, onClick, previousEntries],
+    [
+      currentEntry,
+      disabled,
+      handleFallbackNavigation,
+      immediatePrevious,
+      location.pathname,
+      location.state,
+      navigate,
+      navigateTo,
+      onClick,
+      previousEntries,
+    ],
   );
+
 
 
   const handleClearHistory = React.useCallback(
