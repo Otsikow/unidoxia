@@ -16,6 +16,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -46,6 +55,7 @@ import {
   Globe,
   AtSign,
   MapPin,
+  ChevronsUpDown,
 } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { cn } from "@/lib/utils";
@@ -105,6 +115,7 @@ const Signup = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
+  const [countrySelectorOpen, setCountrySelectorOpen] = useState(false);
   const [username, setUsername] = useState("");
   const [address, setAddress] = useState<ResidentialAddress>(EMPTY_RESIDENTIAL_ADDRESS);
   const [addressErrors, setAddressErrors] = useState<ResidentialAddressErrors>({});
@@ -818,18 +829,55 @@ const Signup = () => {
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence
                 </Label>
-                <Select value={country} onValueChange={setCountry}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue placeholder="Select your country of residence" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {countryOptions.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={countrySelectorOpen} onOpenChange={setCountrySelectorOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="country"
+                      type="button"
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={countrySelectorOpen}
+                      aria-label="Country of residence"
+                      className="h-11 w-full justify-between px-3 font-normal"
+                    >
+                      <span className={cn("truncate", !country && "text-muted-foreground")}>
+                        {country || "Select your country of residence"}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="start"
+                    className="w-[var(--radix-popover-trigger-width)] p-0"
+                  >
+                    <Command>
+                      <CommandInput placeholder="Search countries..." />
+                      <CommandList>
+                        <CommandEmpty>No country found.</CommandEmpty>
+                        <CommandGroup heading={`${countryOptions.length} countries`}>
+                          {countryOptions.map((countryName) => (
+                            <CommandItem
+                              key={countryName}
+                              value={countryName}
+                              onSelect={() => {
+                                setCountry(countryName);
+                                setCountrySelectorOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  country === countryName ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              {countryName}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <p className="text-xs text-muted-foreground">
                   This should be the country where you currently live, not your preferred study
                   destination.
