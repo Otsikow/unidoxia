@@ -1,6 +1,8 @@
 "use client";
 
 import { Link } from "react-router-dom";
+import britishCouncilLogo from "@/assets/british-council-logo.png";
+
 import { useEffect, useMemo, useState, lazy, Suspense, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
