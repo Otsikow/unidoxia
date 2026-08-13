@@ -40,9 +40,9 @@ import {
   emptyUniversityProfileDetails,
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
+import { formatCourseDuration, formatCourseFee } from "@/lib/marketplacePresentation";
 import { SEO } from "@/components/SEO";
 import { logAnalyticsEvent } from "@/lib/analytics";
-import { formatCourseFee } from "@/lib/marketplacePresentation";
 import BackButton from "@/components/BackButton";
 
 // --- University Images ---
@@ -83,9 +83,9 @@ interface Program {
   name: string;
   level: string;
   discipline: string;
-  tuition_amount: number;
-  tuition_currency: string;
-  duration_months: number;
+  tuition_amount: number | null;
+  tuition_currency: string | null;
+  duration_months: number | null;
   description: string | null;
   entry_requirements: any;
   ielts_overall: number | null;
@@ -694,12 +694,15 @@ export default function UniversityProfile() {
                         <div className="flex items-center gap-2 text-sm">
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
                           <span>
-                            {formatCourseFee({ amount: program.tuition_amount, currency: program.tuition_currency })}
+                            {formatCourseFee({
+                              amount: program.tuition_amount,
+                              currency: program.tuition_currency,
+                            })}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{program.duration_months} months</span>
+                          <span>{formatCourseDuration(program.duration_months)}</span>
                         </div>
                         {program.intake_months && program.intake_months.length > 0 && (
                           <div className="flex items-center gap-2 text-sm">
@@ -751,12 +754,15 @@ export default function UniversityProfile() {
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
                               <span>
-                                {formatCourseFee({ amount: selectedProgram.tuition_amount, currency: selectedProgram.tuition_currency })}
+                                {formatCourseFee({
+                                  amount: selectedProgram.tuition_amount,
+                                  currency: selectedProgram.tuition_currency,
+                                })}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span>{selectedProgram.duration_months} months</span>
+                              <span>{formatCourseDuration(selectedProgram.duration_months)}</span>
                             </div>
                             {selectedProgram.intake_months?.length > 0 && (
                               <div className="flex items-center gap-2 text-sm">
