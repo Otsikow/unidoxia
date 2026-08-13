@@ -1,6 +1,8 @@
 "use client";
 
 import { Link } from "react-router-dom";
+import britishCouncilLogo from "@/assets/british-council-logo.png";
+
 import { useEffect, useMemo, useState, lazy, Suspense, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -312,18 +314,29 @@ const Index = () => {
         aria-labelledby="uk-knowledge-trained-heading"
         className="border-y bg-muted/30"
       >
-        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-center md:text-left">
-          <div className="space-y-1">
-            <h2
-              id="uk-knowledge-trained-heading"
-              className="text-lg sm:text-xl font-semibold tracking-tight"
-            >
-              UK knowledge-trained guidance
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-              Eric Arthur, CEO of UniDoxia, has completed the British Council UK knowledge agent and counsellor training.
-            </p>
+        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:items-center gap-5">
+            <img
+              src={britishCouncilLogo}
+              alt="British Council"
+              loading="lazy"
+              className="h-10 w-auto self-center md:self-auto shrink-0 dark:brightness-0 dark:invert"
+            />
+            <div className="space-y-1">
+              <h2
+                id="uk-knowledge-trained-heading"
+                className="text-lg sm:text-xl font-semibold tracking-tight"
+              >
+                UK knowledge-trained guidance
+              </h2>
+              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+                The leadership of UniDoxia has completed the British Council UK knowledge agent and
+                counsellor training, so students and university partners are supported by advisers
+                trained to recognised UK standards.
+              </p>
+            </div>
           </div>
+
           <Link
             to="/about"
             className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm shrink-0"
