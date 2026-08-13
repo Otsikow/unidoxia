@@ -75,8 +75,10 @@ export const NavigationHistoryProvider = ({ children }: { children: React.ReactN
       const existingIndex = prev.findIndex((item) => item.id === entry.id);
 
       if (existingIndex !== -1) {
+        // Returning to a page already in the stack: truncate forward entries so
+        // the Back button never bounces between two pages.
         const next = prev.slice(0, existingIndex + 1);
-        next[existingIndex] = entry;
+        next[existingIndex] = { ...entry, label: prev[existingIndex].label, title: prev[existingIndex].title };
         return next;
       }
 
@@ -87,7 +89,27 @@ export const NavigationHistoryProvider = ({ children }: { children: React.ReactN
 
       return next;
     });
+
+    // Page titles are set after render, so refresh the label once the new page settled.
+    const timer = window.setTimeout(() => {
+      const title = typeof document !== "undefined" ? document.title : null;
+      if (!title) return;
+      setHistory((prev) => {
+        if (prev.length === 0) return prev;
+        const lastIndex = prev.length - 1;
+        const last = prev[lastIndex];
+        if (last.id !== buildEntryId(location)) return prev;
+        const label = formatLabelFromLocation(location, title);
+        if (last.label === label && last.title === title) return prev;
+        const next = [...prev];
+        next[lastIndex] = { ...last, title, label };
+        return next;
+      });
+    }, 300);
+
+    return () => window.clearTimeout(timer);
   }, [location]);
+
 
   const currentEntry = React.useMemo(() => history.at(-1) ?? null, [history]);
 
