@@ -8,9 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Pagination,
@@ -42,10 +40,6 @@ import { CourseCard, type Course } from "@/components/student/CourseCard";
 import { SAMPLE_PROGRAMS } from "@/data/programs-sample";
 import {
   Search,
-  GraduationCap,
-  DollarSign,
-  Award,
-  MapPin,
   SlidersHorizontal,
   ChevronDown,
   X,
@@ -81,6 +75,7 @@ const MAX_PROGRAM_RESULTS = 400;
 const COURSES_PER_PAGE = 100;
 const SEARCH_RPC_PAGE_SIZE = 100;
 const SEARCH_RPC_MAX_RESULTS = 10_000;
+const SEARCH_RESULTS_PER_PAGE = 24;
 
 const DISCIPLINE_NORMALIZATION_MAP: Record<string, string> = {
   "Project Managament": "Project Management",
@@ -152,10 +147,6 @@ const getUniversityVisual = (name: string, logo: string | null): string => {
   if (lower.includes("imperial")) return imperialImg;
   if (lower.includes("edinburgh")) return edinburghImg;
   return defaultUniversityImg;
-};
-
-const getProgramVisual = (program: Program, university: University): string => {
-  return program.image_url || getUniversityVisual(university.name, university.logo_url);
 };
 
 // Helper function to transform course data to CourseCard format
@@ -435,6 +426,26 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     [totalCourses],
   );
 
+  const searchCourses = useMemo(
+    () =>
+      results.flatMap((result) =>
+        result.programs.map((program) =>
+          transformToCourseCardFormat({
+            ...program,
+            university: result.university,
+            detailsUrl: `/courses/${program.id}`,
+          }),
+        ),
+      ),
+    [results],
+  );
+
+  const searchTotalPages = Math.max(1, Math.ceil(searchCourses.length / SEARCH_RESULTS_PER_PAGE));
+  const visibleSearchCourses = useMemo(() => {
+    const offset = (searchPage - 1) * SEARCH_RESULTS_PER_PAGE;
+    return searchCourses.slice(offset, offset + SEARCH_RESULTS_PER_PAGE);
+  }, [searchCourses, searchPage]);
+
   const paginationRange = useMemo<(number | string)[]>(() => {
     if (totalCoursePages <= 7) {
       return Array.from({ length: totalCoursePages }, (_, i) => i + 1);
@@ -487,6 +498,21 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     setSearchTotal(0);
     setSearchParams({});
     setHasSearched(false);
+  };
+
+  const handleSearchPageChange = (page: number) => {
+    if (page < 1 || page > searchTotalPages || page === searchPage) return;
+    setSearchPage(page);
+    setSearchParams(
+      courseSearchParams({
+        q: debouncedSearchTerm,
+        country: selectedCountry,
+        level: selectedLevel,
+        intake: selectedIntake,
+        page,
+      }),
+    );
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
   };
 
   const handleSearch = useCallback(async (page = 1) => {
@@ -605,8 +631,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         setResults(completeResults);
         setSearchTotal(selectedDiscipline !== "all" || Boolean(maxFee) ? visibleTotal : total);
         setSearchUniversityTotal(completeResults.length);
-        setSearchPage(1);
-        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page: 1 }));
+        setSearchPage(page);
+        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
         void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
           query: debouncedSearchTerm || "", normalized_query: normalizedQuery, destination: selectedCountry,
           study_level: selectedLevel, intake: selectedIntake, result_count: total, university_count: completeResults.length, page: 1,
@@ -1039,7 +1065,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       </Card>
                     ) : (
                       <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                           {allCourses.map((course) => (
                             <CourseCard
                               key={course.id}
@@ -1130,152 +1156,45 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   </CardContent>
                 </Card>
               ) : (
-                <>
-                {results.map((r) => (
-                  <Card key={r.university.id} className="overflow-hidden transition hover:shadow-lg">
-                    <div className="flex flex-col lg:flex-row lg:items-start">
-                      <div className="h-40 bg-muted lg:m-6 lg:mr-0 lg:h-36 lg:w-52 lg:shrink-0 lg:overflow-hidden lg:rounded-lg">
-                        <img
-                          src={getUniversityVisual(r.university.name, r.university.logo_url)}
-                          alt={r.university.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = defaultUniversityImg;
-                          }}
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <CardHeader>
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <CardTitle className="text-2xl">{r.university.name}</CardTitle>
-                              <CardDescription className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4" />
-                                {r.university.city && `${r.university.city}, `}
-                                {r.university.country}
-                              </CardDescription>
-                            </div>
-                              {r.scholarships.length > 0 && (
-                                <Badge variant="secondary" className="flex items-center gap-1">
-                                  <Award className="h-3 w-3" />
-                                  {t("pages.universitySearch.results.scholarshipBadge", {
-                                    count: r.scholarships.length,
-                                  })}
-                                </Badge>
-                              )}
-                          </div>
-                          <p className="mt-2 text-sm font-medium">{r.matchingCount.toLocaleString("en-GB")} matching courses</p>
-                        </CardHeader>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {visibleSearchCourses.map((course) => (
+                      <CourseCard key={course.id} course={course} />
+                    ))}
+                  </div>
 
-                        <CardContent className="space-y-4">
-                          {r.university.description && (
-                            <p className="text-sm text-muted-foreground">{r.university.description}</p>
-                          )}
-
-                          {/* Programs */}
-                            <div className="space-y-2">
-                              <h4 className="font-semibold flex items-center gap-2">
-                                <GraduationCap className="h-4 w-4" />
-                                Showing {Math.min(r.programs.length, 4)} of {r.matchingCount.toLocaleString("en-GB")}
-                              </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                              {r.programs.slice(0, 4).map((p) => (
-                                <div
-                                  key={p.id}
-                                  className="flex gap-3 rounded-md bg-muted/50 p-3 transition hover:bg-muted"
-                                >
-                                  <div className="h-16 w-24 overflow-hidden rounded-md bg-muted">
-                                    <img
-                                      src={getProgramVisual(p, r.university)}
-                                      alt={p.name}
-                                      className="h-full w-full object-cover"
-                                      loading="lazy"
-                                      onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = getUniversityVisual(
-                                          r.university.name,
-                                          r.university.logo_url,
-                                        );
-                                      }}
-                                    />
-                                  </div>
-                                  <div className="flex-1 space-y-2">
-                                    <p className="font-medium text-sm leading-tight">{p.name}</p>
-                                    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                                      {p.qualification && <Badge variant="outline">{p.qualification}</Badge>}
-                                      <Badge variant="outline">{p.level}</Badge>
-                                      <span className="flex items-center gap-1">{p.tuition_amount == null ? "Check official tuition fee" : <><DollarSign className="h-3 w-3" />{`${p.tuition_currency} ${p.tuition_amount.toLocaleString()}`}</>}</span>
-                                      <span className="text-[11px] text-muted-foreground/90">
-                                        {p.duration_months == null ? "Check official duration" : `${p.duration_months} months`}
-                                      </span>
-                                      {p.next_intake_year && p.next_intake_month && <span>{new Intl.DateTimeFormat("en-GB", { month: "long" }).format(new Date(2000, p.next_intake_month - 1, 1))} {p.next_intake_year}</span>}
-                                    </div>
-                                    <Button size="sm" variant="outline" className="w-full text-xs" asChild>
-                                      <Link state={returnState()} to={`/courses/${p.id}`} onClick={() => void logAnalyticsEvent("search_result_click", { source: "course_discovery", properties: { programme_id: p.id, university_id: r.university.id, query: searchTerm, result_position: r.programs.findIndex((item) => item.id === p.id) + 1 } })}>
-                                        View course
-                                      </Link>
-                                    </Button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Scholarships */}
-                            {r.scholarships.length > 0 && (
-                              <div className="space-y-2">
-                                <h4 className="font-semibold flex items-center gap-2">
-                                  <Award className="h-4 w-4" /> {t("pages.universitySearch.results.scholarships.heading")}
-                                </h4>
-                                <div className="space-y-1">
-                                  {r.scholarships.slice(0, 3).map((s) => (
-                                    <div
-                                      key={s.id}
-                                      className="text-sm flex items-center justify-between p-2 rounded-md bg-muted/30"
-                                    >
-                                      <span>{s.name}</span>
-                                      {s.amount_cents ? (
-                                        <Badge variant="secondary" className="text-xs">
-                                          {(s.amount_cents / 100).toLocaleString()} {s.currency}
-                                        </Badge>
-                                      ) : (
-                                        <span className="text-xs text-muted-foreground">
-                                          {s.coverage_type || t("pages.universitySearch.results.scholarships.amountVaries")}
-                                        </span>
-                                      )}
-                                    </div>
-                                  ))}
-                                  {r.scholarships.length > 3 && (
-                                    <p className="text-xs text-muted-foreground">
-                                      {t("pages.universitySearch.results.scholarships.more", {
-                                        count: r.scholarships.length - 3,
-                                      })}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-
-                          <div className="flex gap-2 pt-4">
-                              <Button asChild className="flex-1">
-                                <Link state={returnState()} to={`/universities/${r.university.slug || r.university.id}?tab=programs&q=${encodeURIComponent(searchTerm)}`}>
-                                  View all {r.matchingCount.toLocaleString("en-GB")} matching courses
-                                </Link>
-                              </Button>
-                            {r.university.website && (
-                              <Button variant="outline" asChild>
-                                <a href={r.university.website} target="_blank" rel="noopener noreferrer">
-                                    {t("pages.universitySearch.results.visitWebsite")}
-                                </a>
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-                </>
+                  {searchTotalPages > 1 && (
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            href="#"
+                            className={searchPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              handleSearchPageChange(searchPage - 1);
+                            }}
+                          />
+                        </PaginationItem>
+                        <PaginationItem>
+                          <span className="px-3 text-sm text-muted-foreground">
+                            Page {searchPage} of {searchTotalPages}
+                          </span>
+                        </PaginationItem>
+                        <PaginationItem>
+                          <PaginationNext
+                            href="#"
+                            className={searchPage === searchTotalPages ? "pointer-events-none opacity-50" : undefined}
+                            onClick={(event) => {
+                              event.preventDefault();
+                              handleSearchPageChange(searchPage + 1);
+                            }}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  )}
+                </div>
               )}
             </div>
         </div>

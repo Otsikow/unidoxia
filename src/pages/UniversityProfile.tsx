@@ -42,6 +42,7 @@ import {
 } from "@/lib/universityProfile";
 import { SEO } from "@/components/SEO";
 import { logAnalyticsEvent } from "@/lib/analytics";
+import { formatCourseFee } from "@/lib/marketplacePresentation";
 import BackButton from "@/components/BackButton";
 
 // --- University Images ---
@@ -693,7 +694,7 @@ export default function UniversityProfile() {
                         <div className="flex items-center gap-2 text-sm">
                           <DollarSign className="h-4 w-4 text-muted-foreground" />
                           <span>
-                            {program.tuition_amount > 0 ? `${program.tuition_amount.toLocaleString()} ${program.tuition_currency}/year` : "Check official tuition fee"}
+                            {formatCourseFee({ amount: program.tuition_amount, currency: program.tuition_currency })}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
@@ -750,7 +751,7 @@ export default function UniversityProfile() {
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="h-4 w-4 text-muted-foreground" />
                               <span>
-                                {selectedProgram.tuition_amount.toLocaleString()} {selectedProgram.tuition_currency}/year
+                                {formatCourseFee({ amount: selectedProgram.tuition_amount, currency: selectedProgram.tuition_currency })}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
