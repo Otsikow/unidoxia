@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -654,86 +654,99 @@ export default function UniversityProfile() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {filteredPrograms.map((program) => (
-                  <Card key={program.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div className="flex flex-1 items-start gap-3">
+              <>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                  {filteredPrograms.map((program) => (
+                  <Card key={program.id} className="group flex h-full min-h-[31rem] flex-col overflow-hidden border-border/70 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl">
+                    <div className="border-b border-border/60 bg-gradient-to-br from-primary/15 via-primary/5 to-background p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/70 bg-white p-2 shadow-sm">
                           {university ? (
-                            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border bg-white shadow-sm">
-                              <img
-                                src={university.logo_url || getUniversityImage(university.name)}
-                                alt={`${university.name} logo`}
-                                className="h-full w-full object-contain p-2"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = getUniversityImage(university.name);
-                                }}
-                              />
-                            </div>
-                          ) : null}
-                          <div className="space-y-1 flex-1">
-                            <CardTitle className="text-xl">{program.name}</CardTitle>
-                            <CardDescription className="flex items-center gap-2">
-                              <Badge variant="secondary">{program.level}</Badge>
-                              <Badge variant="outline">{program.discipline}</Badge>
-                            </CardDescription>
-                          </div>
+                            <img
+                              src={university.logo_url || getUniversityImage(university.name)}
+                              alt={`${university.name} logo`}
+                              className="h-full w-full object-contain"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = getUniversityImage(university.name);
+                              }}
+                            />
+                          ) : (
+                            <GraduationCap className="h-7 w-7 text-primary" />
+                          )}
                         </div>
-                        <Button onClick={() => setSelectedProgram(program)} className="w-full sm:w-auto">
-                          View Details
-                        </Button>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Course</p>
+                          <p className="truncate text-sm font-medium text-muted-foreground">{university?.name}</p>
+                        </div>
                       </div>
+                    </div>
+
+                    <CardHeader className="space-y-4 pb-4">
+                      <CardTitle className="line-clamp-3 min-h-[4.5rem] text-xl leading-6 transition-colors group-hover:text-primary">
+                        {program.name}
+                      </CardTitle>
+                      <CardDescription className="flex flex-wrap gap-2">
+                        <Badge className="rounded-full px-3" variant="secondary">{program.level}</Badge>
+                        <Badge className="rounded-full px-3" variant="outline">{program.discipline}</Badge>
+                      </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="flex flex-1 flex-col gap-4 pt-0">
                       {program.description && (
-                        <p className="text-sm text-muted-foreground">{program.description}</p>
+                        <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{program.description}</p>
                       )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="flex items-center gap-2 text-sm">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          <span>
+                      <div className="divide-y divide-border/60 rounded-2xl border border-border/70 bg-muted/20 px-4">
+                        <div className="flex items-start gap-3 py-3.5">
+                          <DollarSign className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Tuition fee</p>
+                            <p className="mt-0.5 text-sm font-semibold">
                             {formatCourseFee({
                               amount: program.tuition_amount,
                               currency: program.tuition_currency,
                             })}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <span>{formatCourseDuration(program.duration_months)}</span>
-                        </div>
-                        {program.intake_months && program.intake_months.length > 0 && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                            <span>
-                              Intakes: {program.intake_months.map(getMonthName).join(", ")}
-                            </span>
+                            </p>
                           </div>
-                        )}
+                        </div>
+                        <div className="flex items-start gap-3 py-3.5">
+                          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Duration</p>
+                            <p className="mt-0.5 text-sm font-semibold">{formatCourseDuration(program.duration_months)}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 py-3.5">
+                          <GraduationCap className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                          <div>
+                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Intakes</p>
+                            <p className="mt-0.5 text-sm font-semibold">
+                              {program.intake_months?.length
+                                ? program.intake_months.map(getMonthName).join(", ")
+                                : "Check official course page"}
+                            </p>
+                          </div>
+                        </div>
                       </div>
 
                       {(program.ielts_overall || program.toefl_overall) && (
-                        <div className="flex items-center gap-4 text-sm">
+                        <div className="flex flex-wrap gap-2 text-xs">
                           {program.ielts_overall && (
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              <span>IELTS: {program.ielts_overall}</span>
-                            </div>
+                            <Badge variant="outline">IELTS {program.ielts_overall}</Badge>
                           )}
                           {program.toefl_overall && (
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              <span>TOEFL: {program.toefl_overall}</span>
-                            </div>
+                            <Badge variant="outline">TOEFL {program.toefl_overall}</Badge>
                           )}
                         </div>
                       )}
                     </CardContent>
+                    <CardFooter className="mt-auto border-t border-border/60 bg-muted/10 p-5">
+                      <Button className="w-full rounded-xl" size="lg" onClick={() => setSelectedProgram(program)}>
+                        View course details
+                      </Button>
+                    </CardFooter>
                   </Card>
-                ))}
-
+                  ))}
+                </div>
                 <Dialog open={Boolean(selectedProgram)} onOpenChange={(open) => !open && setSelectedProgram(null)}>
                   <DialogContent className="max-w-3xl">
                     {selectedProgram && (
@@ -812,7 +825,7 @@ export default function UniversityProfile() {
                     )}
                   </DialogContent>
                 </Dialog>
-              </div>
+              </>
             )}
           </TabsContent>
 
