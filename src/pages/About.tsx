@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import britishCouncilLogo from "@/assets/british-council-logo.png";
+
 import { SEO } from "@/components/SEO";
 import { SITE_ORIGIN } from "@/components/SEO";
 
