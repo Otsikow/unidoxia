@@ -21,9 +21,14 @@ export const formatCourseFee = (fee?: {
   amount?: number | null;
   currency?: string | null;
   fee_basis?: string | null;
-}) => fee?.amount != null
+}) => fee?.amount != null && Number.isFinite(Number(fee.amount)) && Number(fee.amount) > 0
   ? `${fee.currency || "GBP"} ${Number(fee.amount).toLocaleString("en-GB")} ${fee.fee_basis === "total" ? "total" : "per year"}`
   : "Check official tuition fee";
+
+export const formatCourseDuration = (durationMonths?: number | null) =>
+  durationMonths != null && Number.isFinite(Number(durationMonths)) && Number(durationMonths) > 0
+    ? `${Number(durationMonths).toLocaleString("en-GB")} months`
+    : "Check course duration";
 
 export const completeVerifiedSummary = (value?: string | null): string | null => {
   const text = value?.replace(/\s+/g, " ").trim();
