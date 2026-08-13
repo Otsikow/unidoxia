@@ -18,20 +18,39 @@ const About = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-3xl">
+    <div className="container mx-auto px-4 py-12 max-w-5xl">
       <SEO
         title="About UniDoxia | Study Abroad Support for International Students"
         description="UniDoxia helps international students, with a strong focus on African applicants, discover courses, prepare applications and understand next steps — guidance, not guarantees."
         canonicalPath="/about"
         jsonLd={jsonLd}
       />
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">About UniDoxia</h1>
-      <p className="text-muted-foreground mb-6">
-        UniDoxia is a study-abroad support platform built around the needs of African
-        students while remaining open to international applicants worldwide. We help
-        students research courses and universities, prepare applications, and understand
-        common visa and scholarship requirements.
-      </p>
+      <section className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 mb-12">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary mb-3">
+            Guidance for global study
+          </p>
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">About UniDoxia</h1>
+          <p className="text-lg leading-relaxed text-muted-foreground">
+            UniDoxia is a study-abroad support platform built around the needs of African
+            students while remaining open to international applicants worldwide. We help
+            students research courses and universities, prepare applications, and understand
+            common visa and scholarship requirements.
+          </p>
+        </div>
+        <figure className="overflow-hidden rounded-2xl border bg-muted shadow-lg">
+          <img
+            src="/about/students-guidance.jpg"
+            alt="African students reviewing study options with an education adviser around a laptop."
+            width="1600"
+            height="900"
+            fetchPriority="high"
+            className="aspect-[16/10] w-full object-cover object-center"
+          />
+        </figure>
+      </section>
+
+      <div className="max-w-3xl mx-auto">
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">University listings and relationships</h2>
       <p className="text-muted-foreground mb-4">
@@ -116,6 +135,7 @@ const About = () => {
         Email <a className="underline" href="mailto:info@unidoxia.com">info@unidoxia.com</a>{" "}
         or use our <Link to="/contact" className="underline">contact page</Link>.
       </p>
+      </div>
     </div>
   );
 };
