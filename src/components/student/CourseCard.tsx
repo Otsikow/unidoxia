@@ -123,7 +123,7 @@ export function CourseCard({ course }: CourseCardProps) {
         aria-label={`View details for ${course.name}`}
       >
         <Card className="group h-full overflow-hidden border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg flex flex-col animate-fade-in-up">
-          <CardContent className="pt-8 pb-4 flex-1">
+          <CardContent className="pt-8 sm:pt-8 pb-4 flex-1">
             {/* University Header */}
             <div className="flex items-start gap-3 mb-4">
               <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden border transition-transform duration-300 group-hover:scale-110 shadow-sm">
