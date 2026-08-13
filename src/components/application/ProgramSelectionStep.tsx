@@ -13,6 +13,7 @@ import {
   getAcademicYearOptions,
   getIntakeOptionsForYear,
 } from '@/lib/intakeOptions';
+import { formatCourseFee } from '@/lib/marketplacePresentation';
 
 interface ProgramSelection {
   programId: string;
@@ -317,8 +318,10 @@ export default function ProgramSelectionStep({
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <span>
-                    Tuition: {selectedProgram.tuition_currency}{' '}
-                    {selectedProgram.tuition_amount.toLocaleString()} per year
+                    Tuition: {formatCourseFee({
+                      amount: selectedProgram.tuition_amount,
+                      currency: selectedProgram.tuition_currency,
+                    })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">

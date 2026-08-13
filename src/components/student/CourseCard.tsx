@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MapPin, Calendar, DollarSign, Clock, GraduationCap } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { formatCourseFee } from '@/lib/marketplacePresentation';
 
 export interface Course {
   id: string;
@@ -98,9 +99,10 @@ export function CourseCard({ course }: CourseCardProps) {
     return 'Contact for dates';
   };
 
-  const tuitionDisplay = course.tuition_amount == null
-    ? 'Check official tuition fee'
-    : `${course.tuition_currency} ${course.tuition_amount.toLocaleString()} / year`;
+  const tuitionDisplay = formatCourseFee({
+    amount: course.tuition_amount,
+    currency: course.tuition_currency,
+  });
   const durationDisplay = course.duration_months == null
     ? 'Check official course duration'
     : `${course.duration_months} months`;
@@ -120,7 +122,7 @@ export function CourseCard({ course }: CourseCardProps) {
         }}
         aria-label={`View details for ${course.name}`}
       >
-        <Card className="group hover:shadow-lg transition-all duration-300 h-full flex flex-col animate-fade-in-up hover:scale-[1.01] relative overflow-visible">
+        <Card className="group h-full overflow-hidden border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg flex flex-col animate-fade-in-up">
           <CardContent className="pt-6 pb-4 flex-1">
             {/* University Header */}
             <div className="flex items-start gap-3 mb-4">
@@ -166,7 +168,7 @@ export function CourseCard({ course }: CourseCardProps) {
             </div>
 
             {/* Programme Title */}
-            <h2 className="text-base sm:text-lg font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors duration-300 leading-snug">
+            <h2 className="min-h-[3.25rem] text-base sm:text-lg font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors duration-300 leading-snug">
               {course.name}
             </h2>
 

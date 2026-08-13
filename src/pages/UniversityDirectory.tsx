@@ -101,11 +101,11 @@ export default function UniversityDirectory() {
           .select(
             "id, slug, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id",
           )
-          // Some seeded universities were missing the active flag. Treat null as visible
-          // so that partner universities (Albert A University, John Kols University,
-          // Pineapple University, Shalombay University, etc.) always appear for students
-          // and agents.
-          .or("active.eq.true,active.is.null")
+          .eq("active", true)
+          .not("name", "ilike", "%placeholder%")
+          .not("name", "ilike", "%test university%")
+          .not("name", "ilike", "%sample university%")
+          .not("name", "ilike", "%demo university%")
           .order("name");
 
         // Keep the existing directory available during a staged rollout before
@@ -114,7 +114,11 @@ export default function UniversityDirectory() {
           const fallback = await supabase
             .from("universities")
             .select("id, name, city, country, website, description, logo_url, featured_image_url, submission_config_json, active, tenant_id")
-            .or("active.eq.true,active.is.null")
+            .eq("active", true)
+            .not("name", "ilike", "%placeholder%")
+            .not("name", "ilike", "%test university%")
+            .not("name", "ilike", "%sample university%")
+            .not("name", "ilike", "%demo university%")
             .order("name");
           universitiesData = fallback.data as typeof universitiesData;
           uniError = fallback.error;
@@ -122,21 +126,26 @@ export default function UniversityDirectory() {
 
         if (uniError) throw uniError;
 
-        // MULTI-TENANT ISOLATION: Fetch programs with university_id to count per institution
-        // Each program belongs to exactly ONE university - no cross-mixing of data
-        const { data: programCounts, error: progError } = await supabase
-          .from("programs")
-          .select("id, university_id")
-          // Programs may also have a missing active flag; include them when counting
-          // so the directory metrics remain accurate.
-          .or("active.eq.true,active.is.null");
+        // Fetch every active programme page. A single Supabase select is capped by the
+        // API row limit and previously made this directory under-report the catalogue.
+        const programCounts: Array<{ university_id: string | null }> = [];
+        const countPageSize = 1_000;
+        for (let offset = 0; ; offset += countPageSize) {
+          const { data: page, error: progError } = await supabase
+            .from("programs")
+            .select("university_id")
+            .eq("active", true)
+            .range(offset, offset + countPageSize - 1);
 
-        if (progError) throw progError;
+          if (progError) throw progError;
+          programCounts.push(...(page || []));
+          if (!page || page.length < countPageSize) break;
+        }
 
         // Build a map of program counts per university
         // This ensures each university only shows their OWN programs
         const programCountMap: Record<string, number> = {};
-        programCounts?.forEach((program) => {
+        programCounts.forEach((program) => {
           const uniId = program.university_id;
           if (uniId) {
             programCountMap[uniId] = (programCountMap[uniId] || 0) + 1;
