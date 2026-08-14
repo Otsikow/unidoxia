@@ -305,13 +305,21 @@ export default function UniversityProfile() {
   return (
     <div className="min-h-screen bg-background">
       <SEO title={`${university.name} - Courses and International Study | UniDoxia`} description={university.description || `Explore courses and international study information for ${university.name}.`} />
-      <div className="mx-auto max-w-7xl px-4 pt-4"><BackButton fallback="/universities" label={(location.state as any)?.marketplaceBack?.label || "Back to universities"} showHistoryMenu={false} /></div>
+      <div className="mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-6">
+        <BackButton
+          fallback="/universities"
+          label={(location.state as any)?.marketplaceBack?.label || "Back to universities"}
+          showHistoryMenu={false}
+          variant="ghost"
+          className="-ml-2 h-10 rounded-xl px-3 font-semibold text-foreground hover:bg-muted"
+        />
+      </div>
       {/* Hero Section */}
-      <div className="relative min-h-[22rem] md:h-96 overflow-hidden">
-        <img src={heroImage} alt={university.name} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-background/30" />
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
-          <div className="max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl px-4 md:px-8">
+        <div className="relative min-h-[24rem] overflow-hidden rounded-2xl border border-border/60 shadow-lg md:h-[28rem] md:rounded-3xl">
+          <img src={heroImage} alt={university.name} className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/45 to-background/10" />
+          <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 md:p-10">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6">
               {/* University Logo */}
               {university.logo_url ? (
@@ -374,22 +382,22 @@ export default function UniversityProfile() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-            <TabsTrigger value="about">
+      <div className="mx-auto max-w-7xl px-4 py-7 md:px-8 md:py-10">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-7">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-2xl border border-border/60 bg-muted/60 p-1.5 md:grid-cols-4">
+            <TabsTrigger value="about" className="min-h-10 rounded-xl">
               <BookOpen className="h-4 w-4 mr-2" />
               About
             </TabsTrigger>
-            <TabsTrigger value="programs">
+            <TabsTrigger value="programs" className="min-h-10 rounded-xl">
               <GraduationCap className="h-4 w-4 mr-2" />
               Programs ({programTotal})
             </TabsTrigger>
-            <TabsTrigger value="requirements">
+            <TabsTrigger value="requirements" className="min-h-10 rounded-xl">
               <FileText className="h-4 w-4 mr-2" />
               Requirements
             </TabsTrigger>
-            <TabsTrigger value="scholarships">
+            <TabsTrigger value="scholarships" className="min-h-10 rounded-xl">
               <Award className="h-4 w-4 mr-2" />
               Scholarships ({scholarships.length})
             </TabsTrigger>
