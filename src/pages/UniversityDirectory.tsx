@@ -274,7 +274,7 @@ export default function UniversityDirectory() {
     const locationLabel = [university.city, university.country].filter(Boolean).join(", ");
 
     const cardContent = (
-      <div className="flex h-full flex-col gap-3.5 p-4 sm:p-5">
+      <div className="flex h-full flex-col gap-3.5 p-4 pb-6 sm:p-5 sm:pb-6">
         <div className="min-h-[5.25rem]">
           <div className="flex items-start gap-3 sm:gap-4">
             {/* University Logo */}
@@ -388,7 +388,7 @@ export default function UniversityDirectory() {
     }
 
     return (
-      <Card className="flex h-[36rem] flex-col overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-lg sm:h-[31rem]">
+      <Card className="flex h-[37.5rem] flex-col overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-lg sm:h-[32.5rem]">
         <div className="h-40 w-full flex-shrink-0 sm:h-44">
           <img
             src={image}
