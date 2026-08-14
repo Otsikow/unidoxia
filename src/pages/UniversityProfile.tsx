@@ -259,7 +259,7 @@ export default function UniversityProfile() {
       const validatedPrograms = (programsData || []).filter(
         (program) => program.university_id === resolvedUniversityId
       );
-      setPrograms(validatedPrograms);
+      setPrograms(validatedPrograms as unknown as Program[]);
       setProgramTotal(programCount || 0);
 
       // MULTI-TENANT ISOLATION: Load scholarships ONLY for this specific university
