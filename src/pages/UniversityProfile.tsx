@@ -101,7 +101,7 @@ interface Program {
     id: string;
     intake_year: number;
     intake_month: number;
-    status: "available" | "recruitable" | "waitlisting" | "closed" | "provisional" | "unknown";
+    status: "available" | "recruitable" | "waitlisting" | "closed" | "unavailable" | "provisional" | "unknown";
     application_deadline?: string | null;
   }>;
 }
@@ -167,6 +167,7 @@ const intakeStatusClasses: Record<string, string> = {
   recruitable: "border-emerald-200 bg-emerald-50 text-emerald-800",
   waitlisting: "border-amber-200 bg-amber-50 text-amber-800",
   closed: "border-red-200 bg-red-50 text-red-800",
+  unavailable: "border-border bg-muted text-muted-foreground",
   provisional: "border-blue-200 bg-blue-50 text-blue-800",
   unknown: "border-border bg-muted text-muted-foreground",
 };
@@ -336,7 +337,7 @@ export default function UniversityProfile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={university.slug === "lethbridge-polytechnic" ? "Lethbridge Polytechnic Courses, Fees & International Admissions | UniDoxia" : `${university.name} - Courses and International Study | UniDoxia`} description={university.slug === "lethbridge-polytechnic" ? "Explore Lethbridge Polytechnic international courses, fees, admissions and current intakes in Lethbridge, Alberta, Canada." : (university.description || `Explore courses and international study information for ${university.name}.`)} />
+      <SEO title={university.slug === "lethbridge-polytechnic" ? "Lethbridge Polytechnic Courses, Fees & International Admissions | UniDoxia" : university.slug === "lambton-college" ? "Lambton College Courses, Fees & International Admissions | UniDoxia" : `${university.name} - Courses and International Study | UniDoxia`} description={university.slug === "lethbridge-polytechnic" ? "Explore Lethbridge Polytechnic international courses, fees, admissions and current intakes in Lethbridge, Alberta, Canada." : university.slug === "lambton-college" ? "Explore Lambton College international programmes, fees, current intakes and admission requirements in Sarnia, Ontario." : (university.description || `Explore courses and international study information for ${university.name}.`)} />
       <div className="mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-6">
         <BackButton
           fallback="/universities"
@@ -796,7 +797,7 @@ export default function UniversityProfile() {
                         <div className="flex flex-wrap gap-2" aria-label="Current intake availability">
                           {program.program_intakes.map((intake) => (
                             <Badge key={intake.id} variant="outline" className={intakeStatusClasses[intake.status] || intakeStatusClasses.unknown}>
-                              {intakeLabel(intake)} · {intake.status === "available" ? "Open" : intake.status.replaceAll("_", " ")}
+                              {intakeLabel(intake)} · {intake.status === "available" ? "Open" : intake.status === "unavailable" ? "Not offered" : intake.status.replaceAll("_", " ")}
                             </Badge>
                           ))}
                         </div>
