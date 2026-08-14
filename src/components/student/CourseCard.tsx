@@ -168,9 +168,13 @@ export function CourseCard({ course }: CourseCardProps) {
             </div>
 
             {/* Programme Title */}
-            <h2 className="min-h-[3.25rem] text-base sm:text-lg font-bold mb-3 line-clamp-2 group-hover:text-primary transition-colors duration-300 leading-snug">
+            <h2
+              title={course.name}
+              className="mb-3 h-[2.75rem] sm:h-[3.5rem] overflow-hidden text-base sm:text-lg font-bold leading-[1.375rem] sm:leading-[1.75rem] line-clamp-2 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] group-hover:text-primary transition-colors duration-300"
+            >
               {course.name}
             </h2>
+
 
             {/* Badges */}
             <div className="flex flex-wrap gap-2 mb-4">
