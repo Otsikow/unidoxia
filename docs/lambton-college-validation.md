@@ -81,5 +81,10 @@ No third-party education-agent, aggregator, blog, Wikipedia or search snippet wa
 | Shared institutional profile, desktop 1440 × 900 | Passed; no horizontal overflow |
 | Shared institutional profile, tablet 768 × 1024 | Passed; no horizontal overflow |
 | Shared institutional profile, mobile 390 × 844 | Passed; no horizontal overflow |
+| Lovable-managed database materialisation | 46 programmes, 138 intakes, 46 fee records and 12 scholarships |
+| Lovable Canada search preview | 104 courses across 5 universities; Lambton cards rendered |
+| Lambton profile preview | 46 programmes and 12 scholarships rendered; claim/disclaimer controls present |
 
-Responsive validation used the existing Lethbridge Polytechnic record because the Lambton migration has not been applied to any production database. Both institutions use the same `UniversityProfile` implementation. No production data was changed during visual QA.
+Initial responsive validation used the existing Lethbridge Polytechnic record before Lambton database materialisation. Both institutions use the same `UniversityProfile` implementation.
+
+After GitHub merge, the reviewed Lambton migration was materialised through the Lovable-managed database. The direct Lambton preview and Canada catalogue were then rendered and checked, including a 390 × 844 mobile profile with no horizontal overflow. The record remains `needs_review` / `profile_incomplete` because the published-source gaps listed above are still real; appearing in the catalogue must not be confused with being fully complete for outreach.
