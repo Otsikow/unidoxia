@@ -1,0 +1,3168 @@
+{
+  "university": {
+    "name": "Lethbridge Polytechnic",
+    "slug": "lethbridge-polytechnic",
+    "city": "Lethbridge",
+    "country": "Canada",
+    "website": "https://lethpolytech.ca/"
+  },
+  "source": {
+    "url": "https://lethpolytech.ca/programs-and-courses/international-programs"
+  },
+  "academicYear": "2026/27",
+  "checkedAt": "2026-08-14T05:46:15.124Z",
+  "discovered": 43,
+  "classified": 43,
+  "programmes": [
+    {
+      "title": "Administrative Office Professional",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "Business and Management",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/administrative-office-professional",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Our graduates enjoy close to a 100 percent employment rate! You can look forward to work in a wide range of roles and office environments including: Positions Administrative assistant Bookkeeper Data entry specialist Program assistant Receptionist Industries Commercial and educational offices Government offices Insurance and real estate offices Legal and dental offices",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/administrative-office-professional",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Agricultural and Heavy Equipment Technician",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/agricultural-and-heavy-equipment-technician",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Upon completion of the program, you'll be able to write exams for the first two years of Agricultural Equipment Technician or Heavy Equipment Technician. You'll also be eligible to enter the Alberta Apprenticeship program. No matter which road you take, you'll be ready to begin a career in many diverse fields, including: Agricultural equipment service Construction equipment service Heavy equipment service Journeyperson agricultural equipment technician Journeyperson heavy equipment technician Mining equipment service Mobile repair service Oilfield equipment service Service manager/shop foreman Trucking equipment service",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "47.0302",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "Late August",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/agricultural-and-heavy-equipment-technician",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Agriculture Science - Bachelor of",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/agriculture-science-bachelor",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Your degree will prepare you for a career in a wide range of fields, including: Agronomy consulting Agronomy sales (crop inputs) Environmental assessment Farm equipment technicians Primary production (food production systems) Research",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "01.1102",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/agriculture-science-bachelor",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Agriculture Science - Bachelor of (Post-Diploma)",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/agriculture-science-bachelor-post-diploma",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Your degree will prepare you for a career in a wide range of fields, including: Agronomy consulting Agronomy sales (crop inputs) Environmental assessment Farm equipment technicians Primary production (food production systems) Research",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/agriculture-science-bachelor-post-diploma",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Agriculture Sciences - Ag Business",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/agriculture-sciences-ag-business",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Graduates of our Agriculture Sciences program work in a wide variety of settings, including: Commodity trader/grain or cattle buyer Farm management consultant Insurance agent/agricultural insurance Loan officer/agriculture finance Marketing and communications for agribusinesses or producer organizations Policy advisor for producer organizations",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "01.0101",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/agriculture-sciences-ag-business",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Agriculture Sciences - Agronomy",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/agriculture-sciences-agronomy",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Graduates of our Agriculture Sciences program work in a wide variety of settings, including: Agronomist Crop consultant Entomologist Extension specialist Farm input sales representative Government Grain merchandiser Insurance specialist Loan officer Plant pathologist Research agronomist Seed production specialist",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "01.1102",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/agriculture-sciences-agronomy",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Architectural Animation Technology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Engineering and Technology",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/architectural-animation-technology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Our diploma program will prepare you to work with design teams in a wide variety of fields: Architectural animation communications specialist Architectural illustrator BIM draftsperson CAD designer Concept artist Digital environmental artist Immersive artist Three-dimensional designer Three-dimensional modelling and texture artist",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/architectural-animation-technology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Automotive Systems",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/automotive-systems",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Wherever your future takes you, you'll be able to drive away from Lethbridge Polytechnic and into positions such as: Apprentice automotive service technician Automotive systems certificate instructor Equipment salesperson Journeyperson automotive service technician Mobile repair service technician Service manager Shop foreman Shop owner",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "Late August",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/automotive-systems",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Business Administration - Accounting",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Business and Management",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/business-administration-accounting",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "A variety of opportunities will await once you graduate. You will have the option to: continue your studies; obtain a professional designation; or immediately pursue your career in fields such as: Accounting Agriculture-business Banking E-commerce Energy industry Entrepreneurship Financial services Human resources Management Marketing Project management Retail management Running your own business Sales Start-up business Taxation Technology Why Lethbridge Polytechnic Business Administration? Employable after 2 years – step right into a great career upon graduation, or, with transfer agreements in place at institutions across Canada and around the globe, you can easily continue your education to earn your bachelor’s degree in as little as 2 additional years.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "available",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September or January",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/business-administration-accounting",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Business Administration - Business Operations",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Business and Management",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/business-administration-operations",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "A variety of opportunities will await you once you graduate. You will have the option to: continue your studies; obtain a professional designation; or immediately pursue your career in fields such as: Advertising Agriculture-business Banking E-commerce Energy industry Entrepreneurship Logistics Management Marketing Project management Retail management Running your own business Sales Start-up business Supply chain management Technology Why Lethbridge Polytechnic Business Administration? Employable after two years – step right into a great career upon graduation, or, with transfer agreements in place at institutions across Canada and around the globe, you can easily continue your education to earn your bachelor’s degree in as little as two additional years.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "available",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September or January",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/business-administration-operations",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Business Administration - Management",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Business and Management",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/business-administration-management",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "A variety of opportunities will await you once you graduate. You will have the option to continue your studies, obtain a professional designation or immediately pursue your career in fields such as: Advertising Agriculture-business Banking E-commerce Energy industry Financial services Human resources Logistics Management Project management Retail management Sales Start-up business Supply chain management Technology Why Lethbridge Polytechnic Business Administration? Employable after two years – step right into a great career upon graduation, or, with transfer agreements in place at institutions across Canada and around the globe, you can easily continue your education to earn your bachelor’s degree in as little as two additional years.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "available",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September or January",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/business-administration-management",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Child and Youth Care",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/child-and-youth-care",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "When you graduate, you'll be ready to work with children, youth and families in a wide variety of settings, including: Adolescent psychiatry Drop-in centres Family support Foster care work Group homes Hospitals Independent living programs Recreation and community centres Residential and treatment programs Safe consumption sites Schools Women’s emergency centres Young offender centres",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "waitlisting",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "44.0702",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September or January",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/child-and-youth-care",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Civil Engineering Technology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Engineering and Technology",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/civil-engineering-technology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Construction estimator Construction inspector Construction manager Consulting Geo-technologist Government/municipality engineering Infrastructure designer Materials testing technologist Quality assurance/control technologist Roadway designer Structural designer",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "15.0201",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/civil-engineering-technology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Information Technology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Engineering and Technology",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/computer-information-technology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Business and systems analyst Computer service technician Database designer/developer GIS developer Information systems project manager IT support specialist Mobile app developer Network analyst/technician Programmer analyst Software developer Software testing specialist Web developer and administrator",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "11.0103",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/computer-information-technology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Conservation Enforcement - Bachelor of Applied Science",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/conservation-enforcement-bachelor-applied-science",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Conservation officer Environmental investigator/inspector Fish and wildlife officer Fishery officer Park patrol officer Park ranger Park warden Pollution control officer Resource management officer Wildlife investigator Employability Natural Resource Law Enforcement Officer positions have specific physical requirements such as vision, hearing and physical fitness. The specific requirements differ with each agency. It is the applicant’s responsibility to confirm that they meet the requirements of the agencies with which they hope to work. Persons with a criminal record may have difficulty competing for jobs as Conservation Enforcement Officers in Canada. Employers often require that students hold a valid Standard First Aid or Wilderness First Aid Certificate and/or a CPR Certificate to be eligible for seasonal and/or permanent employment. Students are encouraged to obtain these certificates either prior to entering the program or during the first term. Workshops and short courses offered by third-party businesses may be available on evenings and weekends. Students are encouraged to attend these sessions to enhance their credentials for employment.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/conservation-enforcement-bachelor-applied-science",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Criminal Justice - Bachelor of",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/criminal-justice-bachelor",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Graduates of the Bachelor of Criminal Justice program will be prepared to enter career paths including the following: Business planner Case workers in provincial and federal justice organizations Communications officer Continued studies in graduate school Crisis support worker Municipal, provincial and federal government policy analyst Parole officers Probation officers Research assistant Supervisors/Managers in justice organizations Victim service worker",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "43.0100",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September (on-campus and online), January or May (online only)",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/criminal-justice-bachelor",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Criminal Justice - Bachelor of (Post-Diploma)",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/criminal-justice-bachelor-post-diploma",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Graduates of the Bachelor of Criminal Justice Post-Diploma Degree program will be prepared to enter careers including the following: Business planner Case workers in provincial and federal justice organizations Communications officer Continued studies in graduate school Crisis support worker Municipal, provincial and federal government policy analyst Parole officers Probation officers Research assistant Supervisors/Managers in justice organizations Victim service worker",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September (on-campus and online), January or May (online only)",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/criminal-justice-bachelor-post-diploma",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Criminal Justice - Corrections",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/criminal-justice-corrections",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "At the end of the program, you'll be prepared for work throughout the criminal justice system in positions such as: Federal correctional officer Halfway house counsellor Provincial correctional officer Victim services worker Youth worker",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September (on-campus and online), January and May (online only)",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/criminal-justice-corrections",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Criminal Justice - Policing",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/criminal-justice-policing",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "You'll leave our program with a comprehensive understanding of the criminal justice system and a valuable range of practical skills and abilities. You'll be ready to serve as either a sworn public safety officer or as a civilian employee, with: Emergency services Federal enforcement agencies such as Royal Canadian Mounted Police, Canada Border Services, Correctional Service Canada, Canadian Security Intelligence Service (CSIS) Municipal police services Other provincial enforcement and protection services including sheriffs Private security and investigation agencies Provincial police services Regional police services",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September (on-campus and online), January and May (online only)",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/criminal-justice-policing",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Culinary Arts",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Hospitality and Culinary Arts",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/culinary-arts",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Lethbridge Polytechnic graduates are employed throughout Canada and abroad in a variety of culinary opportunities including fine restaurants, hotels, cruise ships, catering companies, flight kitchens, hospitals, care facilities and convention centres. Opportunities also exist to own and operate your own restaurant or branch out into marketing and product development. Recent graduates have found employment in the following roles: Banquet chef Banquet cook Business owner Caterer Chef Chef de partie Entrepreneur Food sales representative Line cook Prep cook Sous chef",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "available",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "late August and January",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/culinary-arts",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Digital Communications and Media",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Engineering and Technology",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/digital-communications-and-media",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Your diploma in Digital Communications and Media will prepare you for a wide range of positions working independently or as part of an organization. These careers include: Digital/broadcast journalist Freelance/entrepreneur Graphic and information design Magazine/newspaper content creator Marketing and advertising Media production company owner Media/public relations Photographer/videographer Podcaster Radio host/producer/scriptwriter Social media content manager Story editor Video editor Video producer/director/scriptwriter",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "09.0702",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/digital-communications-and-media",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Early Childhood Education Certificate",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/early-childhood-education-certificate",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "When you graduate, your in-demand skills will open up opportunities in: Before and after school programs Child care centres Day homes Early learning programs Family group care programs Kindergartens Out-of-school care programs Parenting centres Preschool programs Recreational facilities",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "waitlisting",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "19.0709",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September and January (on-campus or online) May (online only).",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/early-childhood-education-certificate",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Early Childhood Education Diploma",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/early-childhood-education-diploma",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "When you graduate, your in-demand skills will open up opportunities in: Before and after school programs Child care centres Day homes Early learning programs Family group care programs Kindergartens Out-of-school care programs Parenting centres Preschool programs Recreational facilities",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "waitlisting",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "19.0709",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September and January (on-campus and online), May (online only)",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/early-childhood-education-diploma",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Ecosystem Management - Bachelor of",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Business and Management",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/bachelor-of-ecosystem-management",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Concentration Dependent Agrologist Environmental consultant Environmental scientist Fisheries biologist Wildlife biologist Graduate studies or research in environmental or wildlife sciences",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/bachelor-of-ecosystem-management",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Engineering Design Technology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Engineering and Technology",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/engineering-design-technology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "An Engineering Design Technology diploma will prepare you for a position in this high demand field, possible roles after graduation include: Architectural technologist Building designer Building inspector CAD technologist Engineering design technologist Environmental consulting Infrastructure designer Manufacturing engineering Mapping/survey technologist Mechanical design technologist Process design technologist Structural technologist",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/engineering-design-technology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Environmental Assessment and Restoration",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/environmental-assessment-and-restoration",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Environmental assessment officer Environmental compliance officer Environmental technologist Environmental investigator Pollution prevention officer Reclamation technologist Soils technologist Water survey technologist Water quality technologist Watershed management coordinator",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "03.0299",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/environmental-assessment-and-restoration",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Exercise Science",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/exercise-science",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "With a diploma in Exercise Science, you'll be ready to work in a variety of capacities in the health and wellness industry, complete two industry certifications or continue your studies in a degree program. Qualified exercise professionals are found working in a variety of positions including: Fitness centre manager Health and fitness coordinators Health and wellness coach Personal training Physiotherapist assistant Strength and conditioning coach",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "31.0505",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/exercise-science",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "General Arts and Science - English",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-english",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Start here, go anywhere! General Arts and Science provides you with foundational skills that transfer easily to a wide variety of careers and academic programs ranging from social scientist to teacher, from business entrepreneur to nurse, and much, much more.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-english",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "General Arts and Science - Health Sciences Certificate",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-health-sciences-certificate",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Discover your interest in the health sector through Lethbridge Polytechnic’s General Arts and Science – Health Sciences certificate. Successful completion of this certificate will equip you with the skills and knowledge to pursue further education for careers in: Exercise science General arts and science Massage therapy Nursing Therapeutic recreation – gerontology",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "available",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "51.0000",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September and January",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-health-sciences-certificate",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "General Arts and Science - Kinesiology Certificate",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-kinesiology-certificate",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Successful completion of this certificate will equip you with the foundational knowledge and skills to support further education and serve as a stepping stone toward more specialized academic pathways in: Athletic therapy Exercise science Health education or community health work Kinesiology Nursing Education in Southwestern Alberta (NESA) Occupational therapy Physiotherapy Practical nursing Recreational therapy",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "31.0501",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-kinesiology-certificate",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "General Arts and Science - Psychology and Sociology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Social and Community Services",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-psychology-and-sociology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Start here, go anywhere! General Arts and Science provides students with foundational skills that transfer easily to a wide variety of careers and academic programs ranging from social scientist to teacher, from business entrepreneur to nurse, and much, much more.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-psychology-and-sociology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "General Arts and Science Certificate",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-certificate",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Start here, go anywhere! General Arts and Science provides you with foundational skills that transfer easily to a wide variety of careers and academic programs ranging from social scientist to teacher, from business entrepreneur to nurse, and much more",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-certificate",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "General Arts and Science Diploma",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-diploma",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Start here, go anywhere! General Arts and Science provides students with foundational skills that transfer easily to a wide variety of careers and academic programs ranging from social scientist to teacher, from business entrepreneur to nurse, and much, much more.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "available",
+          "applicationDeadline": "2026-09-01",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "available",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September, January and May",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/general-arts-and-science-diploma",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Interior Design Technology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Engineering and Technology",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/interior-design-technology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Our diploma program in Interior Design Technology will prepare you to work with design teams in a wide variety of fields. Commercial designer Concept artist Draftsperson Interior design technologist Kitchen and bath designer Millwork designer Product sales representative Residential designer Space planner",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "ineligible",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/interior-design-technology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Massage Therapy",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/massage-therapy",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "You will be prepared to work as a massage therapist in a growing number of fields, including: Chiropractic clinics Independent practitioners Long-term care facilities Massage clinics and spas Private health care providers Sports medicine clinics",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "51.3501",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/massage-therapy",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Multimedia Production",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/multimedia-production",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Our Multimedia Production diploma will prepare you for entry-level positions in a wide range of fields, including: 2D/3D animation Front-end development Interactive advertising/marketing Interactive narrative design Mobile app development Motion graphics New media e-learning New media entrepreneurship/freelance Social media User experience design Web and interactive media design Web and interactive programming/development Web game/simulation design/development",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "11.0801",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/multimedia-production",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Natural Resource Compliance",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/natural-resource-compliance",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Conservation Officer Environmental Investigator/Inspector Fish and Wildlife Officer Fishery Officer Municipal Police Officer Park Patrol Officer Park Ranger Pollution Control Officer Resource Management Officer RCMP Officer Wildlife Investigator Employability Natural Resource Law Enforcement Officer positions have specific physical requirements such as vision, hearing and physical fitness. The specific requirements differ with each agency. It is the applicant’s responsibility to confirm that they meet the requirements of the agencies with which they hope to work. Persons with a criminal record may have difficulty competing for jobs as Conservation Enforcement Officers in Canada. Employers often require that students hold a valid Standard First Aid or Wilderness First Aid Certificate and/or a CPR Certificate to be eligible for seasonal and/or permanent employment. Students are encouraged to obtain these certificates either prior to entering the program or during the first term. A number of workshops and short courses sponsored by various agencies are available on evenings and weekends. Students are encouraged to attend these sessions to enhance their credentials for employment.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "03.0208",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/natural-resource-compliance",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Nursing - Bachelor of",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/bachelor-of-nursing",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Upon successful completion of the program, you'll be eligible to write the NCLEX-RN exam to be licensed as a registered nurse. This will open career opportunities for you in a range of health care facilities, including: Acute care (medical, surgical, mental health, pediatric, maternity, etc.) Community health nursing (public health, primary health care, home care, etc.) Continuing care (long term care, supportive living, etc.) Critical care (ICU, ER, OR, labour and delivery, NICU, etc.) Government agencies Medical offices Nursing education Nursing research Rural and remote nursing",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "unknown",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": "Collaborative Nursing Education in Southwestern Alberta pathway with the University of Lethbridge; applicants must follow the University of Lethbridge application route."
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/bachelor-of-nursing",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Nursing After Degree - Bachelor of",
+      "qualification": "Degree",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/bachelor-of-nursing-after-degree",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Upon successful completion of the program, you'll be eligible to write the NCLEX-RN exam to be licensed as a registered nurse. This will open career opportunities for you in a range of health care facilities, including: Acute care (medical, surgical, mental health, pediatric, maternity, etc.) Community health nursing (public health, primary health care, home care, etc.) Continuing care (long term care, supportive living, etc.) Critical care (ICU, ER, OR, labour and delivery, NICU, etc.) Government agencies Medical offices Nursing education Nursing research Rural and remote nursing",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "unknown",
+          "cipCode": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": "Collaborative Nursing Education in Southwestern Alberta pathway with the University of Lethbridge; applicants must follow the University of Lethbridge application route."
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/bachelor-of-nursing-after-degree",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Practical Nurse",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/practical-nurse",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Upon successful completion of the program, you will be eligible to write the Canadian Practical Nursing Registration Exam (CPNRE). Successful completion of the CPNRE exam designates you as a Licensed Practical Nurse (LPN). Career opportunities for the LPN exist in a variety of health care settings, which include: Acute care (medical, surgical, pediatric, maternity, etc.) Continuing care services (continuing care homes, supportive living accommodations, home and community care, rehabilitative care, palliative care, etc.) Renal services Public health Visit ALIS website for more career information. Practical Nurses are part of an inter-professional collaborative health care team and play a primary role in providing safe, competent and ethical nursing care to the public.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "51.3901",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/practical-nurse",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Renewable Resource Management",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Agriculture and Environment",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/renewable-resource-management",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Our diploma program will prepare you for work in a wide variety of environmental and natural resource management career opportunities, including employment as a: Biological technician Environmental technician Field Research technician Resource management technician Employment is found with government agencies, private environmental organizations, environmental (non-governmental) consulting firms and natural resource industries (oil, gas, mining, and forestry).",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "03.0201",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/renewable-resource-management",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Therapeutic Recreation - Gerontology",
+      "qualification": "Diploma",
+      "level": "Diploma",
+      "discipline": "Health and Medicine",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/therapeutic-recreation-gerontology",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Your diploma in Therapeutic Recreation Gerontology will prepare you to work in many settings, including: Community-based programs Group homes Hospitals Lodges Long term care Mental health programs Rehabilitation programs Seniors day programs Senior centers Supportive living",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "51.0899",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/therapeutic-recreation-gerontology",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Wind Turbine Technician",
+      "qualification": "Certificate",
+      "level": "Certificate",
+      "discipline": "General Studies",
+      "officialUrl": "https://lethpolytech.ca/programs-and-courses/wind-turbine-technician",
+      "durationMonths": null,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Lethbridge",
+      "deliveryType": "On campus",
+      "overview": null,
+      "careerOutcomes": "Once certified, your skills will be extremely marketable in this burgeoning industry; many of our students are hired within days of graduation. You'll have multiple future career pathways, including as a: Apprentice electrician Blade repair technician Wind turbine construction Wind turbine maintenance Wind turbine manufacturing Wind turbine technician Some companies have weight restrictions for technicians at 310 pounds with all of their personal protective equipment and gear on as this is the maximum rated capacity allowed on most safety gear.",
+      "requirements": null,
+      "englishRequirements": {
+        "academicYear": "2026/27",
+        "ieltsAcademic": "6.0 overall, with no band below 6.0 (most programmes)",
+        "toeflIbt": "80 (most programmes)",
+        "pteAcademic": "54 (most programmes)",
+        "sourceUrl": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+        "programmeExceptionsApply": true
+      },
+      "intakes": [
+        {
+          "year": 2026,
+          "month": 9,
+          "status": "closed",
+          "applicationDeadline": null,
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2026/27",
+        "feeBasis": "annual",
+        "sourceUrl": "https://lethpolytech.ca/document-centre/program-cost-estimates"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "pgwp": {
+          "status": "eligible",
+          "cipCode": "47.0704",
+          "sourceUrl": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "checkedAt": "2026-08-14T05:46:15.124Z"
+        },
+        "starts": "September",
+        "nursingCollaboration": null
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "verificationState": "official_source_verified",
+      "dataStatus": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://lethpolytech.ca/programs-and-courses/wind-turbine-technician",
+          "priority": 1
+        },
+        {
+          "kind": "intakes",
+          "url": "https://lethpolytech.ca/programs-and-courses/international-programs",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://lethpolytech.ca/departments/admissions/entrance-requirements/english-language",
+          "priority": 1
+        }
+      ]
+    }
+  ]
+}

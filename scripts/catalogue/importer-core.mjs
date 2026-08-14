@@ -93,6 +93,7 @@ export function sourceFingerprint(input) {
     studyMode: p.studyMode, attendance: p.attendance, catalogueStatus: p.catalogueStatus,
     tuition: p.tuition, intakes: [...p.intakes].sort((a, b) => `${a.year}-${a.month}`.localeCompare(`${b.year}-${b.month}`)),
     requirements: p.requirements ?? null, englishRequirements: p.englishRequirements ?? null,
+    applicationDetails: p.applicationDetails ?? null,
   });
   return createHash("sha256").update(stable).digest("hex");
 }
