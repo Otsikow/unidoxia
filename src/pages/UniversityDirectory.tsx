@@ -277,7 +277,7 @@ export default function UniversityDirectory() {
     const highlights = university.profileDetails?.highlights || [];
 
     const cardContent = (
-      <div className="flex h-full flex-col gap-4 p-4 sm:p-5">
+      <div className="flex flex-col gap-3.5 p-4 sm:p-5">
         <div className="flex flex-col gap-3">
           <div className="flex items-start gap-3 sm:gap-4">
             {/* University Logo */}
@@ -357,9 +357,9 @@ export default function UniversityDirectory() {
           <div className="rounded-md border bg-muted/30 p-2">
             <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
               <Building2 className="h-2.5 w-2.5" />
-              Partner Status
+              Listing Status
             </div>
-            <p className="mt-1 font-medium text-foreground text-xs">Active</p>
+            <p className="mt-1 font-medium text-foreground text-xs">Listed</p>
           </div>
         </div>
 
@@ -379,7 +379,7 @@ export default function UniversityDirectory() {
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center justify-end gap-1.5 mt-auto">
+        <div className="flex flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3">
           <Button variant="outline" size="sm" className="h-8 text-xs px-3" asChild>
             <Link to={`${directoryBasePath}/${university.slug || university.id}`}>
               Explore
@@ -415,12 +415,12 @@ export default function UniversityDirectory() {
     }
 
     return (
-      <Card className="overflow-hidden border-border/60 transition-all hover:shadow-lg h-full flex flex-col">
+      <Card className="overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-lg">
         <div className="w-full flex-shrink-0">
           <img
             src={image}
             alt={university.name}
-            className="h-full w-full object-cover aspect-[16/10] sm:aspect-[4/3]"
+            className="aspect-[16/9] w-full object-cover"
           />
         </div>
         <div className="flex-1 flex flex-col">{cardContent}</div>
@@ -462,20 +462,20 @@ export default function UniversityDirectory() {
     <div className="min-h-screen bg-background pb-12">
       <SEO
         title="University Directory - UniDoxia"
-        description="Browse our directory of partner universities from around the world. Find detailed profiles, rankings, and program information to help you choose the right institution."
-        keywords="university directory, partner universities, college listings, international universities, student recruitment directory, university finder"
+        description="Browse listed universities from around the world. Find detailed profiles, course information, and direct links to help you explore the right institution."
+        keywords="university directory, listed universities, college listings, international universities, student recruitment directory, university finder"
       />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Globe className="h-4 w-4" />
-              Partner universities • Live data
+              Listed universities • Live data
             </div>
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-foreground">University Directory</h1>
               <p className="max-w-2xl text-base text-muted-foreground">
-                Discover partner universities with key information, courses,
+                Discover listed universities with key information, courses,
                 and direct links to explore admissions further.
               </p>
             </div>
@@ -496,7 +496,7 @@ export default function UniversityDirectory() {
             <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-base font-semibold">
                 <Building2 className="h-4 w-4 text-primary" />
-                Partner Universities
+                Listed Universities
               </CardTitle>
               <CardDescription>
                 Active institutions on the platform
@@ -526,7 +526,7 @@ export default function UniversityDirectory() {
                   {formatNumber(summaryMetrics.totalPrograms)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Across all partner universities
+                  Across all listed universities
                 </p>
               </CardContent>
             </Card>
@@ -706,7 +706,7 @@ export default function UniversityDirectory() {
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sortedUniversities.map((university) => (
                 <div key={university.id}>{renderUniversityCard(university)}</div>
               ))}

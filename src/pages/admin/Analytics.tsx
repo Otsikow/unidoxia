@@ -47,7 +47,7 @@ export default function Analytics() {
       color: 'text-green-600',
     },
     {
-      label: 'Partner Universities',
+      label: 'Listed Universities',
       value: statsData ? formatNumber(statsData.partnerUniversities) : '—',
       change: statsData ? formatChange(statsData.partnerUniversitiesChange) : '—',
       trend: (statsData?.partnerUniversitiesChange ?? 0) >= 0 ? 'up' as const : 'down' as const,

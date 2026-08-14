@@ -386,7 +386,7 @@ export default function AgentDashboardOverview() {
     { label: "Create application", icon: FilePlus2, to: "/dashboard/applications/new" },
     { label: "Add new lead", icon: Users, to: "/dashboard/leads" },
     { label: "Search programmes", icon: Search, to: "/courses?view=programs" },
-    { label: "Partner universities", icon: Building2, to: "/dashboard/partners" },
+    { label: "Listed universities", icon: Building2, to: "/dashboard/partners" },
     { label: "Send message", icon: Send, to: "/dashboard/messages" },
   ];
 

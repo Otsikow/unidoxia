@@ -753,7 +753,7 @@ const AdminPrograms = () => {
                 <TabsTrigger value="health">Health</TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="pt-4 text-sm text-muted-foreground">
-                End-to-end listing of all active and upcoming intakes across partner universities.
+                End-to-end listing of all active and upcoming intakes across listed universities.
               </TabsContent>
               <TabsContent value="stem" className="pt-4 text-sm text-muted-foreground">
                 Computer science, data, engineering, and emerging technology courses.

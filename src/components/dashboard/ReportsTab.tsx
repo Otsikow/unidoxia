@@ -447,7 +447,7 @@ export default function ReportsTab() {
     { value: 'applications', label: 'Applications Report', icon: FileText, description: 'Export all applications with student and program details' },
     { value: 'payments', label: 'Payments Report', icon: DollarSign, description: 'Export all payment transactions' },
     { value: 'commissions', label: 'Commissions Report', icon: DollarSign, description: 'Export all commission records' },
-    { value: 'universities', label: 'Universities Report', icon: Building2, description: 'Export all partner universities' },
+    { value: 'universities', label: 'Universities Report', icon: Building2, description: 'Export all listed universities' },
     { value: 'programs', label: 'Courses Report', icon: FileSpreadsheet, description: 'Export all academic courses' },
   ];
 

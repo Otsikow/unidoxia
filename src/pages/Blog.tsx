@@ -326,7 +326,7 @@ export default function Blog() {
           <div className="space-y-3 text-center">
             <h2 className="text-2xl font-semibold">Playbooks, insights & guides</h2>
             <p className="text-sm text-muted-foreground">
-              Select a pathway to access curated resources tailored to students, certified agents, and partner universities.
+              Select a pathway to access curated resources tailored to students, certified agents, and listed universities.
             </p>
           </div>
 
