@@ -33,6 +33,7 @@ import {
   Facebook,
   Youtube,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -91,6 +92,18 @@ interface Program {
   ielts_overall: number | null;
   toefl_overall: number | null;
   intake_months: number[];
+  application_details?: {
+    routing?: string;
+    pgwp?: { status?: "eligible" | "ineligible" | "unknown"; cipCode?: string | null; sourceUrl?: string };
+    nursingCollaboration?: string | null;
+  } | null;
+  program_intakes?: Array<{
+    id: string;
+    intake_year: number;
+    intake_month: number;
+    status: "available" | "recruitable" | "waitlisting" | "closed" | "provisional" | "unknown";
+    application_deadline?: string | null;
+  }>;
 }
 
 interface Scholarship {
@@ -138,6 +151,24 @@ const parseEntryRequirements = (requirements: Program["entry_requirements"]): st
       .filter(Boolean);
   }
   return [];
+};
+
+const publicApplicationRouting = (config: unknown): string | null => {
+  if (!config || typeof config !== "object" || Array.isArray(config)) return null;
+  const value = (config as Record<string, unknown>).applicationRouting;
+  return typeof value === "string" ? value : null;
+};
+
+const intakeLabel = (intake: NonNullable<Program["program_intakes"]>[number]) =>
+  `${getMonthName(intake.intake_month)} ${intake.intake_year}`;
+
+const intakeStatusClasses: Record<string, string> = {
+  available: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  recruitable: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  waitlisting: "border-amber-200 bg-amber-50 text-amber-800",
+  closed: "border-red-200 bg-red-50 text-red-800",
+  provisional: "border-blue-200 bg-blue-50 text-blue-800",
+  unknown: "border-border bg-muted text-muted-foreground",
 };
 
 export default function UniversityProfile() {
@@ -209,7 +240,7 @@ export default function UniversityProfile() {
       // The university_id filter ensures complete data isolation
       let programsQuery = supabase
         .from("programs")
-        .select("*", { count: "exact" })
+        .select("*, program_intakes(*)", { count: "exact" })
         .eq("university_id", resolvedUniversityId)
         .eq("active", true)
         .eq("catalogue_status", "active")
@@ -294,6 +325,7 @@ export default function UniversityProfile() {
     university.featured_image_url ??
     getUniversityImage(university.name);
   const primaryContact = profileDetails.contacts.primary;
+  const guidanceOnly = publicApplicationRouting(university.submission_config_json) === "guidance_only";
   const socialLinks: Array<{ label: string; url: string | null | undefined; icon: LucideIcon }> = [
     { label: "Website", url: university.website, icon: Globe },
     { label: "LinkedIn", url: profileDetails.social.linkedin, icon: Linkedin },
@@ -304,7 +336,7 @@ export default function UniversityProfile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={`${university.name} - Courses and International Study | UniDoxia`} description={university.description || `Explore courses and international study information for ${university.name}.`} />
+      <SEO title={university.slug === "lethbridge-polytechnic" ? "Lethbridge Polytechnic Courses, Fees & International Admissions | UniDoxia" : `${university.name} - Courses and International Study | UniDoxia`} description={university.slug === "lethbridge-polytechnic" ? "Explore Lethbridge Polytechnic international courses, fees, admissions and current intakes in Lethbridge, Alberta, Canada." : (university.description || `Explore courses and international study information for ${university.name}.`)} />
       <div className="mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-6">
         <BackButton
           fallback="/universities"
@@ -383,6 +415,20 @@ export default function UniversityProfile() {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-7 md:px-8 md:py-10">
+        {university.listing_status !== "claimed" && (
+          <div className="mb-7 flex flex-col gap-4 rounded-2xl border border-border/60 bg-muted/35 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex max-w-3xl items-start gap-3">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div>
+                <p className="font-semibold">Independent public-information listing</p>
+                <p className="text-sm leading-6 text-muted-foreground">This institutional profile has been compiled by UniDoxia using official public information and has not yet been claimed by {university.name}. It does not imply endorsement, representation or a recruitment partnership.</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" className="shrink-0">
+              <Link to={`/universities/${university.slug || university.id}/claim`}>Represent {university.name}? Claim this profile</Link>
+            </Button>
+          </div>
+        )}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-7">
           <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-2xl border border-border/60 bg-muted/60 p-1.5 md:grid-cols-4">
             <TabsTrigger value="about" className="min-h-10 rounded-xl">
@@ -746,6 +792,20 @@ export default function UniversityProfile() {
                           )}
                         </div>
                       )}
+                      {program.program_intakes?.length ? (
+                        <div className="flex flex-wrap gap-2" aria-label="Current intake availability">
+                          {program.program_intakes.map((intake) => (
+                            <Badge key={intake.id} variant="outline" className={intakeStatusClasses[intake.status] || intakeStatusClasses.unknown}>
+                              {intakeLabel(intake)} · {intake.status === "available" ? "Open" : intake.status.replaceAll("_", " ")}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : null}
+                      {program.application_details?.pgwp && (
+                        <Badge variant="outline" className={program.application_details.pgwp.status === "eligible" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : program.application_details.pgwp.status === "ineligible" ? "border-red-200 bg-red-50 text-red-800" : ""}>
+                          PGWP {program.application_details.pgwp.status === "eligible" ? "eligible" : program.application_details.pgwp.status === "ineligible" ? "currently ineligible" : "status not confirmed"}{program.application_details.pgwp.cipCode ? ` · CIP ${program.application_details.pgwp.cipCode}` : ""}
+                        </Badge>
+                      )}
                     </CardContent>
                     <CardFooter className="mt-auto border-t border-border/60 bg-muted/10 p-5">
                       <Button className="w-full rounded-xl" size="lg" onClick={() => setSelectedProgram(program)}>
@@ -815,6 +875,15 @@ export default function UniversityProfile() {
                               </ul>
                             </div>
                           )}
+                          {selectedProgram.application_details?.nursingCollaboration && (
+                            <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950">
+                              <p className="font-semibold">Collaborative nursing pathway</p>
+                              <p className="mt-1">{selectedProgram.application_details.nursingCollaboration}</p>
+                            </div>
+                          )}
+                          <div className="rounded-xl border bg-muted/40 p-4 text-sm text-muted-foreground">
+                            <p>PGWP eligibility is determined under current Government of Canada rules and can change. Students should confirm their eligibility before enrolling.</p>
+                          </div>
                         </div>
 
                         <DialogFooter className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4">
@@ -826,7 +895,7 @@ export default function UniversityProfile() {
                             Close
                           </Button>
                           <Button asChild className="w-full sm:w-auto">
-                            <Link to={getApplyUrl(selectedProgram.id)}>Apply</Link>
+                            <Link to={guidanceOnly ? `/contact?subject=${encodeURIComponent(`Application guidance: ${selectedProgram.name} at ${university.name}`)}` : getApplyUrl(selectedProgram.id)}>{guidanceOnly ? "Get application guidance" : "Apply"}</Link>
                           </Button>
                         </DialogFooter>
                       </>
