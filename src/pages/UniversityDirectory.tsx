@@ -25,7 +25,6 @@ import {
   MapPin,
   RefreshCw,
   Search,
-  TrendingUp,
 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
@@ -273,12 +272,10 @@ export default function UniversityDirectory() {
   const renderUniversityCard = (university: UniversityFromDB) => {
     const image = getUniversityImage(university);
     const locationLabel = [university.city, university.country].filter(Boolean).join(", ");
-    const tagline = university.profileDetails?.tagline;
-    const highlights = university.profileDetails?.highlights || [];
 
     const cardContent = (
-      <div className="flex flex-col gap-3.5 p-4 sm:p-5">
-        <div className="flex flex-col gap-3">
+      <div className="flex h-full flex-col gap-3.5 p-4 sm:p-5">
+        <div className="min-h-[5.25rem]">
           <div className="flex items-start gap-3 sm:gap-4">
             {/* University Logo */}
             {university.logo_url ? (
@@ -294,30 +291,20 @@ export default function UniversityDirectory() {
                 <Building2 className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
-            <div className="flex-1 min-w-0 space-y-1">
-              <CardTitle className="text-base font-semibold text-foreground break-words sm:text-lg">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <CardTitle className="line-clamp-2 min-h-10 break-words text-base font-semibold leading-5 text-foreground sm:text-lg sm:leading-6">
                 {university.name}
               </CardTitle>
-              {tagline ? (
-                <p className="text-xs text-primary font-medium leading-relaxed line-clamp-2 sm:line-clamp-3">
-                  {tagline}
-                </p>
-              ) : null}
-              <CardDescription className="flex flex-wrap items-center gap-1 mt-0.5">
+              <CardDescription className="flex min-h-4 items-start gap-1">
                 {locationLabel ? (
-                  <span className="flex items-center gap-1 text-xs">
-                    <MapPin className="h-3 w-3" />
-                    {locationLabel}
+                  <span className="flex min-w-0 items-start gap-1 text-xs">
+                    <MapPin className="mt-0.5 h-3 w-3 flex-shrink-0" />
+                    <span className="line-clamp-1">{locationLabel}</span>
                   </span>
                 ) : null}
               </CardDescription>
             </div>
           </div>
-          {university.description ? (
-            <p className="text-xs leading-relaxed text-muted-foreground line-clamp-3 sm:line-clamp-4">
-              {university.description}
-            </p>
-          ) : null}
         </div>
 
         {/* Compact Programs Card */}
@@ -352,7 +339,9 @@ export default function UniversityDirectory() {
               Location
             </div>
             <p className="mt-1 font-medium text-foreground text-xs">{university.country || "—"}</p>
-            {university.city ? <p className="text-[10px] text-muted-foreground">{university.city}</p> : null}
+            <p className="line-clamp-1 min-h-[0.875rem] text-[10px] text-muted-foreground">
+              {university.city || "Location not specified"}
+            </p>
           </div>
           <div className="rounded-md border bg-muted/30 p-2">
             <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
@@ -363,23 +352,7 @@ export default function UniversityDirectory() {
           </div>
         </div>
 
-        {highlights.length > 0 ? (
-          <div className="rounded-md border bg-background/60 p-2">
-            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-              Highlights
-            </p>
-            <ul className="mt-1 space-y-1 text-xs text-foreground">
-              {highlights.slice(0, 2).map((highlight, index) => (
-                <li key={index} className="flex items-start gap-1.5">
-                  <TrendingUp className="mt-0.5 h-3 w-3 text-primary flex-shrink-0" />
-                  <span className="line-clamp-1">{highlight}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-
-        <div className="flex flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3">
+        <div className="mt-auto flex flex-wrap items-center justify-end gap-1.5 border-t border-border/60 pt-3">
           <Button variant="outline" size="sm" className="h-8 text-xs px-3" asChild>
             <Link to={`${directoryBasePath}/${university.slug || university.id}`}>
               Explore
@@ -415,12 +388,12 @@ export default function UniversityDirectory() {
     }
 
     return (
-      <Card className="overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-lg">
-        <div className="w-full flex-shrink-0">
+      <Card className="flex h-[36rem] flex-col overflow-hidden border-border/60 transition-all hover:-translate-y-0.5 hover:shadow-lg sm:h-[31rem]">
+        <div className="h-40 w-full flex-shrink-0 sm:h-44">
           <img
             src={image}
             alt={university.name}
-            className="aspect-[16/9] w-full object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
         <div className="flex-1 flex flex-col">{cardContent}</div>
@@ -706,7 +679,7 @@ export default function UniversityDirectory() {
               </CardContent>
             </Card>
           ) : viewMode === "grid" ? (
-            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {sortedUniversities.map((university) => (
                 <div key={university.id}>{renderUniversityCard(university)}</div>
               ))}

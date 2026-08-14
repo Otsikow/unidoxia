@@ -16,13 +16,18 @@ describe("UniversityDirectory public presentation", () => {
     expect(directorySource).not.toContain("Partner Status");
   });
 
-  it("keeps sparse university cards compact instead of stretching each row", () => {
-    expect(directorySource).toContain("grid grid-cols-1 items-start gap-4");
-    expect(directorySource).not.toContain(
-      'hover:shadow-lg h-full flex flex-col',
-    );
-    expect(directorySource).not.toContain(
-      'justify-end gap-1.5 mt-auto',
-    );
+  it("renders every grid card at the same controlled height", () => {
+    expect(directorySource).toContain('flex h-[36rem] flex-col');
+    expect(directorySource).toContain('sm:h-[31rem]');
+    expect(directorySource).toContain('h-40 w-full flex-shrink-0 sm:h-44');
+    expect(directorySource).toContain('mt-auto flex flex-wrap items-center');
+    expect(directorySource).not.toContain("items-start gap-4 sm:grid-cols-2");
+  });
+
+  it("keeps variable-length profile content out of summary cards", () => {
+    expect(directorySource).not.toContain("university.description ?");
+    expect(directorySource).not.toContain("highlights.slice");
+    expect(directorySource).not.toContain("tagline ?");
+    expect(directorySource).toContain("line-clamp-2 min-h-10");
   });
 });
