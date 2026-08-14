@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const sql = readFileSync(resolve(process.cwd(), "supabase/migrations/20260814120000_lambton_college_showcase.sql"), "utf8");
+const programmeSql = readFileSync(resolve(process.cwd(), "supabase/migrations/20260814124500_lambton_college_programmes.sql"), "utf8");
 
 describe("Lambton complimentary showcase migration", () => {
   it("seeds a listed, unverified discussion profile without partner status", () => {
@@ -40,5 +41,24 @@ describe("Lambton complimentary showcase migration", () => {
   it("imports the twelve currently published 2026/27 awards idempotently", () => {
     expect((sql.match(/'lambton-[a-z0-9-]+-2026-27'/g) || [])).toHaveLength(12);
     expect(sql).toContain("ON CONFLICT (slug) WHERE slug IS NOT NULL DO UPDATE SET");
+  });
+
+  it("materialises all 46 reviewed programmes through an idempotent migration", () => {
+    expect((programmeSql.match(/INSERT INTO public\.programs/g) || [])).toHaveLength(46);
+    expect(programmeSql).toContain("ON CONFLICT (university_id, official_url) WHERE official_url IS NOT NULL DO NOTHING");
+    expect(programmeSql).toContain("ON CONFLICT (program_id, intake_year, intake_month) DO UPDATE SET");
+  });
+
+  it("uses database-supported fee semantics and preserves unresolved values", () => {
+    expect(programmeSql).not.toMatch(/fee_basis[^\n]*'programme'/);
+    expect(programmeSql).toContain("'total'");
+    expect(programmeSql).toContain("'unresolved'");
+  });
+
+  it("reports review gaps without overstating outreach readiness", () => {
+    expect(programmeSql).toContain("catalogue_unresolved_count = 43");
+    expect(programmeSql).toContain("profile_readiness_status = 'needs_review'");
+    expect(programmeSql).toContain("outreach_status = 'profile_incomplete'");
+    expect(programmeSql).not.toContain("profile_readiness_status = 'ready_for_outreach'");
   });
 });
