@@ -445,7 +445,7 @@ export default function FeaturedUniversitiesAdmin() {
             <CardContent className="pt-0">
               <p className="text-3xl font-bold">{universities?.length ?? 0}</p>
               <p className="text-xs text-muted-foreground">
-                All partner universities with showcase metadata.
+                All listed universities with showcase metadata.
               </p>
             </CardContent>
           </Card>

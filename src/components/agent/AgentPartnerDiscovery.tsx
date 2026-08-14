@@ -218,7 +218,7 @@ export function AgentPartnerDiscovery() {
       <Card>
         <CardHeader className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">
-            <CardTitle>Partner universities</CardTitle>
+            <CardTitle>Listed universities</CardTitle>
             <CardDescription>
               Search, filter, and send requests to universities looking for new student recruitment partners.
             </CardDescription>

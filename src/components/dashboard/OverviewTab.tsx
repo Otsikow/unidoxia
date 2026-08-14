@@ -270,7 +270,7 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
                 <span className="font-medium">{loading ? '...' : metrics.totalApplications}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Partner Universities</span>
+                <span className="text-sm text-muted-foreground">Listed Universities</span>
                 <span className="font-medium">{loading ? '...' : metrics.partnerUniversities}</span>
               </div>
               <div className="flex justify-between">

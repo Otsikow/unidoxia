@@ -104,7 +104,7 @@ export default function AdminDashboard() {
     },
     {
       key: 'universities',
-      label: 'Partner Universities',
+      label: 'Listed Universities',
       value: metrics.partnerUniversities,
       icon: Building2,
       iconClassName: 'text-purple-500',
