@@ -117,7 +117,9 @@ export const NavigationHistoryProvider = ({ children }: { children: React.ReactN
     (entry: NavigationHistoryEntry) => {
       navigate(`${entry.pathname}${entry.search}${entry.hash}`, {
         state: entry.state,
-        replace: false,
+        // This is a Back action. Replacing the current entry prevents the
+        // page being exited from remaining directly behind the destination.
+        replace: true,
       });
     },
     [navigate],
@@ -147,4 +149,3 @@ export const useNavigationHistory = () => {
   }
   return context;
 };
-
