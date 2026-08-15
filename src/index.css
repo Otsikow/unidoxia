@@ -171,6 +171,12 @@ All colors MUST be HSL.
   h6 { font-size: 0.875rem; line-height: 1.4; }
   p, li { line-height: 1.6; }
 
+  /* Prevent long words, URLs and emails from overflowing their containers */
+  h1, h2, h3, h4, h5, h6, p, li, span, a, dd, dt, td, th, label, blockquote, figcaption, code {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   a, button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 
   :focus-visible {
