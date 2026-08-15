@@ -297,8 +297,8 @@ const Index = () => {
               Chat on WhatsApp
             </a>
 
-            {/* Trust ribbon — in normal flow */}
-            <p className="mt-1 inline-flex max-w-full items-center rounded-full bg-slate-950/60 px-5 py-2.5 text-center text-xs sm:text-sm font-medium tracking-tight text-white/90 shadow-lg ring-1 ring-white/15 backdrop-blur-md">
+            {/* Trust ribbon — matches hero CTA pill shape */}
+            <p className="mt-1 inline-flex max-w-2xl items-center justify-center rounded-full border border-white/30 bg-white/10 px-8 py-4 text-center text-xs sm:text-sm font-medium leading-relaxed tracking-tight text-white/90 shadow-lg backdrop-blur-md">
               Explore universities and study opportunities worldwide. Entry requirements,
               availability and application routes vary by institution.
             </p>
