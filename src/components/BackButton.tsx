@@ -97,6 +97,7 @@ export default function BackButton({
         const contextualBack = (location.state as any)?.marketplaceBack;
         if (contextualBack?.href) {
           navigate(contextualBack.href, {
+            replace: true,
             state: {
               ...(contextualBack.previousState || {}),
               restoreScrollY: contextualBack.scrollY,
