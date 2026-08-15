@@ -35,7 +35,7 @@ export function LandingHeader() {
   return (
     <header className="absolute top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4 pt-4 sm:pt-6">
-        <div className="flex items-center justify-between gap-3 rounded-full border border-white/20 bg-black/30 px-3 py-2 shadow-lg shadow-black/10 backdrop-blur-md">
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-black/30 px-4 py-2 shadow-lg shadow-black/10 backdrop-blur-md">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="UniDoxia home">
             <img src={unidoxiaLogo} alt="UniDoxia" className="h-8 w-auto brightness-0 invert" />
