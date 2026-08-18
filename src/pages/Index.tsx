@@ -299,9 +299,10 @@ const Index = () => {
 
             {/* Trust ribbon — matches hero CTA pill shape */}
             <p className="mt-1 inline-flex max-w-2xl items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-center text-xs sm:text-sm font-medium leading-relaxed tracking-tight text-white/90 shadow-lg backdrop-blur-md">
-              Explore universities and study opportunities worldwide. Entry requirements,
-              availability and application routes vary by institution.
+              Explore universities and study opportunities across the UK, Europe, Canada, USA,
+              Australia and beyond.
             </p>
+
           </div>
         </div>
       </section>
