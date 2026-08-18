@@ -171,10 +171,17 @@ All colors MUST be HSL.
   h6 { font-size: 0.875rem; line-height: 1.4; }
   p, li { line-height: 1.6; }
 
-  /* Prevent long words, URLs and emails from overflowing their containers */
+  /* Prevent long words, URLs and emails from overflowing their containers.
+     Use break-word (not anywhere) so normal words never split mid-letter and
+     table columns keep a sensible min-content width. */
   h1, h2, h3, h4, h5, h6, p, li, span, a, dd, dt, td, th, label, blockquote, figcaption, code {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Tables: keep headers/cells readable instead of collapsing into 1-2 chars */
+  th, td {
+    word-break: normal;
+    hyphens: none;
   }
 
   a, button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
