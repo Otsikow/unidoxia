@@ -120,7 +120,7 @@ const Index = () => {
           image: destinationsCta,
           badge: "Universities",
           title: "Discuss international student recruitment",
-          description: "Explore a transparent recruitment relationship focused on African student markets and supported by structured application workflows.",
+          description: "Explore a transparent recruitment relationship across global student markets, supported by structured application workflows.",
           action: "Discuss a Partnership",
         },
       ],
