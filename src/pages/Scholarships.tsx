@@ -336,7 +336,7 @@ const ScholarshipsPage = () => {
           <div className="mb-6">
             <h1 className="text-4xl font-bold mb-2">Find Scholarships</h1>
             <p className="text-muted-foreground">
-              Verified funding opportunities for African international students heading to the UK, Canada and USA.
+              Verified funding opportunities for international students worldwide heading to the UK, Canada and USA.
             </p>
           </div>
 
@@ -408,7 +408,7 @@ const ScholarshipsPage = () => {
                     <span className="font-medium">AI-Powered Search</span>
                   </div>
                   <Textarea
-                    placeholder="Describe what you're looking for... (e.g., 'Full scholarships for African women studying engineering in Canada')"
+                    placeholder="Describe what you're looking for... (e.g., 'Full scholarships for women studying engineering in Canada')"
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     rows={3}

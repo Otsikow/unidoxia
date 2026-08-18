@@ -31,9 +31,9 @@ const UniversityPartnership = () => (
   <div className="min-h-screen bg-gradient-subtle">
     <SEO
       title="International Student Recruitment Partnerships | UniDoxia"
-      description="Discuss an international student recruitment partnership with UniDoxia, with a strong focus on African student markets and transparent application workflows."
+      description="Discuss an international student recruitment partnership with UniDoxia, covering global student markets and transparent application workflows."
       canonicalPath="/partnership"
-      keywords="international student recruitment, African student recruitment, university partnership, education agent platform"
+      keywords="international student recruitment, global student recruitment, university partnership, education agent platform"
     />
 
     <section className="container mx-auto px-4 py-14 lg:py-20">
@@ -42,7 +42,7 @@ const UniversityPartnership = () => (
           <Badge className="gap-2 rounded-full px-3 py-1"><Globe2 className="h-4 w-4" /> University recruitment enquiries</Badge>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Reach more international students through UniDoxia</h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            UniDoxia connects universities with prospective international students and recruitment partners, with a strong focus on African student markets while supporting global reach.
+            UniDoxia connects universities with prospective international students and recruitment partners across global markets.
           </p>
           <p className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
             A university appearing in UniDoxia search or featured listings is not, by itself, a formal recruitment partner or an endorsement of UniDoxia. Formal relationships require a separate written agreement.
@@ -81,7 +81,7 @@ const UniversityPartnership = () => (
 
     <section className="container mx-auto px-4 py-16">
       <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
-        <Card><CardHeader><CardTitle className="flex items-center gap-2"><Globe2 className="h-5 w-5 text-primary" /> Recruitment markets</CardTitle></CardHeader><CardContent className="text-sm leading-relaxed text-muted-foreground">Our strongest recruitment focus is Africa, while the platform can support prospective students and recruitment activity across international markets. Reach and outcomes are discussed using available evidence, not invented volumes.</CardContent></Card>
+        <Card><CardHeader><CardTitle className="flex items-center gap-2"><Globe2 className="h-5 w-5 text-primary" /> Recruitment markets</CardTitle></CardHeader><CardContent className="text-sm leading-relaxed text-muted-foreground">The platform supports prospective students and recruitment activity across international markets, including Europe, Asia, the Middle East, the Americas and Africa. Reach and outcomes are discussed using available evidence, not invented volumes.</CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-primary" /> Technology</CardTitle></CardHeader><CardContent><ul className="space-y-2 text-sm text-muted-foreground">{technology.map((item) => <li key={item}>• {item}</li>)}</ul></CardContent></Card>
         <Card><CardHeader><CardTitle className="flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-primary" /> Quality and compliance</CardTitle></CardHeader><CardContent><ul className="space-y-2 text-sm text-muted-foreground">{qualityControls.map((item) => <li key={item}>• {item}</li>)}</ul></CardContent></Card>
       </div>

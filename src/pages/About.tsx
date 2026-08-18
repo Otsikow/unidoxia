@@ -11,7 +11,7 @@ const About = () => {
     name: "About UniDoxia",
     url: `${SITE_ORIGIN}/about`,
     description:
-      "UniDoxia supports international students with study-abroad discovery and application guidance, with a strong focus on African applicants.",
+      "UniDoxia supports international students worldwide with study-abroad discovery and application guidance.",
     publisher: {
       "@type": "Organization",
       name: "UniDoxia",
@@ -23,7 +23,7 @@ const About = () => {
     <div className="container mx-auto px-4 py-12 max-w-5xl">
       <SEO
         title="About UniDoxia | Study Abroad Support for International Students"
-        description="UniDoxia helps international students, with a strong focus on African applicants, discover courses, prepare applications and understand next steps — guidance, not guarantees."
+        description="UniDoxia helps international students around the world discover courses, prepare applications and understand next steps — guidance, not guarantees."
         canonicalPath="/about"
         jsonLd={jsonLd}
       />
@@ -34,8 +34,8 @@ const About = () => {
           </p>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">About UniDoxia</h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
-            UniDoxia is a study-abroad support platform built around the needs of African
-            students while remaining open to international applicants worldwide. We help
+            UniDoxia is a study-abroad support platform built around the needs of international
+            students worldwide. We help
             students research courses and universities, prepare applications, and understand
             common visa and scholarship requirements.
           </p>
@@ -43,7 +43,7 @@ const About = () => {
         <figure className="overflow-hidden rounded-2xl border bg-muted shadow-lg">
           <img
             src="/about/students-guidance.jpg"
-            alt="African students reviewing study options with an education adviser around a laptop."
+            alt="International students from around the world reviewing study options with an education adviser around a laptop."
             width="1600"
             height="900"
             fetchPriority="high"

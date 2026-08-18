@@ -120,7 +120,7 @@ const Index = () => {
           image: destinationsCta,
           badge: "Universities",
           title: "Discuss international student recruitment",
-          description: "Explore a transparent recruitment relationship focused on African student markets and supported by structured application workflows.",
+          description: "Explore a transparent recruitment relationship across global student markets, supported by structured application workflows.",
           action: "Discuss a Partnership",
         },
       ],
@@ -248,16 +248,16 @@ const Index = () => {
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.03em] [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
-                Global universities. Built around African students.
+                Your Global Study Journey Starts Here
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
-                Discover international courses, prepare your documents, manage applications and
-                track your next steps in one place—with guidance shaped around African applicants
-                and open to students worldwide.
+                Find universities worldwide and get support with course selection, document
+                preparation, applications, visa guidance and every important next step.
               </p>
               <p className="text-xs sm:text-sm text-white/85 italic">
-                Application guidance and technology for clearer international study decisions.
+                One platform. Global opportunities. Expert support.
               </p>
+
             </div>
 
             {/* Primary + Secondary CTAs */}
@@ -299,9 +299,10 @@ const Index = () => {
 
             {/* Trust ribbon — matches hero CTA pill shape */}
             <p className="mt-1 inline-flex max-w-2xl items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-center text-xs sm:text-sm font-medium leading-relaxed tracking-tight text-white/90 shadow-lg backdrop-blur-md">
-              Explore universities and study opportunities worldwide. Entry requirements,
-              availability and application routes vary by institution.
+              Explore universities and study opportunities across the UK, Europe, Canada, USA,
+              Australia and beyond.
             </p>
+
           </div>
         </div>
       </section>
