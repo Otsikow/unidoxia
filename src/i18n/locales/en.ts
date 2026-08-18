@@ -89,7 +89,7 @@ const en = {
     footer: {
       aboutTitle: "UniDoxia",
       aboutDescription:
-        "Helping international students explore study options and manage applications, with a strong focus on African applicants.",
+        "Helping international students worldwide explore study options and manage applications.",
       contactEmailLabel: "Email us",
       followUs: "Follow UniDoxia",
       followUsSubtitle: "Follow us on X, LinkedIn, Facebook, Instagram, and our WhatsApp channel.",
@@ -374,7 +374,7 @@ const en = {
               badge: "Universities",
               title: "We connect you with qualified international students",
               description:
-                "Discuss transparent recruitment workflows for prospective international students and authorised agents, with a strong focus on African student markets.",
+                "Discuss transparent recruitment workflows for prospective international students and authorised agents across global markets.",
               action: "Partner with Us",
             },
           },
