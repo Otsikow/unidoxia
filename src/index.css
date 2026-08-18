@@ -184,6 +184,10 @@ All colors MUST be HSL.
     hyphens: none;
   }
 
+  th {
+    white-space: nowrap;
+  }
+
   a, button, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 
   :focus-visible {
