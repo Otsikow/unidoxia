@@ -248,16 +248,16 @@ const Index = () => {
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.03em] [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
-                Global universities. Built around African students.
+                Your Global Study Journey Starts Here
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
-                Discover international courses, prepare your documents, manage applications and
-                track your next steps in one place—with guidance shaped around African applicants
-                and open to students worldwide.
+                Find universities worldwide and get support with course selection, document
+                preparation, applications, visa guidance and every important next step.
               </p>
               <p className="text-xs sm:text-sm text-white/85 italic">
-                Application guidance and technology for clearer international study decisions.
+                One platform. Global opportunities. Expert support.
               </p>
+
             </div>
 
             {/* Primary + Secondary CTAs */}
