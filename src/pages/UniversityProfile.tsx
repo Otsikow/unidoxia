@@ -377,20 +377,20 @@ export default function UniversityProfile() {
                     {profileDetails.tagline}
                   </p>
                 ) : null}
-                <div className="flex flex-wrap items-center gap-3 text-white/90 drop-shadow">
-                  <Badge className="bg-white/20 hover:bg-white/30 text-white border-white/30 px-3 py-1">
+                <div className="flex flex-wrap items-center gap-3 text-white drop-shadow-md">
+                  <Badge className="bg-black/60 hover:bg-black/70 text-white border-white/40 px-3 py-1 backdrop-blur-sm">
                     <MapPin className="h-3.5 w-3.5 mr-1.5" />
                     {university.city && `${university.city}, `}
                     {university.country}
                   </Badge>
                   <Badge 
-                    className="bg-primary/80 hover:bg-primary text-white border-primary px-3 py-1 cursor-pointer"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground border-primary px-3 py-1 cursor-pointer"
                     onClick={() => setActiveTab("programs")}
                   >
                     <GraduationCap className="h-3.5 w-3.5 mr-1.5" />
                     {programTotal} Courses
                   </Badge>
-                  <Badge className="bg-white/20 text-white border-white/30">
+                  <Badge className="bg-black/60 text-white border-white/40 backdrop-blur-sm">
                     {university.verification_status === "admin_verified" ? "Verified profile" : "Listed by UniDoxia"}
                   </Badge>
                   {university.partnership_tier === "partner" && <Badge className="bg-emerald-600 text-white">UniDoxia Partner</Badge>}
