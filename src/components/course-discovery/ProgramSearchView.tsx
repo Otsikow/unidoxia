@@ -181,6 +181,7 @@ const transformToCourseCardFormat = (
     next_intake_year: course.next_intake_year,
     intake_months: course.intake_months ?? undefined,
 
+
     applyUrl: course.applyUrl,
     detailsUrl: course.detailsUrl || `/courses/${course.id}`,
     instant_submission: course.instant_submission,
