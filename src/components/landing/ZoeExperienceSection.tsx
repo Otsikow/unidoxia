@@ -46,13 +46,20 @@ export function ZoeExperienceSection() {
           </Button>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-3">
+        <div
+          className="grid gap-5 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3"
+          data-testid="zoe-capabilities-grid"
+        >
           {capabilities.map(({ icon: Icon, title, description }) => (
             <Card key={title} className="h-full border-primary/15 bg-background/90">
-              <CardContent className="p-6">
+              <CardContent className="min-w-0 p-5 xl:p-6">
                 <Icon className="h-9 w-9 text-primary" aria-hidden="true" />
-                <h3 className="mt-4 font-semibold">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
+                <h3 className="mt-4 break-normal text-lg font-semibold leading-snug [hyphens:none] [overflow-wrap:normal]">
+                  {title}
+                </h3>
+                <p className="mt-2 break-normal text-sm leading-relaxed text-muted-foreground [hyphens:none] [overflow-wrap:normal]">
+                  {description}
+                </p>
               </CardContent>
             </Card>
           ))}

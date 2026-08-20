@@ -26,6 +26,24 @@ describe("homepage credibility sections", () => {
     expect(screen.getByText(/not a guarantee of admission, funding or a visa/i)).toBeTruthy();
   });
 
+  it("keeps Zoe capability words intact across responsive layouts", () => {
+    renderWithRouter(<ZoeExperienceSection />);
+
+    expect(screen.getByTestId("zoe-capabilities-grid")).toHaveClass(
+      "sm:grid-cols-3",
+      "lg:grid-cols-1",
+      "xl:grid-cols-3",
+    );
+
+    for (const name of ["Programme discovery", "Document guidance", "Clear next steps"]) {
+      expect(screen.getByRole("heading", { name })).toHaveClass(
+        "break-normal",
+        "[hyphens:none]",
+        "[overflow-wrap:normal]",
+      );
+    }
+  });
+
   it("keeps the three-step journey clear without guaranteed matching or outcomes", () => {
     const { container } = renderWithRouter(<StoryboardSection />);
 
