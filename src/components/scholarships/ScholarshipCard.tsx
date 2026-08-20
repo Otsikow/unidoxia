@@ -92,17 +92,18 @@ export const ScholarshipCard = ({
       className={cn("flex flex-col h-full cursor-pointer transition-transform hover:-translate-y-1", className)}
     >
       <CardHeader className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-1 items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-muted/40">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-muted/40">
               {scholarship.logoUrl ? (
-                <img src={scholarship.logoUrl} alt={scholarship.institution} className="h-10 w-10 rounded-lg object-contain" />
+                <img src={scholarship.logoUrl} alt={scholarship.institution} className="h-9 w-9 rounded-lg object-contain" />
               ) : (
-                <GraduationCap className="h-6 w-6 text-primary" />
+                <GraduationCap className="h-5 w-5 text-primary" />
               )}
             </div>
             <div className="min-w-0 space-y-1">
-              <CardTitle className="text-xl leading-snug line-clamp-2">{scholarship.title}</CardTitle>
+              <CardTitle className="text-base sm:text-lg font-semibold leading-snug line-clamp-3 [overflow-wrap:normal] [hyphens:auto]">{scholarship.title}</CardTitle>
+
               <CardDescription className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="inline-flex items-center gap-1 font-medium text-foreground">
                   <Globe2 className="h-4 w-4" />
@@ -116,7 +117,8 @@ export const ScholarshipCard = ({
               </CardDescription>
             </div>
           </div>
-          <div className="flex items-start gap-2">
+          <div className="flex shrink-0 items-start gap-1.5">
+
             {scholarship.verified ? (
               <Badge variant="secondary" className="gap-1">
                 <ShieldCheck className="h-3.5 w-3.5" /> Verified
