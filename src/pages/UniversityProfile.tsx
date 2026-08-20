@@ -355,7 +355,7 @@ export default function UniversityProfile() {
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="relative min-h-[24rem] overflow-hidden rounded-2xl border border-border/60 shadow-lg md:h-[28rem] md:rounded-3xl">
           <img src={heroImage} alt={university.name} className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/45 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/65 to-black/25" />
           <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 md:p-10">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6">
               {/* University Logo */}
