@@ -179,6 +179,8 @@ const transformToCourseCardFormat = (
     university_logo_url: course.university.logo_url || undefined,
     next_intake_month: course.next_intake_month,
     next_intake_year: course.next_intake_year,
+    intake_months: course.intake_months ?? undefined,
+
     applyUrl: course.applyUrl,
     detailsUrl: course.detailsUrl || `/courses/${course.id}`,
     instant_submission: course.instant_submission,
