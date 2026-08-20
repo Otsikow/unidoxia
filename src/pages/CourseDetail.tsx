@@ -41,7 +41,11 @@ export default function CourseDetail() {
   if (!course) return <div className="mx-auto max-w-3xl px-4 py-16 text-center"><h1 className="text-2xl font-bold">Course not available</h1><p className="mt-2 text-muted-foreground">This course may be archived or awaiting verification.</p><Button className="mt-6" onClick={() => navigate("/courses")}>Browse active courses</Button></div>;
 
   const university = course.universities;
-  const intakes = (course.program_intakes ?? []).filter((intake: any) => ["available", "recruitable"].includes(intake.status) && intake.intake_year >= 2027).sort((a: any, b: any) => a.intake_year - b.intake_year || a.intake_month - b.intake_month);
+  const intakeMonths = [...new Set([
+    ...((course.program_intakes ?? []).filter((intake: any) => ["available", "recruitable", "provisional"].includes(intake.status)).map((intake: any) => Number(intake.intake_month))),
+    ...((course.intake_months ?? []).map((month: number) => Number(month))),
+  ])].filter((month) => month >= 1 && month <= 12).sort((a, b) => a - b);
+
   const internationalFee = (course.program_fees ?? []).find((fee: any) => fee.applicant_type === "international" && fee.resolution_status === "verified");
   const summary = completeVerifiedSummary(course.overview || course.description);
   const requirements = typeof course.entry_requirements === "string" ? course.entry_requirements : course.entry_requirements?.summary;
