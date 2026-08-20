@@ -1,0 +1,196 @@
+{
+  "university": {
+    "name": "Georgian College",
+    "slug": "georgian-college",
+    "city": "Barrie",
+    "country": "Canada",
+    "website": "https://www.georgiancollege.ca/"
+  },
+  "source": {
+    "url": "https://cat.georgiancollege.ca/programs/"
+  },
+  "academicYear": "2026/27",
+  "checkedAt": "2026-08-20T00:00:00Z",
+  "discovered": 6,
+  "classified": 6,
+  "programmes": [
+    {
+      "title": "Early Childhood Education",
+      "slug": "early-childhood-education-eced",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Education",
+      "courseCode": "ECED",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eced/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie, Owen Sound or Orangeville",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Prepare to support children from birth to age 12 through play-based learning, inclusive practice and two field placements.",
+      "requirements": ["Secondary-school graduation or equivalent", "Grade 12 English or equivalent", "Programme-specific placement clearance requirements apply"],
+      "intakes": [
+        { "year": 2026, "month": 9, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/eced/" },
+        { "year": 2027, "month": 1, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/eced/" },
+        { "year": 2027, "month": 5, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/eced/" }
+      ],
+      "tuition": { "applicantType": "international", "amount": null, "currency": "CAD", "feeYear": "2026/27", "feeBasis": "annual", "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/" },
+      "applicationDetails": { "routing": "guidance_only", "dli": "O19395677361", "intakeAvailabilityMustBeConfirmed": true },
+      "englishRequirements": { "ieltsAcademic": "6.0 general diploma minimum", "toeflIbt": "79 general diploma minimum", "pteAcademic": "58 general diploma minimum", "sourceUrl": "https://www.georgiancollege.ca/international/admissions/", "programmeExceptionsApply": true },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        { "kind": "programme", "url": "https://cat.georgiancollege.ca/programs/eced/", "priority": 1 },
+        { "kind": "english_requirements", "url": "https://www.georgiancollege.ca/international/admissions/", "priority": 1 }
+      ]
+    },
+    {
+      "title": "Communicative Disorders Assistant",
+      "slug": "communicative-disorders-assistant-coda",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Health and Medicine",
+      "courseCode": "CODA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/coda/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Develop practical skills to support speech-language pathologists and audiologists, including two field placements.",
+      "requirements": ["College diploma, advanced diploma, degree or equivalent", "Placement health, screening and first-aid requirements apply"],
+      "intakes": [
+        { "year": 2026, "month": 9, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/coda/" }
+      ],
+      "tuition": { "applicantType": "international", "amount": null, "currency": "CAD", "feeYear": "2026/27", "feeBasis": "annual", "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/" },
+      "applicationDetails": { "routing": "guidance_only", "dli": "O19395677361", "intakeAvailabilityMustBeConfirmed": true },
+      "englishRequirements": { "ieltsAcademic": "6.5 general graduate-certificate minimum", "toeflIbt": "89 general graduate-certificate minimum, with published component requirements", "pteAcademic": "61 general graduate-certificate minimum", "sourceUrl": "https://www.georgiancollege.ca/international/admissions/", "programmeExceptionsApply": true },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        { "kind": "programme", "url": "https://cat.georgiancollege.ca/programs/coda/", "priority": 1 },
+        { "kind": "english_requirements", "url": "https://www.georgiancollege.ca/international/admissions/", "priority": 1 }
+      ]
+    },
+    {
+      "title": "Game - Development",
+      "slug": "game-development-gamd",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "GAMD",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/gamd/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie Downtown",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Build technical and creative game-development skills across programming, game engines, artificial intelligence, multiplayer networking and digital assets.",
+      "requirements": ["Secondary-school graduation or equivalent", "Grade 12 English or equivalent"],
+      "intakes": [
+        { "year": 2026, "month": 9, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/gamd/" }
+      ],
+      "tuition": { "applicantType": "international", "amount": null, "currency": "CAD", "feeYear": "2026/27", "feeBasis": "annual", "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/" },
+      "applicationDetails": { "routing": "guidance_only", "dli": "O19395677361", "intakeAvailabilityMustBeConfirmed": true },
+      "englishRequirements": { "ieltsAcademic": "6.0 general diploma minimum", "toeflIbt": "79 general diploma minimum", "pteAcademic": "58 general diploma minimum", "sourceUrl": "https://www.georgiancollege.ca/international/admissions/", "programmeExceptionsApply": true },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        { "kind": "programme", "url": "https://cat.georgiancollege.ca/programs/gamd/", "priority": 1 },
+        { "kind": "english_requirements", "url": "https://www.georgiancollege.ca/international/admissions/", "priority": 1 }
+      ]
+    },
+    {
+      "title": "Child and Youth Care",
+      "slug": "child-and-youth-care-cyca",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Social Sciences",
+      "courseCode": "CYCA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cyca/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Prepare to support children, young people and families through evidence-informed therapeutic practice and three field placements.",
+      "requirements": ["Secondary-school graduation or equivalent", "Grade 12 English or equivalent", "Programme-specific placement clearance requirements apply"],
+      "intakes": [
+        { "year": 2026, "month": 9, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/cyca/" }
+      ],
+      "tuition": { "applicantType": "international", "amount": null, "currency": "CAD", "feeYear": "2026/27", "feeBasis": "annual", "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/" },
+      "applicationDetails": { "routing": "guidance_only", "dli": "O19395677361", "intakeAvailabilityMustBeConfirmed": true },
+      "englishRequirements": { "ieltsAcademic": "6.0 general diploma minimum", "toeflIbt": "79 general diploma minimum", "pteAcademic": "58 general diploma minimum", "sourceUrl": "https://www.georgiancollege.ca/international/admissions/", "programmeExceptionsApply": true },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        { "kind": "programme", "url": "https://cat.georgiancollege.ca/programs/cyca/", "priority": 1 },
+        { "kind": "english_requirements", "url": "https://www.georgiancollege.ca/international/admissions/", "priority": 1 }
+      ]
+    },
+    {
+      "title": "Food and Nutrition Management",
+      "slug": "food-and-nutrition-management-fdnm",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Health and Medicine",
+      "courseCode": "FDNM",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/fdnm/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Develop food-service, nutrition and operational-management skills through applied learning and a field placement.",
+      "requirements": ["College diploma, advanced diploma, degree or equivalent", "Relevant experience may be considered under the published alternative route", "Placement screening requirements apply"],
+      "intakes": [
+        { "year": 2026, "month": 9, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/fdnm/" },
+        { "year": 2027, "month": 1, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/fdnm/" }
+      ],
+      "tuition": { "applicantType": "international", "amount": null, "currency": "CAD", "feeYear": "2026/27", "feeBasis": "annual", "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/" },
+      "applicationDetails": { "routing": "guidance_only", "dli": "O19395677361", "intakeAvailabilityMustBeConfirmed": true },
+      "englishRequirements": { "ieltsAcademic": "6.5 general graduate-certificate minimum", "toeflIbt": "89 general graduate-certificate minimum, with published component requirements", "pteAcademic": "61 general graduate-certificate minimum", "sourceUrl": "https://www.georgiancollege.ca/international/admissions/", "programmeExceptionsApply": true },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        { "kind": "programme", "url": "https://cat.georgiancollege.ca/programs/fdnm/", "priority": 1 },
+        { "kind": "english_requirements", "url": "https://www.georgiancollege.ca/international/admissions/", "priority": 1 }
+      ]
+    },
+    {
+      "title": "Business",
+      "slug": "business-busn",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Business and Management",
+      "courseCode": "BUSN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/busn/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus or online",
+      "campus": "Barrie or Online",
+      "deliveryType": "In person or online",
+      "placementAvailable": false,
+      "overview": "Build foundational skills in management, economics, accounting, marketing, human resources and entrepreneurship.",
+      "requirements": ["Secondary-school graduation or equivalent", "Grade 12 English or equivalent", "Grade 11 or 12 mathematics or equivalent, with the published minimum where applicable"],
+      "intakes": [
+        { "year": 2026, "month": 9, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/busn/" },
+        { "year": 2027, "month": 1, "status": "provisional", "applicationDeadline": null, "sourceUrl": "https://cat.georgiancollege.ca/programs/busn/" }
+      ],
+      "tuition": { "applicantType": "international", "amount": null, "currency": "CAD", "feeYear": "2026/27", "feeBasis": "annual", "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/" },
+      "applicationDetails": { "routing": "guidance_only", "dli": "O19395677361", "intakeAvailabilityMustBeConfirmed": true },
+      "englishRequirements": { "ieltsAcademic": "6.0 general diploma minimum", "toeflIbt": "79 general diploma minimum", "pteAcademic": "58 general diploma minimum", "sourceUrl": "https://www.georgiancollege.ca/international/admissions/", "programmeExceptionsApply": true },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        { "kind": "programme", "url": "https://cat.georgiancollege.ca/programs/busn/", "priority": 1 },
+        { "kind": "english_requirements", "url": "https://www.georgiancollege.ca/international/admissions/", "priority": 1 }
+      ]
+    }
+  ]
+}
