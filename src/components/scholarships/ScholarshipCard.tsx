@@ -117,7 +117,8 @@ export const ScholarshipCard = ({
               </CardDescription>
             </div>
           </div>
-          <div className="flex items-start gap-2">
+          <div className="flex shrink-0 items-start gap-1.5">
+
             {scholarship.verified ? (
               <Badge variant="secondary" className="gap-1">
                 <ShieldCheck className="h-3.5 w-3.5" /> Verified
