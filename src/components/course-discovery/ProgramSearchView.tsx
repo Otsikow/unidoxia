@@ -28,6 +28,15 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -42,6 +51,8 @@ import {
   Search,
   SlidersHorizontal,
   ChevronDown,
+  ChevronsUpDown,
+  Check,
   X,
   } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -196,6 +207,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   
   // Initialize state from URL params if available
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || searchParams.get("query") || "");
+  const [selectedUniversity, setSelectedUniversity] = useState(searchParams.get("university") || "all");
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "all");
   const [selectedLevel, setSelectedLevel] = useState(searchParams.get("level") || "all");
   const [selectedDiscipline, setSelectedDiscipline] = useState("all");
@@ -209,6 +221,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [results, setResults] = useState<SearchResult[]>([]);
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
   const [disciplines, setDisciplines] = useState<string[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [universityFilterOpen, setUniversityFilterOpen] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const { t } = useTranslation();
@@ -261,6 +275,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       Boolean(
         searchParams.get("q") ||
           searchParams.get("query") ||
+          searchParams.get("university") ||
           searchParams.get("country") ||
           searchParams.get("level") ||
           searchParams.get("discipline") ||
@@ -286,10 +301,17 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   useEffect(() => {
     const loadFilterOptions = async () => {
       try {
-        const { data: programs } = await supabase
-          .from("programs")
-          .select("level, discipline")
-          .eq("active", true);
+        const [programResult, universityResult] = await Promise.all([
+          supabase.from("programs").select("level, discipline").eq("active", true),
+          applyRealUniversityFilters(
+            supabase
+              .from("universities")
+              .select("id, name, country, city, logo_url, website, description, slug")
+              .eq("active", true)
+              .order("name"),
+          ),
+        ]);
+        const programs = programResult.data;
 
         if (programs) {
           setLevels(PROGRAM_LEVELS);
@@ -298,6 +320,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           ].sort();
           setDisciplines(uniqueDisciplines);
         }
+        if (universityResult.data) setUniversities(universityResult.data);
       } catch (error) {
         console.error("Error loading filters:", error);
       }
@@ -316,6 +339,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       // Fallback to sample data when Supabase isn't configured
       if (!isSupabaseConfigured) {
         const filteredPrograms = SAMPLE_PROGRAMS.filter((program) => {
+          if (selectedUniversity !== "all" && program.university_id !== selectedUniversity) return false;
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
@@ -359,6 +383,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       query = applyRealUniversityFilters(query);
 
       // Apply filters if set
+      if (selectedUniversity !== "all") {
+        query = query.eq("university_id", selectedUniversity);
+      }
       if (selectedCountry !== "all") {
         query = query.eq("universities.country", selectedCountry);
       }
@@ -407,7 +434,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     } finally {
       setLoadingCourses(false);
     }
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
+  }, [selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
 
   // Initial load of courses
   useEffect(() => {
@@ -419,7 +446,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     if (!hasSearched) {
       loadAllCourses(1);
     }
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched, loadAllCourses]);
+  }, [selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched, loadAllCourses]);
 
   const totalCoursePages = useMemo(
     () => (totalCourses > 0 ? Math.ceil(totalCourses / COURSES_PER_PAGE) : 1),
@@ -480,6 +507,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   };
 
   const optionalFilterCount = [
+    selectedUniversity !== "all",
     selectedDiscipline !== "all",
     Boolean(maxFee),
     onlyWithScholarships,
@@ -488,6 +516,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
   const clearFilters = () => {
     setSearchTerm("");
+    setSelectedUniversity("all");
     setSelectedCountry("all");
     setSelectedLevel("all");
     setSelectedDiscipline("all");
@@ -506,6 +535,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     setSearchParams(
       courseSearchParams({
         q: debouncedSearchTerm,
+        university: selectedUniversity,
         country: selectedCountry,
         level: selectedLevel,
         intake: selectedIntake,
@@ -533,6 +563,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
         const filteredPrograms = SAMPLE_PROGRAMS.filter((program) => {
           if (!matchesSearch(program)) return false;
+          if (selectedUniversity !== "all" && program.university_id !== selectedUniversity) return false;
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
@@ -568,7 +599,19 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           existing.matchingCount += 1;
         });
 
-        setResults(Array.from(universitiesMap.values()));
+        const fallbackResults = Array.from(universitiesMap.values());
+        setResults(fallbackResults);
+        setSearchTotal(filteredPrograms.length);
+        setSearchUniversityTotal(fallbackResults.length);
+        setSearchPage(page);
+        setSearchParams(courseSearchParams({
+          q: debouncedSearchTerm,
+          university: selectedUniversity,
+          country: selectedCountry,
+          level: selectedLevel,
+          intake: selectedIntake,
+          page,
+        }));
         return;
       }
 
@@ -576,6 +619,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       const intake = parseIntake(selectedIntake);
       const searchRpc = (offset: number) => (supabase as any).rpc("search_programmes", {
         p_query: normalizedQuery,
+        p_university_id: selectedUniversity === "all" ? null : selectedUniversity,
         p_country: selectedCountry === "all" ? null : selectedCountry,
         p_level: selectedLevel === "all" ? null : selectedLevel,
         p_intake_year: intake.year,
@@ -632,10 +676,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         setSearchTotal(selectedDiscipline !== "all" || Boolean(maxFee) ? visibleTotal : total);
         setSearchUniversityTotal(completeResults.length);
         setSearchPage(page);
-        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
+        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, university: selectedUniversity, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
         void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
           query: debouncedSearchTerm || "", normalized_query: normalizedQuery, destination: selectedCountry,
-          study_level: selectedLevel, intake: selectedIntake, result_count: total, university_count: completeResults.length, page: 1,
+          university_id: selectedUniversity, study_level: selectedLevel, intake: selectedIntake,
+          result_count: total, university_count: completeResults.length, page: 1,
         } });
         return;
       }
@@ -652,6 +697,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         .limit(MAX_UNIVERSITY_RESULTS);
 
       uniQuery = applyRealUniversityFilters(uniQuery);
+
+      if (selectedUniversity !== "all") {
+        uniQuery = uniQuery.eq("id", selectedUniversity);
+      }
       
       if (searchQuery) {
         uniQuery = uniQuery.ilike("name", `%${searchQuery}%`);
@@ -699,9 +748,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           
           if (additionalUnis) {
             // Apply country filter to additional universities
-            const filteredAdditional = selectedCountry !== "all"
-              ? additionalUnis.filter(u => u.country === selectedCountry)
-              : additionalUnis;
+            const filteredAdditional = additionalUnis.filter((university) =>
+              (selectedCountry === "all" || university.country === selectedCountry)
+              && (selectedUniversity === "all" || university.id === selectedUniversity),
+            );
             universitiesData = [...universitiesData, ...filteredAdditional];
           }
         }
@@ -822,13 +872,24 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         .sort((a, b) => b.programs.length - a.programs.length);
 
       setResults(merged);
+      setSearchTotal(merged.reduce((sum, result) => sum + result.matchingCount, 0));
+      setSearchUniversityTotal(merged.length);
+      setSearchPage(page);
+      setSearchParams(courseSearchParams({
+        q: debouncedSearchTerm,
+        university: selectedUniversity,
+        country: selectedCountry,
+        level: selectedLevel,
+        intake: selectedIntake,
+        page,
+      }));
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships, selectedIntake, setSearchParams]);
+  }, [debouncedSearchTerm, selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships, selectedIntake, setSearchParams]);
 
   // Auto-search when filters change
   useEffect(() => {
@@ -959,7 +1020,62 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     )}
                   </div>
                   <CollapsibleContent className="pt-4">
-                    <div className="grid gap-4 md:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                      <div>
+                        <Label htmlFor="university-filter">University</Label>
+                        <Popover open={universityFilterOpen} onOpenChange={setUniversityFilterOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              id="university-filter"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={universityFilterOpen}
+                              className="w-full justify-between px-3 font-normal"
+                            >
+                              <span className="truncate">
+                                {selectedUniversity === "all"
+                                  ? "All universities"
+                                  : universities.find((university) => university.id === selectedUniversity)?.name || "Select university"}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search universities..." />
+                              <CommandList>
+                                <CommandEmpty>No university found.</CommandEmpty>
+                                <CommandGroup>
+                                  <CommandItem
+                                    value="All universities"
+                                    onSelect={() => {
+                                      setSelectedUniversity("all");
+                                      setUniversityFilterOpen(false);
+                                    }}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", selectedUniversity === "all" ? "opacity-100" : "opacity-0")} />
+                                    All universities
+                                  </CommandItem>
+                                  {universities.map((university) => (
+                                    <CommandItem
+                                      key={university.id}
+                                      value={`${university.name} ${university.country}`}
+                                      onSelect={() => {
+                                        setSelectedUniversity(university.id);
+                                        setUniversityFilterOpen(false);
+                                      }}
+                                    >
+                                      <Check className={cn("mr-2 h-4 w-4", selectedUniversity === university.id ? "opacity-100" : "opacity-0")} />
+                                      <span className="truncate">{university.name}</span>
+                                      <span className="ml-auto pl-3 text-xs text-muted-foreground">{university.country}</span>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                       <div>
                         <Label>Subject</Label>
                         <Select value={selectedDiscipline} onValueChange={setSelectedDiscipline}>

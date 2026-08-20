@@ -20,11 +20,19 @@ export function normalizeCourseSearch(value: string): string {
     .replace(/\bu\.?k\.?\b/g, "united kingdom").replace(/\bu\.?s\.?(?:a\.?)?\b/g, "united states").replace(/\s+/g, " ").trim();
 }
 
-export interface CourseSearchState { q?: string; country?: string; level?: string; intake?: string; page?: number; }
+export interface CourseSearchState {
+  q?: string;
+  university?: string;
+  country?: string;
+  level?: string;
+  intake?: string;
+  page?: number;
+}
 
 export function courseSearchParams(state: CourseSearchState): URLSearchParams {
   const params = new URLSearchParams();
   if (state.q?.trim()) params.set("q", state.q.trim());
+  if (state.university && state.university !== "all") params.set("university", state.university);
   if (state.country && state.country !== "all") params.set("country", state.country);
   if (state.level && state.level !== "all") params.set("level", state.level);
   if (state.intake && state.intake !== "all") params.set("intake", state.intake);
