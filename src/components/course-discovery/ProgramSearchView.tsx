@@ -612,6 +612,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
             tuition_amount: row.tuition_amount, tuition_currency: row.tuition_currency,
             duration_months: row.duration_months, university_id: row.university_id,
             qualification: row.qualification, next_intake_year: row.next_intake_year, next_intake_month: row.next_intake_month,
+            intake_months: row.intake_months,
+
           };
           const existing = universityMap.get(row.university_id);
           if (existing) existing.programs.push(program);
