@@ -373,7 +373,7 @@ export default function UniversityProfile() {
                   {university.name}
                 </h1>
                 {profileDetails.tagline ? (
-                  <p className="max-w-2xl text-lg text-white/90 drop-shadow">
+                  <p className="max-w-2xl text-lg text-white drop-shadow-md">
                     {profileDetails.tagline}
                   </p>
                 ) : null}
