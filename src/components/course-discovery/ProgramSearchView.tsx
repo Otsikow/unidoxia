@@ -111,6 +111,8 @@ interface Program {
   qualification?: string | null;
   next_intake_month?: number | null;
   next_intake_year?: number | null;
+  intake_months?: number[] | null;
+
 }
 
 interface Scholarship {
