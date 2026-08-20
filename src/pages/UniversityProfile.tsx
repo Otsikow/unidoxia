@@ -417,16 +417,18 @@ export default function UniversityProfile() {
 
       <div className="mx-auto max-w-7xl px-4 py-7 md:px-8 md:py-10">
         {university.listing_status !== "claimed" && (
-          <div className="mb-7 flex flex-col gap-4 rounded-2xl border border-border/60 bg-muted/35 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex max-w-3xl items-start gap-3">
-              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-              <div>
-                <p className="font-semibold">Independent public-information listing</p>
-                <p className="text-sm leading-6 text-muted-foreground">This institutional profile has been compiled by UniDoxia using official public information and has not yet been claimed by {university.name}. It does not imply endorsement, representation or a recruitment partnership.</p>
+          <div className="mb-7 flex flex-col gap-5 rounded-2xl border border-border/60 bg-muted/35 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 flex-1 items-start gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-semibold text-foreground">Independent public-information listing</p>
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">This institutional profile has been compiled by UniDoxia using official public information and has not yet been claimed by {university.name}. It does not imply endorsement, representation or a recruitment partnership.</p>
               </div>
             </div>
-            <Button asChild variant="outline" className="shrink-0">
-              <Link to={`/universities/${university.slug || university.id}/claim`}>Represent {university.name}? Claim this profile</Link>
+            <Button asChild variant="outline" className="h-auto w-full shrink-0 whitespace-normal px-4 py-3 text-center leading-snug sm:w-fit lg:max-w-xs">
+              <Link to={`/universities/${university.slug || university.id}/claim`}>Claim this profile</Link>
             </Button>
           </div>
         )}
