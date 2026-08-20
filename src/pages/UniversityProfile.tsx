@@ -114,6 +114,10 @@ interface Scholarship {
   coverage_type: string | null;
 }
 
+const profileCardHeaderPadding = "p-4 sm:p-5 lg:p-6";
+const profileCardContentPadding = "p-4 pt-0 sm:p-5 sm:pt-0 lg:p-6 lg:pt-0";
+const profileCardBodyPadding = "p-4 sm:p-5 lg:p-6";
+
 // Helper: pick image for university
 const getUniversityImage = (universityName: string): string => {
   const name = universityName.toLowerCase();
@@ -309,7 +313,7 @@ export default function UniversityProfile() {
       <div className="min-h-screen bg-background p-4 md:p-8">
         <div className="max-w-7xl mx-auto">
           <Card>
-            <CardContent className="py-12 text-center">
+            <CardContent className="px-4 py-10 text-center sm:px-5 sm:py-12 lg:px-6">
               <p className="text-muted-foreground">University not found</p>
               <Button asChild className="mt-4">
                 <Link to="/universities">Back to Directory</Link>
@@ -455,10 +459,10 @@ export default function UniversityProfile() {
           {/* About Tab */}
           <TabsContent value="about" className="space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className={profileCardHeaderPadding}>
                 <CardTitle>About {university.name}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className={profileCardContentPadding}>
                 {university.description ? (
                   <p className="text-muted-foreground leading-relaxed">
                     {university.description}
@@ -472,20 +476,20 @@ export default function UniversityProfile() {
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {profileDetails.internationalStudents && <Card><CardHeader><CardTitle className="text-lg">International students</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{profileDetails.internationalStudents}</CardContent></Card>}
-              {profileDetails.tuition && <Card><CardHeader><CardTitle className="text-lg">Tuition information</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{profileDetails.tuition}</CardContent></Card>}
-              {profileDetails.accommodation && <Card><CardHeader><CardTitle className="text-lg">Accommodation</CardTitle></CardHeader><CardContent className="text-sm text-muted-foreground">{profileDetails.accommodation}</CardContent></Card>}
-              {profileDetails.studyLevels.length > 0 && <Card><CardHeader><CardTitle className="text-lg">Study levels</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2">{profileDetails.studyLevels.map((level) => <Badge key={level} variant="secondary">{level}</Badge>)}</CardContent></Card>}
+              {profileDetails.internationalStudents && <Card><CardHeader className={profileCardHeaderPadding}><CardTitle className="text-lg">International students</CardTitle></CardHeader><CardContent className={`${profileCardContentPadding} text-sm text-muted-foreground`}>{profileDetails.internationalStudents}</CardContent></Card>}
+              {profileDetails.tuition && <Card><CardHeader className={profileCardHeaderPadding}><CardTitle className="text-lg">Tuition information</CardTitle></CardHeader><CardContent className={`${profileCardContentPadding} text-sm text-muted-foreground`}>{profileDetails.tuition}</CardContent></Card>}
+              {profileDetails.accommodation && <Card><CardHeader className={profileCardHeaderPadding}><CardTitle className="text-lg">Accommodation</CardTitle></CardHeader><CardContent className={`${profileCardContentPadding} text-sm text-muted-foreground`}>{profileDetails.accommodation}</CardContent></Card>}
+              {profileDetails.studyLevels.length > 0 && <Card><CardHeader className={profileCardHeaderPadding}><CardTitle className="text-lg">Study levels</CardTitle></CardHeader><CardContent className={`${profileCardContentPadding} flex flex-wrap gap-2`}>{profileDetails.studyLevels.map((level) => <Badge key={level} variant="secondary">{level}</Badge>)}</CardContent></Card>}
             </div>
 
-            {profileDetails.sources.length > 0 && <Card><CardHeader><CardTitle className="text-lg">Information sources</CardTitle><CardDescription>Official pages used to prepare this listing.</CardDescription></CardHeader><CardContent className="space-y-2">{profileDetails.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary hover:underline">{source.label || source.url}{source.checkedAt ? ` · checked ${source.checkedAt}` : ""}</a>)}</CardContent></Card>}
+            {profileDetails.sources.length > 0 && <Card><CardHeader className={profileCardHeaderPadding}><CardTitle className="text-lg">Information sources</CardTitle><CardDescription>Official pages used to prepare this listing.</CardDescription></CardHeader><CardContent className={`${profileCardContentPadding} space-y-2`}>{profileDetails.sources.map((source) => <a key={source.url} href={source.url} target="_blank" rel="noopener noreferrer" className="block text-sm text-primary hover:underline">{source.label || source.url}{source.checkedAt ? ` · checked ${source.checkedAt}` : ""}</a>)}</CardContent></Card>}
 
             {university.ranking && (
               <Card>
-                <CardHeader>
+                <CardHeader className={profileCardHeaderPadding}>
                   <CardTitle>Rankings</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className={profileCardContentPadding}>
                   <pre className="text-sm text-muted-foreground">
                     {JSON.stringify(university.ranking, null, 2)}
                   </pre>
@@ -498,7 +502,7 @@ export default function UniversityProfile() {
               className="group border-2 border-primary/20 hover:border-primary/50 hover:shadow-xl transition-all cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10"
               onClick={() => setActiveTab("programs")}
             >
-              <CardContent className="p-8">
+              <CardContent className={profileCardBodyPadding}>
                 <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                   <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                     <GraduationCap className="h-10 w-10 text-primary" />
@@ -532,7 +536,7 @@ export default function UniversityProfile() {
                 className="group hover:shadow-lg transition-all cursor-pointer"
                 onClick={() => setActiveTab("scholarships")}
               >
-                <CardContent className="p-6">
+                <CardContent className={profileCardBodyPadding}>
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-amber-500/10 group-hover:bg-amber-500/20 transition-colors">
                       <Award className="h-7 w-7 text-amber-600" />
@@ -547,7 +551,7 @@ export default function UniversityProfile() {
               </Card>
 
               <Card>
-                <CardContent className="p-6">
+                <CardContent className={profileCardBodyPadding}>
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-500/10">
                       <MapPin className="h-7 w-7 text-blue-600" />
@@ -563,17 +567,17 @@ export default function UniversityProfile() {
 
             {profileDetails.highlights.length > 0 ? (
               <Card>
-                <CardHeader>
+                <CardHeader className={profileCardHeaderPadding}>
                   <CardTitle>University Highlights</CardTitle>
                   <CardDescription>
                     Why students and partners choose {university.name}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-3 md:grid-cols-2">
+                <CardContent className={`${profileCardContentPadding} grid gap-3 md:grid-cols-2`}>
                   {profileDetails.highlights.map((highlight, index) => (
                     <div
                       key={`${highlight}-${index}`}
-                      className="flex items-start gap-3 rounded-lg bg-muted/50 p-4"
+                      className="flex items-start gap-3 rounded-lg bg-muted/50 p-3 sm:p-4"
                     >
                       <Sparkles className="mt-1 h-4 w-4 text-primary" />
                       <p className="text-sm text-muted-foreground">{highlight}</p>
@@ -585,13 +589,13 @@ export default function UniversityProfile() {
 
             {(primaryContact || socialLinks.length > 0) && (
               <Card>
-                <CardHeader>
+                <CardHeader className={profileCardHeaderPadding}>
                   <CardTitle>Connect with {university.name}</CardTitle>
                   <CardDescription>
                     Speak directly with the admissions team or explore official channels.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="grid gap-6 md:grid-cols-2">
+                <CardContent className={`${profileCardContentPadding} grid gap-6 md:grid-cols-2`}>
                   {primaryContact ? (
                     <div className="space-y-3">
                       <h3 className="text-sm font-semibold uppercase text-muted-foreground">
@@ -654,10 +658,10 @@ export default function UniversityProfile() {
           <TabsContent value="programs" className="space-y-6">
             {/* Filters */}
             <Card>
-              <CardHeader>
+              <CardHeader className={profileCardHeaderPadding}>
                 <CardTitle>Filter Courses</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-wrap gap-2">
+              <CardContent className={`${profileCardContentPadding} flex flex-wrap gap-2`}>
                 <Input value={programSearch} onChange={(event) => { setProgramSearch(event.target.value); setProgramPage(1); }} placeholder="Search this university's courses" className="mb-2 w-full" />
                 <div className="flex flex-wrap gap-2">
                   <Button
@@ -704,7 +708,7 @@ export default function UniversityProfile() {
             {/* Programs List */}
             {filteredPrograms.length === 0 ? (
               <Card>
-                <CardContent className="py-12 text-center">
+                <CardContent className="px-4 py-10 text-center sm:px-5 sm:py-12 lg:px-6">
                   <p className="text-muted-foreground">
                     No courses found matching your criteria.
                   </p>
@@ -715,7 +719,7 @@ export default function UniversityProfile() {
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                   {filteredPrograms.map((program) => (
                   <Card key={program.id} className="group flex h-full min-h-[31rem] flex-col overflow-hidden border-border/70 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-xl">
-                    <div className="border-b border-border/60 bg-gradient-to-br from-primary/15 via-primary/5 to-background p-5">
+                    <div className="border-b border-border/60 bg-gradient-to-br from-primary/15 via-primary/5 to-background p-4 sm:p-5 lg:p-6">
                       <div className="flex items-center gap-3">
                         <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/70 bg-white p-2 shadow-sm">
                           {university ? (
@@ -738,7 +742,7 @@ export default function UniversityProfile() {
                       </div>
                     </div>
 
-                    <CardHeader className="space-y-4 pb-4">
+                    <CardHeader className="space-y-4 p-4 pb-4 sm:p-5 sm:pb-4 lg:p-6 lg:pb-4">
                       <CardTitle className="line-clamp-3 min-h-[4.5rem] text-xl leading-6 transition-colors group-hover:text-primary">
                         {program.name}
                       </CardTitle>
@@ -747,7 +751,7 @@ export default function UniversityProfile() {
                         <Badge className="rounded-full px-3" variant="outline">{program.discipline}</Badge>
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex flex-1 flex-col gap-4 pt-0">
+                    <CardContent className={`${profileCardContentPadding} flex flex-1 flex-col gap-4`}>
                       {program.description && (
                         <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">{program.description}</p>
                       )}
@@ -810,7 +814,7 @@ export default function UniversityProfile() {
                         </Badge>
                       )}
                     </CardContent>
-                    <CardFooter className="mt-auto border-t border-border/60 bg-muted/10 p-5">
+                    <CardFooter className={`${profileCardBodyPadding} mt-auto border-t border-border/60 bg-muted/10`}>
                       <Button className="w-full rounded-xl" size="lg" onClick={() => setSelectedProgram(program)}>
                         View course details
                       </Button>
@@ -912,13 +916,13 @@ export default function UniversityProfile() {
           {/* Requirements Tab */}
           <TabsContent value="requirements" className="space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className={profileCardHeaderPadding}>
                 <CardTitle>General Admission Requirements</CardTitle>
                 <CardDescription>
                   Requirements may vary by course. Please check individual course details.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className={`${profileCardContentPadding} space-y-4`}>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div><h3 className="font-semibold">Academic entry</h3><p className="mt-2 text-sm text-muted-foreground">{profileDetails.entryRequirements || "Check the official course page for current academic requirements."}</p></div>
                   <div><h3 className="font-semibold">English language</h3><p className="mt-2 text-sm text-muted-foreground">{profileDetails.englishRequirements || "Check the official course page for current English-language requirements."}</p></div>
@@ -928,16 +932,16 @@ export default function UniversityProfile() {
 
             {/* Course-specific requirements */}
             <Card>
-              <CardHeader>
+              <CardHeader className={profileCardHeaderPadding}>
                 <CardTitle>Course-Specific Requirements</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className={profileCardContentPadding}>
                 <div className="space-y-4">
                   {programs
                     .filter((p) => p.entry_requirements)
                     .slice(0, 5)
                     .map((program) => (
-                      <div key={program.id} className="p-4 rounded-lg bg-muted/50">
+                      <div key={program.id} className="rounded-lg bg-muted/50 p-3 sm:p-4">
                         <h4 className="font-semibold mb-2">{program.name}</h4>
                         <div className="text-sm text-muted-foreground">
                           {typeof program.entry_requirements === 'string' ? (
@@ -964,7 +968,7 @@ export default function UniversityProfile() {
           <TabsContent value="scholarships" className="space-y-6">
             {scholarships.length === 0 ? (
               <Card>
-                <CardContent className="py-12 text-center">
+                <CardContent className="px-4 py-10 text-center sm:px-5 sm:py-12 lg:px-6">
                   <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <p className="text-muted-foreground">
                     No scholarships currently available for this university.
@@ -978,7 +982,7 @@ export default function UniversityProfile() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {scholarships.map((scholarship) => (
                   <Card key={scholarship.id} className="hover:shadow-lg transition-shadow">
-                    <CardHeader>
+                    <CardHeader className={profileCardHeaderPadding}>
                       <div className="flex items-start gap-3">
                         <Award className="h-6 w-6 text-primary mt-1" />
                         <div className="flex-1">
@@ -995,7 +999,7 @@ export default function UniversityProfile() {
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className={profileCardContentPadding}>
                       {scholarship.coverage_type && (
                         <p className="text-sm text-muted-foreground capitalize">
                           Coverage: {scholarship.coverage_type.replace(/_/g, " ")}
