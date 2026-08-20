@@ -353,7 +353,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let query = supabase
         .from("programs")
         .select(`
-          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id,
+          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, intake_months, university_id,
           universities!inner (id, name, country, city, logo_url, website, description, active)
         `, { count: "exact" })
         .eq("active", true)
@@ -737,7 +737,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let progQuery = supabase
         .from("programs")
         .select(
-          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id",
+          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, intake_months, university_id",
         )
         .in("university_id", uniIds)
         .eq("active", true)
@@ -779,7 +779,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
         const fallbackQuery = supabase
           .from("programs")
-          .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id")
+          .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, intake_months, university_id")
           .in("university_id", uniIds)
           .or("active.eq.true,active.is.null");
 
