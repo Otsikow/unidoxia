@@ -266,7 +266,7 @@ export function CourseCard({ course }: CourseCardProps) {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    <span>Next intake: <span className="font-medium text-foreground">{getNextIntakeDisplay()}</span></span>
+                    <span>Intakes: <span className="font-medium text-foreground">{getNextIntakeDisplay()}</span></span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-4 w-4" />
