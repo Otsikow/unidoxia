@@ -398,7 +398,7 @@ export default function UniversityProfile() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+                      className="bg-black/60 backdrop-blur-sm border-white/40 text-white hover:bg-black/75 hover:text-white"
                       asChild
                     >
                       <a href={university.website} target="_blank" rel="noopener noreferrer">
