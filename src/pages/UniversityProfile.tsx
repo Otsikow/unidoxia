@@ -355,7 +355,7 @@ export default function UniversityProfile() {
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="relative min-h-[24rem] overflow-hidden rounded-2xl border border-border/60 shadow-lg md:h-[28rem] md:rounded-3xl">
           <img src={heroImage} alt={university.name} className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/45 to-background/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/65 to-black/25" />
           <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 md:p-10">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4 md:gap-6">
               {/* University Logo */}
@@ -373,24 +373,24 @@ export default function UniversityProfile() {
                   {university.name}
                 </h1>
                 {profileDetails.tagline ? (
-                  <p className="max-w-2xl text-lg text-white/90 drop-shadow">
+                  <p className="max-w-2xl text-lg text-white drop-shadow-md">
                     {profileDetails.tagline}
                   </p>
                 ) : null}
-                <div className="flex flex-wrap items-center gap-3 text-white/90 drop-shadow">
-                  <Badge className="bg-white/20 hover:bg-white/30 text-white border-white/30 px-3 py-1">
+                <div className="flex flex-wrap items-center gap-3 text-white drop-shadow-md">
+                  <Badge className="bg-black/60 hover:bg-black/70 text-white border-white/40 px-3 py-1 backdrop-blur-sm">
                     <MapPin className="h-3.5 w-3.5 mr-1.5" />
                     {university.city && `${university.city}, `}
                     {university.country}
                   </Badge>
                   <Badge 
-                    className="bg-primary/80 hover:bg-primary text-white border-primary px-3 py-1 cursor-pointer"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground border-primary px-3 py-1 cursor-pointer"
                     onClick={() => setActiveTab("programs")}
                   >
                     <GraduationCap className="h-3.5 w-3.5 mr-1.5" />
                     {programTotal} Courses
                   </Badge>
-                  <Badge className="bg-white/20 text-white border-white/30">
+                  <Badge className="bg-black/60 text-white border-white/40 backdrop-blur-sm">
                     {university.verification_status === "admin_verified" ? "Verified profile" : "Listed by UniDoxia"}
                   </Badge>
                   {university.partnership_tier === "partner" && <Badge className="bg-emerald-600 text-white">UniDoxia Partner</Badge>}
@@ -398,7 +398,7 @@ export default function UniversityProfile() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+                      className="bg-black/60 backdrop-blur-sm border-white/40 text-white hover:bg-black/75 hover:text-white"
                       asChild
                     >
                       <a href={university.website} target="_blank" rel="noopener noreferrer">
