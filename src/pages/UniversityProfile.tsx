@@ -163,8 +163,8 @@ const publicApplicationRouting = (config: unknown): string | null => {
   return typeof value === "string" ? value : null;
 };
 
-const intakeLabel = (intake: NonNullable<Program["program_intakes"]>[number]) =>
-  `${getMonthName(intake.intake_month)} ${intake.intake_year}`;
+export const intakeLabel = (intake: NonNullable<Program["program_intakes"]>[number]) =>
+  getMonthName(intake.intake_month);
 
 const intakeStatusClasses: Record<string, string> = {
   available: "border-emerald-200 bg-emerald-50 text-emerald-800",
@@ -251,7 +251,7 @@ export default function UniversityProfile() {
         .eq("catalogue_status", "active")
         .order("level")
         .order("name")
-        .range((page - 1) * 24, page * 24 - 1);
+        .range((page - 1) * 100, page * 100 - 1);
       if (selectedLevel !== "all") programsQuery = programsQuery.eq("level", selectedLevel);
       if (selectedDiscipline !== "all") programsQuery = programsQuery.eq("discipline", selectedDiscipline);
       const safeProgramSearch = programSearch.trim().replace(/[%_,()]/g, " ").replace(/\s+/g, " ");
@@ -1008,7 +1008,7 @@ export default function UniversityProfile() {
                     </CardContent>
                   </Card>
                 ))}
-                {programTotal > 24 && <div className="flex items-center justify-center gap-3 pt-4"><Button variant="outline" disabled={programPage === 1} onClick={() => setProgramPage((page) => page - 1)}>Previous</Button><span className="text-sm text-muted-foreground">Page {programPage} of {Math.ceil(programTotal / 24)}</span><Button variant="outline" disabled={programPage >= Math.ceil(programTotal / 24)} onClick={() => setProgramPage((page) => page + 1)}>Next</Button></div>}
+                {programTotal > 100 && <div className="flex items-center justify-center gap-3 pt-4"><Button variant="outline" disabled={programPage === 1} onClick={() => setProgramPage((page) => page - 1)}>Previous</Button><span className="text-sm text-muted-foreground">Page {programPage} of {Math.ceil(programTotal / 100)}</span><Button variant="outline" disabled={programPage >= Math.ceil(programTotal / 100)} onClick={() => setProgramPage((page) => page + 1)}>Next</Button></div>}
               </div>
             )}
           </TabsContent>
