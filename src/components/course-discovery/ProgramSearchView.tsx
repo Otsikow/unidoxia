@@ -111,6 +111,8 @@ interface Program {
   qualification?: string | null;
   next_intake_month?: number | null;
   next_intake_year?: number | null;
+  intake_months?: number[] | null;
+
 }
 
 interface Scholarship {
@@ -177,6 +179,9 @@ const transformToCourseCardFormat = (
     university_logo_url: course.university.logo_url || undefined,
     next_intake_month: course.next_intake_month,
     next_intake_year: course.next_intake_year,
+    intake_months: course.intake_months ?? undefined,
+
+
     applyUrl: course.applyUrl,
     detailsUrl: course.detailsUrl || `/courses/${course.id}`,
     instant_submission: course.instant_submission,
@@ -348,7 +353,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let query = supabase
         .from("programs")
         .select(`
-          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id,
+          id, name, level, discipline, tuition_amount, tuition_currency, duration_months, intake_months, university_id,
           universities!inner (id, name, country, city, logo_url, website, description, active)
         `, { count: "exact" })
         .eq("active", true)
@@ -607,6 +612,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
             tuition_amount: row.tuition_amount, tuition_currency: row.tuition_currency,
             duration_months: row.duration_months, university_id: row.university_id,
             qualification: row.qualification, next_intake_year: row.next_intake_year, next_intake_month: row.next_intake_month,
+            intake_months: row.intake_months,
+
           };
           const existing = universityMap.get(row.university_id);
           if (existing) existing.programs.push(program);
@@ -730,7 +737,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       let progQuery = supabase
         .from("programs")
         .select(
-          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id",
+          "id, name, level, discipline, tuition_amount, tuition_currency, duration_months, intake_months, university_id",
         )
         .in("university_id", uniIds)
         .eq("active", true)
@@ -772,7 +779,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
         const fallbackQuery = supabase
           .from("programs")
-          .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, university_id")
+          .select("id, name, level, discipline, tuition_amount, tuition_currency, duration_months, intake_months, university_id")
           .in("university_id", uniIds)
           .or("active.eq.true,active.is.null");
 

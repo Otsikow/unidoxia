@@ -93,11 +93,14 @@ export function CourseCard({ course }: CourseCardProps) {
   };
 
   const getNextIntakeDisplay = () => {
-    if (course.next_intake_month && course.next_intake_year) {
-      return `${MONTH_NAMES[course.next_intake_month - 1]} ${course.next_intake_year}`;
+    const months = (course.intake_months ?? []).filter((m) => m >= 1 && m <= 12);
+    if (months.length > 0) {
+      return [...new Set(months)].sort((a, b) => a - b).map((m) => MONTH_NAMES[m - 1]).join(' · ');
     }
+    if (course.next_intake_month) return MONTH_NAMES[course.next_intake_month - 1];
     return 'Contact for dates';
   };
+
 
   const tuitionDisplay = formatCourseFee({
     amount: course.tuition_amount,
@@ -211,7 +214,7 @@ export function CourseCard({ course }: CourseCardProps) {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Calendar className="h-4 w-4 flex-shrink-0" />
                 <div className="flex items-center gap-2">
-                  <span>Next intake:</span>
+                  <span>Intakes:</span>
                   <span className="font-medium text-foreground">
                     {getNextIntakeDisplay()}
                   </span>
@@ -263,7 +266,7 @@ export function CourseCard({ course }: CourseCardProps) {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    <span>Next intake: <span className="font-medium text-foreground">{getNextIntakeDisplay()}</span></span>
+                    <span>Intakes: <span className="font-medium text-foreground">{getNextIntakeDisplay()}</span></span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Clock className="h-4 w-4" />
