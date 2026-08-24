@@ -3,7 +3,6 @@ import { CheckCircle2, ExternalLink, ShieldAlert, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { favourableFinancialFields, isPubliclyCurrent, type ComparisonOption } from "@/lib/universityComparison";
 
 interface ProgramComparisonProps {
@@ -46,7 +45,7 @@ export function ProgramComparison({ options, open, onOpenChange, onRemove }: Pro
           <DialogTitle>Compare programmes</DialogTitle>
           <DialogDescription>Compare verified costs and requirements. Unknown or stale values are never treated as zero.</DialogDescription>
         </DialogHeader>
-        <ScrollArea className="max-h-[78vh]">
+        <div className="max-h-[78vh] overflow-auto overscroll-contain touch-pan-x touch-pan-y">
           <div className="min-w-[760px] p-6">
             <div className="grid" style={{ gridTemplateColumns: `minmax(170px,.8fr) repeat(${options.length}, minmax(220px,1fr))` }}>
               <div className="border-b p-3 text-sm font-semibold text-muted-foreground">Criteria</div>
@@ -74,7 +73,7 @@ export function ProgramComparison({ options, open, onOpenChange, onRemove }: Pro
             </div>
             <div className="mt-5 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950"><ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" /><p>Fees, deposits, scholarships and entry rules can change. Confirm important details from the linked official source before applying or paying.</p></div>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
