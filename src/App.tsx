@@ -292,6 +292,9 @@ const AdminResourcesPage = lazyWithErrorHandling(() =>
 const AdminProgramsPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminPrograms")
 );
+const AdminComparisonDataPage = lazyWithErrorHandling(() =>
+  import("./pages/admin/AdminComparisonData")
+);
 const AdminToolsPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminTools")
 );
@@ -717,6 +720,7 @@ const App = () => {
                           <Route path="partners" element={<AdminPartnersPage />} />
                           <Route path="resources" element={<AdminResourcesPage />} />
                           <Route path="programs" element={<AdminProgramsPage />} />
+                          <Route path="comparison-data" element={<AdminComparisonDataPage />} />
                           <Route path="tools" element={<AdminToolsPage />} />
                           <Route path="broadcast" element={<AdminBroadcastCenterPage />} />
                           <Route path="tools/broadcast-center" element={<AdminBroadcastCenterPage />} />

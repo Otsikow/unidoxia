@@ -41,6 +41,9 @@ export interface Course {
 
 interface CourseCardProps {
   course: Course;
+  comparisonSelected?: boolean;
+  comparisonDisabled?: boolean;
+  onComparisonToggle?: (course: Course) => void;
 }
 
 const MONTH_NAMES = [
@@ -48,7 +51,7 @@ const MONTH_NAMES = [
   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
 ];
 
-export function CourseCard({ course }: CourseCardProps) {
+export function CourseCard({ course, comparisonSelected, comparisonDisabled, onComparisonToggle }: CourseCardProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -221,17 +224,31 @@ export function CourseCard({ course }: CourseCardProps) {
           </CardContent>
 
           <CardFooter className="pt-0 pb-6">
-            <Button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsDetailsOpen(true);
-              }}
-              className="w-full group-hover:shadow-md transition-shadow pointer-events-auto"
-              size="lg"
-              aria-label={`View details for ${course.name}`}
-            >
-              View Details
-            </Button>
+            <div className="w-full space-y-2">
+              {onComparisonToggle && (
+                <Button
+                  type="button"
+                  variant={comparisonSelected ? "secondary" : "outline"}
+                  className="w-full"
+                  disabled={!comparisonSelected && comparisonDisabled}
+                  aria-pressed={comparisonSelected}
+                  onClick={(e) => { e.stopPropagation(); onComparisonToggle(course); }}
+                >
+                  {comparisonSelected ? "Selected for comparison" : "Add to comparison"}
+                </Button>
+              )}
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDetailsOpen(true);
+                }}
+                className="w-full group-hover:shadow-md transition-shadow pointer-events-auto"
+                size="lg"
+                aria-label={`View details for ${course.name}`}
+              >
+                View Details
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       </div>

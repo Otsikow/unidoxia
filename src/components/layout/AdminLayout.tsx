@@ -127,6 +127,14 @@ const NAV_GROUPS: NavGroup[] = [
         icon: BookOpen,
       },
       {
+        to: "/admin/comparison-data",
+        labelKey: "admin.layout.navigation.comparisonData.label",
+        descriptionKey: "admin.layout.navigation.comparisonData.description",
+        labelDefault: "Comparison data",
+        descriptionDefault: "Fees, freshness & review",
+        icon: BarChart3,
+      },
+      {
         to: "/admin/university-claims",
         labelKey: "admin.layout.navigation.universityClaims.label",
         descriptionKey: "admin.layout.navigation.universityClaims.description",
