@@ -12,8 +12,8 @@ describe("course search normalisation", () => {
   ])("normalises %s", (input, expected) => expect(normalizeCourseSearch(input)).toBe(expected));
 
   it("stores all public filters and pagination in a shareable URL", () => {
-    expect(courseSearchParams({ q: "UK economics", country: "United Kingdom", level: "Postgraduate", intake: "2027-09", page: 3 }).toString())
-      .toBe("q=UK+economics&country=United+Kingdom&level=Postgraduate&intake=2027-09&page=3");
+    expect(courseSearchParams({ q: "UK economics", university: "9c32c04e-8e8f-47af-a3bb-dde7a334bc80", country: "United Kingdom", level: "Postgraduate", intake: "2027-09", page: 3 }).toString())
+      .toBe("q=UK+economics&university=9c32c04e-8e8f-47af-a3bb-dde7a334bc80&country=United+Kingdom&level=Postgraduate&intake=2027-09&page=3");
   });
 
   it("accepts only structured year-month intake values", () => {

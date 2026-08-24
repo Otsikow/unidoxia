@@ -28,6 +28,15 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -37,11 +46,14 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import BackButton from "@/components/BackButton";
 import { CourseCard, type Course } from "@/components/student/CourseCard";
+import { ProgramComparison } from "@/components/course-discovery/ProgramComparison";
 import { SAMPLE_PROGRAMS } from "@/data/programs-sample";
 import {
   Search,
   SlidersHorizontal,
   ChevronDown,
+  ChevronsUpDown,
+  Check,
   X,
   } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -50,6 +62,8 @@ import { cn } from "@/lib/utils";
 import { courseSearchParams, normalizeCourseSearch, parseIntake } from "@/lib/courseSearch";
 import { logAnalyticsEvent } from "@/lib/analytics";
 import { navigationStateFromCurrentPage } from "@/lib/marketplacePresentation";
+import { type ComparisonOption } from "@/lib/universityComparison";
+import { sortComparisonOptions, type ComparisonSort } from "@/lib/universityComparison";
 
 // --- University Images ---
 import oxfordImg from "@/assets/university-oxford.jpg";
@@ -201,10 +215,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   
   // Initialize state from URL params if available
   const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || searchParams.get("query") || "");
+  const [selectedUniversity, setSelectedUniversity] = useState(searchParams.get("university") || "all");
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "all");
   const [selectedLevel, setSelectedLevel] = useState(searchParams.get("level") || "all");
   const [selectedDiscipline, setSelectedDiscipline] = useState("all");
   const [maxFee, setMaxFee] = useState("");
+  const [maxDeposit, setMaxDeposit] = useState("");
+  const [noApplicationFee, setNoApplicationFee] = useState(false);
+  const [englishAlternative, setEnglishAlternative] = useState(false);
   const [onlyWithScholarships, setOnlyWithScholarships] = useState(false);
   const [selectedIntake, setSelectedIntake] = useState(searchParams.get("intake") || "all");
   const [searchPage, setSearchPage] = useState(Number(searchParams.get("page")) || 1);
@@ -214,8 +232,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [results, setResults] = useState<SearchResult[]>([]);
   const [levels, setLevels] = useState<string[]>(PROGRAM_LEVELS);
   const [disciplines, setDisciplines] = useState<string[]>([]);
+  const [universities, setUniversities] = useState<University[]>([]);
+  const [universityFilterOpen, setUniversityFilterOpen] = useState(false);
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [comparisonOptions, setComparisonOptions] = useState<ComparisonOption[]>([]);
+  const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<ComparisonSort>("recommended");
+  const [comparisonProfiles, setComparisonProfiles] = useState<Record<string, any>>({});
   const { t } = useTranslation();
   const location = useLocation();
   const returnState = () => navigationStateFromCurrentPage(`${location.pathname}${location.search}`, "Back to search results", (location.state as any) ?? null, typeof window === "undefined" ? 0 : window.scrollY);
@@ -236,6 +260,61 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     }
     return `/student/applications/new?program=${programId}`;
   };
+
+  const toggleComparison = useCallback(async (course: Course) => {
+    const alreadySelected = comparisonOptions.some((option) => option.programId === course.id);
+    if (alreadySelected) {
+      setComparisonOptions((current) => current.filter((option) => option.programId !== course.id));
+      return;
+    }
+    if (comparisonOptions.length >= 4) return;
+
+    const fallback: ComparisonOption = {
+      programId: course.id,
+      universityName: course.university_name,
+      programName: course.name,
+      country: course.university_country,
+      city: course.university_city,
+      level: course.level,
+      tuitionAmount: course.tuition_amount,
+      currency: course.tuition_currency,
+      nextIntake: course.next_intake_year && course.next_intake_month
+        ? `${course.next_intake_year}-${String(course.next_intake_month).padStart(2, "0")}-01`
+        : null,
+      verificationStatus: "unverified",
+    };
+    setComparisonOptions((current) => [...current, fallback]);
+    void logAnalyticsEvent("comparison_item_added", { source: "course_discovery", properties: { program_id: course.id, university_id: course.university_id } });
+
+    if (!isSupabaseConfigured) return;
+    const { data } = await (supabase as any)
+      .from("public_program_comparisons")
+      .select("*")
+      .eq("program_id", course.id)
+      .maybeSingle();
+    if (!data) return;
+    setComparisonOptions((current) => current.map((option) => option.programId !== course.id ? option : {
+      ...option,
+      tuitionAmount: data.tuition_amount,
+      currency: data.currency,
+      initialDeposit: data.initial_deposit,
+      applicationFee: data.application_fee,
+      applicationFeeWaived: data.application_fee_waived,
+      estimatedFirstYearCost: data.estimated_first_year_cost,
+      scholarshipAvailable: data.scholarship_available,
+      scholarshipMaximum: data.scholarship_maximum,
+      englishSummary: data.english_summary,
+      ieltsAlternativesAccepted: data.ielts_alternatives_accepted,
+      noIeltsPathway: data.no_ielts_pathway,
+      academicSummary: data.academic_summary,
+      nextIntake: data.next_intake,
+      applicationDeadline: data.application_deadline,
+      sourceUrl: data.source_url,
+      lastVerifiedAt: data.last_verified_at,
+      academicYear: data.academic_year,
+      verificationStatus: data.verification_status ?? "unverified",
+    }));
+  }, [comparisonOptions]);
 
   const showSEO = variant === "page";
   const shouldShowBackButton = variant === "page" && showBackButton;
@@ -266,6 +345,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       Boolean(
         searchParams.get("q") ||
           searchParams.get("query") ||
+          searchParams.get("university") ||
           searchParams.get("country") ||
           searchParams.get("level") ||
           searchParams.get("discipline") ||
@@ -291,10 +371,17 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   useEffect(() => {
     const loadFilterOptions = async () => {
       try {
-        const { data: programs } = await supabase
-          .from("programs")
-          .select("level, discipline")
-          .eq("active", true);
+        const [programResult, universityResult] = await Promise.all([
+          supabase.from("programs").select("level, discipline").eq("active", true),
+          applyRealUniversityFilters(
+            supabase
+              .from("universities")
+              .select("id, name, country, city, logo_url, website, description, slug")
+              .eq("active", true)
+              .order("name"),
+          ),
+        ]);
+        const programs = programResult.data;
 
         if (programs) {
           setLevels(PROGRAM_LEVELS);
@@ -303,6 +390,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           ].sort();
           setDisciplines(uniqueDisciplines);
         }
+        if (universityResult.data) setUniversities(universityResult.data);
       } catch (error) {
         console.error("Error loading filters:", error);
       }
@@ -321,6 +409,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       // Fallback to sample data when Supabase isn't configured
       if (!isSupabaseConfigured) {
         const filteredPrograms = SAMPLE_PROGRAMS.filter((program) => {
+          if (selectedUniversity !== "all" && program.university_id !== selectedUniversity) return false;
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
@@ -364,6 +453,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       query = applyRealUniversityFilters(query);
 
       // Apply filters if set
+      if (selectedUniversity !== "all") {
+        query = query.eq("university_id", selectedUniversity);
+      }
       if (selectedCountry !== "all") {
         query = query.eq("universities.country", selectedCountry);
       }
@@ -412,7 +504,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     } finally {
       setLoadingCourses(false);
     }
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
+  }, [selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee]);
 
   // Initial load of courses
   useEffect(() => {
@@ -424,7 +516,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     if (!hasSearched) {
       loadAllCourses(1);
     }
-  }, [selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched, loadAllCourses]);
+  }, [selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, hasSearched, loadAllCourses]);
 
   const totalCoursePages = useMemo(
     () => (totalCourses > 0 ? Math.ceil(totalCourses / COURSES_PER_PAGE) : 1),
@@ -445,11 +537,43 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     [results],
   );
 
-  const searchTotalPages = Math.max(1, Math.ceil(searchCourses.length / SEARCH_RESULTS_PER_PAGE));
+  useEffect(() => {
+    if (!isSupabaseConfigured || searchCourses.length === 0) return;
+    const ids = searchCourses.map((course) => course.id);
+    void (async () => {
+      const { data } = await (supabase as any).from("public_program_comparisons").select("*").in("program_id", ids);
+      if (!data) return;
+      setComparisonProfiles((current) => ({ ...current, ...Object.fromEntries(data.map((profile: any) => [profile.program_id, profile])) }));
+    })();
+  }, [searchCourses]);
+
+  const sortedSearchCourses = useMemo(() => {
+    const options = searchCourses.map((course) => {
+      const profile = comparisonProfiles[course.id];
+      return ({
+      programId: course.id, universityName: course.university_name, programName: course.name,
+      country: course.university_country, city: course.university_city, level: course.level,
+      tuitionAmount: profile?.tuition_amount ?? course.tuition_amount, currency: profile?.currency ?? course.tuition_currency,
+      initialDeposit: profile?.initial_deposit, scholarshipMaximum: profile?.scholarship_maximum,
+      scholarshipAvailable: profile?.scholarship_available, applicationFeeWaived: profile?.application_fee_waived,
+      noIeltsPathway: profile?.no_ielts_pathway, ieltsAlternativesAccepted: profile?.ielts_alternatives_accepted,
+      verificationStatus: profile?.verification_status,
+      nextIntake: profile?.next_intake ?? (course.next_intake_year && course.next_intake_month ? `${course.next_intake_year}-${String(course.next_intake_month).padStart(2, "0")}-01` : null),
+    });
+    }).filter((option) => {
+      if (maxDeposit && (option.initialDeposit == null || option.initialDeposit > Number(maxDeposit))) return false;
+      if (noApplicationFee && !option.applicationFeeWaived) return false;
+      if (englishAlternative && !option.noIeltsPathway && !option.ieltsAlternativesAccepted) return false;
+      return true;
+    });
+    const order = new Map(sortComparisonOptions(options, sortBy).map((option, index) => [option.programId, index]));
+    return searchCourses.filter((course) => order.has(course.id)).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
+  }, [searchCourses, sortBy, comparisonProfiles, maxDeposit, noApplicationFee, englishAlternative]);
+  const searchTotalPages = Math.max(1, Math.ceil(sortedSearchCourses.length / SEARCH_RESULTS_PER_PAGE));
   const visibleSearchCourses = useMemo(() => {
     const offset = (searchPage - 1) * SEARCH_RESULTS_PER_PAGE;
-    return searchCourses.slice(offset, offset + SEARCH_RESULTS_PER_PAGE);
-  }, [searchCourses, searchPage]);
+    return sortedSearchCourses.slice(offset, offset + SEARCH_RESULTS_PER_PAGE);
+  }, [sortedSearchCourses, searchPage]);
 
   const paginationRange = useMemo<(number | string)[]>(() => {
     if (totalCoursePages <= 7) {
@@ -485,18 +609,26 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   };
 
   const optionalFilterCount = [
+    selectedUniversity !== "all",
     selectedDiscipline !== "all",
     Boolean(maxFee),
+    Boolean(maxDeposit),
+    noApplicationFee,
+    englishAlternative,
     onlyWithScholarships,
     selectedIntake !== "all",
   ].filter(Boolean).length;
 
   const clearFilters = () => {
     setSearchTerm("");
+    setSelectedUniversity("all");
     setSelectedCountry("all");
     setSelectedLevel("all");
     setSelectedDiscipline("all");
     setMaxFee("");
+    setMaxDeposit("");
+    setNoApplicationFee(false);
+    setEnglishAlternative(false);
     setOnlyWithScholarships(false);
     setSelectedIntake("all");
     setSearchPage(1);
@@ -511,6 +643,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     setSearchParams(
       courseSearchParams({
         q: debouncedSearchTerm,
+        university: selectedUniversity,
         country: selectedCountry,
         level: selectedLevel,
         intake: selectedIntake,
@@ -538,6 +671,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
         const filteredPrograms = SAMPLE_PROGRAMS.filter((program) => {
           if (!matchesSearch(program)) return false;
+          if (selectedUniversity !== "all" && program.university_id !== selectedUniversity) return false;
           if (selectedCountry !== "all" && program.university_country !== selectedCountry) return false;
           if (selectedLevel !== "all" && program.level !== selectedLevel) return false;
           if (selectedDiscipline !== "all" && program.discipline !== selectedDiscipline) return false;
@@ -573,7 +707,19 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           existing.matchingCount += 1;
         });
 
-        setResults(Array.from(universitiesMap.values()));
+        const fallbackResults = Array.from(universitiesMap.values());
+        setResults(fallbackResults);
+        setSearchTotal(filteredPrograms.length);
+        setSearchUniversityTotal(fallbackResults.length);
+        setSearchPage(page);
+        setSearchParams(courseSearchParams({
+          q: debouncedSearchTerm,
+          university: selectedUniversity,
+          country: selectedCountry,
+          level: selectedLevel,
+          intake: selectedIntake,
+          page,
+        }));
         return;
       }
 
@@ -581,6 +727,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       const intake = parseIntake(selectedIntake);
       const searchRpc = (offset: number) => (supabase as any).rpc("search_programmes", {
         p_query: normalizedQuery,
+        p_university_id: selectedUniversity === "all" ? null : selectedUniversity,
         p_country: selectedCountry === "all" ? null : selectedCountry,
         p_level: selectedLevel === "all" ? null : selectedLevel,
         p_intake_year: intake.year,
@@ -639,10 +786,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         setSearchTotal(selectedDiscipline !== "all" || Boolean(maxFee) ? visibleTotal : total);
         setSearchUniversityTotal(completeResults.length);
         setSearchPage(page);
-        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
+        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, university: selectedUniversity, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
         void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
           query: debouncedSearchTerm || "", normalized_query: normalizedQuery, destination: selectedCountry,
-          study_level: selectedLevel, intake: selectedIntake, result_count: total, university_count: completeResults.length, page: 1,
+          university_id: selectedUniversity, study_level: selectedLevel, intake: selectedIntake,
+          result_count: total, university_count: completeResults.length, page: 1,
         } });
         return;
       }
@@ -659,6 +807,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         .limit(MAX_UNIVERSITY_RESULTS);
 
       uniQuery = applyRealUniversityFilters(uniQuery);
+
+      if (selectedUniversity !== "all") {
+        uniQuery = uniQuery.eq("id", selectedUniversity);
+      }
       
       if (searchQuery) {
         uniQuery = uniQuery.ilike("name", `%${searchQuery}%`);
@@ -706,9 +858,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           
           if (additionalUnis) {
             // Apply country filter to additional universities
-            const filteredAdditional = selectedCountry !== "all"
-              ? additionalUnis.filter(u => u.country === selectedCountry)
-              : additionalUnis;
+            const filteredAdditional = additionalUnis.filter((university) =>
+              (selectedCountry === "all" || university.country === selectedCountry)
+              && (selectedUniversity === "all" || university.id === selectedUniversity),
+            );
             universitiesData = [...universitiesData, ...filteredAdditional];
           }
         }
@@ -829,13 +982,24 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         .sort((a, b) => b.programs.length - a.programs.length);
 
       setResults(merged);
+      setSearchTotal(merged.reduce((sum, result) => sum + result.matchingCount, 0));
+      setSearchUniversityTotal(merged.length);
+      setSearchPage(page);
+      setSearchParams(courseSearchParams({
+        q: debouncedSearchTerm,
+        university: selectedUniversity,
+        country: selectedCountry,
+        level: selectedLevel,
+        intake: selectedIntake,
+        page,
+      }));
     } catch (error) {
       console.error("Search error:", error);
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships, selectedIntake, setSearchParams]);
+  }, [debouncedSearchTerm, selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships, selectedIntake, setSearchParams]);
 
   // Auto-search when filters change
   useEffect(() => {
@@ -966,7 +1130,62 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     )}
                   </div>
                   <CollapsibleContent className="pt-4">
-                    <div className="grid gap-4 md:grid-cols-4">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <div>
+                        <Label htmlFor="university-filter">University</Label>
+                        <Popover open={universityFilterOpen} onOpenChange={setUniversityFilterOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              id="university-filter"
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={universityFilterOpen}
+                              className="w-full justify-between px-3 font-normal"
+                            >
+                              <span className="truncate">
+                                {selectedUniversity === "all"
+                                  ? "All universities"
+                                  : universities.find((university) => university.id === selectedUniversity)?.name || "Select university"}
+                              </span>
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search universities..." />
+                              <CommandList>
+                                <CommandEmpty>No university found.</CommandEmpty>
+                                <CommandGroup>
+                                  <CommandItem
+                                    value="All universities"
+                                    onSelect={() => {
+                                      setSelectedUniversity("all");
+                                      setUniversityFilterOpen(false);
+                                    }}
+                                  >
+                                    <Check className={cn("mr-2 h-4 w-4", selectedUniversity === "all" ? "opacity-100" : "opacity-0")} />
+                                    All universities
+                                  </CommandItem>
+                                  {universities.map((university) => (
+                                    <CommandItem
+                                      key={university.id}
+                                      value={`${university.name} ${university.country}`}
+                                      onSelect={() => {
+                                        setSelectedUniversity(university.id);
+                                        setUniversityFilterOpen(false);
+                                      }}
+                                    >
+                                      <Check className={cn("mr-2 h-4 w-4", selectedUniversity === university.id ? "opacity-100" : "opacity-0")} />
+                                      <span className="truncate">{university.name}</span>
+                                      <span className="ml-auto pl-3 text-xs text-muted-foreground">{university.country}</span>
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
                       <div>
                         <Label>Subject</Label>
                         <Select value={selectedDiscipline} onValueChange={setSelectedDiscipline}>
@@ -1000,6 +1219,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                           </SelectContent>
                         </Select>
                       </div>
+                      <div>
+                        <Label htmlFor="maximum-deposit">Maximum initial deposit</Label>
+                        <Input id="maximum-deposit" type="number" inputMode="numeric" placeholder="Any amount" value={maxDeposit} onChange={(event) => setMaxDeposit(event.target.value)} />
+                      </div>
                       <div className="flex items-center pt-6">
                         <Checkbox
                           id="scholarships"
@@ -1007,6 +1230,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                           onCheckedChange={(checked) => setOnlyWithScholarships(!!checked)}
                         />
                         <Label htmlFor="scholarships" className="ml-2">Scholarships available</Label>
+                      </div>
+                      <div className="flex items-center pt-6">
+                        <Checkbox id="no-application-fee" checked={noApplicationFee} onCheckedChange={(checked) => setNoApplicationFee(!!checked)} />
+                        <Label htmlFor="no-application-fee" className="ml-2">No application fee</Label>
+                      </div>
+                      <div className="flex items-center pt-6">
+                        <Checkbox id="english-alternative" checked={englishAlternative} onCheckedChange={(checked) => setEnglishAlternative(!!checked)} />
+                        <Label htmlFor="english-alternative" className="ml-2">IELTS alternative accepted</Label>
                       </div>
                     </div>
                   </CollapsibleContent>
@@ -1016,7 +1247,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
             {/* Results */}
             <div className="space-y-4">
-              <h2 className="text-2xl font-semibold">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <h2 className="text-2xl font-semibold">
                   {loading
                     ? t("pages.universitySearch.results.loading")
                     : hasSearched
@@ -1024,7 +1256,21 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       : t("pages.universitySearch.results.startSearching", {
                         defaultValue: "Start searching to see universities and programs",
                       })}
-              </h2>
+                </h2>
+                <div className="w-full sm:w-56">
+                  <Label>Sort by</Label>
+                  <Select value={sortBy} onValueChange={(value) => setSortBy(value as ComparisonSort)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recommended">Recommended</SelectItem>
+                      <SelectItem value="tuition">Lowest Tuition</SelectItem>
+                      <SelectItem value="deposit">Lowest Deposit</SelectItem>
+                      <SelectItem value="scholarship">Highest Scholarship</SelectItem>
+                      <SelectItem value="intake">Next Available Intake</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               {!hasSearched ? (
                 <div className="space-y-6">
@@ -1077,6 +1323,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                             <CourseCard
                               key={course.id}
                               course={transformToCourseCardFormat(course)}
+                              comparisonSelected={comparisonOptions.some((option) => option.programId === course.id)}
+                              comparisonDisabled={comparisonOptions.length >= 4}
+                              onComparisonToggle={toggleComparison}
                             />
                           ))}
                         </div>
@@ -1166,7 +1415,13 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {visibleSearchCourses.map((course) => (
-                      <CourseCard key={course.id} course={course} />
+                      <CourseCard
+                        key={course.id}
+                        course={course}
+                        comparisonSelected={comparisonOptions.some((option) => option.programId === course.id)}
+                        comparisonDisabled={comparisonOptions.length >= 4}
+                        onComparisonToggle={toggleComparison}
+                      />
                     ))}
                   </div>
 
@@ -1206,6 +1461,26 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
             </div>
         </div>
       </div>
+      {comparisonOptions.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 p-3 shadow-2xl backdrop-blur supports-[backdrop-filter]:bg-background/85">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold">{comparisonOptions.length} of 4 programmes selected</p>
+              <p className="text-sm text-muted-foreground">Select at least two programmes for a side-by-side comparison.</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setComparisonOptions([])}>Clear</Button>
+              <Button disabled={comparisonOptions.length < 2} onClick={() => { setComparisonOpen(true); void logAnalyticsEvent("comparison_opened", { source: "course_discovery", properties: { program_ids: comparisonOptions.map((option) => option.programId) } }); }}>Compare</Button>
+            </div>
+          </div>
+        </div>
+      )}
+      <ProgramComparison
+        options={comparisonOptions}
+        open={comparisonOpen}
+        onOpenChange={setComparisonOpen}
+        onRemove={(programId) => setComparisonOptions((current) => current.filter((option) => option.programId !== programId))}
+      />
     </div>
   );
 }
