@@ -1,0 +1,1628 @@
+{
+  "university": {
+    "name": "Georgian College",
+    "slug": "georgian-college",
+    "city": "Barrie",
+    "country": "Canada",
+    "website": "https://www.georgiancollege.ca/"
+  },
+  "source": {
+    "url": "https://cat.georgiancollege.ca/programs/",
+    "label": "Official Georgian College 2027-28 Academic Catalogue"
+  },
+  "academicYear": "2027/28",
+  "checkedAt": "2026-08-20T00:00:00Z",
+  "discovered": 24,
+  "classified": 24,
+  "programmes": [
+    {
+      "title": "Biotechnology",
+      "slug": "biotechnology-btec",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Natural and Applied Sciences",
+      "courseCode": "BTEC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/btec/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Laboratory-based biotechnology training using current scientific equipment across microbiology, molecular biology, chemistry and pharmaceutical biotechnology.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/btec/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/btec/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Civil Engineering Technician",
+      "slug": "civil-engineering-technician-cvet",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "CVET",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cvet/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Applied civil-engineering training in construction, surveying, materials, municipal services and infrastructure, with a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cvet/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cvet/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Civil Engineering Technology",
+      "slug": "civil-engineering-technology-cvty",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "CVTY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cvty/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced applied learning in civil infrastructure, design, surveying, construction and project work, supported by two co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cvty/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cvty/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Programming",
+      "slug": "computer-programming-cmpg",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CMPG",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cmpg/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Hands-on software-development training covering programming, databases, web technologies and application development, with a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cmpg/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cmpg/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cmpg/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Programming and Analysis",
+      "slug": "computer-programming-and-analysis-cmpa",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CMPA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cmpa/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced software analysis and development training with practical projects and two co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cmpa/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cmpa/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cmpa/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Systems Technician - Cloud Technologies",
+      "slug": "computer-systems-technician-cloud-technologies-cstc",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CSTC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cstc/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Practical training in computer systems, networking, cloud platforms, security and technical support, with a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cstc/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cstc/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cstc/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Cybersecurity Technician",
+      "slug": "cybersecurity-technician-cyte",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CYTE",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cyte/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie Downtown",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Applied cybersecurity training in systems, networks, threat analysis, defensive operations and secure computing environments.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/cyte/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cyte/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electrical Engineering Technician",
+      "slug": "electrical-engineering-technician-eetn",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "EETN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eetn/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Hands-on electrical engineering training in circuits, controls, power systems, instrumentation and troubleshooting, with a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/eetn/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/eetn/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/eetn/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electrical Engineering Technology",
+      "slug": "electrical-engineering-technology-eety",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "EETY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eety/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced electrical engineering technology training in automation, power, controls and industrial systems, with three co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/eety/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/eety/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/eety/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electromechanical Engineering Technician - Mechatronics",
+      "slug": "electromechanical-engineering-technician-mechatronics-mett",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "METT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mett/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Integrated mechanical, electrical, automation and robotics training with practical laboratory work and a co-op term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/mett/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/mett/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mett/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electromechanical Engineering Technology - Mechatronics",
+      "slug": "electromechanical-engineering-technology-mechatronics-metr",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "METR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/metr/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced mechatronics training across robotics, automation, controls and integrated manufacturing systems, with three co-op terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/metr/"
+        },
+        {
+          "year": 2028,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/metr/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/metr/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Environmental Technician",
+      "slug": "environmental-technician-entn",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Environmental Sciences",
+      "courseCode": "ENTN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/entn/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Field- and laboratory-based environmental training in sampling, monitoring, assessment and regulatory practice, with a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/entn/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/entn/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Environmental Technology",
+      "slug": "environmental-technology-envr",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Environmental Sciences",
+      "courseCode": "ENVR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/envr/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced environmental field and laboratory training in assessment, monitoring, remediation and compliance, with three co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/envr/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/envr/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Heating, Refrigeration and Air Conditioning Technician",
+      "slug": "heating-refrigeration-and-air-conditioning-technician-hrac",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Skilled Trades",
+      "courseCode": "HRAC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/hrac/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Hands-on HVAC training in installation, service, controls, refrigeration and heating systems, with a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/hrac/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/hrac/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Mechanical Technician - Precision Tooling, Machining, and CNC",
+      "slug": "mechanical-technician-precision-tooling-machining-and-cnc-mtpt",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Skilled Trades",
+      "courseCode": "MTPT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mtpt/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Shop-based precision machining, tooling and CNC training using industry equipment, supported by a co-op work term.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/mtpt/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mtpt/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Mechanical Engineering Technology",
+      "slug": "mechanical-engineering-technology-mety",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "METY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mety/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced applied mechanical design, manufacturing, automation and engineering analysis, with three co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/mety/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mety/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Architectural Technician",
+      "slug": "architectural-technician-artc",
+      "qualification": "Ontario College Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Architecture and Construction",
+      "courseCode": "ARTC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/artc/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie Downtown",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Applied architectural design, building technology, drafting and digital-modelling training with two co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/artc/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/artc/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Architectural Technology",
+      "slug": "architectural-technology-arte",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Architecture and Construction",
+      "courseCode": "ARTE",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/arte/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie Downtown",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Advanced architectural technology training in design development, building systems, codes and project documentation, with two co-op terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/arte/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/arte/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Marine Engineering Technology",
+      "slug": "marine-engineering-technology-mtcy",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Marine and Transportation",
+      "courseCode": "MTCY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mtcy/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Owen Sound",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Marine engineering training in vessel machinery, propulsion, electrical systems and shipboard operations, including two co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/mtcy/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mtcy/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Marine Technology - Navigation",
+      "slug": "marine-technology-navigation-mnav",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Marine and Transportation",
+      "courseCode": "MNAV",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mnav/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Owen Sound",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Practical navigation, seamanship, safety and vessel-operations training with three marine co-op work terms.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/mnav/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mnav/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Power Engineering Technology",
+      "slug": "power-engineering-technology-pety",
+      "qualification": "Ontario College Advanced Diploma, Co-op",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "PETY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pety/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Owen Sound",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Applied training in power generation, plant systems, operations and maintenance, with a co-op term and field placement.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific mathematics and/or science prerequisites apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/pety/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pety/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Veterinary Technician",
+      "slug": "veterinary-technician-vetn",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Veterinary Sciences",
+      "courseCode": "VETN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/vetn/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Barrie",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Hands-on animal-health training in clinical procedures, laboratory work, nursing care and diagnostics, including two field placements.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/vetn/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/vetn/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Welding Techniques",
+      "slug": "welding-techniques-wetc",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Skilled Trades",
+      "courseCode": "WETC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/wetc/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Midland or Owen Sound",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Shop-based training in welding processes, fabrication, safety, blueprint reading and practical metalworking techniques.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/wetc/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/wetc/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Plumbing Techniques",
+      "slug": "plumbing-techniques-pltq",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Skilled Trades",
+      "courseCode": "PLTQ",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pltq/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Midland",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Hands-on plumbing training in tools, piping systems, installation practices, codes and workplace safety.",
+      "requirements": [
+        "Secondary-school graduation or equivalent",
+        "Grade 12 English or equivalent",
+        "Programme-specific prerequisites and minimum grades apply; confirm the official programme page"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://cat.georgiancollege.ca/programs/pltq/"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": null,
+        "currency": "CAD",
+        "feeYear": "2027/28",
+        "feeBasis": "annual",
+        "sourceUrl": "https://www.georgiancollege.ca/international/finance-and-fees/"
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "internationalAvailabilityMustBeConfirmed": true
+      },
+      "englishRequirements": {
+        "ieltsAcademic": "6.0 general diploma or certificate minimum",
+        "toeflIbt": "79 general diploma or certificate minimum",
+        "pteAcademic": "58 general diploma or certificate minimum",
+        "sourceUrl": "https://www.georgiancollege.ca/international/admissions/",
+        "programmeExceptionsApply": true
+      },
+      "catalogueStatus": "active",
+      "classification": "verified_fee_pending",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pltq/",
+          "priority": 1
+        },
+        {
+          "kind": "english_requirements",
+          "url": "https://www.georgiancollege.ca/international/admissions/",
+          "priority": 1
+        }
+      ]
+    }
+  ]
+}

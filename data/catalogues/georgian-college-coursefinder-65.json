@@ -1,0 +1,4468 @@
+{
+  "university": {
+    "name": "Georgian College",
+    "slug": "georgian-college",
+    "city": "Barrie",
+    "country": "Canada",
+    "website": "https://www.georgiancollege.ca/"
+  },
+  "source": {
+    "officialCatalogueUrl": "https://cat.georgiancollege.ca/programs/",
+    "coursefinderUrl": "https://app.coursefinder.ai/search-program"
+  },
+  "academicYear": "2026/27",
+  "checkedAt": "2026-08-20T00:00:00Z",
+  "discovered": 65,
+  "classified": 65,
+  "programmes": [
+    {
+      "title": "Practical Nursing",
+      "sourceTitle": "Diploma in Practical Nursing",
+      "slug": "practical-nursing-pnrs",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "PNRS",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pnrs/",
+      "durationMonths": 30,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Practical Nursing is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pnrs/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Social Service Worker",
+      "sourceTitle": "Diploma in Social Service Worker",
+      "slug": "social-service-worker-sswk",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Social Sciences",
+      "courseCode": "SSWK",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/sswk/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Social Service Worker is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/sswk/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Early Childhood Education",
+      "sourceTitle": "Diploma in Early Childhood Education",
+      "slug": "early-childhood-education-eced",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Social Sciences",
+      "courseCode": "ECED",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eced/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Early Childhood Education is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/eced/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Personal Support Worker",
+      "sourceTitle": "Certificate in Personal Support Worker",
+      "slug": "personal-support-worker-pswr",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "PSWR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pswr/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Personal Support Worker is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pswr/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Occupational Therapist Assistant and Physiotherapist Assistant",
+      "sourceTitle": "Diploma in Occupational Therapist Assistant and Physiotherapist Assistant",
+      "slug": "occupational-therapist-assistant-and-physiotherapist-assistant-opta",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "OPTA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/opta/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Occupational Therapist Assistant and Physiotherapist Assistant is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/opta/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Project Management - Information Technology + Graduate Certificate in Artificial Intelligence Leadership and Management (Bundle program)",
+      "sourceTitle": "Graduate Certificate in Project Management - Information Technology + Graduate Certificate in Artificial Intelligence Leadership and Management (Bundle program)",
+      "slug": "project-management-information-technology-graduate-certificate-in-artificial-intelligence-leadership-and-management-bundle-program-pmit-liai",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "PMIT+LIAI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pmit/#bundle-6",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Project Management - Information Technology + Graduate Certificate in Artificial Intelligence Leadership and Management (Bundle program) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pmit/#bundle-6",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Honours Bachelor of Science - Nursing",
+      "sourceTitle": "Honours Bachelor of Science in Nursing",
+      "slug": "honours-bachelor-of-science-nursing-hbsn",
+      "qualification": "Honours Bachelor's Degree",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "HBSN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/hbsn/",
+      "durationMonths": 48,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Honours Bachelor of Science - Nursing is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 18468,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/hbsn/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Food and Nutrition Management",
+      "sourceTitle": "Graduate Certificate in Food and Nutrition Management",
+      "slug": "food-and-nutrition-management-fdnm",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Business and Management",
+      "courseCode": "FDNM",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/fdnm/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Food and Nutrition Management is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/fdnm/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Programming",
+      "sourceTitle": "Diploma in Computer Programming (Co-op)",
+      "slug": "computer-programming-cmpg",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CMPG",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cmpg/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Computer Programming is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cmpg/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electrical Engineering Technician",
+      "sourceTitle": "Diploma in Electrical Engineering Technician",
+      "slug": "electrical-engineering-technician-eetn",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "EETN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eetn/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Electrical Engineering Technician is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/eetn/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electromechanical Engineering Technician - Mechatronics",
+      "sourceTitle": "Diploma in Electromechanical Engineering Technician - Mechatronics",
+      "slug": "electromechanical-engineering-technician-mechatronics-mett",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "METT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mett/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Electromechanical Engineering Technician - Mechatronics is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mett/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Big Data Analytics",
+      "sourceTitle": "Graduate Certificate in Big Data Analytics",
+      "slug": "big-data-analytics-bdat",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "BDAT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/bdat/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Big Data Analytics is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/bdat/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Medical Laboratory Assistant",
+      "sourceTitle": "Certificate in Medical Laboratory Assistant",
+      "slug": "medical-laboratory-assistant-mlba",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "MLBA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mlba/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Medical Laboratory Assistant is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mlba/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Business - Agriculture",
+      "sourceTitle": "Diploma in Business - Agriculture",
+      "slug": "business-agriculture-agri",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Business and Management",
+      "courseCode": "AGRI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/agri/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Business - Agriculture is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/agri/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Heating, Refrigeration and Air Conditioning Technician",
+      "sourceTitle": "Diploma in Heating, Refrigeration and Air Conditioning Technician",
+      "slug": "heating-refrigeration-and-air-conditioning-technician-hrac",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "HRAC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/hrac/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Heating, Refrigeration and Air Conditioning Technician is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/hrac/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Pharmacy Technician",
+      "sourceTitle": "Diploma in Pharmacy Technician",
+      "slug": "pharmacy-technician-phrm",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "PHRM",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/phrm/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Pharmacy Technician is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/phrm/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Addictions and Mental Health (Formerly known as Addictions: Treatment and Prevention)",
+      "sourceTitle": "Graduate Certificate in Addictions and Mental Health (Formerly known as Addictions: Treatment and Prevention)",
+      "slug": "addictions-and-mental-health-formerly-known-as-addictions-treatment-and-prevention-admh",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Health and Medicine",
+      "courseCode": "ADMH",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/admh/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Addictions and Mental Health (Formerly known as Addictions: Treatment and Prevention) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/admh/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Artificial Intelligence- Architecture, Design, and Implementation",
+      "sourceTitle": "Graduate Certificate in Artificial Intelligence- Architecture, Design, and Implementation",
+      "slug": "artificial-intelligence-architecture-design-and-implementation-aidi",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "AIDI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/aidi/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Artificial Intelligence- Architecture, Design, and Implementation is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/aidi/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Big Data Analytics + Graduate Certificate in Project Management - Information Technology (Bundled Program)",
+      "sourceTitle": "Graduate Certificate in Big Data Analytics + Graduate Certificate in Project Management - Information Technology (Bundled Program)",
+      "slug": "big-data-analytics-graduate-certificate-in-project-management-information-technology-bundled-program-bdat-pmit",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "BDAT+PMIT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/bdat/#bundle-19",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Big Data Analytics + Graduate Certificate in Project Management - Information Technology (Bundled Program) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/bdat/#bundle-19",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Cybersecurity",
+      "sourceTitle": "Graduate Certificate in Cybersecurity (Co-op)",
+      "slug": "cybersecurity-cybe",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CYBE",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cybe/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Cybersecurity is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cybe/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Project Management - Information Technology",
+      "sourceTitle": "Graduate Certificate in Project Management - Information Technology",
+      "slug": "project-management-information-technology-pmit",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Business and Management",
+      "courseCode": "PMIT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pmit/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Project Management - Information Technology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pmit/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Therapeutic Recreation",
+      "sourceTitle": "Graduate Certificate in Therapeutic Recreation",
+      "slug": "therapeutic-recreation-trec",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Health and Medicine",
+      "courseCode": "TREC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/trec/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Therapeutic Recreation is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 24960,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/trec/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Aviation Management",
+      "sourceTitle": "Advanced Diploma in Aviation Management (Co-op)",
+      "slug": "aviation-management-avia",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Business and Management",
+      "courseCode": "AVIA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/avia/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Aviation Management is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/avia/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Civil Engineering Technology",
+      "sourceTitle": "Advanced Diploma in Civil Engineering Technology (Co-op)",
+      "slug": "civil-engineering-technology-cvty",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "CVTY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cvty/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Civil Engineering Technology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cvty/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electrical Engineering Technology",
+      "sourceTitle": "Advanced Diploma in Electrical Engineering Technology (Co-op)",
+      "slug": "electrical-engineering-technology-eety",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "EETY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eety/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Electrical Engineering Technology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/eety/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Medical Laboratory Technology",
+      "sourceTitle": "Advanced Diploma in Medical Laboratory Technology",
+      "slug": "medical-laboratory-technology-mlbt",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "MLBT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mlbt/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Medical Laboratory Technology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mlbt/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Carpentry and Renovation Techniques",
+      "sourceTitle": "Certificate in Carpentry and Renovation Techniques",
+      "slug": "carpentry-and-renovation-techniques-crnt",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "CRNT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/crnt/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Carpentry and Renovation Techniques is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/crnt/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Pre-health Sciences Pathway to Advanced Diplomas and Degrees + Certificate in Personal Support Worker (Bundled program)",
+      "sourceTitle": "Certificate in Pre-health Sciences Pathway to Advanced Diplomas and Degrees + Certificate in Personal Support Worker (Bundled program)",
+      "slug": "pre-health-sciences-pathway-to-advanced-diplomas-and-degrees-certificate-in-personal-support-worker-bundled-program-phpa-pswr",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "PHPA+PSWR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/phpa/#bundle-28",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Pre-health Sciences Pathway to Advanced Diplomas and Degrees + Certificate in Personal Support Worker (Bundled program) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/phpa/#bundle-28",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Biotechnology-Health",
+      "sourceTitle": "Diploma in Biotechnology-Health",
+      "slug": "biotechnology-health-btec",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "BTEC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/btec/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Biotechnology-Health is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/btec/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Civil Engineering Technician",
+      "sourceTitle": "Diploma in Civil Engineering Technician (Co-op)",
+      "slug": "civil-engineering-technician-cvet",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "CVET",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cvet/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Civil Engineering Technician is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cvet/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Developmental Services Worker",
+      "sourceTitle": "Diploma in Developmental Services Worker",
+      "slug": "developmental-services-worker-dswr",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Social Sciences",
+      "courseCode": "DSWR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/dswr/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Developmental Services Worker is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/dswr/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Golf Industry Management",
+      "sourceTitle": "Diploma in Golf Industry Management",
+      "slug": "golf-industry-management-glfi",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Business and Management",
+      "courseCode": "GLFI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/glfi/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Golf Industry Management is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/glfi/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Artificial Intelligence Leadership and Management",
+      "sourceTitle": "Graduate Certificate in Artificial Intelligence Leadership and Management",
+      "slug": "artificial-intelligence-leadership-and-management-liai",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "LIAI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/liai/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Artificial Intelligence Leadership and Management is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/liai/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Artificial Intelligence Leadership and Management + Graduate Certificate in Project Management - Information Technology (Bundle program)",
+      "sourceTitle": "Graduate Certificate in Artificial Intelligence Leadership and Management + Graduate Certificate in Project Management - Information Technology (Bundle program)",
+      "slug": "artificial-intelligence-leadership-and-management-graduate-certificate-in-project-management-information-technology-bundle-program-liai-pmit",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "LIAI+PMIT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/liai/#bundle-34",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Artificial Intelligence Leadership and Management + Graduate Certificate in Project Management - Information Technology (Bundle program) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/liai/#bundle-34",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Project Management - Information Technology + Graduate Certificate in Big Data Analytics (Bundle program)",
+      "sourceTitle": "Graduate Certificate in Project Management - Information Technology + Graduate Certificate in Big Data Analytics (Bundle program)",
+      "slug": "project-management-information-technology-graduate-certificate-in-big-data-analytics-bundle-program-pmit-bdat",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "PMIT+BDAT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pmit/#bundle-35",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Project Management - Information Technology + Graduate Certificate in Big Data Analytics (Bundle program) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pmit/#bundle-35",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Honours Bachelor of Interior Design",
+      "sourceTitle": "Honours Bachelor of Interior Design",
+      "slug": "honours-bachelor-of-interior-design-baid",
+      "qualification": "Honours Bachelor's Degree",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "BAID",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/baid/",
+      "durationMonths": 48,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Honours Bachelor of Interior Design is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 18468,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/baid/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Child and Youth Care",
+      "sourceTitle": "Advanced Diploma in Child and Youth Care",
+      "slug": "child-and-youth-care-cyca",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Social Sciences",
+      "courseCode": "CYCA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cyca/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Child and Youth Care is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cyca/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Programming and Analysis",
+      "sourceTitle": "Advanced Diploma in Computer Programming and Analysis (Co-op)",
+      "slug": "computer-programming-and-analysis-cmpa",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CMPA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cmpa/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Computer Programming and Analysis is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cmpa/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electromechanical Engineering Technology - Mechatronics",
+      "sourceTitle": "Advanced Diploma in Electromechanical Engineering Technology - Mechatronics",
+      "slug": "electromechanical-engineering-technology-mechatronics-metr",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "METR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/metr/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Electromechanical Engineering Technology - Mechatronics is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/metr/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Environmental Technology",
+      "sourceTitle": "Advanced Diploma in Environmental Technology (Co-op)",
+      "slug": "environmental-technology-envr",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "ENVR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/envr/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Environmental Technology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/envr/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Game - Development",
+      "sourceTitle": "Advanced Diploma in Game - Development",
+      "slug": "game-development-gamd",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "GAMD",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/gamd/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Game - Development is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/gamd/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Graphic Design",
+      "sourceTitle": "Advanced Diploma in Graphic Design",
+      "slug": "graphic-design-grde",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "GRDE",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/grde/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Graphic Design is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/grde/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Massage Therapy",
+      "sourceTitle": "Advanced Diploma in Massage Therapy",
+      "slug": "massage-therapy-masg",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "MASG",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/masg/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Massage Therapy is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/masg/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Mechanical Engineering Technology",
+      "sourceTitle": "Advanced Diploma in Mechanical Engineering Technology",
+      "slug": "mechanical-engineering-technology-mety",
+      "qualification": "Ontario College Advanced Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "METY",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mety/",
+      "durationMonths": 36,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Mechanical Engineering Technology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mety/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Mechanical Techniques - Marine Engine Mechanic",
+      "sourceTitle": "Certificate in Mechanical Techniques - Marine Engine Mechanic",
+      "slug": "mechanical-techniques-marine-engine-mechanic-mtme",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "MTME",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mtme/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Mechanical Techniques - Marine Engine Mechanic is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mtme/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Construction Techniques",
+      "sourceTitle": "Certificate in Construction Techniques",
+      "slug": "construction-techniques-cote",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "COTE",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cote/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Construction Techniques is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cote/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Culinary Skills",
+      "sourceTitle": "Certificate in Culinary Skills",
+      "slug": "culinary-skills-culi",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "CULI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/culi/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Culinary Skills is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/culi/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Electrical Techniques",
+      "sourceTitle": "Certificate in Electrical Techniques",
+      "slug": "electrical-techniques-eltq",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "ELTQ",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/eltq/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Electrical Techniques is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/eltq/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Gas Technician",
+      "sourceTitle": "Certificate in Gas Technician",
+      "slug": "gas-technician-gast",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "GAST",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/gast/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Gas Technician is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 22857,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/gast/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Plumbing Techniques",
+      "sourceTitle": "Certificate in Plumbing Techniques",
+      "slug": "plumbing-techniques-pltq",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "PLTQ",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/pltq/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Plumbing Techniques is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/pltq/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Pre-health Sciences Pathway to Advanced Diplomas and Degrees",
+      "sourceTitle": "Certificate in Pre-health Sciences Pathway to Advanced Diplomas and Degrees",
+      "slug": "pre-health-sciences-pathway-to-advanced-diplomas-and-degrees-phpa",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "PHPA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/phpa/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Pre-health Sciences Pathway to Advanced Diplomas and Degrees is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/phpa/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Veterinary Assistant",
+      "sourceTitle": "Certificate in Veterinary Assistant",
+      "slug": "veterinary-assistant-veta",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "VETA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/veta/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Veterinary Assistant is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/veta/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Welding Techniques",
+      "sourceTitle": "Certificate in Welding Techniques",
+      "slug": "welding-techniques-wetc",
+      "qualification": "Ontario College Certificate",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "WETC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/wetc/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Welding Techniques is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/wetc/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Computer Systems Technician - Networking",
+      "sourceTitle": "Diploma in Computer Systems Technician - Networking",
+      "slug": "computer-systems-technician-networking-cstc",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "CSTC",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/cstc/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Computer Systems Technician - Networking is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/cstc/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Environmental Technician",
+      "sourceTitle": "Diploma in Environmental Technician",
+      "slug": "environmental-technician-entn",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "ENTN",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/entn/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Environmental Technician is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/entn/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Fitness and Health Promotion",
+      "sourceTitle": "Diploma in Fitness and Health Promotion",
+      "slug": "fitness-and-health-promotion-fhpr",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Health and Medicine",
+      "courseCode": "FHPR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/fhpr/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Fitness and Health Promotion is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/fhpr/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Game - Design and Simulation",
+      "sourceTitle": "Diploma in Game - Design and Simulation",
+      "slug": "game-design-and-simulation-game",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "GAME",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/game/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Game - Design and Simulation is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/game/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Graphic Design Production",
+      "sourceTitle": "Diploma in Graphic Design Production",
+      "slug": "graphic-design-production-grdp",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Applied Arts and Services",
+      "courseCode": "GRDP",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/grdp/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Graphic Design Production is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/grdp/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Mechanical Technician - Precision Skills",
+      "sourceTitle": "Diploma in Mechanical Technician - Precision Skills",
+      "slug": "mechanical-technician-precision-skills-mtpt",
+      "qualification": "Ontario College Diploma",
+      "level": "Undergraduate",
+      "discipline": "Engineering and Technology",
+      "courseCode": "MTPT",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/mtpt/",
+      "durationMonths": 24,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Mechanical Technician - Precision Skills is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/mtpt/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Artificial Intelligence - Architecture, Design, and Implementation + Graduate Certificate in Artificial Intelligence Leadership and Management (Bundled program)",
+      "sourceTitle": "Graduate Certificate in Artificial Intelligence - Architecture, Design, and Implementation + Graduate Certificate in Artificial Intelligence Leadership and Management (Bundled program)",
+      "slug": "artificial-intelligence-architecture-design-and-implementation-graduate-certificate-in-artificial-intelligence-leadership-and-management-bundled-program-aidi-liai",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "AIDI+LIAI",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/aidi/#bundle-60",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Artificial Intelligence - Architecture, Design, and Implementation + Graduate Certificate in Artificial Intelligence Leadership and Management (Bundled program) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 5,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        },
+        {
+          "year": 2027,
+          "month": 1,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/aidi/#bundle-60",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Communicative Disorders Assistant",
+      "sourceTitle": "Graduate Certificate in Communicative Disorders Assistant",
+      "slug": "communicative-disorders-assistant-coda",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Health and Medicine",
+      "courseCode": "CODA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/coda/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Communicative Disorders Assistant is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 24960,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/coda/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Community Crisis and Suicide Response",
+      "sourceTitle": "Graduate Certificate in Community Crisis and Suicide Response",
+      "slug": "community-crisis-and-suicide-response-ccsr",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Social Sciences",
+      "courseCode": "CCSR",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/ccsr/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Community Crisis and Suicide Response is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 15238,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/ccsr/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Digital Content Creation and Strategy",
+      "sourceTitle": "Graduate Certificate in Digital Content Creation and Strategy",
+      "slug": "digital-content-creation-and-strategy-gccs",
+      "qualification": "Ontario College Graduate Certificate",
+      "level": "Graduate Certificate",
+      "discipline": "Computing and Information Technology",
+      "courseCode": "GCCS",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/gccs/",
+      "durationMonths": 12,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Digital Content Creation and Strategy is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 16640,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/gccs/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Honours Bachelor of Business Administration (Automotive Management)",
+      "sourceTitle": "Honours Bachelor of Business Administration (Automotive Management) (Co-op)",
+      "slug": "honours-bachelor-of-business-administration-automotive-management-bbaa",
+      "qualification": "Honours Bachelor's Degree",
+      "level": "Undergraduate",
+      "discipline": "Business and Management",
+      "courseCode": "BBAA",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/bbaa/",
+      "durationMonths": 48,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": true,
+      "overview": "Honours Bachelor of Business Administration (Automotive Management) is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 18468,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/bbaa/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "title": "Honours Bachelor of Counselling Psychology",
+      "sourceTitle": "Honours Bachelor of Counselling Psychology",
+      "slug": "honours-bachelor-of-counselling-psychology-hbcp",
+      "qualification": "Honours Bachelor's Degree",
+      "level": "Undergraduate",
+      "discipline": "Social Sciences",
+      "courseCode": "HBCP",
+      "officialUrl": "https://cat.georgiancollege.ca/programs/hbcp/",
+      "durationMonths": 48,
+      "studyMode": "Full-time",
+      "attendance": "On campus",
+      "campus": "Georgian College campus",
+      "deliveryType": "In person",
+      "placementAvailable": false,
+      "overview": "Honours Bachelor of Counselling Psychology is listed in Georgian College's current programme catalogue. Confirm programme-specific admission, campus and availability details before applying.",
+      "requirements": [
+        "Programme-specific admission requirements apply",
+        "International applicants must confirm current eligibility and English-language requirements"
+      ],
+      "intakes": [
+        {
+          "year": 2027,
+          "month": 9,
+          "status": "provisional",
+          "applicationDeadline": null,
+          "sourceUrl": "https://app.coursefinder.ai/search-program"
+        }
+      ],
+      "tuition": {
+        "applicantType": "international",
+        "amount": 18468,
+        "currency": "CAD",
+        "feeYear": "2027",
+        "feeBasis": "annual",
+        "sourceUrl": "https://app.coursefinder.ai/search-program",
+        "officiallyVerified": false
+      },
+      "applicationDetails": {
+        "routing": "guidance_only",
+        "dli": "O19395677361",
+        "intakeAvailabilityMustBeConfirmed": true,
+        "feeConfirmationRequired": true,
+        "sourceRecord": "Coursefinder authenticated catalogue snapshot"
+      },
+      "catalogueStatus": "active",
+      "classification": "third_party_fee_pending_official_confirmation",
+      "sources": [
+        {
+          "kind": "programme",
+          "url": "https://cat.georgiancollege.ca/programs/hbcp/",
+          "priority": 1
+        },
+        {
+          "kind": "fees",
+          "url": "https://app.coursefinder.ai/search-program",
+          "priority": 2
+        },
+        {
+          "kind": "fees",
+          "url": "https://www.georgiancollege.ca/international/finance-and-fees/",
+          "priority": 1
+        }
+      ]
+    }
+  ]
+}

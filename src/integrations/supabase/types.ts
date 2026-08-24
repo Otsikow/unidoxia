@@ -4858,6 +4858,7 @@ export type Database = {
           discipline: string
           duration_months: number
           id: string
+          intake_months: number[]
           level: string
           name: string
           qualification: string
