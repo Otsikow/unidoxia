@@ -5263,36 +5263,68 @@ export type Database = {
           id: string
         }[]
       }
-      search_programmes: {
-        Args: {
-          p_country?: string
-          p_intake_month?: number
-          p_intake_year?: number
-          p_level?: string
-          p_limit?: number
-          p_offset?: number
-          p_query?: string
-        }
-        Returns: {
-          discipline: string
-          duration_months: number
-          id: string
-          intake_months: number[]
-          level: string
-          name: string
-          qualification: string
-          rank_score: number
-          total_count: number
-          tuition_amount: number
-          tuition_currency: string
-          university_city: string
-          university_country: string
-          university_id: string
-          university_logo_url: string
-          university_name: string
-          university_slug: string
-        }[]
-      }
+      search_programmes:
+        | {
+            Args: {
+              p_country?: string
+              p_intake_month?: number
+              p_intake_year?: number
+              p_level?: string
+              p_limit?: number
+              p_offset?: number
+              p_query?: string
+            }
+            Returns: {
+              discipline: string
+              duration_months: number
+              id: string
+              intake_months: number[]
+              level: string
+              name: string
+              qualification: string
+              rank_score: number
+              total_count: number
+              tuition_amount: number
+              tuition_currency: string
+              university_city: string
+              university_country: string
+              university_id: string
+              university_logo_url: string
+              university_name: string
+              university_slug: string
+            }[]
+          }
+        | {
+            Args: {
+              p_country?: string
+              p_intake_month?: number
+              p_intake_year?: number
+              p_level?: string
+              p_limit?: number
+              p_offset?: number
+              p_query?: string
+              p_university_id?: string
+            }
+            Returns: {
+              discipline: string
+              duration_months: number
+              id: string
+              intake_months: number[]
+              level: string
+              name: string
+              qualification: string
+              rank_score: number
+              total_count: number
+              tuition_amount: number
+              tuition_currency: string
+              university_city: string
+              university_country: string
+              university_id: string
+              university_logo_url: string
+              university_name: string
+              university_slug: string
+            }[]
+          }
       send_profile_completion_reminders: { Args: never; Returns: number }
       university_is_outreach_ready: {
         Args: { p_university_id: string }
