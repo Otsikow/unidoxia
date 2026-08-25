@@ -569,6 +569,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     const order = new Map(sortComparisonOptions(options, sortBy).map((option, index) => [option.programId, index]));
     return searchCourses.filter((course) => order.has(course.id)).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
   }, [searchCourses, sortBy, comparisonProfiles, maxDeposit, noApplicationFee, englishAlternative]);
+  const hasClientOnlyFilters = Boolean(maxDeposit) || noApplicationFee || englishAlternative;
+  const displayedSearchTotal = hasClientOnlyFilters ? sortedSearchCourses.length : searchTotal;
   const searchTotalPages = Math.max(1, Math.ceil(sortedSearchCourses.length / SEARCH_RESULTS_PER_PAGE));
   const visibleSearchCourses = useMemo(() => {
     const offset = (searchPage - 1) * SEARCH_RESULTS_PER_PAGE;
@@ -1252,7 +1254,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   {loading
                     ? t("pages.universitySearch.results.loading")
                     : hasSearched
-                      ? `${(searchTotal || results.reduce((sum, result) => sum + result.matchingCount, 0)).toLocaleString("en-GB")} courses across ${searchUniversityTotal || results.length} ${(searchUniversityTotal || results.length) === 1 ? "university" : "universities"}`
+                      ? `${displayedSearchTotal.toLocaleString("en-GB")} courses across ${displayedSearchTotal === 0 ? 0 : (searchUniversityTotal || results.length)} ${(displayedSearchTotal === 0 ? 0 : (searchUniversityTotal || results.length)) === 1 ? "university" : "universities"}`
                       : t("pages.universitySearch.results.startSearching", {
                         defaultValue: "Start searching to see universities and programs",
                       })}
@@ -1405,10 +1407,16 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     </Card>
                   ))}
                 </div>
-              ) : results.length === 0 ? (
+              ) : sortedSearchCourses.length === 0 ? (
                 <Card>
-                  <CardContent className="py-12 text-center text-muted-foreground">
-                      {t("pages.universitySearch.results.empty")}
+                  <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
+                    <div className="space-y-1">
+                      <p className="font-medium text-foreground">No courses match all selected filters</p>
+                      <p className="text-sm text-muted-foreground">
+                        Remove one or more filters to see available courses.
+                      </p>
+                    </div>
+                    <Button variant="outline" onClick={clearFilters}>Clear filters</Button>
                   </CardContent>
                 </Card>
               ) : (
