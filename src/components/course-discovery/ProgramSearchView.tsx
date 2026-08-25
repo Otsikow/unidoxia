@@ -582,7 +582,6 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   }, [searchCourses, sortBy, comparisonProfiles, maxDeposit, noApplicationFee, englishAlternative, onlyWithScholarships]);
   const displayedSearchTotal = sortedSearchCourses.length;
   const displayedUniversityTotal = useMemo(() => new Set(sortedSearchCourses.map((course) => course.university_id)).size, [sortedSearchCourses]);
-
   const searchTotalPages = Math.max(1, Math.ceil(sortedSearchCourses.length / SEARCH_RESULTS_PER_PAGE));
   const visibleSearchCourses = useMemo(() => {
     const offset = (searchPage - 1) * SEARCH_RESULTS_PER_PAGE;
