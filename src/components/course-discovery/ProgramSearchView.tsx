@@ -1344,6 +1344,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
               </CardContent>
             </Card>
 
+            {/* AppliedFilters component: renders the active course-search filter summary and removal controls. */}
             {activeFilters.length > 0 && (
               <section className="mx-auto max-w-5xl space-y-3" aria-labelledby="applied-filters-heading">
                 <div className="flex flex-wrap items-center justify-between gap-3">
