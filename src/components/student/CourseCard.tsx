@@ -14,6 +14,7 @@ import { MapPin, Calendar, DollarSign, Clock, GraduationCap } from 'lucide-react
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { formatCourseFee } from '@/lib/marketplacePresentation';
+import { logCourseDiscoveryEvent } from '@/lib/analytics';
 
 export interface Course {
   id: string;
@@ -67,6 +68,7 @@ export function CourseCard({ course, comparisonSelected, comparisonDisabled, onC
     course.is_unidoxia_partner === true;
 
   const handleCardNavigation = () => {
+    logCourseDiscoveryEvent('university_viewed', { university_id: course.university_id, source: 'course_card' });
     if (course.detailsUrl) {
       navigate(course.detailsUrl);
       return;
@@ -81,6 +83,7 @@ export function CourseCard({ course, comparisonSelected, comparisonDisabled, onC
 
   const handleApplyNow = (e?: MouseEvent<HTMLButtonElement>) => {
     e?.stopPropagation();
+    logCourseDiscoveryEvent('application_started', { university_id: course.university_id, programme_id: course.id, source: 'course_card' });
     if (course.applyUrl) {
       navigate(course.applyUrl);
       return;

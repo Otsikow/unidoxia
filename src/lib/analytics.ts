@@ -74,7 +74,7 @@ export function logVisaCalculatorCardClick(variant: 'card' | 'cta_button'): void
 
 type GA4EventParams = Record<string, string | number | boolean | null | undefined>;
 
-function logGA4Event(eventName: string, params: GA4EventParams = {}): void {
+export function logGA4Event(eventName: string, params: GA4EventParams = {}): void {
   if (typeof window === 'undefined') return;
 
   const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
@@ -87,6 +87,16 @@ function logGA4Event(eventName: string, params: GA4EventParams = {}): void {
   if (Array.isArray(dataLayer)) {
     dataLayer.push({ event: eventName, ...params });
   }
+}
+
+const BLOCKED_ANALYTICS_KEYS = /name|email|phone|passport|student.?id|document/i;
+
+export function logCourseDiscoveryEvent(eventName: string, params: GA4EventParams = {}): void {
+  const safeParams = Object.fromEntries(
+    Object.entries(params).filter(([key, value]) => !BLOCKED_ANALYTICS_KEYS.test(key) && ["string", "number", "boolean"].includes(typeof value)),
+  );
+  logGA4Event(eventName, { event_category: "course_discovery", ...safeParams });
+  void logAnalyticsEvent(eventName, { source: "course_discovery", properties: safeParams });
 }
 
 export function logWhatsAppLauncherClick(): void {
