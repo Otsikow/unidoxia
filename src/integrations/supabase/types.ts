@@ -429,6 +429,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "application_drafts_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
+          {
             foreignKeyName: "application_drafts_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -586,6 +593,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
           },
           {
             foreignKeyName: "applications_student_id_fkey"
@@ -1041,6 +1055,91 @@ export type Database = {
           },
         ]
       }
+      catalogue_change_proposals: {
+        Row: {
+          created_at: string
+          detected_at: string
+          evidence: Json
+          id: string
+          program_id: string | null
+          proposed_changes: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_url: string
+          status: string
+          university_id: string
+        }
+        Insert: {
+          created_at?: string
+          detected_at?: string
+          evidence?: Json
+          id?: string
+          program_id?: string | null
+          proposed_changes: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_url: string
+          status?: string
+          university_id: string
+        }
+        Update: {
+          created_at?: string
+          detected_at?: string
+          evidence?: Json
+          id?: string
+          program_id?: string | null
+          proposed_changes?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_url?: string
+          status?: string
+          university_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogue_change_proposals_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalogue_change_proposals_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
+          {
+            foreignKeyName: "catalogue_change_proposals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalogue_change_proposals_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalogue_change_proposals_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "catalogue_change_proposals_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalogue_import_items: {
         Row: {
           action: string
@@ -1095,6 +1194,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalogue_import_items_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
           },
         ]
       }
@@ -1169,6 +1275,13 @@ export type Database = {
             foreignKeyName: "catalogue_import_runs_university_id_fkey"
             columns: ["university_id"]
             isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "catalogue_import_runs_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
             referencedRelation: "universities"
             referencedColumns: ["id"]
           },
@@ -1227,6 +1340,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalogue_sources_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
+          {
+            foreignKeyName: "catalogue_sources_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
           },
           {
             foreignKeyName: "catalogue_sources_university_id_fkey"
@@ -1725,11 +1852,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "intake_calendars_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
+          {
             foreignKeyName: "intake_calendars_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intake_calendars_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
           },
           {
             foreignKeyName: "intake_calendars_university_id_fkey"
@@ -1784,6 +1925,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "intakes_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
           },
         ]
       }
@@ -2241,6 +2389,111 @@ export type Database = {
           },
         ]
       }
+      program_comparison_profiles: {
+        Row: {
+          academic_summary: string | null
+          academic_year: string | null
+          application_fee: number | null
+          application_fee_waived: boolean | null
+          created_at: string
+          currency: string | null
+          english_summary: string | null
+          estimated_first_year_cost: number | null
+          ielts_alternatives_accepted: boolean | null
+          ielts_score: number | null
+          initial_deposit: number | null
+          international_student_eligible: boolean | null
+          last_verified_at: string | null
+          minimum_gpa: number | null
+          no_ielts_pathway: boolean | null
+          payment_plan_summary: string | null
+          program_id: string
+          review_due_at: string | null
+          scholarship_available: boolean | null
+          scholarship_maximum: number | null
+          scholarship_minimum: number | null
+          source_url: string | null
+          tuition_amount: number | null
+          tuition_per_year: number | null
+          updated_at: string
+          verification_status: string
+          visa_document_type: string | null
+        }
+        Insert: {
+          academic_summary?: string | null
+          academic_year?: string | null
+          application_fee?: number | null
+          application_fee_waived?: boolean | null
+          created_at?: string
+          currency?: string | null
+          english_summary?: string | null
+          estimated_first_year_cost?: number | null
+          ielts_alternatives_accepted?: boolean | null
+          ielts_score?: number | null
+          initial_deposit?: number | null
+          international_student_eligible?: boolean | null
+          last_verified_at?: string | null
+          minimum_gpa?: number | null
+          no_ielts_pathway?: boolean | null
+          payment_plan_summary?: string | null
+          program_id: string
+          review_due_at?: string | null
+          scholarship_available?: boolean | null
+          scholarship_maximum?: number | null
+          scholarship_minimum?: number | null
+          source_url?: string | null
+          tuition_amount?: number | null
+          tuition_per_year?: number | null
+          updated_at?: string
+          verification_status?: string
+          visa_document_type?: string | null
+        }
+        Update: {
+          academic_summary?: string | null
+          academic_year?: string | null
+          application_fee?: number | null
+          application_fee_waived?: boolean | null
+          created_at?: string
+          currency?: string | null
+          english_summary?: string | null
+          estimated_first_year_cost?: number | null
+          ielts_alternatives_accepted?: boolean | null
+          ielts_score?: number | null
+          initial_deposit?: number | null
+          international_student_eligible?: boolean | null
+          last_verified_at?: string | null
+          minimum_gpa?: number | null
+          no_ielts_pathway?: boolean | null
+          payment_plan_summary?: string | null
+          program_id?: string
+          review_due_at?: string | null
+          scholarship_available?: boolean | null
+          scholarship_maximum?: number | null
+          scholarship_minimum?: number | null
+          source_url?: string | null
+          tuition_amount?: number | null
+          tuition_per_year?: number | null
+          updated_at?: string
+          verification_status?: string
+          visa_document_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "program_comparison_profiles_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: true
+            referencedRelation: "programs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_comparison_profiles_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: true
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
+        ]
+      }
       program_fees: {
         Row: {
           amount: number | null
@@ -2298,6 +2551,13 @@ export type Database = {
             referencedRelation: "programs"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "program_fees_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
         ]
       }
       program_intakes: {
@@ -2347,6 +2607,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "programs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "program_intakes_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
           },
         ]
       }
@@ -2511,6 +2778,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programs_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
           },
           {
             foreignKeyName: "programs_university_id_fkey"
@@ -3051,11 +3325,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "scholarships_program_id_fkey"
+            columns: ["program_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["program_id"]
+          },
+          {
             foreignKeyName: "scholarships_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scholarships_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
           },
           {
             foreignKeyName: "scholarships_university_id_fkey"
@@ -4039,6 +4327,91 @@ export type Database = {
             foreignKeyName: "university_claims_university_id_fkey"
             columns: ["university_id"]
             isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "university_claims_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      university_comparison_defaults: {
+        Row: {
+          academic_summary: string | null
+          academic_year: string | null
+          application_fee: number | null
+          application_fee_waived: boolean | null
+          created_at: string
+          currency: string | null
+          english_summary: string | null
+          ielts_alternatives_accepted: boolean | null
+          initial_deposit: number | null
+          last_verified_at: string | null
+          no_ielts_pathway: boolean | null
+          payment_plan_summary: string | null
+          review_due_at: string | null
+          source_url: string | null
+          university_id: string
+          updated_at: string
+          verification_status: string
+          visa_document_type: string | null
+        }
+        Insert: {
+          academic_summary?: string | null
+          academic_year?: string | null
+          application_fee?: number | null
+          application_fee_waived?: boolean | null
+          created_at?: string
+          currency?: string | null
+          english_summary?: string | null
+          ielts_alternatives_accepted?: boolean | null
+          initial_deposit?: number | null
+          last_verified_at?: string | null
+          no_ielts_pathway?: boolean | null
+          payment_plan_summary?: string | null
+          review_due_at?: string | null
+          source_url?: string | null
+          university_id: string
+          updated_at?: string
+          verification_status?: string
+          visa_document_type?: string | null
+        }
+        Update: {
+          academic_summary?: string | null
+          academic_year?: string | null
+          application_fee?: number | null
+          application_fee_waived?: boolean | null
+          created_at?: string
+          currency?: string | null
+          english_summary?: string | null
+          ielts_alternatives_accepted?: boolean | null
+          initial_deposit?: number | null
+          last_verified_at?: string | null
+          no_ielts_pathway?: boolean | null
+          payment_plan_summary?: string | null
+          review_due_at?: string | null
+          source_url?: string | null
+          university_id?: string
+          updated_at?: string
+          verification_status?: string
+          visa_document_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "university_comparison_defaults_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: true
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "university_comparison_defaults_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: true
             referencedRelation: "universities"
             referencedColumns: ["id"]
           },
@@ -4091,6 +4464,13 @@ export type Database = {
             foreignKeyName: "university_memberships_university_id_fkey"
             columns: ["university_id"]
             isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
+          },
+          {
+            foreignKeyName: "university_memberships_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
             referencedRelation: "universities"
             referencedColumns: ["id"]
           },
@@ -4119,6 +4499,13 @@ export type Database = {
           university_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "university_search_aliases_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "public_program_comparisons"
+            referencedColumns: ["university_id"]
+          },
           {
             foreignKeyName: "university_search_aliases_university_id_fkey"
             columns: ["university_id"]
@@ -4476,6 +4863,37 @@ export type Database = {
       }
     }
     Views: {
+      public_program_comparisons: {
+        Row: {
+          academic_summary: string | null
+          academic_year: string | null
+          application_deadline: string | null
+          application_fee: number | null
+          application_fee_waived: boolean | null
+          city: string | null
+          country: string | null
+          currency: string | null
+          discipline: string | null
+          english_summary: string | null
+          estimated_first_year_cost: number | null
+          ielts_alternatives_accepted: boolean | null
+          initial_deposit: number | null
+          last_verified_at: string | null
+          level: string | null
+          next_intake: string | null
+          no_ielts_pathway: boolean | null
+          program_id: string | null
+          program_name: string | null
+          scholarship_available: boolean | null
+          scholarship_maximum: number | null
+          source_url: string | null
+          tuition_amount: number | null
+          university_id: string | null
+          university_name: string | null
+          verification_status: string | null
+        }
+        Relationships: []
+      }
       staff_profiles: {
         Row: {
           account_status: string | null
@@ -4635,6 +5053,7 @@ export type Database = {
           title: string
         }[]
       }
+      flag_stale_comparison_data: { Args: never; Returns: number }
       get_admin_student_review_bundle: {
         Args: { p_student_id: string }
         Returns: Json
@@ -4844,36 +5263,68 @@ export type Database = {
           id: string
         }[]
       }
-      search_programmes: {
-        Args: {
-          p_country?: string
-          p_intake_month?: number
-          p_intake_year?: number
-          p_level?: string
-          p_limit?: number
-          p_offset?: number
-          p_query?: string
-        }
-        Returns: {
-          discipline: string
-          duration_months: number
-          id: string
-          intake_months: number[]
-          level: string
-          name: string
-          qualification: string
-          rank_score: number
-          total_count: number
-          tuition_amount: number
-          tuition_currency: string
-          university_city: string
-          university_country: string
-          university_id: string
-          university_logo_url: string
-          university_name: string
-          university_slug: string
-        }[]
-      }
+      search_programmes:
+        | {
+            Args: {
+              p_country?: string
+              p_intake_month?: number
+              p_intake_year?: number
+              p_level?: string
+              p_limit?: number
+              p_offset?: number
+              p_query?: string
+            }
+            Returns: {
+              discipline: string
+              duration_months: number
+              id: string
+              intake_months: number[]
+              level: string
+              name: string
+              qualification: string
+              rank_score: number
+              total_count: number
+              tuition_amount: number
+              tuition_currency: string
+              university_city: string
+              university_country: string
+              university_id: string
+              university_logo_url: string
+              university_name: string
+              university_slug: string
+            }[]
+          }
+        | {
+            Args: {
+              p_country?: string
+              p_intake_month?: number
+              p_intake_year?: number
+              p_level?: string
+              p_limit?: number
+              p_offset?: number
+              p_query?: string
+              p_university_id?: string
+            }
+            Returns: {
+              discipline: string
+              duration_months: number
+              id: string
+              intake_months: number[]
+              level: string
+              name: string
+              qualification: string
+              rank_score: number
+              total_count: number
+              tuition_amount: number
+              tuition_currency: string
+              university_city: string
+              university_country: string
+              university_id: string
+              university_logo_url: string
+              university_name: string
+              university_slug: string
+            }[]
+          }
       send_profile_completion_reminders: { Args: never; Returns: number }
       university_is_outreach_ready: {
         Args: { p_university_id: string }
