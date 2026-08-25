@@ -59,8 +59,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
 import { cn } from "@/lib/utils";
-import { courseSearchParams, normalizeCourseSearch, parseIntake } from "@/lib/courseSearch";
-import { logAnalyticsEvent } from "@/lib/analytics";
+import { courseSearchParams, normalizeCourseSearch, parseIntake, validateCourseSearchState } from "@/lib/courseSearch";
+import { logAnalyticsEvent, logCourseDiscoveryEvent } from "@/lib/analytics";
 import { navigationStateFromCurrentPage } from "@/lib/marketplacePresentation";
 import { type ComparisonOption } from "@/lib/universityComparison";
 import { sortComparisonOptions, type ComparisonSort } from "@/lib/universityComparison";
@@ -146,6 +146,9 @@ interface SearchResult {
   matchingCount: number;
 }
 
+type FilterKey = "query" | "university" | "country" | "level" | "discipline" | "tuitionMax" | "depositMax" | "noApplicationFee" | "englishAlternative" | "scholarshipOnly" | "intake";
+interface ActiveFilter { key: FilterKey; label: string }
+
 // --- Helper: choose logo or fallback image ---
 const getUniversityVisual = (name: string, logo: string | null): string => {
   const lower = name.toLowerCase();
@@ -218,12 +221,12 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [selectedUniversity, setSelectedUniversity] = useState(searchParams.get("university") || "all");
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "all");
   const [selectedLevel, setSelectedLevel] = useState(searchParams.get("level") || "all");
-  const [selectedDiscipline, setSelectedDiscipline] = useState("all");
-  const [maxFee, setMaxFee] = useState("");
-  const [maxDeposit, setMaxDeposit] = useState("");
-  const [noApplicationFee, setNoApplicationFee] = useState(false);
-  const [englishAlternative, setEnglishAlternative] = useState(false);
-  const [onlyWithScholarships, setOnlyWithScholarships] = useState(false);
+  const [selectedDiscipline, setSelectedDiscipline] = useState(searchParams.get("discipline") || "all");
+  const [maxFee, setMaxFee] = useState(searchParams.get("tuitionMax") || "");
+  const [maxDeposit, setMaxDeposit] = useState(searchParams.get("depositMax") || "");
+  const [noApplicationFee, setNoApplicationFee] = useState(searchParams.get("noApplicationFee") === "true");
+  const [englishAlternative, setEnglishAlternative] = useState(searchParams.get("englishAlternative") === "true");
+  const [onlyWithScholarships, setOnlyWithScholarships] = useState(searchParams.get("scholarshipOnly") === "true");
   const [selectedIntake, setSelectedIntake] = useState(searchParams.get("intake") || "all");
   const [searchPage, setSearchPage] = useState(Number(searchParams.get("page")) || 1);
   const [searchTotal, setSearchTotal] = useState(0);
@@ -238,8 +241,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [hasSearched, setHasSearched] = useState(false);
   const [comparisonOptions, setComparisonOptions] = useState<ComparisonOption[]>([]);
   const [comparisonOpen, setComparisonOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<ComparisonSort>("recommended");
+  const [sortBy, setSortBy] = useState<ComparisonSort>((searchParams.get("sort") as ComparisonSort) || "recommended");
   const [comparisonProfiles, setComparisonProfiles] = useState<Record<string, any>>({});
+  const [validationMessage, setValidationMessage] = useState<string | null>(null);
   const { t } = useTranslation();
   const location = useLocation();
   const returnState = () => navigationStateFromCurrentPage(`${location.pathname}${location.search}`, "Back to search results", (location.state as any) ?? null, typeof window === "undefined" ? 0 : window.scrollY);
@@ -339,6 +343,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
 
   // Track if this is the initial load
   const isInitialMount = useRef(true);
+  const lastAnalyticsState = useRef("");
   const initialSearchPage = useRef(Number(searchParams.get("page")) || 1);
   const hasInitialQuery = useMemo(
     () =>
@@ -350,6 +355,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           searchParams.get("level") ||
           searchParams.get("discipline") ||
           searchParams.get("maxFee") ||
+          searchParams.get("tuitionMax") ||
+          searchParams.get("depositMax") ||
+          searchParams.get("noApplicationFee") ||
+          searchParams.get("englishAlternative") ||
+          searchParams.get("scholarshipOnly") ||
           searchParams.get("intake")
       ),
     [searchParams],
@@ -564,13 +574,14 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
       if (maxDeposit && (option.initialDeposit == null || option.initialDeposit > Number(maxDeposit))) return false;
       if (noApplicationFee && !option.applicationFeeWaived) return false;
       if (englishAlternative && !option.noIeltsPathway && !option.ieltsAlternativesAccepted) return false;
+      if (onlyWithScholarships && !option.scholarshipAvailable) return false;
       return true;
     });
     const order = new Map(sortComparisonOptions(options, sortBy).map((option, index) => [option.programId, index]));
     return searchCourses.filter((course) => order.has(course.id)).sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
-  }, [searchCourses, sortBy, comparisonProfiles, maxDeposit, noApplicationFee, englishAlternative]);
-  const hasClientOnlyFilters = Boolean(maxDeposit) || noApplicationFee || englishAlternative;
-  const displayedSearchTotal = hasClientOnlyFilters ? sortedSearchCourses.length : searchTotal;
+  }, [searchCourses, sortBy, comparisonProfiles, maxDeposit, noApplicationFee, englishAlternative, onlyWithScholarships]);
+  const displayedSearchTotal = sortedSearchCourses.length;
+  const displayedUniversityTotal = useMemo(() => new Set(sortedSearchCourses.map((course) => course.university_id)).size, [sortedSearchCourses]);
   const searchTotalPages = Math.max(1, Math.ceil(sortedSearchCourses.length / SEARCH_RESULTS_PER_PAGE));
   const visibleSearchCourses = useMemo(() => {
     const offset = (searchPage - 1) * SEARCH_RESULTS_PER_PAGE;
@@ -621,6 +632,39 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     selectedIntake !== "all",
   ].filter(Boolean).length;
 
+  const activeFilters = useMemo<ActiveFilter[]>(() => {
+    const selectedUniversityName = universities.find((university) => university.id === selectedUniversity)?.name;
+    return [
+      searchTerm.trim() ? { key: "query" as const, label: `Search: ${searchTerm.trim()}` } : null,
+      selectedUniversity !== "all" ? { key: "university" as const, label: selectedUniversityName || "Selected university" } : null,
+      selectedCountry !== "all" ? { key: "country" as const, label: selectedCountry } : null,
+      selectedLevel !== "all" ? { key: "level" as const, label: selectedLevel } : null,
+      selectedDiscipline !== "all" ? { key: "discipline" as const, label: selectedDiscipline } : null,
+      maxFee ? { key: "tuitionMax" as const, label: `Tuition ≤ ${new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 }).format(Number(maxFee))}` } : null,
+      maxDeposit ? { key: "depositMax" as const, label: `Deposit ≤ ${new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 }).format(Number(maxDeposit))}` } : null,
+      noApplicationFee ? { key: "noApplicationFee" as const, label: "No application fee" } : null,
+      englishAlternative ? { key: "englishAlternative" as const, label: "IELTS alternative accepted" } : null,
+      onlyWithScholarships ? { key: "scholarshipOnly" as const, label: "Scholarship available" } : null,
+      selectedIntake !== "all" ? { key: "intake" as const, label: `Intake: ${selectedIntake}` } : null,
+    ].filter((filter): filter is ActiveFilter => Boolean(filter));
+  }, [universities, searchTerm, selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, maxDeposit, noApplicationFee, englishAlternative, onlyWithScholarships, selectedIntake]);
+
+  useEffect(() => {
+    if (!hasSearched || loading) return;
+    const signature = JSON.stringify({ filters: activeFilters.map((filter) => [filter.key, filter.label]), displayedSearchTotal });
+    if (lastAnalyticsState.current === signature) return;
+    const previous = lastAnalyticsState.current;
+    lastAnalyticsState.current = signature;
+    logCourseDiscoveryEvent("course_search", { destination: selectedCountry, study_level: selectedLevel, active_filter_count: activeFilters.length, result_count: displayedSearchTotal });
+    if (previous && activeFilters.length > 0) {
+      const latest = activeFilters[activeFilters.length - 1];
+      logCourseDiscoveryEvent("filter_applied", { filter_type: latest.key, filter_value: latest.label, result_count: displayedSearchTotal });
+    }
+    if (displayedSearchTotal === 0) {
+      logCourseDiscoveryEvent("zero_results", { active_filter_count: activeFilters.length, destination: selectedCountry, study_level: selectedLevel });
+    }
+  }, [activeFilters, displayedSearchTotal, hasSearched, loading, selectedCountry, selectedLevel]);
+
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedUniversity("all");
@@ -637,6 +681,26 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     setSearchTotal(0);
     setSearchParams({});
     setHasSearched(false);
+    setValidationMessage(null);
+    logCourseDiscoveryEvent("reset_filters", { previous_filter_count: activeFilters.length });
+  };
+
+  const removeFilter = (key: FilterKey) => {
+    const removed = activeFilters.find((filter) => filter.key === key);
+    if (key === "query") setSearchTerm("");
+    if (key === "university") setSelectedUniversity("all");
+    if (key === "country") setSelectedCountry("all");
+    if (key === "level") setSelectedLevel("all");
+    if (key === "discipline") setSelectedDiscipline("all");
+    if (key === "tuitionMax") setMaxFee("");
+    if (key === "depositMax") setMaxDeposit("");
+    if (key === "noApplicationFee") setNoApplicationFee(false);
+    if (key === "englishAlternative") setEnglishAlternative(false);
+    if (key === "scholarshipOnly") setOnlyWithScholarships(false);
+    if (key === "intake") setSelectedIntake("all");
+    setSearchPage(1);
+    setValidationMessage(null);
+    logCourseDiscoveryEvent("filter_removed", { filter_type: key, filter_value: removed?.label || key });
   };
 
   const handleSearchPageChange = (page: number) => {
@@ -658,7 +722,40 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const handleSearch = useCallback(async (page = 1) => {
     setHasSearched(true);
     setLoading(true);
+    setValidationMessage(null);
+    const validation = validateCourseSearchState({ tuitionMax: maxFee, depositMax: maxDeposit, intake: selectedIntake, sort: sortBy });
+    if (!validation.success) {
+      setValidationMessage(Object.values(validation.fields)[0] || "Some selected filters are invalid or conflicting.");
+      setResults([]);
+      setSearchTotal(0);
+      setLoading(false);
+      return;
+    }
     try {
+      if (isSupabaseConfigured) {
+        const rawUrlFilters = Object.fromEntries(searchParams.entries());
+        const rawBoolean = (key: "noApplicationFee" | "englishAlternative" | "scholarshipOnly", value: boolean) =>
+          rawUrlFilters[key] && !["true", "false"].includes(rawUrlFilters[key]) ? rawUrlFilters[key] : value;
+        const { data: serverValidation, error: validationError } = await (supabase as any).rpc("validate_course_search_filters", {
+          p_filters: {
+            ...rawUrlFilters,
+            query: debouncedSearchTerm, university: selectedUniversity, country: selectedCountry,
+            level: selectedLevel, discipline: selectedDiscipline, tuitionMax: maxFee,
+            depositMax: maxDeposit,
+            noApplicationFee: rawBoolean("noApplicationFee", noApplicationFee),
+            englishAlternative: rawBoolean("englishAlternative", englishAlternative),
+            scholarshipOnly: rawBoolean("scholarshipOnly", onlyWithScholarships),
+            intake: selectedIntake, sort: sortBy, page,
+          },
+        });
+        if (validationError) throw new Error("Course filter validation is temporarily unavailable.");
+        if (serverValidation?.success === false) {
+          setValidationMessage(Object.values(serverValidation.fields || {})[0] as string || serverValidation.message);
+          setResults([]);
+          setSearchTotal(0);
+          return;
+        }
+      }
       // Fallback search when Supabase isn't configured
       if (!isSupabaseConfigured) {
         const searchQuery = debouncedSearchTerm?.trim().toLowerCase() || "";
@@ -720,6 +817,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
           country: selectedCountry,
           level: selectedLevel,
           intake: selectedIntake,
+          discipline: selectedDiscipline, tuitionMax: maxFee, depositMax: maxDeposit,
+          noApplicationFee, englishAlternative, scholarshipOnly: onlyWithScholarships, sort: sortBy,
           page,
         }));
         return;
@@ -788,12 +887,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         setSearchTotal(selectedDiscipline !== "all" || Boolean(maxFee) ? visibleTotal : total);
         setSearchUniversityTotal(completeResults.length);
         setSearchPage(page);
-        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, university: selectedUniversity, country: selectedCountry, level: selectedLevel, intake: selectedIntake, page }));
-        void logAnalyticsEvent("course_search", { source: "course_discovery", properties: {
-          query: debouncedSearchTerm || "", normalized_query: normalizedQuery, destination: selectedCountry,
-          university_id: selectedUniversity, study_level: selectedLevel, intake: selectedIntake,
-          result_count: total, university_count: completeResults.length, page: 1,
-        } });
+        setSearchParams(courseSearchParams({ q: debouncedSearchTerm, university: selectedUniversity, country: selectedCountry, level: selectedLevel, intake: selectedIntake, discipline: selectedDiscipline, tuitionMax: maxFee, depositMax: maxDeposit, noApplicationFee, englishAlternative, scholarshipOnly: onlyWithScholarships, sort: sortBy, page }));
         return;
       }
       console.warn("Database catalogue search unavailable; using legacy search", rpcError);
@@ -993,15 +1087,18 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         country: selectedCountry,
         level: selectedLevel,
         intake: selectedIntake,
+        discipline: selectedDiscipline, tuitionMax: maxFee, depositMax: maxDeposit,
+        noApplicationFee, englishAlternative, scholarshipOnly: onlyWithScholarships, sort: sortBy,
         page,
       }));
     } catch (error) {
       console.error("Search error:", error);
+      setValidationMessage(error instanceof Error ? error.message : "We could not validate this search. Please try again.");
       setResults([]);
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, onlyWithScholarships, selectedIntake, setSearchParams]);
+  }, [debouncedSearchTerm, selectedUniversity, selectedCountry, selectedLevel, selectedDiscipline, maxFee, maxDeposit, noApplicationFee, englishAlternative, onlyWithScholarships, selectedIntake, sortBy, searchParams, setSearchParams]);
 
   // Auto-search when filters change
   useEffect(() => {
@@ -1085,9 +1182,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   </div>
 
                   <div>
-                      <Label>Where?</Label>
+                      <Label htmlFor="destination-country">Where?</Label>
                     <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                        <SelectTrigger><SelectValue placeholder={t("pages.universitySearch.filters.fields.country.placeholder")} /></SelectTrigger>
+                        <SelectTrigger id="destination-country"><SelectValue placeholder={t("pages.universitySearch.filters.fields.country.placeholder")} /></SelectTrigger>
                       <SelectContent>
                           <SelectItem value="all">{t("pages.universitySearch.filters.fields.country.all")}</SelectItem>
                         {MAJOR_DESTINATION_COUNTRIES.map((c) => (
@@ -1098,9 +1195,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   </div>
 
                   <div>
-                      <Label>Study level</Label>
+                      <Label htmlFor="study-level">Study level</Label>
                     <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                        <SelectTrigger><SelectValue placeholder={t("pages.universitySearch.filters.fields.programLevel.placeholder")} /></SelectTrigger>
+                        <SelectTrigger id="study-level"><SelectValue placeholder={t("pages.universitySearch.filters.fields.programLevel.placeholder")} /></SelectTrigger>
                       <SelectContent>
                           <SelectItem value="all">{t("pages.universitySearch.filters.fields.programLevel.all")}</SelectItem>
                         {levels.map((l) => (
@@ -1128,7 +1225,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       </Button>
                     </CollapsibleTrigger>
                     {(hasSearched || optionalFilterCount > 0 || selectedCountry !== "all" || selectedLevel !== "all") && (
-                      <Button variant="ghost" size="sm" onClick={clearFilters}>Clear all</Button>
+                      <Button variant="outline" size="sm" onClick={clearFilters}>Reset all filters</Button>
                     )}
                   </div>
                   <CollapsibleContent className="pt-4">
@@ -1247,6 +1344,32 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
               </CardContent>
             </Card>
 
+            {activeFilters.length > 0 && (
+              <section className="mx-auto max-w-5xl space-y-3" aria-labelledby="applied-filters-heading">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 id="applied-filters-heading" className="text-sm font-semibold">Applied filters ({activeFilters.length})</h2>
+                  <Button variant="ghost" size="sm" onClick={clearFilters}>Reset all filters</Button>
+                </div>
+                <div className="flex flex-wrap gap-2" data-testid="applied-filters">
+                  {activeFilters.map((filter) => (
+                    <Badge key={filter.key} variant="secondary" className="h-auto max-w-full gap-1.5 whitespace-normal py-1.5 pl-3 pr-1.5 text-left">
+                      <span className="min-w-0 break-words">{filter.label}</span>
+                      <button type="button" onClick={() => removeFilter(filter.key)} className="shrink-0 rounded-full p-1 hover:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={`Remove ${filter.label} filter`}>
+                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {validationMessage && (
+              <div role="alert" aria-live="assertive" className="mx-auto max-w-5xl rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+                <p className="font-semibold">Please check your selected filters.</p>
+                <p className="mt-1 text-muted-foreground">{validationMessage}</p>
+              </div>
+            )}
+
             {/* Results */}
             <div className="space-y-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -1254,7 +1377,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                   {loading
                     ? t("pages.universitySearch.results.loading")
                     : hasSearched
-                      ? `${displayedSearchTotal.toLocaleString("en-GB")} courses across ${displayedSearchTotal === 0 ? 0 : (searchUniversityTotal || results.length)} ${(displayedSearchTotal === 0 ? 0 : (searchUniversityTotal || results.length)) === 1 ? "university" : "universities"}`
+                      ? `${displayedSearchTotal.toLocaleString("en-GB")} courses across ${displayedUniversityTotal} ${displayedUniversityTotal === 1 ? "university" : "universities"}`
                       : t("pages.universitySearch.results.startSearching", {
                         defaultValue: "Start searching to see universities and programs",
                       })}
@@ -1407,16 +1530,16 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                     </Card>
                   ))}
                 </div>
-              ) : sortedSearchCourses.length === 0 ? (
-                <Card>
-                  <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-                    <div className="space-y-1">
-                      <p className="font-medium text-foreground">No courses match all selected filters</p>
-                      <p className="text-sm text-muted-foreground">
-                        Remove one or more filters to see available courses.
+              ) : validationMessage ? null : displayedSearchTotal === 0 ? (
+                <Card role="status" aria-live="polite">
+                  <CardContent className="space-y-5 py-12 text-center">
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-foreground">No courses match all your selected filters.</h3>
+                      <p className="mx-auto max-w-2xl text-muted-foreground">
+                        Try removing one filter at a time, increasing your tuition or deposit limit, or expanding your destination. We only show alternatives calculated from available course data.
                       </p>
                     </div>
-                    <Button variant="outline" onClick={clearFilters}>Clear filters</Button>
+                    <Button onClick={clearFilters}>Reset all filters</Button>
                   </CardContent>
                 </Card>
               ) : (
