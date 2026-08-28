@@ -1,6 +1,6 @@
 # University Showcase implementation
 
-Last updated: 12 August 2026 (production activation)
+Last updated: 28 August 2026 (activation completed)
 
 | Feature | Status | Notes |
 | --- | --- | --- |
@@ -16,9 +16,9 @@ Last updated: 12 August 2026 (production activation)
 | Admin claim review | Deployed | Protected admin queue and security-definer approval/rejection RPC. Approval requires verified email. `review_university_claim` is executable by signed-in users only. |
 | Team-ready ownership | Deployed | `university_memberships` supports owner, administrator, admissions, editor and viewer roles. |
 | University dashboard | Reused | Existing protected profile, media, programme, tuition, intake, requirement and scholarship management remains in place. Existing tenant RLS continues to enforce institution isolation. |
-| Migration deployment | Completed 12 August 2026 | `20260812110000_university_showcase_claims.sql` applied to production with added Data API grants, plus follow-up grant/policy repairs. No data was reset or deleted. |
-| Email service deployment | Completed | Both Edge Functions deployed from current source. `RESEND_API_KEY` is configured; `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are injected by the platform. `SITE_URL` is unset and uses the safe production fallback `https://unidoxia.com`. |
-| Live responsive QA | Pending | Feature frontend is already in the published bundle. End-to-end QA with a real institutional claim deliberately not run (no unsolicited email). |
+| Migration deployment | Completed 28 August 2026 | `20260812110000_university_showcase_claims.sql` is applied in production. A follow-up grants migration records the live least-privilege grants (`GRANT SELECT` to `authenticated`, `GRANT ALL` to `service_role`, no `anon`) in repository source so source and production match. No data was reset or deleted. |
+| Email service deployment | Completed 28 August 2026 | Both Edge Functions redeployed from current source and confirmed reachable (no `NOT_FOUND`). `RESEND_API_KEY` is configured; `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are injected by the platform. `SITE_URL` remains unset and uses the safe production fallback `https://unidoxia.com`. |
+| Live responsive QA | Completed (safe scope) | `/universities` and the three seeded profile routes (`teesside-university`, `university-of-sunderland`, `northumbria-university`) render with no console errors. End-to-end QA with a real institutional claim deliberately not run (no unsolicited email). |
 
 ## Production activation record (12 August 2026)
 
@@ -43,9 +43,18 @@ Smoke tests (non-destructive, no claim submitted, no email sent):
 - Privilege checks confirm `authenticated` has `SELECT` only on both new tables, `service_role` has full access, and `review_university_claim` is signed-in only.
 - Typecheck, unit tests (23 passing) and production build all pass.
 
+## Activation completion record (28 August 2026)
+
+- Repository source reconciled with production grants via a grants-only migration; RLS policies untouched and no privilege widened.
+- `submit-university-claim` and `verify-university-claim` redeployed and confirmed reachable.
+- Re-run safe smoke tests: `OPTIONS` 200 on both functions; `GET` 405; empty body 400; public-domain email 400; university-domain mismatch 400; malformed token 400; well-formed unknown token 400. `university_claims` row count remained 0 — no claim record created and no email sent.
+- `RESEND_API_KEY` confirmed present (value never read or displayed). `SITE_URL` still unset; production fallback `https://unidoxia.com` in use.
+- Live directory and the three seeded profile routes render with zero console errors.
+- Full production build succeeds (sitemap: 24 universities, 1,466 courses); automated tests pass (26 files, 130 tests).
+
 Remaining pending items:
 
-- Publish so the two source fixes reach production.
+- Publish so the latest frontend source reaches production.
 - End-to-end claim test with a genuine institutional address when an institution is ready.
 - Authorised university logos/campus media and verified current tuition after source review.
 - Admin claim queue verified at privilege/policy level only; no signed-in admin session was available to the tooling for a live UI check.
@@ -70,4 +79,4 @@ Remaining pending items:
 
 ## Next milestone
 
-Apply the migration and Edge Functions to staging, run end-to-end email and approval tests, then publish the merged frontend through the external production deployment integration. Add authorised university logos/campus media and verified current tuition after source review.
+Migration and both Edge Functions are live in production and smoke-tested. Remaining work is a genuine end-to-end claim with an institutional address, authorised university logos/campus media, and verified current tuition after source review.

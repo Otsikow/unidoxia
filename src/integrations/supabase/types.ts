@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -4076,6 +4076,9 @@ export type Database = {
         Row: {
           academic_year: string | null
           active: boolean | null
+          application_fee_amount: number | null
+          application_fee_currency: string | null
+          application_fee_waived: boolean | null
           catalogue_discovered_count: number
           catalogue_fee_verified_count: number
           catalogue_intake_verified_count: number
@@ -4101,7 +4104,11 @@ export type Database = {
           featured_priority: number | null
           featured_summary: string | null
           fee_year: string | null
+          financial_terms_last_verified_at: string | null
           id: string
+          initial_tuition_deposit_amount: number | null
+          initial_tuition_deposit_currency: string | null
+          initial_tuition_deposit_percentage: number | null
           last_catalogue_checked_at: string | null
           last_source_checked_at: string | null
           listing_status: string
@@ -4126,6 +4133,9 @@ export type Database = {
         Insert: {
           academic_year?: string | null
           active?: boolean | null
+          application_fee_amount?: number | null
+          application_fee_currency?: string | null
+          application_fee_waived?: boolean | null
           catalogue_discovered_count?: number
           catalogue_fee_verified_count?: number
           catalogue_intake_verified_count?: number
@@ -4151,7 +4161,11 @@ export type Database = {
           featured_priority?: number | null
           featured_summary?: string | null
           fee_year?: string | null
+          financial_terms_last_verified_at?: string | null
           id?: string
+          initial_tuition_deposit_amount?: number | null
+          initial_tuition_deposit_currency?: string | null
+          initial_tuition_deposit_percentage?: number | null
           last_catalogue_checked_at?: string | null
           last_source_checked_at?: string | null
           listing_status?: string
@@ -4176,6 +4190,9 @@ export type Database = {
         Update: {
           academic_year?: string | null
           active?: boolean | null
+          application_fee_amount?: number | null
+          application_fee_currency?: string | null
+          application_fee_waived?: boolean | null
           catalogue_discovered_count?: number
           catalogue_fee_verified_count?: number
           catalogue_intake_verified_count?: number
@@ -4201,7 +4218,11 @@ export type Database = {
           featured_priority?: number | null
           featured_summary?: string | null
           fee_year?: string | null
+          financial_terms_last_verified_at?: string | null
           id?: string
+          initial_tuition_deposit_amount?: number | null
+          initial_tuition_deposit_currency?: string | null
+          initial_tuition_deposit_percentage?: number | null
           last_catalogue_checked_at?: string | null
           last_source_checked_at?: string | null
           listing_status?: string
@@ -5357,6 +5378,10 @@ export type Database = {
         Returns: {
           university_id: string
         }[]
+      }
+      validate_course_search_filters: {
+        Args: { p_filters: Json }
+        Returns: Json
       }
     }
     Enums: {
