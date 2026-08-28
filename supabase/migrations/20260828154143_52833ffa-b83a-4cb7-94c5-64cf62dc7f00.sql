@@ -1,5 +1,5 @@
--- Publish the UniDoxia weekly international student visa and policy update.
--- Sources verified against official government/regulator guidance on 28 August 2026.
+-- Publish the UniDoxia weekly international student visa and policy update (week ending 28 August 2026).
+-- Sources were verified against official government/regulator pages on 28 August 2026.
 
 DO $$
 DECLARE
@@ -50,13 +50,13 @@ BEGIN
 <h2>Canada: proof-of-funds requirement rises from 1 September 2026</h2>
 <p>IRCC updated its official proof-of-financial-support guidance on <strong>28 August 2026</strong>. For study permit applications submitted on or after <strong>1 September 2026</strong>, a single applicant studying outside Quebec must show <strong>CAN$23,448</strong> for first-year living expenses, excluding tuition and transportation. The current amount through 31 August 2026 is CAN$22,895.</p>
 <p>The new annual living-expense amounts outside Quebec are CAN$23,448 for one family member including the applicant; CAN$29,192 for two; CAN$35,888 for three; CAN$43,572 for four; CAN$49,419 for five; CAN$55,736 for six; and CAN$62,054 for seven. Each additional family member above seven adds CAN$6,318.</p>
-<p>IRCC's current guidance also says officers assess both the amount and <strong>source</strong> of funds and whether the money will remain available throughout the studies. As an example of banking evidence, the page lists <strong>six months of bank statements</strong>, including the month the application is submitted or the month before, together with documentation showing the source of income appearing in those statements.</p>
+<p>IRCC's current guidance also says officers assess both the amount and <strong>source</strong> of funds and whether the money will remain available throughout the studies. As an example of banking evidence, the page now lists <strong>six months of bank statements</strong>, including the month the application is submitted or the month before, together with documentation showing the source of income appearing in those statements.</p>
 <p><strong>What students should do:</strong> Anyone planning to submit a Canadian study permit application from 1 September should recalculate the required funds before applying. Do not rely on the old CAN$22,895 figure, and do not treat a large closing balance by itself as sufficient evidence if the source of the money cannot be properly documented.</p>
 <p><a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents/financial-support.html" target="_blank" rel="noopener noreferrer">Check IRCC's official proof-of-financial-support guidance</a>.</p>
 
 <h2>Canada: fresh Francophone student pilot window opened on 26 August</h2>
 <p>A fresh annual application window under Canada's <strong>Francophone Minority Communities Student Pilot (FMCSP)</strong> opened on <strong>26 August 2026</strong>. IRCC will accept a maximum of <strong>2,970 Part A study permit applications</strong> for processing between 26 August 2026 and 25 August 2027. Applications received above that annual maximum are returned.</p>
-<p>The pilot can be relevant to eligible French-speaking applicants from many African countries, including Benin, Burkina Faso, Burundi, Cameroon, Cabo Verde, Central African Republic, Chad, Comoros, Côte d'Ivoire, Democratic Republic of the Congo, Republic of the Congo, Djibouti, Equatorial Guinea, Gabon, Guinea, Guinea-Bissau, Madagascar, Mali, Mauritania, Mauritius, Morocco, Niger, Rwanda, São Tomé and Príncipe, Senegal, Seychelles, Togo and Tunisia.</p>
+<p>The pilot can be relevant to eligible French-speaking applicants from many African countries, including Benin, Burkina Faso, Burundi, Cameroon, Cabo Verde, Central African Republic, Chad, Comoros, C&ocirc;te d'Ivoire, Democratic Republic of the Congo, Republic of the Congo, Djibouti, Equatorial Guinea, Gabon, Guinea, Guinea-Bissau, Madagascar, Mali, Mauritania, Mauritius, Morocco, Niger, Rwanda, S&atilde;o Tom&eacute; and Pr&iacute;ncipe, Senegal, Seychelles, Togo and Tunisia.</p>
 <p>Among the requirements, the applicant must have an acceptance letter from a participating designated learning institution outside Quebec for an eligible postsecondary programme taught primarily in French, lasting at least two years full time and leading to a diploma or degree. Applicants need at least NCLC 5 in all four French language abilities, must cover first-year tuition and travel costs, and must demonstrate at least 75% of the applicable low-income cut-off for the location of the participating institution.</p>
 <p>This is a genuine pathway initiative, but it is <strong>not a visa guarantee</strong>. Applicants remain subject to other applicable eligibility and admissibility requirements.</p>
 <p><a href="https://www.canada.ca/en/immigration-refugees-citizenship/corporate/mandate/policies-operational-instructions-agreements/public-policies/study-permit-franco-minority-communities-student-pilot-2026.html" target="_blank" rel="noopener noreferrer">Read IRCC's official FMCSP public policy</a>.</p>
@@ -90,18 +90,18 @@ BEGIN
 <p><a href="https://www.federalregister.gov/documents/2026/07/17/2026-14439/establishing-a-fixed-time-period-of-admission-and-an-extension-of-stay-procedure-for-nonimmigrant" target="_blank" rel="noopener noreferrer">Read the DHS final rule in the Federal Register</a>.</p>
 
 <h2>France: no new increase this week</h2>
-<p>No new student financial threshold change was identified this week. France-Visas continues to state that long-stay student visa applications submitted from <strong>1 August 2026</strong> need proof of resources of at least <strong>€877.50 per month</strong>.</p>
+<p>No new student financial threshold change was identified this week. France-Visas continues to state that long-stay student visa applications submitted from <strong>1 August 2026</strong> need proof of resources of at least <strong>&euro;877.50 per month</strong>.</p>
 <p>This is an existing requirement, not a new 28 August announcement. Students should still make sure they are using the current figure rather than older guidance that showed a lower amount.</p>
 <p><a href="https://www.france-visas.gouv.fr/en/" target="_blank" rel="noopener noreferrer">Check the official France-Visas guidance</a>.</p>
 
 <h2>What should international students do now?</h2>
 <ul>
-  <li>If applying for Canada from 1 September, recalculate funds using the new CAN$23,448 single-applicant living-expense figure outside Quebec and prepare evidence showing where the funds came from.</li>
-  <li>French-speaking applicants eligible for the Canadian FMCSP should check participating institutions and programme eligibility while the new annual cap window is open.</li>
-  <li>For UK study, verify the institution on the live sponsor register before deposit and CAS decisions.</li>
-  <li>For Australia, record the provider's priority status on the day the Student visa is lodged.</li>
-  <li>For the United States, check for any Federal Register update before 15 September.</li>
-  <li>Do not make immigration decisions from old TikTok videos, WhatsApp forwards or agent rumours.</li>
+<li>If applying for Canada from 1 September, recalculate funds using the new CAN$23,448 single-applicant living-expense figure outside Quebec and prepare evidence showing where the funds came from.</li>
+<li>French-speaking applicants eligible for the Canadian FMCSP should check participating institutions and programme eligibility while the new annual cap window is open.</li>
+<li>For UK study, verify the institution on the live sponsor register before deposit and CAS decisions.</li>
+<li>For Australia, record the provider's priority status on the day the Student visa is lodged.</li>
+<li>For the United States, check for any Federal Register update before 15 September.</li>
+<li>Do not make immigration decisions from old TikTok videos, WhatsApp forwards or agent rumours.</li>
 </ul>
 
 <h2>Planning to study abroad?</h2>
@@ -109,8 +109,8 @@ BEGIN
 <p><strong>Explore your study options at UniDoxia.com.</strong></p>
 
 <p><em>Disclaimer: This article provides general educational information and is not legal or immigration advice. Immigration rules, financial thresholds, institutional requirements and processing practices can change. Always verify the latest official government and institution guidance before making financial or immigration decisions.</em></p>
-    $article$,
-    '/src/assets/campus-gathering.png',
+$article$,
+    '/blog/2026-08-28-international-student-visa-updates-cover.png',
     ARRAY['Student Visa', 'Study Abroad', 'Canada', 'UK', 'USA', 'Australia', 'France'],
     'published',
     true,
@@ -119,7 +119,7 @@ BEGIN
     NOW(),
     NOW()
   )
-  ON CONFLICT (tenant_id, slug) DO UPDATE SET
+  ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
     excerpt = EXCLUDED.excerpt,
     content_html = EXCLUDED.content_html,
