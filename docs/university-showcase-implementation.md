@@ -1,6 +1,6 @@
 # University Showcase implementation
 
-Last updated: 12 August 2026 (production activation)
+Last updated: 28 August 2026 (activation completed)
 
 | Feature | Status | Notes |
 | --- | --- | --- |
