@@ -68,7 +68,7 @@ BEGIN
 <p><a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents/financial-support.html" target="_blank" rel="noopener noreferrer">Check Canada's official study-permit financial-support guidance</a>.</p>
 
 <h2>France: the higher financial requirement is now in effect</h2>
-<p>France-Visas confirms that long-stay student visa applications submitted from <strong>1 August 2026</strong> must include proof of resources corresponding to at least <strong>€877.50 per month</strong>. Students preparing for France should make sure their financial documents reflect the new figure rather than older guidance.</p>
+<p>France-Visas confirms that long-stay student visa applications submitted from <strong>1 August 2026</strong> must include proof of resources corresponding to at least <strong>&euro;877.50 per month</strong>. Students preparing for France should make sure their financial documents reflect the new figure rather than older guidance.</p>
 <p><a href="https://www.france-visas.gouv.fr/en/web/france-visas" target="_blank" rel="noopener noreferrer">Check the official France-Visas information</a>.</p>
 
 <h2>Australia: your education provider can affect processing priority</h2>

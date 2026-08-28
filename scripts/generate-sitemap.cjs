@@ -52,6 +52,12 @@ const entries = [
     changefreq: "monthly",
     lastmod: "2026-08-10T08:00:00+01:00",
   },
+  {
+    path: "/blog/international-student-visa-updates-14-august-2026",
+    priority: "0.7",
+    changefreq: "monthly",
+    lastmod: "2026-08-15T10:25:00+01:00",
+  },
 
 
   { path: "/faq", priority: "0.6", changefreq: "monthly" },
