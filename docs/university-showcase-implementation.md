@@ -16,9 +16,9 @@ Last updated: 28 August 2026 (activation completed)
 | Admin claim review | Deployed | Protected admin queue and security-definer approval/rejection RPC. Approval requires verified email. `review_university_claim` is executable by signed-in users only. |
 | Team-ready ownership | Deployed | `university_memberships` supports owner, administrator, admissions, editor and viewer roles. |
 | University dashboard | Reused | Existing protected profile, media, programme, tuition, intake, requirement and scholarship management remains in place. Existing tenant RLS continues to enforce institution isolation. |
-| Migration deployment | Completed 12 August 2026 | `20260812110000_university_showcase_claims.sql` applied to production with added Data API grants, plus follow-up grant/policy repairs. No data was reset or deleted. |
-| Email service deployment | Completed | Both Edge Functions deployed from current source. `RESEND_API_KEY` is configured; `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are injected by the platform. `SITE_URL` is unset and uses the safe production fallback `https://unidoxia.com`. |
-| Live responsive QA | Pending | Feature frontend is already in the published bundle. End-to-end QA with a real institutional claim deliberately not run (no unsolicited email). |
+| Migration deployment | Completed 28 August 2026 | `20260812110000_university_showcase_claims.sql` is applied in production. A follow-up grants migration records the live least-privilege grants (`GRANT SELECT` to `authenticated`, `GRANT ALL` to `service_role`, no `anon`) in repository source so source and production match. No data was reset or deleted. |
+| Email service deployment | Completed 28 August 2026 | Both Edge Functions redeployed from current source and confirmed reachable (no `NOT_FOUND`). `RESEND_API_KEY` is configured; `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are injected by the platform. `SITE_URL` remains unset and uses the safe production fallback `https://unidoxia.com`. |
+| Live responsive QA | Completed (safe scope) | `/universities` and the three seeded profile routes (`teesside-university`, `university-of-sunderland`, `northumbria-university`) render with no console errors. End-to-end QA with a real institutional claim deliberately not run (no unsolicited email). |
 
 ## Production activation record (12 August 2026)
 
