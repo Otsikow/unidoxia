@@ -43,9 +43,18 @@ Smoke tests (non-destructive, no claim submitted, no email sent):
 - Privilege checks confirm `authenticated` has `SELECT` only on both new tables, `service_role` has full access, and `review_university_claim` is signed-in only.
 - Typecheck, unit tests (23 passing) and production build all pass.
 
+## Activation completion record (28 August 2026)
+
+- Repository source reconciled with production grants via a grants-only migration; RLS policies untouched and no privilege widened.
+- `submit-university-claim` and `verify-university-claim` redeployed and confirmed reachable.
+- Re-run safe smoke tests: `OPTIONS` 200 on both functions; `GET` 405; empty body 400; public-domain email 400; university-domain mismatch 400; malformed token 400; well-formed unknown token 400. `university_claims` row count remained 0 — no claim record created and no email sent.
+- `RESEND_API_KEY` confirmed present (value never read or displayed). `SITE_URL` still unset; production fallback `https://unidoxia.com` in use.
+- Live directory and the three seeded profile routes render with zero console errors.
+- Full production build succeeds (sitemap: 24 universities, 1,466 courses); automated tests pass (26 files, 130 tests).
+
 Remaining pending items:
 
-- Publish so the two source fixes reach production.
+- Publish so the latest frontend source reaches production.
 - End-to-end claim test with a genuine institutional address when an institution is ready.
 - Authorised university logos/campus media and verified current tuition after source review.
 - Admin claim queue verified at privilege/policy level only; no signed-in admin session was available to the tooling for a live UI check.
