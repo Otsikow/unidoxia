@@ -91,7 +91,7 @@ BEGIN
 
 <p><em>Disclaimer: This article provides general information and is not legal or immigration advice. Rules, fees, institutional requirements and processing practices can change. Always check the relevant government's official guidance and your institution's requirements before making financial or immigration decisions.</em></p>
     $article$,
-    '/src/assets/campus-gathering.png',
+    '/blog/2026-08-14-international-student-visa-updates-cover.png',
     ARRAY['Student Visa', 'Study Abroad', 'UK', 'USA', 'Canada', 'France', 'Australia'],
     'published',
     true,
