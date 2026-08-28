@@ -334,7 +334,7 @@ const en = {
       databaseTitle: "Database Error",
       databaseMessage: "Database connection failed. Please try again in a moment.",
       genericTitle: "Something went wrong",
-      genericMessage: "An unexpected error occurred. Please try again.",
+      genericMessage: "We couldn't load this page right now. Please try again.",
       fallbackTitle: "Error",
       fallbackMessage: "An unexpected error occurred",
       technicalDetails: "Technical Details",
