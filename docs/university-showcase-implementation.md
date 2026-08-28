@@ -79,4 +79,4 @@ Remaining pending items:
 
 ## Next milestone
 
-Apply the migration and Edge Functions to staging, run end-to-end email and approval tests, then publish the merged frontend through the external production deployment integration. Add authorised university logos/campus media and verified current tuition after source review.
+Migration and both Edge Functions are live in production and smoke-tested. Remaining work is a genuine end-to-end claim with an institutional address, authorised university logos/campus media, and verified current tuition after source review.
