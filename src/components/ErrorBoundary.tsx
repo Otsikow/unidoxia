@@ -106,11 +106,14 @@ class ErrorBoundaryComponent extends Component<PropsWithTranslation, State> {
     if (error.message.includes("Supabase") || error.message.includes("database"))
       return t("app.errorBoundary.databaseMessage");
 
-    if (error.message.length < 100 && !error.message.includes("Error:"))
+    // Never surface raw runtime exception text (e.g. "Input is not defined") to
+    // end users. The real error is still logged and reported for diagnostics.
+    if (process.env.NODE_ENV === "development" && error.message.length < 100 && !error.message.includes("Error:"))
       return error.message;
 
     return t("app.errorBoundary.genericMessage");
   };
+
 
   private getErrorTitle = (error: Error): string => {
     const { t } = this.props;
@@ -163,21 +166,20 @@ class ErrorBoundaryComponent extends Component<PropsWithTranslation, State> {
               <CardDescription className="text-base">{errorMessage}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Alert>
-                <Bug className="h-4 w-4" />
-                <AlertDescription className="text-sm">
-                  {process.env.NODE_ENV === "development" && error && (
+              {process.env.NODE_ENV === "development" && error && (
+                <Alert>
+                  <Bug className="h-4 w-4" />
+                  <AlertDescription className="text-sm">
                     <details className="mt-2">
                       <summary className="cursor-pointer text-xs text-muted-foreground">
                         {t("app.errorBoundary.technicalDetails")}
                       </summary>
-                      <pre className="mt-2 text-xs text-muted-foreground overflow-auto max-h-32">
-                        {error.stack}
-                      </pre>
+                      <pre className="mt-2 max-h-32 overflow-auto text-xs text-muted-foreground">{error.stack}</pre>
                     </details>
-                  )}
-                </AlertDescription>
-              </Alert>
+                  </AlertDescription>
+                </Alert>
+              )}
+
 
               <div className="flex flex-col gap-2 sm:flex-row">
                 {canRetry && (
