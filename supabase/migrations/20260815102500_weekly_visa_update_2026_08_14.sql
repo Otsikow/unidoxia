@@ -100,7 +100,7 @@ BEGIN
     NOW(),
     NOW()
   )
-  ON CONFLICT (tenant_id, slug) DO UPDATE SET
+  ON CONFLICT (slug) DO UPDATE SET
     title = EXCLUDED.title,
     excerpt = EXCLUDED.excerpt,
     content_html = EXCLUDED.content_html,
