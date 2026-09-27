@@ -1,20 +1,19 @@
 # UniDoxia Voice Assistant
 
-A local voice/browser automation module for UniDoxia. It is designed to become the first business profile in a broader personal voice assistant.
+A local voice/browser automation module for UniDoxia. It is the first business profile for a broader reusable voice assistant.
 
-## Current scope
+## What is implemented
 
-The module currently provides:
-
-- an approved-command registry for UniDoxia
-- protected route mapping for admin/staff pages
-- Playwright browser execution
-- three risk levels: green, amber, red
-- mandatory confirmation for red/destructive commands
-- blocking for unknown commands
+- Chrome/Edge microphone capture through the Web Speech API
+- typed-command fallback
+- Jev/TypeSafe closed-set intent selection
+- approved UniDoxia command registry
+- verified protected route mapping
+- persistent Playwright browser profile so login can be reused locally
+- green/amber/red risk levels
+- mandatory confirmation gate for red/destructive commands
+- blocking for unknown or low-confidence commands
 - safety tests
-
-The microphone and Jev intent layer are the next step. Until that layer is added, commands can be exercised as typed input.
 
 ## Install
 
@@ -22,49 +21,82 @@ The microphone and Jev intent layer are the next step. Until that layer is added
 cd tools/voice-assistant
 npm install
 npx playwright install chromium
+cp .env.example .env
 ```
 
-## Run a safe command
+Put your server-side Jev key in `.env`:
+
+```env
+TYPESAFE_API_KEY=your_key_here
+```
+
+Do not put the key into the browser page or UniDoxia frontend.
+
+## Start
 
 ```bash
-npm start -- "show applications"
+npm start
 ```
 
-Other examples:
+Then open:
 
-```bash
-npm start -- "open unidoxia"
-npm start -- "show students"
-npm start -- "show notifications"
+```text
+http://localhost:8787
 ```
 
-By default the assistant uses `https://unidoxia.com`. For local or staging use:
+Use Chrome or Edge, click **Start microphone**, allow microphone access, and say commands such as:
 
-```bash
-UNIDOXIA_BASE_URL=http://localhost:5173 npm start -- "show students"
+```text
+Open UniDoxia
+Show students
+Show applications
+Show notifications
 ```
+
+You can type the same commands if speech recognition is unavailable.
+
+## Login persistence
+
+Playwright uses `tools/voice-assistant/.profile` as a persistent local browser profile. Log into UniDoxia in the controlled browser once and the local profile can reuse that authenticated session. Do not commit `.profile` or copy it to another machine.
+
+## Configuration
+
+```env
+UNIDOXIA_BASE_URL=https://unidoxia.com
+VOICE_ASSISTANT_PORT=8787
+JEV_MIN_CONFIDENCE=0.55
+JEV_MODEL=jev-1.13.0
+```
+
+For staging or local development change `UNIDOXIA_BASE_URL` instead of pointing tests at production.
 
 ## Safety model
 
-- Green: navigate/read/search. May execute automatically.
-- Amber: typing or preparing content. Allowed only in explicitly supported handlers.
-- Red: send, submit, approve, reject, delete, pay, publish. Always requires explicit confirmation and a dedicated action handler.
+- Green: navigation/read-only actions may execute automatically.
+- Amber: typing or preparing content needs an explicit dedicated handler.
+- Red: send, submit, approve, reject, delete, pay, or publish requires explicit confirmation and a dedicated executor.
 
-Red actions are intentionally not implemented as generic clicks. Each one must be added explicitly so a voice misunderstanding cannot trigger an irreversible action.
+Generic destructive clicks are intentionally blocked. Confirmation alone does not grant Jev arbitrary browser control.
 
-## Architecture target
+## Architecture
 
 ```text
-Microphone
-  -> speech transcript
-  -> Jev intent selection from approved commands
-  -> safety policy
-  -> Playwright
+Microphone or typed command
+  -> local server
+  -> Jev selects from approved command keys only
+  -> confidence + safety policy
+  -> Playwright persistent browser
   -> UniDoxia protected routes
 ```
 
-Jev should choose only from the command registry. It should not invent arbitrary URLs, selectors, or destructive actions.
+## Tests
 
-## Next implementation step
+```bash
+npm test
+```
 
-Add the microphone/Jev adapter based on the `jev-voice-browser` interaction pattern, keeping the existing command registry and safety policy as the execution boundary.
+The tests cover approved matching, unknown-command blocking, destructive confirmation, verified UniDoxia routes, and the closed Jev command set.
+
+## Important production rule
+
+Test against local/staging UniDoxia before enabling the assistant against production data. Red actions must be added individually with their own selectors, preconditions, confirmation language, and tests.
