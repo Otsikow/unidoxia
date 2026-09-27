@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Eric Voice Assistant</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:760px;margin:40px auto;padding:0 20px;background:#0b0b0b;color:#f5f5f5}button,input{font-size:16px;padding:12px;border-radius:10px;border:1px solid #444}button{cursor:pointer}#mic{background:#fff;color:#000;font-weight:700}input{width:70%;background:#181818;color:#fff}.card{background:#151515;border:1px solid #2a2a2a;border-radius:16px;padding:20px;margin:16px 0}.muted{color:#aaa}#status{white-space:pre-wrap}
+</style>
+</head>
+<body>
+<h1>Eric Voice Assistant</h1>
+<p class="muted">UniDoxia voice control. Jev chooses only approved commands. Sensitive actions require confirmation.</p>
+<div class="card">
+  <button id="mic">Start microphone</button>
+  <p id="heard" class="muted">Microphone off</p>
+</div>
+<div class="card">
+  <form id="form">
+    <input id="typed" placeholder="Type a command, e.g. show applications" autocomplete="off" />
+    <button type="submit">Run</button>
+  </form>
+</div>
+<div class="card"><strong>Status</strong><div id="status" class="muted">Ready</div></div>
+<script>
+const status = document.getElementById('status');
+const heard = document.getElementById('heard');
+async function runCommand(transcript){
+  status.textContent='Working...';
+  try{
+    const r=await fetch('/api/command',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({transcript})});
+    const data=await r.json();
+    status.textContent=JSON.stringify(data,null,2);
+  }catch(e){status.textContent='Error: '+e.message;}
+}
+document.getElementById('form').addEventListener('submit',e=>{e.preventDefault();const t=document.getElementById('typed').value.trim();if(t)runCommand(t);});
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;let on=false;
+const mic=document.getElementById('mic');
+mic.onclick=()=>{
+  if(!SR){status.textContent='Speech recognition is not available here. Use Chrome or Edge, or type the command.';return;}
+  if(!rec){
+    rec=new SR(); rec.lang='en-GB'; rec.interimResults=true; rec.continuous=true;
+    rec.onresult=e=>{let finalText='';let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;if(e.results[i].isFinal)finalText+=t;else interim+=t;}heard.textContent=(finalText||interim||'Listening...');if(finalText.trim())runCommand(finalText.trim());};
+    rec.onend=()=>{if(on)rec.start();};
+    rec.onerror=e=>{status.textContent='Microphone error: '+e.error;};
+  }
+  on=!on;
+  if(on){rec.start();mic.textContent='Stop microphone';heard.textContent='Listening...';}
+  else{rec.stop();mic.textContent='Start microphone';heard.textContent='Microphone off';}
+};
+</script>
+</body>
+</html>
