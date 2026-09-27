@@ -5,7 +5,7 @@ export const BUSINESSES = {
     routes: {
       adminHome: "/admin/overview",
       students: "/admin/students",
-      applications: "/admin/applications",
+      applications: "/dashboard/applications",
       notifications: "/admin/notifications",
       messages: "/admin/chat",
     },
