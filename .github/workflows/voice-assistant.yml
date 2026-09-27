@@ -1,0 +1,29 @@
+name: Voice Assistant Tests
+
+on:
+  pull_request:
+    paths:
+      - 'tools/voice-assistant/**'
+      - '.github/workflows/voice-assistant.yml'
+  push:
+    branches:
+      - feature/jev-voice-assistant
+    paths:
+      - 'tools/voice-assistant/**'
+      - '.github/workflows/voice-assistant.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/voice-assistant
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: tools/voice-assistant/package-lock.json
+      - run: npm install
+      - run: npm test
