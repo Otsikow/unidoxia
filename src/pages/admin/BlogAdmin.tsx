@@ -83,6 +83,7 @@ import { BlogPreview } from "@/components/blog/BlogPreview";
 import BackButton from "@/components/BackButton";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
+import { findEditorialDuplicate } from "@/lib/blogEditorial";
 
 // Utility functions
 const generateSlug = (title: string): string =>
@@ -362,6 +363,15 @@ export default function BlogAdmin() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    const duplicate = findEditorialDuplicate(posts, form, editing?.id);
+    if (duplicate) {
+      toast.error(
+        duplicate.kind === "cover"
+          ? `Choose a new cover image. It is already used by “${duplicate.post.title}”.`
+          : `Choose a distinct title. “${duplicate.post.title}” already exists.`,
+      );
+      return;
+    }
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: form });
     } else {
@@ -387,7 +397,12 @@ export default function BlogAdmin() {
       const { data, error } = await invokeEdgeFunction<{ imageUrl?: string }>(
         "generate-blog-image",
         {
-          body: { prompt: form.title, postId: editing?.id || createUniqueId() },
+          body: {
+            title: form.title,
+            excerpt: form.excerpt,
+            tags: form.tags,
+            postId: editing?.id || createUniqueId(),
+          },
         },
       );
 
@@ -606,7 +621,9 @@ export default function BlogAdmin() {
                   {editing ? "Edit Post" : "Create New Post"}
                 </CardTitle>
                 <CardDescription>
-                  {editing ? "Update your blog post" : "Write a new blog post"}
+                  {editing
+                    ? "Update this post without reusing another post’s title or cover image."
+                    : "Lead with one specific student question, a real consequence and a useful next check. Keep the title and cover distinct from every existing post."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -623,6 +640,7 @@ export default function BlogAdmin() {
                       })
                     }
                     required
+                    placeholder="e.g. UK Student Visa: When Could UKVI Ask for Your Documents?"
                   />
                 </div>
 
@@ -644,6 +662,7 @@ export default function BlogAdmin() {
                       setForm({ ...form, excerpt: e.target.value })
                     }
                     rows={3}
+                    placeholder="Give the practical answer and why the student should care; avoid generic weekly-roundup wording."
                   />
                 </div>
 
@@ -656,7 +675,7 @@ export default function BlogAdmin() {
                       onChange={(e) =>
                         setForm({ ...form, cover_image_url: e.target.value })
                       }
-                      placeholder="Image URL"
+                      placeholder="A unique cover image URL"
                     />
                     <Button
                       type="button"
@@ -688,6 +707,9 @@ export default function BlogAdmin() {
                       className="w-full h-48 object-cover rounded-lg"
                     />
                   )}
+                  <p className="text-sm text-muted-foreground">
+                    Every post needs its own rights-safe cover. A strong shareable post answers a timely question plainly, shows the practical consequence, and gives readers a checklist they can save or send on.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
