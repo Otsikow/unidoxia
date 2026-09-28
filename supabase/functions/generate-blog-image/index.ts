@@ -8,6 +8,24 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function base64ToUint8Array(base64: string): Uint8Array {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be configured");
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: { persistSession: false },
+});
+
 async function getAuthenticatedUser(req: Request): Promise<{ user: { id: string }; error?: never } | { user?: never; error: Response }> {
   const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
@@ -62,11 +80,23 @@ serve(async (req) => {
   const auth = await getAuthenticatedUser(req);
   if (auth.error) return auth.error;
 
+  const { data: canManagePosts, error: roleError } = await supabase.rpc(
+    "is_admin_or_staff",
+    { p_user_id: auth.user.id },
+  );
+  if (roleError || !canManagePosts) {
+    return new Response(JSON.stringify({ error: "Blog management access is required" }), {
+      status: 403,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const body = await req.json();
     const title = typeof body?.title === "string" ? body.title : "";
     const excerpt = typeof body?.excerpt === "string" ? body.excerpt : undefined;
     const tags = typeof body?.tags === "string" ? body.tags : undefined;
+    const postId = typeof body?.postId === "string" ? body.postId : crypto.randomUUID();
 
     if (!title.trim()) {
       return new Response(JSON.stringify({ error: "Title is required" }), {
@@ -129,8 +159,27 @@ serve(async (req) => {
 
     const base64Data = imageBase64.startsWith("data:") ? imageBase64.split(",")[1] : imageBase64;
     const mimeType = imageBase64.startsWith("data:") ? imageBase64.split(";")[0].split(":")[1] : "image/png";
+    const extension = mimeType.includes("jpeg") ? "jpg" : "png";
+    const filePath = `blog-covers/${postId}-${crypto.randomUUID()}.${extension}`;
+    const blob = new Blob([base64ToUint8Array(base64Data) as BlobPart], { type: mimeType });
 
-    return new Response(JSON.stringify({ imageBase64: base64Data, mimeType }), {
+    const { error: uploadError } = await supabase.storage.from("public").upload(filePath, blob, {
+      contentType: mimeType,
+      cacheControl: "31536000",
+      upsert: false,
+    });
+
+    if (uploadError) {
+      console.error("Blog cover upload error", uploadError);
+      return new Response(JSON.stringify({ error: "Unable to store generated image" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: publicUrlData } = supabase.storage.from("public").getPublicUrl(filePath);
+
+    return new Response(JSON.stringify({ imageUrl: publicUrlData.publicUrl, filePath, mimeType }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { selectDistinctBlogCards } from "@/lib/blogEditorial";
 
 interface BlogCard {
   id: string;
@@ -24,7 +25,7 @@ export default function LatestFromBlog() {
         .select("id, slug, title, excerpt, cover_image_url, tags, published_at")
         .eq("status", "published")
         .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(3);
+        .limit(12);
       if (error) throw error;
       return (data ?? []) as BlogCard[];
     },
@@ -33,6 +34,8 @@ export default function LatestFromBlog() {
   });
 
   if (isError || (!isLoading && (!data || data.length === 0))) return null;
+
+  const latestPosts = selectDistinctBlogCards(data ?? [], 3);
 
   return (
     <section className="container mx-auto px-4 py-16" aria-labelledby="latest-blog-heading">
@@ -58,7 +61,7 @@ export default function LatestFromBlog() {
           ? Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="h-72 rounded-xl bg-muted animate-pulse" />
             ))
-          : data!.map((post) => (
+          : latestPosts.map((post) => (
               <Link
                 key={post.id}
                 to={`/blog/${post.slug}`}
