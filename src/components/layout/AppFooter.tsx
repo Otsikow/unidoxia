@@ -324,7 +324,13 @@ export function AppFooter() {
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t pt-6 text-center sm:flex-row sm:text-left">
-          <p className="text-xs text-muted-foreground">{t("layout.footer.copyright", { year })}</p>
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">{t("layout.footer.copyright", { year })}</p>
+            <p className="max-w-xl text-xs text-muted-foreground">
+              UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales,
+              company number 16172129.
+            </p>
+          </div>
           <div className="text-xs text-muted-foreground">
             <span className="hidden sm:inline">{t("layout.footer.questions")}</span>
             <a className="hover:underline" href="mailto:info@unidoxia.com">
