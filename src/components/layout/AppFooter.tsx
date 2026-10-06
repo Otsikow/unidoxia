@@ -152,7 +152,7 @@ export function AppFooter() {
                 </Button>
                 <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
                   <a
-                    href="https://www.linkedin.com/company/110137778/admin/dashboard/"
+                    href="https://www.linkedin.com/company/110137778/"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={t("layout.footer.social.linkedin", { defaultValue: "Follow us on LinkedIn" })}
