@@ -293,7 +293,8 @@ export function FeaturedUniversitiesSection() {
                     onError={(e) => {
                       // Fallback if image fails to load
                       const target = e.target as HTMLImageElement;
-                      target.src = PLACEHOLDER_BANNERS[0];
+                      const fallback = "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80";
+                      if (target.src !== fallback) target.src = fallback;
                     }}
                   />
                   {/* Logo overlay - kept inside the banner so it never obscures the name */}
