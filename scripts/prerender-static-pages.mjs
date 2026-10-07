@@ -2,8 +2,11 @@
 // (before JavaScript) carries each page's own title, description, canonical,
 // og:* tags and crawlable starter content. React replaces #root on load.
 import fs from "node:fs";
+import { spaRoutePatterns } from "./hosting-routes.mjs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { loadPublicCatalogue, fetchPublicRows } from './catalogue/public-catalogue.mjs';
+import { coursePage, universityPage, organisation, blogSchema, disambiguateMetadata } from './catalogue/seo-pages.mjs';
 
 const ORIGIN = "https://unidoxia.com";
 const DIST = path.resolve("dist");
@@ -12,46 +15,15 @@ const template = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
 const esc = (s = "") =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-const readEnv = () => {
-  const env = { ...process.env };
-  try {
-    for (const line of fs.readFileSync(".env", "utf8").split("\n")) {
-      const m = line.match(/^(\w+)=["']?(.*?)["']?$/);
-      if (m && !env[m[1]]) env[m[1]] = m[2];
-    }
-  } catch {}
-  return env;
-};
-const env = readEnv();
-const SB_URL = env.VITE_SUPABASE_URL;
-const SB_KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-const rest = async (query) => {
-  if (!SB_URL || !SB_KEY) return [];
-  try {
-    const res = await fetch(`${SB_URL}/rest/v1/${query}`, {
-      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
-    });
-    return res.ok ? await res.json() : [];
-  } catch {
-    return [];
-  }
-};
-
-let faqSections = [];
-try {
-  const en = (await import(pathToFileURL(path.resolve("src/i18n/locales/en.ts")).href)).default;
-  faqSections = en?.pages?.faq?.sections ?? [];
-} catch (e) {
-  console.warn("[prerender] FAQ text unavailable:", e.message);
-}
-
-const featured = await rest(
-  "universities?select=name,slug,city,country,featured_summary&featured=eq.true&active=eq.true&order=featured_priority.asc.nullslast&limit=12",
-);
-const posts = await rest(
-  "blog_posts?select=slug,title,seo_title,seo_description,excerpt&status=eq.published&order=published_at.desc&limit=500",
-);
+const { universities, programmes } = await loadPublicCatalogue();
+const featured = universities.filter(u => u.featured).sort((a, b) => (a.featured_priority ?? Infinity) - (b.featured_priority ?? Infinity)).slice(0, 12);
+const posts = await fetchPublicRows("blog_posts?select=id,slug,title,seo_title,seo_description,excerpt,published_at,updated_at,cover_image_url&status=eq.published");
+const scholarships = await fetchPublicRows('scholarships?select=id,slug,title,name,summary,description,seo_title,seo_description,updated_at&slug=not.is.null&status=in.(Published,"Closing Soon",Upcoming,Closed,Archived)');
+// Same English questions and answers as the React FAQ; fail rather than silently
+// publishing an empty FAQ if its source is unavailable.
+const en = (await import(pathToFileURL(path.resolve("src/i18n/locales/en.ts")).href)).default;
+const faqSections = en.pages.faq.sections;
+if (!faqSections.length) throw new Error('FAQ source is empty');
 
 const faqHtml = faqSections
   .map(
@@ -88,11 +60,12 @@ const featuredHtml = featured.length
   : "";
 
 const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a href="/universities">Universities</a> · <a href="/scholarships">Scholarships</a> · <a href="/blog">Blog</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;
-const footer = `<footer><p>UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129.</p></footer>`;
+const footer = `<footer><p>UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.</p></footer>`;
 
 const pages = [
   {
     path: "/",
+    jsonLd: organisation,
     title: "Study Abroad Support for International Students | UniDoxia",
     description:
       "UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements.",
@@ -193,14 +166,27 @@ const pages = [
     description: "The terms that apply when you use UniDoxia.",
     body: `<h1>Terms of service</h1>`,
   },
+  ...universities.map(u => universityPage(u, programmes)),
+  ...programmes.map(p => coursePage(p, universities.find(u => u.id === p.university_id))),
+  ...scholarships.map(s => ({
+    path: `/scholarships/${encodeURIComponent(s.slug)}`,
+    lastmod: s.updated_at,
+    title: s.seo_title || `${s.title || s.name} | UniDoxia`,
+    description: s.seo_description || s.summary || s.title || s.name,
+    body: `<h1>${esc(s.title || s.name)}</h1><p>${esc(s.summary || s.description || '')}</p>`,
+  })),
   ...posts.map((p) => ({
-    path: `/blog/${p.slug}`,
+    path: `/blog/${encodeURIComponent(p.slug)}`,
+    lastmod: p.updated_at || p.published_at,
+    jsonLd: blogSchema(p),
     title: p.seo_title || `${p.title} | UniDoxia`,
     description: p.seo_description || p.excerpt || p.title,
     ogType: "article",
     body: `<article><h1>${esc(p.title)}</h1>${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}</article>`,
   })),
 ];
+
+disambiguateMetadata(pages);
 
 const render = (page) => {
   const url = `${ORIGIN}${page.path === "/" ? "/" : page.path}`;
@@ -216,13 +202,25 @@ const render = (page) => {
     .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${t}">`)
     .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${d}">`)
     .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${d}">`);
+  html = html.replace('</head>', `<meta name="prerender-path" content="${esc(page.path)}">\n</head>`);
+  if (page.noindex) {
+    html = html.replace(/<link rel="canonical"[^>]*>/, '').replace(/<meta property="og:url"[^>]*>/, '');
+    html = html.replace('</head>', '<meta name="robots" content="noindex">\n</head>');
+  }
   if (page.jsonLd) {
     const json = JSON.stringify(page.jsonLd).replace(/</g, "\\u003c");
-    html = html.replace("</head>", `<script type="application/ld+json">${json}</script>\n</head>`);
+    html = html.replace("</head>", `<script type="application/ld+json" data-prerender-seo="1">${json}</script>\n</head>`);
   }
   return html.replace('<div id="root"></div>', `<div id="root">${nav}<main>${page.body}</main>${footer}</div>`);
 };
 
+fs.writeFileSync(path.join(DIST, 'seo-hosting.json'), JSON.stringify({
+  spaRoutes: spaRoutePatterns(),
+  universityAliases: Object.fromEntries(universities.filter(u => u.slug && u.slug !== u.id).map(u => [`/universities/${u.id}`, `/universities/${encodeURIComponent(u.slug)}`])),
+}, null, 2));
+// Store route metadata only, never API keys or full database records.
+fs.writeFileSync(path.join(DIST, 'seo-routes.json'), JSON.stringify(pages.map(({ path, lastmod, kind }) => ({ path, lastmod, kind })), null, 2));
+fs.writeFileSync(path.join(DIST, '404.html'), render({ path: '/404', title: 'Page not found | UniDoxia', description: 'The requested page could not be found.', noindex: true, body: '<h1>Page not found</h1><p>The page may have moved or no longer exists.</p><a href="/">Return to Home</a>' }));
 let count = 0;
 for (const page of pages) {
   const out = page.path === "/" ? path.join(DIST, "index.html") : path.join(DIST, page.path, "index.html");

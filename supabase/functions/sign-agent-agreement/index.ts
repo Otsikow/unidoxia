@@ -68,7 +68,7 @@ async function buildAgreementPdf(details: Body, signedAt: Date): Promise<Uint8Ar
       .replace(/[\u201C\u201D]/g, '"')
       .replace(/[\u2013\u2014]/g, "-")
       .replace(/\u2022/g, "-")
-      .replace(/[^\x00-\x7F]/g, "");
+      .split("").filter((character) => character.charCodeAt(0) <= 127).join("");
 
   const newPage = () => {
     page = pdf.addPage([PAGE_W, PAGE_H]);

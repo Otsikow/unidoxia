@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 type JsonLd = Record<string, unknown>;
 
@@ -101,10 +102,11 @@ export const SEO = ({
   robots,
   jsonLd,
 }: SEOProps) => {
+  const { pathname } = useLocation();
   useEffect(() => {
     if (typeof document === "undefined") return;
 
-    const canonicalUrl = toAbsolute(canonicalPath);
+    const canonicalUrl = toAbsolute(canonicalPath || pathname);
     const absoluteOgImage = toAbsolute(ogImage);
     const jsonLdItems = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
@@ -148,6 +150,11 @@ export const SEO = ({
     if (modifiedTime) upsertMeta("property", "article:modified_time", modifiedTime);
     else removeMeta("property", "article:modified_time");
 
+    // Replace static schema when this page provides its own, or after navigation.
+    document.head.querySelectorAll('script[data-prerender-seo]').forEach(node => {
+      const source = document.head.querySelector('meta[name="prerender-path"]')?.getAttribute('content');
+      if (jsonLdItems.length || source !== pathname.replace(/\/$/, '') && source !== pathname) node.remove();
+    });
     // JSON-LD
     setJsonLd(jsonLdItems);
   }, [
@@ -155,6 +162,7 @@ export const SEO = ({
     description,
     keywords,
     canonicalPath,
+    pathname,
     ogImage,
     ogType,
     publishedTime,

@@ -42,6 +42,7 @@ import {
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
 import { formatCourseDuration, formatCourseFee } from "@/lib/marketplacePresentation";
+import NotFound from "./NotFound";
 import { SEO } from "@/components/SEO";
 import { logAnalyticsEvent } from "@/lib/analytics";
 import BackButton from "@/components/BackButton";
@@ -221,10 +222,11 @@ export default function UniversityProfile() {
 
   const loadUniversityData = useCallback(async (universityId: string, page = 1) => {
     setLoading(true);
+    setUniversity(null);
     try {
       // Load university - fetch by ID to get the specific university
-      const baseQuery = (supabase.from("universities") as any).select("*");
-      const lookup = universityId.includes("-") && universityId.length !== 36
+      const baseQuery = (supabase.from("universities") as any).select("*").eq("active", true).neq("listing_status", "archived");
+      const lookup = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(universityId)
         ? baseQuery.eq("slug", universityId)
         : baseQuery.eq("id", universityId);
       const { data: universityData, error: uniError } = await lookup.single();
@@ -308,22 +310,7 @@ export default function UniversityProfile() {
     );
   }
 
-  if (!university) {
-    return (
-      <div className="min-h-screen bg-background p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
-          <Card>
-            <CardContent className="px-4 py-10 text-center sm:px-5 sm:py-12 lg:px-6">
-              <p className="text-muted-foreground">University not found</p>
-              <Button asChild className="mt-4">
-                <Link to="/universities">Back to Directory</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
+  if (!university) return <NotFound />;
 
   const heroImage =
     profileDetails.media.heroImageUrl ??

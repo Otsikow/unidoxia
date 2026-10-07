@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, Clock, ExternalLink, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SEO } from "@/components/SEO";
+import NotFound from "./NotFound";
 import BackButton from "@/components/BackButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,16 +36,18 @@ export default function CourseDetail() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     void (async () => {
       const { data } = await supabase
         .from("programs")
-        .select(`*, universities!inner(id,name,slug,city,country,logo_url,active), program_intakes(*), program_fees(*)`)
+        .select(`*, universities!inner(id,name,slug,city,country,logo_url,active,listing_status), program_intakes(*), program_fees(*)`)
         .eq("id", id)
         .eq("active", true)
         .eq("catalogue_status", "active")
         // Courses attached to an inactive university must not be publicly reachable,
         // matching what course search already returns.
         .eq("universities.active", true)
+        .neq("universities.listing_status", "archived")
         .maybeSingle();
       if (!cancelled) {
         setCourse(data);
@@ -64,16 +67,7 @@ export default function CourseDetail() {
   }, [id]);
 
   if (loading) return <LoadingState message="Loading course details…" />;
-  if (!course)
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold">Course not available</h1>
-        <p className="mt-2 text-muted-foreground">This course may be archived or awaiting verification.</p>
-        <Button className="mt-6" onClick={() => navigate("/courses")}>
-          Browse active courses
-        </Button>
-      </div>
-    );
+  if (!course) return <NotFound />;
 
   const university = course.universities;
   const sections = buildCourseSections(course);
