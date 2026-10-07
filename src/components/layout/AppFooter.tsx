@@ -328,7 +328,7 @@ export function AppFooter() {
             <p className="text-xs text-muted-foreground">{t("layout.footer.copyright", { year })}</p>
             <p className="max-w-xl text-xs text-muted-foreground">
               UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales,
-              company number 16172129.
+              company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.
             </p>
           </div>
           <div className="text-xs text-muted-foreground">

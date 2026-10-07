@@ -14,7 +14,8 @@
     "catalogue:discover": "node scripts/catalogue/discover-university-catalogue.mjs --university all",
     "catalogue:review": "node scripts/catalogue/review-catalogue.mjs --university all",
     "preview": "vite preview",
-    "postbuild": "node scripts/prerender-static-pages.mjs && node scripts/generate-sitemap.cjs && node scripts/append-catalogue-sitemap.mjs"
+    "postbuild": "node scripts/prerender-static-pages.mjs && node scripts/generate-sitemap.cjs && node scripts/append-catalogue-sitemap.mjs && node scripts/verify-seo.mjs && node scripts/verify-seo-hosting.mjs",
+    "verify:seo": "node scripts/verify-seo.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

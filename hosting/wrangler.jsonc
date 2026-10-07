@@ -1,0 +1,12 @@
+{
+  "name": "unidoxia-seo",
+  "main": "seo-worker.mjs",
+  "compatibility_date": "2026-10-07",
+  "assets": {
+    "directory": "../dist",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none"
+  }
+}

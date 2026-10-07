@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { SEO } from "@/components/SEO";
 import BackButton from "@/components/BackButton";
 
 const NotFound = () => {
@@ -12,7 +13,8 @@ const NotFound = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-subtle">
         <div className="text-center">
-          <h1 className="mb-4 text-6xl font-bold text-primary">404</h1>
+          <SEO title="Page not found | UniDoxia" description="The requested page could not be found." robots="noindex" />
+          <h1 className="mb-4 text-6xl font-bold text-primary">Page not found</h1>
           <p className="mb-8 text-xl text-muted-foreground">Oops! Page not found</p>
           <BackButton fallback="/" label="Return to Home" className="px-6" />
         </div>

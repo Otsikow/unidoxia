@@ -633,7 +633,7 @@ const UniversityProfilePage = () => {
         featured_image_url: heroUrl,
         submission_config_json: updatedDetails as unknown as Json,
         active: true,
-        // @ts-ignore - scoring_config not yet in generated types
+        // scoring_config is persisted alongside the generated university fields.
         scoring_config: scoringConfigToSave as Json
       };
 

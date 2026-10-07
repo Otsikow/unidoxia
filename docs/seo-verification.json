@@ -1,0 +1,221 @@
+{
+  "sitemapUrls": 1535,
+  "notFound": "Page not found; noindex; no canonical",
+  "examples": [
+    {
+      "path": "/",
+      "title": "Study Abroad Support for International Students | UniDoxia",
+      "canonical": "https://unidoxia.com/",
+      "description": "UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements.",
+      "h1": "Study abroad support for international students",
+      "footer": "UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "UniDoxia",
+          "legalName": "Global Talent Gateway Ltd",
+          "url": "https://unidoxia.com",
+          "logo": "https://unidoxia.com/assets/unidoxia-logo-BmnWTOef.png",
+          "email": "info@unidoxia.com",
+          "sameAs": [
+            "https://x.com/unidoxia",
+            "https://www.linkedin.com/company/110137778/",
+            "https://www.instagram.com/unidoxia/",
+            "https://www.facebook.com/profile.php?id=61584297605909",
+            "https://www.reddit.com/r/UniDoxia"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/faq",
+      "title": "Frequently Asked Questions | UniDoxia",
+      "canonical": "https://unidoxia.com/faq",
+      "description": "Answers to common questions about studying abroad, university applications, student visas and how UniDoxia supports international students.",
+      "h1": "Frequently Asked Questions",
+      "footer": "UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does UniDoxia help me apply to universities?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "UniDoxia connects you with verified agents who guide you through every stage — from selecting universities to submitting documents."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is there a fee to use the platform?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Creating an account and exploring universities is free. Agents may charge consulting fees, clearly shown before commitment."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What documents do I need to apply?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Academic transcripts, English test scores (IELTS/TOEFL), recommendations, personal statement, and passport copy are typically required."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I apply to multiple universities?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! You can apply to multiple universities at once and track all applications in one dashboard."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I stay informed about my application status?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Your personalized dashboard shows real-time updates, deadlines, and next steps so you always know what to do next."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How can our university partner with UniDoxia?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Submit a partnership enquiry or contact our team. Any formal relationship proceeds only after appropriate checks, agreed responsibilities and a written agreement."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What insights do universities receive?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Universities gain access to dashboards showing applicant pipelines, conversion metrics, and regional interest so you can plan recruitment campaigns with confidence."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can we manage offers directly on the platform?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Admissions teams can issue conditional or unconditional offers, request missing documents, and communicate with students and agents from a single workspace."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What support do agents receive on UniDoxia?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Agents receive a dedicated CRM, marketing collateral, and on-demand training to help match students with suitable courses quickly."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How are agent commissions handled?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Commission structures are transparent. Universities define the terms, and payouts are tracked within the agent dashboard for easy reconciliation."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can agents collaborate with university admissions teams?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Absolutely. Shared workspaces and messaging threads keep all parties aligned on student progress, missing documents, and interview scheduling."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/blog/international-student-visa-study-policy-updates-4-september-2026",
+      "title": "International Student Visa Updates | 4 September 2026",
+      "canonical": "https://unidoxia.com/blog/international-student-visa-study-policy-updates-4-september-2026",
+      "description": "Verified weekly updates for international students covering Canada, the UK, USA, Australia and France, with practical application guidance.",
+      "h1": "International Student Visa & Study Policy Updates: Week Ending 4 September 2026",
+      "footer": "UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": "International Student Visa & Study Policy Updates: Week Ending 4 September 2026",
+          "description": "Verified weekly updates for international students covering Canada, the UK, USA, Australia and France, with practical application guidance.",
+          "datePublished": "2026-09-04T15:03:34.632108+00:00",
+          "dateModified": "2026-09-04T15:04:25.70738+00:00",
+          "image": "https://unidoxia.com/blog/2026-09-04-international-student-visa-updates-cover.png",
+          "author": {
+            "@type": "Organization",
+            "name": "UniDoxia Editorial Team",
+            "url": "https://unidoxia.com/editorial-policy"
+          },
+          "publisher": {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "UniDoxia",
+            "legalName": "Global Talent Gateway Ltd",
+            "url": "https://unidoxia.com",
+            "logo": "https://unidoxia.com/assets/unidoxia-logo-BmnWTOef.png",
+            "email": "info@unidoxia.com",
+            "sameAs": [
+              "https://x.com/unidoxia",
+              "https://www.linkedin.com/company/110137778/",
+              "https://www.instagram.com/unidoxia/",
+              "https://www.facebook.com/profile.php?id=61584297605909",
+              "https://www.reddit.com/r/UniDoxia"
+            ]
+          },
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://unidoxia.com/blog/international-student-visa-study-policy-updates-4-september-2026"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/universities/hochschule-fresenius",
+      "title": "Hochschule Fresenius: Courses and Entry Information | UniDoxia",
+      "canonical": "https://unidoxia.com/universities/hochschule-fresenius",
+      "description": "Explore Hochschule Fresenius in Germany. Find courses, entry information and study details on UniDoxia.",
+      "h1": "Hochschule Fresenius",
+      "footer": "UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "CollegeOrUniversity",
+          "name": "Hochschule Fresenius",
+          "url": "https://unidoxia.com/universities/hochschule-fresenius",
+          "location": {
+            "@type": "Place",
+            "name": "Germany"
+          }
+        }
+      ]
+    },
+    {
+      "path": "/courses/001a318c-d4b0-418e-bf6e-c6dac75837fd",
+      "title": "Criminology BSc (Hons) at Northumbria University | UniDoxia",
+      "canonical": "https://unidoxia.com/courses/001a318c-d4b0-418e-bf6e-c6dac75837fd",
+      "description": "Criminology BSc (Hons) at Northumbria University. Undergraduate · 36 months · Newcastle, Newcastle upon Tyne, United Kingdom. Explore course and entry details.",
+      "h1": "Criminology BSc (Hons)",
+      "footer": "UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.",
+      "jsonLd": [
+        {
+          "@context": "https://schema.org",
+          "@type": "Course",
+          "name": "Criminology BSc (Hons)",
+          "description": "Looking for courses in criminology? Our BSc degree will equip you with knowledge to analyse criminal behaviour and societal responses to crime. Apply",
+          "provider": {
+            "@type": "CollegeOrUniversity",
+            "name": "Northumbria University",
+            "url": "https://unidoxia.com/universities/northumbria-university"
+          }
+        }
+      ]
+    }
+  ]
+}
