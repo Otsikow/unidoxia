@@ -1,0 +1,19 @@
+{
+  "name": "unidoxia-voice-assistant",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/server.js",
+    "cli": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "playwright": "^1.56.1",
+    "ws": "^8.18.3"
+  }
+}
