@@ -90,6 +90,19 @@ export async function validateFileUpload(
     throw new Error('This file extension is not allowed.');
   }
 
+  // FIX: Reject empty files (0 bytes)
+  // Root cause: Browser file pickers can select empty files if the source is corrupted
+  // or if the file was truncated during download/transfer
+  if (file.size === 0) {
+    throw new Error('This file appears to be empty. Please check the file and try again.');
+  }
+
+  // FIX: Reject suspiciously small files that claim to be PDFs or documents
+  // Root cause: Truncated or corrupted uploads can result in files with headers only
+  if (file.size < 100 && (extension === 'pdf' || extension === 'docx' || extension === 'doc')) {
+    throw new Error('This document appears to be corrupted or incomplete. Please check the file and try again.');
+  }
+
   if (options.maxSizeBytes && file.size > options.maxSizeBytes) {
     throw new Error('File size exceeds the allowed limit.');
   }
@@ -105,6 +118,13 @@ export async function validateFileUpload(
 
   if (!contentTypeMatches) {
     throw new Error('Unsupported file type.');
+  }
+
+  // FIX: Additional integrity check for PDFs
+  // Root cause: Valid PDF files must have at minimum a header, body, and trailer
+  // Files smaller than 200 bytes are almost certainly corrupted
+  if (detectedMimeType === 'application/pdf' && file.size < 200) {
+    throw new Error('This PDF appears to be corrupted or truncated. Please check the file and try again.');
   }
 
   const preparedFile = new File([file], sanitizedFileName, { type: detectedMimeType });
