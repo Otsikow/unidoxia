@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useStudentRecord } from "@/hooks/useStudentRecord";
 import { validateFileUpload } from "@/lib/fileUpload";
+import { verifyUploadedFileSize } from "@/lib/fileUpload";
 import { logError, formatErrorForToast } from "@/lib/errorUtils";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 
@@ -253,6 +254,23 @@ export default function Documents() {
       });
 
     if (uploadError) throw uploadError;
+
+    // FIX: Verify uploaded file size matches original to catch truncation during upload
+    const verification = await verifyUploadedFileSize(
+      supabase,
+      "student-documents",
+      storagePath,
+      file.size
+    );
+
+    if (!verification.valid) {
+      // Upload was truncated - clean up and fail with clear error
+      await supabase.storage.from("student-documents").remove([storagePath]);
+      throw new Error(
+        verification.error || 
+        'Upload was incomplete. Please check your internet connection and try again.'
+      );
+    }
   };
 
   const handleOutstandingFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {

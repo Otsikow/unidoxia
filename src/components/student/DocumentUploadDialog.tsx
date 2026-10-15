@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import type { Database } from '@/integrations/supabase/types';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
-import { validateFileUpload } from '@/lib/fileUpload';
+import { validateFileUpload, verifyUploadedFileSize } from '@/lib/fileUpload';
 import {
   Dialog,
   DialogContent,
@@ -186,6 +186,23 @@ export function DocumentUploadDialog({
         });
 
       if (uploadError) throw uploadError;
+
+      // FIX: Verify uploaded file size matches original to catch truncation during upload
+      const verification = await verifyUploadedFileSize(
+        supabase,
+        'application-documents',
+        filePath,
+        preparedFile.size
+      );
+
+      if (!verification.valid) {
+        // Upload was truncated - clean up and fail with clear error
+        await supabase.storage.from('application-documents').remove([filePath]);
+        throw new Error(
+          verification.error || 
+          'Upload was incomplete. Please check your internet connection and try again.'
+        );
+      }
 
       // Create document record in database
       const { error: dbError } = await supabase

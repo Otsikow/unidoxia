@@ -79,6 +79,29 @@ function isMimeAllowed(
   return false;
 }
 
+/**
+ * Verifies that a PDF file has a valid %%EOF trailer.
+ * PDFs must end with %%EOF (possibly followed by whitespace).
+ * This catches truncated PDFs that have headers but missing trailers.
+ */
+async function validatePdfTrailer(file: File): Promise<boolean> {
+  try {
+    // Read the last 1024 bytes to check for %%EOF trailer
+    const lastChunkSize = Math.min(1024, file.size);
+    const lastChunk = file.slice(file.size - lastChunkSize);
+    const buffer = await lastChunk.arrayBuffer();
+    const decoder = new TextDecoder('latin1');
+    const text = decoder.decode(buffer);
+    
+    // PDF must end with %%EOF (possibly followed by whitespace/newlines)
+    // Trim trailing whitespace and check if it ends with %%EOF
+    const trimmed = text.trimEnd();
+    return trimmed.endsWith('%%EOF');
+  } catch {
+    return false;
+  }
+}
+
 export async function validateFileUpload(
   file: File,
   options: UploadValidationOptions
@@ -127,8 +150,70 @@ export async function validateFileUpload(
     throw new Error('This PDF appears to be corrupted or truncated. Please check the file and try again.');
   }
 
+  // FIX: Validate PDF trailer for truncated full-size PDFs
+  // Root cause: PDFs can be truncated during transfer while retaining headers,
+  // resulting in files that look valid by size but are cut short.
+  // Valid PDFs must end with %%EOF.
+  if (detectedMimeType === 'application/pdf') {
+    const hasValidTrailer = await validatePdfTrailer(file);
+    if (!hasValidTrailer) {
+      throw new Error('This PDF file appears to be truncated or corrupted (missing end marker). Please check the original file and try uploading again.');
+    }
+  }
+
   const preparedFile = new File([file], sanitizedFileName, { type: detectedMimeType });
 
   return { detectedMimeType, sanitizedFileName, preparedFile };
+}
+
+/**
+ * Verifies that an uploaded file in Supabase storage matches the expected size.
+ * This catches truncation that occurs during the upload process itself.
+ * 
+ * @param bucket - Supabase storage bucket name
+ * @param path - Object path in the bucket
+ * @param expectedSize - Original file size in bytes
+ * @returns true if sizes match, false otherwise
+ */
+export async function verifyUploadedFileSize(
+  supabaseClient: any,
+  bucket: string,
+  path: string,
+  expectedSize: number
+): Promise<{ valid: boolean; actualSize?: number; error?: string }> {
+  try {
+    // Get file metadata from storage
+    const { data, error } = await supabaseClient.storage
+      .from(bucket)
+      .list(path.split('/').slice(0, -1).join('/'), {
+        search: path.split('/').pop(),
+      });
+
+    if (error) {
+      return { valid: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { valid: false, error: 'Uploaded file not found in storage' };
+    }
+
+    const fileMetadata = data[0];
+    const actualSize = fileMetadata.metadata?.size ?? 0;
+
+    if (actualSize !== expectedSize) {
+      return {
+        valid: false,
+        actualSize,
+        error: `Upload verification failed: file was truncated (expected ${expectedSize} bytes, got ${actualSize} bytes)`,
+      };
+    }
+
+    return { valid: true, actualSize };
+  } catch (err) {
+    return {
+      valid: false,
+      error: err instanceof Error ? err.message : 'Unknown verification error',
+    };
+  }
 }
 

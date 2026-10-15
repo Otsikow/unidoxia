@@ -40,3 +40,6 @@ verify_jwt = false
 
 [functions.passport-ocr]
 verify_jwt = true
+
+[functions.validate-document-upload]
+verify_jwt = true
