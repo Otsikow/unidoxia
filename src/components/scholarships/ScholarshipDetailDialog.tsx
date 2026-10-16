@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import type { ReactNode } from "react";
 import {
   Dialog,
@@ -31,7 +32,7 @@ import {
   Globe2,
 } from "lucide-react";
 import type { ScholarshipSearchResult } from "@/types/scholarship";
-import { format } from "date-fns";
+
 
 interface ScholarshipDetailDialogProps {
   open: boolean;
@@ -69,7 +70,7 @@ export const ScholarshipDetailDialog = ({
   const handleSave = () => onToggleSave(scholarship);
   const handleShare = () => onShare?.(scholarship);
 
-  const deadlineDate = scholarship.deadline ? format(new Date(scholarship.deadline), "PPP") : "Rolling";
+  const deadlineDate = scholarship.deadline ? formatUkDate(scholarship.deadline) : "Rolling";
   const countdownLabel = scholarship.deadlineLabel;
 
   return (
@@ -210,7 +211,7 @@ export const ScholarshipDetailDialog = ({
                     <p className="mt-1 text-sm text-muted-foreground">
                       Applications open:{" "}
                       <span className="font-medium text-foreground">
-                        {format(new Date(scholarship.applicationOpensAt), "PPP p")}
+                        {formatUkDateTime(scholarship.applicationOpensAt)}
                       </span>
                     </p>
                   ) : null}
@@ -231,7 +232,7 @@ export const ScholarshipDetailDialog = ({
                     Last verified:{" "}
                     <span className="font-medium text-foreground">
                       {scholarship.lastVerified
-                        ? format(new Date(scholarship.lastVerified), "PPP")
+                        ? formatUkDate(scholarship.lastVerified)
                         : "Not specified"}
                     </span>
                   </p>

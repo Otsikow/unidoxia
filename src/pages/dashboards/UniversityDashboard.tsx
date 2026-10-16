@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1106,7 +1107,7 @@ export default function UniversityDashboard() {
                               <StatusBadge status={app.status} />
                             </TableCell>
                             <TableCell>
-                              {new Date(app.created_at).toLocaleDateString('en-GB')}
+                              {formatUkDate(app.created_at)}
                             </TableCell>
                           </TableRow>
                         ))}

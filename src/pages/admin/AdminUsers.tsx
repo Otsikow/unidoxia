@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -702,11 +703,7 @@ const AdminUsers = () => {
 
   const formatDate = (value: string | null) => {
     if (!value) return "—";
-    return new Date(value).toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    return formatUkDate(value);
   };
 
   const getPaymentStatus = (row: PlanRosterRow) => {

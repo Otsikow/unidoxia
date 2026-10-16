@@ -1,3 +1,4 @@
+import { formatUkTime } from '@/lib/dateFormat';
 import { v4 as uuidv4 } from 'uuid';
 import { applicationRequiredDetailsSchema } from '@/lib/applicationValidation';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -1672,7 +1673,7 @@ export default function NewApplication() {
                 <p className="text-xs text-muted-foreground">Saving draft...</p>
               ) : lastSavedAt ? (
                 <p className="text-xs text-muted-foreground">
-                  Last saved at {lastSavedAt.toLocaleTimeString()}
+                  Last saved at {formatUkTime(lastSavedAt)}
                 </p>
               ) : hasUnsavedChanges ? (
                 <p className="text-xs text-muted-foreground">

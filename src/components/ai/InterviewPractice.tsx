@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -808,7 +809,7 @@ export default function InterviewPractice() {
                             <div>
                               <p className="font-medium">{question.question}</p>
                               <p className="text-xs text-muted-foreground">
-                                Recorded on {response.recordedAt ? new Date(response.recordedAt).toLocaleString() : '—'}
+                                Recorded on {formatUkDateTime(response.recordedAt)}
                               </p>
                             </div>
                             <Badge className={getDifficultyColor(question.difficulty)}>

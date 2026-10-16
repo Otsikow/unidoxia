@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useEffect, useState, useCallback } from 'react';
 import type { ChangeEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -589,8 +590,8 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
                     </CardTitle>
                     <CardDescription>
                       {score.test_type === ENGLISH_PROFICIENCY_LETTER
-                        ? `Uploaded on ${new Date(score.test_date).toLocaleDateString('en-GB')}`
-                        : `Overall: ${score.total_score} • Taken on ${new Date(score.test_date).toLocaleDateString('en-GB')}`}
+                        ? `Uploaded on ${formatUkDate(score.test_date)}`
+                        : `Overall: ${score.total_score} • Taken on ${formatUkDate(score.test_date)}`}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">

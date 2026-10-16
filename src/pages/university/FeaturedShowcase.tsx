@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Building2,
@@ -108,7 +109,7 @@ const formatDateTime = (value: string | null) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString();
+  return formatUkDateTime(date);
 };
 
 const calculateDaysRemaining = (expiresAt: string | null) => {

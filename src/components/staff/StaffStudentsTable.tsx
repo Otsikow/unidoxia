@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useState } from "react";
 import { Users, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,7 +114,7 @@ export function StaffStudentsTable() {
                     </div>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {student.updatedAt ? new Date(student.updatedAt).toLocaleString() : "—"}
+                    {formatUkDateTime(student.updatedAt)}
                   </TableCell>
                 </TableRow>
               ))}

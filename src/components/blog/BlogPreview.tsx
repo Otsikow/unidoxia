@@ -1,10 +1,11 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { ExternalLink, Calendar, Eye, Heart, User, Tag } from 'lucide-react';
-import { format } from 'date-fns';
+
 import DOMPurify from 'dompurify';
 
 interface BlogPost {
@@ -99,8 +100,8 @@ export function BlogPreview({ post, open, onOpenChange }: BlogPreviewProps) {
                 <Calendar className="h-4 w-4" />
                 <span>
                   {post.published_at 
-                    ? format(new Date(post.published_at), 'd MMM yyyy')
-                    : format(new Date(post.created_at), 'd MMM yyyy')
+                    ? formatUkDate(post.published_at)
+                    : formatUkDate(post.created_at)
                   }
                 </span>
               </div>
@@ -160,11 +161,11 @@ export function BlogPreview({ post, open, onOpenChange }: BlogPreviewProps) {
                 </div>
                 {post.published_at && (
                   <div>
-                    <span className="font-medium">Published:</span> {format(new Date(post.published_at), 'PPpp')}
+                    <span className="font-medium">Published:</span> {formatUkDateTime(post.published_at)}
                   </div>
                 )}
                 <div>
-                  <span className="font-medium">Last Updated:</span> {format(new Date(post.created_at), 'PPpp')}
+                  <span className="font-medium">Last Updated:</span> {formatUkDateTime(post.created_at)}
                 </div>
               </div>
             </div>

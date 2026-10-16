@@ -1,6 +1,7 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { format, subDays } from "date-fns";
+import { subDays } from "date-fns";
 import BackButton from "@/components/BackButton";
 import {
   Card,
@@ -507,7 +508,7 @@ export default function UserManagement() {
                         </TableCell>
                         <TableCell>{renderStatusBadge(user)}</TableCell>
                         <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                          {user.created_at ? format(new Date(user.created_at), "d MMM yyyy") : "Not set"}
+                          {user.created_at ? formatUkDate(user.created_at) : "Not set"}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap items-center justify-end gap-2">

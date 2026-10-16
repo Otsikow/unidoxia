@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -116,7 +117,7 @@ export default function AdminScholarshipReports() {
                   {stale.slice(0, 10).map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-medium">{r.title ?? "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{r.last_verified_at ? new Date(r.last_verified_at).toLocaleDateString('en-GB') : "Never"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{r.last_verified_at ? formatUkDate(r.last_verified_at) : "Never"}</TableCell>
                       <TableCell className="text-right"><Link to="/admin/scholarships" className="text-primary text-xs">Review</Link></TableCell>
                     </TableRow>
                   ))}
@@ -136,7 +137,7 @@ export default function AdminScholarshipReports() {
                   {expiringSoon.slice(0, 10).map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-medium">{r.title ?? "—"}</TableCell>
-                      <TableCell className="text-xs">{r.deadline ? new Date(r.deadline).toLocaleDateString('en-GB') : "Not set"}</TableCell>
+                      <TableCell className="text-xs">{r.deadline ? formatUkDate(r.deadline) : "Not set"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -183,7 +184,7 @@ export default function AdminScholarshipReports() {
                 <li key={l.id} className="text-sm border-l-2 border-primary/40 pl-3">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">{l.action}</Badge>
-                    <span className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString()}</span>
+                    <span className="text-xs text-muted-foreground">{formatUkDateTime(l.created_at)}</span>
                   </div>
                   {l.notes ? <p className="text-xs text-muted-foreground mt-0.5">{l.notes}</p> : null}
                 </li>

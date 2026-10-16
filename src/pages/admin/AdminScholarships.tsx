@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { useMemo, useState } from "react";
@@ -17,7 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, ShieldCheck, Plus, ExternalLink, Archive, Send, Loader2 } from "lucide-react";
-import { format } from "date-fns";
+
 import { ScholarshipVerificationLog } from "@/components/scholarships/ScholarshipVerificationLog";
 
 type ScholarshipRow = {
@@ -318,14 +319,14 @@ export default function AdminScholarships() {
                     </TableCell>
                     <TableCell>{r.institution_name ?? "—"}</TableCell>
                     <TableCell>{r.country ?? "—"}</TableCell>
-                    <TableCell>{r.deadline ? format(new Date(r.deadline), "d MMM yyyy") : "Rolling"}</TableCell>
+                    <TableCell>{r.deadline ? formatUkDate(r.deadline) : "Rolling"}</TableCell>
                     <TableCell><Badge variant={statusVariant(r.status) as any}>{r.status}</Badge></TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-xs">
                         {r.verification_status === "Fully Verified" && <ShieldCheck className="h-3.5 w-3.5 text-green-600" />}
                         {r.verification_status}
                       </div>
-                      {r.last_verified_at && <div className="text-xs text-muted-foreground">{format(new Date(r.last_verified_at), "d MMM yyyy")}</div>}
+                      {r.last_verified_at && <div className="text-xs text-muted-foreground">{formatUkDate(r.last_verified_at)}</div>}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">

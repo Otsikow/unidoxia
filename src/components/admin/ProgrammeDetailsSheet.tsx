@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useCallback } from "react";
 import { 
   BookOpen, 
@@ -373,11 +374,7 @@ const ProgrammeDetailsSheet = ({
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatUkDate(dateString);
   };
 
   const getIntakeMonthsDisplay = (months: number[]) => {
@@ -605,7 +602,7 @@ const ProgrammeDetailsSheet = ({
                       ) : (
                         <Save className="mr-2 h-4 w-4" />
                       )}
-                      Save Changes
+                      Save changes
                     </Button>
                   </div>
                 </div>

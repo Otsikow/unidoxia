@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -146,14 +147,8 @@ const STATUS_FILTER_MAP: Record<StatusFilter, string[]> = {
   completed: ['enrolled', 'withdrawn', 'rejected'],
 };
 
-const formatDate = (value?: string | null, options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }) => {
-  if (!value) return '—';
-  try {
-    return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
-  } catch {
-    return value;
-  }
-};
+const formatDate = (value?: string | null, options: Intl.DateTimeFormatOptions = {}) =>
+  options.timeStyle ? formatUkDateTime(value) : formatUkDate(value);
 
 const formatIntake = (month?: number | null, year?: number | null) => {
   if (!month || !year) return '—';

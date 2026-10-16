@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, type KeyboardEvent } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -466,7 +467,7 @@ export default function StaffApplications() {
                       <TableCell>
                         <div className="flex items-center gap-1 text-sm">
                           <Calendar className="h-3 w-3" />
-                          {new Date(app.lastUpdated).toLocaleDateString('en-GB')}
+                          {formatUkDate(app.lastUpdated)}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

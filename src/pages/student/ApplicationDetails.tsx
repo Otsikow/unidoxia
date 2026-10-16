@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -675,7 +676,7 @@ export default function ApplicationDetails() {
                         <div className="font-medium">{item.title || 'Update'}</div>
                         {item.description && <div className="text-muted-foreground">{item.description}</div>}
                         {item.date && (
-                          <div className="text-xs text-muted-foreground mt-1">{new Date(item.date).toLocaleString()}</div>
+                          <div className="text-xs text-muted-foreground mt-1">{formatUkDateTime(item.date)}</div>
                         )}
                       </div>
                     </div>
@@ -722,7 +723,7 @@ export default function ApplicationDetails() {
                           )}
                         </TableCell>
                         <TableCell className="text-sm">
-                          {t.due_at ? new Date(t.due_at).toLocaleDateString('en-GB') : 'Not set'}
+                          {t.due_at ? formatUkDate(t.due_at) : 'Not set'}
                         </TableCell>
                         <TableCell className="text-sm">
                           <Badge variant="outline">{(t.priority || 'medium').toUpperCase()}</Badge>
@@ -834,11 +835,11 @@ export default function ApplicationDetails() {
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {request.requested_at && (
-                            <Badge variant="outline">Requested {new Date(request.requested_at).toLocaleDateString('en-GB')}</Badge>
+                            <Badge variant="outline">Requested {formatUkDate(request.requested_at)}</Badge>
                           )}
                           {request.due_date && (
                             <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
-                              Due {new Date(request.due_date).toLocaleDateString('en-GB')}
+                              Due {formatUkDate(request.due_date)}
                             </Badge>
                           )}
                         </div>
@@ -923,7 +924,7 @@ export default function ApplicationDetails() {
                             {d.verified ? 'Verified' : 'Pending'}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm">{new Date(d.uploaded_at).toLocaleDateString('en-GB')}</TableCell>
+                        <TableCell className="text-sm">{formatUkDate(d.uploaded_at)}</TableCell>
                         <TableCell className="text-right">
                           <Button variant="ghost" size="sm" onClick={() => downloadDoc(d)}>
                             <Download className="h-4 w-4" />
@@ -957,7 +958,7 @@ export default function ApplicationDetails() {
                           <div className="space-y-1 mb-3 sm:mb-0">
                             <div className="text-sm font-medium capitalize">{o.offer_type.replace('_', ' ')} Offer</div>
                             {o.expiry_date && (
-                              <div className="text-xs text-muted-foreground">Expires {new Date(o.expiry_date).toLocaleDateString('en-GB')}</div>
+                              <div className="text-xs text-muted-foreground">Expires {formatUkDate(o.expiry_date)}</div>
                             )}
                           </div>
                           <div className="flex flex-wrap items-center gap-2">
@@ -1010,7 +1011,7 @@ export default function ApplicationDetails() {
                               {doc.document_type?.replace(/_/g, ' ') || 'Document'}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              Uploaded {new Date(doc.uploaded_at).toLocaleDateString('en-GB')}
+                              Uploaded {formatUkDate(doc.uploaded_at)}
                             </div>
                           </div>
                           <div className="flex flex-wrap items-center gap-2">

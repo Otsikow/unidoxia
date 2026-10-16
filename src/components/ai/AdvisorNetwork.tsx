@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -415,7 +416,7 @@ export default function AdvisorNetwork() {
                         onClick={() => setBookingSlot(slot)}
                         className="text-xs"
                       >
-                        {new Date(slot.date).toLocaleDateString('en-GB')}
+                        {formatUkDate(slot.date)}
                         <br />
                         {slot.time}
                       </Button>

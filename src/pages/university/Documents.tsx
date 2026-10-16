@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Loader2, FileDown, FolderOpen, Clock4, CheckCircle2, Search } from "lucide-react";
@@ -49,7 +50,7 @@ const formatDate = (value: string | null) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString('en-GB');
+  return formatUkDate(date);
 };
 
 type SortOption = "recent" | "status-pending" | "status-received";

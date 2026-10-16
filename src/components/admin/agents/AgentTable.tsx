@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,7 +28,7 @@ import { formatCurrency, getInitials, getStatusColor, getComplianceColor, getWha
 import WhatsAppButton from "./WhatsAppButton";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
+
 
 interface Props {
   agents: AgentRecord[];
@@ -169,7 +170,7 @@ export default function AgentTable({
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {agent.lastActivityAt
-                  ? format(new Date(agent.lastActivityAt), "dd MMM yyyy")
+                  ? formatUkDate(agent.lastActivityAt)
                   : "Never"}
               </TableCell>
               <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>

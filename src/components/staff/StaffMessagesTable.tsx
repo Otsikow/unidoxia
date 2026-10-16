@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useState } from "react";
 import { MessageSquare, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -135,7 +136,7 @@ export function StaffMessagesTable() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {message.createdAt ? new Date(message.createdAt).toLocaleString() : "—"}
+                    {formatUkDateTime(message.createdAt)}
                   </TableCell>
                 </TableRow>
               ))}

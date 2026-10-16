@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import { AlertCircle, CalendarClock, CheckSquare, Filter, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -208,7 +209,7 @@ export function StaffTasksBoard() {
                     <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <CalendarClock className="h-3.5 w-3.5" />
-                        {task.dueAt ? new Date(task.dueAt).toLocaleString() : "No due date"}
+                        {task.dueAt ? formatUkDateTime(task.dueAt) : "No due date"}
                       </span>
                       {task.assigneeName && <span>Assigned to {task.assigneeName}</span>}
                       {task.applicationId && <span>Application #{task.applicationId.slice(0, 8)}</span>}

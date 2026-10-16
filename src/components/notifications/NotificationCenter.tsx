@@ -1,6 +1,7 @@
+import { formatUkDate, formatUkDateTime, formatUkTime } from '@/lib/dateFormat';
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow, format, isToday, isYesterday } from "date-fns";
+import { formatDistanceToNow, isToday, isYesterday } from "date-fns";
 import {
   Bell,
   Check,
@@ -632,12 +633,12 @@ export default function NotificationCenter() {
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     if (isToday(date)) {
-      return `Today at ${format(date, "h:mm a")}`;
+      return `Today at ${formatUkTime(date)}`;
     }
     if (isYesterday(date)) {
-      return `Yesterday at ${format(date, "h:mm a")}`;
+      return `Yesterday at ${formatUkTime(date)}`;
     }
-    return format(date, "d MMM yyyy 'at' h:mm a");
+    return formatUkDateTime(date);
   };
 
   const filtered = notifications.filter((n) => {
@@ -670,7 +671,7 @@ export default function NotificationCenter() {
     } else if (isYesterday(date)) {
       key = "Yesterday";
     } else {
-      key = format(date, "Md MMM yyyy");
+      key = formatUkDate(date);
     }
     if (!acc[key]) {
       acc[key] = [];

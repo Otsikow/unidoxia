@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkTime } from '@/lib/dateFormat';
 import { useCallback, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -5,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Search, MessageSquarePlus } from 'lucide-react';
-import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
+import { isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Conversation } from '@/hooks/useMessages';
 import type { UserPresence } from '@/hooks/usePresence';
@@ -75,11 +76,11 @@ export function ChatList({
     const messageDate = new Date(date);
     
     if (isToday(messageDate)) {
-      return format(messageDate, 'HH:mm');
+      return formatUkTime(messageDate);
     } else if (isYesterday(messageDate)) {
       return 'Yesterday';
     } else {
-      return format(messageDate, 'dd/MM/yyyy');
+      return formatUkDate(messageDate);
     }
   };
 

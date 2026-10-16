@@ -31,7 +31,7 @@ import {
   type ResidentialAddressErrors,
 } from '@/lib/residentialAddress';
 import {
-  getAcademicYearOptions,
+  getStudentAcademicYearOptions,
   getIntakeOptionsForYear,
 } from '@/lib/intakeOptions';
 
@@ -621,7 +621,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
 
           {/* Preferred intake Year & Month */}
           {(() => {
-            const academicYears = getAcademicYearOptions(new Date(), undefined, student.preferred_intake_year ?? undefined);
+            const academicYears = getStudentAcademicYearOptions(new Date(), undefined, student.preferred_intake_year ?? undefined);
             const selectedYear =
               academicYears.find((y) => y.startYear === formData.preferred_intake_year)?.startYear ||
               formData.preferred_intake_year ||

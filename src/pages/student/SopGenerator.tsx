@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -59,13 +60,7 @@ const formatFileSize = (bytes: number) => {
 };
 
 const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  formatUkDateTime(iso);
 
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */

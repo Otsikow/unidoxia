@@ -25,7 +25,7 @@ export default function AdditionalPersonalDetails({ data, onChange }: {
       <Label htmlFor={field}>{label} *</Label>
       <Select value={String(data[field] || '')} onValueChange={(value) => update(field, value)}>
         <SelectTrigger id={field}><SelectValue placeholder="Select an option" /></SelectTrigger>
-        <SelectContent>{options.map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent>
+        <SelectContent>{options.map((value) => <SelectItem key={value} value={value}>{value === 'yes' ? 'Yes' : value === 'no' ? 'No' : value}</SelectItem>)}</SelectContent>
       </Select>
     </div>
   );

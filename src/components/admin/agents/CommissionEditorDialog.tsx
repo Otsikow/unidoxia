@@ -137,7 +137,7 @@ export default function CommissionEditorDialog({ agent, open, onOpenChange, onSa
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>Cancel</Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Save Changes
+            Save changes
           </Button>
         </DialogFooter>
       </DialogContent>

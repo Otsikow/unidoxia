@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime, formatUkTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -385,12 +386,9 @@ const formatDate = (v: string | null | undefined, includeTime = false) => {
   const date = new Date(v);
   if (isNaN(date.getTime())) return "—";
   if (includeTime) {
-    return date.toLocaleString(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+    return formatUkDateTime(date);
   }
-  return date.toLocaleDateString(undefined, { dateStyle: "medium" });
+  return formatUkDate(date);
 };
 
 const formatFileSize = (bytes: number | null | undefined) => {
@@ -931,7 +929,7 @@ export function ApplicationReviewDialog({
     onNotesUpdate?.(application.id, internalNotes);
     toast({ 
       title: "Notes saved", 
-      description: `Internal notes updated successfully at ${savedAt.toLocaleTimeString()}`,
+      description: `Internal notes updated successfully at ${formatUkTime(savedAt)}`,
     });
   }, [application, internalNotes, onNotesUpdate, toast]);
 
@@ -2324,7 +2322,7 @@ export function ApplicationReviewDialog({
                             {notesSavedAt ? (
                               <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
                                 <CheckCircle2 className="h-3 w-3" />
-                                Saved at {notesSavedAt.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                                Saved at {formatUkDateTime(notesSavedAt)}
                               </p>
                             ) : (
                               <p className="text-[10px] sm:text-xs text-muted-foreground">

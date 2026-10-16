@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   Card,
@@ -47,7 +48,7 @@ import {
   UploadCloud,
   Video,
 } from "lucide-react";
-import { format } from "date-fns";
+
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -793,11 +794,11 @@ const AdminResources = () => {
                       <div className="flex flex-wrap items-center gap-4">
                         {resource.createdAt ? (
                           <span>
-                            Added {format(new Date(resource.createdAt), "d MMM yyyy")}
+                            Added {formatUkDate(resource.createdAt)}
                           </span>
                         ) : null}
                         {resource.updatedAt ? (
-                          <span>Updated {format(new Date(resource.updatedAt), "d MMM yyyy")}</span>
+                          <span>Updated {formatUkDate(resource.updatedAt)}</span>
                         ) : null}
                       </div>
                     </div>

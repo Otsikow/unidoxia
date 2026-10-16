@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { GraduationCap, MapPin, DollarSign, Calendar, Search, Loader2, CalendarDays } from 'lucide-react';
 import {
-  getAcademicYearOptions,
+  getStudentAcademicYearOptions,
   getIntakeOptionsForYear,
 } from '@/lib/intakeOptions';
 import { formatCourseFee } from '@/lib/marketplacePresentation';
@@ -290,7 +291,7 @@ export default function ProgramSelectionStep({
                 ) : (
                   programs.map((program) => (
                     <SelectItem key={program.id} value={program.id}>
-                      {program.name} - {program.university.name}
+                      {program.name}, {program.university.name}
                     </SelectItem>
                   ))
                 )}
@@ -366,8 +367,8 @@ export default function ProgramSelectionStep({
                     <SelectContent>
                       {intakes.map((intake) => (
                         <SelectItem key={intake.id} value={intake.id}>
-                          {intake.term} - Starts: {new Date(intake.start_date).toLocaleDateString('en-GB')}{' '}
-                          (Deadline: {new Date(intake.app_deadline).toLocaleDateString('en-GB')})
+                          {intake.term}, starts {formatUkDate(intake.start_date)}{' '}
+                          (deadline {formatUkDate(intake.app_deadline)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -407,7 +408,7 @@ function PreferredStudyYearAndIntake({
   intakeMonth,
   onChange,
 }: PreferredStudyYearAndIntakeProps) {
-  const academicYears = getAcademicYearOptions(new Date(), undefined, intakeYear);
+  const academicYears = getStudentAcademicYearOptions(new Date(), undefined, intakeYear);
 
   // Determine which academic year currently matches the saved intake.
   const matchingAcademicYear =

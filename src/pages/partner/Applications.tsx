@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -131,14 +132,8 @@ const STATUS_FILTER_MAP: Record<StatusFilter, string[]> = {
   rejected: ['withdrawn', 'deferred'],
 };
 
-const formatDate = (value?: string | null, options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }) => {
-  if (!value) return '—';
-  try {
-    return new Intl.DateTimeFormat(undefined, options).format(new Date(value));
-  } catch {
-    return value;
-  }
-};
+const formatDate = (value?: string | null, options: Intl.DateTimeFormatOptions = {}) =>
+  options.timeStyle ? formatUkDateTime(value) : formatUkDate(value);
 
 const getStudentName = (application: ApplicationRow) =>
   application.student?.legal_name ||

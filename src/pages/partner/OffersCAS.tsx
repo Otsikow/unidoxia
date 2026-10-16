@@ -1,6 +1,7 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+
 import { Download, Filter, GraduationCap, University } from "lucide-react";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { PartnerSidebar } from "@/components/partner/PartnerSidebar";
@@ -134,7 +135,7 @@ const statusBadgeStyles: Record<RecordStatus, string> = {
 const formatDate = (isoDate?: string) => {
   if (!isoDate) return "—";
   try {
-    return format(new Date(isoDate), "PPP");
+    return formatUkDate(isoDate);
   } catch (error) {
     console.warn("Unable to format date", error);
     return "—";

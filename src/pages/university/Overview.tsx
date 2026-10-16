@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useRef, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -55,7 +56,7 @@ const formatDate = (value: string | null) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString('en-GB');
+  return formatUkDate(date);
 };
 
 const pipelineIcons: Record<string, ComponentType<{ className?: string }>> = {
@@ -74,7 +75,7 @@ const formatTimeAgo = (date: Date | null) => {
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
-  return date.toLocaleDateString('en-GB');
+  return formatUkDate(date);
 };
 
 // Document Requests Snapshot Component

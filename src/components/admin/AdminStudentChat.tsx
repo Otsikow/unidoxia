@@ -1,5 +1,6 @@
+import { formatUkDateTime, formatUkTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useRef, useState } from "react";
-import { format } from "date-fns";
+
 import { Send, Loader2, X, MessageSquare, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -238,9 +239,9 @@ export function AdminStudentChat({ studentProfileId, studentName, onClose }: Adm
     const isToday = date.toDateString() === now.toDateString();
     
     if (isToday) {
-      return format(date, "h:mm a");
+      return formatUkTime(date);
     }
-    return format(date, "d MMM yyyy, HH:mm");
+    return formatUkDateTime(date);
   };
 
   return (

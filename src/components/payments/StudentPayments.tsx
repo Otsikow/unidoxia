@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -137,11 +138,7 @@ export function StudentPayments() {
     }).format(cents / 100);
 
   const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+    formatUkDate(dateString);
 
   const getStatusBadge = (status: string) => {
     const variants: Record<

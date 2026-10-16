@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import {
   ChangeEvent,
   useCallback,
@@ -89,7 +90,7 @@ const formatDate = (value: string | null) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString('en-GB');
+  return formatUkDate(date);
 };
 
 const getStatusBadgeClasses = (status: string) => {

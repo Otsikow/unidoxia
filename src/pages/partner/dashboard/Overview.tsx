@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -139,16 +140,7 @@ const percentageFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 1,
 });
 
-const formatDate = (value: string | null | undefined) => {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-};
+const formatDate = formatUkDate;
 
 const getGreeting = (fullName?: string | null) => {
   const hours = new Date().getHours();

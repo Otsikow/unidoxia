@@ -143,7 +143,7 @@ export default function Checkout() {
       }
       toast({
         title: 'Payment unavailable',
-        description: 'Checkout could not be started. Please try again or contact support.',
+        description: 'Stripe checkout could not be started. Please try again or contact support.',
         variant: 'destructive',
       });
     } finally {
@@ -276,7 +276,7 @@ export default function Checkout() {
                 Complete Your Purchase
               </CardTitle>
               <CardDescription>
-                Secure payment
+                Secure payment powered by Stripe
               </CardDescription>
             </CardHeader>
 
@@ -294,17 +294,30 @@ export default function Checkout() {
               <div className="border rounded-lg p-6 bg-muted/30">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <Lock className="h-5 w-5 text-green-600" />
-                  <span className="font-medium">Secure checkout</span>
+                  <span className="font-medium">Secure Stripe Checkout</span>
                 </div>
                 <p className="text-sm text-center text-muted-foreground mb-4">
-                  You will be redirected to a secure payment page to complete your purchase.
+                  You will be redirected to Stripe's secure payment page to complete your purchase.
                 </p>
-
+                <div className="flex justify-center gap-4">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Stripe_Logo%2C_revised_2016.svg/512px-Stripe_Logo%2C_revised_2016.svg.png"
+                    alt="Stripe"
+                    className="h-8 object-contain opacity-60"
+                  />
+                </div>
               </div>
 
-              <p className="text-center text-xs text-muted-foreground">
-                Available payment methods are shown at checkout.
-              </p>
+              {/* Payment Methods */}
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground mb-2">Accepted Payment Methods</p>
+                <div className="flex justify-center gap-2 text-muted-foreground">
+                  <span className="px-2 py-1 border rounded text-xs">Visa</span>
+                  <span className="px-2 py-1 border rounded text-xs">MasterCard</span>
+                  <span className="px-2 py-1 border rounded text-xs">Amex</span>
+                  <span className="px-2 py-1 border rounded text-xs">Discover</span>
+                </div>
+              </div>
 
               {/* Confirmation Checkbox */}
               <div className="flex items-start space-x-3 p-4 bg-muted/50 rounded-lg border">

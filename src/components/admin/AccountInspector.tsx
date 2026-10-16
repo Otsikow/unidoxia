@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -131,7 +132,7 @@ export const AccountInspector = () => {
 
   const formatDate = (dateStr: string | null | undefined) => {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleString();
+    return formatUkDateTime(dateStr);
   };
 
   return (

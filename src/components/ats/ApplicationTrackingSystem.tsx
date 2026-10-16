@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +30,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+
 import { getErrorMessage, logError, formatErrorForToast } from '@/lib/errorUtils';
 
 interface Application {
@@ -401,7 +402,7 @@ export default function ApplicationTrackingSystem() {
                                     <span className="font-medium">{event.event}</span>
                                     <p className="text-muted-foreground text-xs">{event.description}</p>
                                     <p className="text-muted-foreground text-xs">
-                                      {format(new Date(event.date), "d MMM yyyy")}
+                                      {formatUkDate(event.date)}
                                     </p>
                                   </div>
                                 </div>

@@ -1,4 +1,4 @@
-// Dynamic Academic year + Intake calculation utilities.
+// Dynamic academic year + Intake calculation utilities.
 // Keeps the application form's "Preferred Study Year and Intake" section
 // always up to date without manual admin updates.
 
@@ -22,13 +22,13 @@ const MONTH_NAMES = [
 export interface AcademicYearOption {
   /** First calendar year of the academic year, e.g. 2026 for "2026/2027". */
   startYear: number;
-  label: string; // e.g. "2026/2027 Academic year"
+  label: string; // e.g. "2026/2027 academic year"
 }
 
 export interface IntakeOption {
   year: number;
   month: number; // 1-12
-  label: string; // e.g. "January 2026 Intake"
+  label: string; // e.g. "January 2026 intake"
   startDate: Date;
 }
 
@@ -42,8 +42,20 @@ export function getAcademicYearOptions(
   const years = Array.from({ length: 7 }, (_, index) => currentYear - 1 + index);
   if (savedYear && Number.isInteger(savedYear) && !years.includes(savedYear)) years.push(savedYear);
   return years.sort((a, b) => a - b).map((year) => ({
-    startYear: year, label: `${year}/${year + 1} Academic year`,
+    startYear: year, label: `${year}/${year + 1} academic year`,
   }));
+}
+
+/** Student forms offer years with upcoming intakes, plus the student's saved year. */
+export function getStudentAcademicYearOptions(
+  now: Date = new Date(),
+  intakeMonths: IntakeMonthOption[] = DEFAULT_INTAKE_MONTHS,
+  savedYear?: number,
+): AcademicYearOption[] {
+  return getAcademicYearOptions(now, intakeMonths, savedYear).filter(
+    ({ startYear }) => startYear === savedYear
+      || getIntakeOptionsForYear(startYear, now, intakeMonths).length > 0,
+  );
 }
 
 /**
@@ -69,7 +81,7 @@ export function getIntakeOptionsForYear(
         year: startYear,
         month: m.month,
         startDate,
-        label: `${MONTH_NAMES[m.month - 1]} ${startYear} Intake`,
+        label: `${MONTH_NAMES[m.month - 1]} ${startYear} intake`,
       };
     })
     .filter((opt) => opt.startDate >= today || opt.month === savedMonth);

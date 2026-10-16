@@ -1,3 +1,4 @@
+import { formatUkDate, formatUkDateTime } from '@/lib/dateFormat';
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -458,7 +459,7 @@ export default function FeaturedUniversitiesAdmin() {
             <CardContent className="pt-0">
               <p className="text-3xl font-bold text-balance">
                 {lastUpdated
-                  ? new Date(lastUpdated).toLocaleString()
+                  ? formatUkDateTime(lastUpdated)
                   : "Not available"}
               </p>
               <p className="text-xs text-muted-foreground">
@@ -541,10 +542,10 @@ export default function FeaturedUniversitiesAdmin() {
                   : "Not prioritised";
               const listingBadge = getListingStatusBadge(university.featured_listing_status);
               const listingExpiresOn = university.featured_listing_expires_at
-                ? new Date(university.featured_listing_expires_at).toLocaleDateString('en-GB')
+                ? formatUkDate(university.featured_listing_expires_at)
                 : null;
               const lastPaidOn = university.featured_listing_last_paid_at
-                ? new Date(university.featured_listing_last_paid_at).toLocaleDateString('en-GB')
+                ? formatUkDate(university.featured_listing_last_paid_at)
                 : null;
 
               return (

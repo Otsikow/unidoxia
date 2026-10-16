@@ -1,4 +1,4 @@
-import { formatNumericDate } from '@/lib/applicationDates';
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -199,7 +199,7 @@ export default function ReviewSubmitStep({
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Date of birth</p>
-              <p>{formatNumericDate(formData.personalInfo.dateOfBirth) || 'Not provided'}</p>
+              <p>{formatUkDate(formData.personalInfo.dateOfBirth) || 'Not provided'}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Nationality</p>
@@ -224,7 +224,7 @@ export default function ReviewSubmitStep({
               ['mailingPostcode', 'Mailing postcode'],
             ] as const).map(([field, label]) => <div key={field}>
               <p className="font-medium text-muted-foreground">{label}</p>
-              <p>{(field === 'passportIssueDate' ? formatNumericDate(formData.personalInfo[field]) : formData.personalInfo[field]) || 'Not provided'}</p>
+              <p>{(field === 'passportIssueDate' ? formatUkDate(formData.personalInfo[field]) : formData.personalInfo[field]) || 'Not provided'}</p>
             </div>)}
             <div>
               <p className="font-medium text-muted-foreground">Permanent address and postcode</p>
@@ -300,7 +300,7 @@ export default function ReviewSubmitStep({
                       <Badge variant="secondary">{edu.level}</Badge>
                     </div>
                     <p className="text-muted-foreground">
-                      {edu.country} • {formatNumericDate(edu.startDate)} to {formatNumericDate(edu.endDate) || 'Present'}
+                      {edu.country} • {formatUkDate(edu.startDate)} to {edu.endDate ? formatUkDate(edu.endDate) : 'Present'}
                     </p>
                     {edu.board && <p>Board: {edu.board}</p>}
                     <p>Language of instruction: {edu.languageOfInstruction || 'Not provided'}</p>

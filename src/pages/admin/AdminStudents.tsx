@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -31,7 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+
 import {
   AlertCircle,
   ArrowDown,
@@ -755,7 +756,7 @@ const AdminStudents = () => {
                       </TableCell>
                       <TableCell>
                         {student.created_at
-                          ? format(new Date(student.created_at), "d MMM yyyy")
+                          ? formatUkDate(student.created_at)
                           : "—"}
                       </TableCell>
                       <TableCell>

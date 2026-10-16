@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
@@ -138,16 +139,7 @@ const percentageFormatter = new Intl.NumberFormat(undefined, {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-const formatDate = (value: string | null | undefined) => {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-};
+const formatDate = formatUkDate;
 
 const getStatusLabel = (status: string | null | undefined) => status ?? "pending";
 
