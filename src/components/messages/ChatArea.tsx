@@ -232,7 +232,7 @@ export function ChatArea({
     const d = new Date(date);
     if (isToday(d)) return 'Today';
     if (isYesterday(d)) return 'Yesterday';
-    return format(d, 'MMMM dd, yyyy');
+    return format(d, 'Md MMM yyyy');
   };
 
   const formatMessageTime = (date: string) =>

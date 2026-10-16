@@ -240,7 +240,7 @@ export function AdminStudentChat({ studentProfileId, studentName, onClose }: Adm
     if (isToday) {
       return format(date, "h:mm a");
     }
-    return format(date, "MMM d, h:mm a");
+    return format(date, "d MMM yyyy, HH:mm");
   };
 
   return (

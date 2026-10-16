@@ -1,3 +1,5 @@
+import { UKDateInput } from '@/components/ui/uk-date-input';
+import { applicationDateBounds } from '@/lib/applicationDates';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -289,12 +291,12 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date_of_birth">Date of Birth *</Label>
-              <Input
+              <UKDateInput
                 id="date_of_birth"
                 name="date_of_birth"
-                type="date"
+                bounds={applicationDateBounds().birth}
                 value={formData.date_of_birth}
-                onChange={handleChange}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, date_of_birth: value }))}
                 required
               />
             </div>
@@ -323,12 +325,11 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="passport_expiry">Passport Expiry *</Label>
-              <Input
+              <UKDateInput
                 id="passport_expiry"
                 name="passport_expiry"
-                type="date"
                 value={formData.passport_expiry}
-                onChange={handleChange}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, passport_expiry: value }))}
                 required
               />
             </div>
@@ -618,18 +619,18 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
             </p>
           </div>
 
-          {/* Preferred Intake Year & Month */}
+          {/* Preferred intake Year & Month */}
           {(() => {
-            const academicYears = getAcademicYearOptions();
+            const academicYears = getAcademicYearOptions(new Date(), undefined, student.preferred_intake_year ?? undefined);
             const selectedYear =
               academicYears.find((y) => y.startYear === formData.preferred_intake_year)?.startYear ||
               formData.preferred_intake_year ||
               0;
-            const intakeOptions = selectedYear ? getIntakeOptionsForYear(selectedYear) : [];
+            const intakeOptions = selectedYear ? getIntakeOptionsForYear(selectedYear, new Date(), undefined, formData.preferred_intake_month) : [];
             return (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="preferred_intake_year">Preferred Academic Year</Label>
+                  <Label htmlFor="preferred_intake_year">Academic year</Label>
                   <Select
                     value={formData.preferred_intake_year ? String(formData.preferred_intake_year) : ''}
                     onValueChange={(value) => {
@@ -660,7 +661,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="preferred_intake_month">Preferred Intake</Label>
+                  <Label htmlFor="preferred_intake_month">Preferred intake</Label>
                   <Select
                     value={formData.preferred_intake_month ? String(formData.preferred_intake_month) : ''}
                     onValueChange={(value) =>

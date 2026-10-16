@@ -1,3 +1,5 @@
+import { UKDateInput } from '@/components/ui/uk-date-input';
+import { applicationDateBounds } from '@/lib/applicationDates';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -34,7 +36,10 @@ export default function AdditionalPersonalDetails({ data, onChange }: {
         {selectField('maritalStatus', 'Marital status', ['Single', 'Married', 'Civil partnership', 'Divorced', 'Separated', 'Widowed'])}
         {textField('cityOfBirth', 'City of birth')}
         {selectField('countryOfBirth', 'Country of birth', COUNTRIES)}
-        {textField('passportIssueDate', 'Passport issue date', 'date')}
+        <div className="space-y-2">
+          <Label htmlFor="passportIssueDate">Passport issue date *</Label>
+          <UKDateInput id="passportIssueDate" value={data.passportIssueDate} bounds={applicationDateBounds().passportIssue} required onValueChange={(value) => update('passportIssueDate', value)} />
+        </div>
         {textField('passportPlaceOfIssue', 'Passport place of issue')}
         {textField('mailingPostcode', 'Mailing address postcode')}
       </div>
@@ -50,7 +55,7 @@ export default function AdditionalPersonalDetails({ data, onChange }: {
         ['otherCitizenship', 'Do you hold any other citizenship?', 'otherCitizenshipCountry', 'Other country of citizenship'],
         ['previousStudyAbroad', 'Have you previously studied abroad?', 'previousStudyAbroadDetails', 'Previous study abroad details'],
         ['previousResidenceAbroad', 'Have you previously lived abroad?', 'previousResidenceAbroadDetails', 'Previous residence abroad details'],
-        ['visaRefusals', 'Have you had any visa refusals abroad?', 'visaRefusalsDetails', 'Visa refusal details'],
+        ['visaRefusals', 'Have you ever been refused a visa for any country?', 'visaRefusalsDetails', 'Visa refusal details'],
       ] as const).map(([answer, label, detail, detailLabel]) => <div className="space-y-2" key={answer}>
         {selectField(answer, label, ['yes', 'no'])}
         {data[answer] === 'yes' && (answer === 'otherCitizenship'

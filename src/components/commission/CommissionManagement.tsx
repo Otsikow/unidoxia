@@ -338,7 +338,7 @@ export default function CommissionManagement() {
                           Student: {commission.applications?.students?.profiles?.full_name ?? 'Student name unavailable'} • {commission.applications?.programs?.name ?? 'Course'} at {commission.applications?.programs?.universities?.name ?? 'University'}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>Date: {commission.created_at ? new Date(commission.created_at).toLocaleDateString() : 'Not available'}</span>
+                          <span>Date: {commission.created_at ? new Date(commission.created_at).toLocaleDateString('en-GB') : 'Not available'}</span>
                           <span>Rate: {commission.rate_percent}%</span>
                         </div>
                       </div>

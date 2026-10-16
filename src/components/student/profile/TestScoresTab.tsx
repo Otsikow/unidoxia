@@ -589,8 +589,8 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
                     </CardTitle>
                     <CardDescription>
                       {score.test_type === ENGLISH_PROFICIENCY_LETTER
-                        ? `Uploaded on ${new Date(score.test_date).toLocaleDateString()}`
-                        : `Overall: ${score.total_score} • Taken on ${new Date(score.test_date).toLocaleDateString()}`}
+                        ? `Uploaded on ${new Date(score.test_date).toLocaleDateString('en-GB')}`
+                        : `Overall: ${score.total_score} • Taken on ${new Date(score.test_date).toLocaleDateString('en-GB')}`}
                     </CardDescription>
                   </div>
                   <div className="flex gap-2">

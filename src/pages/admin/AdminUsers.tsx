@@ -702,7 +702,7 @@ const AdminUsers = () => {
 
   const formatDate = (value: string | null) => {
     if (!value) return "—";
-    return new Date(value).toLocaleDateString("en-US", {
+    return new Date(value).toLocaleDateString("en-GB", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -1180,7 +1180,7 @@ const AdminUsers = () => {
                         onClick={() => handleAssignmentSave(row.id)}
                         disabled={savingAssignmentId === row.id}
                       >
-                        {savingAssignmentId === row.id ? "Saving..." : "Save"}
+                        {savingAssignmentId === row.id ? "Saving" : "Save"}
                       </Button>
                     </div>
                   </div>
@@ -1406,7 +1406,7 @@ const AdminUsers = () => {
                         !isPaidAgentPlan(studentRecord)
                       }
                     >
-                      {isSavingAssignment ? "Saving..." : "Save agent assignment"}
+                      {isSavingAssignment ? "Saving" : "Save agent assignment"}
                     </Button>
                     {(studentRecord.plan_type || "free") !== "agent_supported" && (
                       <p className="text-xs text-muted-foreground">

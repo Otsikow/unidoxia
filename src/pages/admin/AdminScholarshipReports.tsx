@@ -116,7 +116,7 @@ export default function AdminScholarshipReports() {
                   {stale.slice(0, 10).map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-medium">{r.title ?? "—"}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{r.last_verified_at ? new Date(r.last_verified_at).toLocaleDateString() : "Never"}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{r.last_verified_at ? new Date(r.last_verified_at).toLocaleDateString('en-GB') : "Never"}</TableCell>
                       <TableCell className="text-right"><Link to="/admin/scholarships" className="text-primary text-xs">Review</Link></TableCell>
                     </TableRow>
                   ))}
@@ -136,7 +136,7 @@ export default function AdminScholarshipReports() {
                   {expiringSoon.slice(0, 10).map((r) => (
                     <TableRow key={r.id}>
                       <TableCell className="font-medium">{r.title ?? "—"}</TableCell>
-                      <TableCell className="text-xs">{r.deadline ? new Date(r.deadline).toLocaleDateString() : "—"}</TableCell>
+                      <TableCell className="text-xs">{r.deadline ? new Date(r.deadline).toLocaleDateString('en-GB') : "Not set"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

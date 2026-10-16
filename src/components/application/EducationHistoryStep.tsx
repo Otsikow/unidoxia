@@ -1,3 +1,5 @@
+import { UKDateInput } from '@/components/ui/uk-date-input';
+import { applicationDateBounds } from '@/lib/applicationDates';
 import type { ApplicationFormData } from '@/types/application';
 import { applicationEducationHistorySchema } from '@/lib/applicationValidation';
 import { useState } from 'react';
@@ -165,28 +167,28 @@ export default function EducationHistoryStep({
                       <div className="space-y-2">
                         <Label htmlFor={`startDate-${record.id}`} className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          Start month and year *
+                          Start date *
                         </Label>
-                        <Input
+                        <UKDateInput
                           id={`startDate-${record.id}`}
-                          type="month"
-                          value={record.startDate.slice(0, 7)}
-                          onChange={(e) => updateRecord(record.id, 'startDate', e.target.value ? `${e.target.value}-01` : '')}
+                          bounds={record.level === 'high_school' ? applicationDateBounds().secondarySchool : undefined}
+                          value={record.startDate}
+                          onValueChange={(value) => updateRecord(record.id, 'startDate', value)}
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor={`endDate-${record.id}`} className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          Completion month and year *
+                          Completion date *
                         </Label>
-                        <Input
+                        <UKDateInput
                           id={`endDate-${record.id}`}
-                          type="month"
-                          value={record.endDate.slice(0, 7)}
-                          onChange={(e) => updateRecord(record.id, 'endDate', e.target.value ? `${e.target.value}-01` : '')}
+                          bounds={record.level === 'high_school' ? applicationDateBounds().secondarySchool : undefined}
+                          value={record.endDate}
+                          onValueChange={(value) => updateRecord(record.id, 'endDate', value)}
                         />
-                        <p className="text-xs text-muted-foreground">Use your expected completion month if currently enrolled</p>
+                        <p className="text-xs text-muted-foreground">Use your expected completion date if currently enrolled</p>
                       </div>
                     </div>
 
@@ -213,7 +215,7 @@ export default function EducationHistoryStep({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`gradeScale-${record.id}`}>Grade scale / Exam system *</Label>
+                        <Label htmlFor={`gradeScale-${record.id}`}>Grade scale or exam system *</Label>
                         <Select
                           value={record.gradeScale}
                           onValueChange={(value) => updateRecord(record.id, 'gradeScale', value)}

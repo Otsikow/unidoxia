@@ -137,7 +137,7 @@ export function StudentPayments() {
     }).format(cents / 100);
 
   const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-US", {
+    new Date(dateString).toLocaleDateString("en-GB", {
       year: "numeric",
       month: "short",
       day: "numeric",

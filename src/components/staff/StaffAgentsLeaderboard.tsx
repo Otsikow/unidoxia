@@ -69,7 +69,7 @@ export function StaffAgentsLeaderboard() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {agent.updatedAt ? new Date(agent.updatedAt).toLocaleDateString() : "—"}
+                    {agent.updatedAt ? new Date(agent.updatedAt).toLocaleDateString('en-GB') : "Not set"}
                   </TableCell>
                 </TableRow>
               ))}

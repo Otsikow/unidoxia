@@ -1,3 +1,4 @@
+import { applicationDateBounds, isDateWithinBounds } from './applicationDates';
 import { z } from 'zod';
 
 const required = (label: string) => z.string().trim().min(1, `${label} is required.`);
@@ -21,14 +22,14 @@ export const applicationPersonalInfoSchema = z.object({
   email: z.string().trim().email('Enter a valid email address.'),
   phone: required('Phone number'),
   whatsappNumber: required('WhatsApp number'),
-  dateOfBirth: pastDate('Date of birth'),
+  dateOfBirth: date('Date of birth').refine((value) => isDateWithinBounds(value, applicationDateBounds().birth), 'Date of birth must be from 1950 to the current year minus 15.'),
   gender: required('Gender'),
   maritalStatus: required('Marital status'),
   nationality: required('Nationality'),
   currentCountry: required('Current country'),
   cityOfBirth: required('City of birth'),
   countryOfBirth: required('Country of birth'),
-  passportIssueDate: pastDate('Passport issue date'),
+  passportIssueDate: pastDate('Passport issue date').refine((value) => isDateWithinBounds(value, applicationDateBounds().passportIssue), 'Passport issue date must be within the last 15 years and cannot be in the future.'),
   passportPlaceOfIssue: required('Passport place of issue'),
   correspondentAddress: required('Mailing address'),
   mailingPostcode: required('Mailing address postcode'),
@@ -55,7 +56,7 @@ export const applicationPersonalInfoSchema = z.object({
     ['previousResidenceAbroad', 'previousResidenceAbroadDetails', 'Previous residence abroad details'],
     ['visaRefusals', 'visaRefusalsDetails', 'Visa refusal details'],
   ] as const) {
-    if (data[answer] === 'yes' && !data[detail].trim()) ctx.addIssue({ code: 'custom', path: [detail], message: `${label} are required.` });
+    if (data[answer] === 'yes' && !data[detail].trim()) ctx.addIssue({ code: 'custom', path: [detail], message: `${label} is required.` });
   }
 });
 
@@ -70,6 +71,11 @@ export const applicationEducationRecordSchema = z.object({
   languageOfInstruction: required('Language of instruction'),
   board: z.string(),
 }).superRefine((data, ctx) => {
+  if (data.level === 'high_school') {
+    for (const field of ['startDate', 'endDate'] as const) {
+      if (!isDateWithinBounds(data[field], applicationDateBounds().secondarySchool)) ctx.addIssue({ code: 'custom', path: [field], message: 'Secondary school dates must be from the current year minus 40 to next year.' });
+    }
+  }
   if (data.endDate < data.startDate) ctx.addIssue({ code: 'custom', path: ['endDate'], message: 'Completion cannot be before the start date.' });
   if (data.level === 'high_school' && !data.board.trim()) ctx.addIssue({ code: 'custom', path: ['board'], message: 'Secondary school board is required.' });
 });

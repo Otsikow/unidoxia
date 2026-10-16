@@ -133,7 +133,7 @@ export default function AdminScholarshipSources() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button onClick={submit} disabled={saving}>{saving ? "Saving…" : "Save source"}</Button>
+              <Button onClick={submit} disabled={saving}>{saving ? "Saving" : "Save source"}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -168,7 +168,7 @@ export default function AdminScholarshipSources() {
                     <TableCell>{r.organisation ?? "—"}</TableCell>
                     <TableCell>{r.country ?? "—"}</TableCell>
                     <TableCell><Badge variant={r.trust_level === "official" ? "default" : r.trust_level === "flagged" ? "destructive" : "outline"}>{r.trust_level}</Badge></TableCell>
-                    <TableCell className="text-muted-foreground text-xs">{r.last_checked_at ? new Date(r.last_checked_at).toLocaleDateString() : "Never"}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">{r.last_checked_at ? new Date(r.last_checked_at).toLocaleDateString('en-GB') : "Never"}</TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button size="sm" variant="ghost" asChild><a href={r.website_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a></Button>
                       <Button size="sm" variant="ghost" onClick={() => markChecked(r.id)}><ShieldCheck className="h-4 w-4" /></Button>

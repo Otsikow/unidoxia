@@ -309,7 +309,7 @@ export function BlogAnalytics({ className = "" }: BlogAnalyticsProps) {
                   <TableCell>
                     <div className="text-sm">
                       {post.published_at ? (
-                        format(new Date(post.published_at), "MMM d, yyyy")
+                        format(new Date(post.published_at), "d MMM yyyy")
                       ) : (
                         <span className="text-muted-foreground">Not published</span>
                       )}

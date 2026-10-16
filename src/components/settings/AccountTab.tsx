@@ -151,7 +151,7 @@ const AccountTab = ({ profile }: AccountTabProps) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Member since:</span>
-                <span>{new Date(profile.created_at).toLocaleDateString()}</span>
+                <span>{new Date(profile.created_at).toLocaleDateString('en-GB')}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Account type:</span>

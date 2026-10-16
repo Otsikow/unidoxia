@@ -1,4 +1,4 @@
-// Dynamic Academic Year + Intake calculation utilities.
+// Dynamic Academic year + Intake calculation utilities.
 // Keeps the application form's "Preferred Study Year and Intake" section
 // always up to date without manual admin updates.
 
@@ -22,7 +22,7 @@ const MONTH_NAMES = [
 export interface AcademicYearOption {
   /** First calendar year of the academic year, e.g. 2026 for "2026/2027". */
   startYear: number;
-  label: string; // e.g. "2026/2027 Academic Year"
+  label: string; // e.g. "2026/2027 Academic year"
 }
 
 export interface IntakeOption {
@@ -32,28 +32,18 @@ export interface IntakeOption {
   startDate: Date;
 }
 
-/**
- * Returns the current and next academic year, calculated from today's date.
- * Academic year YYYY/(YYYY+1) groups intakes occurring in calendar year YYYY.
- * The current academic year is hidden once all of its intakes have passed.
- */
+/** Calendar years from last year through five years ahead, plus a saved value. */
 export function getAcademicYearOptions(
   now: Date = new Date(),
-  intakeMonths: IntakeMonthOption[] = DEFAULT_INTAKE_MONTHS,
+  _intakeMonths: IntakeMonthOption[] = DEFAULT_INTAKE_MONTHS,
+  savedYear?: number,
 ): AcademicYearOption[] {
   const currentYear = now.getFullYear();
-  const sortedMonths = [...intakeMonths].sort((a, b) => a.month - b.month);
-  const lastMonth = sortedMonths[sortedMonths.length - 1]?.month ?? 12;
-
-  // If every intake in the current calendar year has already passed,
-  // roll the "current" academic year forward by one.
-  const lastIntakeOfYear = new Date(currentYear, lastMonth - 1, 1);
-  const startYear = lastIntakeOfYear < startOfMonth(now) ? currentYear + 1 : currentYear;
-
-  return [0, 1].map((offset) => {
-    const y = startYear + offset;
-    return { startYear: y, label: `${y}/${y + 1} Academic Year` };
-  });
+  const years = Array.from({ length: 7 }, (_, index) => currentYear - 1 + index);
+  if (savedYear && Number.isInteger(savedYear) && !years.includes(savedYear)) years.push(savedYear);
+  return years.sort((a, b) => a - b).map((year) => ({
+    startYear: year, label: `${year}/${year + 1} Academic year`,
+  }));
 }
 
 /**
@@ -64,9 +54,14 @@ export function getIntakeOptionsForYear(
   startYear: number,
   now: Date = new Date(),
   intakeMonths: IntakeMonthOption[] = DEFAULT_INTAKE_MONTHS,
+  savedMonth?: number,
 ): IntakeOption[] {
   const today = startOfMonth(now);
-  return [...intakeMonths]
+  const months = [...intakeMonths];
+  if (savedMonth && savedMonth >= 1 && savedMonth <= 12 && !months.some((option) => option.month === savedMonth)) {
+    months.push({ month: savedMonth, label: MONTH_NAMES[savedMonth - 1] });
+  }
+  return months
     .sort((a, b) => a.month - b.month)
     .map((m) => {
       const startDate = new Date(startYear, m.month - 1, 1);
@@ -77,7 +72,7 @@ export function getIntakeOptionsForYear(
         label: `${MONTH_NAMES[m.month - 1]} ${startYear} Intake`,
       };
     })
-    .filter((opt) => opt.startDate >= today);
+    .filter((opt) => opt.startDate >= today || opt.month === savedMonth);
 }
 
 function startOfMonth(d: Date) {

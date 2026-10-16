@@ -107,7 +107,7 @@ export const PAYMENT_TERMS = {
     'All payments are one-time and non-refundable',
     'No subscriptions or recurring charges',
     'No hidden fees or additional costs',
-    'Secure payment processing via Stripe',
+    'Secure payment processing',
     'Instant plan activation upon payment',
   ],
 };
@@ -132,7 +132,7 @@ export const PRICING_FAQ = [
   },
   {
     question: 'What payment methods are accepted?',
-    answer: 'We accept all major credit cards (Visa, MasterCard, American Express), debit cards, and select local payment methods through Stripe.',
+    answer: 'Available payment methods are shown at checkout.',
   },
 ];
 

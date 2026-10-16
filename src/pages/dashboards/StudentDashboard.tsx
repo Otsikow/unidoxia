@@ -847,7 +847,7 @@ const StudentDashboard = () => {
                       <Badge variant="secondary">{request.status ?? 'pending'}</Badge>
                       {request.due_date && (
                         <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
-                          Due {new Date(request.due_date).toLocaleDateString()}
+                          Due {new Date(request.due_date).toLocaleDateString('en-GB')}
                         </Badge>
                       )}
                       <Button asChild size="sm" variant="default">

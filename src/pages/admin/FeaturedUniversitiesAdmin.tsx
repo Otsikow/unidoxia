@@ -541,10 +541,10 @@ export default function FeaturedUniversitiesAdmin() {
                   : "Not prioritised";
               const listingBadge = getListingStatusBadge(university.featured_listing_status);
               const listingExpiresOn = university.featured_listing_expires_at
-                ? new Date(university.featured_listing_expires_at).toLocaleDateString()
+                ? new Date(university.featured_listing_expires_at).toLocaleDateString('en-GB')
                 : null;
               const lastPaidOn = university.featured_listing_last_paid_at
-                ? new Date(university.featured_listing_last_paid_at).toLocaleDateString()
+                ? new Date(university.featured_listing_last_paid_at).toLocaleDateString('en-GB')
                 : null;
 
               return (

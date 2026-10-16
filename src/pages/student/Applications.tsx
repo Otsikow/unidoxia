@@ -595,7 +595,7 @@ export default function Applications() {
                               Intake: {getIntakeLabel(app.intake_month, app.intake_year)}
                             </span>
                           </div>
-                          <div>Applied: {new Date(app.created_at).toLocaleDateString()}</div>
+                          <div>Applied: {new Date(app.created_at).toLocaleDateString('en-GB')}</div>
                           <div className="flex items-center gap-1 text-muted-foreground">
                             <Timer className="h-3 w-3 sm:h-4 sm:w-4" /> {etaFor(app.status)}
                           </div>

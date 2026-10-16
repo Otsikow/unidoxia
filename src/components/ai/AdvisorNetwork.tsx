@@ -415,7 +415,7 @@ export default function AdvisorNetwork() {
                         onClick={() => setBookingSlot(slot)}
                         className="text-xs"
                       >
-                        {new Date(slot.date).toLocaleDateString()}
+                        {new Date(slot.date).toLocaleDateString('en-GB')}
                         <br />
                         {slot.time}
                       </Button>

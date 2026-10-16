@@ -409,7 +409,7 @@ export default function StaffDashboard() {
                                 {row.payoutStatus}
                               </Badge>
                             </TableCell>
-                            <TableCell>{row.createdAt ? format(new Date(row.createdAt), "MMM d, yyyy") : "—"}</TableCell>
+                            <TableCell>{row.createdAt ? format(new Date(row.createdAt), "d MMM yyyy") : "Not set"}</TableCell>
                             <TableCell className="text-right">
                               <Button
                                 size="sm"

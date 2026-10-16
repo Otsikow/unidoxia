@@ -1,3 +1,4 @@
+import { getAcademicYearOptions } from '@/lib/intakeOptions';
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -185,9 +186,6 @@ const AdminStudentDetail = () => {
   const [intakeMonth, setIntakeMonth] = useState("");
   const [intakeYear, setIntakeYear] = useState("");
   const [intakeSaving, setIntakeSaving] = useState(false);
-  const firstIntakeYear = Math.min(1900, Number(intakeYear) || 1900);
-  const lastIntakeYear = Math.max(new Date().getFullYear() + 10, Number(intakeYear));
-  const intakeYears = Array.from({ length: lastIntakeYear - firstIntakeYear + 1 }, (_, index) => firstIntakeYear + index).reverse();
   const [bundle, setBundle] = useState<StudentBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -280,6 +278,7 @@ const AdminStudentDetail = () => {
   /* ------------------------------ Derived ------------------------------ */
 
   const student = bundle?.student;
+  const intakeYears = getAcademicYearOptions(new Date(), undefined, student?.preferred_intake_year ?? undefined).map(({ startYear }) => startYear);
   const documents = bundle?.documents ?? [];
   const educationRecords = bundle?.education_records ?? [];
 
@@ -905,7 +904,7 @@ const AdminStudentDetail = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Date of Birth</p>
                 <p className="font-medium">
-                  {student.date_of_birth ? format(new Date(student.date_of_birth), "MMM d, yyyy") : "-"}
+                  {student.date_of_birth ? format(new Date(student.date_of_birth), "d MMM yyyy") : "-"}
                 </p>
               </div>
               <div>
@@ -925,14 +924,14 @@ const AdminStudentDetail = () => {
                 <p className="font-medium">{student.preferred_country ?? "-"}</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="admin-intake-month">Preferred Intake</Label>
+                <Label htmlFor="admin-intake-month">Preferred intake</Label>
                 <Select value={intakeMonth} onValueChange={setIntakeMonth} disabled={intakeSaving}>
                   <SelectTrigger id="admin-intake-month"><SelectValue placeholder="Select intake month" /></SelectTrigger>
                   <SelectContent>{Array.from({ length: 12 }, (_, index) => <SelectItem key={index + 1} value={String(index + 1)}>{new Date(2000, index, 1).toLocaleString('en-GB', { month: 'long' })}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="admin-intake-year">Academic Year</Label>
+                <Label htmlFor="admin-intake-year">Academic year</Label>
                 <Select value={intakeYear} onValueChange={setIntakeYear} disabled={intakeSaving}>
                   <SelectTrigger id="admin-intake-year"><SelectValue placeholder="Select academic year" /></SelectTrigger>
                   <SelectContent>{intakeYears.map((year) => <SelectItem key={year} value={String(year)}>{year}/{year + 1}</SelectItem>)}</SelectContent>
@@ -950,7 +949,7 @@ const AdminStudentDetail = () => {
                   } finally {
                     setIntakeSaving(false);
                   }
-                }}>{intakeSaving ? 'Saving...' : 'Save intake'}</Button>
+                }}>{intakeSaving ? 'Saving' : 'Save intake'}</Button>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
@@ -995,7 +994,7 @@ const AdminStudentDetail = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Joined</p>
                 <p className="font-medium">
-                  {student.created_at ? format(new Date(student.created_at), "MMM d, yyyy") : "-"}
+                  {student.created_at ? format(new Date(student.created_at), "d MMM yyyy") : "-"}
                 </p>
               </div>
               {student.passport_number && (
@@ -1054,7 +1053,7 @@ const AdminStudentDetail = () => {
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Archived At</p>
-                  <p>{archivedAt ? format(new Date(archivedAt), "MMM d, yyyy HH:mm") : "-"}</p>
+                  <p>{archivedAt ? format(new Date(archivedAt), "d MMM yyyy HH:mm") : "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Reason</p>
@@ -1225,7 +1224,7 @@ const AdminStudentDetail = () => {
                           <p className="font-medium text-sm">{getDocLabel(doc.document_type)}</p>
                           <p className="text-xs text-muted-foreground">
                             {doc.file_name} • {formatFileSize(doc.file_size)} •{" "}
-                            {format(new Date(doc.created_at), "MMM d, yyyy")}
+                            {format(new Date(doc.created_at), "d MMM yyyy")}
                           </p>
                         </div>
                       </div>
@@ -1337,7 +1336,7 @@ const AdminStudentDetail = () => {
                       <Badge variant="outline">{app.status ?? "draft"}</Badge>
                       {app.submitted_at && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Submitted {format(new Date(app.submitted_at), "MMM d, yyyy")}
+                          Submitted {format(new Date(app.submitted_at), "d MMM yyyy")}
                         </p>
                       )}
                     </div>

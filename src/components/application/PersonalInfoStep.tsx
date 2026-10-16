@@ -1,3 +1,5 @@
+import { UKDateInput } from '@/components/ui/uk-date-input';
+import { applicationDateBounds } from '@/lib/applicationDates';
 import AdditionalPersonalDetails from './AdditionalPersonalDetails';
 import { applicationPersonalInfoSchema, emergencyContactSchema } from '@/lib/applicationValidation';
 import type { ApplicationFormData } from '@/types/application';
@@ -48,11 +50,11 @@ export default function PersonalInfoStep({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Full Name */}
+        {/* Full name */}
         <div className="space-y-2">
           <Label htmlFor="fullName" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            Full Name *
+            Full name *
           </Label>
           <Input
             id="fullName"
@@ -83,7 +85,7 @@ export default function PersonalInfoStep({
           <div className="space-y-2">
             <Label htmlFor="phone" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              Phone Number *
+              Phone number *
             </Label>
             <Input
               id="phone"
@@ -111,22 +113,22 @@ export default function PersonalInfoStep({
           />
         </div>
 
-        {/* Date of Birth */}
+        {/* Date of birth */}
         <div className="space-y-2">
           <Label htmlFor="dateOfBirth" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Date of Birth *
+            Date of birth *
           </Label>
-          <Input
+          <UKDateInput
             id="dateOfBirth"
-            type="date"
+            bounds={applicationDateBounds().birth}
             value={data.dateOfBirth}
-            onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+            onValueChange={(value) => handleChange('dateOfBirth', value)}
             required
           />
         </div>
 
-        {/* Nationality & Current Country */}
+        {/* Nationality & Current country */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="nationality" className="flex items-center gap-2">
@@ -153,7 +155,7 @@ export default function PersonalInfoStep({
           <div className="space-y-2">
             <Label htmlFor="currentCountry" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Current Country *
+              Current country *
             </Label>
             <Input
               id="currentCountry"
@@ -165,11 +167,11 @@ export default function PersonalInfoStep({
           </div>
         </div>
 
-        {/* Passport Number */}
+        {/* Passport number */}
         <div className="space-y-2">
           <Label htmlFor="passportNumber" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            Passport Number
+            Passport number
           </Label>
           <Input
             id="passportNumber"

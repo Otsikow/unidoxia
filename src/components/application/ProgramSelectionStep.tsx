@@ -366,8 +366,8 @@ export default function ProgramSelectionStep({
                     <SelectContent>
                       {intakes.map((intake) => (
                         <SelectItem key={intake.id} value={intake.id}>
-                          {intake.term} - Starts: {new Date(intake.start_date).toLocaleDateString()}{' '}
-                          (Deadline: {new Date(intake.app_deadline).toLocaleDateString()})
+                          {intake.term} - Starts: {new Date(intake.start_date).toLocaleDateString('en-GB')}{' '}
+                          (Deadline: {new Date(intake.app_deadline).toLocaleDateString('en-GB')})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -407,14 +407,14 @@ function PreferredStudyYearAndIntake({
   intakeMonth,
   onChange,
 }: PreferredStudyYearAndIntakeProps) {
-  const academicYears = getAcademicYearOptions();
+  const academicYears = getAcademicYearOptions(new Date(), undefined, intakeYear);
 
   // Determine which academic year currently matches the saved intake.
   const matchingAcademicYear =
-    academicYears.find((y) => y.startYear === intakeYear) ?? academicYears[0];
+    academicYears.find((y) => y.startYear === intakeYear) ?? academicYears.find((y) => y.startYear === new Date().getFullYear());
   const selectedStartYear = matchingAcademicYear?.startYear ?? academicYears[0]?.startYear ?? 0;
 
-  const intakeOptions = getIntakeOptionsForYear(selectedStartYear);
+  const intakeOptions = getIntakeOptionsForYear(selectedStartYear, new Date(), undefined, intakeMonth);
 
   const handleYearChange = (value: string) => {
     const year = parseInt(value, 10);
@@ -434,7 +434,7 @@ function PreferredStudyYearAndIntake({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarDays className="h-5 w-5" />
-          Choose Your Preferred Study Year
+          Choose your preferred study year
         </CardTitle>
         <CardDescription>
           Select the academic year and intake period you would like to apply for. UniDoxia
@@ -445,7 +445,7 @@ function PreferredStudyYearAndIntake({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="preferredYear">Preferred Academic Year *</Label>
+            <Label htmlFor="preferredYear">Academic year *</Label>
             <Select value={selectedStartYear ? selectedStartYear.toString() : ''} onValueChange={handleYearChange}>
               <SelectTrigger id="preferredYear">
                 <SelectValue placeholder="Select academic year" />
@@ -461,7 +461,7 @@ function PreferredStudyYearAndIntake({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferredIntake">Preferred Intake *</Label>
+            <Label htmlFor="preferredIntake">Preferred intake *</Label>
             <Select
               value={intakeMonth ? intakeMonth.toString() : ''}
               onValueChange={handleMonthChange}

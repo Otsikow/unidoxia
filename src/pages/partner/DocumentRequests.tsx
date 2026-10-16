@@ -75,7 +75,7 @@ const formatDate = (dateString: string | null) => {
   if (!dateString) return "—";
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB');
 };
 
 const getStatusBadgeClasses = (status: string) => {

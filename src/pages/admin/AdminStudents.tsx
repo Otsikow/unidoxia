@@ -603,7 +603,7 @@ const AdminStudents = () => {
                   );
                   return merged.map((year) => (
                     <SelectItem key={year} value={String(year)}>
-                      {year}/{year + 1} Academic Year
+                      {year}/{year + 1} Academic year
                     </SelectItem>
                   ));
                 })()}
@@ -755,7 +755,7 @@ const AdminStudents = () => {
                       </TableCell>
                       <TableCell>
                         {student.created_at
-                          ? format(new Date(student.created_at), "MMM d, yyyy")
+                          ? format(new Date(student.created_at), "d MMM yyyy")
                           : "—"}
                       </TableCell>
                       <TableCell>

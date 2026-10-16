@@ -374,7 +374,7 @@ export default function Pricing() {
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <CreditCard className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-medium">Powered by Stripe</span>
+            <span className="text-sm font-medium">Secure checkout</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Check className="h-5 w-5 text-green-600" />

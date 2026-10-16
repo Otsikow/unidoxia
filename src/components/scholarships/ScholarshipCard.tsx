@@ -210,7 +210,7 @@ export const ScholarshipCard = ({
             </div>
             {scholarship.lastVerified && (
               <span>
-                Verified {new Date(scholarship.lastVerified).toLocaleDateString()}
+                Verified {new Date(scholarship.lastVerified).toLocaleDateString('en-GB')}
               </span>
             )}
           </div>
@@ -218,7 +218,7 @@ export const ScholarshipCard = ({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4 text-primary" />
-            {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Rolling"}
+            {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString('en-GB') : "Rolling"}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={handleShare}>

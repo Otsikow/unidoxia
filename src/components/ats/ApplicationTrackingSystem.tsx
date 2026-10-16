@@ -401,7 +401,7 @@ export default function ApplicationTrackingSystem() {
                                     <span className="font-medium">{event.event}</span>
                                     <p className="text-muted-foreground text-xs">{event.description}</p>
                                     <p className="text-muted-foreground text-xs">
-                                      {format(new Date(event.date), "MMM dd, yyyy")}
+                                      {format(new Date(event.date), "d MMM yyyy")}
                                     </p>
                                   </div>
                                 </div>

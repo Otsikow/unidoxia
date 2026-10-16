@@ -372,7 +372,7 @@ export default function ResourceLibrary() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(resource.created_at).toLocaleDateString()}
+                          {new Date(resource.created_at).toLocaleDateString('en-GB')}
                         </span>
                       </div>
                       <span>{resource.views} views</span>
@@ -420,7 +420,7 @@ export default function ResourceLibrary() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(filteredBlogPosts.find(post => post.featured)?.created_at || '').toLocaleDateString()}
+                        {new Date(filteredBlogPosts.find(post => post.featured)?.created_at || '').toLocaleDateString('en-GB')}
                       </span>
                       <span>{filteredBlogPosts.find(post => post.featured)?.read_time} min read</span>
                     </div>
@@ -473,7 +473,7 @@ export default function ResourceLibrary() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(post.created_at).toLocaleDateString()}
+                        {new Date(post.created_at).toLocaleDateString('en-GB')}
                       </span>
                     </div>
                     <span>{post.read_time} min read</span>

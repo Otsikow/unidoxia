@@ -664,7 +664,7 @@ const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversight
           </TableCell>
           <TableCell className="min-w-[120px]">{countryValue}</TableCell>
           <TableCell className="min-w-[140px]">
-            {submittedDate ? format(new Date(submittedDate), "MMM d, yyyy") : "Not submitted"}
+            {submittedDate ? format(new Date(submittedDate), "d MMM yyyy") : "Not submitted"}
           </TableCell>
           <TableCell className="min-w-[140px]">
             {application.agent?.profile?.full_name ?? application.agent?.company_name ?? "—"}

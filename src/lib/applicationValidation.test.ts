@@ -84,3 +84,32 @@ describe('required application details', () => {
     expect(applicationRequiredDetailsSchema.safeParse(data).success).toBe(false);
   });
 });
+
+// These checks cover final submission, which must enforce the same bounds as entry.
+describe('application date range enforcement', () => {
+  it.each(['dateOfBirth', 'passportIssueDate'] as const)('rejects out-of-range %s', (field) => {
+    const data = valid();
+    data.personalInfo[field] = field === 'dateOfBirth' ? '1949-12-31' : '2000-01-01';
+    expect(applicationRequiredDetailsSchema.safeParse(data).success).toBe(false);
+    data.personalInfo[field] = `${new Date().getFullYear() + 1}-01-01`;
+    expect(applicationRequiredDetailsSchema.safeParse(data).success).toBe(false);
+  });
+
+  it.each(['startDate', 'endDate'] as const)('rejects secondary school %s outside the permitted years', (field) => {
+    const data = valid();
+    data.educationHistory[0][field] = `${new Date().getFullYear() - 41}-01-01`;
+    expect(applicationRequiredDetailsSchema.safeParse(data).success).toBe(false);
+    data.educationHistory[0][field] = `${new Date().getFullYear() + 2}-01-01`;
+    expect(applicationRequiredDetailsSchema.safeParse(data).success).toBe(false);
+  });
+
+  it('uses the requested singular required message for conditional details', () => {
+    const data = valid();
+    data.personalInfo.visaRefusals = 'yes';
+    const result = applicationRequiredDetailsSchema.safeParse(data);
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.issues).toContainEqual(expect.objectContaining({
+      path: ['personalInfo', 'visaRefusalsDetails'], message: 'Visa refusal details is required.',
+    }));
+  });
+});

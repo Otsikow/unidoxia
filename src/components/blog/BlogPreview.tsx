@@ -99,8 +99,8 @@ export function BlogPreview({ post, open, onOpenChange }: BlogPreviewProps) {
                 <Calendar className="h-4 w-4" />
                 <span>
                   {post.published_at 
-                    ? format(new Date(post.published_at), 'MMM d, yyyy')
-                    : format(new Date(post.created_at), 'MMM d, yyyy')
+                    ? format(new Date(post.published_at), 'd MMM yyyy')
+                    : format(new Date(post.created_at), 'd MMM yyyy')
                   }
                 </span>
               </div>

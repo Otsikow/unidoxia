@@ -351,7 +351,7 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
                           <span>{formatFileSize(document.file_size)}</span>
                           <span>•</span>
                           <span>
-                            {new Date(document.updated_at).toLocaleDateString()}
+                            {new Date(document.updated_at).toLocaleDateString('en-GB')}
                           </span>
                         </div>
                       </div>

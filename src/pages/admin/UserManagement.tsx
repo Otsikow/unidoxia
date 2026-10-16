@@ -507,7 +507,7 @@ export default function UserManagement() {
                         </TableCell>
                         <TableCell>{renderStatusBadge(user)}</TableCell>
                         <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                          {user.created_at ? format(new Date(user.created_at), "MMM d, yyyy") : "—"}
+                          {user.created_at ? format(new Date(user.created_at), "d MMM yyyy") : "Not set"}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap items-center justify-end gap-2">

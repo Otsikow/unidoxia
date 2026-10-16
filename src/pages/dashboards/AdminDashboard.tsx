@@ -569,14 +569,14 @@ export default function AdminDashboard() {
                                     disabled={updatingDocumentId === doc.id}
                                     onClick={() => updateDocumentStatus(doc, 'rejected')}
                                   >
-                                    {updatingDocumentId === doc.id ? 'Saving...' : 'Reject'}
+                                    {updatingDocumentId === doc.id ? 'Saving' : 'Reject'}
                                   </Button>
                                   <Button
                                     size="sm"
                                     disabled={updatingDocumentId === doc.id}
                                     onClick={() => updateDocumentStatus(doc, 'verified')}
                                   >
-                                    {updatingDocumentId === doc.id ? 'Saving...' : 'Approve'}
+                                    {updatingDocumentId === doc.id ? 'Saving' : 'Approve'}
                                   </Button>
                                 </div>
                               </div>

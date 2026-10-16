@@ -719,7 +719,7 @@ export default function UsersTab() {
               Cancel
             </Button>
             <Button onClick={handleSavePermissions} disabled={updatingPermissions}>
-              {updatingPermissions ? 'Saving...' : 'Save Changes'}
+              {updatingPermissions ? 'Saving' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -224,9 +224,9 @@ export default function TaskManager() {
                   const priorityClass = priorityBadges[(task.priority ?? "medium") as Priority] ?? priorityBadges.medium;
                   const statusClass = statusBadges[task.status ?? "open"] ?? statusBadges.open;
                   const dueDisplay = task.dueAt
-                    ? new Date(task.dueAt).toLocaleDateString()
+                    ? new Date(task.dueAt).toLocaleDateString('en-GB')
                     : task.createdAt
-                      ? new Date(task.createdAt).toLocaleDateString()
+                      ? new Date(task.createdAt).toLocaleDateString('en-GB')
                       : "No due date";
 
                   return (

@@ -633,7 +633,7 @@ export function AgentPayments() {
                   disabled={savingDetails || currentPaymentDetails.trim().length === 0}
                   className="gap-2 self-start sm:self-auto"
                 >
-                  {savingDetails ? 'Saving...' : 'Save Payment Details'}
+                  {savingDetails ? 'Saving' : 'Save Payment Details'}
                 </Button>
               </div>
             </div>

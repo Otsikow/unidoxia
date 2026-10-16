@@ -34,7 +34,7 @@ const formatDate = (value: string | null) => {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB');
 };
 
 const isWithinLastDays = (iso: string, days: number) => {
@@ -58,7 +58,7 @@ const formatTimeAgo = (date: Date | null) => {
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('en-GB');
 };
 
 const RISK_BADGE_STYLES: Record<ApplicationRiskBand, string> = {

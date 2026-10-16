@@ -793,11 +793,11 @@ const AdminResources = () => {
                       <div className="flex flex-wrap items-center gap-4">
                         {resource.createdAt ? (
                           <span>
-                            Added {format(new Date(resource.createdAt), "MMM d, yyyy")}
+                            Added {format(new Date(resource.createdAt), "d MMM yyyy")}
                           </span>
                         ) : null}
                         {resource.updatedAt ? (
-                          <span>Updated {format(new Date(resource.updatedAt), "MMM d, yyyy")}</span>
+                          <span>Updated {format(new Date(resource.updatedAt), "d MMM yyyy")}</span>
                         ) : null}
                       </div>
                     </div>
@@ -938,7 +938,7 @@ const AdminResources = () => {
             <Button onClick={handleSubmit} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving
                 </>
               ) : dialogMode === "upload" ? (
                 "Upload"

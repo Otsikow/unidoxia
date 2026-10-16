@@ -294,7 +294,7 @@ export default function ZoeChatbot() {
       title: "Zoe is unavailable",
       description: "We couldn’t reach Zoe just now. Please try again in a moment.",
       troubleshooting:
-        "If this keeps happening, verify that the Supabase Edge Functions are deployed and reachable from your network.",
+        "If this keeps happening, please contact support.",
     };
 
     if (error instanceof Error) {

@@ -130,7 +130,7 @@ export function LeadsHealthCard() {
             </div>
             <div className="text-muted-foreground">
               {data.latest
-                ? `Latest lead: ${format(new Date(data.latest), "PPp")}`
+                ? `Latest lead: ${format(new Date(data.latest), "d MMM yyyy, HH:mm")}`
                 : "No leads yet — table healthy and ready."}
             </div>
           </div>
@@ -302,7 +302,7 @@ export default function AdminLeads() {
                           {overdue && <Badge variant="destructive" className="text-[10px]">Overdue</Badge>}
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(l.created_at), "MMM d, HH:mm")}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(l.created_at), "d MMM yyyy, HH:mm")}</TableCell>
                     </TableRow>
                   );
                 })}

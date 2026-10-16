@@ -2213,7 +2213,7 @@ export function ApplicationReviewDialog({
                             Cancel
                           </Button>
                           <Button onClick={saveReview} disabled={savingReview}>
-                            {savingReview ? "Saving…" : "Save"}
+                            {savingReview ? "Saving" : "Save"}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -2348,7 +2348,7 @@ export function ApplicationReviewDialog({
                             {savingNotes ? (
                               <>
                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Saving...
+                                Saving
                               </>
                             ) : (
                               "Save Notes"

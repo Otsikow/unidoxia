@@ -555,8 +555,8 @@ export default function BlogAdmin() {
                         </TableCell>
                         <TableCell>
                           {post.published_at
-                            ? format(new Date(post.published_at), "MMM d, yyyy")
-                            : format(new Date(post.created_at!), "MMM d, yyyy")}
+                            ? format(new Date(post.published_at), "d MMM yyyy")
+                            : format(new Date(post.created_at!), "d MMM yyyy")}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">

@@ -1106,7 +1106,7 @@ export default function UniversityDashboard() {
                               <StatusBadge status={app.status} />
                             </TableCell>
                             <TableCell>
-                              {new Date(app.created_at).toLocaleDateString()}
+                              {new Date(app.created_at).toLocaleDateString('en-GB')}
                             </TableCell>
                           </TableRow>
                         ))}

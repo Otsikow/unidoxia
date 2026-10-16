@@ -637,7 +637,7 @@ export default function NotificationCenter() {
     if (isYesterday(date)) {
       return `Yesterday at ${format(date, "h:mm a")}`;
     }
-    return format(date, "MMM d, yyyy 'at' h:mm a");
+    return format(date, "d MMM yyyy 'at' h:mm a");
   };
 
   const filtered = notifications.filter((n) => {
@@ -670,7 +670,7 @@ export default function NotificationCenter() {
     } else if (isYesterday(date)) {
       key = "Yesterday";
     } else {
-      key = format(date, "MMMM d, yyyy");
+      key = format(date, "Md MMM yyyy");
     }
     if (!acc[key]) {
       acc[key] = [];

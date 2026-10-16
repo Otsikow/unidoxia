@@ -359,7 +359,7 @@ export function DocumentUploadDialog({
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">Due by:</span>
               <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
-                {new Date(documentRequest.due_date).toLocaleDateString()}
+                {new Date(documentRequest.due_date).toLocaleDateString('en-GB')}
               </Badge>
             </div>
           )}

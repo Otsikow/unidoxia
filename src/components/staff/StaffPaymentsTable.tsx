@@ -69,7 +69,7 @@ export function StaffPaymentsTable() {
                       <Badge variant={detail.variant}>{detail.label}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {payment.dueAt ? new Date(payment.dueAt).toLocaleDateString() : "—"}
+                      {payment.dueAt ? new Date(payment.dueAt).toLocaleDateString('en-GB') : "Not set"}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       {new Intl.NumberFormat(undefined, {

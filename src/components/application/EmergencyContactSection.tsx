@@ -41,7 +41,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <LifeBuoy className="h-5 w-5" />
-          Emergency Contact
+          Emergency contact
         </CardTitle>
         <CardDescription>
           Someone we can contact on your behalf if we cannot reach you. This is kept private and is
@@ -53,7 +53,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
           <div className="space-y-2">
             <Label htmlFor="ecName" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              Full Name *
+              Full name *
             </Label>
             <Input
               id="ecName"
@@ -92,7 +92,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
           <div className="space-y-2">
             <Label htmlFor="ecPhone" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              Phone Number (with country code) *
+              Phone number (with country code) *
             </Label>
             <Input
               id="ecPhone"
