@@ -14,6 +14,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: brokeredPreviewStorage(),
     persistSession: true,
     autoRefreshToken: true,
+    // Callback.tsx explicitly handles both OAuth tokens and PKCE codes. Letting
+    // initialization consume the same URL can race with the callback exchange.
+    // Keep automatic detection for direct password-recovery/email destinations.
+    detectSessionInUrl: typeof window === 'undefined' || window.location.pathname.replace(/\/+$/, '') !== '/auth/callback',
   },
 });
 

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getSafeAuthRedirect } from "@/lib/authRedirect";
+import { completeAuthCallback } from "@/lib/completeAuthCallback";
 
 type CallbackState =
   | { status: "loading" }
@@ -22,8 +23,6 @@ const getParamFromHash = (hash: string, key: string) => {
   return params.get(key);
 };
 
-const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
-
 const AuthCallback = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,16 +32,13 @@ const AuthCallback = () => {
   const [sendingLink, setSendingLink] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
   const hasFinished = useRef(false);
+  // Share the one-time exchange across effect replays (including StrictMode).
+  const completion = useRef<ReturnType<typeof completeAuthCallback> | null>(null);
+  const callbackUrl = useRef(new URL(window.location.href));
 
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const nextTarget = useMemo(() => getSafeAuthRedirect(params.get("next")), [params]);
   const type = params.get("type") ?? getParamFromHash(location.hash, "type");
-  const code = params.get("code");
-
-  const errorFromQuery = params.get("error") ?? getParamFromHash(location.hash, "error");
-  const errorDescription =
-    params.get("error_description") ?? getParamFromHash(location.hash, "error_description");
-
   useEffect(() => {
     if (hasFinished.current) return;
     let active = true;
@@ -51,67 +47,24 @@ const AuthCallback = () => {
       hasFinished.current = true;
       setState({ status: "success" });
       // Clear the one-time token / error fragment so a refresh never replays it.
-      window.history.replaceState({}, "", `${window.location.pathname}`);
+      window.history.replaceState(window.history.state, "", window.location.pathname);
       navigate(type === "recovery" ? "/auth/reset-password" : nextTarget, { replace: true });
-    };
-
-    // supabase-js processes the URL fragment asynchronously, so poll briefly
-    // before deciding the link failed.
-    const waitForSession = async () => {
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        const { data } = await supabase.auth.getSession();
-        if (data.session) return data.session;
-        if (!active) return null;
-        await wait(300);
-      }
-      return null;
     };
 
     const finish = async () => {
       try {
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) console.warn("Code exchange failed, falling back to session check", error);
-        }
-
-        // A link can be consumed more than once (email scanners, double clicks,
-        // refreshes). If a session already exists, the sign-in actually worked —
-        // never show an error in that case.
-        const session = await waitForSession();
+        completion.current ??= completeAuthCallback(supabase.auth, callbackUrl.current);
+        await completion.current;
+        if (active) goToApp();
+      } catch (err) {
         if (!active) return;
-
-        if (session) {
-          goToApp();
-          return;
-        }
-
-        if (errorFromQuery || errorDescription) {
-          const message = (errorDescription || errorFromQuery || "").replace(/\+/g, " ").trim();
-          setState({
-            status: "error",
-            title: "This sign-in link has expired",
-            description:
-              /expired|not found|invalid/i.test(message) || !message
-                ? "Sign-in links can only be used once and expire quickly. Enter your email below and we'll send you a fresh one."
-                : message,
-          });
-          return;
-        }
-
+        // Never log callback credentials or leave them in browser history.
+        window.history.replaceState(window.history.state, "", window.location.pathname);
+        const message = err instanceof Error ? err.message : "Please try signing in again.";
         setState({
           status: "error",
           title: "Sign-in not completed",
-          description:
-            "We couldn't start a session from this link. Enter your email below and we'll send you a fresh one.",
-        });
-      } catch (err) {
-        console.error("Auth callback failed", err);
-        if (!active) return;
-        const message = err instanceof Error ? err.message : "Unexpected error";
-        setState({
-          status: "error",
-          title: "Authentication error",
-          description: `${message}. You can request a new link below or sign in with your email and password.`,
+          description: `${message} Return to login to retry Google sign-in, or request a new email link below.`,
         });
       }
     };
@@ -121,7 +74,7 @@ const AuthCallback = () => {
     return () => {
       active = false;
     };
-  }, [code, errorDescription, errorFromQuery, navigate, nextTarget, type]);
+  }, [navigate, nextTarget, type]);
 
   const handleRequestNewLink = useCallback(async () => {
     const trimmed = email.trim().toLowerCase();
