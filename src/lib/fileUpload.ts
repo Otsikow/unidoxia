@@ -1,4 +1,5 @@
 import { sanitizeFileName } from './validation';
+import { validatePdfIntegrity } from '../../supabase/functions/_shared/pdfIntegrity.ts';
 
 type MagicSignature = {
   mimeType: string;
@@ -8,7 +9,7 @@ type MagicSignature = {
 };
 
 const MAGIC_SIGNATURES: MagicSignature[] = [
-  { mimeType: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46] }, // %PDF
+  { mimeType: 'application/pdf', bytes: [0x25, 0x50, 0x44, 0x46, 0x2d] }, // %PDF-
   { mimeType: 'image/png', bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] },
   { mimeType: 'image/jpeg', bytes: [0xff, 0xd8, 0xff] },
   { mimeType: 'image/gif', bytes: [0x47, 0x49, 0x46, 0x38] },
@@ -79,29 +80,6 @@ function isMimeAllowed(
   return false;
 }
 
-/**
- * Verifies that a PDF file has a valid %%EOF trailer.
- * PDFs must end with %%EOF (possibly followed by whitespace).
- * This catches truncated PDFs that have headers but missing trailers.
- */
-async function validatePdfTrailer(file: File): Promise<boolean> {
-  try {
-    // Read the last 1024 bytes to check for %%EOF trailer
-    const lastChunkSize = Math.min(1024, file.size);
-    const lastChunk = file.slice(file.size - lastChunkSize);
-    const buffer = await lastChunk.arrayBuffer();
-    const decoder = new TextDecoder('latin1');
-    const text = decoder.decode(buffer);
-    
-    // PDF must end with %%EOF (possibly followed by whitespace/newlines)
-    // Trim trailing whitespace and check if it ends with %%EOF
-    const trimmed = text.trimEnd();
-    return trimmed.endsWith('%%EOF');
-  } catch {
-    return false;
-  }
-}
-
 export async function validateFileUpload(
   file: File,
   options: UploadValidationOptions
@@ -150,14 +128,11 @@ export async function validateFileUpload(
     throw new Error('This PDF appears to be corrupted or truncated. Please check the file and try again.');
   }
 
-  // FIX: Validate PDF trailer for truncated full-size PDFs
-  // Root cause: PDFs can be truncated during transfer while retaining headers,
-  // resulting in files that look valid by size but are cut short.
-  // Valid PDFs must end with %%EOF.
-  if (detectedMimeType === 'application/pdf') {
-    const hasValidTrailer = await validatePdfTrailer(file);
-    if (!hasValidTrailer) {
-      throw new Error('This PDF file appears to be truncated or corrupted (missing end marker). Please check the original file and try uploading again.');
+  // Check both PDF identity and completeness, including padded and incremental PDFs.
+  if (detectedMimeType === 'application/pdf' || file.type === 'application/pdf' || extension === 'pdf') {
+    const isValidPdf = await validatePdfIntegrity(file);
+    if (!isValidPdf) {
+      throw new Error('This PDF file appears to be truncated or corrupted (invalid header or missing end marker). Please check the original file and try uploading again.');
     }
   }
 

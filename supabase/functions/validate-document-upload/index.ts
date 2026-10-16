@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.110.2';
+import { validatePdfIntegrity } from '../_shared/pdfIntegrity.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,7 +16,7 @@ const corsHeaders = {
  * Validates:
  * - File exists in storage
  * - File size matches expected size (no truncation)
- * - PDFs have valid %%EOF trailer
+ * - PDFs start with %PDF- and contain %%EOF within the final 1024 bytes
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -97,7 +98,7 @@ Deno.serve(async (req) => {
 
     // PDF-specific validation
     if (expectedMimeType === 'application/pdf') {
-      // Download last 1KB of file to check for %%EOF trailer
+      // Download the file, then inspect its header and final 1024 bytes
       const { data: fileBlob, error: downloadError } = await supabase.storage
         .from(bucket)
         .download(path);
@@ -115,19 +116,11 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Check PDF trailer
-      const arrayBuffer = await fileBlob.arrayBuffer();
-      const lastChunkSize = Math.min(1024, arrayBuffer.byteLength);
-      const lastChunk = arrayBuffer.slice(arrayBuffer.byteLength - lastChunkSize);
-      const decoder = new TextDecoder('latin1');
-      const text = decoder.decode(lastChunk);
-      const trimmed = text.trimEnd();
-
-      if (!trimmed.endsWith('%%EOF')) {
+      if (!await validatePdfIntegrity(fileBlob)) {
         return new Response(
           JSON.stringify({
             valid: false,
-            error: 'PDF file is truncated or corrupted (missing %%EOF trailer)',
+            error: 'PDF file is truncated or corrupted (invalid %PDF- header or missing %%EOF trailer)',
           }),
           { 
             status: 400, 
