@@ -1,4 +1,4 @@
-import { render, screen, waitFor, cleanup } from '@testing-library/react';
+import { act, render, screen, waitFor, cleanup } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import NotFound from './NotFound';
@@ -14,7 +14,9 @@ describe('missing-route SEO', () => {
     render(<RouterProvider router={router} />);
     expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeInTheDocument();
     expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
-    await router.navigate('/courses');
+    await act(async () => {
+      await router.navigate('/courses');
+    });
     await waitFor(() => expect(document.title).toBe('Courses | UniDoxia'));
     expect(document.querySelector('meta[name="robots"]')).toBeNull();
     expect(document.querySelector('link[rel="canonical"]')).toHaveAttribute('href', 'https://unidoxia.com/courses');
@@ -24,7 +26,9 @@ describe('missing-route SEO', () => {
     const router = createMemoryRouter([{ path: '/courses/:id', element: <SEO title="Course" description="Details" /> }], { initialEntries: ['/courses/a'] });
     render(<RouterProvider router={router} />);
     expect(document.querySelector('script[data-prerender-seo]')).not.toBeNull();
-    await router.navigate('/courses/b');
+    await act(async () => {
+      await router.navigate('/courses/b');
+    });
     await waitFor(() => expect(document.querySelector('script[data-prerender-seo]')).toBeNull());
   });
 });
