@@ -83,6 +83,7 @@ import {
 
 import { TablePagination } from "@/components/common/TablePagination";
 import { formatIntakeLabel, getAcademicYearOptions } from "@/lib/intakeOptions";
+import { DuplicateStudentsPanel } from "@/components/admin/DuplicateStudentsPanel";
 
 const STUDENTS_PAGE_SIZE = 20;
 
@@ -553,6 +554,9 @@ const AdminStudents = () => {
           Refresh
         </Button>
       </div>
+
+      {/* Duplicate Detection Panel */}
+      <DuplicateStudentsPanel />
 
       <Card>
         <CardContent className="overflow-x-auto pt-6">
