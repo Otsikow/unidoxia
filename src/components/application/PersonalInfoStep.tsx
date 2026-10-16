@@ -1,3 +1,6 @@
+import AdditionalPersonalDetails from './AdditionalPersonalDetails';
+import { applicationPersonalInfoSchema, emergencyContactSchema } from '@/lib/applicationValidation';
+import type { ApplicationFormData } from '@/types/application';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,23 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRIES } from '@/lib/countries';
 import { User, Mail, Phone, Calendar, Globe, CreditCard, MapPin, MessageCircle } from 'lucide-react';
-import EmergencyContactSection, {
-  isEmergencyContactComplete,
-} from '@/components/application/EmergencyContactSection';
+import EmergencyContactSection from '@/components/application/EmergencyContactSection';
 import type { EmergencyContact } from '@/types/application';
 
-interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  whatsappNumber: string;
-  dateOfBirth: string;
-  nationality: string;
-  passportNumber: string;
-  currentCountry: string;
-  homeAddress: string;
-  correspondentAddress: string;
-}
+type PersonalInfo = ApplicationFormData['personalInfo'];
 
 interface PersonalInfoStepProps {
   data: PersonalInfo;
@@ -42,18 +32,7 @@ export default function PersonalInfoStep({
     onChange({ ...data, [field]: value });
   };
 
-  const isValid = () => {
-    return (
-      data.fullName.trim() !== '' &&
-      data.email.trim() !== '' &&
-      data.phone.trim() !== '' &&
-      data.whatsappNumber.trim() !== '' &&
-      data.dateOfBirth !== '' &&
-      data.nationality.trim() !== '' &&
-      data.currentCountry.trim() !== '' &&
-      isEmergencyContactComplete(emergencyContact)
-    );
-  };
+  const isValid = () => applicationPersonalInfoSchema.safeParse(data).success && emergencyContactSchema.safeParse(emergencyContact).success;
 
   return (
     <div className="space-y-6">
@@ -218,17 +197,19 @@ export default function PersonalInfoStep({
           <div className="space-y-2">
             <Label htmlFor="correspondentAddress" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Correspondent Address
+              Mailing address *
             </Label>
             <Input
               id="correspondentAddress"
               value={data.correspondentAddress}
               onChange={(e) => handleChange('correspondentAddress', e.target.value)}
+              required
               placeholder="Address for letters and official communication"
             />
           </div>
         </div>
 
+        <AdditionalPersonalDetails data={data} onChange={onChange} />
       </CardContent>
     </Card>
 

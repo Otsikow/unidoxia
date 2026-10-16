@@ -1,3 +1,4 @@
+import { emergencyContactSchema } from '@/lib/applicationValidation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,14 +20,7 @@ export const RELATIONSHIP_OPTIONS = [
 ];
 
 export function isEmergencyContactComplete(contact: EmergencyContact): boolean {
-  const phone = contact.phone.trim();
-  return (
-    contact.fullName.trim().length > 1 &&
-    contact.relationship.trim() !== '' &&
-    phone.startsWith('+') &&
-    phone.replace(/\D/g, '').length >= 8 &&
-    contact.country.trim() !== ''
-  );
+  return emergencyContactSchema.safeParse(contact).success;
 }
 
 interface EmergencyContactSectionProps {
@@ -40,7 +34,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
   };
 
   const emailInvalid = data.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim());
-  const phoneInvalid = data.phone.trim().length > 1 && !isEmergencyContactComplete({ ...data, fullName: 'x', relationship: 'x', country: 'x' });
+  const phoneInvalid = data.phone.trim().length > 1 && (!/^\+[\d\s()-]+$/.test(data.phone.trim()) || data.phone.replace(/\D/g, '').length < 8);
 
   return (
     <Card>
@@ -66,6 +60,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
               value={data.fullName}
               onChange={(e) => handleChange('fullName', e.target.value)}
               placeholder="Full name of your emergency contact"
+              required
               autoComplete="off"
             />
           </div>
@@ -105,6 +100,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
               value={data.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               placeholder="+233 501 234 567"
+              required
               inputMode="tel"
             />
             {phoneInvalid && (
@@ -117,10 +113,11 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
           <div className="space-y-2">
             <Label htmlFor="ecEmail" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              Email Address (if available)
+              Email address *
             </Label>
             <Input
               id="ecEmail"
+              required
               type="email"
               value={data.email}
               onChange={(e) => handleChange('email', e.target.value)}

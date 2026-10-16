@@ -213,9 +213,33 @@ export default function ReviewSubmitStep({
               <p>{formData.personalInfo.homeAddress || 'Not provided'}</p>
             </div>
             <div>
-              <p className="font-medium text-muted-foreground">Correspondent Address</p>
+              <p className="font-medium text-muted-foreground">Mailing address</p>
               <p>{formData.personalInfo.correspondentAddress || 'Not provided'}</p>
             </div>
+            {([
+              ['gender', 'Gender'], ['maritalStatus', 'Marital status'],
+              ['cityOfBirth', 'City of birth'], ['countryOfBirth', 'Country of birth'],
+              ['passportIssueDate', 'Passport issue date'], ['passportPlaceOfIssue', 'Passport place of issue'],
+              ['mailingPostcode', 'Mailing postcode'],
+            ] as const).map(([field, label]) => <div key={field}>
+              <p className="font-medium text-muted-foreground">{label}</p>
+              <p>{formData.personalInfo[field] || 'Not provided'}</p>
+            </div>)}
+            <div>
+              <p className="font-medium text-muted-foreground">Permanent address and postcode</p>
+              <p>{formData.personalInfo.sameAsMailingAddress
+                ? `${formData.personalInfo.correspondentAddress}, ${formData.personalInfo.mailingPostcode}`
+                : `${formData.personalInfo.permanentAddress}, ${formData.personalInfo.permanentPostcode}`}</p>
+            </div>
+            {([
+              ['otherCitizenship', 'Other citizenship', 'otherCitizenshipCountry'],
+              ['previousStudyAbroad', 'Previous study abroad', 'previousStudyAbroadDetails'],
+              ['previousResidenceAbroad', 'Previous residence abroad', 'previousResidenceAbroadDetails'],
+              ['visaRefusals', 'Visa refusals abroad', 'visaRefusalsDetails'],
+            ] as const).map(([answer, label, detail]) => <div key={answer}>
+              <p className="font-medium text-muted-foreground">{label}</p>
+              <p>{formData.personalInfo[answer] === 'yes' ? `Yes: ${formData.personalInfo[detail]}` : 'No'}</p>
+            </div>)}
           </div>
         </CardContent>
       </Card>
@@ -277,9 +301,11 @@ export default function ReviewSubmitStep({
                     <p className="text-muted-foreground">
                       {edu.country} • {edu.startDate} to {edu.endDate || 'Present'}
                     </p>
+                    {edu.board && <p>Board: {edu.board}</p>}
+                    <p>Language of instruction: {edu.languageOfInstruction || 'Not provided'}</p>
                     {edu.gpa && (
                       <p className="text-muted-foreground">
-                        GPA: {edu.gpa} / {edu.gradeScale}
+                        Grades: {edu.gpa} / {edu.gradeScale}
                       </p>
                     )}
                   </CardContent>
@@ -311,13 +337,13 @@ export default function ReviewSubmitStep({
                   {programDetails.name ?? 'Course unavailable'}
                 </p>
                 <p className="text-muted-foreground">
-                  {(programDetails.level ?? '—')} • {(programDetails.discipline ?? '—')}
+                  {(programDetails.level ?? '-')} • {(programDetails.discipline ?? '-')}
                 </p>
               </div>
               <div>
                 <p className="font-medium text-muted-foreground">University</p>
                 <p>
-                  {programDetails.university?.name ?? '—'}, {programDetails.university?.city ?? '—'}, {programDetails.university?.country ?? '—'}
+                  {programDetails.university?.name ?? '-'}, {programDetails.university?.city ?? '-'}, {programDetails.university?.country ?? '-'}
                 </p>
               </div>
               <div>
