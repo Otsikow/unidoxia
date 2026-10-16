@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation, useNavigate } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import BackButton from "@/components/BackButton";
@@ -47,12 +47,25 @@ describe("BackButton", () => {
       { initialEntries: ["/courses"] },
     );
 
+    const originalListKey = router.state.location.key;
     render(<RouterProvider router={router} />);
-    fireEvent.click(screen.getByRole("link", { name: "Open course" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Browse courses" }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("link", { name: "Open course" }));
+    });
+    const backButton = await screen.findByRole("button", { name: "Browse courses" });
+    await act(async () => {
+      fireEvent.click(backButton);
+    });
 
     expect(await screen.findByText("Course list restored")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Browser back" }));
+    expect(router.state.historyAction).toBe("REPLACE");
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: "Browser back" }));
+    });
+    // Both list entries have the same pathname. Check the key to prove Back
+    // reached the original entry rather than asserting before navigation settles.
+    await waitFor(() => expect(router.state.location.key).toBe(originalListKey));
+    expect(router.state.historyAction).toBe("POP");
     await waitFor(() => expect(router.state.location.pathname).toBe("/courses"));
     expect(screen.queryByRole("button", { name: "Browse courses" })).not.toBeInTheDocument();
   });
