@@ -9,7 +9,7 @@ type Section = {
   summary?: string;
 };
 
-const lastReviewed = 'October 22, 2025';
+const lastReviewed = '17 October 2026';
 
 const highlights = [
   {
@@ -102,6 +102,19 @@ const sections: Section[] = [
           <li>Regulators or law enforcement when required by applicable law.</li>
         </ul>
         <p>We do not sell your personal information.</p>
+      </div>
+    )
+  },
+  {
+    id: 'whatsapp',
+    title: 'WhatsApp Enquiries and Updates',
+    content: (
+      <div className="space-y-4">
+        <p>Global Talent Gateway Ltd, trading as UniDoxia, is the controller of your WhatsApp enquiry data. The company is registered in England and Wales, company number 16172129, with its registered office at Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ. We use your phone number, profile name and messages to reply. If you link your student account, we record that link to provide a limited application status summary.</p>
+        <p>Meta Platforms Ireland Limited acts as our data processor for the WhatsApp Business Platform and may process data outside the UK, including in the United States, using safeguards recognised under UK law.</p>
+        <p>Our first replies may come from an automated assistant. Type 4 at any time to speak to the UniDoxia admissions team. If you move to WhatsApp from Zoe, our website assistant, we share the last few messages from that chat with the team. Please don't send documents, passport numbers, card details or passwords on WhatsApp. Upload documents in your UniDoxia dashboard.</p>
+        <p>Application updates on WhatsApp are optional and need your consent. Giving us your number or linking your account isn't consent. Reply STOP to stop all WhatsApp messages from us, or START to get replies again. To get application updates again, turn them on in your profile settings. We don't send marketing on WhatsApp without your consent.</p>
+        <p>We keep WhatsApp conversations for 12 months, then delete them unless we need them for an active application or complaint. If we need to keep a conversation for longer, we keep it for no more than 24 months after your last message. If you opt out, we keep only your number and the opt-out so we don't message you again. If you message us from outside the UK, your messages are sent to us in the UK and handled as described in this policy. Application updates on WhatsApp are only available if you're 18 or over. We check this using the date of birth in your profile. To ask for a copy of your WhatsApp messages or to have them deleted, email info@unidoxia.com. We rely on consent for application updates, legitimate interests in replying to enquiries, and steps taken at your request before entering into a contract. Withdrawing consent doesn't affect earlier processing.</p>
       </div>
     )
   },

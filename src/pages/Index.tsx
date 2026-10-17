@@ -1,5 +1,7 @@
 "use client";
 
+import { WHATSAPP_URL } from '@/config/whatsapp';
+
 import { Link } from "react-router-dom";
 import britishCouncilLogo from "@/assets/british-council-logo.png";
 
@@ -39,7 +41,6 @@ const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperien
 const LatestFromBlog = lazy(() => import("@/components/landing/LatestFromBlog"));
 const ContactForm = lazy(() => import("@/components/ContactForm").then((m) => ({ default: m.ContactForm })));
 
-const WHATSAPP_URL = "https://wa.me/447360961803";
 
 /* ---------- Skeleton Loader ---------- */
 const SectionLoader = () => (

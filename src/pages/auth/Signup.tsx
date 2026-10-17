@@ -157,6 +157,7 @@ const Signup = () => {
     [location.search],
   );
 
+
   const countryOptions = useMemo(() => buildCountryOptions(), []);
 
   const parseReferralParam = (value: string | null) => {
@@ -825,6 +826,7 @@ const Signup = () => {
                   Required with country code (e.g. +1, +44, +234). We use this as your primary
                   WhatsApp contact.
                 </p>
+
 
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence

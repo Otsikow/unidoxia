@@ -89,6 +89,7 @@ const isProfileLike = (value: unknown): value is Profile => {
 };
 
 interface SignUpParams {
+  whatsappOptIn?: boolean;
   email: string;
   password: string;
   fullName: string;
@@ -649,6 +650,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
+        if (finalProfile.role === 'student') {
+          const { error: consentError } = await supabase.rpc('whatsapp_capture_signup_consent');
+          if (consentError) console.error('Unable to save WhatsApp signup preferences.');
+        }
         setProfile(finalProfile);
   };
 
@@ -1277,6 +1282,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     referralSource,
     redirectTo,
     address,
+    whatsappOptIn,
   }: SignUpParams) => {
     try {
       const callbackPath = redirectTo
@@ -1293,6 +1299,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         country: country || '',
         username: sanitizedUsername || `user_${crypto.randomUUID().slice(0, 12)}`,
       };
+
+      if (whatsappOptIn === true && role === 'student') {
+        metadata.whatsapp_opt_in = 'true';
+        metadata.whatsapp_opt_in_at = new Date().toISOString();
+      }
 
       if (referrerUsername) {
         metadata.referrer_username = referrerUsername;

@@ -1,3 +1,4 @@
+import { WHATSAPP_URL } from '@/config/whatsapp';
 import { supabase } from '@/integrations/supabase/client';
 
 export type AnalyticsEventName = 'visa_calculator_card_click' | (string & {});
@@ -107,7 +108,7 @@ export function logWhatsAppLauncherClick(): void {
     destination_channel: 'whatsapp',
     conversion_intent: 'chat_start',
     value: 1,
-    link_url: 'https://wa.me/447360961803',
+    link_url: WHATSAPP_URL,
   });
 }
 
@@ -119,6 +120,13 @@ export function logFreeConsultationWhatsAppClick(): void {
     destination_channel: 'whatsapp',
     conversion_intent: 'consultation_booking',
     value: 1,
-    link_url: 'https://wa.me/447360961803',
+    link_url: WHATSAPP_URL,
+  });
+}
+
+export function logZoeWhatsAppHandoffClick(): void {
+  logGA4Event('zoe_whatsapp_handoff_click', {
+    event_category: 'engagement', event_label: 'zoe_whatsapp_handoff',
+    cta_location: 'zoe_escalation', destination_channel: 'whatsapp', value: 1,
   });
 }

@@ -1,3 +1,6 @@
+import { isAdultForWhatsApp } from '@/config/whatsapp';
+import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
+import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,7 +41,21 @@ const CompleteSignup = () => {
 
   const [referralSource, setReferralSource] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const whatsappAvailable = useWhatsAppAvailable();
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState<string | null>(null);
+  const [consentReady, setConsentReady] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!whatsappAvailable || profile?.role !== 'student' || !user?.id) return;
+    let active = true;
+    void supabase.from('students').select('date_of_birth').eq('profile_id', user.id).maybeSingle().then(({ data, error }) => {
+      if (!active) return;
+      setDateOfBirth(data?.date_of_birth ?? null); setConsentReady(!error);
+    });
+    return () => { active = false; };
+  }, [whatsappAvailable, profile?.role, user?.id]);
 
   const fullNameFromAuth = (
     profile?.full_name ||
@@ -173,7 +190,7 @@ const CompleteSignup = () => {
       const finalReferralSource = needsReferralSource ? referralSource.trim() : metadataReferral;
       const finalWhatsapp = needsWhatsapp ? normalizedWhatsapp : existingWhatsapp;
 
-      if (profile.role === "student" && needsReferralSource) {
+      if (profile.role === "student" && (needsReferralSource || needsWhatsapp)) {
         const { data: studentRecord, error: studentFetchError } = await supabase
           .from("students")
           .select("id, tenant_id")
@@ -188,21 +205,29 @@ const CompleteSignup = () => {
             .update({
               referral_source: finalReferralSource,
               contact_phone: finalWhatsapp || null,
+              whatsapp_number: finalWhatsapp || null,
             })
             .eq("id", studentRecord.id);
 
           if (studentUpdateError) throw studentUpdateError;
 
-          const { error: attributionError } = await supabase.from("attributions").insert({
-            tenant_id: studentRecord.tenant_id,
-            student_id: studentRecord.id,
-            source: finalReferralSource,
-            touch: "signup",
-            medium: "self-reported",
-          });
+          if (needsReferralSource) {
+            const { error: attributionError } = await supabase.from("attributions").insert({
+              tenant_id: studentRecord.tenant_id,
+              student_id: studentRecord.id,
+              source: finalReferralSource,
+              touch: "signup",
+              medium: "self-reported",
+            });
 
-          if (attributionError) throw attributionError;
+            if (attributionError) throw attributionError;
+          }
         }
+      }
+
+      if (whatsappAvailable && profile.role === 'student' && consentReady && isAdultForWhatsApp(dateOfBirth) && whatsappOptIn) {
+        const { error: consentError } = await supabase.rpc('whatsapp_set_preferences', { p_number: finalWhatsapp, p_opt_in: whatsappOptIn });
+        if (consentError) throw consentError;
       }
 
       const { error: metadataError } = await supabase.auth.updateUser({
@@ -291,6 +316,8 @@ const CompleteSignup = () => {
                 </p>
               </div>
             )}
+
+            {whatsappAvailable && profile.role === 'student' && consentReady && isAdultForWhatsApp(dateOfBirth) && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
 
             {needsReferralSource && (
               <div className="space-y-2">

@@ -81,6 +81,11 @@ const NAV_GROUPS: NavGroup[] = [
     groupDefault: "Students & Agents",
     items: [
       {
+        to: "/admin/whatsapp", labelKey: "admin.layout.navigation.whatsapp.label",
+        descriptionKey: "admin.layout.navigation.whatsapp.description", labelDefault: "WhatsApp",
+        descriptionDefault: "Student enquiries & handovers", icon: Bell,
+      },
+      {
         to: "/admin/students",
         labelKey: "admin.layout.navigation.students.label",
         descriptionKey: "admin.layout.navigation.students.description",
@@ -356,7 +361,7 @@ const AdminLayout = () => {
     );
   }
 
-  if (!hasRole("admin")) {
+  if (!hasRole("admin") && !(hasRole("staff") && location.pathname === "/admin/whatsapp")) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-muted/20 p-6 text-center">
         <Badge variant="destructive" className="uppercase tracking-wide">

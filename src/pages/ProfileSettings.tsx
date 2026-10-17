@@ -1,3 +1,4 @@
+import { WhatsAppAccountCard } from '@/components/whatsapp/WhatsAppAccountCard';
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -460,6 +461,7 @@ export default function ProfileSettings() {
 
           <TabsContent value="profile">
             <ProfileInfoTab profile={profile} roleData={roleData} />
+            {profile.role === 'student' && <WhatsAppAccountCard settings />}
           </TabsContent>
 
           <TabsContent value="documents">

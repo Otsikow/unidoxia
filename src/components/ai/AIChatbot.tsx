@@ -1,3 +1,5 @@
+import { WHATSAPP_URL } from '@/config/whatsapp';
+import { ZoeWhatsAppHandoff } from '@/components/whatsapp/ZoeWhatsAppHandoff';
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
@@ -840,7 +842,7 @@ export default function ZoeChatbot() {
     return (
       <div className="fixed bottom-4 right-4 z-50 md:bottom-5 md:right-5">
         <a
-          href="https://wa.me/447360961803"
+          href={WHATSAPP_URL}
           target="_blank"
           rel="noopener noreferrer"
           onClick={logWhatsAppLauncherClick}
@@ -968,6 +970,7 @@ export default function ZoeChatbot() {
             </Alert>
           </div>
         ) : null}
+        <ZoeWhatsAppHandoff messages={messages} />
         <ScrollArea ref={scrollRef} className="min-h-0 flex-1 px-5">
           <div className="space-y-4 py-5">
             {messages.map((message, index) => {

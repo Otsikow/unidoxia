@@ -90,6 +90,7 @@ const menuItems = {
     { title: "Featured Showcase", url: "/university/featured-showcase", icon: Sparkles },
   ],
   staff: [
+    { title: "WhatsApp", url: "/admin/whatsapp", icon: Bell },
     { title: "My Dashboard", url: "/dashboard", icon: Home },
     { title: "Students", url: "/dashboard/students", icon: Users },
     { title: "Agents", url: "/dashboard/reports", icon: BarChart3 },
@@ -115,6 +116,7 @@ const menuItems = {
     { title: "Applications", url: "/dashboard/applications", icon: FileText },
     { title: "Agents", url: "/dashboard/agents", icon: Share2 },
     { title: "Notifications", url: "/admin/notifications", icon: Bell },
+    { title: "WhatsApp", url: "/admin/whatsapp", icon: Bell },
     { title: "Commissions", url: "/dashboard/commissions", icon: DollarSign },
     { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
     { title: "Settings", url: "/profile/settings", icon: Settings },

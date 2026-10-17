@@ -276,6 +276,7 @@ const AdminDashboardPage = lazyWithErrorHandling(() =>
 const AdminOverview = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminOverview")
 );
+const AdminWhatsApp = lazyWithErrorHandling(() => import("./pages/admin/AdminWhatsApp"));
 const AdminUsers = lazyWithErrorHandling(() => import("./pages/admin/AdminUsers"));
 const AdminAgentsPage = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminAgents")
@@ -714,6 +715,7 @@ const App = () => {
                           <Route path="dashboard" element={<Navigate to="/admin/overview" replace />} />
                           <Route path="overview" element={<AdminOverview />} />
                           <Route path="users" element={<AdminUsers />} />
+                          <Route path="whatsapp" element={<AdminWhatsApp />} />
                           <Route path="admissions" element={<Navigate to="/admin/overview" replace />} />
                           <Route path="agents" element={<AdminAgentsPage />} />
                           <Route path="payments" element={<AdminPaymentsPage />} />
