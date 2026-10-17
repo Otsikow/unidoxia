@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { processWhatsAppPayload } from '../../supabase/functions/_shared/whatsappProcess';
+import { processWhatsAppPayload, countryAlias } from '../../supabase/functions/_shared/whatsappProcess';
 import { createWhatsAppReplyHandler } from '../../supabase/functions/_shared/whatsappReplyHandler';
 import type { WhatsAppDatabase } from '../../supabase/functions/_shared/whatsappStore';
 import { LINK_FAILURE } from '../../supabase/functions/_shared/whatsappFlow';
@@ -7,12 +7,12 @@ import { LINK_FAILURE } from '../../supabase/functions/_shared/whatsappFlow';
 // An in-memory Supabase adapter tests orchestration. PostgreSQL locking/RLS still need a real test project.
 function fixture(options: { mode?: string; optedOut?: boolean; linked?: boolean; role?: boolean; lastInbound?: string; link?: { code: string; used?: boolean; expired?: boolean; number?: string; user?: string; attempts?: number }; savedNumber?: string } = {}) {
   const now = new Date().toISOString();
-  const contact = { id: 'contact', wa_id: '447700900123', profile_name: 'Student', opted_out_at: options.optedOut ? now : null, linked_user_id: options.linked ? 'student-user' : null };
+  const contact = { id: 'contact', wa_id: '447700900123', profile_name: 'Student', opted_out_at: options.optedOut ? now : null, linked_at: options.linked ? now : null, linked_user_id: options.linked ? 'student-user' : null };
   const conversation = { id: 'conversation', contact_id: 'contact', mode: options.mode ?? 'assistant', flow_state: { introduced: true }, last_inbound_at: options.lastInbound ?? now, unread_count: 0 };
   const tables: Record<string, any[]> = { whatsapp_contacts: [contact], whatsapp_conversations: [conversation], whatsapp_messages: [],
     students: [{ id: 'student', profile_id: 'student-user', whatsapp_number: options.savedNumber ?? '+44 7700 900123' }],
     applications: [{ student_id: 'student', status: 'submitted', updated_at: now, created_at: now, programs: { name: 'Computing', universities: { name: 'Example University' } }, notes: 'PRIVATE', fees_json: 'PRIVATE' }],
-    programs: [{ id: 'course', name: 'Computing', discipline: 'Computing', level: 'postgraduate', active: true, catalogue_status: 'active', universities: { name: 'Example University', country: 'Canada', active: true, listing_status: 'active' } }],
+    programs: [{ id: 'course', name: 'Computing', discipline: 'Computing', level: 'Master', active: true, catalogue_status: 'active', universities: { name: 'Example University', country: 'Canada', active: true, listing_status: 'active' } }],
     universities: [{ country: 'Canada', active: true, listing_status: 'active' }, { country: 'Hidden', active: false, listing_status: 'archived' }],
     zoe_handoffs: [{ id: '0123456789abcdef0123', summary: 'Visible summary', created_at: now, used_at: null }],
   };
@@ -43,6 +43,34 @@ function fixture(options: { mode?: string; optedOut?: boolean; linked?: boolean;
         if (success && code) { code.used = true; contact.linked_user_id = 'student-user'; }
         return { data: success, error: null };
       }
+      if (name === 'whatsapp_published_countries') return { data: tables.universities.filter(u => u.active && u.listing_status !== 'archived').map(u => ({country:u.country})), error: null };
+      if (name === 'whatsapp_claim_next') {
+        if ((conversation as any).processing_token) return {data:null,error:null};
+        const message = tables.whatsapp_messages.find(m => m.direction === 'inbound' && !m.processed_at);
+        if (!message) return {data:null,error:null};
+        Object.assign(conversation,{processing_token:message.id,processing_message:message.id});
+        return {data:structuredClone({contact,conversation,message,token:message.id}),error:null};
+      }
+      if (name === 'whatsapp_finish_claim') {
+        const v = conversation as any;
+        const message = tables.whatsapp_messages.find(m => m.id === v.processing_message);
+        if (message) message.processed_at = now;
+        v.processing_token = null; v.processing_message = null;
+        v.consecutive_losses = args.p_lost ? (v.consecutive_losses ?? 0) + 1 : 0;
+        if (v.consecutive_losses >= 3) { v.mode = 'human'; notifications.push({reason:'Repeated concurrent activity'}); }
+        return {data:v.consecutive_losses,error:null};
+      }
+      if (name === 'whatsapp_retain') {
+        const until = Date.parse(args.p_until);
+        const maximum = new Date(now); maximum.setUTCMonth(maximum.getUTCMonth()+24);
+        const valid = until > Date.now() && until <= maximum.getTime();
+        if (valid) Object.assign(conversation,{retain_until:args.p_until,retain_reason:args.p_reason,retain_set_by:args.p_staff});
+        return {data:valid,error:null};
+      }
+      if (name === 'whatsapp_set_preferences') {
+        Object.assign(tables.students[0],{whatsapp_opt_in:args.p_opt_in});
+        return {data:null,error:null};
+      }
       if (name === 'whatsapp_ingest') {
         if (seen.has(args.p_meta_id)) return { data: { duplicate: true }, error: null };
         seen.add(args.p_meta_id); conversation.last_inbound_at = args.p_received_at; conversation.unread_count++;
@@ -62,8 +90,8 @@ function fixture(options: { mode?: string; optedOut?: boolean; linked?: boolean;
         is: (key: string, val: any) => { filters.push(row => value(row,key) === val); return chain; },
         gte: (key: string, val: any) => { filters.push(row => value(row,key) >= val); return chain; },
         in: (key: string, vals: any[]) => { filters.push(row => vals.includes(value(row,key))); return chain; },
-        ilike: (key: string, val: string) => { filters.push(row => String(value(row,key)).toLowerCase().includes(val.replace(/%/g,'').toLowerCase())); return chain; },
-        or: () => chain,
+        ilike: (key: string, val: string) => { filters.push(row => val.includes('%') ? String(value(row,key)).toLowerCase().includes(val.replace(/%/g,'').toLowerCase()) : String(value(row,key)).toLowerCase() === val.toLowerCase()); return chain; },
+        or: (expression: string) => { filters.push(row => expression.split(',').some(term => { const [key,op,...parts] = term.split('.'); const target = parts.join('.').toLowerCase(); const actual = String(value(row,key)).toLowerCase(); return op === 'ilike' && (target.includes('%') ? actual.includes(target.replace(/%/g,'')) : actual === target); })); return chain; },
         update: (v: any) => { patch = v; return chain; }, insert: (v: any) => { insert = v; return chain; },
         single: () => { single = true; return chain; }, maybeSingle: () => { single = true; return chain; },
         then: (resolve: (v: any) => void) => {
@@ -129,6 +157,53 @@ describe('WhatsApp webhook orchestration', () => {
     expect(f.notifications).toHaveLength(1); expect(f.conversation.mode).toBe('human');
     expect(f.tables.whatsapp_messages.filter(m => m.direction === 'outbound').at(-1).body).toContain('admissions team');
   });
+
+  it('saving a profile unticked still permits a hi reply', async () => {
+    const f = fixture(); await f.db.rpc('whatsapp_set_preferences',{p_number:'+44 7700 900123',p_opt_in:false});
+    await processWhatsAppPayload(f.db,config,payload('hi')); expect(f.contact.opted_out_at).toBeNull();
+    expect(f.tables.whatsapp_messages.at(-1).body).toContain('How can we help?');
+  });
+  it.each(['Stop.', 'STOP please', 'opt out', 'Unsubscribe me'])('processes opt-out variant %s in human mode', async text => {
+    const f = fixture({mode:'human'}); await processWhatsAppPayload(f.db,config,payload(text)); expect(f.contact.opted_out_at).toBeTruthy();
+  });
+  it.each([['postgraduate','Master'],['postgraduate','Masters'],['doctorate','PhD'],['diploma','Certificate'],['undergraduate','Bachelor']])('finds %s courses stored as %s and resolves UK exactly', async (level, stored) => {
+    const f = fixture(); f.tables.programs[0].level=stored; f.tables.programs[0].universities.country='United Kingdom';
+    Object.assign(f.conversation.flow_state,{step:'country',subject:'Computing',level});
+    await processWhatsAppPayload(f.db,config,payload('UK')); expect(f.tables.whatsapp_messages.at(-1).body).toContain('/courses/course');
+    Object.assign(f.conversation.flow_state,{step:'country',subject:'Computing',level}); f.tables.programs[0].universities.country='Ukraine';
+    await processWhatsAppPayload(f.db,config,payload('UK','next')); expect(f.tables.whatsapp_messages.at(-1).body).not.toContain('/courses/course');
+  });
+  it.each([['uk','United Kingdom'],['Britain','United Kingdom'],['great britain','United Kingdom'],['England','United Kingdom'],['Scotland','United Kingdom'],['Wales','United Kingdom'],['us','United States'],['USA','United States'],['america','United States'],['uae','United Arab Emirates']])('maps country %s', (alias,canonical) => expect(countryAlias(alias)).toBe(canonical));
+  it('expires status links at 180 days', async () => {
+    const f=fixture({linked:true}); f.contact.linked_at=new Date(Date.now()-180*86400000-1).toISOString();
+    await processWhatsAppPayload(f.db,config,payload('3')); expect(f.contact.linked_user_id).toBeNull(); expect(f.tables.whatsapp_messages.at(-1).body).toContain('please link your account first');
+  });
+  it('drains two messages ingested while the first flow is still running, with a fresh snapshot', async () => {
+    const f=fixture(); const rpc=f.db.rpc; let queued=false;
+    f.db.rpc=async (name,args) => {
+      if(name==='whatsapp_reserve_auto_reply' && !queued) {
+        queued=true;
+        await processWhatsAppPayload(f.db,config,payload('1','second'));
+        await processWhatsAppPayload(f.db,config,payload('nursing','third'));
+      }
+      return rpc(name,args);
+    };
+    await processWhatsAppPayload(f.db,config,payload('hi','first'));
+    expect(f.conversation.mode).toBe('assistant'); expect(f.notifications).toHaveLength(0);
+    expect(f.conversation.flow_state).toMatchObject({step:'level',subject:'nursing'});
+    expect(f.tables.whatsapp_messages.filter(m=>m.direction==='inbound').every(m=>m.processed_at)).toBe(true);
+    expect(f.tables.whatsapp_messages.filter(m=>m.direction==='outbound').map(m=>m.body)).toEqual(expect.arrayContaining([expect.stringContaining('What would you like to study?'),expect.stringContaining('Which level?')]));
+  });
+  it('drops a stale state reply, handing over only after three consecutive losses', async () => {
+    const f=fixture(); const from=f.db.from;
+    f.db.from=table=>{ const chain=from(table); const eq=chain.eq;
+      chain.eq=(key:string,value:unknown)=>eq(key,key==='processing_token'?'stale-token':value); return chain; };
+    for(let i=1;i<=3;i++) {
+      await processWhatsAppPayload(f.db,config,payload('hi','loss-'+i));
+      expect(f.notifications).toHaveLength(i===3?1:0);
+    }
+    expect(f.tables.whatsapp_messages.filter(m=>m.direction==='outbound')).toHaveLength(0);
+  });
   it('never downgrades delivery receipts', async () => {
     const f = fixture();
     f.tables.whatsapp_messages.push({ meta_message_id: 'outbound', status: 'queued' });
@@ -161,9 +236,9 @@ describe('WhatsApp webhook orchestration', () => {
     expect(f.notifications).toHaveLength(0);
   });
   it('routes a claimed message to people if a database lookup fails, without replaying a send', async () => {
-    const f = fixture(); const from = f.db.from;
-    f.db.from = table => { if (table === 'universities') throw new Error('Lookup unavailable'); return from(table); };
-    await expect(processWhatsAppPayload(f.db, config, payload('2'))).rejects.toThrow('Lookup unavailable');
+    const f = fixture(); Object.assign(f.conversation.flow_state,{step:'country',subject:'Computing',level:'postgraduate'}); const from = f.db.from;
+    f.db.from = table => { if (table === 'programs') throw new Error('Lookup unavailable'); return from(table); };
+    await expect(processWhatsAppPayload(f.db, config, payload('Canada'))).rejects.toThrow('Lookup unavailable');
     expect(f.conversation.mode).toBe('human'); expect(f.notifications).toHaveLength(1);
     await processWhatsAppPayload(f.db, config, payload('2'));
     expect(f.tables.whatsapp_messages).toHaveLength(1); expect(fetch).not.toHaveBeenCalled();
@@ -194,14 +269,14 @@ describe('WhatsApp staff actions', () => {
     const f = fixture(); const response = await createWhatsAppReplyHandler(f.db, activeConfig)(request('reply'));
     expect(await response.json()).toMatchObject({ status: 'sent' }); expect(f.tables.whatsapp_messages[0]).toMatchObject({ status: 'sent', meta_message_id: 'out-meta' }); expect(fetch).toHaveBeenCalledTimes(1);
   });
-  it('retains only for active applications or complaints, for at most another 12 months', async () => {
+  it('retains only for active applications or complaints, within 24 months of the last message', async () => {
     const f = fixture(); const handler = createWhatsAppReplyHandler(f.db, config);
     const retain = (reason: string, retainUntil: string) => new Request('https://example.test', { method: 'POST', headers: { Authorization: 'Bearer valid', 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'retain', conversationId: 'conversation', reason, retainUntil }) });
     const valid = new Date(Date.now() + 30 * 86400000).toISOString();
     expect((await handler(retain('active_application', valid))).status).toBe(200);
     expect(f.conversation).toMatchObject({ retain_until: valid, retain_reason: 'active_application' });
     expect((await handler(retain('complaint', valid))).status).toBe(200);
-    for (const [reason, until] of [['marketing',valid], ['complaint','invalid'], ['complaint', new Date(Date.now()-86400000).toISOString()], ['active_application',new Date(Date.now()+400*86400000).toISOString()]]) {
+    for (const [reason, until] of [['marketing',valid], ['complaint','invalid'], ['complaint', new Date(Date.now()-86400000).toISOString()], ['active_application',new Date(Date.now()+800*86400000).toISOString()]]) {
       expect((await handler(retain(reason,until))).status).toBe(400);
     }
     expect(fetch).not.toHaveBeenCalled();

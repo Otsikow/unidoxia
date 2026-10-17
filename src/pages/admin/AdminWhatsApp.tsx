@@ -93,10 +93,10 @@ export default function AdminWhatsApp() {
       <Card><CardHeader><CardTitle>{conversation ? 'Student conversation' : 'Select a conversation'}</CardTitle></CardHeader><CardContent className="space-y-4 min-w-0">
         {conversation && <>
           {conversation.handover_reason && <p className="text-sm">Handover: {conversation.handover_reason}</p>}
-          {summary && <div className="rounded-lg bg-muted p-3"><h2 className="font-medium">Zoe context</h2><p className="whitespace-pre-wrap break-words text-sm">{summary}</p></div>}
+          {summary && <div className="rounded-lg bg-muted p-3"><h2 className="font-medium">Zoe context (written by the website chat, not checked)</h2><p className="whitespace-pre-wrap break-words text-sm">{summary}</p></div>}
           <div className="flex flex-wrap gap-2">{[['take_over','Take over'],['hand_back','Hand back'],['assign','Assign to me'],['close','Close']].map(([action,label]) => <Button key={action} variant="outline" size="sm" disabled={busy} onClick={() => void act(action)}>{label}</Button>)}</div>
           <details className="rounded-lg border p-3 space-y-2"><summary className="cursor-pointer text-sm">Extend retention for an active application or complaint</summary>
-            <p className="text-sm">Confirm the case is still active. Choose an end date within the next 12 months.</p>
+            <p className="text-sm">Confirm the case is still active. Choose an end date within 24 months of the last message.</p>
             <Label htmlFor="whatsapp-retain-reason">Reason</Label><select id="whatsapp-retain-reason" className="block border rounded p-2 bg-background" value={retainReason} onChange={e => setRetainReason(e.target.value)}><option value="active_application">Active application</option><option value="complaint">Complaint</option></select>
             <Label htmlFor="whatsapp-retain-date">Retain until</Label><input id="whatsapp-retain-date" type="date" className="block border rounded p-2 bg-background" value={retainDate} onChange={e => setRetainDate(e.target.value)} />
             {conversation.retain_until && <p className="text-sm">Current extension: {new Date(conversation.retain_until).toLocaleDateString('en-GB')}</p>}
@@ -111,7 +111,7 @@ export default function AdminWhatsApp() {
               <p className="text-xs text-muted-foreground">{m.sender} · {new Date(m.created_at).toLocaleString('en-GB')} · {m.status}</p><p className="whitespace-pre-wrap break-words text-sm mt-1">{m.body}</p>{m.error && <p className="text-xs text-destructive">{m.error}</p>}
             </div>)}
           </div>
-          <Label htmlFor="whatsapp-reply">Reply as the UniDoxia admissions team</Label><Textarea id="whatsapp-reply" value={reply} onChange={e => setReply(e.target.value)} maxLength={4096} placeholder="Do not request documents or sensitive information on WhatsApp." />
+          <Label htmlFor="whatsapp-reply">Reply as the UniDoxia admissions team</Label><Textarea id="whatsapp-reply" value={reply} onChange={e => setReply(e.target.value)} maxLength={4096} placeholder="Do not request documents or sensitive information on WhatsApp." /><p className="text-sm text-muted-foreground">Don't give visa or immigration advice, and don't promise an offer, visa or scholarship. Point visa questions to gov.uk.</p>
           <Button disabled={busy || !reply.trim() || !windowOpen || Boolean(conversation.contact?.opted_out_at)} onClick={() => void act('reply')}>{enabled ? 'Send reply' : 'Save skipped reply'}</Button>
         </>}
       </CardContent></Card>

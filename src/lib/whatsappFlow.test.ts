@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { WELCOME, HANDOVER, DISCLOSURE, LINK_FAILURE, MENU, isOpen, parseOpeningHours, runWhatsAppFlow as flow, type OpeningHours, type FlowState } from '../../supabase/functions/_shared/whatsappFlow';
+import { WELCOME, HANDOVER, DISCLOSURE, LINK_FAILURE, MENU, isOpen, parseOpeningHours, VISA_REPLY, showZoeHandoff, runWhatsAppFlow as flow, type OpeningHours, type FlowState } from '../../supabase/functions/_shared/whatsappFlow';
 const hours: OpeningHours = { days: [1,2,3,4,5], open: '09:00', close: '17:30' };
 const introduced = { introduced: true };
 describe('WhatsApp student flow', () => {
   it('greets with menu, automation disclosure, privacy and sensitive-data warning', () => {
     const r = flow({ text: 'Hi' });
-    expect(r.replies[0]).toBe(WELCOME + '\n' + DISCLOSURE + '\n' + MENU);
+    expect(r.replies).toEqual([WELCOME + '\n' + DISCLOSURE, MENU]);
     expect(r.replies[0]).toContain("Please don't send passport numbers, card details, passwords or documents here");
     expect(r.replies[0]).not.toContain('\u2014');
   });
@@ -28,11 +28,11 @@ describe('WhatsApp student flow', () => {
     expect(r.replies[0]).not.toMatch(/fee|deadline|visa/i);
     expect(r.state.step).toBeUndefined();
   });
-  it('reports no matches without inventing a course', () => expect(flow({ text: 'ANY', state: { ...introduced, step: 'country' }, courses: [] }).replies[0]).toContain('No matching published courses'));
+  it('reports no matches without inventing a course', () => expect(flow({ text: 'ANY', state: { ...introduced, step: 'country' }, courses: [] }).replies[0]).toContain("Sorry, I couldn't find a match."));
   it('lists actual destinations once with the search link', () => {
     expect(flow({ text: '2', state: introduced }).lookup).toEqual({ type: 'countries' });
-    expect(flow({ text: '2', state: introduced, countries: ['Canada','Ghana','Canada'] }).replies[0]).toBe('Explore destinations with published universities:\nCanada\nGhana\nSearch: https://unidoxia.com/search');
-    expect(flow({ text: '2', countries: [] }).replies[0]).toContain('No published destinations');
+    expect(flow({ text: '2', state: introduced, countries: ['Canada','Ghana','Canada'] }).replies[0]).toBe('We have universities in:\nCanada\nGhana\nSee all courses: https://unidoxia.com/courses');
+    expect(flow({ text: '2', countries: [] }).replies.join("\n")).toContain("Sorry, I can't show destinations right now.");
   });
   it('does not disclose application status to an unlinked contact', () => {
     const r = flow({ text: '3', state: introduced, applications: [{ university: 'Secret', programme: 'Secret', status: 'submitted', changedAt: null }] });
@@ -41,15 +41,15 @@ describe('WhatsApp student flow', () => {
   it('formats only the linked high-level summary and an honest date', () => {
     expect(flow({ text: '3', linked: true }).lookup).toEqual({ type: 'status' });
     const r = flow({ text: '3', linked: true, state: introduced, applications: [{ university: 'Example', programme: 'MSc Computing', status: 'conditional_offer', changedAt: '2026-10-16T14:00:00Z' }, { university: 'Example 2', programme: 'BA', status: 'draft', changedAt: null }] });
-    expect(r.replies[0]).toBe('Example\nMSc Computing\nConditional offer\nLast updated: 16/10/2026\n\nExample 2\nBA\nDraft\nLast updated: date unavailable');
-    expect(flow({ text: '3', linked: true, applications: [] }).replies[0]).toContain('No applications');
+    expect(r.replies[0]).toBe("Here's the latest on your applications:\n\nExample\nMSc Computing\nConditional offer\nLast updated: 16/10/2026\n\nExample 2\nBA\nDraft\nLast updated: date unavailable\n\nFor full details, sign in at https://unidoxia.com/student/applications");
+    expect(flow({ text: '3', linked: true, applications: [] }).replies.join('\n')).toContain("I can't see any applications");
   });
   it('requests verification for a correctly formatted LINK and confirms success without opting in', () => {
     expect(flow({ text: 'LINK 123456' }).linkCode).toBe('123456');
     const r = flow({ text: 'LINK 123456', linkResult: true, state: introduced });
-    expect(r.replies[0]).toContain('is linked'); expect(r.consent).toBeUndefined();
+    expect(r.replies[0]).toContain('is now linked'); expect(r.consent).toBeUndefined();
   });
-  it.each(['LINK','LINK 12','LINK abcdef','LINK 1234567','LINK 123456 details'])('malformed code %s gives the same generic failure', text => {
+  it.each(['LINK 12','LINK 1234567','LINK 123456 details'])('malformed code %s gives the same generic failure', text => {
     expect(flow({ text, state: introduced }).replies).toEqual([LINK_FAILURE]);
   });
   it.each(['missing','expired','used','wrong number','attempt limit','no student'])('%s code validation gives the same generic failure', () => {
@@ -59,7 +59,7 @@ describe('WhatsApp student flow', () => {
   it('uses only configured opening hours with friendly London times', () => {
     expect(flow({ text: '4', state: introduced }).replies).toEqual([HANDOVER]);
     expect(flow({ text: '4', state: introduced, hours, now: new Date('2026-10-16T09:00:00Z') }).replies).toEqual([HANDOVER]);
-    expect(flow({ text: '4', state: introduced, hours, now: new Date('2026-10-18T10:00:00Z') }).replies).toEqual(["Thanks. I've passed this to the UniDoxia admissions team. We're closed now, so an adviser will reply on Monday 19 October from 9am UK time."]);
+    expect(flow({ text: '4', state: introduced, hours, now: new Date('2026-10-18T10:00:00Z') }).replies).toEqual(["Thanks. I've passed this to the UniDoxia admissions team. We're closed now, so we'll reply on Monday 19 October from 9am UK time."]);
     expect(flow({ text: '4', state: introduced, hours: { ...hours, open: '09:30' }, now: new Date('2026-10-18T10:00:00Z') }).replies[0]).toContain('from 9:30am UK time.');
   });
   it('respects London daylight saving and has no fallback schedule', () => {
@@ -90,20 +90,43 @@ describe('WhatsApp student flow', () => {
     expect(flow({ text: 'STOP' }).consent).toBe('out');
     expect(flow({ text: 'UNSUBSCRIBE' }).consent).toBe('out');
     for (const text of ['STOP','UNSUBSCRIBE','Hi','4','LINK 123456']) expect(flow({ text, optedOut: true }).replies).toEqual([]);
-    const r = flow({ text: 'START', optedOut: true }); expect(r.consent).toBe('in'); expect(r.replies[0]).toContain(MENU);
+    const r = flow({ text: 'START', optedOut: true }); expect(r.consent).toBe('in'); expect(r.replies.join('\n')).toContain(MENU);
   });
   it('keeps START in human mode clear that the team will continue', () => {
     const r = flow({ text: 'START', mode: 'human', optedOut: true });
-    expect(r.replies[0]).toContain('The UniDoxia team will reply here.');
+    expect(r.replies.join('\n')).toContain('The UniDoxia admissions team will reply here.');
     expect(r.replies[0]).not.toContain(MENU);
   });
   it('hands over non-text without requesting documents over WhatsApp', () => {
     const r = flow({ text: null }); expect(r.handover).toBe('Non-text message');
-    expect(r.replies.join('\n')).toContain('Please upload documents securely');
+    expect(r.replies.join('\n')).toContain('Please upload documents in your UniDoxia dashboard');
     expect(r.replies.join('\n')).toContain('https://unidoxia.com/student/documents');
   });
   it('hands over after two unknown messages', () => {
     const r = flow({ text: 'unmatched', state: introduced }); expect(r.handover).toBeUndefined();
     expect(flow({ text: 'still unmatched', state: r.state }).handover).toBe('Two messages not understood');
   });
+  it.each(['Stop.', 'STOP please', 'opt out', 'Unsubscribe me', 'stop messaging me', 'cancel messages'])('honours %s even in human mode', text => {
+    expect(flow({ text, mode: 'human', state: introduced }).consent).toBe('out');
+    expect(flow({ text, optedOut: true }).replies).toEqual([]);
+  });
+  it.each(['START.', 'unstop', 'opt in please'])('recognises resume command %s', text => expect(flow({text,optedOut:true}).consent).toBe('in'));
+  it.each(['masters','msc','ma','mba','bsc','ba','degree','phd'])('accepts level alias %s', text => expect(flow({text,state:{...introduced,step:'level'}}).state.step).toBe('country'));
+  it('re-asks an invalid level without increasing the unknown count', () => {
+    const r = flow({text:'invalid',state:{...introduced,step:'level',unknown:1}});
+    expect(r.replies).toEqual(['Please reply A, B, C, D or E.']); expect(r.state.step).toBe('level'); expect(r.handover).toBeUndefined();
+  });
+  it.each(['Link to apply?', 'LINK', 'LINK abcdef'])('ordinary link question %s is not a code command', text => {
+    const r = flow({text,state:introduced}); expect(r.linkCode).toBeUndefined(); expect(r.replies).not.toContain(LINK_FAILURE);
+  });
+  it.each(['Can I get a student visa with a gap year?', 'Do you guarantee admission?', 'evisa', 'CAS'])('gives the fixed visa/guarantee reply for %s before unknown escalation', text => {
+    const r = flow({text,state:{...introduced,unknown:1}}); expect(r.replies).toEqual([VISA_REPLY]); expect(r.handover).toBeUndefined(); expect(r.state.unknown).toBe(0);
+  });
+  it('places the visa-refusal guard before the handover', () => expect(flow({text:'my visa was refused',state:introduced}).replies).toEqual(["We can't give immigration advice, but the admissions team can help with your university application.\n" + HANDOVER]));
+  it('does not trigger a Zoe panel on generic assistant agent wording', () => {
+    expect(showZoeHandoff([{role:'assistant',content:'Our agents recruit students.'}])).toBe(false);
+    expect(showZoeHandoff([{role:'user',content:'Please can I speak to a person'}])).toBe(true);
+    expect(showZoeHandoff([{role:'assistant',content:'Please speak to the UniDoxia admissions team about this. Contact info@unidoxia.com or continue on WhatsApp.'}])).toBe(true);
+  });
+
 });

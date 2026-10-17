@@ -1,3 +1,4 @@
+import { isUnder18 } from '@/config/whatsapp';
 import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
 import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
 import { useState, useEffect } from "react";
@@ -42,7 +43,19 @@ const CompleteSignup = () => {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const whatsappAvailable = useWhatsAppAvailable();
   const [whatsappOptIn, setWhatsappOptIn] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState<string | null>(null);
+  const [consentReady, setConsentReady] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!whatsappAvailable || profile?.role !== 'student' || !user?.id) return;
+    let active = true;
+    void supabase.from('students').select('date_of_birth').eq('profile_id', user.id).maybeSingle().then(({ data, error }) => {
+      if (!active) return;
+      setDateOfBirth(data?.date_of_birth ?? null); setConsentReady(!error);
+    });
+    return () => { active = false; };
+  }, [whatsappAvailable, profile?.role, user?.id]);
 
   const fullNameFromAuth = (
     profile?.full_name ||
@@ -212,7 +225,7 @@ const CompleteSignup = () => {
         }
       }
 
-      if (whatsappAvailable && profile.role === 'student') {
+      if (whatsappAvailable && profile.role === 'student' && consentReady && !isUnder18(dateOfBirth) && whatsappOptIn) {
         const { error: consentError } = await supabase.rpc('whatsapp_set_preferences', { p_number: finalWhatsapp, p_opt_in: whatsappOptIn });
         if (consentError) throw consentError;
       }
@@ -304,7 +317,7 @@ const CompleteSignup = () => {
               </div>
             )}
 
-            {whatsappAvailable && profile.role === 'student' && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
+            {whatsappAvailable && profile.role === 'student' && consentReady && !isUnder18(dateOfBirth) && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
 
             {needsReferralSource && (
               <div className="space-y-2">

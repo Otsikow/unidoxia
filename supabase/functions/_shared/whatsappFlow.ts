@@ -8,11 +8,11 @@ export interface FlowState {
 export interface Course { id: string; name: string; level: string; university: string; country: string }
 export interface ApplicationStatus { university: string; programme: string; status: string; changedAt: string | null }
 export interface OpeningHours { days: number[]; open: string; close: string }
-export const LINK_FAILURE = 'We could not link this number. Please sign in to your UniDoxia dashboard, check your saved WhatsApp number and request a new code.';
+export const LINK_FAILURE = "Sorry, we couldn't link this number.\nPlease sign in to your UniDoxia dashboard, check the WhatsApp number saved in your profile and get a new code.";
 export const WELCOME = 'Hello, welcome to UniDoxia.';
-export const MENU = 'How can we help?\n1 Find courses\n2 Study destinations\n3 My application status\n4 Speak to an adviser';
-export const DISCLOSURE = "You're chatting with our automated assistant. Type 4 at any time to speak to an adviser.\nPlease don't send passport numbers, card details, passwords or documents here. Privacy: https://unidoxia.com/legal/privacy";
-export const HANDOVER = "Thanks. I've passed this to the UniDoxia admissions team. An adviser will reply here as soon as they can.";
+export const MENU = 'How can we help?\n1 Find courses\n2 Study destinations\n3 My application status\n4 Speak to the admissions team';
+export const DISCLOSURE = "You're chatting with our automated assistant. Type 4 at any time to speak to the admissions team.\nPlease don't send passport numbers, card details, passwords or documents here. Privacy: https://unidoxia.com/legal/privacy";
+export const HANDOVER = "Thanks. I've passed this to the UniDoxia admissions team. Someone will reply here as soon as they can.";
 export function parseOpeningHours(raw?: string): OpeningHours | undefined {
   try {
     const v = JSON.parse(raw ?? 'null');
@@ -29,7 +29,15 @@ export function isOpen(now: Date, hours: OpeningHours): boolean {
   const time = `${part('hour')}:${part('minute')}`;
   return hours.days.includes(day) && time >= hours.open && time < hours.close;
 }
-export const isOptCommand = (text: string) => /^(stop|unsubscribe|start)$/i.test(text.trim());
+export function optCommand(text: string): 'in' | 'out' | undefined {
+  const clean = text.replace(/[^\p{L}\p{N}\s]/gu, '').trim().replace(/\s+/g, ' ');
+  if (/^(stop|stop all|stop messages|unsubscribe|opt out|optout|cancel messages)\b/i.test(clean)) return 'out';
+  if (/^(start|unstop|opt in)\b/i.test(clean)) return 'in';
+}
+export const isOptCommand = (text: string) => optCommand(text) !== undefined;
+export const VISA_REPLY = "We can't give visa or immigration advice, and we can't guarantee an offer, visa or scholarship. Universities and the Home Office make those decisions.\nFor official visa guidance, see https://www.gov.uk/student-visa\nType 4 if you'd like the admissions team to help with your application.";
+export const ZOE_ESCALATION = 'Please speak to the UniDoxia admissions team about this. Contact info@unidoxia.com or continue on WhatsApp.';
+export const showZoeHandoff = (messages: { role: string; content: string }[]) => messages.slice(-3).some(m => m.role === 'user' ? needsPerson(m.content) : m.role === 'assistant' && m.content.includes(ZOE_ESCALATION));
 export const zoeReference = (text: string) => text.match(/\bRef\s+ZOE-([a-f0-9]{8,32})\b/i)?.[1]?.toLowerCase();
 export function needsPerson(text: string): boolean {
   return /\b(adviser|advisor|agent|human|person|someone|manager|complain\w*|call me|speak to|visa refus\w*|refund|legal)\b/i.test(text) || /visa.{0,30}(refus|reject|denied)|refus.{0,30}visa|eligibility\s+disput|lawyer|solicitor/i.test(text);
@@ -43,7 +51,7 @@ export function handoverReply(now = new Date(), hours?: OpeningHours): string {
     const date = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', weekday: 'long', day: 'numeric', month: 'long' }).format(next);
     const [hour, minutes] = hours.open.split(':').map(Number);
     const time = `${hour % 12 || 12}${minutes ? ':' + String(minutes).padStart(2, '0') : ''}${hour < 12 ? 'am' : 'pm'}`;
-    return `Thanks. I've passed this to the UniDoxia admissions team. We're closed now, so an adviser will reply on ${date} from ${time} UK time.`;
+    return `Thanks. I've passed this to the UniDoxia admissions team. We're closed now, so we'll reply on ${date} from ${time} UK time.`;
   }
   return HANDOVER;
 }
@@ -59,7 +67,7 @@ export interface FlowResult {
 }
 const STATUS: Record<string, string> = {
   draft: 'Draft', submitted: 'Submitted', screening: 'Screening', conditional_offer: 'Conditional offer',
-  unconditional_offer: 'Unconditional offer', cas_loa: 'CAS / letter of acceptance', visa: 'Visa stage',
+  unconditional_offer: 'Unconditional offer', cas_loa: 'CAS or letter of acceptance', visa: 'Visa stage',
   enrolled: 'Enrolled', withdrawn: 'Withdrawn', deferred: 'Deferred', rejected: 'Not successful',
   under_review: 'Under review', pending_documents: 'Documents pending', interview_scheduled: 'Interview scheduled', interview: 'Interview',
 };
@@ -68,27 +76,28 @@ export function runWhatsAppFlow(input: FlowInput): FlowResult {
   const state = { ...input.state };
   const result: FlowResult = { replies: [], state };
   const say = (body: string) => {
-    result.replies.push((state.introduced ? '' : WELCOME + '\n' + DISCLOSURE + '\n') + body);
+    if (!state.introduced) result.replies.push(WELCOME + '\n' + DISCLOSURE);
+    result.replies.push(body);
     state.introduced = true;
     return result;
   };
   const handover = (reason: string) => {
     result.handover = reason; state.step = undefined; state.unknown = 0;
-    return say(handoverReply(input.now, input.hours));
+    return say((/visa.{0,30}(refus|reject|denied)|refus.{0,30}visa/i.test(text ?? '') ? "We can't give immigration advice, but the admissions team can help with your university application.\n" : '') + handoverReply(input.now, input.hours));
   };
   const trimmed = text?.trim() ?? '';
-  if (/^(stop|unsubscribe)$/i.test(trimmed)) {
+  if (optCommand(trimmed) === 'out') {
     if (optedOut) return result;
     result.consent = 'out'; state.step = undefined;
     return say("You've opted out. We won't send you any more WhatsApp messages. Send START if you change your mind.");
   }
-  if (/^start$/i.test(trimmed)) {
+  if (optCommand(trimmed) === 'in') {
     result.consent = 'in'; state.step = undefined; state.unknown = 0;
-    return say("Thanks, you've opted back in." + (input.mode === 'human' ? '\nThe UniDoxia team will reply here.' : '\n' + MENU));
+    return say("Thanks, you've opted back in." + (input.mode === 'human' ? '\nThe UniDoxia admissions team will reply here.' : '\n' + MENU));
   }
   if (optedOut) return result;
   if (text === null) {
-    say("Sorry, I can't open files, photos or voice notes here. Please upload documents securely in your UniDoxia dashboard: https://unidoxia.com/student/documents. Type your question and I'll help.");
+    say("Sorry, I can't open files, photos or voice notes here.\nPlease upload documents in your UniDoxia dashboard: https://unidoxia.com/student/documents");
     handover('Non-text message');
     result.replies = [result.replies.join('\n')];
     return result;
@@ -96,36 +105,39 @@ export function runWhatsAppFlow(input: FlowInput): FlowResult {
   const ref = zoeReference(trimmed);
   if (ref) { result.zoeRef = ref; return handover('Zoe handover'); }
   if (trimmed === '4' || needsPerson(trimmed)) return handover('Student requested admissions support');
-  if (/^link\b/i.test(trimmed)) {
+  if (/^link\s*\d/i.test(trimmed)) {
     if (!/^link\s+\d{6}$/i.test(trimmed)) return say(LINK_FAILURE);
     if (input.linkResult === undefined) { result.linkCode = trimmed.slice(-6); return result; }
-    return say(input.linkResult ? 'Your WhatsApp number is linked to your UniDoxia account. Reply 3 to check your application status. Linking does not sign you up for updates. You can choose updates in your profile settings.' : LINK_FAILURE);
+    return say(input.linkResult ? "Thanks, your WhatsApp number is now linked to your UniDoxia account.\nReply 3 to see your application status.\nThis doesn't sign you up for updates. You can turn those on in your profile settings." : LINK_FAILURE);
   }
+  if (/\b(visa|immigration|brp|evisa|cas)\b/i.test(trimmed) || /guarant/i.test(trimmed)) { state.unknown = 0; return say(VISA_REPLY); }
   const plain = trimmed.replace(/[^\p{L}\p{N}\s]/gu, '').trim();
   if (/^(hi|hello|hey|hiya|good (morning|afternoon|evening)|menu|help)\b/i.test(plain) || !trimmed) {
     state.step = undefined; state.unknown = 0;
     return say(state.introduced ? WELCOME + '\n' + MENU : MENU);
   }
-  if (trimmed === '1' || /^courses$/i.test(trimmed)) { state.step = 'subject'; state.unknown = 0; return say('Which subject would you like to study?'); }
+  if (trimmed === '1' || /^courses$/i.test(trimmed)) { state.step = 'subject'; state.unknown = 0; return say("What would you like to study? For example, nursing or computer science."); }
   if (trimmed === '2') {
     state.step = undefined; state.unknown = 0;
     if (input.countries === undefined) { result.lookup = { type: 'countries' }; return result; }
-    return say(input.countries.length ? `Explore destinations with published universities:\n${[...new Set(input.countries)].sort().join('\n')}\nSearch: https://unidoxia.com/search` : 'No published destinations are available right now. Reply 4 to speak to an adviser.');
+    return say(input.countries.length ? `We have universities in:\n${[...new Set(input.countries)].sort().join('\n')}\nSee all courses: https://unidoxia.com/courses` : "Sorry, I can't show destinations right now. Reply 4 for the admissions team.");
   }
   if (trimmed === '3' || /^status$/i.test(trimmed)) {
     state.step = undefined; state.unknown = 0;
-    if (!linked) return say('For your privacy, link your account first. Sign in at https://unidoxia.com/student/profile and use "Get updates on WhatsApp" to generate a code. Send LINK followed by the code from the WhatsApp number saved in your student profile.');
+    if (!linked) return say("To keep your details private, please link your account first.\nSign in at https://unidoxia.com/student/profile and choose \"Link WhatsApp to your account\" to get a code.\nThen send LINK and the code from the number saved in your profile.");
     if (input.applications === undefined) { result.lookup = { type: 'status' }; return result; }
-    return say(input.applications.length ? input.applications.map(a => `${a.university}\n${a.programme}\n${STATUS[a.status] ?? 'Please check your dashboard'}\nLast updated: ${a.changedAt && Number.isFinite(Date.parse(a.changedAt)) ? new Date(a.changedAt).toLocaleDateString('en-GB', { timeZone: 'Europe/London' }) : 'date unavailable'}`).join('\n\n') : 'No applications are available for this linked account. Check your dashboard or reply 4 for an adviser.');
+    return say(input.applications.length ? "Here's the latest on your applications:\n\n" + input.applications.map(a => `${a.university}\n${a.programme}\n${STATUS[a.status] ?? 'Please check your dashboard'}\nLast updated: ${a.changedAt && Number.isFinite(Date.parse(a.changedAt)) ? new Date(a.changedAt).toLocaleDateString('en-GB', { timeZone: 'Europe/London' }) : 'date unavailable'}`).join('\n\n') + '\n\nFor full details, sign in at https://unidoxia.com/student/applications' : "I can't see any applications on this account. Check your dashboard at https://unidoxia.com/student/applications or reply 4 for the admissions team.");
   }
   if (state.step === 'subject') {
     state.subject = trimmed.slice(0, 100); state.step = 'level'; state.unknown = 0;
-    return say('Which study level?\nA Undergraduate\nB Postgraduate\nC Foundation\nD Diploma\nE Doctorate');
+    return say("Which level?\nA Undergraduate\nB Postgraduate (Masters)\nC Foundation\nD Diploma or certificate\nE PhD");
   }
   if (state.step === 'level') {
     const levels: Record<string,string> = { a: 'undergraduate', b: 'postgraduate', c: 'foundation', d: 'diploma', e: 'doctorate', undergraduate: 'undergraduate', bachelor: 'undergraduate', postgraduate: 'postgraduate', master: 'postgraduate', foundation: 'foundation', diploma: 'diploma', doctorate: 'doctorate', phd: 'doctorate' };
+    Object.assign(levels, { masters: 'postgraduate', msc: 'postgraduate', ma: 'postgraduate', mba: 'postgraduate', bsc: 'undergraduate', ba: 'undergraduate', degree: 'undergraduate', certificate: 'diploma' });
     const level = levels[trimmed.toLowerCase()];
-    if (level) { state.level = level; state.step = 'country'; state.unknown = 0; return say('Which country would you prefer? Reply ANY to search all destinations.'); }
+    if (level) { state.level = level; state.step = 'country'; state.unknown = 0; return say("Which country would you like to study in? Reply ANY to see all countries."); }
+    return say('Please reply A, B, C, D or E.');
   }
   if (state.step === 'country') {
     if (input.courses === undefined) {
@@ -133,7 +145,7 @@ export function runWhatsAppFlow(input: FlowInput): FlowResult {
       return result;
     }
     state.step = undefined; state.unknown = 0;
-    return say(input.courses.length ? `Here are matching published courses:\n\n${input.courses.slice(0, 5).map(c => `${c.name}\n${c.university}, ${c.country}\n${c.level}\nhttps://unidoxia.com/courses/${encodeURIComponent(c.id)}`).join('\n\n')}\n\nReply 1 for another search or 4 for an adviser.` : 'No matching published courses were found. Try another subject with 1, or reply 4 for an adviser.');
+    return say(input.courses.length ? `Here are some courses that match:\n\n${input.courses.slice(0, 5).map(c => `${c.name}\n${c.university}, ${c.country}\n${c.level}\nhttps://unidoxia.com/courses/${encodeURIComponent(c.id)}`).join('\n\n')}\n\nReply 1 to search again or 4 for the admissions team.` : "Sorry, I couldn't find a match. Reply 1 to try another subject, or 4 for the admissions team.");
   }
   if (!state.introduced) return say(MENU);
   state.unknown = (state.unknown ?? 0) + 1;

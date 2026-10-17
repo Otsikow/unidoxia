@@ -21,9 +21,7 @@ export function createWhatsAppReplyHandler(db: WhatsAppDatabase, config: WhatsAp
       if (action === 'retain') {
         if (!['active_application', 'complaint'].includes(input.reason)) return json({ error: 'Choose active application or complaint.' }, 400);
         const until = Date.parse(input.retainUntil);
-        const maximum = new Date(); maximum.setUTCMonth(maximum.getUTCMonth() + 12);
-        if (!Number.isFinite(until) || until <= Date.now() || until > maximum.getTime()) return json({ error: 'Retention must be within the next 12 months.' }, 400);
-        checked(await db.from('whatsapp_conversations').update({ retain_until: new Date(until).toISOString(), retain_reason: input.reason }).eq('id', conversationId));
+        if (!Number.isFinite(until) || !checked(await db.rpc('whatsapp_retain', { p_conversation: conversationId, p_until: new Date(until).toISOString(), p_reason: input.reason, p_staff: data.user.id }))) return json({ error: 'Retention must end within 24 months of the last message.' }, 400);
         return json({ ok: true });
       }
       if (action === 'reply') {

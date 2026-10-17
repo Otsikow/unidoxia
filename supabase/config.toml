@@ -52,3 +52,6 @@ verify_jwt = true
 
 [functions.whatsapp-config]
 verify_jwt = false
+
+[functions.zoe-handoff]
+verify_jwt = false
