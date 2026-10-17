@@ -1,3 +1,4 @@
+import { hasAnalyticsConsent } from "@/lib/cookieConsent";
 import { supabase } from '@/integrations/supabase/client';
 
 export type AnalyticsEventName = 'visa_calculator_card_click' | (string & {});
@@ -12,6 +13,7 @@ export async function logAnalyticsEvent(
   eventName: AnalyticsEventName,
   options: AnalyticsEventOptions = {}
 ): Promise<void> {
+  if (!hasAnalyticsConsent()) return;
   const { source = 'web', properties = {}, userId: providedUserId } = options;
 
   try {
@@ -43,6 +45,7 @@ export async function logAnalyticsEvent(
       augmentedProperties.path = window.location.pathname;
     }
 
+    if (!hasAnalyticsConsent()) return;
     const { error } = await supabase.from('analytics_events').insert({
       tenant_id: tenantId,
       event_type: eventName,
@@ -75,7 +78,7 @@ export function logVisaCalculatorCardClick(variant: 'card' | 'cta_button'): void
 type GA4EventParams = Record<string, string | number | boolean | null | undefined>;
 
 export function logGA4Event(eventName: string, params: GA4EventParams = {}): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || !hasAnalyticsConsent()) return;
 
   const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
   if (typeof gtag === 'function') {
