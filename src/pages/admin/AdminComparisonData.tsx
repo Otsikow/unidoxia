@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Clock3, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -48,7 +49,7 @@ export default function AdminComparisonData() {
           {!isLoading && !data?.proposals.length && <p className="text-sm text-muted-foreground">No proposals are awaiting review.</p>}
           {data?.proposals.map((proposal: any) => (
             <div key={proposal.id} className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div><p className="font-medium">Detected {new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(new Date(proposal.detected_at))}</p><a className="text-sm text-primary underline" href={proposal.source_url} target="_blank" rel="noreferrer">Review official source</a></div>
+              <div><p className="font-medium">Detected {formatUkDate(proposal.detected_at)}</p><a className="text-sm text-primary underline" href={proposal.source_url} target="_blank" rel="noreferrer">Review official source</a></div>
               <Badge variant="outline">Approval required</Badge>
             </div>
           ))}

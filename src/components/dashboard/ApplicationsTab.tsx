@@ -359,7 +359,7 @@ export default function ApplicationsTab() {
                       </Select>
                     </TableCell>
                     <TableCell>
-                      {new Date(app.intake_year, app.intake_month - 1).toLocaleDateString('en-US', {
+                      {new Date(app.intake_year, app.intake_month - 1).toLocaleDateString('en-GB', {
                         month: 'short',
                         year: 'numeric',
                       })}

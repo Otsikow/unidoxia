@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -351,7 +352,7 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
                           <span>{formatFileSize(document.file_size)}</span>
                           <span>•</span>
                           <span>
-                            {new Date(document.updated_at).toLocaleDateString()}
+                            {formatUkDate(document.updated_at)}
                           </span>
                         </div>
                       </div>

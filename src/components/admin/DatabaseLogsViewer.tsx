@@ -1,3 +1,4 @@
+import { formatUkTime } from '@/lib/dateFormat';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -155,7 +156,7 @@ export const DatabaseLogsViewer = () => {
                           </div>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             {log.duration && <span>{log.duration}ms</span>}
-                            <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
+                            <span>{formatUkTime(log.timestamp)}</span>
                           </div>
                         </div>
                         

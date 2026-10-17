@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -334,7 +335,7 @@ export default function FeedbackAnalytics() {
                         {feedback.message}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">
-                        {new Date(feedback.created_at).toLocaleString()}
+                        {formatUkDateTime(feedback.created_at)}
                       </p>
                     </CardContent>
                   </Card>
@@ -394,7 +395,7 @@ export default function FeedbackAnalytics() {
                   <div>
                     <span className="text-sm text-muted-foreground">Submitted:</span>
                     <p className="mt-1 text-sm">
-                      {new Date(selectedFeedback.created_at).toLocaleString()}
+                      {formatUkDateTime(selectedFeedback.created_at)}
                     </p>
                   </div>
 

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +116,7 @@ export default function BuildPreviews() {
     if (minutes < 1) return "just now";
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
-    return date.toLocaleDateString();
+    return formatUkDate(date);
   };
 
   return (

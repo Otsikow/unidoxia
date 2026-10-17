@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
@@ -132,7 +133,7 @@ const generateApplicationNudges = (
     const missingDocs = missingDocsMap[app.id] ?? [];
     const deadlineDate = safeParseDate(app.intake?.app_deadline);
     const daysUntilDeadline = deadlineDate ? differenceInCalendarDays(deadlineDate, now) : null;
-    const dueDateLabel = deadlineDate ? format(deadlineDate, 'MMM d, yyyy') : undefined;
+    const dueDateLabel = deadlineDate ? formatUkDate(deadlineDate) : undefined;
     const deadlineDistance = deadlineDate ? formatDistanceToNowStrict(deadlineDate, { addSuffix: true }) : null;
     const approximateIntakeDate =
       app.intake_year && app.intake_month
@@ -770,7 +771,7 @@ export default function ApplicationTracking() {
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          Updated: {new Date(app.updated_at).toLocaleDateString()}
+                          Updated: {formatUkDate(app.updated_at)}
                         </span>
                       </div>
                       <StatusBadge status={app.status} />

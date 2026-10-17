@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { useEffect, useMemo, useState, Suspense, type CSSProperties } from "react";
@@ -409,7 +410,7 @@ export default function StaffDashboard() {
                                 {row.payoutStatus}
                               </Badge>
                             </TableCell>
-                            <TableCell>{row.createdAt ? format(new Date(row.createdAt), "MMM d, yyyy") : "—"}</TableCell>
+                            <TableCell>{row.createdAt ? formatUkDate(row.createdAt) : "Not set"}</TableCell>
                             <TableCell className="text-right">
                               <Button
                                 size="sm"

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -151,7 +152,7 @@ const AccountTab = ({ profile }: AccountTabProps) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Member since:</span>
-                <span>{new Date(profile.created_at).toLocaleDateString()}</span>
+                <span>{formatUkDate(profile.created_at)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Account type:</span>

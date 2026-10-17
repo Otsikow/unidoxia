@@ -463,12 +463,12 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  Saving
                 </>
               ) : (
                 <>
                   <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                  Save changes
                 </>
               )}
             </Button>

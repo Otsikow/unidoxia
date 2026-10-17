@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -90,7 +91,7 @@ export function StaffTaskAutomationPanel() {
                     <div className="flex flex-wrap items-center gap-2 text-xs">
                       <Badge variant="secondary">Priority {task.priority}</Badge>
                       <Badge variant="outline">
-                        Due {task.dueAt ? new Date(task.dueAt).toLocaleDateString() : "Flexible"}
+                        Due {task.dueAt ? formatUkDate(task.dueAt) : "Flexible"}
                       </Badge>
                     </div>
                   </div>

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDebounce } from '@/hooks/useDebounce';
 import { GraduationCap, MapPin, DollarSign, Calendar, Search, Loader2, CalendarDays } from 'lucide-react';
 import {
-  getAcademicYearOptions,
+  getStudentAcademicYearOptions,
   getIntakeOptionsForYear,
 } from '@/lib/intakeOptions';
 import { formatCourseFee } from '@/lib/marketplacePresentation';
@@ -290,7 +291,7 @@ export default function ProgramSelectionStep({
                 ) : (
                   programs.map((program) => (
                     <SelectItem key={program.id} value={program.id}>
-                      {program.name} - {program.university.name}
+                      {program.name}, {program.university.name}
                     </SelectItem>
                   ))
                 )}
@@ -366,8 +367,8 @@ export default function ProgramSelectionStep({
                     <SelectContent>
                       {intakes.map((intake) => (
                         <SelectItem key={intake.id} value={intake.id}>
-                          {intake.term} - Starts: {new Date(intake.start_date).toLocaleDateString()}{' '}
-                          (Deadline: {new Date(intake.app_deadline).toLocaleDateString()})
+                          {intake.term}, starts {formatUkDate(intake.start_date)}{' '}
+                          (deadline {formatUkDate(intake.app_deadline)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -407,14 +408,14 @@ function PreferredStudyYearAndIntake({
   intakeMonth,
   onChange,
 }: PreferredStudyYearAndIntakeProps) {
-  const academicYears = getAcademicYearOptions();
+  const academicYears = getStudentAcademicYearOptions(new Date(), undefined, intakeYear);
 
   // Determine which academic year currently matches the saved intake.
   const matchingAcademicYear =
-    academicYears.find((y) => y.startYear === intakeYear) ?? academicYears[0];
+    academicYears.find((y) => y.startYear === intakeYear) ?? academicYears.find((y) => y.startYear === new Date().getFullYear());
   const selectedStartYear = matchingAcademicYear?.startYear ?? academicYears[0]?.startYear ?? 0;
 
-  const intakeOptions = getIntakeOptionsForYear(selectedStartYear);
+  const intakeOptions = getIntakeOptionsForYear(selectedStartYear, new Date(), undefined, intakeMonth);
 
   const handleYearChange = (value: string) => {
     const year = parseInt(value, 10);
@@ -434,7 +435,7 @@ function PreferredStudyYearAndIntake({
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <CalendarDays className="h-5 w-5" />
-          Choose Your Preferred Study Year
+          Choose your preferred study year
         </CardTitle>
         <CardDescription>
           Select the academic year and intake period you would like to apply for. UniDoxia
@@ -445,7 +446,7 @@ function PreferredStudyYearAndIntake({
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="preferredYear">Preferred Academic Year *</Label>
+            <Label htmlFor="preferredYear">Academic year *</Label>
             <Select value={selectedStartYear ? selectedStartYear.toString() : ''} onValueChange={handleYearChange}>
               <SelectTrigger id="preferredYear">
                 <SelectValue placeholder="Select academic year" />
@@ -461,7 +462,7 @@ function PreferredStudyYearAndIntake({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="preferredIntake">Preferred Intake *</Label>
+            <Label htmlFor="preferredIntake">Preferred intake *</Label>
             <Select
               value={intakeMonth ? intakeMonth.toString() : ''}
               onValueChange={handleMonthChange}

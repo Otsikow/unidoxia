@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ export function ScholarshipVerificationLog({ scholarshipId }: { scholarshipId: s
               <li key={l.id} className="text-sm border-l-2 border-primary/40 pl-3">
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{l.action}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString()}</span>
+                  <span className="text-xs text-muted-foreground">{formatUkDateTime(l.created_at)}</span>
                 </div>
                 {l.notes ? <p className="text-xs text-muted-foreground mt-0.5">{l.notes}</p> : null}
               </li>

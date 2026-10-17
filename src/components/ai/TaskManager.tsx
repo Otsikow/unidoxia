@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import { AlertCircle, Calendar, CheckSquare, Filter, Flag, Plus, User } from "lucide-react";
 
@@ -224,9 +225,9 @@ export default function TaskManager() {
                   const priorityClass = priorityBadges[(task.priority ?? "medium") as Priority] ?? priorityBadges.medium;
                   const statusClass = statusBadges[task.status ?? "open"] ?? statusBadges.open;
                   const dueDisplay = task.dueAt
-                    ? new Date(task.dueAt).toLocaleDateString()
+                    ? formatUkDate(task.dueAt)
                     : task.createdAt
-                      ? new Date(task.createdAt).toLocaleDateString()
+                      ? formatUkDate(task.createdAt)
                       : "No due date";
 
                   return (

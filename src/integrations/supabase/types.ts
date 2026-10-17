@@ -1720,6 +1720,9 @@ export type Database = {
       }
       education_records: {
         Row: {
+          board: string | null
+          language_of_instruction: string | null
+          grades: string | null
           certificate_url: string | null
           country: string
           created_at: string | null
@@ -1735,6 +1738,9 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          board?: string | null
+          language_of_instruction?: string | null
+          grades?: string | null
           certificate_url?: string | null
           country: string
           created_at?: string | null
@@ -1750,6 +1756,9 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          board?: string | null
+          language_of_instruction?: string | null
+          grades?: string | null
           certificate_url?: string | null
           country?: string
           created_at?: string | null
@@ -3611,6 +3620,24 @@ export type Database = {
       }
       students: {
         Row: {
+          marital_status: string | null
+          mailing_postcode: string | null
+          permanent_address: string | null
+          permanent_postcode: string | null
+          same_as_mailing_address: boolean | null
+          other_citizenship: string | null
+          other_citizenship_country: string | null
+          previous_study_abroad: string | null
+          previous_study_abroad_details: string | null
+          previous_residence_abroad: string | null
+          previous_residence_abroad_details: string | null
+          visa_refusals: string | null
+          visa_refusals_details: string | null
+          city_of_birth: string | null
+          country_of_birth: string | null
+          passport_issue_date: string | null
+          passport_place_of_issue: string | null
+          gender: string | null
           address: Json | null
           address_line_1: string | null
           address_line_2: string | null
@@ -3666,6 +3693,24 @@ export type Database = {
           visa_history_json: Json | null
         }
         Insert: {
+          marital_status?: string | null
+          mailing_postcode?: string | null
+          permanent_address?: string | null
+          permanent_postcode?: string | null
+          same_as_mailing_address?: boolean | null
+          other_citizenship?: string | null
+          other_citizenship_country?: string | null
+          previous_study_abroad?: string | null
+          previous_study_abroad_details?: string | null
+          previous_residence_abroad?: string | null
+          previous_residence_abroad_details?: string | null
+          visa_refusals?: string | null
+          visa_refusals_details?: string | null
+          city_of_birth?: string | null
+          country_of_birth?: string | null
+          passport_issue_date?: string | null
+          passport_place_of_issue?: string | null
+          gender?: string | null
           address?: Json | null
           address_line_1?: string | null
           address_line_2?: string | null
@@ -3721,6 +3766,24 @@ export type Database = {
           visa_history_json?: Json | null
         }
         Update: {
+          marital_status?: string | null
+          mailing_postcode?: string | null
+          permanent_address?: string | null
+          permanent_postcode?: string | null
+          same_as_mailing_address?: boolean | null
+          other_citizenship?: string | null
+          other_citizenship_country?: string | null
+          previous_study_abroad?: string | null
+          previous_study_abroad_details?: string | null
+          previous_residence_abroad?: string | null
+          previous_residence_abroad_details?: string | null
+          visa_refusals?: string | null
+          visa_refusals_details?: string | null
+          city_of_birth?: string | null
+          country_of_birth?: string | null
+          passport_issue_date?: string | null
+          passport_place_of_issue?: string | null
+          gender?: string | null
           address?: Json | null
           address_line_1?: string | null
           address_line_2?: string | null
@@ -5012,6 +5075,11 @@ export type Database = {
       }
     }
     Functions: {
+      save_application_student_details: {
+        Args: { p_student_id: string; p_details: Json }
+        Returns: undefined
+      }
+
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean

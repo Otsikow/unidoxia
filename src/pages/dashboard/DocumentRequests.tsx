@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
@@ -68,7 +69,7 @@ const formatDate = (dateString: string | null) => {
   if (!dateString) return "—";
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString();
+  return formatUkDate(date);
 };
 
 const getStatusVariant = (

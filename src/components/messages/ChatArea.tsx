@@ -1,8 +1,9 @@
+import { formatUkDate, formatUkTime } from '@/lib/dateFormat';
 import { useEffect, useMemo, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { format, formatDistanceToNow, isToday, isYesterday } from 'date-fns';
+import { formatDistanceToNow, isToday, isYesterday } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { MessageInput } from './MessageInput';
 import type {
@@ -232,11 +233,11 @@ export function ChatArea({
     const d = new Date(date);
     if (isToday(d)) return 'Today';
     if (isYesterday(d)) return 'Yesterday';
-    return format(d, 'MMMM dd, yyyy');
+    return formatUkDate(d);
   };
 
   const formatMessageTime = (date: string) =>
-    format(new Date(date), 'HH:mm');
+    formatUkTime(date);
 
   const shouldShowDateDivider = (
     current: Message,

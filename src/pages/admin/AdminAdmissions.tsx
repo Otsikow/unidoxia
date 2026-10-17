@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Card,
@@ -664,7 +665,7 @@ const AdminAdmissionsOversight = ({ embedded = false }: AdminAdmissionsOversight
           </TableCell>
           <TableCell className="min-w-[120px]">{countryValue}</TableCell>
           <TableCell className="min-w-[140px]">
-            {submittedDate ? format(new Date(submittedDate), "MMM d, yyyy") : "Not submitted"}
+            {submittedDate ? formatUkDate(submittedDate) : "Not submitted"}
           </TableCell>
           <TableCell className="min-w-[140px]">
             {application.agent?.profile?.full_name ?? application.agent?.company_name ?? "—"}

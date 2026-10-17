@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import {
   Card,
@@ -285,7 +286,7 @@ const ZoeIntelligence = () => {
   };
 
   const generatedLabel = useMemo(
-    () => new Date(report.generatedAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }),
+    () => formatUkDateTime(report.generatedAt),
     [report.generatedAt],
   );
 

@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -163,7 +164,7 @@ export function StaffTaskOverview() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Last synced {new Date(data.lastRefreshedAt).toLocaleString()}.
+              Last synced {formatUkDateTime(data.lastRefreshedAt)}.
             </p>
           </>
         ) : null}

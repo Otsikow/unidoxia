@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -185,7 +186,7 @@ export default function ReviewSubmitStep({
         <CardContent className="space-y-3 text-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <p className="font-medium text-muted-foreground">Full Name</p>
+              <p className="font-medium text-muted-foreground">Full name</p>
               <p>{formData.personalInfo.fullName}</p>
             </div>
             <div>
@@ -197,15 +198,15 @@ export default function ReviewSubmitStep({
               <p>{formData.personalInfo.phone}</p>
             </div>
             <div>
-              <p className="font-medium text-muted-foreground">Date of Birth</p>
-              <p>{formData.personalInfo.dateOfBirth || 'Not provided'}</p>
+              <p className="font-medium text-muted-foreground">Date of birth</p>
+              <p>{formatUkDate(formData.personalInfo.dateOfBirth) || 'Not provided'}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground">Nationality</p>
               <p>{formData.personalInfo.nationality}</p>
             </div>
             <div>
-              <p className="font-medium text-muted-foreground">Current Country</p>
+              <p className="font-medium text-muted-foreground">Current country</p>
               <p>{formData.personalInfo.currentCountry}</p>
             </div>
             <div>
@@ -213,24 +214,48 @@ export default function ReviewSubmitStep({
               <p>{formData.personalInfo.homeAddress || 'Not provided'}</p>
             </div>
             <div>
-              <p className="font-medium text-muted-foreground">Correspondent Address</p>
+              <p className="font-medium text-muted-foreground">Mailing address</p>
               <p>{formData.personalInfo.correspondentAddress || 'Not provided'}</p>
             </div>
+            {([
+              ['gender', 'Gender'], ['maritalStatus', 'Marital status'],
+              ['cityOfBirth', 'City of birth'], ['countryOfBirth', 'Country of birth'],
+              ['passportIssueDate', 'Passport issue date'], ['passportPlaceOfIssue', 'Passport place of issue'],
+              ['mailingPostcode', 'Mailing postcode'],
+            ] as const).map(([field, label]) => <div key={field}>
+              <p className="font-medium text-muted-foreground">{label}</p>
+              <p>{(field === 'passportIssueDate' ? formatUkDate(formData.personalInfo[field]) : formData.personalInfo[field]) || 'Not provided'}</p>
+            </div>)}
+            <div>
+              <p className="font-medium text-muted-foreground">Permanent address and postcode</p>
+              <p>{formData.personalInfo.sameAsMailingAddress
+                ? `${formData.personalInfo.correspondentAddress}, ${formData.personalInfo.mailingPostcode}`
+                : `${formData.personalInfo.permanentAddress}, ${formData.personalInfo.permanentPostcode}`}</p>
+            </div>
+            {([
+              ['otherCitizenship', 'Other citizenship', 'otherCitizenshipCountry'],
+              ['previousStudyAbroad', 'Previous study abroad', 'previousStudyAbroadDetails'],
+              ['previousResidenceAbroad', 'Previous residence abroad', 'previousResidenceAbroadDetails'],
+              ['visaRefusals', 'Previous visa refusals', 'visaRefusalsDetails'],
+            ] as const).map(([answer, label, detail]) => <div key={answer}>
+              <p className="font-medium text-muted-foreground">{label}</p>
+              <p>{formData.personalInfo[answer] === 'yes' ? `Yes: ${formData.personalInfo[detail]}` : 'No'}</p>
+            </div>)}
           </div>
         </CardContent>
       </Card>
 
-      {/* Emergency Contact Section */}
+      {/* Emergency contact Section */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <User className="h-5 w-5" />
-            Emergency Contact
+            Emergency contact
           </CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="font-medium text-muted-foreground">Full Name</p>
+            <p className="font-medium text-muted-foreground">Full name</p>
             <p>{formData.emergencyContact.fullName || 'Not provided'}</p>
           </div>
           <div>
@@ -275,11 +300,13 @@ export default function ReviewSubmitStep({
                       <Badge variant="secondary">{edu.level}</Badge>
                     </div>
                     <p className="text-muted-foreground">
-                      {edu.country} • {edu.startDate} to {edu.endDate || 'Present'}
+                      {edu.country} • {formatUkDate(edu.startDate)} to {edu.endDate ? formatUkDate(edu.endDate) : 'Present'}
                     </p>
+                    {edu.board && <p>Board: {edu.board}</p>}
+                    <p>Language of instruction: {edu.languageOfInstruction || 'Not provided'}</p>
                     {edu.gpa && (
                       <p className="text-muted-foreground">
-                        GPA: {edu.gpa} / {edu.gradeScale}
+                        Grades: {edu.gpa} / {edu.gradeScale}
                       </p>
                     )}
                   </CardContent>
@@ -311,17 +338,17 @@ export default function ReviewSubmitStep({
                   {programDetails.name ?? 'Course unavailable'}
                 </p>
                 <p className="text-muted-foreground">
-                  {(programDetails.level ?? '—')} • {(programDetails.discipline ?? '—')}
+                  {(programDetails.level ?? '-')} • {(programDetails.discipline ?? '-')}
                 </p>
               </div>
               <div>
                 <p className="font-medium text-muted-foreground">University</p>
                 <p>
-                  {programDetails.university?.name ?? '—'}, {programDetails.university?.city ?? '—'}, {programDetails.university?.country ?? '—'}
+                  {programDetails.university?.name ?? '-'}, {programDetails.university?.city ?? '-'}, {programDetails.university?.country ?? '-'}
                 </p>
               </div>
               <div>
-                <p className="font-medium text-muted-foreground">Intended Intake</p>
+                <p className="font-medium text-muted-foreground">Preferred intake</p>
                 <p>
                   {getMonthName(formData.programSelection.intakeMonth)}{' '}
                   {formData.programSelection.intakeYear}

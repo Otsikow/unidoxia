@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useMemo, type ComponentType } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -277,11 +278,7 @@ export function AgentPayments() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatUkDate(dateString);
   };
 
   const getStatusBadge = (status: string) => {
@@ -379,7 +376,7 @@ export function AgentPayments() {
 
     return Array.from(monthlyMap.entries())
       .map(([month, data]) => ({
-        month: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: new Date(month + '-01').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
         earned: data.earned,
         pending: data.pending,
       }))
@@ -633,7 +630,7 @@ export function AgentPayments() {
                   disabled={savingDetails || currentPaymentDetails.trim().length === 0}
                   className="gap-2 self-start sm:self-auto"
                 >
-                  {savingDetails ? 'Saving...' : 'Save Payment Details'}
+                  {savingDetails ? 'Saving' : 'Save payment details'}
                 </Button>
               </div>
             </div>

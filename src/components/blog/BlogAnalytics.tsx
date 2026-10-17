@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +17,7 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from "lucide-react";
-import { format, subDays, subWeeks, subMonths } from "date-fns";
+import { subDays, subWeeks, subMonths } from "date-fns";
 import { useEffect, useRef } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
@@ -309,7 +310,7 @@ export function BlogAnalytics({ className = "" }: BlogAnalyticsProps) {
                   <TableCell>
                     <div className="text-sm">
                       {post.published_at ? (
-                        format(new Date(post.published_at), "MMM d, yyyy")
+                        formatUkDate(post.published_at)
                       ) : (
                         <span className="text-muted-foreground">Not published</span>
                       )}

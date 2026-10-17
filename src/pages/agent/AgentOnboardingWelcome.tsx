@@ -228,7 +228,7 @@ const AgentOnboardingWelcome = () => {
                 onClick={markOnboarded}
                 disabled={markingOnboarded}
               >
-                {markingOnboarded ? "Saving…" : "Skip to Dashboard"}
+                {markingOnboarded ? "Saving" : "Skip to dashboard"}
               </Button>
             )}
           </div>

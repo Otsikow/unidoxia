@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -340,7 +341,7 @@ export default function OverviewTab({ metrics, loading }: OverviewTabProps) {
                 {analyticsLoading
                   ? 'Loading...'
                   : showcaseStats.lastUpdated
-                  ? new Date(showcaseStats.lastUpdated).toLocaleString()
+                  ? formatUkDateTime(showcaseStats.lastUpdated)
                   : 'Not available'}
               </p>
             </div>

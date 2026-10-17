@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, Clock, ExternalLink, MapPin } from "lucide-react";
@@ -73,7 +74,7 @@ export default function CourseDetail() {
   const sections = buildCourseSections(course);
   const duration = course.duration_months ? `${course.duration_months} months` : "Check official duration";
   const checked = course.source_last_checked_at
-    ? new Date(course.source_last_checked_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    ? formatUkDate(course.source_last_checked_at)
     : "Awaiting source review";
   const currentHref = `${location.pathname}${location.search}`;
   const universityState = navigationStateFromCurrentPage(

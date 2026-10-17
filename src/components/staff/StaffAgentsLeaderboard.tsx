@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState } from "react";
 import { Award } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,7 +70,7 @@ export function StaffAgentsLeaderboard() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
-                    {agent.updatedAt ? new Date(agent.updatedAt).toLocaleDateString() : "—"}
+                    {agent.updatedAt ? formatUkDate(agent.updatedAt) : "Not set"}
                   </TableCell>
                 </TableRow>
               ))}

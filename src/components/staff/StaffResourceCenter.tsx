@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Card,
@@ -37,7 +38,7 @@ import {
   Video,
   type LucideIcon,
 } from "lucide-react";
-import { format } from "date-fns";
+
 
 const STORAGE_BUCKET = "resources";
 
@@ -435,7 +436,7 @@ const StaffResourceCenter = () => {
                     {items.map((resource) => {
                       const Icon = getFileIcon(resource.fileType);
                       const uploadedDate = resource.createdAt
-                        ? format(new Date(resource.createdAt), "PPP")
+                        ? formatUkDate(resource.createdAt)
                         : null;
 
                       return (

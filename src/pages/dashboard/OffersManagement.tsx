@@ -1,6 +1,7 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+
 import { Download, Filter, RefreshCw, Search } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -165,7 +166,7 @@ const toProcessedRecord = (record: CombinedRecord): ProcessedRecord => {
 const formatDate = (isoDate?: string) => {
   if (!isoDate) return "—";
   try {
-    return format(new Date(isoDate), "PPP");
+    return formatUkDate(isoDate);
   } catch (error) {
     console.warn("Unable to format date", error);
     return "—";

@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -385,7 +386,7 @@ const AdminBroadcastCenter = () => {
       toast({
         title: scheduledFor ? "Broadcast scheduled" : "Broadcast queued",
         description: scheduledFor
-          ? `Broadcast will be sent at ${new Date(scheduledFor).toLocaleString()}.`
+          ? `Broadcast will be sent at ${formatUkDateTime(scheduledFor)}.`
           : `${selectedAudience.length} recipients were processed. Review Delivery Logs for channel results.`,
       });
 
@@ -839,7 +840,7 @@ const AdminBroadcastCenter = () => {
                           <td className="px-3 py-2 text-muted-foreground">{log.recipient_id}</td>
                           <td className="px-3 py-2 text-muted-foreground">{log.broadcast_id}</td>
                           <td className="px-3 py-2 text-muted-foreground">
-                            <span className="inline-flex items-center gap-1"><Clock3 className="h-3 w-3" />{new Date(log.created_at).toLocaleString()}</span>
+                            <span className="inline-flex items-center gap-1"><Clock3 className="h-3 w-3" />{formatUkDateTime(log.created_at)}</span>
                           </td>
                         </tr>
                       ))}

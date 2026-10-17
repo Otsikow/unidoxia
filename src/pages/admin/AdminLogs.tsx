@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Shield, Terminal, Download, RefreshCw, Search } from "lucide-react";
 
@@ -541,7 +542,7 @@ const AdminLogs = () => {
                   <span className="text-muted-foreground">{record.entity}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t">
-                  <span>{new Date(record.createdAt).toLocaleString()}</span>
+                  <span>{formatUkDateTime(record.createdAt)}</span>
                   <span className="font-mono">{record.ipAddress ?? "—"}</span>
                 </div>
               </div>
@@ -602,7 +603,7 @@ const AdminLogs = () => {
                       <TableCell className="hidden lg:table-cell">
                         <span className="text-xs text-muted-foreground line-clamp-2">{formatDetails(record.details)}</span>
                       </TableCell>
-                      <TableCell className="text-sm whitespace-nowrap">{new Date(record.createdAt).toLocaleString()}</TableCell>
+                      <TableCell className="text-sm whitespace-nowrap">{formatUkDateTime(record.createdAt)}</TableCell>
                       <TableCell className="hidden xl:table-cell text-sm">{record.ipAddress ?? "—"}</TableCell>
                     </TableRow>
                   ))}

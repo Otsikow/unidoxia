@@ -1,3 +1,7 @@
+import { UKDateInput } from '@/components/ui/uk-date-input';
+import { applicationDateBounds } from '@/lib/applicationDates';
+import type { ApplicationFormData } from '@/types/application';
+import { applicationEducationHistorySchema } from '@/lib/applicationValidation';
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,16 +12,7 @@ import { GraduationCap, Plus, Trash2, Calendar, Globe, Building } from 'lucide-r
 import { v4 as uuidv4 } from 'uuid';
 import { EDUCATION_LEVEL_OPTIONS, normalizeEducationLevel } from '@/lib/education';
 
-interface EducationRecord {
-  id: string;
-  level: string;
-  institutionName: string;
-  country: string;
-  startDate: string;
-  endDate: string;
-  gpa: string;
-  gradeScale: string;
-}
+type EducationRecord = ApplicationFormData['educationHistory'][number];
 
 interface EducationHistoryStepProps {
   data: EducationRecord[];
@@ -46,6 +41,8 @@ export default function EducationHistoryStep({
       endDate: '',
       gpa: '',
       gradeScale: '4.0',
+      board: '',
+      languageOfInstruction: '',
     };
     onChange([...data, newRecord]);
     setEditingId(newRecord.id);
@@ -68,18 +65,7 @@ export default function EducationHistoryStep({
     onChange(filtered);
   };
 
-  const isRecordValid = (record: EducationRecord) => {
-    return (
-      record.level !== '' &&
-      record.institutionName.trim() !== '' &&
-      record.country.trim() !== '' &&
-      record.startDate !== ''
-    );
-  };
-
-  const isValid = () => {
-    return data.length > 0 && data.every(isRecordValid);
-  };
+  const isValid = () => applicationEducationHistorySchema.safeParse(data).success;
 
   return (
     <div className="space-y-6">
@@ -90,7 +76,7 @@ export default function EducationHistoryStep({
             Education History
           </CardTitle>
           <CardDescription>
-            Add your educational background. Include at least your most recent qualification.
+            Include your secondary school and each subsequent qualification. Complete all dates, grades and languages of instruction.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -150,7 +136,7 @@ export default function EducationHistoryStep({
                       <div className="space-y-2">
                         <Label htmlFor={`institution-${record.id}`} className="flex items-center gap-2">
                           <Building className="h-4 w-4" />
-                          Institution Name *
+                          {record.level === 'high_school' ? 'Secondary school name *' : 'Institution name *'}
                         </Label>
                         <Input
                           id={`institution-${record.id}`}
@@ -181,35 +167,45 @@ export default function EducationHistoryStep({
                       <div className="space-y-2">
                         <Label htmlFor={`startDate-${record.id}`} className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          Start Date *
+                          Start date *
                         </Label>
-                        <Input
+                        <UKDateInput
                           id={`startDate-${record.id}`}
-                          type="date"
+                          bounds={record.level === 'high_school' ? applicationDateBounds().secondarySchool : undefined}
                           value={record.startDate}
-                          onChange={(e) => updateRecord(record.id, 'startDate', e.target.value)}
+                          onValueChange={(value) => updateRecord(record.id, 'startDate', value)}
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor={`endDate-${record.id}`} className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          End Date
+                          Completion date *
                         </Label>
-                        <Input
+                        <UKDateInput
                           id={`endDate-${record.id}`}
-                          type="date"
+                          bounds={record.level === 'high_school' ? applicationDateBounds().secondarySchool : undefined}
                           value={record.endDate}
-                          onChange={(e) => updateRecord(record.id, 'endDate', e.target.value)}
+                          onValueChange={(value) => updateRecord(record.id, 'endDate', value)}
                         />
-                        <p className="text-xs text-muted-foreground">Leave blank if currently enrolled</p>
+                        <p className="text-xs text-muted-foreground">Use your expected completion date if currently enrolled</p>
                       </div>
                     </div>
 
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor={`language-${record.id}`}>Language of instruction *</Label>
+                        <Input id={`language-${record.id}`} value={record.languageOfInstruction || ''} required onChange={(e) => updateRecord(record.id, 'languageOfInstruction', e.target.value)} />
+                      </div>
+                      {record.level === 'high_school' && <div className="space-y-2">
+                        <Label htmlFor={`board-${record.id}`}>Secondary school board *</Label>
+                        <Input id={`board-${record.id}`} value={record.board || ''} required onChange={(e) => updateRecord(record.id, 'board', e.target.value)} />
+                      </div>}
+                    </div>
                     {/* GPA & Grade Scale */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor={`gpa-${record.id}`}>GPA / Grade</Label>
+                        <Label htmlFor={`gpa-${record.id}`}>Grades *</Label>
                         <Input
                           id={`gpa-${record.id}`}
                           value={record.gpa}
@@ -219,7 +215,7 @@ export default function EducationHistoryStep({
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor={`gradeScale-${record.id}`}>Grade Scale / Exam System</Label>
+                        <Label htmlFor={`gradeScale-${record.id}`}>Grade scale or exam system *</Label>
                         <Select
                           value={record.gradeScale}
                           onValueChange={(value) => updateRecord(record.id, 'gradeScale', value)}

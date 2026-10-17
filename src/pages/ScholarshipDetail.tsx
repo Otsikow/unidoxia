@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
+
 import { AlertTriangle, CalendarDays, ExternalLink, Globe2, GraduationCap, ShieldCheck, Users } from "lucide-react";
 
 const db = supabase as any;
@@ -137,10 +138,10 @@ export default function ScholarshipDetail() {
       <div className="grid md:grid-cols-3 gap-4">
         <KeyFact icon={<Globe2 className="h-4 w-4" />} label="Country" value={s.country} />
         <KeyFact icon={<GraduationCap className="h-4 w-4" />} label="Study level" value={s.study_level} />
-        <KeyFact icon={<CalendarDays className="h-4 w-4" />} label="Deadline" value={s.deadline ? format(new Date(s.deadline), "d MMMM yyyy") : "Rolling / not specified"} />
+        <KeyFact icon={<CalendarDays className="h-4 w-4" />} label="Deadline" value={s.deadline ? formatUkDate(s.deadline) : "Rolling / not specified"} />
         <KeyFact icon={<ShieldCheck className="h-4 w-4" />} label="Funding" value={s.scholarship_value ?? s.funding_type} />
         <KeyFact icon={<Users className="h-4 w-4" />} label="Awards available" value={s.number_of_awards ? String(s.number_of_awards) : "Not specified"} />
-        <KeyFact icon={<ShieldCheck className="h-4 w-4" />} label="Last verified" value={s.last_verified_at ? format(new Date(s.last_verified_at), "d MMM yyyy") : "Not specified"} />
+        <KeyFact icon={<ShieldCheck className="h-4 w-4" />} label="Last verified" value={s.last_verified_at ? formatUkDate(s.last_verified_at) : "Not specified"} />
       </div>
 
       {applyUrl && !isClosed && (

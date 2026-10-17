@@ -585,7 +585,7 @@ const AdminSettings = () => {
 
       <div className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
         <Button variant="outline" size="sm" className="w-full sm:w-auto">{t("common.reset", { defaultValue: "Reset" })}</Button>
-        <Button onClick={handleSave} size="sm" className="w-full sm:w-auto">{t("common.saveChanges", { defaultValue: "Save Changes" })}</Button>
+        <Button onClick={handleSave} size="sm" className="w-full sm:w-auto">{t("common.saveChanges", { defaultValue: "Save changes" })}</Button>
       </div>
     </div>
   );

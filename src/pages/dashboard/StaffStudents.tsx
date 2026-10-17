@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 "use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useState, Suspense } from "react";
@@ -135,7 +136,7 @@ const ACTIVE_STATUSES = new Set<ApplicationStatus | null>([
 const formatDate = (value: string | null) => {
   if (!value) return "Unknown";
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Unknown" : date.toLocaleString();
+  return Number.isNaN(date.getTime()) ? "Unknown" : formatUkDateTime(date);
 };
 
 const deriveDisplayStatus = (status: ApplicationStatus | null) =>

@@ -612,7 +612,7 @@ export default function SoPGenerator({
                     ) : (
                       <CheckCircle className="h-4 w-4 mr-2" />
                     )}
-                    {saving ? "Saving..." : "Save"}
+                    {saving ? "Saving" : "Save"}
                   </Button>
                 </div>
               </div>

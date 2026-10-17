@@ -1,9 +1,11 @@
+import { getAcademicYearOptions } from '@/lib/intakeOptions';
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { formatIntakeLabel } from "@/lib/intakeOptions";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { logSecurityEvent } from "@/lib/securityLogger";
@@ -181,6 +183,9 @@ const AdminStudentDetail = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
 
+  const [intakeMonth, setIntakeMonth] = useState("");
+  const [intakeYear, setIntakeYear] = useState("");
+  const [intakeSaving, setIntakeSaving] = useState(false);
   const [bundle, setBundle] = useState<StudentBundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -233,6 +238,8 @@ const AdminStudentDetail = () => {
         .maybeSingle();
 
       if (archiveData) {
+        setIntakeMonth(archiveData.preferred_intake_month ? String(archiveData.preferred_intake_month) : '');
+        setIntakeYear(archiveData.preferred_intake_year ? String(archiveData.preferred_intake_year) : '');
         setBundle((prev) => {
           if (!prev) return prev;
           return {
@@ -271,6 +278,7 @@ const AdminStudentDetail = () => {
   /* ------------------------------ Derived ------------------------------ */
 
   const student = bundle?.student;
+  const intakeYears = getAcademicYearOptions(new Date(), undefined, student?.preferred_intake_year ?? undefined).map(({ startYear }) => startYear);
   const documents = bundle?.documents ?? [];
   const educationRecords = bundle?.education_records ?? [];
 
@@ -282,9 +290,9 @@ const AdminStudentDetail = () => {
 
     if (!rawName) {
       return {
-        firstName: "—",
-        middleName: "—",
-        surname: "—",
+        firstName: "-",
+        middleName: "-",
+        surname: "-",
       };
     }
 
@@ -293,15 +301,15 @@ const AdminStudentDetail = () => {
     if (parts.length === 1) {
       return {
         firstName: parts[0],
-        middleName: "—",
-        surname: "—",
+        middleName: "-",
+        surname: "-",
       };
     }
 
     if (parts.length === 2) {
       return {
         firstName: parts[0],
-        middleName: "—",
+        middleName: "-",
         surname: parts[1],
       };
     }
@@ -816,7 +824,7 @@ const AdminStudentDetail = () => {
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-amber-500">
-                  <AlertTriangle className="h-5 w-5" /> Missing Required Documents — {studentName}
+                  <AlertTriangle className="h-5 w-5" /> Missing Required Documents - {studentName}
                 </DialogTitle>
               </DialogHeader>
               <p className="text-sm text-muted-foreground">
@@ -896,40 +904,52 @@ const AdminStudentDetail = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Date of Birth</p>
                 <p className="font-medium">
-                  {student.date_of_birth ? format(new Date(student.date_of_birth), "MMM d, yyyy") : "—"}
+                  {student.date_of_birth ? format(new Date(student.date_of_birth), "d MMM yyyy") : "-"}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Nationality</p>
-                <p className="font-medium">{student.nationality ?? "—"}</p>
+                <p className="font-medium">{student.nationality ?? "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Country</p>
-                <p className="font-medium">{student.current_country ?? "—"}</p>
+                <p className="font-medium">{student.current_country ?? "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Preferred Course</p>
-                <p className="font-medium">{student.preferred_course ?? "—"}</p>
+                <p className="font-medium">{student.preferred_course ?? "-"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Preferred Study Country</p>
-                <p className="font-medium">{student.preferred_country ?? "—"}</p>
+                <p className="font-medium">{student.preferred_country ?? "-"}</p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Preferred Intake</p>
-                <p className="font-medium">
-                  {student.preferred_intake_year && student.preferred_intake_month
-                    ? formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)
-                    : "—"}
-                </p>
+              <div className="space-y-2">
+                <Label htmlFor="admin-intake-month">Preferred intake</Label>
+                <Select value={intakeMonth} onValueChange={setIntakeMonth} disabled={intakeSaving}>
+                  <SelectTrigger id="admin-intake-month"><SelectValue placeholder="Select intake month" /></SelectTrigger>
+                  <SelectContent>{Array.from({ length: 12 }, (_, index) => <SelectItem key={index + 1} value={String(index + 1)}>{new Date(2000, index, 1).toLocaleString('en-GB', { month: 'long' })}</SelectItem>)}</SelectContent>
+                </Select>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Academic Year</p>
-                <p className="font-medium">
-                  {student.preferred_intake_year
-                    ? `${student.preferred_intake_year}/${student.preferred_intake_year + 1}`
-                    : "—"}
-                </p>
+              <div className="space-y-2">
+                <Label htmlFor="admin-intake-year">Academic year</Label>
+                <Select value={intakeYear} onValueChange={setIntakeYear} disabled={intakeSaving}>
+                  <SelectTrigger id="admin-intake-year"><SelectValue placeholder="Select academic year" /></SelectTrigger>
+                  <SelectContent>{intakeYears.map((year) => <SelectItem key={year} value={String(year)}>{year}/{year + 1}</SelectItem>)}</SelectContent>
+                </Select>
+                <Button size="sm" disabled={intakeSaving || !intakeMonth || !intakeYear} onClick={async () => {
+                  setIntakeSaving(true);
+                  try {
+                    const { data, error } = await supabase.from('students').update({ preferred_intake_month: Number(intakeMonth), preferred_intake_year: Number(intakeYear) }).eq('id', student.id).select('id').single();
+                    if (error || !data) throw error || new Error('Student update failed');
+                    await fetchStudent();
+                    await logSecurityEvent({ eventType: 'custom', description: 'Admin updated student preferred intake', metadata: { studentId: student.id, month: Number(intakeMonth), year: Number(intakeYear) }, alert: false });
+                    toast({ title: 'Preferred intake updated' });
+                  } catch {
+                    toast({ title: 'Unable to save preferred intake', description: 'Please try again.', variant: 'destructive' });
+                  } finally {
+                    setIntakeSaving(false);
+                  }
+                }}>{intakeSaving ? 'Saving' : 'Save intake'}</Button>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
@@ -938,7 +958,7 @@ const AdminStudentDetail = () => {
                     <a href={`mailto:${student.contact_email || student.profile?.email}`} className="text-primary hover:underline flex items-center gap-1">
                       <Mail className="h-3 w-3" /> {student.contact_email || student.profile?.email}
                     </a>
-                  ) : "—"}
+                  ) : "-"}
                 </p>
               </div>
               <div>
@@ -948,7 +968,7 @@ const AdminStudentDetail = () => {
                     <a href={`tel:${student.contact_phone}`} className="text-primary hover:underline flex items-center gap-1 cursor-pointer">
                       <Phone className="h-3 w-3" /> {student.contact_phone}
                     </a>
-                  ) : "—"}
+                  ) : "-"}
                 </p>
               </div>
               <div>
@@ -956,7 +976,7 @@ const AdminStudentDetail = () => {
                 <p className="font-medium">
                   {(() => {
                     const whatsapp = (student.address as any)?.whatsapp || student.contact_phone || null;
-                    if (!whatsapp) return "—";
+                    if (!whatsapp) return "-";
                     const digits = whatsapp.replace(/\D/g, "");
                     return (
                       <a
@@ -974,7 +994,7 @@ const AdminStudentDetail = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Joined</p>
                 <p className="font-medium">
-                  {student.created_at ? format(new Date(student.created_at), "MMM d, yyyy") : "—"}
+                  {student.created_at ? format(new Date(student.created_at), "d MMM yyyy") : "-"}
                 </p>
               </div>
               {student.passport_number && (
@@ -1005,19 +1025,19 @@ const AdminStudentDetail = () => {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Relationship</p>
-                  <p className="font-medium">{student.emergency_contact_relationship || "—"}</p>
+                  <p className="font-medium">{student.emergency_contact_relationship || "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{student.emergency_contact_phone || "—"}</p>
+                  <p className="font-medium">{student.emergency_contact_phone || "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium break-all">{student.emergency_contact_email || "—"}</p>
+                  <p className="font-medium break-all">{student.emergency_contact_email || "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Country</p>
-                  <p className="font-medium">{student.emergency_contact_country || "—"}</p>
+                  <p className="font-medium">{student.emergency_contact_country || "-"}</p>
                 </div>
               </CardContent>
             </Card>
@@ -1033,7 +1053,7 @@ const AdminStudentDetail = () => {
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Archived At</p>
-                  <p>{archivedAt ? format(new Date(archivedAt), "MMM d, yyyy HH:mm") : "—"}</p>
+                  <p>{archivedAt ? format(new Date(archivedAt), "d MMM yyyy HH:mm") : "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Reason</p>
@@ -1204,7 +1224,7 @@ const AdminStudentDetail = () => {
                           <p className="font-medium text-sm">{getDocLabel(doc.document_type)}</p>
                           <p className="text-xs text-muted-foreground">
                             {doc.file_name} • {formatFileSize(doc.file_size)} •{" "}
-                            {format(new Date(doc.created_at), "MMM d, yyyy")}
+                            {format(new Date(doc.created_at), "d MMM yyyy")}
                           </p>
                         </div>
                       </div>
@@ -1316,7 +1336,7 @@ const AdminStudentDetail = () => {
                       <Badge variant="outline">{app.status ?? "draft"}</Badge>
                       {app.submitted_at && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          Submitted {format(new Date(app.submitted_at), "MMM d, yyyy")}
+                          Submitted {format(new Date(app.submitted_at), "d MMM yyyy")}
                         </p>
                       )}
                     </div>
@@ -1348,7 +1368,7 @@ const AdminStudentDetail = () => {
           <DialogHeader>
             <div className="flex items-start justify-between gap-3 pr-8">
               <DialogTitle className="flex items-center gap-2">
-                {previewDoc && getDocLabel(previewDoc.document_type)} — {previewDoc?.file_name}
+                {previewDoc && getDocLabel(previewDoc.document_type)} - {previewDoc?.file_name}
               </DialogTitle>
               <Button
                 type="button"

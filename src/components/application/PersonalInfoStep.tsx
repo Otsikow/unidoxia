@@ -1,3 +1,8 @@
+import { UKDateInput } from '@/components/ui/uk-date-input';
+import { applicationDateBounds } from '@/lib/applicationDates';
+import AdditionalPersonalDetails from './AdditionalPersonalDetails';
+import { applicationPersonalInfoSchema, emergencyContactSchema } from '@/lib/applicationValidation';
+import type { ApplicationFormData } from '@/types/application';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -5,23 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRIES } from '@/lib/countries';
 import { User, Mail, Phone, Calendar, Globe, CreditCard, MapPin, MessageCircle } from 'lucide-react';
-import EmergencyContactSection, {
-  isEmergencyContactComplete,
-} from '@/components/application/EmergencyContactSection';
+import EmergencyContactSection from '@/components/application/EmergencyContactSection';
 import type { EmergencyContact } from '@/types/application';
 
-interface PersonalInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  whatsappNumber: string;
-  dateOfBirth: string;
-  nationality: string;
-  passportNumber: string;
-  currentCountry: string;
-  homeAddress: string;
-  correspondentAddress: string;
-}
+type PersonalInfo = ApplicationFormData['personalInfo'];
 
 interface PersonalInfoStepProps {
   data: PersonalInfo;
@@ -42,18 +34,7 @@ export default function PersonalInfoStep({
     onChange({ ...data, [field]: value });
   };
 
-  const isValid = () => {
-    return (
-      data.fullName.trim() !== '' &&
-      data.email.trim() !== '' &&
-      data.phone.trim() !== '' &&
-      data.whatsappNumber.trim() !== '' &&
-      data.dateOfBirth !== '' &&
-      data.nationality.trim() !== '' &&
-      data.currentCountry.trim() !== '' &&
-      isEmergencyContactComplete(emergencyContact)
-    );
-  };
+  const isValid = () => applicationPersonalInfoSchema.safeParse(data).success && emergencyContactSchema.safeParse(emergencyContact).success;
 
   return (
     <div className="space-y-6">
@@ -69,11 +50,11 @@ export default function PersonalInfoStep({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Full Name */}
+        {/* Full name */}
         <div className="space-y-2">
           <Label htmlFor="fullName" className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            Full Name *
+            Full name *
           </Label>
           <Input
             id="fullName"
@@ -104,7 +85,7 @@ export default function PersonalInfoStep({
           <div className="space-y-2">
             <Label htmlFor="phone" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              Phone Number *
+              Phone number *
             </Label>
             <Input
               id="phone"
@@ -132,22 +113,22 @@ export default function PersonalInfoStep({
           />
         </div>
 
-        {/* Date of Birth */}
+        {/* Date of birth */}
         <div className="space-y-2">
           <Label htmlFor="dateOfBirth" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Date of Birth *
+            Date of birth *
           </Label>
-          <Input
+          <UKDateInput
             id="dateOfBirth"
-            type="date"
+            bounds={applicationDateBounds().birth}
             value={data.dateOfBirth}
-            onChange={(e) => handleChange('dateOfBirth', e.target.value)}
+            onValueChange={(value) => handleChange('dateOfBirth', value)}
             required
           />
         </div>
 
-        {/* Nationality & Current Country */}
+        {/* Nationality & Current country */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="nationality" className="flex items-center gap-2">
@@ -174,7 +155,7 @@ export default function PersonalInfoStep({
           <div className="space-y-2">
             <Label htmlFor="currentCountry" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Current Country *
+              Current country *
             </Label>
             <Input
               id="currentCountry"
@@ -186,11 +167,11 @@ export default function PersonalInfoStep({
           </div>
         </div>
 
-        {/* Passport Number */}
+        {/* Passport number */}
         <div className="space-y-2">
           <Label htmlFor="passportNumber" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            Passport Number
+            Passport number
           </Label>
           <Input
             id="passportNumber"
@@ -218,17 +199,19 @@ export default function PersonalInfoStep({
           <div className="space-y-2">
             <Label htmlFor="correspondentAddress" className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
-              Correspondent Address
+              Mailing address *
             </Label>
             <Input
               id="correspondentAddress"
               value={data.correspondentAddress}
               onChange={(e) => handleChange('correspondentAddress', e.target.value)}
+              required
               placeholder="Address for letters and official communication"
             />
           </div>
         </div>
 
+        <AdditionalPersonalDetails data={data} onChange={onChange} />
       </CardContent>
     </Card>
 

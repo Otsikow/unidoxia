@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { Link } from "react-router-dom";
 import { CheckCircle2, ExternalLink, ShieldAlert, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,7 @@ const money = (value?: number | null, currency = "GBP") => value == null
   : new Intl.NumberFormat("en-GB", { style: "currency", currency, maximumFractionDigits: 0 }).format(value);
 
 const date = (value?: string | null) => value
-  ? new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(new Date(value))
+  ? formatUkDate(value)
   : "Not verified";
 
 export function ProgramComparison({ options, open, onOpenChange, onRemove }: ProgramComparisonProps) {

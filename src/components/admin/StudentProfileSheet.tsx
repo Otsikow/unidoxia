@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -578,7 +579,7 @@ export function StudentProfileSheet({
                           <span className="text-muted-foreground">Date of Birth</span>
                           <p className="font-medium">
                             {student.date_of_birth
-                              ? format(new Date(student.date_of_birth), "MMM d, yyyy")
+                              ? formatUkDate(student.date_of_birth)
                               : "—"}
                           </p>
                         </div>
@@ -599,7 +600,7 @@ export function StudentProfileSheet({
                           <p className="font-medium">{student.preferred_country || "—"}</p>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Preferred Intake</span>
+                          <span className="text-muted-foreground">Preferred intake</span>
                           <p className="font-medium">
                             {student.preferred_intake_year && student.preferred_intake_month
                               ? formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)
@@ -607,7 +608,7 @@ export function StudentProfileSheet({
                           </p>
                         </div>
                         <div>
-                          <span className="text-muted-foreground">Academic Year</span>
+                          <span className="text-muted-foreground">Academic year</span>
                           <p className="font-medium">
                             {student.preferred_intake_year
                               ? `${student.preferred_intake_year}/${student.preferred_intake_year + 1}`
@@ -662,7 +663,7 @@ export function StudentProfileSheet({
                           <span className="text-muted-foreground">Passport Expiry</span>
                           <p className="font-medium">
                             {student.passport_expiry
-                              ? format(new Date(student.passport_expiry), "MMM d, yyyy")
+                              ? formatUkDate(student.passport_expiry)
                               : "—"}
                           </p>
                         </div>
@@ -848,7 +849,7 @@ export function StudentProfileSheet({
                               <p className="text-xs text-muted-foreground mt-1">
                                 {app.app_number && `#${app.app_number}`}
                                 {app.submitted_at &&
-                                  ` • Submitted ${format(new Date(app.submitted_at), "MMM d, yyyy")}`}
+                                  ` • Submitted ${formatUkDate(app.submitted_at)}`}
                               </p>
                             </div>
                             <Badge variant="outline">

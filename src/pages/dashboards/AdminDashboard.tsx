@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
@@ -513,7 +514,7 @@ export default function AdminDashboard() {
                                   <Badge variant="outline" className="capitalize">
                                     {doc.document_type.replace(/_/g, ' ')}
                                   </Badge>
-                                  <span className="text-xs text-muted-foreground">{new Date(doc.created_at || '').toLocaleString()}</span>
+                                  <span className="text-xs text-muted-foreground">{formatUkDateTime(doc.created_at || '')}</span>
                                 </div>
                                 <div className="font-medium break-words">{doc.file_name}</div>
                                 {doc.verification_notes && (
@@ -569,14 +570,14 @@ export default function AdminDashboard() {
                                     disabled={updatingDocumentId === doc.id}
                                     onClick={() => updateDocumentStatus(doc, 'rejected')}
                                   >
-                                    {updatingDocumentId === doc.id ? 'Saving...' : 'Reject'}
+                                    {updatingDocumentId === doc.id ? 'Saving' : 'Reject'}
                                   </Button>
                                   <Button
                                     size="sm"
                                     disabled={updatingDocumentId === doc.id}
                                     onClick={() => updateDocumentStatus(doc, 'verified')}
                                   >
-                                    {updatingDocumentId === doc.id ? 'Saving...' : 'Approve'}
+                                    {updatingDocumentId === doc.id ? 'Saving' : 'Approve'}
                                   </Button>
                                 </div>
                               </div>

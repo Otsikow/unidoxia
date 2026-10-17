@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useMemo, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -453,7 +454,7 @@ const AdminChatConsole = () => {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground">
-                Last updated {latestBroadcast.lastUpdated ? new Date(latestBroadcast.lastUpdated).toLocaleString() : "moments ago"}
+                Last updated {latestBroadcast.lastUpdated ? formatUkDateTime(latestBroadcast.lastUpdated) : "moments ago"}
               </p>
             </div>
           ) : (
@@ -485,7 +486,7 @@ const AdminChatConsole = () => {
                       Audience: {audienceLabel[entry.audience ?? "all"]} • Scope: {entry.scope}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Sent {entry.sentAt ? new Date(entry.sentAt).toLocaleString() : new Date(entry.createdAt).toLocaleString()}
+                      Sent {entry.sentAt ? formatUkDateTime(entry.sentAt) : formatUkDateTime(entry.createdAt)}
                     </p>
                   </div>
                   {renderDeliveryStatus(entry.status)}

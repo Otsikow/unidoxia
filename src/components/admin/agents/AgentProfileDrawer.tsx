@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Mail, Phone, Globe, Calendar, Shield, FileText } from "lucide-react";
 import type { AgentRecord } from "./types";
 import { formatCurrency, getInitials, getStatusColor, getComplianceColor } from "./utils";
 import WhatsAppButton from "./WhatsAppButton";
-import { format } from "date-fns";
+
 
 interface Props {
   agent: AgentRecord | null;
@@ -87,7 +88,7 @@ export default function AgentProfileDrawer({ agent, open, onOpenChange, onOpenCo
             {agent.createdAt && (
               <div className="flex items-center gap-2.5">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>Joined {format(new Date(agent.createdAt), "dd MMM yyyy")}</span>
+                <span>Joined {formatUkDate(agent.createdAt)}</span>
               </div>
             )}
           </div>

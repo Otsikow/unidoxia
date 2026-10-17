@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -372,7 +373,7 @@ export default function ResourceLibrary() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(resource.created_at).toLocaleDateString()}
+                          {formatUkDate(resource.created_at)}
                         </span>
                       </div>
                       <span>{resource.views} views</span>
@@ -420,7 +421,7 @@ export default function ResourceLibrary() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(filteredBlogPosts.find(post => post.featured)?.created_at || '').toLocaleDateString()}
+                        {formatUkDate(filteredBlogPosts.find(post => post.featured)?.created_at || '')}
                       </span>
                       <span>{filteredBlogPosts.find(post => post.featured)?.read_time} min read</span>
                     </div>
@@ -473,7 +474,7 @@ export default function ResourceLibrary() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {new Date(post.created_at).toLocaleDateString()}
+                        {formatUkDate(post.created_at)}
                       </span>
                     </div>
                     <span>{post.read_time} min read</span>

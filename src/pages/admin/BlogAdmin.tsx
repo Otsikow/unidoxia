@@ -1,7 +1,8 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { format } from "date-fns";
+
 import DOMPurify from "dompurify";
 import { toast } from "sonner";
 import {
@@ -555,8 +556,8 @@ export default function BlogAdmin() {
                         </TableCell>
                         <TableCell>
                           {post.published_at
-                            ? format(new Date(post.published_at), "MMM d, yyyy")
-                            : format(new Date(post.created_at!), "MMM d, yyyy")}
+                            ? formatUkDate(post.published_at)
+                            : formatUkDate(post.created_at!)}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">

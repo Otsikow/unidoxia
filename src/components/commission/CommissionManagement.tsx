@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -338,7 +339,7 @@ export default function CommissionManagement() {
                           Student: {commission.applications?.students?.profiles?.full_name ?? 'Student name unavailable'} • {commission.applications?.programs?.name ?? 'Course'} at {commission.applications?.programs?.universities?.name ?? 'University'}
                         </p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>Date: {commission.created_at ? new Date(commission.created_at).toLocaleDateString() : 'Not available'}</span>
+                          <span>Date: {commission.created_at ? formatUkDate(commission.created_at) : 'Not available'}</span>
                           <span>Rate: {commission.rate_percent}%</span>
                         </div>
                       </div>

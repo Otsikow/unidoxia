@@ -649,7 +649,7 @@ export default function ProgramForm({
               Cancel
             </Button>
             <Button type="submit" form="program-form" disabled={isSubmitting || isSavingDraft} className="w-full sm:w-auto">
-              {isSubmitting ? "Saving..." : submitLabel}
+              {isSubmitting ? "Saving" : submitLabel}
             </Button>
           </div>
         </div>

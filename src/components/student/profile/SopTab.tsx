@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 import { useCallback, useEffect, useState } from "react";
 import SoPGenerator from "@/components/ai/SoPGenerator";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,13 +35,7 @@ const formatFileSize = (bytes: number) => {
 };
 
 const formatDateTime = (iso: string) =>
-  new Date(iso).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  formatUkDateTime(iso);
 
 export function SopTab({ studentId, onUpdate }: SopTabProps) {
   const { toast } = useToast();

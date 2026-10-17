@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import {
   Card,
@@ -253,11 +254,7 @@ const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
 const formatDate = (value: string) =>
-  new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  formatUkDate(value);
 
 const AdminPayments = () => {
   const [dateRange, setDateRange] = useState<keyof typeof rangeOptions>("30d");

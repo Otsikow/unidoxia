@@ -16,6 +16,24 @@ export const EMPTY_EMERGENCY_CONTACT: EmergencyContact = {
 
 export interface ApplicationFormData {
   personalInfo: {
+    maritalStatus: string;
+    mailingPostcode: string;
+    permanentAddress: string;
+    permanentPostcode: string;
+    otherCitizenship: string;
+    otherCitizenshipCountry: string;
+    previousStudyAbroad: string;
+    previousStudyAbroadDetails: string;
+    previousResidenceAbroad: string;
+    previousResidenceAbroadDetails: string;
+    visaRefusals: string;
+    visaRefusalsDetails: string;
+    cityOfBirth: string;
+    countryOfBirth: string;
+    passportIssueDate: string;
+    passportPlaceOfIssue: string;
+    gender: string;
+    sameAsMailingAddress: boolean;
     fullName: string;
     email: string;
     phone: string;
@@ -37,6 +55,8 @@ export interface ApplicationFormData {
     endDate: string;
     gpa: string;
     gradeScale: string;
+    languageOfInstruction: string;
+    board: string;
   }>;
   programSelection: {
     programId: string;

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import {
@@ -253,7 +254,7 @@ export function AgentAgreementDialog({ open, onSigned }: AgentAgreementDialogPro
                 </Field>
               </div>
               <p className="text-xs text-muted-foreground">
-                Date: {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
+                Date: {formatUkDate(new Date())}
               </p>
             </section>
 

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useParams, Navigate } from "react-router-dom";
@@ -30,11 +31,7 @@ interface BlogPostDetail {
 const formatDate = (iso: string | null) => {
   if (!iso) return null;
   try {
-    return new Date(iso).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    return formatUkDate(iso);
   } catch {
     return null;
   }

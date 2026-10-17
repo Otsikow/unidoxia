@@ -1,3 +1,6 @@
+import { formatUkTime } from '@/lib/dateFormat';
+import { v4 as uuidv4 } from 'uuid';
+import { applicationRequiredDetailsSchema } from '@/lib/applicationValidation';
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -147,18 +150,7 @@ const mergeLegacyFormData = (
     return current;
   }
 
-  const personalInfoFields: Array<keyof ApplicationFormData['personalInfo']> = [
-    'fullName',
-    'email',
-    'phone',
-    'whatsappNumber',
-    'dateOfBirth',
-    'nationality',
-    'passportNumber',
-    'currentCountry',
-    'homeAddress',
-    'correspondentAddress',
-  ];
+  const personalInfoFields = Object.keys(current.personalInfo).filter((field) => field !== 'sameAsMailingAddress') as Array<Exclude<keyof ApplicationFormData['personalInfo'], 'sameAsMailingAddress'>>;
 
   const personalInfo = { ...current.personalInfo };
   const legacyPersonal = isRecord(legacy.personalInfo) ? legacy.personalInfo : null;
@@ -170,6 +162,9 @@ const mergeLegacyFormData = (
       }
     }
 
+    if (typeof legacyPersonal.sameAsMailingAddress === 'boolean') {
+      personalInfo.sameAsMailingAddress = legacyPersonal.sameAsMailingAddress;
+    }
     const legacyAddress = legacyPersonal.address;
     if (typeof legacyAddress === 'string' && !personalInfo.homeAddress) {
       personalInfo.homeAddress = legacyAddress;
@@ -191,7 +186,7 @@ const mergeLegacyFormData = (
           const gradeScale = entry.gradeScale;
 
           return {
-            id: typeof id === 'string' && id.length > 0 ? id : `legacy-${index}`,
+            id: typeof id === 'string' && isValidUuidString(id) ? id : uuidv4(),
             level: typeof level === 'string' ? normalizeEducationLevel(level) : '',
             institutionName: typeof institutionName === 'string' ? institutionName : '',
             country: typeof country === 'string' ? country : '',
@@ -203,6 +198,8 @@ const mergeLegacyFormData = (
                 : typeof gpa === 'number'
                 ? gpa.toString()
                 : '',
+            board: typeof entry.board === 'string' ? entry.board : '',
+            languageOfInstruction: typeof entry.languageOfInstruction === 'string' ? entry.languageOfInstruction : '',
             gradeScale: typeof gradeScale === 'string' ? gradeScale : '',
           };
         })
@@ -339,6 +336,24 @@ export default function NewApplication() {
   // Form data state
   const [formData, setFormData] = useState<ApplicationFormData>({
     personalInfo: {
+      maritalStatus: '',
+      mailingPostcode: '',
+      permanentAddress: '',
+      permanentPostcode: '',
+      otherCitizenship: '',
+      otherCitizenshipCountry: '',
+      previousStudyAbroad: '',
+      previousStudyAbroadDetails: '',
+      previousResidenceAbroad: '',
+      previousResidenceAbroadDetails: '',
+      visaRefusals: '',
+      visaRefusalsDetails: '',
+      cityOfBirth: '',
+      countryOfBirth: '',
+      passportIssueDate: '',
+      passportPlaceOfIssue: '',
+      gender: '',
+      sameAsMailingAddress: false,
       fullName: '',
       email: '',
       phone: '',
@@ -374,7 +389,8 @@ export default function NewApplication() {
   }, [formData]);
 
   const validationIssues = useMemo(() => {
-    const issues: string[] = [];
+    const parsed = applicationRequiredDetailsSchema.safeParse(formData);
+    const issues: string[] = parsed.success ? [] : parsed.error.issues.map((issue) => issue.message);
     const personal = formData.personalInfo;
 
     if (!personal.fullName.trim()) {
@@ -459,7 +475,7 @@ export default function NewApplication() {
       issues.push('Select a course before you submit your application.');
     }
 
-    return issues;
+    return [...new Set(issues)];
   }, [formData, profile]);
 
   const mapStudentDocuments = useCallback(
@@ -592,6 +608,24 @@ export default function NewApplication() {
               : prev.programSelection.intakeMonth,
         },
         personalInfo: {
+          maritalStatus: studentData.marital_status || '',
+          mailingPostcode: studentData.mailing_postcode || '',
+          permanentAddress: studentData.permanent_address || '',
+          permanentPostcode: studentData.permanent_postcode || '',
+          otherCitizenship: studentData.other_citizenship || '',
+          otherCitizenshipCountry: studentData.other_citizenship_country || '',
+          previousStudyAbroad: studentData.previous_study_abroad || '',
+          previousStudyAbroadDetails: studentData.previous_study_abroad_details || '',
+          previousResidenceAbroad: studentData.previous_residence_abroad || '',
+          previousResidenceAbroadDetails: studentData.previous_residence_abroad_details || '',
+          visaRefusals: studentData.visa_refusals || '',
+          visaRefusalsDetails: studentData.visa_refusals_details || '',
+          cityOfBirth: studentData.city_of_birth || '',
+          countryOfBirth: studentData.country_of_birth || '',
+          passportIssueDate: studentData.passport_issue_date || '',
+          passportPlaceOfIssue: studentData.passport_place_of_issue || '',
+          gender: studentData.gender || '',
+          sameAsMailingAddress: studentData.same_as_mailing_address ?? false,
           fullName: studentData.legal_name || profile?.full_name || studentData.profile?.full_name || '',
           email: studentData.contact_email || profile?.email || studentData.profile?.email || '',
           phone: studentData.contact_phone || profile?.phone || studentData.profile?.phone || '',
@@ -640,7 +674,9 @@ export default function NewApplication() {
           country: record.country,
           startDate: record.start_date,
           endDate: record.end_date || '',
-          gpa: record.gpa?.toString() || '',
+          gpa: record.grades || record.gpa?.toString() || '',
+          board: record.board || '',
+          languageOfInstruction: record.language_of_instruction || '',
           gradeScale: record.grade_scale || '',
         })),
       }));
@@ -862,7 +898,9 @@ export default function NewApplication() {
         educationHistory: Array.isArray(draftData.educationHistory)
           ? draftData.educationHistory.map((record, index) => ({
               ...record,
-              id: record.id || `draft-${index}`,
+              board: record.board || '',
+              languageOfInstruction: record.languageOfInstruction || '',
+              id: isValidUuidString(record.id) ? record.id : uuidv4(),
               level: normalizeEducationLevel(record.level),
             }))
           : [],
@@ -872,6 +910,8 @@ export default function NewApplication() {
       setFormData((prev) => ({
         ...prev,
         ...normalizedDraftData,
+        personalInfo: { ...prev.personalInfo, ...normalizedDraftData.personalInfo },
+        emergencyContact: { ...prev.emergencyContact, ...normalizedDraftData.emergencyContact },
         programSelection: {
           ...prev.programSelection,
           ...normalizedDraftData.programSelection,
@@ -1113,149 +1153,15 @@ export default function NewApplication() {
     try {
       // Persist the student particulars captured in this application so universities
       // can reliably review identity + background from the application record.
-      const syncStudentProfile = async () => {
-        const personal = formDataRef.current.personalInfo;
-        const legalName = personal.fullName?.trim() ?? '';
-        const contactEmail = personal.email?.trim() ?? '';
-        const contactPhone = personal.phone?.trim() ?? '';
-        const whatsappNumber = personal.whatsappNumber?.trim() ?? '';
-        const nationality = personal.nationality?.trim() ?? '';
-        const passportNumber = personal.passportNumber?.trim() ?? '';
-        const currentCountry = personal.currentCountry?.trim() ?? '';
-        const dateOfBirth = personal.dateOfBirth?.trim() ?? '';
-        const homeAddressText = personal.homeAddress?.trim() ?? '';
-        const correspondentAddressText = personal.correspondentAddress?.trim() ?? '';
-
-        const educationRecords = (formDataRef.current.educationHistory ?? []).map((rec) => ({
-          id: rec.id,
-          level: normalizeEducationLevel(rec.level),
-          institutionName: rec.institutionName?.trim() ?? '',
-          country: rec.country?.trim() ?? '',
-          startDate: rec.startDate,
-          endDate: rec.endDate,
-          gpa: rec.gpa,
-          gradeScale: rec.gradeScale,
-        }));
-
-        const emergency = formDataRef.current.emergencyContact;
-        if (emergency?.fullName?.trim()) {
-          const { error: ecError } = await supabase
-            .from('students')
-            .update({
-              emergency_contact_name: emergency.fullName.trim(),
-              emergency_contact_relationship: emergency.relationship.trim() || null,
-              emergency_contact_phone: emergency.phone.trim() || null,
-              emergency_contact_email: emergency.email.trim() || null,
-              emergency_contact_country: emergency.country.trim() || null,
-            } as never)
-            .eq('id', studentId);
-          if (ecError) {
-            console.warn('[NewApplication] Emergency contact update failed:', ecError);
-          }
-        }
-
-        const rpcResult = await supabase.rpc(
-
-          'sync_student_profile_from_application_submit' as any,
-          {
-            p_student_id: studentId,
-            p_legal_name: legalName || null,
-            p_contact_email: contactEmail || null,
-            p_contact_phone: contactPhone || null,
-            p_whatsapp_number: whatsappNumber || null,
-            p_date_of_birth: dateOfBirth || null,
-            p_nationality: nationality || null,
-            p_passport_number: passportNumber || null,
-            p_current_country: currentCountry || null,
-            p_address:
-              homeAddressText || correspondentAddressText
-                ? ({
-                    ...(homeAddressText ? { home_address: homeAddressText, street: homeAddressText } : {}),
-                    ...(correspondentAddressText ? { correspondent_address: correspondentAddressText } : {}),
-                  } as any)
-                : null,
-            p_education_records: educationRecords as any,
-          },
-        );
-
-        // WhatsApp number is stored in address JSON, no separate column update needed
-
-        // If RPC exists and succeeded, we're done.
-        if (!rpcResult.error) return;
-
-        // If RPC is missing, fall back to direct updates (works for student-owned records).
-        const msg = (rpcResult.error.message ?? '').toLowerCase();
-        const code = rpcResult.error.code ?? '';
-        const isMissingRpc =
-          code === 'PGRST202' ||
-          code === 'PGRST204' ||
-          code === '42P01' ||
-          msg.includes('could not find the function') ||
-          msg.includes('schema cache');
-
-        if (!isMissingRpc) {
-          // Permission or other error: don't block submission, but log for diagnosis.
-          console.warn('[NewApplication] Student sync RPC failed:', rpcResult.error);
-          return;
-        }
-
-        const updateStudent: Record<string, unknown> = {};
-        if (legalName) updateStudent.legal_name = legalName;
-        if (contactEmail) updateStudent.contact_email = contactEmail;
-        if (contactPhone) updateStudent.contact_phone = contactPhone;
-        if (nationality) updateStudent.nationality = nationality;
-        if (passportNumber) updateStudent.passport_number = passportNumber;
-        if (currentCountry) updateStudent.current_country = currentCountry;
-        if (dateOfBirth) updateStudent.date_of_birth = dateOfBirth;
-        if (homeAddressText || correspondentAddressText || whatsappNumber || contactPhone) {
-          updateStudent.address = {
-            ...(homeAddressText ? { home_address: homeAddressText, street: homeAddressText } : {}),
-            ...(correspondentAddressText ? { correspondent_address: correspondentAddressText } : {}),
-            ...(contactPhone ? { phone: contactPhone } : {}),
-            ...(whatsappNumber ? { whatsapp: whatsappNumber } : {}),
-          };
-        }
-
-        if (Object.keys(updateStudent).length > 0) {
-          const { error: stuErr } = await supabase
-            .from('students')
-            .update(updateStudent as never)
-            .eq('id', studentId);
-          if (stuErr) {
-            console.warn('[NewApplication] Student update fallback failed:', stuErr);
-          }
-        }
-
-        const eduRows = educationRecords
-          .filter((r) => r.institutionName && r.country && r.startDate)
-          .map((r) => ({
-            id: isValidUuidString(r.id) ? r.id : undefined,
-            student_id: studentId,
-            level: r.level,
-            institution_name: r.institutionName,
-            country: r.country,
-            start_date: r.startDate,
-            end_date: r.endDate || null,
-            grade_scale: r.gradeScale || null,
-            gpa:
-              typeof r.gpa === 'string' && r.gpa.trim().length > 0
-                ? Number(r.gpa)
-                : null,
-          }));
-
-        if (eduRows.length > 0) {
-          const { error: eduErr } = await supabase
-            .from('education_records')
-            .upsert(eduRows as never, { onConflict: 'id' })
-            .select('id')
-            .limit(1);
-          if (eduErr) {
-            console.warn('[NewApplication] Education upsert fallback failed:', eduErr);
-          }
-        }
-      };
-
-      await syncStudentProfile();
+      const { error: syncError } = await supabase.rpc('save_application_student_details', {
+        p_student_id: studentId,
+        p_details: {
+          personalInfo: formData.personalInfo,
+          emergencyContact: { ...formData.emergencyContact },
+          educationHistory: formData.educationHistory,
+        },
+      });
+      if (syncError) throw syncError;
 
       // Ensure the application is stored under the program/university tenant (not the submitter's tenant).
       // This is critical for university dashboards to see applications instantly and consistently.
@@ -1767,7 +1673,7 @@ export default function NewApplication() {
                 <p className="text-xs text-muted-foreground">Saving draft...</p>
               ) : lastSavedAt ? (
                 <p className="text-xs text-muted-foreground">
-                  Last saved at {lastSavedAt.toLocaleTimeString()}
+                  Last saved at {formatUkTime(lastSavedAt)}
                 </p>
               ) : hasUnsavedChanges ? (
                 <p className="text-xs text-muted-foreground">

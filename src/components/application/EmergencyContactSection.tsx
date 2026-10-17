@@ -1,3 +1,4 @@
+import { emergencyContactSchema } from '@/lib/applicationValidation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,14 +20,7 @@ export const RELATIONSHIP_OPTIONS = [
 ];
 
 export function isEmergencyContactComplete(contact: EmergencyContact): boolean {
-  const phone = contact.phone.trim();
-  return (
-    contact.fullName.trim().length > 1 &&
-    contact.relationship.trim() !== '' &&
-    phone.startsWith('+') &&
-    phone.replace(/\D/g, '').length >= 8 &&
-    contact.country.trim() !== ''
-  );
+  return emergencyContactSchema.safeParse(contact).success;
 }
 
 interface EmergencyContactSectionProps {
@@ -40,14 +34,14 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
   };
 
   const emailInvalid = data.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim());
-  const phoneInvalid = data.phone.trim().length > 1 && !isEmergencyContactComplete({ ...data, fullName: 'x', relationship: 'x', country: 'x' });
+  const phoneInvalid = data.phone.trim().length > 1 && (!/^\+[\d\s()-]+$/.test(data.phone.trim()) || data.phone.replace(/\D/g, '').length < 8);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <LifeBuoy className="h-5 w-5" />
-          Emergency Contact
+          Emergency contact
         </CardTitle>
         <CardDescription>
           Someone we can contact on your behalf if we cannot reach you. This is kept private and is
@@ -59,13 +53,14 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
           <div className="space-y-2">
             <Label htmlFor="ecName" className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              Full Name *
+              Full name *
             </Label>
             <Input
               id="ecName"
               value={data.fullName}
               onChange={(e) => handleChange('fullName', e.target.value)}
               placeholder="Full name of your emergency contact"
+              required
               autoComplete="off"
             />
           </div>
@@ -97,7 +92,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
           <div className="space-y-2">
             <Label htmlFor="ecPhone" className="flex items-center gap-2">
               <Phone className="h-4 w-4" />
-              Phone Number (with country code) *
+              Phone number (with country code) *
             </Label>
             <Input
               id="ecPhone"
@@ -105,6 +100,7 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
               value={data.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
               placeholder="+233 501 234 567"
+              required
               inputMode="tel"
             />
             {phoneInvalid && (
@@ -117,10 +113,11 @@ export default function EmergencyContactSection({ data, onChange }: EmergencyCon
           <div className="space-y-2">
             <Label htmlFor="ecEmail" className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              Email Address (if available)
+              Email address *
             </Label>
             <Input
               id="ecEmail"
+              required
               type="email"
               value={data.email}
               onChange={(e) => handleChange('email', e.target.value)}

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState } from "react";
 import { CreditCard } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,7 +70,7 @@ export function StaffPaymentsTable() {
                       <Badge variant={detail.variant}>{detail.label}</Badge>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
-                      {payment.dueAt ? new Date(payment.dueAt).toLocaleDateString() : "—"}
+                      {payment.dueAt ? formatUkDate(payment.dueAt) : "Not set"}
                     </TableCell>
                     <TableCell className="text-right font-semibold">
                       {new Intl.NumberFormat(undefined, {

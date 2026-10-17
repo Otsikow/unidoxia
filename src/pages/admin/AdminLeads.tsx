@@ -1,3 +1,4 @@
+import { formatUkDateTime } from '@/lib/dateFormat';
 "use client";
 
 import { useMemo, useState } from "react";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, isPast, isToday } from "date-fns";
+import { isPast, isToday } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Flame, Snowflake, ThermometerSun, AlertTriangle, CheckCircle2 } from "lucide-react";
 
@@ -130,7 +131,7 @@ export function LeadsHealthCard() {
             </div>
             <div className="text-muted-foreground">
               {data.latest
-                ? `Latest lead: ${format(new Date(data.latest), "PPp")}`
+                ? `Latest lead: ${formatUkDateTime(data.latest)}`
                 : "No leads yet — table healthy and ready."}
             </div>
           </div>
@@ -302,7 +303,7 @@ export default function AdminLeads() {
                           {overdue && <Badge variant="destructive" className="text-[10px]">Overdue</Badge>}
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(l.created_at), "MMM d, HH:mm")}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatUkDateTime(l.created_at)}</TableCell>
                     </TableRow>
                   );
                 })}

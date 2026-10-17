@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -586,11 +587,7 @@ const StudentDashboard = () => {
     const date = new Date(dateString);
     if (Number.isNaN(date.getTime())) return 'N/A';
 
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatUkDate(date);
   };
 
   const formatDeadline = (year?: number | null, month?: number | null) => {
@@ -847,7 +844,7 @@ const StudentDashboard = () => {
                       <Badge variant="secondary">{request.status ?? 'pending'}</Badge>
                       {request.due_date && (
                         <Badge variant="outline" className="text-amber-700 dark:text-amber-300">
-                          Due {new Date(request.due_date).toLocaleDateString()}
+                          Due {formatUkDate(request.due_date)}
                         </Badge>
                       )}
                       <Button asChild size="sm" variant="default">

@@ -1,3 +1,4 @@
+import { formatUkDate } from '@/lib/dateFormat';
 "use client";
 
 import { useMemo, useState } from "react";
@@ -10,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
+
 import { Archive as ArchiveIcon } from "lucide-react";
 
 const db = supabase as any;
@@ -91,8 +92,8 @@ export default function ScholarshipArchive() {
                 <Badge variant="outline">{r.status}</Badge>
               </CardHeader>
               <CardContent className="text-xs text-muted-foreground flex flex-wrap gap-4">
-                {r.deadline && <span>Deadline was {format(new Date(r.deadline), "d MMM yyyy")}</span>}
-                {r.last_verified_at && <span>Last verified {format(new Date(r.last_verified_at), "d MMM yyyy")}</span>}
+                {r.deadline && <span>Deadline was {formatUkDate(r.deadline)}</span>}
+                {r.last_verified_at && <span>Last verified {formatUkDate(r.last_verified_at)}</span>}
               </CardContent>
             </Card>
           ))}
