@@ -10,8 +10,8 @@ function fixture() {
   const db: WhatsAppDatabase={rpc,auth:{getUser},from:()=>{throw new Error('Unexpected direct table write');}};
   return {db,rpc,getUser};
 }
-beforeEach(()=>vi.stubGlobal('crypto',webcrypto));
-afterEach(()=>vi.unstubAllGlobals());
+beforeEach(() => { vi.stubGlobal('crypto', webcrypto); });
+afterEach(() => { vi.unstubAllGlobals(); });
 describe('Zoe edge boundary and fallback',()=>{
   it('hashes only the trusted IP and never sends a raw IP to storage',async()=>{
     const f=fixture(); const handler=createZoeHandoffHandler(f.db,'test-only-salt');

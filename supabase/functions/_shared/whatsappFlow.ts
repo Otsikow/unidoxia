@@ -89,7 +89,9 @@ export function runWhatsAppFlow(input: FlowInput): FlowResult {
   if (optCommand(trimmed) === 'out') {
     if (optedOut) return result;
     result.consent = 'out'; state.step = undefined;
-    return say("You've opted out. We won't send you any more WhatsApp messages. Send START if you change your mind.");
+    result.replies.push("You've opted out. We won't send you any more WhatsApp messages. Send START if you change your mind.");
+    state.introduced = true;
+    return result;
   }
   if (optCommand(trimmed) === 'in') {
     result.consent = 'in'; state.step = undefined; state.unknown = 0;
@@ -110,7 +112,7 @@ export function runWhatsAppFlow(input: FlowInput): FlowResult {
     if (input.linkResult === undefined) { result.linkCode = trimmed.slice(-6); return result; }
     return say(input.linkResult ? "Thanks, your WhatsApp number is now linked to your UniDoxia account.\nReply 3 to see your application status.\nThis doesn't sign you up for updates. You can turn those on in your profile settings." : LINK_FAILURE);
   }
-  if (/\b(visa|immigration|brp|evisa|cas)\b/i.test(trimmed) || /guarant/i.test(trimmed)) { state.unknown = 0; return say(VISA_REPLY); }
+  if ((state.step !== 'subject' || /guarant/i.test(trimmed) || /\bvisa\b/i.test(trimmed)) && (/\b(visa|immigration|brp|evisa)\b/i.test(trimmed) || /guarant/i.test(trimmed))) { state.unknown = 0; return say(VISA_REPLY); }
   const plain = trimmed.replace(/[^\p{L}\p{N}\s]/gu, '').trim();
   if (/^(hi|hello|hey|hiya|good (morning|afternoon|evening)|menu|help)\b/i.test(plain) || !trimmed) {
     state.step = undefined; state.unknown = 0;

@@ -3,7 +3,7 @@ export async function verifyWhatsAppSignature(rawBody: ArrayBuffer | Uint8Array 
   if (!secret || !signature || !/^sha256=[0-9a-f]{64}$/.test(signature)) return false;
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const digest = new Uint8Array(await crypto.subtle.sign('HMAC', key, typeof rawBody === 'string' ? encoder.encode(rawBody) : rawBody));
+  const digest = new Uint8Array(await crypto.subtle.sign('HMAC', key, typeof rawBody === 'string' ? encoder.encode(rawBody) : new Uint8Array(rawBody)));
   const supplied = signature.slice(7);
   let difference = 0;
   for (let i = 0; i < digest.length; i++) difference |= digest[i] ^ parseInt(supplied.slice(i * 2, i * 2 + 2), 16);

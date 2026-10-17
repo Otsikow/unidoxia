@@ -1,5 +1,3 @@
-import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
-import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -159,8 +157,6 @@ const Signup = () => {
     [location.search],
   );
 
-  const whatsappAvailable = useWhatsAppAvailable();
-  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
 
   const countryOptions = useMemo(() => buildCountryOptions(), []);
 
@@ -619,7 +615,6 @@ const Signup = () => {
         fullName,
         role,
         phone: normalizedPhone,
-        whatsappOptIn: whatsappAvailable && whatsappOptIn,
         country,
         username,
         referrerId: referrerInfo?.id,
@@ -832,7 +827,6 @@ const Signup = () => {
                   WhatsApp contact.
                 </p>
 
-                {whatsappAvailable && role === 'student' && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
 
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence

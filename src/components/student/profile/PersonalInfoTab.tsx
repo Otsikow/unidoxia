@@ -1,4 +1,4 @@
-import { isUnder18 } from '@/config/whatsapp';
+import { isAdultForWhatsApp } from '@/config/whatsapp';
 import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
 import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
 import { WhatsAppAccountCard } from '@/components/whatsapp/WhatsAppAccountCard';
@@ -237,9 +237,9 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
       if (error) throw error;
 
       if (whatsappAvailable && user?.id === student.profile_id) {
-        const { error: consentError } = await supabase.rpc('whatsapp_set_preferences', { p_number: fullWhatsappNumber, p_opt_in: formData.whatsapp_opt_in && !isUnder18(formData.date_of_birth) });
+        const { error: consentError } = await supabase.rpc('whatsapp_set_preferences', { p_number: fullWhatsappNumber, p_opt_in: formData.whatsapp_opt_in && isAdultForWhatsApp(formData.date_of_birth) });
         if (consentError) throw consentError;
-        if (data) data.whatsapp_opt_in = formData.whatsapp_opt_in && !isUnder18(formData.date_of_birth);
+        if (data) data.whatsapp_opt_in = formData.whatsapp_opt_in && isAdultForWhatsApp(formData.date_of_birth);
       }
 
       // Immediately update the form with the saved data
@@ -440,7 +440,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
               <p className="text-sm text-muted-foreground">
                 Enter your number without the leading zero. Country code will be added automatically.
               </p>
-              {whatsappAvailable && user?.id === student.profile_id && !isUnder18(formData.date_of_birth) && <WhatsAppConsent checked={formData.whatsapp_opt_in} onChange={value => setFormData(prev => ({ ...prev, whatsapp_opt_in: value }))} />}
+              {whatsappAvailable && user?.id === student.profile_id && isAdultForWhatsApp(student.date_of_birth) && isAdultForWhatsApp(formData.date_of_birth) && <WhatsAppConsent checked={formData.whatsapp_opt_in} onChange={value => setFormData(prev => ({ ...prev, whatsapp_opt_in: value }))} />}
               {errors.whatsappNumber && <p className="text-xs text-destructive">{errors.whatsappNumber}</p>}
               {isLikelyValidInternational(formData.whatsapp_country_code, formData.whatsapp_local) && (
                 <Button asChild type="button" variant="outline" className="w-full sm:w-auto">

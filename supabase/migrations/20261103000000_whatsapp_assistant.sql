@@ -83,6 +83,11 @@ BEGIN
         NEW.whatsapp_opt_out_at := CASE WHEN NEW.whatsapp_opt_in THEN NULL ELSE now() END;
       END IF;
     END IF;
+    IF NEW.date_of_birth IS DISTINCT FROM OLD.date_of_birth AND NEW.whatsapp_opt_in AND
+       (NEW.date_of_birth IS NULL OR NEW.date_of_birth > (current_date - interval '18 years')::date) THEN
+      NEW.whatsapp_opt_in := false;
+      NEW.whatsapp_opt_out_at := now();
+    END IF;
     IF NEW.whatsapp_number IS DISTINCT FROM OLD.whatsapp_number THEN
       -- Consent is specific to the saved number; a change requires fresh consent.
       NEW.whatsapp_opt_in := false;
@@ -92,7 +97,7 @@ BEGIN
   RETURN NEW;
 END $$;
 DROP TRIGGER IF EXISTS whatsapp_student_consent_guard ON public.students;
-CREATE TRIGGER whatsapp_student_consent_guard BEFORE INSERT OR UPDATE OF whatsapp_number, whatsapp_opt_in, whatsapp_opt_in_at, whatsapp_opt_out_at ON public.students
+CREATE TRIGGER whatsapp_student_consent_guard BEFORE INSERT OR UPDATE OF date_of_birth, whatsapp_number, whatsapp_opt_in, whatsapp_opt_in_at, whatsapp_opt_out_at ON public.students
 FOR EACH ROW EXECUTE FUNCTION public.whatsapp_student_consent_guard();
 
 CREATE OR REPLACE FUNCTION public.whatsapp_sync_consent() RETURNS trigger
@@ -179,8 +184,8 @@ BEGIN
   SELECT id INTO ref FROM public.zoe_handoffs WHERE ip_hash = p_ip_hash AND summary_hash = summary_digest
     AND created_at > now() - interval '10 minutes' ORDER BY created_at DESC LIMIT 1;
   IF ref IS NOT NULL THEN RETURN ref; END IF;
-  IF (SELECT count(*) FROM public.zoe_handoffs WHERE ip_hash = p_ip_hash AND created_at > now() - interval '1 hour') >= 3
-    OR (SELECT count(*) FROM public.zoe_handoffs WHERE ip_hash = p_ip_hash AND created_at > now() - interval '1 day') >= 10
+  IF (p_user IS NULL AND ((SELECT count(*) FROM public.zoe_handoffs WHERE ip_hash = p_ip_hash AND created_at > now() - interval '1 hour') >= 3
+    OR (SELECT count(*) FROM public.zoe_handoffs WHERE ip_hash = p_ip_hash AND created_at > now() - interval '1 day') >= 10))
     OR (p_user IS NOT NULL AND (SELECT count(*) FROM public.zoe_handoffs WHERE user_id = p_user AND created_at > now() - interval '1 hour') >= 5) THEN RETURN NULL; END IF;
   IF p_user IS NULL THEN
     -- A bounded counter row serialises only anonymous capacity accounting, never a global advisory lock.
@@ -234,7 +239,7 @@ CREATE OR REPLACE FUNCTION public.whatsapp_set_preferences(p_number text, p_opt_
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$ BEGIN
   IF auth.uid() IS NULL OR NOT EXISTS (SELECT 1 FROM public.students WHERE profile_id = auth.uid()) THEN RAISE EXCEPTION 'Student sign in required'; END IF;
   IF p_number IS NULL OR regexp_replace(p_number, '[^0-9]', '', 'g') !~ '^[1-9][0-9]{6,14}$' THEN RAISE EXCEPTION 'A WhatsApp number with country code is required'; END IF;
-  IF p_opt_in AND EXISTS (SELECT 1 FROM public.students WHERE profile_id = auth.uid() AND date_of_birth > (current_date - interval '18 years')::date) THEN RAISE EXCEPTION 'WhatsApp updates are not available for under-18s'; END IF;
+  IF p_opt_in AND EXISTS (SELECT 1 FROM public.students WHERE profile_id = auth.uid() AND (date_of_birth IS NULL OR date_of_birth > (current_date - interval '18 years')::date)) THEN RAISE EXCEPTION 'WhatsApp updates require a saved date of birth showing you are 18 or over'; END IF;
   UPDATE public.students SET whatsapp_number = p_number WHERE profile_id = auth.uid();
   UPDATE public.students SET whatsapp_opt_in = COALESCE(p_opt_in,false),
     whatsapp_opt_in_at = CASE WHEN p_opt_in THEN now() ELSE whatsapp_opt_in_at END,
@@ -378,6 +383,7 @@ BEGIN
   SELECT * INTO s FROM public.students WHERE profile_id = auth.uid() FOR UPDATE;
   IF NOT FOUND OR s.whatsapp_signup_consent_checked_at IS NOT NULL THEN RETURN; END IF;
   UPDATE public.students SET whatsapp_signup_consent_checked_at = now() WHERE id = s.id;
+  IF s.date_of_birth IS NULL OR s.date_of_birth > (current_date - interval '18 years')::date THEN RETURN; END IF;
   IF s.whatsapp_opt_in_at IS NOT NULL OR s.whatsapp_opt_out_at IS NOT NULL THEN RETURN; END IF;
   SELECT raw_user_meta_data INTO meta FROM auth.users WHERE id = auth.uid();
   IF meta->>'whatsapp_opt_in' = 'true' AND meta->>'whatsapp_opt_in_at' IS NOT NULL THEN

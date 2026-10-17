@@ -92,6 +92,24 @@ describe('WhatsApp student flow', () => {
     for (const text of ['STOP','UNSUBSCRIBE','Hi','4','LINK 123456']) expect(flow({ text, optedOut: true }).replies).toEqual([]);
     const r = flow({ text: 'START', optedOut: true }); expect(r.consent).toBe('in'); expect(r.replies.join('\n')).toContain(MENU);
   });
+  it('confirms Stop. from a new contact with exactly one reply', () => {
+    const r = flow({ text: 'Stop.' });
+    expect(r.replies).toEqual(["You've opted out. We won't send you any more WhatsApp messages. Send START if you change your mind."]);
+    expect(r.state.introduced).toBe(true); expect(r.consent).toBe('out');
+  });
+  it('does not treat a CAS status question as visa advice', () => {
+    expect(flow({ text: 'When will I get my CAS?' }).replies).not.toContain(VISA_REPLY);
+  });
+  it('searches Immigration law as a course subject', () => {
+    const subject = flow({ text: 'Immigration law', state: { ...introduced, step: 'subject' } });
+    expect(subject.state.subject).toBe('Immigration law'); expect(subject.state.step).toBe('level');
+    expect(subject.replies).not.toContain(VISA_REPLY);
+    const level = flow({ text: 'A', state: subject.state });
+    expect(flow({ text: 'ANY', state: level.state }).lookup).toMatchObject({ type: 'courses', subject: 'Immigration law' });
+  });
+  it.each(['visa law', 'guaranteed admission'])('keeps the visa guard for %s on the subject step', text => {
+    expect(flow({ text, state: { ...introduced, step: 'subject' } }).replies).toEqual([VISA_REPLY]);
+  });
   it('keeps START in human mode clear that the team will continue', () => {
     const r = flow({ text: 'START', mode: 'human', optedOut: true });
     expect(r.replies.join('\n')).toContain('The UniDoxia admissions team will reply here.');
@@ -119,7 +137,7 @@ describe('WhatsApp student flow', () => {
   it.each(['Link to apply?', 'LINK', 'LINK abcdef'])('ordinary link question %s is not a code command', text => {
     const r = flow({text,state:introduced}); expect(r.linkCode).toBeUndefined(); expect(r.replies).not.toContain(LINK_FAILURE);
   });
-  it.each(['Can I get a student visa with a gap year?', 'Do you guarantee admission?', 'evisa', 'CAS'])('gives the fixed visa/guarantee reply for %s before unknown escalation', text => {
+  it.each(['Can I get a student visa with a gap year?', 'Do you guarantee admission?', 'evisa'])('gives the fixed visa/guarantee reply for %s before unknown escalation', text => {
     const r = flow({text,state:{...introduced,unknown:1}}); expect(r.replies).toEqual([VISA_REPLY]); expect(r.handover).toBeUndefined(); expect(r.state.unknown).toBe(0);
   });
   it('places the visa-refusal guard before the handover', () => expect(flow({text:'my visa was refused',state:introduced}).replies).toEqual(["We can't give immigration advice, but the admissions team can help with your university application.\n" + HANDOVER]));

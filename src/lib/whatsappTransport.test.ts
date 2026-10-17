@@ -83,9 +83,9 @@ describe('WhatsApp sending defaults', () => {
 });
 
 describe('future WhatsApp template consent gate', () => {
-  const consent = { studentOptInAt: '2026-01-01T10:00:00Z', contactOptedOutAt: null, studentOptedOutAt: null, enabled: true };
+  const consent = { dateOfBirth: '2000-01-01', studentOptInAt: '2026-01-01T10:00:00Z', contactOptedOutAt: null, studentOptedOutAt: null, enabled: true };
   it('requires explicit recorded consent and enabled sending', () => {
     expect(canSendWhatsAppTemplate(consent)).toBe(true);
-    for (const patch of [{ studentOptInAt: null }, { studentOptInAt: 'bad' }, { studentOptInAt: '2099-01-01' }, { contactOptedOutAt: '2026-10-01' }, { studentOptedOutAt: '2026-10-01' }, { enabled: false }]) expect(canSendWhatsAppTemplate({ ...consent, ...patch })).toBe(false);
+    for (const patch of [{ dateOfBirth: null }, { dateOfBirth: undefined }, { dateOfBirth: 'invalid' }, { dateOfBirth: '2000-02-30' }, { dateOfBirth: new Date().toISOString().slice(0, 10) }, { studentOptInAt: null }, { studentOptInAt: 'bad' }, { studentOptInAt: '2099-01-01' }, { contactOptedOutAt: '2026-10-01' }, { studentOptedOutAt: '2026-10-01' }, { enabled: false }]) expect(canSendWhatsAppTemplate({ ...consent, ...patch })).toBe(false);
   });
 });

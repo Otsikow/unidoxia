@@ -95,6 +95,37 @@ DO $$ BEGIN
  EXCEPTION WHEN raise_exception THEN IF SQLERRM <> 'Only the student can change WhatsApp consent' THEN RAISE; END IF; END;
 END $$;
 SELECT set_config('request.jwt.claims','{"role":"authenticated","sub":"00000000-0000-0000-0000-000000000001"}',true);
+-- Unknown DOB refuses opt-in; old signup metadata cannot opt in an ineligible student.
+UPDATE auth.users SET raw_user_meta_data='{"whatsapp_opt_in":true,"whatsapp_opt_in_at":"2026-01-01T00:00:00Z","phone":"+44 7700 900111"}' WHERE id='00000000-0000-0000-0000-000000000001';
+SET LOCAL ROLE authenticated;
+DO $$ BEGIN
+ UPDATE public.students SET date_of_birth=NULL WHERE id='00000000-0000-0000-0000-000000000011';
+ BEGIN
+  PERFORM public.whatsapp_set_preferences('+44 7700 900111',true);
+  RAISE EXCEPTION 'Unknown DOB opt-in allowed';
+ EXCEPTION WHEN raise_exception THEN
+  IF SQLERRM <> 'WhatsApp updates require a saved date of birth showing you are 18 or over' THEN RAISE; END IF;
+ END;
+ PERFORM public.whatsapp_capture_signup_consent();
+ IF (SELECT whatsapp_opt_in FROM public.students WHERE id='00000000-0000-0000-0000-000000000011') THEN RAISE EXCEPTION 'Signup metadata opted in without DOB'; END IF;
+ -- An own-record DOB save must withdraw consent without failing the consent guard.
+ UPDATE public.students SET date_of_birth='2000-01-01' WHERE id='00000000-0000-0000-0000-000000000011';
+ PERFORM public.whatsapp_set_preferences('+44 7700 900111',true);
+ UPDATE public.students SET date_of_birth=current_date - interval '16 years' WHERE id='00000000-0000-0000-0000-000000000011';
+ IF (SELECT whatsapp_opt_in OR whatsapp_opt_out_at IS NULL FROM public.students WHERE id='00000000-0000-0000-0000-000000000011') THEN RAISE EXCEPTION 'Under-18 DOB did not withdraw consent'; END IF;
+ BEGIN
+  PERFORM public.whatsapp_set_preferences('+44 7700 900111',true);
+  RAISE EXCEPTION 'Under-18 opt-in allowed';
+ EXCEPTION WHEN raise_exception THEN
+  IF SQLERRM <> 'WhatsApp updates require a saved date of birth showing you are 18 or over' THEN RAISE; END IF;
+ END;
+ UPDATE public.students SET date_of_birth='2000-01-01' WHERE id='00000000-0000-0000-0000-000000000011';
+ PERFORM public.whatsapp_set_preferences('+44 7700 900111',true);
+ UPDATE public.students SET date_of_birth=NULL WHERE id='00000000-0000-0000-0000-000000000011';
+ IF (SELECT whatsapp_opt_in OR whatsapp_opt_out_at IS NULL FROM public.students WHERE id='00000000-0000-0000-0000-000000000011') THEN RAISE EXCEPTION 'NULL DOB did not withdraw consent'; END IF;
+ UPDATE public.students SET date_of_birth='2000-01-01' WHERE id='00000000-0000-0000-0000-000000000011';
+END $$;
+RESET ROLE;
 SELECT public.whatsapp_set_preferences('+44 7700 900111',true);
 SELECT set_config('request.jwt.claims','{"role":"service_role"}',true);
 DO $$ DECLARE c uuid; snapshot jsonb; second jsonb; code text; BEGIN
@@ -188,7 +219,7 @@ DO $$ DECLARE h text := repeat('a',64); ref text; n integer; BEGIN
  INSERT INTO public.zoe_handoffs(summary,ip_hash,created_at) SELECT 'daily '||i,repeat('b',64),now()-interval '2 hours' FROM generate_series(1,10) i;
  IF public.whatsapp_create_zoe_handoff_secure('eleven',repeat('b',64),NULL) IS NOT NULL THEN RAISE EXCEPTION 'IP daily limit failed'; END IF;
  FOR i IN 1..5 LOOP
-  IF public.whatsapp_create_zoe_handoff_secure('user '||i,encode(sha256(convert_to('user-ip-'||i,'UTF8')),'hex'),'00000000-0000-0000-0000-000000000001') IS NULL THEN RAISE EXCEPTION 'Signed-in limit too early'; END IF;
+  IF public.whatsapp_create_zoe_handoff_secure('user '||i,repeat('c',64),'00000000-0000-0000-0000-000000000001') IS NULL THEN RAISE EXCEPTION 'Signed-in limit too early'; END IF;
  END LOOP;
  IF public.whatsapp_create_zoe_handoff_secure('six',repeat('c',64),'00000000-0000-0000-0000-000000000001') IS NOT NULL THEN RAISE EXCEPTION 'User hourly limit failed'; END IF;
  FOR i IN 1..297 LOOP

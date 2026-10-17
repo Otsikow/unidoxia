@@ -1,3 +1,5 @@
+import { isAdultForWhatsApp } from './whatsappAge.ts';
+
 export interface WhatsAppConfig {
   enabled?: string;
   provider?: string;
@@ -30,12 +32,13 @@ export async function sendWhatsAppText(config: WhatsAppConfig, recipient: string
 // Mandatory gate for every future template sender. No template transport exists yet.
 // START only resumes service replies; it never creates update or marketing consent.
 export function canSendWhatsAppTemplate(input: {
+  dateOfBirth: string | null | undefined;
   studentOptInAt: string | null | undefined;
   contactOptedOutAt: string | null | undefined;
   studentOptedOutAt: string | null | undefined;
   enabled: boolean;
 }): boolean {
   const at = input.studentOptInAt ? Date.parse(input.studentOptInAt) : NaN;
-  return input.enabled === true && Number.isFinite(at) && at <= Date.now() &&
+  return input.enabled === true && isAdultForWhatsApp(input.dateOfBirth) && Number.isFinite(at) && at <= Date.now() &&
     !input.contactOptedOutAt && !input.studentOptedOutAt;
 }

@@ -1,4 +1,4 @@
-import { isUnder18 } from '@/config/whatsapp';
+import { isAdultForWhatsApp } from '@/config/whatsapp';
 import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
 import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
 import { useState, useEffect } from "react";
@@ -225,7 +225,7 @@ const CompleteSignup = () => {
         }
       }
 
-      if (whatsappAvailable && profile.role === 'student' && consentReady && !isUnder18(dateOfBirth) && whatsappOptIn) {
+      if (whatsappAvailable && profile.role === 'student' && consentReady && isAdultForWhatsApp(dateOfBirth) && whatsappOptIn) {
         const { error: consentError } = await supabase.rpc('whatsapp_set_preferences', { p_number: finalWhatsapp, p_opt_in: whatsappOptIn });
         if (consentError) throw consentError;
       }
@@ -317,7 +317,7 @@ const CompleteSignup = () => {
               </div>
             )}
 
-            {whatsappAvailable && profile.role === 'student' && consentReady && !isUnder18(dateOfBirth) && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
+            {whatsappAvailable && profile.role === 'student' && consentReady && isAdultForWhatsApp(dateOfBirth) && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
 
             {needsReferralSource && (
               <div className="space-y-2">

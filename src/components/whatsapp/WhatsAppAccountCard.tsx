@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { WhatsAppConsent } from './WhatsAppConsent';
-import { whatsappLink, isUnder18 } from '@/config/whatsapp';
+import { whatsappLink, isAdultForWhatsApp } from '@/config/whatsapp';
 export function WhatsAppAccountCard({ settings = false }: { settings?: boolean }) {
   const available = useWhatsAppAvailable();
   const { user } = useAuth();
@@ -36,7 +36,7 @@ export function WhatsAppAccountCard({ settings = false }: { settings?: boolean }
     try {
       if (!link) {
         if (!/^\+?[1-9][\d\s()-]{6,24}$/.test(number)) throw new Error('Enter your WhatsApp number with country code.');
-        const { error } = await supabase.rpc('whatsapp_set_preferences', { p_number: number, p_opt_in: optIn && !isUnder18(dob) });
+        const { error } = await supabase.rpc('whatsapp_set_preferences', { p_number: number, p_opt_in: optIn && isAdultForWhatsApp(dob) });
         if (error) throw error;
         setCode('');
       } else {
@@ -49,7 +49,7 @@ export function WhatsAppAccountCard({ settings = false }: { settings?: boolean }
   };
   return <Card><CardHeader><CardTitle>Link WhatsApp to your account</CardTitle></CardHeader><CardContent className="space-y-3">
     <p className="text-sm text-muted-foreground">Link the WhatsApp number in your profile so you can check your application status on WhatsApp. This is optional and doesn't sign you up for updates.</p>
-    {settings && <><Label htmlFor="settings-whatsapp">WhatsApp number with country code</Label><Input id="settings-whatsapp" value={number} onChange={e => { setNumber(e.target.value); setOptIn(false); setCode(''); }} />{!isUnder18(dob) && <WhatsAppConsent checked={optIn} onChange={setOptIn} />}<Button type="button" variant="outline" disabled={busy} onClick={() => void act(false)}>Save WhatsApp preferences</Button></>}
+    {settings && <><Label htmlFor="settings-whatsapp">WhatsApp number with country code</Label><Input id="settings-whatsapp" value={number} onChange={e => { setNumber(e.target.value); setOptIn(false); setCode(''); }} />{isAdultForWhatsApp(dob) && <WhatsAppConsent checked={optIn} onChange={setOptIn} />}<Button type="button" variant="outline" disabled={busy} onClick={() => void act(false)}>Save WhatsApp preferences</Button></>}
     {!settings && <p className="text-sm">{number ? <>Saved number: {number}.<br />If you've changed your number, save it before you get a code.</> : 'Please save your WhatsApp number in Personal Information first.'}</p>}
     <Button type="button" disabled={busy} onClick={() => void act(true)}>Get a link code</Button>
     {code && <div className="space-y-2"><p>Send LINK {code} to UniDoxia on WhatsApp.</p><p className="text-sm text-muted-foreground">This code works for 15 minutes. Send it from your saved number and don't share it with anyone.</p><Button asChild variant="outline"><a href={whatsappLink(`LINK ${code}`)} target="_blank" rel="noopener noreferrer">Open WhatsApp</a></Button></div>}
