@@ -1,3 +1,4 @@
+import { WHATSAPP_URL as whatsappLink } from '@/config/whatsapp';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactForm } from "@/components/ContactForm";
 import professionalConsultant from "@/assets/zoe-portrait.png";
@@ -8,7 +9,6 @@ import { SEO } from "@/components/SEO";
 const Contact = () => {
   const { t } = useTranslation();
   const emailAddress = t("pages.contact.email");
-  const whatsappLink = "https://wa.me/447360961803";
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <SEO

@@ -1,3 +1,6 @@
+import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
+import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
+import { WhatsAppAccountCard } from '@/components/whatsapp/WhatsAppAccountCard';
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,10 +77,11 @@ type AddressData = {
 const extractFormData = (student: Tables<'students'>) => {
   const addressData = student.address as AddressData;
   const contactPhoneRaw = student.contact_phone || addressData?.phone || '';
-  const whatsappRaw = addressData?.whatsapp || addressData?.phone || student.contact_phone || '';
+  const whatsappRaw = student.whatsapp_number || addressData?.whatsapp || addressData?.phone || student.contact_phone || '';
   const contactPhone = parseInternationalNumber(contactPhoneRaw);
   const whatsappPhone = parseInternationalNumber(whatsappRaw);
   return {
+    whatsapp_opt_in: student.whatsapp_opt_in ?? false,
     legal_name: student.legal_name || '',
     preferred_name: student.preferred_name || '',
     date_of_birth: student.date_of_birth || '',
@@ -107,6 +111,7 @@ const extractFormData = (student: Tables<'students'>) => {
 
 export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
   const { toast } = useToast();
+  const whatsappAvailable = useWhatsAppAvailable();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
@@ -137,7 +142,8 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
+      ...(e.target.name.startsWith('whatsapp') ? { whatsapp_opt_in: false } : {}),
     }));
 
     if (e.target.name.startsWith('contact_phone') || e.target.name.startsWith('whatsapp')) {
@@ -192,6 +198,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
       const { data, error } = await supabase
         .from('students')
         .update({
+          whatsapp_number: fullWhatsappNumber,
           legal_name: formData.legal_name,
           preferred_name: formData.preferred_name,
           date_of_birth: formData.date_of_birth,
@@ -227,6 +234,12 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
         .single();
 
       if (error) throw error;
+
+      if (whatsappAvailable && user?.id === student.profile_id) {
+        const { error: consentError } = await supabase.rpc('whatsapp_set_preferences', { p_number: fullWhatsappNumber, p_opt_in: formData.whatsapp_opt_in });
+        if (consentError) throw consentError;
+        if (data) data.whatsapp_opt_in = formData.whatsapp_opt_in;
+      }
 
       // Immediately update the form with the saved data
       if (data) {
@@ -397,7 +410,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
                 <Select
                   value={formData.whatsapp_country_code}
                   onValueChange={(value) => {
-                    const nextData = { ...formData, whatsapp_country_code: value };
+                    const nextData = { ...formData, whatsapp_country_code: value, whatsapp_opt_in: false };
                     setFormData(nextData);
                     setErrors(validateNumbers(nextData));
                   }}
@@ -426,6 +439,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
               <p className="text-sm text-muted-foreground">
                 Enter your number without the leading zero. Country code will be added automatically.
               </p>
+              {whatsappAvailable && user?.id === student.profile_id && <WhatsAppConsent checked={formData.whatsapp_opt_in} onChange={value => setFormData(prev => ({ ...prev, whatsapp_opt_in: value }))} />}
               {errors.whatsappNumber && <p className="text-xs text-destructive">{errors.whatsappNumber}</p>}
               {isLikelyValidInternational(formData.whatsapp_country_code, formData.whatsapp_local) && (
                 <Button asChild type="button" variant="outline" className="w-full sm:w-auto">
@@ -695,6 +709,7 @@ export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
         </CardContent>
       </Card>
 
+      {user?.id === student.profile_id && <WhatsAppAccountCard />}
       <Button type="submit" disabled={loading} className="w-full hover-scale">
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Save Personal Information

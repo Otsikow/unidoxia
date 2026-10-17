@@ -9,7 +9,7 @@ type Section = {
   summary?: string;
 };
 
-const lastReviewed = 'October 22, 2025';
+const lastReviewed = '17 October 2026';
 
 const highlights = [
   {
@@ -102,6 +102,19 @@ const sections: Section[] = [
           <li>Regulators or law enforcement when required by applicable law.</li>
         </ul>
         <p>We do not sell your personal information.</p>
+      </div>
+    )
+  },
+  {
+    id: 'whatsapp',
+    title: 'WhatsApp Enquiries and Updates',
+    content: (
+      <div className="space-y-4">
+        <p>Global Talent Gateway Ltd, trading as UniDoxia, is the controller of your WhatsApp enquiry data. The company is registered in England and Wales, company number 16172129, with its registered office at Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ. We use your phone number, profile name and messages to reply. If you link your student account, we record that link to provide a limited application status summary.</p>
+        <p>Meta Platforms Ireland Limited acts as our data processor for the WhatsApp Business Platform and may process data outside the UK, including in the United States, using safeguards recognised under UK law.</p>
+        <p>Our first replies may come from an automated assistant. Type 4 at any time to speak to the UniDoxia admissions team. Please do not send documents, passport numbers, card details or passwords here. Upload documents securely in your UniDoxia dashboard.</p>
+        <p>Application updates require your optional consent. Providing a number or linking an account does not give consent. You can withdraw consent by sending STOP or changing your profile settings. STOP stops all WhatsApp messages from us. START opts you back in to service replies. To receive application updates again, choose them in your profile settings. We do not send marketing on WhatsApp without consent.</p>
+        <p>We keep conversations for 12 months unless needed for an active application or complaint. If you opt out, we keep a record of your number and opt-out so we do not message you again. We rely on consent for application updates, legitimate interests in responding to enquiries, and steps taken at your request before entering into a contract. Withdrawing consent does not affect earlier lawful processing.</p>
       </div>
     )
   },

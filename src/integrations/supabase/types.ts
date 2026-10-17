@@ -3611,6 +3611,11 @@ export type Database = {
       }
       students: {
         Row: {
+          whatsapp_number: string | null
+          whatsapp_opt_in: boolean
+          whatsapp_opt_in_at: string | null
+          whatsapp_signup_consent_checked_at: string | null
+          whatsapp_opt_out_at: string | null
           address: Json | null
           address_line_1: string | null
           address_line_2: string | null
@@ -3666,6 +3671,11 @@ export type Database = {
           visa_history_json: Json | null
         }
         Insert: {
+          whatsapp_number?: string | null
+          whatsapp_opt_in?: boolean
+          whatsapp_opt_in_at?: string | null
+          whatsapp_signup_consent_checked_at?: string | null
+          whatsapp_opt_out_at?: string | null
           address?: Json | null
           address_line_1?: string | null
           address_line_2?: string | null
@@ -3721,6 +3731,11 @@ export type Database = {
           visa_history_json?: Json | null
         }
         Update: {
+          whatsapp_number?: string | null
+          whatsapp_opt_in?: boolean
+          whatsapp_opt_in_at?: string | null
+          whatsapp_signup_consent_checked_at?: string | null
+          whatsapp_opt_out_at?: string | null
           address?: Json | null
           address_line_1?: string | null
           address_line_2?: string | null
@@ -4882,6 +4897,198 @@ export type Database = {
           },
         ]
       }
+      whatsapp_contacts: {
+        Row: {
+          id: string
+          wa_id: string
+          profile_name: string | null
+          linked_user_id: string | null
+          linked_at: string | null
+          auto_reply_times: string[]
+          marketing_consent_at: string | null
+          service_resumed_at: string | null
+          opted_out_at: string | null
+          link_attempts: number
+          link_attempted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          wa_id: string
+          profile_name?: string | null
+          linked_user_id?: string | null
+          linked_at?: string | null
+          auto_reply_times?: string[]
+          marketing_consent_at?: string | null
+          service_resumed_at?: string | null
+          opted_out_at?: string | null
+          link_attempts?: number
+          link_attempted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          wa_id?: string
+          profile_name?: string | null
+          linked_user_id?: string | null
+          linked_at?: string | null
+          auto_reply_times?: string[]
+          marketing_consent_at?: string | null
+          service_resumed_at?: string | null
+          opted_out_at?: string | null
+          link_attempts?: number
+          link_attempted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_conversations: {
+        Row: {
+          id: string
+          contact_id: string
+          mode: "assistant" | "human" | "closed"
+          flow_state: Json
+          handover_reason: string | null
+          assigned_to: string | null
+          last_inbound_at: string | null
+          last_outbound_at: string | null
+          unread_count: number
+          source: string
+          retain_until: string | null
+          retain_reason: string | null
+          zoe_context: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          contact_id: string
+          mode?: "assistant" | "human" | "closed"
+          flow_state?: Json
+          handover_reason?: string | null
+          assigned_to?: string | null
+          last_inbound_at?: string | null
+          last_outbound_at?: string | null
+          unread_count?: number
+          source?: string
+          retain_until?: string | null
+          retain_reason?: string | null
+          zoe_context?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          contact_id?: string
+          mode?: "assistant" | "human" | "closed"
+          flow_state?: Json
+          handover_reason?: string | null
+          assigned_to?: string | null
+          last_inbound_at?: string | null
+          last_outbound_at?: string | null
+          unread_count?: number
+          source?: string
+          retain_until?: string | null
+          retain_reason?: string | null
+          zoe_context?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_messages: {
+        Row: {
+          id: string
+          conversation_id: string
+          direction: "inbound" | "outbound"
+          sender: "student" | "assistant" | "staff"
+          body: string
+          meta_message_id: string | null
+          status: "received" | "queued" | "sent" | "delivered" | "read" | "failed" | "skipped"
+          error: string | null
+          sent_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          conversation_id: string
+          direction: "inbound" | "outbound"
+          sender: "student" | "assistant" | "staff"
+          body: string
+          meta_message_id?: string | null
+          status: "received" | "queued" | "sent" | "delivered" | "read" | "failed" | "skipped"
+          error?: string | null
+          sent_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          conversation_id?: string
+          direction?: "inbound" | "outbound"
+          sender?: "student" | "assistant" | "staff"
+          body?: string
+          meta_message_id?: string | null
+          status?: "received" | "queued" | "sent" | "delivered" | "read" | "failed" | "skipped"
+          error?: string | null
+          sent_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      whatsapp_link_codes: {
+        Row: {
+          id: string
+          user_id: string
+          code: string
+          expires_at: string
+          used_at: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          code: string
+          expires_at: string
+          used_at?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          code?: string
+          expires_at?: string
+          used_at?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+      zoe_handoffs: {
+        Row: {
+          id: string
+          user_id: string | null
+          summary: string
+          created_at: string
+          used_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          summary: string
+          created_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          summary?: string
+          created_at?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_program_comparisons: {
@@ -5012,6 +5219,11 @@ export type Database = {
       }
     }
     Functions: {
+      whatsapp_capture_signup_consent: { Args: Record<PropertyKey, never>; Returns: undefined }
+      whatsapp_set_preferences: { Args: { p_number: string; p_opt_in: boolean }; Returns: undefined }
+      whatsapp_create_link_code: { Args: Record<PropertyKey, never>; Returns: string }
+      whatsapp_create_zoe_handoff: { Args: { p_summary: string }; Returns: string }
+
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean

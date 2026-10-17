@@ -1,3 +1,5 @@
+import { useWhatsAppAvailable } from '@/hooks/useWhatsAppAvailable';
+import { WhatsAppConsent } from '@/components/whatsapp/WhatsAppConsent';
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -156,6 +158,9 @@ const Signup = () => {
     () => getSafeAuthRedirect(new URLSearchParams(location.search).get("next")),
     [location.search],
   );
+
+  const whatsappAvailable = useWhatsAppAvailable();
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false);
 
   const countryOptions = useMemo(() => buildCountryOptions(), []);
 
@@ -614,6 +619,7 @@ const Signup = () => {
         fullName,
         role,
         phone: normalizedPhone,
+        whatsappOptIn: whatsappAvailable && whatsappOptIn,
         country,
         username,
         referrerId: referrerInfo?.id,
@@ -825,6 +831,8 @@ const Signup = () => {
                   Required with country code (e.g. +1, +44, +234). We use this as your primary
                   WhatsApp contact.
                 </p>
+
+                {whatsappAvailable && role === 'student' && <WhatsAppConsent checked={whatsappOptIn} onChange={setWhatsappOptIn} />}
 
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence

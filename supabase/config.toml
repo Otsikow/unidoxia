@@ -43,3 +43,12 @@ verify_jwt = true
 
 [functions.validate-document-upload]
 verify_jwt = true
+
+[functions.whatsapp-webhook]
+verify_jwt = false
+
+[functions.whatsapp-reply]
+verify_jwt = true
+
+[functions.whatsapp-config]
+verify_jwt = false
