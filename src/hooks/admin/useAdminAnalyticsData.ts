@@ -257,7 +257,7 @@ export const useUserActivityData = (tenantId?: string | null) => {
         const returning = Math.max(0, active - newUserCount);
 
         weeks.push({
-          week: format(weekEnd, "MMM d"),
+          week: format(weekEnd, "d MMM"),
           active,
           returning,
           newUsers: newUserCount,

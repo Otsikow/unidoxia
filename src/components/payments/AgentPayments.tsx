@@ -376,7 +376,7 @@ export function AgentPayments() {
 
     return Array.from(monthlyMap.entries())
       .map(([month, data]) => ({
-        month: new Date(month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: new Date(month + '-01').toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
         earned: data.earned,
         pending: data.pending,
       }))

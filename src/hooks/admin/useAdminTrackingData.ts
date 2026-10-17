@@ -625,7 +625,7 @@ export const useApplicationVelocity = (tenantId?: string | null) => {
 
       for (let i = 6; i >= 0; i--) {
         const date = subDays(now, i);
-        const key = format(date, "MMM dd");
+        const key = format(date, "d MMM");
         dailyStats.set(key, { submitted: 0, enrolled: 0 });
       }
 
@@ -633,7 +633,7 @@ export const useApplicationVelocity = (tenantId?: string | null) => {
         const createdAt = app.created_at ? new Date(app.created_at) : null;
         if (!createdAt) continue;
 
-        const key = format(createdAt, "MMM dd");
+        const key = format(createdAt, "d MMM");
         const stats = dailyStats.get(key);
         if (stats) {
           if (app.status !== "draft") {

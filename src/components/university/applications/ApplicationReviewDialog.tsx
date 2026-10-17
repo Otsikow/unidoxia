@@ -1741,7 +1741,7 @@ export function ApplicationReviewDialog({
                               {new Date(
                                 application.intakeYear,
                                 application.intakeMonth - 1
-                              ).toLocaleDateString(undefined, {
+                              ).toLocaleDateString("en-GB", {
                                 month: "long",
                                 year: "numeric",
                               })}
