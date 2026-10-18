@@ -17,7 +17,6 @@ import {
   ScrollText,
   School,
   CreditCard,
-  ShieldCheck,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -60,11 +59,10 @@ const buildNavigatorSteps = (
   applications: ApplicationSummary[],
   payments: PaymentSummary[],
 ): NavigatorStep[] => {
-  const findDoc = (type: string) => documents.find((doc) => doc.document_type === type);
+  const findDoc = (...types: string[]) => documents.find((doc) => types.includes(doc.document_type));
   const passportDoc = findDoc('passport');
   const transcriptDoc = findDoc('transcript');
-  const sopDoc = findDoc('personal_statement');
-  const visaDoc = findDoc('financial_document');
+  const sopDoc = findDoc('sop', 'personal_statement');
   const hasApplications = applications.length > 0;
   const latestApplication = applications.reduce<ApplicationSummary | null>((latest, current) => {
     if (!latest) return current;
@@ -114,15 +112,15 @@ const buildNavigatorSteps = (
     },
     {
       id: 'sop',
-      title: 'Complete SOP',
-      description: 'Craft your statement of purpose using the AI writer.',
+      title: 'Upload statement of purpose',
+      description: 'Add your statement of purpose to the required document checklist.',
       completed: Boolean(sopDoc),
       status: sopDoc ? 'complete' : 'pending',
       aiHint: sopDoc
-        ? 'AI stored your SOP so agents can annotate instantly.'
-        : 'AI will coach you through each paragraph once you start writing.',
-      actionLabel: sopDoc ? 'Review SOP' : 'Launch SOP generator',
-      actionHref: '/student/profile#sop',
+        ? 'Your statement of purpose is available for your application team.'
+        : 'Upload your statement of purpose with the rest of your application documents.',
+      actionLabel: sopDoc ? 'View documents' : 'Upload statement of purpose',
+      actionHref: '/student/documents',
       icon: ScrollText,
       lastUpdated: getRecordTimestamp(sopDoc ?? null),
     },
@@ -157,20 +155,6 @@ const buildNavigatorSteps = (
       actionHref: '/student/payments',
       icon: CreditCard,
       lastUpdated: getRecordTimestamp(successfulPayment ?? pendingPayment ?? sortedPayments[0] ?? null),
-    },
-    {
-      id: 'visa',
-      title: 'Prepare visa documents',
-      description: 'Upload financial proofs so AI can pre-check visa readiness.',
-      completed: Boolean(visaDoc),
-      status: visaDoc ? 'complete' : 'pending',
-      aiHint: visaDoc
-        ? 'AI marked your finances as visa-ready in the background.'
-        : 'AI will stage your embassy checklist once finances are uploaded.',
-      actionLabel: visaDoc ? 'Review visa docs' : 'Upload visa docs',
-      actionHref: '/student/documents',
-      icon: ShieldCheck,
-      lastUpdated: getRecordTimestamp(visaDoc ?? null),
     },
   ];
 

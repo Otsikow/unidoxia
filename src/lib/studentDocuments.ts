@@ -20,6 +20,7 @@ export const ENGLISH_PROOF_DOCUMENT: RequiredStudentDocument = {
   type: 'english_proof',
   label: 'English proof',
   acceptableTypes: [
+    'english_proof',
     'english_test_certificate', 'english_medium_letter', 'english_proficiency',
     'ielts', 'toefl', 'pte', 'duolingo', 'english_test',
     'wassce_waec', 'wassce', 'waec', 'secondary_school_results',

@@ -790,7 +790,7 @@ const Signup = () => {
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="flex items-center gap-2">
-                      <UserCircle className="h-4 w-4" /> First Name
+                      <UserCircle className="h-4 w-4" /> First name
                     </Label>
                     <Input
                       id="firstName"
@@ -802,7 +802,7 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="middleName" className="flex items-center gap-2">
-                      <UserCircle className="h-4 w-4" /> Middle Name (optional)
+                      <UserCircle className="h-4 w-4" /> Middle name
                     </Label>
                     <Input
                       id="middleName"
@@ -814,7 +814,7 @@ const Signup = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="lastName" className="flex items-center gap-2">
-                      <UserCircle className="h-4 w-4" /> Last Name
+                      <UserCircle className="h-4 w-4" /> Last name
                     </Label>
                     <Input
                       id="lastName"

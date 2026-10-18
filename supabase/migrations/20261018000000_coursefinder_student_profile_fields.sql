@@ -59,7 +59,7 @@ COMMENT ON COLUMN public.students.guardian IS 'DEPRECATED: not used by CourseFin
 COMMENT ON COLUMN public.students.visa_history_json IS 'DEPRECATED: not used by CourseFinder form';
 COMMENT ON COLUMN public.students.finances_json IS 'DEPRECATED: not used by CourseFinder form';
 COMMENT ON COLUMN public.students.referral_source IS 'DEPRECATED: not used by CourseFinder form';
-COMMENT ON COLUMN public.students.whatsapp_number IS 'DEPRECATED: not used by CourseFinder form';
+COMMENT ON COLUMN public.students.whatsapp_number IS 'Optional WhatsApp number; excluded from CourseFinder profile completeness';
 COMMENT ON COLUMN public.students.emergency_contact_country IS 'DEPRECATED: not used by CourseFinder form';
 
 -- Store the student registration fields supplied to Supabase Auth. The existing

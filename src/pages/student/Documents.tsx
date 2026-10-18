@@ -718,7 +718,10 @@ export default function Documents() {
       <Card>
         <CardHeader>
           <CardTitle>Upload Document</CardTitle>
-          <CardDescription>Upload required documents for your applications</CardDescription>
+          <CardDescription className="space-y-1">
+            <span className="block">Upload required documents for your applications. WASSCE or WAEC results count as the English proof equivalent.</span>
+            <span className="block">Each university sets its own English requirement; we'll confirm what yours accepts.</span>
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

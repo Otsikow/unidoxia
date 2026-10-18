@@ -14,7 +14,7 @@ describe('CourseFinder document checklist', () => {
     ]);
   });
 
-  it.each(['english_test_certificate', 'english_medium_letter', 'wassce_waec'])(
+  it.each(['english_proof', 'english_test_certificate', 'english_medium_letter', 'wassce_waec'])(
     'accepts %s as the one required English proof',
     (documentType) => {
       expect(isEnglishProofComplete([{ document_type: documentType }])).toBe(true);

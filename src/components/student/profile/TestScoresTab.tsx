@@ -567,9 +567,9 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
         <Card>
           <CardContent className="py-12 text-center">
             <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="font-semibold mb-2">No Test Scores</h3>
+            <h3 className="font-semibold mb-2">No test scores</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Add your English proficiency test scores to complete your profile
+              Optional. Add IELTS, TOEFL, PTE or Duolingo if you have them.
             </p>
           </CardContent>
         </Card>

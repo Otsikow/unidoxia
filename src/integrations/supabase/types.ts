@@ -3713,6 +3713,7 @@ export type Database = {
           waec_scratch_card_pin: string | null
           waec_scratch_card_serial: string | null
           work_experience: Json
+          whatsapp_number: string | null
           citizenship: string | null
         }
         Insert: {
@@ -3806,6 +3807,7 @@ export type Database = {
           waec_scratch_card_pin?: string | null
           waec_scratch_card_serial?: string | null
           work_experience?: Json
+          whatsapp_number?: string | null
           citizenship?: string | null
         }
         Update: {
@@ -3899,6 +3901,7 @@ export type Database = {
           waec_scratch_card_pin?: string | null
           waec_scratch_card_serial?: string | null
           work_experience?: Json
+          whatsapp_number?: string | null
           citizenship?: string | null
         }
         Relationships: [

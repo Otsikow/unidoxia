@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
 import { RESIDENCE_COUNTRIES } from '@/lib/residenceCountries';
+import { getWhatsAppFieldState, resolveWhatsAppNumber } from '@/lib/whatsappNumber';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -25,7 +26,7 @@ const extractForm = (student: Tables<'students'>) => {
   const legacyNames = text(student.legal_name).trim().split(/\s+/);
   return {
     first_name: text(student.first_name) || legacyNames[0] || '', middle_name: text(student.middle_name), last_name: text(student.last_name) || legacyNames.slice(1).join(' '),
-    contact_phone: text(student.contact_phone), contact_email: text(student.contact_email), date_of_birth: text(student.date_of_birth), gender: text(student.gender), marital_status: text(student.marital_status), nationality: text(student.nationality), citizenship: text(student.citizenship), city_of_birth: text(student.city_of_birth), country_of_birth: text(student.country_of_birth),
+    contact_phone: text(student.contact_phone), whatsapp_number: text(student.whatsapp_number), contact_email: text(student.contact_email), date_of_birth: text(student.date_of_birth), gender: text(student.gender), marital_status: text(student.marital_status), nationality: text(student.nationality), citizenship: text(student.citizenship), city_of_birth: text(student.city_of_birth), country_of_birth: text(student.country_of_birth),
     passport_number: text(student.passport_number), passport_issue_date: text(student.passport_issue_date), passport_expiry: text(student.passport_expiry), passport_issue_country: text(student.passport_issue_country),
     address_line_1: text(student.address_line_1), country_of_residence: text(student.country_of_residence), state_region: text(student.state_region), city: text(student.city), postal_code: text(student.postal_code),
     permanent_address_line_1: text(student.permanent_address_line_1), permanent_country: text(student.permanent_country), permanent_state_region: text(student.permanent_state_region), permanent_city: text(student.permanent_city), permanent_postal_code: text(student.permanent_postal_code), permanent_same_as_mailing: student.permanent_same_as_mailing,
@@ -48,7 +49,7 @@ const Choice = ({ form, setForm, name, label, options }: { form: Form; setForm: 
     <Label>{label} *</Label>
     <Select value={String(form[name] || '')} onValueChange={(value) => setForm((current) => ({ ...current, [name]: value }))}>
       <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-      <SelectContent>{options.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
+      <SelectContent>{options.map((option) => <SelectItem key={option} value={option}>{option === 'yes' ? 'Yes' : option === 'no' ? 'No' : option}</SelectItem>)}</SelectContent>
     </Select>
   </div>
 );
@@ -63,7 +64,15 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState(() => extractForm(student));
-  useEffect(() => setForm(extractForm(student)), [student]);
+  const [whatsappSameAsMobile, setWhatsappSameAsMobile] = useState(
+    () => getWhatsAppFieldState(text(student.contact_phone), student.whatsapp_number).sameAsMobile,
+  );
+  useEffect(() => {
+    setForm(extractForm(student));
+    setWhatsappSameAsMobile(
+      getWhatsAppFieldState(text(student.contact_phone), student.whatsapp_number).sameAsMobile,
+    );
+  }, [student]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -75,12 +84,17 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
       has_visa_refusals: form.has_visa_refusals === 'yes' ? true : form.has_visa_refusals === 'no' ? false : null,
       preferred_intake_month: form.preferred_intake_month ? Number(form.preferred_intake_month) : null,
       preferred_intake_year: form.preferred_intake_year ? Number(form.preferred_intake_year) : null,
+      whatsapp_number: resolveWhatsAppNumber(form.contact_phone, form.whatsapp_number, whatsappSameAsMobile),
       legal_name: [form.first_name, form.middle_name, form.last_name].filter(Boolean).join(' '),
     };
     const relevant = getCourseFinderProfileSections(payload).filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id));
     const missing = relevant.flatMap((section) => section.missing);
     if (missing.length || !/^\+[1-9]\d{7,14}$/.test(form.contact_phone.replace(/[\s()-]/g, ''))) {
       toast({ title: 'Please complete the required fields', description: missing.length ? `Missing: ${missing.join(', ')}.` : 'Enter a mobile number with country code, for example +447123456789.', variant: 'destructive' });
+      return;
+    }
+    if (!whatsappSameAsMobile && form.whatsapp_number.trim() && !/^\+[1-9]\d{7,14}$/.test(form.whatsapp_number.replace(/[\s()-]/g, ''))) {
+      toast({ title: 'Check your WhatsApp number', description: 'Include the country code, for example +447123456789, or leave it blank.', variant: 'destructive' });
       return;
     }
     setLoading(true);
@@ -100,7 +114,17 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
   return <form onSubmit={submit} className="space-y-6">
     <Card><CardHeader><CardTitle>Registration and personal details</CardTitle><CardDescription>Use your details exactly as they appear on official documents.</CardDescription></CardHeader><CardContent className="space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3"><Field form={form} setForm={setForm} name="first_name" label="First name" /><Field form={form} setForm={setForm} name="middle_name" label="Middle name" optional /><Field form={form} setForm={setForm} name="last_name" label="Last name" /></div>
-      <div className={grid}><Field form={form} setForm={setForm} name="contact_phone" label="Mobile number (with country code)" type="tel" helper="For example +447123456789." /><Field form={form} setForm={setForm} name="contact_email" label="Email" type="email" /><Field form={form} setForm={setForm} name="date_of_birth" label="Date of birth" type="date" /><Choice form={form} setForm={setForm} name="gender" label="Gender" options={['Female', 'Male', 'Non-binary', 'Prefer not to say']} /><Choice form={form} setForm={setForm} name="marital_status" label="Marital status" options={['Single', 'Married', 'Divorced', 'Widowed', 'Separated']} /><Field form={form} setForm={setForm} name="nationality" label="Nationality" /><Field form={form} setForm={setForm} name="citizenship" label="Citizenship" /><Field form={form} setForm={setForm} name="city_of_birth" label="City of birth" /><Country form={form} setForm={setForm} name="country_of_birth" label="Country of birth" /></div>
+      <div className={grid}>
+        <Field form={form} setForm={setForm} name="contact_phone" label="Mobile number (with country code)" type="tel" helper="For example +447123456789." />
+        <div className="space-y-3">
+          {!whatsappSameAsMobile && <Field form={form} setForm={setForm} name="whatsapp_number" label="WhatsApp number (with country code)" type="tel" optional />}
+          <div className="flex items-center gap-2">
+            <Checkbox id="whatsapp-same-as-mobile" checked={whatsappSameAsMobile} onCheckedChange={(checked) => setWhatsappSameAsMobile(checked === true)} />
+            <Label htmlFor="whatsapp-same-as-mobile">Same as mobile</Label>
+          </div>
+        </div>
+        <Field form={form} setForm={setForm} name="contact_email" label="Email" type="email" /><Field form={form} setForm={setForm} name="date_of_birth" label="Date of birth" type="date" /><Choice form={form} setForm={setForm} name="gender" label="Gender" options={['Female', 'Male', 'Non-binary', 'Prefer not to say']} /><Choice form={form} setForm={setForm} name="marital_status" label="Marital status" options={['Single', 'Married', 'Divorced', 'Widowed', 'Separated']} /><Field form={form} setForm={setForm} name="nationality" label="Nationality" /><Field form={form} setForm={setForm} name="citizenship" label="Citizenship" /><Field form={form} setForm={setForm} name="city_of_birth" label="City of birth" /><Country form={form} setForm={setForm} name="country_of_birth" label="Country of birth" />
+      </div>
     </CardContent></Card>
     <Card><CardHeader><CardTitle>Passport</CardTitle></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="passport_number" label="Passport number" /><Field form={form} setForm={setForm} name="passport_issue_date" label="Issue date" type="date" /><Field form={form} setForm={setForm} name="passport_expiry" label="Expiry date" type="date" /><Country form={form} setForm={setForm} name="passport_issue_country" label="Issue country" /></CardContent></Card>
     <Card><CardHeader><CardTitle>Mailing address</CardTitle></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="address_line_1" label="Address line 1" /><Country form={form} setForm={setForm} name="country_of_residence" label="Country" /><Field form={form} setForm={setForm} name="state_region" label="State or region" /><Field form={form} setForm={setForm} name="city" label="City" /><Field form={form} setForm={setForm} name="postal_code" label="Postcode" /></CardContent></Card>

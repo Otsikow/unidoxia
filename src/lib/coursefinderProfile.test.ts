@@ -23,6 +23,13 @@ describe('CourseFinder profile rules', () => {
     expect(calculateCourseFinderCompleteness(sections)).toBe(100);
   });
 
+  it('does not count the optional WhatsApp number towards completeness', () => {
+    const withoutWhatsApp = getCourseFinderProfileSections({ ...completeStudent, whatsapp_number: null }, [], [], true);
+    const withWhatsApp = getCourseFinderProfileSections({ ...completeStudent, whatsapp_number: '+233501234567' }, [], [], true);
+    expect(calculateCourseFinderCompleteness(withoutWhatsApp)).toBe(100);
+    expect(calculateCourseFinderCompleteness(withWhatsApp)).toBe(100);
+  });
+
   it('requires every specified personal and background field', () => {
     const sections = getCourseFinderProfileSections({ ...completeStudent, gender: '', has_visa_refusals: null }, [], [], true);
     expect(sections.find((section) => section.id === 'personal')?.missing).toContain('gender');
