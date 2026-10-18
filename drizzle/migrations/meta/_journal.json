@@ -15,6 +15,13 @@
       "when": 1792328990039,
       "tag": "0001_coursefinder_student_profile_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792329015676,
+      "tag": "0002_add_student_preferences",
+      "breakpoints": true
     }
   ]
 }
