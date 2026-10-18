@@ -31,7 +31,7 @@ interface DuplicateStudent {
   email: string;
   phone: string;
   created_at: string;
-  duplicate_type: 'email' | 'phone';
+  duplicate_type: string;
   duplicate_match_ids: string[];
   match_count: number;
 }
