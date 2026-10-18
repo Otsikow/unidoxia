@@ -173,7 +173,7 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
           : '';
 
     const normalizedPhone = rawPhone.replace(/[\s\-()]/g, '');
-    const hasReferralSource = referralSource.length > 0;
+    const hasReferralSource = profile.role === 'student' || referralSource.length > 0;
     const hasWhatsapp =
       normalizedPhone.length > 0 &&
       (/^\+[1-9]\d{7,14}$/.test(normalizedPhone) || /^[1-9]\d{7,14}$/.test(normalizedPhone));

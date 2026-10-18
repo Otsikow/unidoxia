@@ -1,704 +1,113 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
+import { RESIDENCE_COUNTRIES } from '@/lib/residenceCountries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { Loader2, MessageCircle } from 'lucide-react';
-import type { Tables } from '@/integrations/supabase/types';
-import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  buildInternationalNumber,
-  COUNTRY_PHONE_OPTIONS,
-  getDialCodeByCountry,
-  isLikelyValidInternational,
-  parseInternationalNumber,
-  toWhatsAppLink,
-} from '@/lib/phone';
-import { RESIDENCE_COUNTRIES } from '@/lib/residenceCountries';
-import {
-  postalCodeRequired,
-  stateRegionRequired,
-  trimAddress,
-  validateResidentialAddress,
-  type ResidentialAddress,
-  type ResidentialAddressErrors,
-} from '@/lib/residentialAddress';
-import {
-  getAcademicYearOptions,
-  getIntakeOptionsForYear,
-} from '@/lib/intakeOptions';
 
-// Common study areas/disciplines
-const STUDY_AREAS = [
-  'Business & Management',
-  'Computer Science & IT',
-  'Engineering',
-  'Medicine & Health Sciences',
-  'Law',
-  'Arts & Humanities',
-  'Social Sciences',
-  'Natural Sciences',
-  'Education',
-  'Architecture & Design',
-  'Media & Communications',
-  'Agriculture & Environmental Sciences',
-  'Hospitality & Tourism',
-  'Finance & Accounting',
-  'Other'
-] as const;
+interface Props { student: Tables<'students'>; onUpdate: () => void }
+type Form = ReturnType<typeof extractForm>;
 
-import { STUDY_DESTINATIONS } from '@/lib/studyDestinations';
+const text = (value: unknown) => typeof value === 'string' ? value : '';
+const answer = (value: boolean | null) => value === true ? 'yes' : value === false ? 'no' : '';
 
-const PREFERRED_COUNTRIES = STUDY_DESTINATIONS;
-
-interface PersonalInfoTabProps {
-  student: Tables<'students'>;
-  onUpdate: () => void;
-}
-
-type AddressData = { 
-  phone?: string; 
-  whatsapp?: string;
-  line1?: string; 
-  line2?: string; 
-  city?: string; 
-  postal_code?: string; 
-  country?: string; 
-} | null;
-
-const extractFormData = (student: Tables<'students'>) => {
-  const addressData = student.address as AddressData;
-  const contactPhoneRaw = student.contact_phone || addressData?.phone || '';
-  const whatsappRaw = addressData?.whatsapp || addressData?.phone || student.contact_phone || '';
-  const contactPhone = parseInternationalNumber(contactPhoneRaw);
-  const whatsappPhone = parseInternationalNumber(whatsappRaw);
+const extractForm = (student: Tables<'students'>) => {
+  const legacyNames = text(student.legal_name).trim().split(/\s+/);
   return {
-    legal_name: student.legal_name || '',
-    preferred_name: student.preferred_name || '',
-    date_of_birth: student.date_of_birth || '',
-    nationality: student.nationality || '',
-    passport_number: student.passport_number || '',
-    passport_expiry: student.passport_expiry || '',
-    contact_email: student.contact_email || '',
-    contact_phone_country_code: contactPhone.dialCode || getDialCodeByCountry(student.current_country),
-    contact_phone_local: contactPhone.localNumber,
-    whatsapp_country_code: whatsappPhone.dialCode || getDialCodeByCountry(student.current_country),
-    whatsapp_local: whatsappPhone.localNumber,
-    current_country: student.current_country || '',
-    preferred_course: (student as any).preferred_course || '',
-    preferred_study_area: (student as any).preferred_study_area || '',
-    preferred_country: (student as any).preferred_country || '',
-    preferred_intake_year: (student as any).preferred_intake_year || 0,
-    preferred_intake_month: (student as any).preferred_intake_month || 0,
-    address_line_1: (student as any).address_line_1 || addressData?.line1 || '',
-    address_line_2: (student as any).address_line_2 || addressData?.line2 || '',
-    city: (student as any).city || addressData?.city || '',
-    state_region: (student as any).state_region || '',
-    postal_code: (student as any).postal_code || addressData?.postal_code || '',
-    country_of_residence:
-      (student as any).country_of_residence || addressData?.country || student.current_country || ''
+    first_name: text(student.first_name) || legacyNames[0] || '', middle_name: text(student.middle_name), last_name: text(student.last_name) || legacyNames.slice(1).join(' '),
+    contact_phone: text(student.contact_phone), contact_email: text(student.contact_email), date_of_birth: text(student.date_of_birth), gender: text(student.gender), marital_status: text(student.marital_status), nationality: text(student.nationality), citizenship: text(student.citizenship), city_of_birth: text(student.city_of_birth), country_of_birth: text(student.country_of_birth),
+    passport_number: text(student.passport_number), passport_issue_date: text(student.passport_issue_date), passport_expiry: text(student.passport_expiry), passport_issue_country: text(student.passport_issue_country),
+    address_line_1: text(student.address_line_1), country_of_residence: text(student.country_of_residence), state_region: text(student.state_region), city: text(student.city), postal_code: text(student.postal_code),
+    permanent_address_line_1: text(student.permanent_address_line_1), permanent_country: text(student.permanent_country), permanent_state_region: text(student.permanent_state_region), permanent_city: text(student.permanent_city), permanent_postal_code: text(student.permanent_postal_code), permanent_same_as_mailing: student.permanent_same_as_mailing,
+    emergency_contact_name: text(student.emergency_contact_name), emergency_contact_relationship: text(student.emergency_contact_relationship), emergency_contact_phone: text(student.emergency_contact_phone), emergency_contact_email: text(student.emergency_contact_email),
+    has_other_citizenship: answer(student.has_other_citizenship), lived_or_studied_abroad: answer(student.lived_or_studied_abroad), previous_immigration_applications: answer(student.previous_immigration_applications), has_visa_refusals: answer(student.has_visa_refusals),
+    preferred_course: text(student.preferred_course), preferred_university: text(student.preferred_university), preferred_intake_month: student.preferred_intake_month?.toString() || '', preferred_intake_year: student.preferred_intake_year?.toString() || '',
   };
 };
 
-export function PersonalInfoTab({ student, onUpdate }: PersonalInfoTabProps) {
-  const { toast } = useToast();
+const Field = ({ form, setForm, name, label, type = 'text', optional = false, helper }: { form: Form; setForm: React.Dispatch<React.SetStateAction<Form>>; name: keyof Form; label: string; type?: string; optional?: boolean; helper?: string }) => (
+  <div className="space-y-2">
+    <Label htmlFor={String(name)}>{label}{optional ? ' (optional)' : ' *'}</Label>
+    <Input id={String(name)} type={type} value={String(form[name] ?? '')} onChange={(event) => setForm((current) => ({ ...current, [name]: event.target.value }))} required={!optional} />
+    {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
+  </div>
+);
+
+const Choice = ({ form, setForm, name, label, options }: { form: Form; setForm: React.Dispatch<React.SetStateAction<Form>>; name: keyof Form; label: string; options: string[] }) => (
+  <div className="space-y-2">
+    <Label>{label} *</Label>
+    <Select value={String(form[name] || '')} onValueChange={(value) => setForm((current) => ({ ...current, [name]: value }))}>
+      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+      <SelectContent>{options.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}</SelectContent>
+    </Select>
+  </div>
+);
+
+const Country = ({ form, setForm, name, label }: { form: Form; setForm: React.Dispatch<React.SetStateAction<Form>>; name: keyof Form; label: string }) => (
+  <Choice form={form} setForm={setForm} name={name} label={label} options={RESIDENCE_COUNTRIES as unknown as string[]} />
+);
+
+export function PersonalInfoTab({ student, onUpdate }: Props) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ contactPhone?: string; whatsappNumber?: string }>({});
-  const [addressErrors, setAddressErrors] = useState<ResidentialAddressErrors>({});
-  
-  const [formData, setFormData] = useState(() => extractFormData(student));
+  const [form, setForm] = useState(() => extractForm(student));
+  useEffect(() => setForm(extractForm(student)), [student]);
 
-  // Sync form data when student prop changes (e.g., after refetch)
-  useEffect(() => {
-    setFormData(extractFormData(student));
-  }, [student]);
-
-  const validateNumbers = useCallback((data: typeof formData) => {
-    const validationErrors: { contactPhone?: string; whatsappNumber?: string } = {};
-
-    if (!isLikelyValidInternational(data.contact_phone_country_code, data.contact_phone_local)) {
-      validationErrors.contactPhone = 'Enter a valid number without leading zero. Country code is required.';
-    }
-
-    if (!isLikelyValidInternational(data.whatsapp_country_code, data.whatsapp_local)) {
-      validationErrors.whatsappNumber = 'Enter a valid WhatsApp number without leading zero. Country code is required.';
-    }
-
-    return validationErrors;
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-
-    if (e.target.name.startsWith('contact_phone') || e.target.name.startsWith('whatsapp')) {
-      const nextData = {
-        ...formData,
-        [e.target.name]: e.target.value,
-      };
-      setErrors(validateNumbers(nextData));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const validationErrors = validateNumbers(formData);
-    if (validationErrors.contactPhone || validationErrors.whatsappNumber) {
-      setErrors(validationErrors);
-      toast({
-        title: 'Invalid phone format',
-        description: 'Please correct your phone and WhatsApp numbers before saving.',
-        variant: 'destructive',
-      });
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const payload = {
+      ...form,
+      has_other_citizenship: form.has_other_citizenship === 'yes' ? true : form.has_other_citizenship === 'no' ? false : null,
+      lived_or_studied_abroad: form.lived_or_studied_abroad === 'yes' ? true : form.lived_or_studied_abroad === 'no' ? false : null,
+      previous_immigration_applications: form.previous_immigration_applications === 'yes' ? true : form.previous_immigration_applications === 'no' ? false : null,
+      has_visa_refusals: form.has_visa_refusals === 'yes' ? true : form.has_visa_refusals === 'no' ? false : null,
+      preferred_intake_month: form.preferred_intake_month ? Number(form.preferred_intake_month) : null,
+      preferred_intake_year: form.preferred_intake_year ? Number(form.preferred_intake_year) : null,
+      legal_name: [form.first_name, form.middle_name, form.last_name].filter(Boolean).join(' '),
+    };
+    const relevant = getCourseFinderProfileSections(payload).filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id));
+    const missing = relevant.flatMap((section) => section.missing);
+    if (missing.length || !/^\+[1-9]\d{7,14}$/.test(form.contact_phone.replace(/[\s()-]/g, ''))) {
+      toast({ title: 'Please complete the required fields', description: missing.length ? `Missing: ${missing.join(', ')}.` : 'Enter a mobile number with country code, for example +447123456789.', variant: 'destructive' });
       return;
     }
-
-    const addressValue: ResidentialAddress = trimAddress({
-      address_line_1: formData.address_line_1,
-      address_line_2: formData.address_line_2,
-      city: formData.city,
-      state_region: formData.state_region,
-      postal_code: formData.postal_code,
-      country_of_residence: formData.country_of_residence,
-    });
-
-    const addressValidation = validateResidentialAddress(addressValue);
-    setAddressErrors(addressValidation);
-    if (Object.keys(addressValidation).length > 0) {
-      toast({
-        title: 'Residential address incomplete',
-        description: 'Please complete the highlighted address fields before saving.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
-
-    const fullContactPhone = buildInternationalNumber(formData.contact_phone_country_code, formData.contact_phone_local);
-    const fullWhatsappNumber = buildInternationalNumber(formData.whatsapp_country_code, formData.whatsapp_local);
-
     try {
-      const { data, error } = await supabase
-        .from('students')
-        .update({
-          legal_name: formData.legal_name,
-          preferred_name: formData.preferred_name,
-          date_of_birth: formData.date_of_birth,
-          nationality: formData.nationality,
-          passport_number: formData.passport_number,
-          passport_expiry: formData.passport_expiry,
-          contact_email: formData.contact_email,
-          contact_phone: fullContactPhone,
-          current_country: formData.current_country,
-          preferred_course: formData.preferred_course,
-          preferred_study_area: formData.preferred_study_area,
-          preferred_country: formData.preferred_country,
-          preferred_intake_year: formData.preferred_intake_year || null,
-          preferred_intake_month: formData.preferred_intake_month || null,
-          address_line_1: addressValue.address_line_1 || null,
-          address_line_2: addressValue.address_line_2 || null,
-          city: addressValue.city || null,
-          state_region: addressValue.state_region || null,
-          postal_code: addressValue.postal_code || null,
-          country_of_residence: addressValue.country_of_residence || null,
-          address: {
-            line1: addressValue.address_line_1,
-            line2: addressValue.address_line_2,
-            city: addressValue.city,
-            postal_code: addressValue.postal_code,
-            country: addressValue.country_of_residence,
-            phone: fullContactPhone,
-            whatsapp: fullWhatsappNumber || null
-          }
-        })
-        .eq('id', student.id)
-        .select()
-        .single();
-
+      const { error } = await supabase.from('students').update(payload).eq('id', student.id);
       if (error) throw error;
-
-      // Immediately update the form with the saved data
-      if (data) {
-        setFormData(extractFormData(data));
-      }
-
-      // Invalidate and refetch the student record query to update all consumers
-      await queryClient.invalidateQueries({
-        queryKey: studentRecordQueryKey(user?.id),
-      });
-
-      toast({
-        title: 'Success',
-        description: 'Personal information updated successfully'
-      });
-      
+      await queryClient.invalidateQueries({ queryKey: studentRecordQueryKey(user?.id) });
+      toast({ title: 'Details saved', description: 'Your CourseFinder profile details are up to date.' });
       onUpdate();
     } catch (error) {
-      console.error('Error updating personal info:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update personal information',
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+      console.error(error);
+      toast({ title: 'Unable to save details', description: 'Please try again.', variant: 'destructive' });
+    } finally { setLoading(false); }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in">
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
-          <CardDescription>Your legal name and identification details</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="legal_name">Legal Name (as on passport) *</Label>
-              <Input
-                id="legal_name"
-                name="legal_name"
-                value={formData.legal_name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="preferred_name">Preferred Name</Label>
-              <Input
-                id="preferred_name"
-                name="preferred_name"
-                value={formData.preferred_name}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="date_of_birth">Date of Birth *</Label>
-              <Input
-                id="date_of_birth"
-                name="date_of_birth"
-                type="date"
-                value={formData.date_of_birth}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="nationality">Nationality *</Label>
-              <Input
-                id="nationality"
-                name="nationality"
-                value={formData.nationality}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="passport_number">Passport Number *</Label>
-              <Input
-                id="passport_number"
-                name="passport_number"
-                value={formData.passport_number}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="passport_expiry">Passport Expiry *</Label>
-              <Input
-                id="passport_expiry"
-                name="passport_expiry"
-                type="date"
-                value={formData.passport_expiry}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
-          <CardDescription>How we can reach you</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="contact_email">Email *</Label>
-              <Input
-                id="contact_email"
-                name="contact_email"
-                type="email"
-                value={formData.contact_email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="contact_phone">Phone Number *</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-2">
-                <Select
-                  value={formData.contact_phone_country_code}
-                  onValueChange={(value) => {
-                    const nextData = { ...formData, contact_phone_country_code: value };
-                    setFormData(nextData);
-                    setErrors(validateNumbers(nextData));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select country code" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRY_PHONE_OPTIONS.map((option) => (
-                      <SelectItem key={`${option.country}-${option.dialCode}`} value={option.dialCode}>
-                        {option.flag} {option.country} ({option.dialCode})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  id="contact_phone"
-                  name="contact_phone_local"
-                  type="tel"
-                  value={formData.contact_phone_local}
-                  onChange={handleChange}
-                  placeholder="7360961803"
-                  required
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Enter your number without the leading zero. Country code will be added automatically.
-              </p>
-              {errors.contactPhone && <p className="text-xs text-destructive">{errors.contactPhone}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="whatsapp_number">WhatsApp Number *</Label>
-              <div className="grid grid-cols-1 sm:grid-cols-[220px_1fr] gap-2">
-                <Select
-                  value={formData.whatsapp_country_code}
-                  onValueChange={(value) => {
-                    const nextData = { ...formData, whatsapp_country_code: value };
-                    setFormData(nextData);
-                    setErrors(validateNumbers(nextData));
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select country code" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {COUNTRY_PHONE_OPTIONS.map((option) => (
-                      <SelectItem key={`whatsapp-${option.country}-${option.dialCode}`} value={option.dialCode}>
-                        {option.flag} {option.country} ({option.dialCode})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  id="whatsapp_number"
-                  name="whatsapp_local"
-                  type="tel"
-                  value={formData.whatsapp_local}
-                  onChange={handleChange}
-                  placeholder="7360961803"
-                  required
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Enter your number without the leading zero. Country code will be added automatically.
-              </p>
-              {errors.whatsappNumber && <p className="text-xs text-destructive">{errors.whatsappNumber}</p>}
-              {isLikelyValidInternational(formData.whatsapp_country_code, formData.whatsapp_local) && (
-                <Button asChild type="button" variant="outline" className="w-full sm:w-auto">
-                  <a
-                    href={toWhatsAppLink(buildInternationalNumber(formData.whatsapp_country_code, formData.whatsapp_local))}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" /> Message on WhatsApp
-                  </a>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="current_country">Current Country of Residence *</Label>
-            <Input
-              id="current_country"
-              name="current_country"
-              value={formData.current_country}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="space-y-4 rounded-xl border bg-muted/30 p-4">
-            <div className="space-y-1">
-              <h3 className="text-base font-semibold">Residential Address</h3>
-              <p className="text-xs text-muted-foreground">
-                Your current residential address. This may be used to support your university
-                applications.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="country_of_residence">Country of Residence *</Label>
-              <Select
-                value={formData.country_of_residence || undefined}
-                onValueChange={(value) => {
-                  setFormData((prev) => ({ ...prev, country_of_residence: value }));
-                  setAddressErrors((prev) => ({ ...prev, country_of_residence: undefined }));
-                }}
-              >
-                <SelectTrigger id="country_of_residence">
-                  <SelectValue placeholder="Select your country of residence" />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {RESIDENCE_COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {addressErrors.country_of_residence && (
-                <p className="text-xs text-destructive">{addressErrors.country_of_residence}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address_line_1">Address Line 1 *</Label>
-              <Input
-                id="address_line_1"
-                name="address_line_1"
-                value={formData.address_line_1}
-                onChange={handleChange}
-                placeholder="House number and street"
-              />
-              {addressErrors.address_line_1 && (
-                <p className="text-xs text-destructive">{addressErrors.address_line_1}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address_line_2">Address Line 2 (optional)</Label>
-              <Input
-                id="address_line_2"
-                name="address_line_2"
-                value={formData.address_line_2}
-                onChange={handleChange}
-                placeholder="Apartment, suite, district"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="city">City / Town *</Label>
-                <Input id="city" name="city" value={formData.city} onChange={handleChange} />
-                {addressErrors.city && (
-                  <p className="text-xs text-destructive">{addressErrors.city}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="state_region">
-                  State / Region{stateRegionRequired(formData.country_of_residence) ? ' *' : ''}
-                </Label>
-                <Input
-                  id="state_region"
-                  name="state_region"
-                  value={formData.state_region}
-                  onChange={handleChange}
-                />
-                {addressErrors.state_region && (
-                  <p className="text-xs text-destructive">{addressErrors.state_region}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="postal_code">
-                  Postal / ZIP Code{postalCodeRequired(formData.country_of_residence) ? ' *' : ''}
-                </Label>
-                <Input
-                  id="postal_code"
-                  name="postal_code"
-                  value={formData.postal_code}
-                  onChange={handleChange}
-                />
-                {addressErrors.postal_code && (
-                  <p className="text-xs text-destructive">{addressErrors.postal_code}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="hover:shadow-md transition-shadow">
-        <CardHeader>
-          <CardTitle>Study Preferences</CardTitle>
-          <CardDescription>
-            Tell us about your study goals so we can better support your journey.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="preferred_course">Preferred Course</Label>
-              <Input
-                id="preferred_course"
-                name="preferred_course"
-                value={formData.preferred_course}
-                onChange={handleChange}
-                placeholder="e.g., MBA, Computer Science, Nursing"
-              />
-              <p className="text-xs text-muted-foreground">
-                The specific program or degree you want to pursue
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="preferred_study_area">Preferred Study Area</Label>
-              <Select
-                value={formData.preferred_study_area}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_study_area: value }))}
-              >
-                <SelectTrigger id="preferred_study_area">
-                  <SelectValue placeholder="Select a study area" />
-                </SelectTrigger>
-                <SelectContent>
-                  {STUDY_AREAS.map((area) => (
-                    <SelectItem key={area} value={area}>
-                      {area}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                The broader field or discipline
-              </p>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="preferred_country">Preferred Country</Label>
-            <Select
-              value={formData.preferred_country}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, preferred_country: value }))}
-            >
-              <SelectTrigger id="preferred_country">
-                <SelectValue placeholder="Select a country" />
-              </SelectTrigger>
-              <SelectContent>
-                {PREFERRED_COUNTRIES.map((country) => (
-                  <SelectItem key={country} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              Your preferred destination for studying abroad
-            </p>
-          </div>
-
-          {/* Preferred Intake Year & Month */}
-          {(() => {
-            const academicYears = getAcademicYearOptions();
-            const selectedYear =
-              academicYears.find((y) => y.startYear === formData.preferred_intake_year)?.startYear ||
-              formData.preferred_intake_year ||
-              0;
-            const intakeOptions = selectedYear ? getIntakeOptionsForYear(selectedYear) : [];
-            return (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="preferred_intake_year">Preferred Academic Year</Label>
-                  <Select
-                    value={formData.preferred_intake_year ? String(formData.preferred_intake_year) : ''}
-                    onValueChange={(value) => {
-                      const year = parseInt(value, 10);
-                      const opts = getIntakeOptionsForYear(year);
-                      const stillValid = opts.some((o) => o.month === formData.preferred_intake_month);
-                      const month = stillValid ? formData.preferred_intake_month : opts[0]?.month ?? 0;
-                      setFormData((prev) => ({
-                        ...prev,
-                        preferred_intake_year: year,
-                        preferred_intake_month: month,
-                      }));
-                    }}
-                  >
-                    <SelectTrigger id="preferred_intake_year">
-                      <SelectValue placeholder="Select academic year" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {academicYears.map((y) => (
-                        <SelectItem key={y.startYear} value={String(y.startYear)}>
-                          {y.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    The academic year you plan to begin your studies
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="preferred_intake_month">Preferred Intake</Label>
-                  <Select
-                    value={formData.preferred_intake_month ? String(formData.preferred_intake_month) : ''}
-                    onValueChange={(value) =>
-                      setFormData((prev) => ({ ...prev, preferred_intake_month: parseInt(value, 10) }))
-                    }
-                    disabled={!selectedYear}
-                  >
-                    <SelectTrigger id="preferred_intake_month">
-                      <SelectValue placeholder={selectedYear ? 'Select intake month' : 'Select academic year first'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {intakeOptions.length === 0 ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">
-                          No upcoming intakes
-                        </div>
-                      ) : (
-                        intakeOptions.map((opt) => (
-                          <SelectItem key={opt.month} value={String(opt.month)}>
-                            {opt.label}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Your preferred intake start date
-                  </p>
-                </div>
-              </div>
-            );
-          })()}
-        </CardContent>
-      </Card>
-
-      <Button type="submit" disabled={loading} className="w-full hover-scale">
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        Save Personal Information
-      </Button>
-    </form>
-  );
+  const grid = 'grid grid-cols-1 gap-4 md:grid-cols-2';
+  return <form onSubmit={submit} className="space-y-6">
+    <Card><CardHeader><CardTitle>Registration and personal details</CardTitle><CardDescription>Use your details exactly as they appear on official documents.</CardDescription></CardHeader><CardContent className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3"><Field form={form} setForm={setForm} name="first_name" label="First name" /><Field form={form} setForm={setForm} name="middle_name" label="Middle name" optional /><Field form={form} setForm={setForm} name="last_name" label="Last name" /></div>
+      <div className={grid}><Field form={form} setForm={setForm} name="contact_phone" label="Mobile number (with country code)" type="tel" helper="For example +447123456789." /><Field form={form} setForm={setForm} name="contact_email" label="Email" type="email" /><Field form={form} setForm={setForm} name="date_of_birth" label="Date of birth" type="date" /><Choice form={form} setForm={setForm} name="gender" label="Gender" options={['Female', 'Male', 'Non-binary', 'Prefer not to say']} /><Choice form={form} setForm={setForm} name="marital_status" label="Marital status" options={['Single', 'Married', 'Divorced', 'Widowed', 'Separated']} /><Field form={form} setForm={setForm} name="nationality" label="Nationality" /><Field form={form} setForm={setForm} name="citizenship" label="Citizenship" /><Field form={form} setForm={setForm} name="city_of_birth" label="City of birth" /><Country form={form} setForm={setForm} name="country_of_birth" label="Country of birth" /></div>
+    </CardContent></Card>
+    <Card><CardHeader><CardTitle>Passport</CardTitle></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="passport_number" label="Passport number" /><Field form={form} setForm={setForm} name="passport_issue_date" label="Issue date" type="date" /><Field form={form} setForm={setForm} name="passport_expiry" label="Expiry date" type="date" /><Country form={form} setForm={setForm} name="passport_issue_country" label="Issue country" /></CardContent></Card>
+    <Card><CardHeader><CardTitle>Mailing address</CardTitle></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="address_line_1" label="Address line 1" /><Country form={form} setForm={setForm} name="country_of_residence" label="Country" /><Field form={form} setForm={setForm} name="state_region" label="State or region" /><Field form={form} setForm={setForm} name="city" label="City" /><Field form={form} setForm={setForm} name="postal_code" label="Postcode" /></CardContent></Card>
+    <Card><CardHeader><CardTitle>Permanent address</CardTitle><CardDescription>Tick the box if this is the same as your mailing address.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="flex items-center gap-2"><Checkbox id="same" checked={form.permanent_same_as_mailing} onCheckedChange={(checked) => setForm((current) => ({ ...current, permanent_same_as_mailing: checked === true }))} /><Label htmlFor="same">Same as mailing address</Label></div>{!form.permanent_same_as_mailing && <div className={grid}><Field form={form} setForm={setForm} name="permanent_address_line_1" label="Address line 1" /><Country form={form} setForm={setForm} name="permanent_country" label="Country" /><Field form={form} setForm={setForm} name="permanent_state_region" label="State or region" /><Field form={form} setForm={setForm} name="permanent_city" label="City" /><Field form={form} setForm={setForm} name="permanent_postal_code" label="Postcode" /></div>}</CardContent></Card>
+    <Card><CardHeader><CardTitle>Emergency contact</CardTitle><CardDescription>Add exactly one person we can contact in an emergency.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="emergency_contact_name" label="Name" /><Field form={form} setForm={setForm} name="emergency_contact_relationship" label="Relationship" /><Field form={form} setForm={setForm} name="emergency_contact_phone" label="Phone" type="tel" /><Field form={form} setForm={setForm} name="emergency_contact_email" label="Email" type="email" /></CardContent></Card>
+    <Card><CardHeader><CardTitle>Background</CardTitle><CardDescription>Please answer every question.</CardDescription></CardHeader><CardContent className={grid}><Choice form={form} setForm={setForm} name="has_other_citizenship" label="Do you have another citizenship?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="lived_or_studied_abroad" label="Have you lived or studied in another country?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="previous_immigration_applications" label="Have you made previous immigration applications?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="has_visa_refusals" label="Have you had a visa refusal?" options={['yes', 'no']} /></CardContent></Card>
+    <Card><CardHeader><CardTitle>Course preferences</CardTitle><CardDescription>Optional preferences only. UniDoxia staff will confirm your final course, university and intake.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="preferred_course" label="Preferred course" optional /><Field form={form} setForm={setForm} name="preferred_university" label="Preferred university" optional /><Field form={form} setForm={setForm} name="preferred_intake_month" label="Preferred intake month" type="number" optional /><Field form={form} setForm={setForm} name="preferred_intake_year" label="Preferred intake year" type="number" optional /></CardContent></Card>
+    <Button type="submit" disabled={loading} className="w-full">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save profile details</Button>
+  </form>;
 }
