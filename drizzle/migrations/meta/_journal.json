@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1792328966421,
+      "tag": "0000_add_whatsapp_number_to_students",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792328990039,
+      "tag": "0001_coursefinder_student_profile_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792329015676,
+      "tag": "0002_add_student_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792329077442,
+      "tag": "0003_secure_duplicate_students_rpc",
+      "breakpoints": true
+    }
+  ]
+}

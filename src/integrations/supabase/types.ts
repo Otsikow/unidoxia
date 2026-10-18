@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -3631,6 +3631,7 @@ export type Database = {
           archived_at: string | null
           archived_by: string | null
           assigned_agent_id: string | null
+          citizenship: string | null
           city: string | null
           city_of_birth: string | null
           consent_flags_json: Json | null
@@ -3648,15 +3649,16 @@ export type Database = {
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relationship: string | null
-          first_name: string | null
           finances_json: Json | null
-          guardian: Json | null
-          id: string
+          first_name: string | null
           gender: string | null
+          guardian: Json | null
           has_other_citizenship: boolean | null
+          has_visa_refusals: boolean | null
           highest_education_level: string | null
-          legal_name: string | null
+          id: string
           last_name: string | null
+          legal_name: string | null
           lived_or_studied_abroad: boolean | null
           manual_status: string | null
           marital_status: string | null
@@ -3671,28 +3673,27 @@ export type Database = {
           payment_currency: string | null
           payment_date: string | null
           payment_type: string | null
-          plan_type: string | null
-          postal_code: string | null
           permanent_address_line_1: string | null
           permanent_city: string | null
           permanent_country: string | null
           permanent_postal_code: string | null
           permanent_same_as_mailing: boolean
           permanent_state_region: string | null
+          plan_type: string | null
+          postal_code: string | null
           preferred_country: string | null
           preferred_course: string | null
-          preferred_university: string | null
           preferred_intake_month: number | null
           preferred_intake_year: number | null
           preferred_name: string | null
           preferred_study_area: string | null
+          preferred_university: string | null
+          previous_immigration_applications: boolean | null
           profile_completeness: number | null
           profile_id: string
-          previous_immigration_applications: boolean | null
           reference_code: string
           referral_source: string | null
           refund_eligibility: boolean | null
-          state_region: string | null
           secondary_board: string | null
           secondary_end_month: number | null
           secondary_end_year: number | null
@@ -3705,16 +3706,15 @@ export type Database = {
           secondary_school_state: string | null
           secondary_start_month: number | null
           secondary_start_year: number | null
+          state_region: string | null
           tenant_id: string
           test_scores: Json | null
           updated_at: string | null
-          has_visa_refusals: boolean | null
           visa_history_json: Json | null
           waec_scratch_card_pin: string | null
           waec_scratch_card_serial: string | null
-          work_experience: Json
           whatsapp_number: string | null
-          citizenship: string | null
+          work_experience: Json
         }
         Insert: {
           address?: Json | null
@@ -3725,6 +3725,7 @@ export type Database = {
           archived_at?: string | null
           archived_by?: string | null
           assigned_agent_id?: string | null
+          citizenship?: string | null
           city?: string | null
           city_of_birth?: string | null
           consent_flags_json?: Json | null
@@ -3742,15 +3743,16 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
-          first_name?: string | null
           finances_json?: Json | null
-          guardian?: Json | null
-          id?: string
+          first_name?: string | null
           gender?: string | null
+          guardian?: Json | null
           has_other_citizenship?: boolean | null
+          has_visa_refusals?: boolean | null
           highest_education_level?: string | null
-          legal_name?: string | null
+          id?: string
           last_name?: string | null
+          legal_name?: string | null
           lived_or_studied_abroad?: boolean | null
           manual_status?: string | null
           marital_status?: string | null
@@ -3765,28 +3767,27 @@ export type Database = {
           payment_currency?: string | null
           payment_date?: string | null
           payment_type?: string | null
-          plan_type?: string | null
-          postal_code?: string | null
           permanent_address_line_1?: string | null
           permanent_city?: string | null
           permanent_country?: string | null
           permanent_postal_code?: string | null
           permanent_same_as_mailing?: boolean
           permanent_state_region?: string | null
+          plan_type?: string | null
+          postal_code?: string | null
           preferred_country?: string | null
           preferred_course?: string | null
-          preferred_university?: string | null
           preferred_intake_month?: number | null
           preferred_intake_year?: number | null
           preferred_name?: string | null
           preferred_study_area?: string | null
+          preferred_university?: string | null
+          previous_immigration_applications?: boolean | null
           profile_completeness?: number | null
           profile_id: string
-          previous_immigration_applications?: boolean | null
           reference_code?: string
           referral_source?: string | null
           refund_eligibility?: boolean | null
-          state_region?: string | null
           secondary_board?: string | null
           secondary_end_month?: number | null
           secondary_end_year?: number | null
@@ -3799,16 +3800,15 @@ export type Database = {
           secondary_school_state?: string | null
           secondary_start_month?: number | null
           secondary_start_year?: number | null
+          state_region?: string | null
           tenant_id: string
           test_scores?: Json | null
           updated_at?: string | null
-          has_visa_refusals?: boolean | null
           visa_history_json?: Json | null
           waec_scratch_card_pin?: string | null
           waec_scratch_card_serial?: string | null
-          work_experience?: Json
           whatsapp_number?: string | null
-          citizenship?: string | null
+          work_experience?: Json
         }
         Update: {
           address?: Json | null
@@ -3819,6 +3819,7 @@ export type Database = {
           archived_at?: string | null
           archived_by?: string | null
           assigned_agent_id?: string | null
+          citizenship?: string | null
           city?: string | null
           city_of_birth?: string | null
           consent_flags_json?: Json | null
@@ -3836,15 +3837,16 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
-          first_name?: string | null
           finances_json?: Json | null
-          guardian?: Json | null
-          id?: string
+          first_name?: string | null
           gender?: string | null
+          guardian?: Json | null
           has_other_citizenship?: boolean | null
+          has_visa_refusals?: boolean | null
           highest_education_level?: string | null
-          legal_name?: string | null
+          id?: string
           last_name?: string | null
+          legal_name?: string | null
           lived_or_studied_abroad?: boolean | null
           manual_status?: string | null
           marital_status?: string | null
@@ -3859,28 +3861,27 @@ export type Database = {
           payment_currency?: string | null
           payment_date?: string | null
           payment_type?: string | null
-          plan_type?: string | null
-          postal_code?: string | null
           permanent_address_line_1?: string | null
           permanent_city?: string | null
           permanent_country?: string | null
           permanent_postal_code?: string | null
           permanent_same_as_mailing?: boolean
           permanent_state_region?: string | null
+          plan_type?: string | null
+          postal_code?: string | null
           preferred_country?: string | null
           preferred_course?: string | null
-          preferred_university?: string | null
           preferred_intake_month?: number | null
           preferred_intake_year?: number | null
           preferred_name?: string | null
           preferred_study_area?: string | null
+          preferred_university?: string | null
+          previous_immigration_applications?: boolean | null
           profile_completeness?: number | null
           profile_id?: string
-          previous_immigration_applications?: boolean | null
           reference_code?: string
           referral_source?: string | null
           refund_eligibility?: boolean | null
-          state_region?: string | null
           secondary_board?: string | null
           secondary_end_month?: number | null
           secondary_end_year?: number | null
@@ -3893,16 +3894,15 @@ export type Database = {
           secondary_school_state?: string | null
           secondary_start_month?: number | null
           secondary_start_year?: number | null
+          state_region?: string | null
           tenant_id?: string
           test_scores?: Json | null
           updated_at?: string | null
-          has_visa_refusals?: boolean | null
           visa_history_json?: Json | null
           waec_scratch_card_pin?: string | null
           waec_scratch_card_serial?: string | null
-          work_experience?: Json
           whatsapp_number?: string | null
-          citizenship?: string | null
+          work_experience?: Json
         }
         Relationships: [
           {
@@ -5141,20 +5141,6 @@ export type Database = {
       }
     }
     Functions: {
-      find_duplicate_students: {
-        Args: { p_limit?: number }
-        Returns: {
-          student_id: string
-          profile_id: string
-          full_name: string
-          email: string
-          phone: string
-          created_at: string
-          duplicate_type: "email" | "phone"
-          duplicate_match_ids: string[]
-          match_count: number
-        }[]
-      }
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean
@@ -5197,6 +5183,20 @@ export type Database = {
           p_user_id?: string
         }
         Returns: Json
+      }
+      find_duplicate_students: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          duplicate_match_ids: string[]
+          duplicate_type: string
+          email: string
+          full_name: string
+          match_count: number
+          phone: string
+          profile_id: string
+          student_id: string
+        }[]
       }
       find_scholarship_duplicates: {
         Args: {
