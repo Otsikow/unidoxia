@@ -3664,6 +3664,7 @@ export type Database = {
           test_scores: Json | null
           updated_at: string | null
           visa_history_json: Json | null
+          whatsapp_number: string | null
         }
         Insert: {
           address?: Json | null
@@ -3719,6 +3720,7 @@ export type Database = {
           test_scores?: Json | null
           updated_at?: string | null
           visa_history_json?: Json | null
+          whatsapp_number?: string | null
         }
         Update: {
           address?: Json | null
@@ -3774,6 +3776,7 @@ export type Database = {
           test_scores?: Json | null
           updated_at?: string | null
           visa_history_json?: Json | null
+          whatsapp_number?: string | null
         }
         Relationships: [
           {
