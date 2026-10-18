@@ -33,6 +33,7 @@ import { validateFileUpload } from "@/lib/fileUpload";
 import { verifyUploadedFileSize } from "@/lib/fileUpload";
 import { logError, formatErrorForToast } from "@/lib/errorUtils";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
+import { getCourseFinderProfileSections } from "@/lib/coursefinderProfile";
 
 import {
   FileText,
@@ -75,27 +76,17 @@ interface StudentDocument {
 /* -------------------------------------------------------------------------- */
 
 const DOCUMENT_TYPES = [
-  { value: "passport", label: "Passport", required: true },
-  { value: "passport_photo", label: "Passport Photo", required: true },
-  { value: "transcript", label: "Academic Transcript", required: true },
-  { value: "degree_certificate", label: "Academic Certificate", required: true },
-  { value: "wassce_waec", label: "WASSCE / WAEC Results (incl. English Language)", required: true },
-  { value: "cv", label: "CV / Resume", required: true },
-  { value: "english_proficiency", label: "Statement of English Proficiency", required: true },
-  { value: "reference_letter_1", label: "Letter of Reference (1st)", required: true },
-  { value: "reference_letter_2", label: "Letter of Reference (2nd)", required: true },
-  { value: "ielts", label: "IELTS Score", required: false },
-  { value: "toefl", label: "TOEFL Score", required: false },
-  { value: "sop", label: "Statement of Purpose", required: false },
-  { value: "lor", label: "Letter of Recommendation", required: false },
-  { value: "portfolio", label: "Portfolio", required: false },
-  { value: "financial_document", label: "Financial / Bank Statement (Optional)", required: false },
-  { value: "affidavit", label: "Affidavit (Optional)", required: false },
-  { value: "birth_certificate", label: "Birth Certificate (Optional)", required: false },
-  { value: "medical_report", label: "Medical Report (Optional)", required: false },
-  { value: "police_clearance", label: "Police Clearance (Optional)", required: false },
-  { value: "sponsor_letter", label: "Sponsor Letter (Optional)", required: false },
-  { value: "other", label: "Other Supporting Document (Optional)", required: false },
+  { value: "passport", label: "Passport photo page", required: true },
+  { value: "passport_photo", label: "Passport-style photo", required: true },
+  { value: "transcript", label: "Transcript(s)", required: true },
+  { value: "degree_certificate", label: "Academic or degree certificate", required: true },
+  { value: "wassce_waec", label: "WASSCE or WAEC results", required: true },
+  { value: "sop", label: "Statement of purpose", required: true },
+  { value: "reference_letter_1", label: "Reference letter 1", required: true },
+  { value: "reference_letter_2", label: "Reference letter 2", required: true },
+  { value: "cv", label: "CV", required: true },
+  { value: "english_test_certificate", label: "English test certificate", required: false },
+  { value: "english_medium_letter", label: "English-medium-of-instruction letter", required: false },
 ] as const;
 
 // Helper to get document type label from value
@@ -667,17 +658,15 @@ export default function Documents() {
   /* ------------------------------------------------------------------------ */
 
   const missingPersonalFields = useMemo(() => {
-    const missing: string[] = [];
-    if (!studentRecord) return missing;
-
-    if (!studentRecord.legal_name?.trim()) missing.push("Full Name");
-    if (!studentRecord.contact_email?.trim() && !profile?.email) missing.push("Email Address");
-    if (!studentRecord.contact_phone?.trim() && !profile?.phone) missing.push("Phone Number");
-    if (!studentRecord.date_of_birth) missing.push("Date of Birth");
-    if (!studentRecord.nationality?.trim()) missing.push("Nationality");
-    if (!studentRecord.current_country?.trim()) missing.push("Current Country");
-
-    return missing;
+    if (!studentRecord) return [];
+    const value = {
+      ...studentRecord,
+      contact_email: studentRecord.contact_email || profile?.email,
+      contact_phone: studentRecord.contact_phone || profile?.phone,
+    };
+    return getCourseFinderProfileSections(value as unknown as Record<string, unknown>)
+      .filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id))
+      .flatMap((section) => section.missing);
   }, [studentRecord, profile]);
 
   const isPersonalInfoComplete = missingPersonalFields.length === 0;
@@ -729,7 +718,10 @@ export default function Documents() {
       <Card>
         <CardHeader>
           <CardTitle>Upload Document</CardTitle>
-          <CardDescription>Upload required documents for your applications</CardDescription>
+          <CardDescription className="space-y-1">
+            <span className="block">Upload required documents for your applications. WASSCE or WAEC English results can count as English proof.</span>
+            <span className="block">Each university sets its own English requirement; we'll confirm what yours accepts.</span>
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>

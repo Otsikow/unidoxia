@@ -84,7 +84,7 @@ const CompleteSignup = () => {
           : "";
 
       const normalizedWhatsapp = normalizePhoneNumber(profileWhatsapp || metadataWhatsapp);
-      const hasReferralSource = metadataReferral.length > 0;
+      const hasReferralSource = profile.role === "student" || metadataReferral.length > 0;
       const hasWhatsapp = WHATSAPP_REGEX.test(normalizedWhatsapp);
 
       if (hasReferralSource && hasWhatsapp) {
@@ -114,7 +114,7 @@ const CompleteSignup = () => {
       : "";
 
   const existingWhatsapp = profileWhatsapp || metadataWhatsapp;
-  const needsReferralSource = metadataReferral.length === 0;
+  const needsReferralSource = profile.role !== "student" && metadataReferral.length === 0;
   const needsWhatsapp = !WHATSAPP_REGEX.test(normalizePhoneNumber(existingWhatsapp));
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,8 +143,8 @@ const CompleteSignup = () => {
     if (needsWhatsapp && !normalizedWhatsapp) {
       toast({
         variant: "destructive",
-        title: "WhatsApp number required",
-        description: "Please enter your WhatsApp number with country code.",
+        title: "Mobile number required",
+        description: "Please enter your mobile number with country code.",
       });
       return;
     }
@@ -152,7 +152,7 @@ const CompleteSignup = () => {
     if (needsWhatsapp && !WHATSAPP_REGEX.test(normalizedWhatsapp)) {
       toast({
         variant: "destructive",
-        title: "Invalid WhatsApp number",
+        title: "Invalid mobile number",
         description: "Include the country code, for example: +2348012345678 or +447123456789.",
       });
       return;
@@ -173,7 +173,7 @@ const CompleteSignup = () => {
       const finalReferralSource = needsReferralSource ? referralSource.trim() : metadataReferral;
       const finalWhatsapp = needsWhatsapp ? normalizedWhatsapp : existingWhatsapp;
 
-      if (profile.role === "student" && needsReferralSource) {
+      if (profile.role === "student") {
         const { data: studentRecord, error: studentFetchError } = await supabase
           .from("students")
           .select("id, tenant_id")
@@ -186,22 +186,12 @@ const CompleteSignup = () => {
           const { error: studentUpdateError } = await supabase
             .from("students")
             .update({
-              referral_source: finalReferralSource,
               contact_phone: finalWhatsapp || null,
             })
             .eq("id", studentRecord.id);
 
           if (studentUpdateError) throw studentUpdateError;
 
-          const { error: attributionError } = await supabase.from("attributions").insert({
-            tenant_id: studentRecord.tenant_id,
-            student_id: studentRecord.id,
-            source: finalReferralSource,
-            touch: "signup",
-            medium: "self-reported",
-          });
-
-          if (attributionError) throw attributionError;
         }
       }
 
@@ -275,7 +265,7 @@ const CompleteSignup = () => {
               <div className="space-y-2">
                 <Label htmlFor="whatsappNumber" className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  WhatsApp Number
+                  Mobile number (with country code)
                   <span className="text-destructive">*</span>
                 </Label>
                 <Input

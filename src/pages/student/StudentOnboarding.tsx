@@ -12,18 +12,17 @@ import {
   CheckCircle,
   FileText,
   GraduationCap,
-  Award,
-  DollarSign,
   FileCheck,
   IdCard,
   ScrollText,
   School,
   CreditCard,
-  ShieldCheck,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 import { NextStepNavigator, type NavigatorStep } from '@/components/student/NextStepNavigator';
+import { areRequiredStudentDocumentsComplete } from '@/lib/studentDocuments';
+import { calculateCourseFinderCompleteness, getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
 
 interface ChecklistItem {
   id: string;
@@ -55,30 +54,15 @@ const DEFAULT_TENANT_ID = import.meta.env.VITE_DEFAULT_TENANT_ID ?? '00000000-00
 const getRecordTimestamp = (record?: { updated_at: string | null; created_at: string | null } | null) =>
   record?.updated_at ?? record?.created_at ?? null;
 
-const getWhatsappNumberFromStudent = (student: Tables<'students'> | null): string => {
-  if (!student) return '';
-
-  const address = student.address;
-  if (address && typeof address === 'object' && !Array.isArray(address)) {
-    const addressRecord = address as Record<string, unknown>;
-    if (typeof addressRecord.whatsapp === 'string' && addressRecord.whatsapp.trim()) {
-      return addressRecord.whatsapp.trim();
-    }
-  }
-
-  return student.contact_phone?.trim() ?? '';
-};
-
 const buildNavigatorSteps = (
   documents: StudentDocumentSummary[],
   applications: ApplicationSummary[],
   payments: PaymentSummary[],
 ): NavigatorStep[] => {
-  const findDoc = (type: string) => documents.find((doc) => doc.document_type === type);
+  const findDoc = (...types: string[]) => documents.find((doc) => types.includes(doc.document_type));
   const passportDoc = findDoc('passport');
   const transcriptDoc = findDoc('transcript');
-  const sopDoc = findDoc('personal_statement');
-  const visaDoc = findDoc('financial_document');
+  const sopDoc = findDoc('sop', 'personal_statement');
   const hasApplications = applications.length > 0;
   const latestApplication = applications.reduce<ApplicationSummary | null>((latest, current) => {
     if (!latest) return current;
@@ -128,15 +112,15 @@ const buildNavigatorSteps = (
     },
     {
       id: 'sop',
-      title: 'Complete SOP',
-      description: 'Craft your statement of purpose using the AI writer.',
+      title: 'Upload statement of purpose',
+      description: 'Add your statement of purpose to the required document checklist.',
       completed: Boolean(sopDoc),
       status: sopDoc ? 'complete' : 'pending',
       aiHint: sopDoc
-        ? 'AI stored your SOP so agents can annotate instantly.'
-        : 'AI will coach you through each paragraph once you start writing.',
-      actionLabel: sopDoc ? 'Review SOP' : 'Launch SOP generator',
-      actionHref: '/student/profile#sop',
+        ? 'Your statement of purpose is available for your application team.'
+        : 'Upload your statement of purpose with the rest of your application documents.',
+      actionLabel: sopDoc ? 'View documents' : 'Upload statement of purpose',
+      actionHref: '/student/documents',
       icon: ScrollText,
       lastUpdated: getRecordTimestamp(sopDoc ?? null),
     },
@@ -172,20 +156,6 @@ const buildNavigatorSteps = (
       icon: CreditCard,
       lastUpdated: getRecordTimestamp(successfulPayment ?? pendingPayment ?? sortedPayments[0] ?? null),
     },
-    {
-      id: 'visa',
-      title: 'Prepare visa documents',
-      description: 'Upload financial proofs so AI can pre-check visa readiness.',
-      completed: Boolean(visaDoc),
-      status: visaDoc ? 'complete' : 'pending',
-      aiHint: visaDoc
-        ? 'AI marked your finances as visa-ready in the background.'
-        : 'AI will stage your embassy checklist once finances are uploaded.',
-      actionLabel: visaDoc ? 'Review visa docs' : 'Upload visa docs',
-      actionHref: '/student/documents',
-      icon: ShieldCheck,
-      lastUpdated: getRecordTimestamp(visaDoc ?? null),
-    },
   ];
 
   return steps;
@@ -204,7 +174,6 @@ export default function StudentOnboarding() {
   const [navigatorUpdatedAt, setNavigatorUpdatedAt] = useState<string | null>(null);
   const applicationIdsRef = useRef<string[]>([]);
   const [markingOnboarded, setMarkingOnboarded] = useState(false);
-  const hasRequiredWhatsapp = Boolean(getWhatsappNumberFromStudent(student));
 
   const markOnboardingComplete = useCallback(async () => {
     if (!user?.id || profile?.role !== 'student') {
@@ -214,16 +183,6 @@ export default function StudentOnboarding() {
 
     if (profile.onboarded) {
       navigate('/student/dashboard');
-      return;
-    }
-
-    if (!hasRequiredWhatsapp) {
-      toast({
-        title: 'WhatsApp number required',
-        description: 'Please add your WhatsApp number in your profile before completing onboarding.',
-        variant: 'destructive',
-      });
-      navigate('/student/profile');
       return;
     }
 
@@ -254,7 +213,7 @@ export default function StudentOnboarding() {
     } finally {
       setMarkingOnboarded(false);
     }
-  }, [hasRequiredWhatsapp, navigate, profile?.role, profile?.onboarded, refreshProfile, toast, user?.id]);
+  }, [navigate, profile?.role, profile?.onboarded, refreshProfile, toast, user?.id]);
 
   const resolveTenantId = useCallback(async (): Promise<string | null> => {
     try {
@@ -339,26 +298,25 @@ export default function StudentOnboarding() {
         currentStudent = createdStudent;
       }
 
-      let educationCount = 0;
-      let testScoresCount = 0;
-      let documentsCount = 0;
+      let educationRecords: Tables<'education_records'>[] = [];
+      let testScoreRecords: Pick<Tables<'test_scores'>, 'test_type' | 'total_score' | 'test_date'>[] = [];
       let documentsList: StudentDocumentSummary[] = [];
       let applicationsList: ApplicationSummary[] = [];
       let paymentsList: PaymentSummary[] = [];
 
       if (currentStudent?.id) {
         const [
-          { count: educationCountResult, error: educationError },
-          { count: testScoresCountResult, error: testScoresError },
+          { data: educationData, error: educationError },
+          { data: testScoresData, error: testScoresError },
           { data: documentsData, error: documentsError },
         ] = await Promise.all([
           supabase
             .from('education_records')
-            .select('*', { count: 'exact', head: true })
+            .select('*')
             .eq('student_id', currentStudent.id),
           supabase
             .from('test_scores')
-            .select('*', { count: 'exact', head: true })
+            .select('test_type, total_score, test_date')
             .eq('student_id', currentStudent.id),
           supabase
             .from('student_documents')
@@ -371,10 +329,9 @@ export default function StudentOnboarding() {
         if (testScoresError) throw testScoresError;
         if (documentsError) throw documentsError;
 
-        educationCount = educationCountResult ?? 0;
-        testScoresCount = testScoresCountResult ?? 0;
+        educationRecords = educationData ?? [];
+        testScoreRecords = testScoresData ?? [];
         documentsList = documentsData ?? [];
-        documentsCount = documentsList.length;
 
         const { data: applicationsData, error: applicationsError } = await supabase
           .from('applications')
@@ -401,75 +358,26 @@ export default function StudentOnboarding() {
         }
       }
 
-      const sopDone = documentsList.some((doc) => doc.document_type === 'personal_statement');
-
-      // Build checklist
-      const items: ChecklistItem[] = [
-        {
-          id: 'personal',
-          title: 'Complete Personal Information',
-          description: 'Add your legal name, WhatsApp number, contact details, and passport information',
-          completed: !!(
-            currentStudent?.legal_name &&
-            currentStudent?.contact_email &&
-            currentStudent?.passport_number &&
-            getWhatsappNumberFromStudent(currentStudent)
-          ),
-          icon: FileText,
-          link: '/student/profile',
-        },
-        {
-          id: 'education',
-          title: 'Add Education History',
-          description: 'Add at least one education record (high school or university)',
-          completed: educationCount > 0,
-          icon: GraduationCap,
-          link: '/student/profile#education',
-        },
-        {
-          id: 'tests',
-          title: 'Add English Test Scores',
-          description: 'Upload your IELTS, TOEFL, or other English test results',
-          completed: testScoresCount > 0,
-          icon: Award,
-          link: '/student/profile#tests',
-        },
-        {
-          id: 'finances',
-          title: 'Complete Financial Information',
-          description: 'Provide details about your finances and sponsorship',
-          completed: !!(
-            currentStudent?.finances_json &&
-            typeof currentStudent.finances_json === 'object' &&
-            currentStudent.finances_json !== null &&
-            Object.keys(currentStudent.finances_json as Record<string, unknown>).length > 0
-          ),
-          icon: DollarSign,
-          link: '/student/profile#finances',
-        },
-        {
-          id: 'documents',
-          title: 'Upload Required Documents',
-          description: 'Upload passport, transcripts, and other key documents',
-          completed: documentsCount >= 2,
-          icon: FileCheck,
-          link: '/student/documents',
-        },
-        {
-          id: 'sop',
-          title: 'Complete Statement of Purpose',
-          description: 'Generate and save your SOP using the AI writer',
-          completed: sopDone,
-          icon: ScrollText,
-          link: '/student/profile#sop',
-        },
-      ];
+      const iconBySection = { personal: FileText, passport: IdCard, addresses: FileText, emergency: FileText, background: FileCheck, academic: GraduationCap, documents: FileCheck } as const;
+      const sections = getCourseFinderProfileSections(
+        currentStudent as unknown as Record<string, unknown>,
+        educationRecords.filter((degree) => degree.level !== 'high_school'),
+        testScoreRecords,
+        areRequiredStudentDocumentsComplete(documentsList),
+      );
+      const items: ChecklistItem[] = sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        description: section.completed ? section.description : `Missing: ${section.missing.join(', ')}`,
+        completed: section.completed,
+        icon: iconBySection[section.id],
+        link: section.id === 'documents' ? '/student/documents' : section.id === 'academic' ? '/student/profile#education' : '/student/profile#personal',
+      }));
 
       setChecklist(items);
 
       // Calculate completeness
-      const completedItems = items.filter((item) => item.completed).length;
-      const percentage = Math.round((completedItems / items.length) * 100);
+      const percentage = calculateCourseFinderCompleteness(sections);
       setCompleteness(percentage);
 
       const navigator = buildNavigatorSteps(documentsList, applicationsList, paymentsList);
@@ -617,7 +525,7 @@ export default function StudentOnboarding() {
             <Button
               variant="default"
               onClick={markOnboardingComplete}
-              disabled={markingOnboarded || profile?.onboarded || completeness < 60 || !hasRequiredWhatsapp}
+              disabled={markingOnboarded || profile?.onboarded || completeness < 100}
               className="w-full sm:w-auto"
             >
               {markingOnboarded ? 'Finalizing...' : profile?.onboarded ? 'Onboarding completed' : 'Finish onboarding'}
@@ -650,11 +558,6 @@ export default function StudentOnboarding() {
                 <p className="text-sm text-muted-foreground">
                   Complete all steps below to unlock full access to university applications and features.
                 </p>
-                {!hasRequiredWhatsapp && (
-                  <p className="text-sm text-destructive">
-                    Add your WhatsApp number in your profile to finish onboarding.
-                  </p>
-                )}
               </div>
             )}
           </CardContent>

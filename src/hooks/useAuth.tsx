@@ -92,6 +92,9 @@ interface SignUpParams {
   email: string;
   password: string;
   fullName: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   role?: SignupRole;
   phone?: string;
   country?: string;
@@ -1013,6 +1016,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             tenant_id: tenant.id,
             profile_id: userId,
             referral_source: referralSource || null,
+            first_name: user.user_metadata?.first_name || null,
+            middle_name: user.user_metadata?.middle_name || null,
+            last_name: user.user_metadata?.last_name || null,
+            legal_name: user.user_metadata?.full_name || null,
+            contact_email: user.email || null,
+            contact_phone: user.user_metadata?.phone || null,
           })
           .select('id')
           .single();
@@ -1268,6 +1277,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     email,
     password,
     fullName,
+    firstName,
+    middleName,
+    lastName,
     role = 'student',
     phone,
     country,
@@ -1288,6 +1300,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const metadata: Record<string, string> = {
         full_name: fullName,
+        first_name: firstName || '',
+        middle_name: middleName || '',
+        last_name: lastName || '',
         role,
         phone: phone || '',
         country: country || '',

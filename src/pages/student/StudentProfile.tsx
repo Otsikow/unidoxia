@@ -9,12 +9,11 @@ import { Progress } from '@/components/ui/progress';
 import { PersonalInfoTab } from '@/components/student/profile/PersonalInfoTab';
 import { EducationTab } from '@/components/student/profile/EducationTab';
 import { TestScoresTab } from '@/components/student/profile/TestScoresTab';
-import { FinancesTab } from '@/components/student/profile/FinancesTab';
-import { SopTab } from '@/components/student/profile/SopTab';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import {
   getMissingRequiredStudentDocuments,
+  areRequiredStudentDocumentsComplete,
   type RequiredStudentDocument,
 } from '@/lib/studentDocuments';
 import type { Tables } from '@/integrations/supabase/types';
@@ -23,6 +22,7 @@ import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
+import { calculateCourseFinderCompleteness, getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
 
 export default function StudentProfile() {
   const navigate = useNavigate();
@@ -60,87 +60,29 @@ export default function StudentProfile() {
   const recalcCompleteness = useCallback(async (record: Tables<'students'>) => {
     setIsCalculatingCompleteness(true);
     try {
-      const personalDone = !!(
-        record.legal_name &&
-        record.contact_email &&
-        record.passport_number
+      const [{ data: degrees }, { data: tests }, { data: documents }] = await Promise.all([
+        supabase.from('education_records').select('*').eq('student_id', record.id),
+        supabase.from('test_scores').select('test_type, total_score, test_date').eq('student_id', record.id),
+        supabase.from('student_documents').select('document_type').eq('student_id', record.id),
+      ]);
+      const sections = getCourseFinderProfileSections(
+        record as unknown as Record<string, unknown>,
+        (degrees ?? []).filter((degree) => degree.level !== 'high_school'),
+        tests ?? [],
+        areRequiredStudentDocumentsComplete(documents ?? []),
       );
-      const financesDone =
-        !!record.finances_json &&
-        Object.keys(record.finances_json as Record<string, unknown>).length > 0;
-
-      const [
-        { count: educationCount },
-        { count: testScoresCount },
-        { count: documentsCount },
-        { count: sopCount },
-      ] =
-        await Promise.all([
-          supabase.from('education_records').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
-          supabase.from('test_scores').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
-          supabase.from('student_documents').select('*', { count: 'exact', head: true }).eq('student_id', record.id),
-          supabase
-            .from('student_documents')
-            .select('*', { count: 'exact', head: true })
-            .eq('student_id', record.id)
-            .eq('document_type', 'personal_statement'),
-        ]);
-
-      const educationDone = (educationCount || 0) > 0;
-      const testsDone = (testScoresCount || 0) > 0;
-      const documentsDone = (documentsCount || 0) >= 2;
-      const sopDone = (sopCount || 0) > 0;
-
-      const items = [personalDone, educationDone, testsDone, financesDone, documentsDone, sopDone];
-      const done = items.filter(Boolean).length;
-      const percent = Math.round((done / items.length) * 100);
+      const done = sections.filter((section) => section.completed).length;
+      const percent = calculateCourseFinderCompleteness(sections);
 
       setCompletedSteps(done);
       setCompleteness(percent);
-      setChecklist([
-        {
-          id: 'personal',
-          title: 'Personal Info',
-          description: 'Legal name, contact email, and passport details',
-          completed: personalDone,
-          link: '/student/profile#personal',
-        },
-        {
-          id: 'education',
-          title: 'Education',
-          description: 'Add at least one education record',
-          completed: educationDone,
-          link: '/student/profile#education',
-        },
-        {
-          id: 'tests',
-          title: 'Test Scores',
-          description: 'Provide English test results',
-          completed: testsDone,
-          link: '/student/profile#tests',
-        },
-        {
-          id: 'finances',
-          title: 'Finances',
-          description: 'Add your financial information',
-          completed: financesDone,
-          link: '/student/profile#finances',
-        },
-        {
-          id: 'documents',
-          title: 'Documents',
-          description: 'Upload your passport, passport photo, transcript, SOP, CV, and English proficiency statement',
-          completed: documentsDone,
-          link: '/student/documents',
-        },
-        {
-          id: 'sop',
-          title: 'Statement of Purpose',
-          description: 'Generate and save your SOP',
-          completed: sopDone,
-          link: '/student/profile#sop',
-        },
-      ]);
+      setChecklist(sections.map((section) => ({
+        id: section.id,
+        title: section.title,
+        description: section.completed ? section.description : `Missing: ${section.missing.join(', ')}`,
+        completed: section.completed,
+        link: section.id === 'documents' ? '/student/documents' : section.id === 'academic' ? '/student/profile#education' : '/student/profile#personal',
+      })));
 
       if (record.profile_completeness !== percent) {
         await supabase
@@ -241,7 +183,7 @@ export default function StudentProfile() {
   // Handle URL hash for tab selection
   useEffect(() => {
     const hash = window.location.hash.replace('#', '');
-    if (hash && ['personal', 'education', 'tests', 'finances', 'sop'].includes(hash)) {
+    if (hash && ['personal', 'education', 'tests'].includes(hash)) {
       setActiveTab(hash);
     }
   }, []);
@@ -286,7 +228,7 @@ export default function StudentProfile() {
 
   // Update URL hash when tab changes
   useEffect(() => {
-    if (['personal', 'education', 'tests', 'finances', 'sop'].includes(activeTab)) {
+    if (['personal', 'education', 'tests'].includes(activeTab)) {
       window.location.hash = activeTab;
     }
   }, [activeTab]);
@@ -381,7 +323,7 @@ export default function StudentProfile() {
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                {completeness}% complete • {completedSteps} of {checklist.length || 6} steps completed
+                {completeness}% complete • {completedSteps} of {checklist.length || 7} steps completed
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -393,8 +335,7 @@ export default function StudentProfile() {
               </div>
               {completeness < 100 && (
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Tip: Upload your passport, passport photo, transcript, SOP, CV, and English
-                  proficiency statement in the{' '}
+                  Complete the highlighted profile fields and upload every required document in the{' '}
                   <Link className="underline" to="/student/documents">
                     Documents
                   </Link>{' '}
@@ -463,7 +404,7 @@ export default function StudentProfile() {
                   if (item.id === 'documents') {
                     navigate('/student/documents');
                   } else {
-                    setActiveTab(item.id);
+                    setActiveTab(item.id === 'academic' ? 'education' : 'personal');
                     // Smooth scroll to tabs section
                     const tabsElement = document.querySelector('[role="tablist"]');
                     if (tabsElement) {
@@ -496,21 +437,15 @@ export default function StudentProfile() {
           </Card>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 gap-2 h-auto p-1 sm:p-2">
+              <TabsList className="grid w-full grid-cols-3 gap-2 h-auto p-1 sm:p-2">
                 <TabsTrigger value="personal" className="text-sm sm:text-base">
-                  Personal Info
+                  Personal
                 </TabsTrigger>
                 <TabsTrigger value="education" className="text-sm sm:text-base">
                   Education
                 </TabsTrigger>
                 <TabsTrigger value="tests" className="text-sm sm:text-base">
-                  Test Scores
-                </TabsTrigger>
-                <TabsTrigger value="finances" className="text-sm sm:text-base">
-                  Finances
-                </TabsTrigger>
-                <TabsTrigger value="sop" className="text-sm sm:text-base">
-                  SOP
+                  English Test (Optional)
                 </TabsTrigger>
               </TabsList>
 
@@ -519,20 +454,13 @@ export default function StudentProfile() {
             </TabsContent>
 
             <TabsContent value="education" className="space-y-4 animate-fade-in">
-                <EducationTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
+                <EducationTab student={studentRecord} onUpdate={refreshStudentData} />
             </TabsContent>
 
             <TabsContent value="tests" className="space-y-4 animate-fade-in">
                 <TestScoresTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
             </TabsContent>
 
-            <TabsContent value="finances" className="space-y-4 animate-fade-in">
-                <FinancesTab student={studentRecord} onUpdate={refreshStudentData} />
-            </TabsContent>
-
-            <TabsContent value="sop" className="space-y-4 animate-fade-in">
-                <SopTab studentId={studentRecord.id} onUpdate={refreshStudentData} />
-            </TabsContent>
           </Tabs>
       </div>
     </div>

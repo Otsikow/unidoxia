@@ -41,14 +41,17 @@ interface DocumentsTabProps {
 }
 
 const DOCUMENT_TYPES = [
-  { value: 'passport', label: 'Passport' },
-  { value: 'visa', label: 'Visa' },
-  { value: 'transcript', label: 'Transcript' },
-  { value: 'certificate', label: 'Certificate' },
-  { value: 'resume', label: 'Resume/CV' },
-  { value: 'recommendation', label: 'Recommendation Letter' },
-  { value: 'financial', label: 'Financial Document' },
-  { value: 'other', label: 'Other' },
+  { value: 'passport', label: 'Passport photo page' },
+  { value: 'passport_photo', label: 'Passport-style photo' },
+  { value: 'transcript', label: 'Transcript(s)' },
+  { value: 'degree_certificate', label: 'Academic or degree certificate' },
+  { value: 'wassce_waec', label: 'WASSCE or WAEC results' },
+  { value: 'sop', label: 'Statement of purpose' },
+  { value: 'reference_letter_1', label: 'Reference letter 1' },
+  { value: 'reference_letter_2', label: 'Reference letter 2' },
+  { value: 'cv', label: 'CV' },
+  { value: 'english_test_certificate', label: 'English test certificate' },
+  { value: 'english_medium_letter', label: 'English-medium-of-instruction letter' },
 ];
 
 const DocumentsTab = ({ profile }: DocumentsTabProps) => {

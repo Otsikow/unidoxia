@@ -18,7 +18,7 @@
  * every application is in that state.
  */
 
-import { REQUIRED_STUDENT_DOCUMENTS } from "@/lib/studentDocuments";
+import { areRequiredStudentDocumentsComplete } from "@/lib/studentDocuments";
 
 /* ---------- types -------------------------------------------------------- */
 
@@ -235,10 +235,7 @@ export function deriveStudentStatus(student: DeriveInput): StudentOperationalSta
   }
 
   // No applications – check document & profile completeness
-  const docTypes = new Set(student.documents.map((d) => d.document_type));
-  const hasAllDocs = REQUIRED_STUDENT_DOCUMENTS.every((req) =>
-    req.optional || req.acceptableTypes.some((t) => docTypes.has(t))
-  );
+  const hasAllDocs = areRequiredStudentDocumentsComplete(student.documents);
 
   const profileComplete = Boolean(student.legal_name && student.contact_email);
 

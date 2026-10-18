@@ -398,14 +398,14 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Test Scores</h2>
-          <p className="text-muted-foreground">English proficiency and standardized tests</p>
+          <h2 className="text-2xl font-bold">English test</h2>
+          <p className="text-muted-foreground">Optional. Add IELTS, TOEFL, PTE or Duolingo results.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => { resetForm(); setEditingRecord(null); }}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Test Score
+              Add English test
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
@@ -413,7 +413,7 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
               <DialogHeader>
                 <DialogTitle>{editingRecord ? 'Edit' : 'Add'} Test Score</DialogTitle>
                 <DialogDescription>
-                  Add your English proficiency or standardized test scores
+                  Add your optional English test type, score and date.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
@@ -426,11 +426,8 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
                     <SelectContent>
                       <SelectItem value="IELTS">IELTS</SelectItem>
                       <SelectItem value="TOEFL">TOEFL</SelectItem>
+                      <SelectItem value="PTE">PTE</SelectItem>
                       <SelectItem value="Duolingo">Duolingo English Test</SelectItem>
-                      <SelectItem value={ENGLISH_PROFICIENCY_LETTER}>English Proficiency Letter</SelectItem>
-                      <SelectItem value="SAT">SAT</SelectItem>
-                      <SelectItem value="GRE">GRE</SelectItem>
-                      <SelectItem value="GMAT">GMAT</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -570,9 +567,9 @@ export function TestScoresTab({ studentId, onUpdate }: TestScoresTabProps) {
         <Card>
           <CardContent className="py-12 text-center">
             <Award className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="font-semibold mb-2">No Test Scores</h3>
+            <h3 className="font-semibold mb-2">No test scores</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Add your English proficiency test scores to complete your profile
+              Optional. Add IELTS, TOEFL, PTE or Duolingo if you have them.
             </p>
           </CardContent>
         </Card>

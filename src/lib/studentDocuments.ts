@@ -2,93 +2,48 @@ export type RequiredStudentDocument = {
   type: string;
   label: string;
   acceptableTypes: string[];
-  optional?: boolean;
 };
 
 export const REQUIRED_STUDENT_DOCUMENTS: RequiredStudentDocument[] = [
-  { type: 'passport', label: 'Passport', acceptableTypes: ['passport'] },
-  { type: 'passport_photo', label: 'Passport Photo', acceptableTypes: ['passport_photo'] },
-  { type: 'transcript', label: 'Academic Transcript', acceptableTypes: ['transcript'] },
-  {
-    type: 'degree_certificate',
-    label: 'Academic Certificate',
-    acceptableTypes: ['degree_certificate', 'academic_certificate', 'certificate'],
-  },
-  {
-    type: 'wassce_waec',
-    label: 'WASSCE / WAEC Results (incl. English Language, PIN & Serial Number)',
-    acceptableTypes: ['wassce_waec', 'wassce', 'waec', 'secondary_school_results'],
-  },
-  { type: 'sop', label: 'Statement of Purpose', acceptableTypes: ['sop', 'personal_statement'] },
-  {
-    type: 'reference_letter_1',
-    label: 'Letter of Reference (1st)',
-    acceptableTypes: ['lor', 'recommendation_letter', 'reference_letter', 'letter_of_reference', 'reference_letter_1'],
-  },
-  {
-    type: 'reference_letter_2',
-    label: 'Letter of Reference (2nd)',
-    acceptableTypes: ['reference_letter_2'],
-  },
-  { type: 'cv', label: 'CV / Resume', acceptableTypes: ['cv'] },
-  {
-    type: 'english_proficiency',
-    label: 'Statement of English Proficiency',
-    acceptableTypes: ['english_proficiency', 'ielts', 'toefl', 'english_test'],
-  },
-  // Optional supplementary documents — shown in the upload list, but never block "missing" checks
-  {
-    type: 'affidavit',
-    label: 'Affidavit (Optional)',
-    acceptableTypes: ['affidavit', 'affidavit_of_support', 'sworn_affidavit'],
-    optional: true,
-  },
-  {
-    type: 'birth_certificate',
-    label: 'Birth Certificate (Optional)',
-    acceptableTypes: ['birth_certificate'],
-    optional: true,
-  },
-  {
-    type: 'financial_document',
-    label: 'Financial / Bank Statement (Optional)',
-    acceptableTypes: ['financial_document', 'bank_statement', 'sponsor_letter', 'proof_of_funds'],
-    optional: true,
-  },
-  {
-    type: 'medical_report',
-    label: 'Medical Report (Optional)',
-    acceptableTypes: ['medical_report', 'health_certificate', 'vaccination_record'],
-    optional: true,
-  },
-  {
-    type: 'police_clearance',
-    label: 'Police Clearance (Optional)',
-    acceptableTypes: ['police_clearance', 'police_report', 'background_check'],
-    optional: true,
-  },
-  {
-    type: 'research_proposal',
-    label: 'Research Proposal (Optional)',
-    acceptableTypes: ['research_proposal', 'research_plan', 'phd_proposal'],
-    optional: true,
-  },
-  {
-    type: 'other_supporting',
-    label: 'Other Supporting Document (Optional)',
-    acceptableTypes: ['other', 'other_supporting', 'supporting_document', 'misc'],
-    optional: true,
-  },
+  { type: 'passport', label: 'Passport photo page', acceptableTypes: ['passport', 'passport_photo_page'] },
+  { type: 'passport_photo', label: 'Passport-style photo', acceptableTypes: ['passport_photo'] },
+  { type: 'transcript', label: 'Transcript(s)', acceptableTypes: ['transcript'] },
+  { type: 'degree_certificate', label: 'Academic or degree certificate', acceptableTypes: ['degree_certificate', 'academic_certificate', 'certificate'] },
+  { type: 'wassce_waec', label: 'WASSCE or WAEC results', acceptableTypes: ['wassce_waec', 'wassce', 'waec', 'secondary_school_results'] },
+  { type: 'sop', label: 'Statement of purpose', acceptableTypes: ['sop', 'personal_statement'] },
+  { type: 'reference_letter_1', label: 'Reference letter 1', acceptableTypes: ['reference_letter_1'] },
+  { type: 'reference_letter_2', label: 'Reference letter 2', acceptableTypes: ['reference_letter_2'] },
+  { type: 'cv', label: 'CV', acceptableTypes: ['cv'] },
 ];
+
+export const ENGLISH_PROOF_DOCUMENT: RequiredStudentDocument = {
+  type: 'english_proof',
+  label: 'English proof',
+  acceptableTypes: [
+    'english_proof',
+    'english_test_certificate', 'english_medium_letter', 'english_proficiency',
+    'ielts', 'toefl', 'pte', 'duolingo', 'english_test',
+    'wassce_waec', 'wassce', 'waec', 'secondary_school_results',
+  ],
+};
+
+export const isEnglishProofComplete = (documents: { document_type: string }[]) => {
+  const uploadedTypes = new Set(documents.map((doc) => doc.document_type.toLowerCase()));
+  return ENGLISH_PROOF_DOCUMENT.acceptableTypes.some((type) => uploadedTypes.has(type.toLowerCase()));
+};
 
 export const getMissingRequiredStudentDocuments = (
   documents: { document_type: string }[],
 ): RequiredStudentDocument[] => {
-  const uploadedTypes = documents.map((doc) => doc.document_type.toLowerCase());
-
-  return REQUIRED_STUDENT_DOCUMENTS.filter(
-    (requirement) =>
-      !requirement.optional &&
-      !requirement.acceptableTypes.some((type) => uploadedTypes.includes(type.toLowerCase())),
+  const uploadedTypes = new Set(documents.map((doc) => doc.document_type.toLowerCase()));
+  const missing = REQUIRED_STUDENT_DOCUMENTS.filter(
+    (requirement) => !requirement.acceptableTypes.some((type) => uploadedTypes.has(type.toLowerCase())),
   );
+  if (!isEnglishProofComplete(documents)) {
+    missing.push(ENGLISH_PROOF_DOCUMENT);
+  }
+  return missing;
 };
+
+export const areRequiredStudentDocumentsComplete = (documents: { document_type: string }[]) =>
+  getMissingRequiredStudentDocuments(documents).length === 0;

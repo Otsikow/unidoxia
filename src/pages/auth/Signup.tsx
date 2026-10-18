@@ -112,6 +112,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
@@ -418,8 +419,8 @@ const Signup = () => {
     if (!phone.trim()) {
       toast({
         variant: "destructive",
-        title: "Phone / WhatsApp number required",
-        description: "Please enter your phone number with country code.",
+        title: "Mobile number required",
+        description: "Please enter your mobile number with country code.",
       });
       return false;
     }
@@ -428,13 +429,13 @@ const Signup = () => {
     if (!STUDENT_WHATSAPP_REGEX.test(normalizedPhone)) {
       toast({
         variant: "destructive",
-        title: "Valid WhatsApp number required",
+        title: "Valid mobile number required",
         description: "Include the country code (for example: +2348012345678, +447123456789).",
       });
       return false;
     }
 
-    if (!country) {
+    if (role !== 'student' && !country) {
       toast({
         variant: "destructive",
         title: "Country of residence required",
@@ -443,9 +444,9 @@ const Signup = () => {
     }
 
     const nextAddress = { ...address, country_of_residence: country };
-    const addressValidation = validateResidentialAddress(nextAddress);
+    const addressValidation = role === 'student' ? {} : validateResidentialAddress(nextAddress);
     setAddressErrors(addressValidation);
-    if (Object.keys(addressValidation).length > 0) {
+    if (role !== 'student' && Object.keys(addressValidation).length > 0) {
       toast({
         variant: "destructive",
         title: "Residential address incomplete",
@@ -454,7 +455,7 @@ const Signup = () => {
       return false;
     }
 
-    if (!referralSource.trim()) {
+    if (role !== 'student' && !referralSource.trim()) {
       toast({
         variant: "destructive",
         title: "Referral source required",
@@ -476,17 +477,17 @@ const Signup = () => {
   };
 
   const validateStep3 = () => {
-    if (!username.trim()) {
+    if (role !== 'student' && !username.trim()) {
       toast({ variant: "destructive", title: "Username required" });
       return false;
     }
 
-    if (username.trim().length < 2) {
+    if (role !== 'student' && username.trim().length < 2) {
       toast({ variant: "destructive", title: "Username too short", description: "Please use at least 2 characters." });
       return false;
     }
 
-    if (usernameError && usernameCheckAvailable) {
+    if (role !== 'student' && usernameError && usernameCheckAvailable) {
       toast({
         variant: "destructive",
         title: "Username unavailable",
@@ -564,7 +565,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+      const fullName = [firstName.trim(), middleName.trim(), lastName.trim()].filter(Boolean).join(' ');
       const normalizedPhone = normalizePhoneNumber(phone.trim());
       const normalizedEmail = email.trim().toLowerCase();
 
@@ -593,9 +594,9 @@ const Signup = () => {
           if (result.phone_taken) {
             toast({
               variant: "destructive",
-              title: "WhatsApp number already in use",
+              title: "Mobile number already in use",
               description:
-                "This WhatsApp number is already linked to an existing account. Please log in to continue where you left off, or recover your account.",
+                "This mobile number is already linked to an existing account. Please log in to continue where you left off, or recover your account.",
             });
             setLoading(false);
             navigate("/auth/login", { state: { from: nextTarget } });
@@ -612,15 +613,18 @@ const Signup = () => {
         email,
         password,
         fullName,
+        firstName: firstName.trim(),
+        middleName: middleName.trim(),
+        lastName: lastName.trim(),
         role,
         phone: normalizedPhone,
         country,
-        username,
+        username: role === 'student' ? '' : username,
         referrerId: referrerInfo?.id,
         referrerUsername: referrerInfo?.username,
-        referralSource: referralSource.trim() || undefined,
+        referralSource: role === 'student' ? undefined : referralSource.trim() || undefined,
         redirectTo: nextTarget,
-        address: trimAddress({ ...address, country_of_residence: country }),
+        address: role === 'student' ? undefined : trimAddress({ ...address, country_of_residence: country }),
       });
 
       if (error) {
@@ -783,10 +787,10 @@ const Signup = () => {
 
             {step === 2 && (
               <div className="space-y-5">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="firstName" className="flex items-center gap-2">
-                      <UserCircle className="h-4 w-4" /> First Name
+                      <UserCircle className="h-4 w-4" /> First name
                     </Label>
                     <Input
                       id="firstName"
@@ -797,8 +801,20 @@ const Signup = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="middleName" className="flex items-center gap-2">
+                      <UserCircle className="h-4 w-4" /> Middle name
+                    </Label>
+                    <Input
+                      id="middleName"
+                      value={middleName}
+                      onChange={(e) => setMiddleName(e.target.value)}
+                      placeholder="Enter your middle name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="lastName" className="flex items-center gap-2">
-                      <UserCircle className="h-4 w-4" /> Last Name
+                      <UserCircle className="h-4 w-4" /> Last name
                     </Label>
                     <Input
                       id="lastName"
@@ -810,7 +826,7 @@ const Signup = () => {
                 </div>
 
                 <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" /> WhatsApp Number
+                  <Phone className="h-4 w-4" /> Mobile number (with country code)
                   <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -822,10 +838,10 @@ const Signup = () => {
                   placeholder="e.g. +2348012345678"
                 />
                 <p className="text-sm text-muted-foreground">
-                  Required with country code (e.g. +1, +44, +234). We use this as your primary
-                  WhatsApp contact.
+                  Include the country code, for example +44 or +234.
                 </p>
 
+                {role !== "student" && <>
                 <Label htmlFor="country" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" /> Country of Residence
                 </Label>
@@ -996,12 +1012,13 @@ const Signup = () => {
                     reward commission.
                   </p>
                 </div>
+                </>}
               </div>
             )}
 
             {step === 3 && (
               <div className="space-y-5">
-                <Label htmlFor="username" className="flex items-center gap-2">
+                {role !== "student" && <><Label htmlFor="username" className="flex items-center gap-2">
                   <AtSign className="h-4 w-4" /> Username
                 </Label>
                 <Input
@@ -1019,6 +1036,7 @@ const Signup = () => {
                 {usernameInfo && !usernameError && (
                   <p className="text-xs text-muted-foreground">{usernameInfo}</p>
                 )}
+                </>}
 
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" /> Email Address

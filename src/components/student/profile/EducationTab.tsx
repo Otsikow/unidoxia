@@ -1,565 +1,112 @@
-import { useEffect, useState, useCallback } from 'react';
-import type { ChangeEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json, Tables } from '@/integrations/supabase/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
+import { validateCourseFinderDegree } from '@/lib/coursefinderProfile';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
-import { Plus, GraduationCap, Pencil, Trash2, Loader2, Eye, Upload } from 'lucide-react';
-import type { Tables } from '@/integrations/supabase/types';
-import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
-import { useAuth } from '@/hooks/useAuth';
-import { validateFileUpload } from '@/lib/fileUpload';
-import {
-  EDUCATION_LEVEL_OPTIONS,
-  getEducationLevelLabel,
-  normalizeEducationLevel,
-} from '@/lib/education';
+import { Textarea } from '@/components/ui/textarea';
 
-const CERTIFICATE_BUCKET = 'student-documents';
-const CERTIFICATE_PREFIX = 'education-certificates';
-const MAX_CERTIFICATE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_CERTIFICATE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+interface Props { student: Tables<'students'>; onUpdate?: () => void }
+type Degree = Tables<'education_records'>;
+type Work = { employer: string; job_title: string; city: string; country: string; start_date: string; end_date: string; description: string };
+const emptyDegree = { institution_name: '', country: '', state_region: '', city: '', degree_title: '', grade_scale: '', gpa: '', language_of_instruction: '', start_date: '', end_date: '' };
+const emptyWork: Work = { employer: '', job_title: '', city: '', country: '', start_date: '', end_date: '', description: '' };
+const text = (value: unknown) => typeof value === 'string' ? value : '';
 
-interface EducationTabProps {
-  studentId: string;
-  onUpdate?: () => void;
-}
-
-export function EducationTab({ studentId, onUpdate }: EducationTabProps) {
-  const { toast } = useToast();
+export function EducationTab({ student, onUpdate }: Props) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(true);
-  const [educationRecords, setEducationRecords] = useState<Tables<'education_records'>[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<Tables<'education_records'> | null>(null);
-  const [certificateFile, setCertificateFile] = useState<File | null>(null);
-  const [existingCertificatePath, setExistingCertificatePath] = useState<string | null>(null);
-  const [viewingCertificatePath, setViewingCertificatePath] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    level: '',
-    institution_name: '',
-    country: '',
-    start_date: '',
-    end_date: '',
-    grade_scale: '',
-    gpa: ''
+  const [degrees, setDegrees] = useState<Degree[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editing, setEditing] = useState<Degree | null>(null);
+  const [degree, setDegree] = useState(emptyDegree);
+  const [work, setWork] = useState<Work[]>(Array.isArray(student.work_experience) ? student.work_experience as unknown as Work[] : []);
+  const [workDraft, setWorkDraft] = useState(emptyWork);
+  const [secondary, setSecondary] = useState({
+    country_of_education: text(student.country_of_education), highest_education_level: text(student.highest_education_level), secondary_board: text(student.secondary_board), secondary_qualification: text(student.secondary_qualification), secondary_school_name: text(student.secondary_school_name), secondary_school_country: text(student.secondary_school_country), secondary_school_state: text(student.secondary_school_state), secondary_school_city: text(student.secondary_school_city), secondary_start_month: student.secondary_start_month?.toString() || '', secondary_start_year: student.secondary_start_year?.toString() || '', secondary_end_month: student.secondary_end_month?.toString() || '', secondary_end_year: student.secondary_end_year?.toString() || '', secondary_language_of_instruction: text(student.secondary_language_of_instruction), secondary_grades_band: text(student.secondary_grades_band), waec_scratch_card_pin: text(student.waec_scratch_card_pin), waec_scratch_card_serial: text(student.waec_scratch_card_serial),
   });
 
-  const fetchEducationRecords = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('education_records')
-        .select('*')
-        .eq('student_id', studentId)
-        .order('end_date', { ascending: false });
+  const loadDegrees = useCallback(async () => {
+    const { data, error } = await supabase.from('education_records').select('*').eq('student_id', student.id).order('start_date');
+    if (error) toast({ title: 'Unable to load degrees', description: error.message, variant: 'destructive' });
+    else setDegrees((data || []).filter((record) => record.level !== 'high_school'));
+  }, [student.id, toast]);
+  useEffect(() => { void loadDegrees(); }, [loadDegrees]);
 
-      if (error) throw error;
-      setEducationRecords(data || []);
-    } catch (error) {
-      console.error('Error fetching education records:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, [studentId]);
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: studentRecordQueryKey(user?.id) });
+    onUpdate?.();
+  };
 
-  useEffect(() => {
-    fetchEducationRecords();
-  }, [fetchEducationRecords]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const saveSecondary = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const missing = Object.entries(secondary).filter(([, value]) => !String(value).trim()).map(([key]) => key.replaceAll('_', ' '));
+    if (missing.length) { toast({ title: 'Complete all required academic fields', description: `Missing: ${missing.join(', ')}.`, variant: 'destructive' }); return; }
     setLoading(true);
-
-    let uploadedCertificatePath: string | null = null;
-    const previousCertificatePath = editingRecord?.certificate_url ?? null;
-
-    try {
-      const normalizedLevel = normalizeEducationLevel(formData.level);
-      let certificatePath = existingCertificatePath ?? null;
-
-      // Handle certificate upload
-      if (certificateFile) {
-        const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(certificateFile, {
-          allowedMimeTypes: ALLOWED_CERTIFICATE_TYPES,
-          allowedExtensions: ['png', 'jpg', 'jpeg', 'pdf'],
-          maxSizeBytes: MAX_CERTIFICATE_SIZE,
-        });
-
-        const extension = sanitizedFileName.split('.').pop()?.toLowerCase() || 'pdf';
-        const safeInstitution = formData.institution_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30);
-        const filePath = `${studentId}/${CERTIFICATE_PREFIX}/${safeInstitution}-${Date.now()}.${extension}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from(CERTIFICATE_BUCKET)
-          .upload(filePath, preparedFile, {
-            cacheControl: '3600',
-            upsert: false,
-            contentType: detectedMimeType
-          });
-
-        if (uploadError) throw uploadError;
-
-        uploadedCertificatePath = filePath;
-        certificatePath = filePath;
-      }
-
-      if (editingRecord) {
-        const { error } = await supabase
-          .from('education_records')
-          .update({
-            ...formData,
-            level: normalizedLevel,
-            gpa: formData.gpa ? parseFloat(formData.gpa) : null,
-            certificate_url: certificatePath
-          })
-          .eq('id', editingRecord.id);
-
-        if (error) throw error;
-
-        // Clean up old certificate if a new one was uploaded
-        if (uploadedCertificatePath && previousCertificatePath && previousCertificatePath !== uploadedCertificatePath) {
-          const { error: removeError } = await supabase.storage
-            .from(CERTIFICATE_BUCKET)
-            .remove([previousCertificatePath]);
-          if (removeError) {
-            console.error('Error removing previous certificate:', removeError);
-          }
-        }
-
-        toast({ title: 'Success', description: 'Education record updated' });
-      } else {
-        const { error } = await supabase
-          .from('education_records')
-          .insert({
-            student_id: studentId,
-            ...formData,
-            level: normalizedLevel,
-            gpa: formData.gpa ? parseFloat(formData.gpa) : null,
-            certificate_url: certificatePath
-          });
-
-        if (error) throw error;
-        toast({ title: 'Success', description: 'Education record added' });
-      }
-
-      setIsDialogOpen(false);
-      setEditingRecord(null);
-      setCertificateFile(null);
-      setExistingCertificatePath(null);
-      resetForm();
-      await fetchEducationRecords();
-      
-      // Invalidate student record query to update completeness calculation
-      await queryClient.invalidateQueries({
-        queryKey: studentRecordQueryKey(user?.id),
-      });
-      
-      onUpdate?.();
-    } catch (error: unknown) {
-      // Clean up uploaded certificate on error
-      if (uploadedCertificatePath) {
-        const { error: cleanupError } = await supabase.storage
-          .from(CERTIFICATE_BUCKET)
-          .remove([uploadedCertificatePath]);
-        if (cleanupError) {
-          console.error('Failed to clean up uploaded certificate after error:', cleanupError);
-        }
-      }
-
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
-    } finally {
-      setLoading(false);
-    }
+    const payload = { ...secondary, secondary_start_month: Number(secondary.secondary_start_month), secondary_start_year: Number(secondary.secondary_start_year), secondary_end_month: Number(secondary.secondary_end_month), secondary_end_year: Number(secondary.secondary_end_year) };
+    const { error } = await supabase.from('students').update(payload).eq('id', student.id);
+    setLoading(false);
+    if (error) toast({ title: 'Unable to save academic details', description: error.message, variant: 'destructive' });
+    else { toast({ title: 'Academic details saved' }); await refresh(); }
   };
 
-  const handleDelete = async (record: Tables<'education_records'>) => {
-    if (!confirm('Are you sure you want to delete this education record?')) return;
-
-    try {
-      const { error } = await supabase
-        .from('education_records')
-        .delete()
-        .eq('id', record.id);
-
-      if (error) throw error;
-
-      // Delete certificate from storage if it exists
-      if (record.certificate_url) {
-        const { error: removeError } = await supabase.storage
-          .from(CERTIFICATE_BUCKET)
-          .remove([record.certificate_url]);
-        if (removeError) {
-          console.error('Error removing certificate from storage:', removeError);
-        }
-      }
-
-      toast({ title: 'Success', description: 'Education record deleted' });
-      await fetchEducationRecords();
-      
-      // Invalidate student record query to update completeness calculation
-      await queryClient.invalidateQueries({
-        queryKey: studentRecordQueryKey(user?.id),
-      });
-      
-      onUpdate?.();
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive'
-      });
-    }
+  const openDegree = (record?: Degree) => {
+    setEditing(record || null);
+    setDegree(record ? { institution_name: record.institution_name, country: record.country, state_region: text(record.state_region), city: text(record.city), degree_title: text(record.degree_title), grade_scale: text(record.grade_scale), gpa: record.gpa?.toString() || '', language_of_instruction: text(record.language_of_instruction), start_date: record.start_date, end_date: text(record.end_date) } : emptyDegree);
+    setDialogOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({
-      level: '',
-      institution_name: '',
-      country: '',
-      start_date: '',
-      end_date: '',
-      grade_scale: '',
-      gpa: ''
-    });
-    setCertificateFile(null);
-    setExistingCertificatePath(null);
+  const saveDegree = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const payload = { ...degree, level: 'degree', gpa: Number(degree.gpa), student_id: student.id };
+    const missing = validateCourseFinderDegree(payload);
+    if (missing.length) { toast({ title: 'Complete every degree field', description: `Missing: ${missing.join(', ')}.`, variant: 'destructive' }); return; }
+    setLoading(true);
+    const result = editing ? await supabase.from('education_records').update(payload).eq('id', editing.id) : await supabase.from('education_records').insert(payload);
+    setLoading(false);
+    if (result.error) toast({ title: 'Unable to save degree', description: result.error.message, variant: 'destructive' });
+    else { setDialogOpen(false); await loadDegrees(); await refresh(); }
   };
 
-  const openEditDialog = (record: Tables<'education_records'>) => {
-    setEditingRecord(record);
-    setFormData({
-      level: normalizeEducationLevel(record.level),
-      institution_name: record.institution_name,
-      country: record.country,
-      start_date: record.start_date,
-      end_date: record.end_date || '',
-      grade_scale: record.grade_scale || '',
-      gpa: record.gpa?.toString() || ''
-    });
-    setCertificateFile(null);
-    setExistingCertificatePath(record.certificate_url || null);
-    setIsDialogOpen(true);
+  const removeDegree = async (record: Degree) => {
+    if (!window.confirm(`Remove ${record.degree_title || 'this degree'}?`)) return;
+    const { error } = await supabase.from('education_records').delete().eq('id', record.id);
+    if (error) toast({ title: 'Unable to remove degree', description: error.message, variant: 'destructive' });
+    else { await loadDegrees(); await refresh(); }
   };
 
-  const handleCertificateChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      setCertificateFile(null);
-      return;
-    }
-
-    if (!ALLOWED_CERTIFICATE_TYPES.includes(file.type)) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please upload a PDF or image file (PNG, JPG, JPEG).',
-        variant: 'destructive'
-      });
-      event.target.value = '';
-      return;
-    }
-
-    if (file.size > MAX_CERTIFICATE_SIZE) {
-      toast({
-        title: 'File too large',
-        description: 'Certificate must be smaller than 10MB.',
-        variant: 'destructive'
-      });
-      event.target.value = '';
-      return;
-    }
-
-    setCertificateFile(file);
+  const saveWork = async (next: Work[]) => {
+    setWork(next);
+    const { error } = await supabase.from('students').update({ work_experience: next as unknown as Json }).eq('id', student.id);
+    if (error) toast({ title: 'Unable to save work experience', description: error.message, variant: 'destructive' });
+    else await refresh();
   };
 
-  const viewCertificate = async (path: string) => {
-    if (viewingCertificatePath) return;
+  const field = (name: keyof typeof secondary, label: string, type = 'text') => <div className="space-y-2"><Label htmlFor={name}>{label} *</Label><Input id={name} type={type} value={secondary[name]} onChange={(event) => setSecondary((current) => ({ ...current, [name]: event.target.value }))} required /></div>;
+  const degreeField = (name: keyof typeof emptyDegree, label: string, type = 'text') => <div className="space-y-2"><Label htmlFor={`degree-${name}`}>{label} *</Label><Input id={`degree-${name}`} type={type} step={name === 'gpa' ? '0.01' : undefined} value={degree[name]} onChange={(event) => setDegree((current) => ({ ...current, [name]: event.target.value }))} required /></div>;
+  const grid = 'grid grid-cols-1 gap-4 md:grid-cols-2';
+  return <div className="space-y-6">
+    <form onSubmit={saveSecondary}><Card><CardHeader><CardTitle>Academic overview and secondary education</CardTitle><CardDescription>All fields in this section are required.</CardDescription></CardHeader><CardContent className="space-y-4"><div className={grid}>
+      {field('country_of_education', 'Country of education')}{field('highest_education_level', 'Highest level of education')}{field('secondary_board', 'Board', 'text')}{field('secondary_qualification', 'Qualification')}{field('secondary_school_name', 'School name')}{field('secondary_school_country', 'School country')}{field('secondary_school_state', 'School state or region')}{field('secondary_school_city', 'School city')}{field('secondary_start_month', 'Start month', 'number')}{field('secondary_start_year', 'Start year', 'number')}{field('secondary_end_month', 'End month', 'number')}{field('secondary_end_year', 'End year', 'number')}{field('secondary_language_of_instruction', 'Language of instruction')}
+      <div className="space-y-2"><Label>Grades band *</Label><Select value={secondary.secondary_grades_band} onValueChange={(value) => setSecondary((current) => ({ ...current, secondary_grades_band: value }))}><SelectTrigger><SelectValue placeholder="Select percentage band" /></SelectTrigger><SelectContent>{['90-100%', '80-89%', '70-79%', '60-69%', '50-59%', 'Below 50%'].map((band) => <SelectItem key={band} value={band}>{band}</SelectItem>)}</SelectContent></Select></div>
+      {field('waec_scratch_card_pin', 'WAEC results scratch-card PIN')}{field('waec_scratch_card_serial', 'WAEC results scratch-card serial number')}
+    </div><Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save academic details</Button></CardContent></Card></form>
 
-    setViewingCertificatePath(path);
-    try {
-      const { data, error } = await supabase.storage
-        .from(CERTIFICATE_BUCKET)
-        .download(path);
+    <Card><CardHeader><div className="flex items-center justify-between gap-4"><div><CardTitle>Degrees</CardTitle><CardDescription>Optional to add. Every field is required for each degree you add.</CardDescription></div><Button type="button" onClick={() => openDegree()}><Plus className="mr-2 h-4 w-4" />Add degree</Button></div></CardHeader><CardContent className="space-y-3">{degrees.length === 0 ? <p className="text-sm text-muted-foreground">No degrees added.</p> : degrees.map((record) => <div key={record.id} className="flex items-center justify-between rounded-lg border p-4"><div><p className="font-medium">{record.degree_title}</p><p className="text-sm text-muted-foreground">{record.institution_name}, {record.city}, {record.country}</p></div><div className="flex gap-2"><Button type="button" size="icon" variant="outline" onClick={() => openDegree(record)} aria-label="Edit degree"><Pencil className="h-4 w-4" /></Button><Button type="button" size="icon" variant="outline" onClick={() => void removeDegree(record)} aria-label="Remove degree"><Trash2 className="h-4 w-4" /></Button></div></div>)}</CardContent></Card>
 
-      if (error || !data) {
-        throw new Error(error?.message || 'Unable to retrieve certificate');
-      }
+    <Card><CardHeader><CardTitle>Work experience</CardTitle><CardDescription>Optional. Add as many roles as you need.</CardDescription></CardHeader><CardContent className="space-y-4">{work.map((role, index) => <div key={`${role.employer}-${index}`} className="flex items-start justify-between rounded-lg border p-3"><div><p className="font-medium">{role.job_title} at {role.employer}</p><p className="text-sm text-muted-foreground">{role.start_date} to {role.end_date || 'present'}</p></div><Button type="button" size="icon" variant="ghost" onClick={() => void saveWork(work.filter((_, itemIndex) => itemIndex !== index))}><Trash2 className="h-4 w-4" /></Button></div>)}<div className={grid}>{(['employer', 'job_title', 'city', 'country', 'start_date', 'end_date'] as const).map((name) => <div className="space-y-2" key={name}><Label>{{ employer: 'Employer', job_title: 'Job title', city: 'City', country: 'Country', start_date: 'Start date', end_date: 'End date' }[name]}</Label><Input type={name.endsWith('date') ? 'date' : 'text'} value={workDraft[name]} onChange={(event) => setWorkDraft((current) => ({ ...current, [name]: event.target.value }))} /></div>)}<div className="space-y-2 md:col-span-2"><Label>Description</Label><Textarea value={workDraft.description} onChange={(event) => setWorkDraft((current) => ({ ...current, description: event.target.value }))} /></div></div><Button type="button" variant="outline" disabled={!workDraft.employer || !workDraft.job_title} onClick={() => { void saveWork([...work, workDraft]); setWorkDraft(emptyWork); }}><Plus className="mr-2 h-4 w-4" />Add work experience</Button></CardContent></Card>
 
-      const url = URL.createObjectURL(data);
-      const newWindow = window.open(url, '_blank');
-
-      if (!newWindow) {
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = path.split('/').pop() || 'certificate';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 60_000);
-    } catch (error) {
-      console.error('Error viewing certificate:', error);
-      toast({
-        title: 'Unable to view certificate',
-        description: error instanceof Error ? error.message : 'Please try again later.',
-        variant: 'destructive'
-      });
-    } finally {
-      setViewingCertificatePath(null);
-    }
-  };
-
-  if (loading && educationRecords.length === 0) {
-    return <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Education History</h2>
-          <p className="text-muted-foreground">Add your academic qualifications</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setEditingRecord(null); }}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Education
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <form onSubmit={handleSubmit}>
-              <DialogHeader>
-                <DialogTitle>{editingRecord ? 'Edit' : 'Add'} Education Record</DialogTitle>
-                <DialogDescription>
-                  Add details about your academic qualifications
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="level">Level *</Label>
-                  <Select value={formData.level} onValueChange={(value) => setFormData({ ...formData, level: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {EDUCATION_LEVEL_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="institution_name">Institution Name *</Label>
-                  <Input
-                    id="institution_name"
-                    value={formData.institution_name}
-                    onChange={(e) => setFormData({ ...formData, institution_name: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country *</Label>
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="start_date">Start Date *</Label>
-                    <Input
-                      id="start_date"
-                      type="date"
-                      value={formData.start_date}
-                      onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="end_date">End Date (or Expected)</Label>
-                    <Input
-                      id="end_date"
-                      type="date"
-                      value={formData.end_date}
-                      onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="grade_scale">Grading Scale</Label>
-                    <Select value={formData.grade_scale} onValueChange={(value) => setFormData({ ...formData, grade_scale: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select scale" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="GPA 4.0">GPA 4.0</SelectItem>
-                        <SelectItem value="GPA 5.0">GPA 5.0</SelectItem>
-                        <SelectItem value="Percentage">Percentage</SelectItem>
-                        <SelectItem value="UK Classification">UK Classification</SelectItem>
-                        <SelectItem value="CGPA 10.0">CGPA 10.0</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="gpa">Grade/GPA</Label>
-                    <Input
-                      id="gpa"
-                      type="number"
-                      step="0.01"
-                      value={formData.gpa}
-                      onChange={(e) => setFormData({ ...formData, gpa: e.target.value })}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2 pt-4 border-t">
-                  <Label htmlFor="certificate" className="flex items-center gap-2">
-                    <Upload className="h-4 w-4" />
-                    Certificate (Optional)
-                  </Label>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Upload your degree certificate, transcript, or academic record
-                  </p>
-                  <Input
-                    id="certificate"
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg,application/pdf"
-                    onChange={handleCertificateChange}
-                  />
-                  {certificateFile && (
-                    <p className="text-sm text-muted-foreground">
-                      Selected: {certificateFile.name} ({(certificateFile.size / 1024).toFixed(1)} KB)
-                    </p>
-                  )}
-                  {!certificateFile && existingCertificatePath && (
-                    <div className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm">
-                      <span className="text-muted-foreground">Existing certificate uploaded</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => viewCertificate(existingCertificatePath)}
-                        disabled={viewingCertificatePath !== null}
-                      >
-                        {viewingCertificatePath === existingCertificatePath && (
-                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                        )}
-                        <Eye className="mr-1 h-3 w-3" />
-                        View
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {editingRecord ? 'Update' : 'Add'} Record
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {educationRecords.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <GraduationCap className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="font-semibold mb-2">No Education Records</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Add your academic qualifications to complete your profile
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {educationRecords.map((record) => (
-            <Card key={record.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <GraduationCap className="h-5 w-5" />
-                      {record.institution_name}
-                    </CardTitle>
-                    <CardDescription>
-                      {getEducationLevelLabel(normalizeEducationLevel(record.level))} • {record.country}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openEditDialog(record)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDelete(record)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Duration:</span>
-                    <p>{record.start_date} - {record.end_date || 'Present'}</p>
-                  </div>
-                  {record.gpa && (
-                    <div>
-                      <span className="text-muted-foreground">Grade:</span>
-                      <p>{record.gpa} ({record.grade_scale})</p>
-                    </div>
-                  )}
-                </div>
-                {record.certificate_url && (
-                  <div className="flex items-center justify-between rounded-lg border px-4 py-3">
-                    <div>
-                      <p className="text-sm font-medium">Certificate</p>
-                      <p className="text-xs text-muted-foreground">View the uploaded document</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => viewCertificate(record.certificate_url!)}
-                      disabled={viewingCertificatePath !== null}
-                    >
-                      {viewingCertificatePath === record.certificate_url && (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      )}
-                      <Eye className="mr-2 h-4 w-4" />
-                      View
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editing ? 'Edit degree' : 'Add degree'}</DialogTitle></DialogHeader><form onSubmit={saveDegree} className="space-y-4"><div className={grid}>{degreeField('institution_name', 'Institution')}{degreeField('country', 'Country')}{degreeField('state_region', 'State or region')}{degreeField('city', 'City')}{degreeField('degree_title', 'Degree title')}{degreeField('grade_scale', 'Grading scale', 'text')}{degreeField('gpa', 'Score', 'number')}{degreeField('language_of_instruction', 'Language of instruction')}{degreeField('start_date', 'Start date', 'date')}{degreeField('end_date', 'End date', 'date')}</div><DialogFooter><Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button><Button type="submit" disabled={loading}>Save degree</Button></DialogFooter></form></DialogContent></Dialog>
+  </div>;
 }
