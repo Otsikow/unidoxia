@@ -8,6 +8,13 @@
       "when": 1792328966421,
       "tag": "0000_add_whatsapp_number_to_students",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792328990039,
+      "tag": "0001_coursefinder_student_profile_fields",
+      "breakpoints": true
     }
   ]
 }
