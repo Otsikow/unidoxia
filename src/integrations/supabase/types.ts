@@ -5184,6 +5184,20 @@ export type Database = {
         }
         Returns: Json
       }
+      find_duplicate_students: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          duplicate_match_ids: string[]
+          duplicate_type: string
+          email: string
+          full_name: string
+          match_count: number
+          phone: string
+          profile_id: string
+          student_id: string
+        }[]
+      }
       find_scholarship_duplicates: {
         Args: {
           p_academic_year: string
