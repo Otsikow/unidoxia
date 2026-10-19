@@ -60,7 +60,7 @@ const featuredHtml = featured.length
   : "";
 
 const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a href="/universities">Universities</a> · <a href="/scholarships">Scholarships</a> · <a href="/blog">Blog</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;
-const footer = `<footer><p>UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.</p></footer>`;
+const footer = `<footer><p>UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: 54 Blakey Close, Redcar, England, TS10 4PB.</p></footer>`;
 
 const pages = [
   {

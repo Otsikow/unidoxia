@@ -11,7 +11,7 @@ const evidence = [];
 const uniqueTitles = new Set();
 const uniqueDescriptions = new Set();
 const seen = new Set();
-const footerText = 'UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ.';
+const footerText = 'UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: 54 Blakey Close, Redcar, England, TS10 4PB.';
 for (const url of urls) {
   const pathname = new URL(url).pathname;
   const file = path.join(dist, pathname, 'index.html');
