@@ -1,3 +1,4 @@
+import { openCookieSettings } from "@/lib/cookieConsent";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
@@ -319,6 +320,7 @@ export function AppFooter() {
                   {t("layout.footer.accountLinks.terms")}
                 </Link>
               </li>
+              <li><button type="button" onClick={openCookieSettings} className="min-h-11 text-left hover:underline focus-visible:outline focus-visible:outline-2">Cookie settings</button></li>
             </ul>
           </div>
         </div>
