@@ -118,21 +118,20 @@ export const gateOptions = (student: CourseFinderStudent | null | undefined): Co
   strict: isStrictStudent(student),
 });
 
-/** Statuses before an application is sent on from UniDoxia. */
-export const PRE_SUBMISSION_STATUSES = new Set(['draft', 'submitted']);
-
 /**
  * Statuses that send an application on from UniDoxia (to CourseFinder or the
  * university), including a jump straight to an offer. Moving an application
- * from draft or submitted into one of these needs a complete profile. The same
- * rule is enforced on the server by the enforce_application_profile_gate trigger.
+ * into one of these from any other status (draft, submitted, withdrawn,
+ * deferred, rejected, pending documents, interview and so on) needs a complete
+ * profile. The server trigger enforce_application_profile_gate uses exactly
+ * this list.
  */
 export const COURSEFINDER_SUBMISSION_STATUSES = new Set([
   'screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled',
 ]);
 
 export const requiresCompleteProfileForStatus = (oldStatus: string | null | undefined, newStatus: string) =>
-  COURSEFINDER_SUBMISSION_STATUSES.has(newStatus) && PRE_SUBMISSION_STATUSES.has(String(oldStatus ?? 'draft'));
+  COURSEFINDER_SUBMISSION_STATUSES.has(newStatus) && !COURSEFINDER_SUBMISSION_STATUSES.has(String(oldStatus ?? 'draft'));
 
 /** What the server says about one application (application_profile_gate_status). */
 export type ApplicationProfileGate = {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  IN_PROGRESS_APPLICATION_STATUSES,
   canDismissPrompt,
   dismissPrompt,
   isPromptDismissed,
@@ -79,5 +80,19 @@ describe('prompt for existing students with an application in progress', () => {
 
   it('goes once the profile is complete', () => {
     expect(shouldShowCompleteProfilePrompt({ isStudent: true, isLoading: false, missingFields: [], dismissed: false, hasApplicationInProgress: true })).toBe(false);
+  });
+});
+
+describe('in-progress statuses for the banner', () => {
+  it('include under review, pending documents and the interview statuses', () => {
+    expect(IN_PROGRESS_APPLICATION_STATUSES).toEqual(
+      expect.arrayContaining(['under_review', 'pending_documents', 'interview', 'interview_scheduled']),
+    );
+  });
+
+  it('leave out finished or stopped applications', () => {
+    for (const status of ['enrolled', 'withdrawn', 'deferred', 'rejected']) {
+      expect(IN_PROGRESS_APPLICATION_STATUSES as readonly string[]).not.toContain(status);
+    }
   });
 });

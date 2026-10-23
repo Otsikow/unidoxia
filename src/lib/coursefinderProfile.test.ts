@@ -1,6 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   calculateCourseFinderCompleteness,
+  COURSEFINDER_SUBMISSION_STATUSES,
   isProfileGateClear,
   isValidOverrideReason,
   profileGateMessage,
@@ -183,5 +185,29 @@ describe('application profile gate (grandfathering, override, bypasses)', () => 
     expect(studentProfileLink('staff', 's1')).toBe('/admin/students/s1');
     expect(studentProfileLink('agent', 's1')).toBe('/agent/students/s1');
     expect(studentProfileLink('school_rep', 's1')).toBeNull();
+  });
+});
+
+describe('gated statuses (re-entry and non-gated moves)', () => {
+  it('checks moves out of withdrawn, deferred and other non-gated statuses into gated ones', () => {
+    for (const from of ['withdrawn', 'deferred', 'rejected', 'under_review', 'pending_documents', 'interview', 'interview_scheduled']) {
+      expect(requiresCompleteProfileForStatus(from, 'screening')).toBe(true);
+      expect(requiresCompleteProfileForStatus(from, 'conditional_offer')).toBe(true);
+    }
+  });
+
+  it('never blocks rejecting, asking for documents or an interview', () => {
+    for (const to of ['rejected', 'pending_documents', 'interview', 'interview_scheduled', 'under_review', 'withdrawn', 'deferred']) {
+      expect(requiresCompleteProfileForStatus('submitted', to)).toBe(false);
+      expect(requiresCompleteProfileForStatus('draft', to)).toBe(false);
+    }
+  });
+
+  it('uses exactly the same gated list as the server trigger', () => {
+    const sql = readFileSync('supabase/migrations/20261103000000_coursefinder_mandatory_registration_fields.sql', 'utf8');
+    const match = sql.match(/gated_statuses constant text\[\] := ARRAY\[([^\]]+)\]/);
+    expect(match).not.toBeNull();
+    const serverList = [...match![1].matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
+    expect(serverList).toEqual([...COURSEFINDER_SUBMISSION_STATUSES].sort());
   });
 });

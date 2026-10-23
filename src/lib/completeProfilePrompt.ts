@@ -8,7 +8,8 @@
 
 /** Application statuses that count as in progress for the prompt. */
 export const IN_PROGRESS_APPLICATION_STATUSES = [
-  'draft', 'submitted', 'screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa',
+  'draft', 'submitted', 'screening', 'under_review', 'pending_documents', 'interview', 'interview_scheduled',
+  'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa',
 ] as const;
 
 export const canDismissPrompt = (hasApplicationInProgress: boolean) => !hasApplicationInProgress;

@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ClipboardList, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentRecord } from '@/hooks/useStudentRecord';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -16,6 +17,8 @@ import {
   shouldShowCompleteProfilePrompt,
   summariseMissingFields,
 } from '@/lib/completeProfilePrompt';
+
+type ApplicationStatus = Database['public']['Enums']['application_status'];
 
 /**
  * A gentle reminder for students whose profile is missing any field
@@ -51,7 +54,9 @@ export function CompleteProfilePrompt() {
         .from('applications')
         .select('id', { count: 'exact', head: true })
         .eq('student_id', student!.id)
-        .in('status', [...IN_PROGRESS_APPLICATION_STATUSES]);
+        // The generated enum type predates under_review, pending_documents and the
+        // interview statuses, which exist in the database.
+        .in('status', [...IN_PROGRESS_APPLICATION_STATUSES] as unknown as ApplicationStatus[]);
       if (error) throw error;
       return (count ?? 0) > 0;
     },

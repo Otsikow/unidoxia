@@ -297,11 +297,18 @@ CREATE TRIGGER enforce_coursefinder_education_record
   EXECUTE FUNCTION public.enforce_coursefinder_education_record();
 
 -- 4. Applications: complete profile before sending on to CourseFinder ---------
--- Moving an application on from draft or submitted (to screening, any offer,
--- CAS or LOA, visa or enrolled) needs a complete CourseFinder profile. This is
--- enforced here for every route (staff screens, the university review dialog,
--- RPCs) and the app asks application_profile_gate_status() so the screens give
--- the same answer. Withdrawn and deferred are never blocked.
+-- Sending an application on (into screening, any offer, CAS or LOA, visa or
+-- enrolled) needs a complete CourseFinder profile. Only these gated statuses
+-- are checked; the list matches COURSEFINDER_SUBMISSION_STATUSES in
+-- src/lib/coursefinderProfile.ts. Any move INTO a gated status from a status
+-- outside the list is checked, including from draft, submitted, withdrawn,
+-- deferred, rejected, under review, pending documents or interview, so leaving
+-- and re-entering cannot get round it. Moves into non-gated statuses (for
+-- example rejecting, withdrawing, deferring, asking for documents or an
+-- interview) and moves between gated statuses are never blocked.
+-- This is enforced here for every route (staff screens, the university review
+-- dialog, RPCs) and the app asks application_profile_gate_status() so the
+-- screens give the same answer.
 --
 -- Exceptions:
 --   * Applications that already exist when this migration runs are grandfathered
@@ -494,10 +501,22 @@ DECLARE
   missing text[];
   overridden boolean;
   result jsonb;
+  caller uuid := auth.uid();
 BEGIN
-  SELECT a.id, a.student_id, a.coursefinder_gate_exempt INTO app
+  SELECT a.id, a.student_id, a.agent_id, a.program_id, a.coursefinder_gate_exempt INTO app
   FROM public.applications a WHERE a.id = p_application_id;
-  IF NOT FOUND THEN
+  -- Only the student, admins and staff, or the agent or university linked to
+  -- the application may ask. Others get the same answer as a missing row.
+  IF NOT FOUND OR caller IS NULL OR NOT (
+    public.is_admin_or_staff(caller)
+    OR EXISTS (SELECT 1 FROM public.students st WHERE st.id = app.student_id AND st.profile_id = caller)
+    OR EXISTS (SELECT 1 FROM public.agents ag WHERE ag.id = app.agent_id AND ag.profile_id = caller)
+    OR EXISTS (
+      SELECT 1 FROM public.programs pr
+      WHERE pr.id = app.program_id
+        AND pr.university_id = public.get_university_id_for_user(caller)
+    )
+  ) THEN
     RAISE EXCEPTION 'Application not found.' USING ERRCODE = 'no_data_found';
   END IF;
   overridden := EXISTS (SELECT 1 FROM public.application_profile_gate_overrides o WHERE o.application_id = app.id);
@@ -555,6 +574,8 @@ AS $$
 DECLARE
   old_status text := CASE WHEN TG_OP = 'UPDATE' THEN OLD.status::text END;
   new_status text := NEW.status::text;
+  -- Must match COURSEFINDER_SUBMISSION_STATUSES in src/lib/coursefinderProfile.ts.
+  gated_statuses constant text[] := ARRAY['screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled'];
   missing text[];
 BEGIN
   -- The exempt flag is not the app's to set: new rows from signed-in users are
@@ -568,8 +589,9 @@ BEGIN
     NEW.coursefinder_gate_exempt := OLD.coursefinder_gate_exempt;
   END IF;
 
-  IF new_status IS NULL OR new_status IN ('draft', 'submitted', 'withdrawn', 'deferred')
-     OR (old_status IS NOT NULL AND old_status NOT IN ('draft', 'submitted')) THEN
+  -- Only moves INTO a gated status from outside the list are checked.
+  IF new_status IS NULL OR NOT (new_status = ANY (gated_statuses))
+     OR (old_status IS NOT NULL AND old_status = ANY (gated_statuses)) THEN
     RETURN NEW;
   END IF;
 
@@ -593,7 +615,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.enforce_application_profile_gate() IS
-  'Blocks moving an application on from draft or submitted until the student profile is complete for CourseFinder, unless the application is grandfathered or an admin has overridden it.';
+  'Blocks moving an application into a sent-on status (screening, offers, CAS or LOA, visa, enrolled) from any other status until the student profile is complete for CourseFinder, unless the application is grandfathered or an admin has overridden it.';
 
 DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
 CREATE TRIGGER enforce_application_profile_gate
