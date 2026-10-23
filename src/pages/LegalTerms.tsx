@@ -34,11 +34,11 @@ const sections: Section[] = [
       <p>
         These Terms of Service (“Terms”) govern your access to and use of UniDoxia (“UniDoxia”, “we”,
         “us”, or “our”) products, websites, and services (collectively, the “Services”). By accessing or using the
-        Services, you agree to be bound by these Terms and our Privacy Policy.
+        Services, you agree to be bound by these Terms and our Privacy Notice.
       </p>
     ),
     summary:
-      'Use of the platform constitutes acceptance of these Terms and our Privacy Policy. You must ensure organizational consent when you act on behalf of someone else.'
+      'Use of the platform constitutes acceptance of these Terms and our Privacy Notice. You must ensure organizational consent when you act on behalf of someone else.'
   },
   {
     id: 'eligibility',

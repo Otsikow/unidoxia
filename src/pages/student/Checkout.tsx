@@ -386,7 +386,7 @@ export default function Checkout() {
                 </Link>{' '}
                 and{' '}
                 <Link to="/legal/privacy" className="underline hover:text-foreground">
-                  Privacy Policy
+                  Privacy Notice
                 </Link>
                 .
               </p>

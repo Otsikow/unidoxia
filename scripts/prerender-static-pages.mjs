@@ -166,9 +166,9 @@ const pages = [
   },
   {
     path: "/legal/privacy",
-    title: "Privacy Policy | UniDoxia",
+    title: "Privacy Notice | UniDoxia",
     description: "How UniDoxia collects, uses and protects your personal data.",
-    body: `<h1>Privacy policy</h1>`,
+    body: `<h1>Privacy Notice</h1>`,
   },
   {
     path: "/legal/terms",

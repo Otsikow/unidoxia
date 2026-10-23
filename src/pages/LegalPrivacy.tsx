@@ -74,7 +74,7 @@ const sections: Section[] = [
         <p>Personal information supports essential platform experiences, including to:</p>
         <ul className="list-disc pl-6">
           <li>Operate and maintain your account, applications, and communication preferences.</li>
-          <li>Match you with programmes, advisors, and services relevant to your interests.</li>
+          <li>Match you with programmes, advisers, and services relevant to your interests.</li>
           <li>Provide customer support, respond to inquiries, and resolve issues.</li>
           <li>Conduct analytics to improve product quality, safety, and reliability.</li>
           <li>Meet legal, regulatory, and compliance obligations, including fraud prevention.</li>
