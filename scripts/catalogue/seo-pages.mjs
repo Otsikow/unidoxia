@@ -7,7 +7,7 @@ const details = rows => `<dl>${rows.filter(([, value]) => value !== '' && value 
 export const universityPath = university => `/universities/${encodeURIComponent(university.slug || university.id)}`;
 export const organisation = {
   '@context': 'https://schema.org', '@type': 'Organization', name: 'UniDoxia', legalName: 'Global Talent Gateway Ltd',
-  url: ORIGIN, logo: `${ORIGIN}/assets/unidoxia-logo-BmnWTOef.png`, email: 'info@unidoxia.com',
+  url: ORIGIN, logo: `${ORIGIN}/assets/unidoxia-logo-BNsBHQRb.png`, email: 'info@unidoxia.com',
   sameAs: ['https://x.com/unidoxia', 'https://www.linkedin.com/company/110137778/', 'https://www.instagram.com/unidoxia/', 'https://www.tiktok.com/@unidoxia.com1', 'https://www.facebook.com/profile.php?id=61584297605909', 'https://www.reddit.com/r/UniDoxia'],
 };
 export function universityPage(university, programmes) {
