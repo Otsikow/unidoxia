@@ -1,3 +1,6 @@
+import { blogSchema } from '@/lib/publicSeo.mjs';
+import { articleContent } from '@/lib/articleContent';
+import NotFound from './NotFound';
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useParams, Navigate } from "react-router-dom";
@@ -73,35 +76,7 @@ export default function BlogPost() {
 
   const sanitizedHtml = useMemo(() => {
     if (!data) return null;
-    const normalize = (s: string) =>
-      s.replace(/\s+/g, " ").trim().toLowerCase();
-    const stripLeadingTitleH1 = (html: string) => {
-      // Remove a leading <h1>…</h1> only when its text matches the article
-      // title, so the page template's H1 is not duplicated by content.
-      const match = html.match(/^\s*<h1[^>]*>([\s\S]*?)<\/h1>\s*/i);
-      if (!match) return html;
-      const inner = match[1].replace(/<[^>]+>/g, "");
-      if (normalize(inner) === normalize(data.title)) {
-        return html.slice(match[0].length);
-      }
-      return html;
-    };
-    if (data.content_html && data.content_html.trim().length > 0) {
-      return DOMPurify.sanitize(stripLeadingTitleH1(data.content_html));
-    }
-    if (data.content_md && data.content_md.trim().length > 0) {
-      // Also strip a leading Markdown H1 (# Title) that matches the DB title.
-      let md = data.content_md;
-      const mdMatch = md.match(/^\s*#\s+(.+?)\s*\n/);
-      if (mdMatch && normalize(mdMatch[1]) === normalize(data.title)) {
-        md = md.slice(mdMatch[0].length);
-      }
-      const rendered = marked.parse(md, { async: false }) as string;
-      return DOMPurify.sanitize(stripLeadingTitleH1(rendered), {
-        ADD_ATTR: ["target", "rel"],
-      });
-    }
-    return null;
+    return DOMPurify.sanitize(articleContent(data));
   }, [data]);
 
   if (isLoading) {
@@ -130,18 +105,18 @@ export default function BlogPost() {
     );
   }
 
-  if (!data) return <Navigate to="/blog" replace />;
+  if (!data) return <NotFound />;
 
   const publishedLabel = formatDate(data.published_at);
   const updatedLabel = formatDate(data.updated_at);
   const readingMinutes = estimateReadingMinutes(data.content_html || data.content_md || data.excerpt);
   const coverAlt = data.cover_image_url ? `Cover image for article: ${data.title}` : "";
 
-  const seoTitle = data.seo_title || `${data.title} | UniDoxia Blog`;
+  const seoTitle = data.seo_title || `${data.title} | UniDoxia`;
   const seoDescription =
     data.seo_description ||
     data.excerpt ||
-    `Read ${data.title} on the UniDoxia blog — source-checked guidance on studying abroad.`;
+    data.title;
 
   const canonicalPath = `/blog/${data.slug}`;
   const canonicalUrl = `https://unidoxia.com${canonicalPath}`;
@@ -151,23 +126,7 @@ export default function BlogPost() {
         : `https://unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
     : undefined;
 
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: data.title,
-    description: seoDescription,
-    image: absoluteCover ? [absoluteCover] : undefined,
-    datePublished: data.published_at || undefined,
-    dateModified: data.updated_at || data.published_at || undefined,
-    mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
-    author: { "@type": "Organization", name: "UniDoxia Editorial Team", url: "https://unidoxia.com/editorial-policy" },
-    publisher: {
-      "@type": "Organization",
-      name: "UniDoxia",
-      url: "https://unidoxia.com",
-      logo: { "@type": "ImageObject", url: "https://unidoxia.com/favicon.png" },
-    },
-  };
+  const articleJsonLd = blogSchema(data);
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -291,6 +250,13 @@ export default function BlogPost() {
         <p className="text-muted-foreground italic">No content available.</p>
       )}
 
+      <section className="mt-10 rounded-xl border bg-muted/40 p-6 space-y-3">
+        <h2 className="text-xl font-semibold">Plan your next step</h2>
+        {/\b(UK|United Kingdom|British)\b/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/destinations/united-kingdom">Plan your UK university shortlist</Link>.</p>}
+        {/visa/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/visa-calculator">Explore student visa readiness</Link> and <Link className="text-primary underline" to="/faq">read common application questions</Link>.</p>}
+        <p>Compare <Link className="text-primary underline" to="/courses">courses and entry requirements</Link>, explore <Link className="text-primary underline" to="/universities">universities by destination</Link> or check <Link className="text-primary underline" to="/scholarships">scholarship eligibility and deadlines</Link>.</p>
+        <p><Link className="text-primary underline" to="/free-consultation">Ask about your study plans in a free consultation</Link>.</p>
+      </section>
       <div className="mt-12 border-t border-border/60 pt-6">
         <ShareButtons slug={data.slug} title={data.title} description={data.excerpt || undefined} />
       </div>

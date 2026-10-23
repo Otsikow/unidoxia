@@ -1,3 +1,4 @@
+import { businessFooter } from '@/config/business';
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
@@ -346,8 +347,7 @@ export function AppFooter() {
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">{t("layout.footer.copyright", { year })}</p>
             <p className="max-w-xl text-xs text-muted-foreground">
-              UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales,
-              company number 16172129. Registered office: 54 Blakey Close, Redcar, England, TS10 4PB.
+              {businessFooter}
             </p>
           </div>
           <div className="text-xs text-muted-foreground">

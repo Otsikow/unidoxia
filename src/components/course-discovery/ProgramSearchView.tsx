@@ -1128,8 +1128,8 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
     <div className={containerClasses}>
       {showSEO && (
         <SEO
-          title="Search Courses - UniDoxia"
-          description="Find and compare courses from top universities around the world. Filter by country, level, discipline, and more to discover the perfect program for your study abroad journey."
+          title="Search Courses at Universities Abroad | UniDoxia"
+          description="Search undergraduate and postgraduate courses at universities in the UK, Canada, USA, Europe and more, with fees, intakes and entry requirements."
           keywords="course search, find courses, study abroad programs, international programs, student recruitment, find a course, university courses"
         />
       )}

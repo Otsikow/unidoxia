@@ -171,8 +171,8 @@ export default function Blog() {
   return (
     <div className="relative">
       <SEO
-        title="Study Abroad Blog | UniDoxia"
-        description="Weekly, source-checked guidance on visa rule changes, scholarships, admissions, and common application mistakes for international students."
+        title="Study Abroad & Student Visa Blog | UniDoxia"
+        description="Student visa updates, scholarship guides and practical study-abroad advice for international students from the UniDoxia Editorial Team."
         keywords="study abroad blog, international student advice, university application tips, scholarships, student visa guidance"
         canonicalPath="/blog"
         jsonLd={{
@@ -181,7 +181,7 @@ export default function Blog() {
           name: "UniDoxia Blog",
           url: "https://unidoxia.com/blog",
           description:
-            "Weekly, source-checked guidance on visa rule changes, scholarships, admissions, and common application mistakes.",
+            "Study-abroad guidance on visa rule changes, scholarships, admissions, and common application mistakes.",
           publisher: {
             "@type": "Organization",
             name: "UniDoxia",
@@ -195,12 +195,12 @@ export default function Blog() {
           <div className="mx-auto max-w-3xl text-center space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border px-4 py-1 text-sm text-muted-foreground">
               <Sparkles className="h-4 w-4" />
-              Weekly, source-checked guidance
+              Study-abroad guidance
             </div>
             <div className="space-y-3">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Insights & Guides</h1>
               <p className="text-base sm:text-lg text-muted-foreground">
-                Every week we publish source-checked updates on visa rule changes, scholarships, admissions, and the most common application mistakes — so you can plan with clarity. We share guidance, not guarantees of visa or scholarship outcomes.
+                Explore our published guidance on visa rule changes, scholarships, admissions, and the most common application mistakes — so you can plan with clarity. We share guidance, not guarantees of visa or scholarship outcomes.
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-center">

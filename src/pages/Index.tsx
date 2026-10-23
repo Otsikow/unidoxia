@@ -1,4 +1,5 @@
 "use client";
+import { organisation } from '@/lib/publicSeo.mjs';
 
 import { Link } from "react-router-dom";
 import britishCouncilLogo from "@/assets/british-council-logo.png";
@@ -62,17 +63,15 @@ const Index = () => {
   const { t } = useTranslation();
 
   /* ---------- Hero Video State ---------- */
-  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const prefersReducedMotion =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const conn = (navigator as any).connection;
-    const saveData = Boolean(conn?.saveData);
-    const effectiveType = String(conn?.effectiveType ?? "");
-    const isSlowConnection = ["slow-2g", "2g"].includes(effectiveType);
-    return !(prefersReducedMotion || saveData || isSlowConnection);
-  });
+  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(false);
+  useEffect(() => {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px)').matches || connection?.saveData || ['slow-2g', '2g'].includes(connection?.effectiveType)) return;
+    const enable = () => setShouldRenderHeroVideo(true);
+    // The poster and essential content get the first network opportunity.
+    const timer = window.setTimeout(enable, 2500);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [heroVideoReady, setHeroVideoReady] = useState(false);
   const heroVideoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -187,14 +186,7 @@ const Index = () => {
         description="UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements."
         canonicalPath="/"
         jsonLd={[
-          {
-            "@context": "https://schema.org",
-            "@type": "Organization",
-            name: "UniDoxia",
-            url: "https://unidoxia.com",
-            logo: "https://unidoxia.com/favicon.png",
-            email: "info@unidoxia.com",
-          },
+          organisation,
           {
             "@context": "https://schema.org",
             "@type": "WebSite",
@@ -215,7 +207,7 @@ const Index = () => {
 
         <div
           className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
-          style={{ backgroundColor: "#0e1a2b" }}
+          style={{ backgroundColor: "#0e1a2b", backgroundImage: "linear-gradient(135deg, #0e1a2b99, #0e1a2b66), url(/videos/hero-poster.jpg)", backgroundSize: "cover", backgroundPosition: "center" }}
           aria-hidden
         />
 
@@ -227,10 +219,8 @@ const Index = () => {
             loop
             muted
             playsInline
-            preload="auto"
+            preload="none"
             poster="/videos/hero-poster.jpg"
-            // @ts-expect-error - fetchpriority is valid HTML attribute
-            fetchpriority="high"
           >
             <source src="/videos/hero-video.mp4" type="video/mp4" />
           </video>

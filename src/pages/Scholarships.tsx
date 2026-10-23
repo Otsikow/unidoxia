@@ -320,8 +320,8 @@ const ScholarshipsPage = () => {
   return (
     <>
       <SEO 
-        title="Find Scholarships - UniDoxia"
-        description="Discover scholarships and funding opportunities worldwide. Search by country, level, and eligibility to find the perfect scholarship for your international education journey."
+        title="Scholarships for International Students | UniDoxia"
+        description="Find current scholarships for international students, with eligibility, deadlines and links to official application pages."
       />
       
       <div className="min-h-screen bg-background">

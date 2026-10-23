@@ -1,0 +1,66 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "canonical": "https://unidoxia.com/",
+    "title": "Study Abroad Support for International Students | UniDoxia",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/free-consultation",
+    "status": 200,
+    "canonical": "https://unidoxia.com/",
+    "title": "Study Abroad Support for International Students | UniDoxia",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/robots.txt",
+    "status": 200,
+    "contentType": "text/plain; charset=utf-8"
+  },
+  {
+    "path": "/sitemap.xml",
+    "status": 200,
+    "contentType": "application/xml"
+  },
+  {
+    "path": "/missing-seo-verification-page",
+    "status": 200,
+    "canonical": "https://unidoxia.com/",
+    "title": "Study Abroad Support for International Students | UniDoxia",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/blog/international-student-visa-study-policy-updates-4-september-2026",
+    "status": 200,
+    "canonical": "https://unidoxia.com/blog/international-student-visa-study-policy-updates-4-september-2026",
+    "title": "International Student Visa Updates | 4 September 2026",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/universities/hochschule-fresenius",
+    "status": 200,
+    "canonical": "https://unidoxia.com/universities/hochschule-fresenius",
+    "title": "Hochschule Fresenius: Courses and Entry Information | UniDoxia",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/courses/001a318c-d4b0-418e-bf6e-c6dac75837fd",
+    "status": 200,
+    "canonical": "https://unidoxia.com/courses/001a318c-d4b0-418e-bf6e-c6dac75837fd",
+    "title": "Criminology BSc (Hons) at Northumbria University | UniDoxia",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "/scholarships/archive",
+    "status": 200,
+    "canonical": "https://unidoxia.com/scholarships/archive",
+    "title": "Scholarship Archive | UniDoxia",
+    "contentType": "text/html; charset=utf-8"
+  },
+  {
+    "path": "https://www.unidoxia.com/courses?seo-check=1",
+    "status": 302,
+    "location": "https://unidoxia.com/courses?seo-check=1"
+  }
+]

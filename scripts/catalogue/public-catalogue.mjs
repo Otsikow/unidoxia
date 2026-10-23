@@ -32,8 +32,8 @@ export async function fetchPublicRows(query, config = publicBuildConfig(), reque
 }
 
 export async function loadPublicCatalogue() {
-  const universities = await fetchPublicRows('universities?active=eq.true&listing_status=neq.archived&select=id,slug,name,city,country,description,featured,featured_priority,featured_summary,website,updated_at');
-  const programmes = await fetchPublicRows('programs?active=eq.true&catalogue_status=eq.active&universities.active=eq.true&universities.listing_status=neq.archived&select=id,name,university_id,course_code,level,qualification,duration_months,campus,study_mode,overview,description,entry_requirements,english_requirements,intake_months,updated_at,universities!inner(id),program_intakes(intake_month,intake_year,status),program_fees(amount,currency,fee_basis,fee_year,applicant_type,resolution_status)');
+  const universities = await fetchPublicRows('universities?active=eq.true&listing_status=neq.archived&select=id,slug,name,city,country,description,featured,featured_priority,featured_summary,website,submission_config_json,updated_at');
+  const programmes = await fetchPublicRows('programs?active=eq.true&catalogue_status=eq.active&universities.active=eq.true&universities.listing_status=neq.archived&select=id,name,university_id,course_code,level,qualification,duration_months,campus,study_mode,overview,description,modules,official_url,entry_requirements,english_requirements,intake_months,updated_at,universities!inner(id),program_intakes(intake_month,intake_year,status),program_fees(amount,currency,fee_basis,fee_year,applicant_type,resolution_status)');
   const ids = new Set(universities.map(u => u.id));
   if (programmes.some(p => !ids.has(p.university_id))) throw new Error('Catalogue changed during build; retry for a consistent public snapshot.');
   return { universities, programmes };

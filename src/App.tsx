@@ -1,4 +1,6 @@
 "use client";
+import StudyUK from '@/pages/StudyUK';
+import FreeConsultation from '@/pages/FreeConsultation';
 
 import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -618,7 +620,8 @@ const App = () => {
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
-                        <Route path="/free-consultation" element={<PublicLayout><IntakeForm /></PublicLayout>} />
+                        <Route path="/destinations/united-kingdom" element={<PublicLayout><StudyUK /></PublicLayout>} />
+                        <Route path="/free-consultation" element={<PublicLayout><FreeConsultation /></PublicLayout>} />
                         <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />
 
                         {/* University Search */}

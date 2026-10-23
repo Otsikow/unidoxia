@@ -381,29 +381,9 @@ export function FeaturedUniversitiesSection() {
 
                   {/* CTA */}
                   <div className="pt-2">
-                    {formattedWebsite ? (
-                      <Button 
-                        asChild 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full gap-2 border-primary/20 hover:bg-primary hover:text-primary-foreground transition-colors"
-                      >
-                        <a href={formattedWebsite} target="_blank" rel="noopener noreferrer">
-                          {visitSiteLabel}
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    ) : (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="w-full gap-2 opacity-50 cursor-not-allowed" 
-                        disabled
-                      >
-                        {visitSiteLabel}
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    )}
+                    <Button asChild variant="outline" size="sm" className="w-full gap-2 border-primary/20 hover:bg-primary hover:text-primary-foreground transition-colors">
+                      {university.id.startsWith('fallback-') ? <Link to="/universities">Browse university profiles</Link> : <Link to={`/universities/${university.id}`}>View university profile <GraduationCap className="h-4 w-4" /></Link>}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

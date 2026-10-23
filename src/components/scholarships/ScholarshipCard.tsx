@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { MouseEvent } from "react";
 import {
   Card,
@@ -221,6 +222,7 @@ export const ScholarshipCard = ({
             {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Rolling"}
           </div>
           <div className="flex items-center gap-2">
+            {scholarship.slug && <Button asChild variant="outline" size="sm"><Link to={`/scholarships/${scholarship.slug}`} onClick={event => event.stopPropagation()}>Read scholarship details</Link></Button>}
             <Button variant="ghost" size="sm" onClick={handleShare}>
               <Share2 className="mr-1.5 h-4 w-4" /> Share
             </Button>
