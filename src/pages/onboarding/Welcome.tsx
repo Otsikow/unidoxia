@@ -319,7 +319,7 @@ export default function OnboardingWelcome() {
         <img
           src={unidoxiaLogo}
           alt="UniDoxia"
-          className="h-12 sm:h-16 w-auto mb-4 sm:mb-6 animate-fade-in"
+          className="h-12 sm:h-16 w-auto mb-4 sm:mb-6 animate-fade-in dark:rounded-lg dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
         />
 
         {/* Central Globe illustration */}

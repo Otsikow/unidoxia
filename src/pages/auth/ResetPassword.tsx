@@ -76,7 +76,7 @@ const ResetPassword = () => {
         <Card className="w-full max-w-md shadow-lg">
           <CardHeader className="space-y-1 text-center">
             <div className="flex justify-center mb-4">
-              <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-20 w-20 rounded-lg object-contain dark:brightness-0 dark:invert" />
+              <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-20 w-20 rounded-lg object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm" />
             </div>
             <CardTitle className="text-2xl font-bold">Verifying reset link</CardTitle>
             <CardDescription>One moment while we prepare your password reset.</CardDescription>
@@ -146,7 +146,7 @@ const ResetPassword = () => {
             />
           </div>
           <div className="flex justify-center mb-4">
-            <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-20 w-20 rounded-lg object-contain dark:brightness-0 dark:invert" />
+            <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-20 w-20 rounded-lg object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm" />
           </div>
           <CardTitle className="text-2xl font-bold">Set New Password</CardTitle>
           <CardDescription>

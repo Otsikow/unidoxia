@@ -243,7 +243,7 @@ const Index = () => {
             <img
               src={unidoxiaLogo}
               alt="UniDoxia logo"
-              className="hero-logo mb-1 h-auto w-24 sm:w-28 md:w-32 lg:w-36 drop-shadow-[0_4px_20px_rgba(0,0,0,0.6)] brightness-0 invert"
+              className="hero-logo mb-1 h-auto w-24 sm:w-28 md:w-32 lg:w-36 box-content bg-white rounded-2xl p-2 shadow-md"
             />
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">

@@ -102,7 +102,7 @@ const AppNavbar = () => {
                     <img
                       src={unidoxiaLogo}
                       alt={t("layout.navbar.brand.short")}
-                      className="h-8 w-8 rounded-md object-contain dark:brightness-0 dark:invert"
+                      className="h-8 w-8 rounded-md object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
                     />
                     <span className="text-base font-semibold">
                       {t("layout.navbar.brand.short")}
@@ -195,7 +195,7 @@ const AppNavbar = () => {
             <img
               src={unidoxiaLogo}
               alt={t("layout.navbar.brand.short")}
-              className="h-8 w-8 rounded-md object-contain dark:brightness-0 dark:invert"
+              className="h-8 w-8 rounded-md object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
             />
             <span className="hidden truncate text-base font-semibold sm:inline">
               {t("layout.navbar.brand.full")}

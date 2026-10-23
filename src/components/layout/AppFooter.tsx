@@ -122,7 +122,7 @@ export function AppFooter() {
               <img
                 src={unidoxiaLogo}
                 alt={t("layout.navbar.brand.full")}
-                className="h-9 w-9 rounded-md object-contain dark:brightness-0 dark:invert"
+                className="h-9 w-9 rounded-md object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
               />
               <span className="font-semibold text-lg">{t("layout.footer.aboutTitle")}</span>
             </div>
