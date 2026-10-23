@@ -17,8 +17,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 240 6% 10%;
 
-    /* Apple system blue, retained as UniDoxia's trust colour */
-    --primary: 211 100% 50%;
+    /* UniDoxia blue with sufficient contrast for white button labels */
+    --primary: 211 100% 44%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 211 100% 44%;
     

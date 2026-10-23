@@ -1,0 +1,85 @@
+{
+  "url": "http://127.0.0.1:4173/",
+  "fetchTime": "2026-10-23T13:21:21.024Z",
+  "lighthouseVersion": "13.5.0",
+  "mode": "Local production build, default mobile Lighthouse simulation, local asset server without compression/cache headers; no before/after baseline or field result.",
+  "scores": {
+    "performance": 53,
+    "accessibility": 91,
+    "seo": 100
+  },
+  "metrics": {
+    "first-contentful-paint": "9.7 s",
+    "largest-contentful-paint": "13.3 s",
+    "speed-index": "9.7 s",
+    "total-blocking-time": "190 ms",
+    "cumulative-layout-shift": "0",
+    "total-byte-weight": "Total size was 3,396 KiB"
+  },
+  "remainingFindings": [
+    {
+      "id": "mainthread-work-breakdown",
+      "title": "Minimize main-thread work",
+      "displayValue": "3.2 s"
+    },
+    {
+      "id": "unsized-images",
+      "title": "Image elements do not have explicit `width` and `height`"
+    },
+    {
+      "id": "button-name",
+      "title": "Buttons do not have an accessible name"
+    },
+    {
+      "id": "color-contrast",
+      "title": "Background and foreground colors do not have a sufficient contrast ratio."
+    },
+    {
+      "id": "label-content-name-mismatch",
+      "title": "Elements with visible text labels do not have matching accessible names."
+    },
+    {
+      "id": "total-byte-weight",
+      "title": "Avoid enormous network payloads",
+      "displayValue": "Total size was 3,396 KiB"
+    },
+    {
+      "id": "unused-css-rules",
+      "title": "Reduce unused CSS",
+      "displayValue": "Est savings of 246 KiB"
+    },
+    {
+      "id": "unused-javascript",
+      "title": "Reduce unused JavaScript",
+      "displayValue": "Est savings of 677 KiB"
+    },
+    {
+      "id": "cache-insight",
+      "title": "Use efficient cache lifetimes",
+      "displayValue": "Est savings of 3,345 KiB"
+    },
+    {
+      "id": "document-latency-insight",
+      "title": "Document request latency",
+      "displayValue": "Est savings of 5 KiB"
+    },
+    {
+      "id": "forced-reflow-insight",
+      "title": "Forced reflow"
+    },
+    {
+      "id": "image-delivery-insight",
+      "title": "Improve image delivery",
+      "displayValue": "Est savings of 1,394 KiB"
+    },
+    {
+      "id": "network-dependency-tree-insight",
+      "title": "Network dependency tree"
+    },
+    {
+      "id": "render-blocking-insight",
+      "title": "Render-blocking requests",
+      "displayValue": "Est savings of 1,650 ms"
+    }
+  ]
+}

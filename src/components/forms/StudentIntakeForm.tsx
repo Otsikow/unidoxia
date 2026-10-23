@@ -162,7 +162,7 @@ const studentIntakeSchema = z.object({
   consent: z.boolean().refine((value) => value === true, {
     message: 'You need to agree before we can process your information'
   })
-});
+}).refine(values => Number(values.preferredIntakeYear) >= new Date().getFullYear() && futureSeasons(values.preferredIntakeYear).includes(values.preferredIntakeSeason), { message: 'Choose a future intake', path: ['preferredIntakeSeason'] });
 
 type StudentIntakeFormValues = z.infer<typeof studentIntakeSchema>;
 
@@ -187,7 +187,8 @@ const studyAreas = [
 
 const destinations = ['Canada', 'United Kingdom', 'United States', 'Australia', 'New Zealand', 'Ireland'];
 
-const intakeSeasons = ['January', 'May', 'September', 'Rolling Intake'];
+const seasonMonths: Record<string, number> = { January: 1, May: 5, September: 9 };
+const futureSeasons = (year: string, now = new Date()) => Object.keys(seasonMonths).filter(term => new Date(Number(year), seasonMonths[term] - 1, 1) > now).concat('Rolling Intake');
 
 const studyModes = ['On-campus', 'Hybrid', 'Online'];
 
@@ -247,8 +248,8 @@ export default function StudentIntakeForm() {
       englishTest: '',
       testScore: '',
       preferredDestinations: [],
-      preferredIntakeYear: yearOptions[0] ?? currentYear.toString(),
-      preferredIntakeSeason: 'September',
+      preferredIntakeYear: (currentYear + 1).toString(),
+      preferredIntakeSeason: 'January',
       programLevel: '',
       studyArea: '',
       studyMode: 'On-campus',
@@ -259,7 +260,7 @@ export default function StudentIntakeForm() {
       additionalNotes: '',
       consent: false
     }),
-    [graduationYears, yearOptions, user?.email, currentYear]
+    [graduationYears, user?.email, currentYear]
   );
 
   const form = useForm<StudentIntakeFormValues>({
@@ -926,7 +927,7 @@ export default function StudentIntakeForm() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Preferred intake year *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={value => { field.onChange(value); form.setValue('preferredIntakeSeason', futureSeasons(value)[0]); }} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select year" />
@@ -957,7 +958,7 @@ export default function StudentIntakeForm() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {intakeSeasons.map((term) => (
+                            {futureSeasons(form.watch('preferredIntakeYear')).map((term) => (
                               <SelectItem key={term} value={term}>
                                 {term}
                               </SelectItem>

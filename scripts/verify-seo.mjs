@@ -1,3 +1,4 @@
+import { businessFooter } from '../src/config/business.ts';
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -11,7 +12,7 @@ const evidence = [];
 const uniqueTitles = new Set();
 const uniqueDescriptions = new Set();
 const seen = new Set();
-const footerText = 'UniDoxia is a trading name of Global Talent Gateway Ltd, registered in England and Wales, company number 16172129. Registered office: 54 Blakey Close, Redcar, England, TS10 4PB.';
+const footerText = businessFooter;
 for (const url of urls) {
   const pathname = new URL(url).pathname;
   const file = path.join(dist, pathname, 'index.html');
@@ -34,7 +35,7 @@ for (const url of urls) {
   assert(title && description, `Missing metadata: ${pathname}`);
   assert.equal(doc.querySelector('meta[property="og:title"]')?.content, title, pathname);
   assert.equal(doc.querySelector('meta[property="og:description"]')?.content, description, pathname);
-  const schemas = [...doc.querySelectorAll('script[type="application/ld+json"]')].map(node => JSON.parse(node.textContent));
+  const schemas = [...doc.querySelectorAll('script[type="application/ld+json"]')].flatMap(node => JSON.parse(node.textContent));
   const type = pathname.startsWith('/courses/') ? 'Course' : pathname.startsWith('/universities/') ? 'CollegeOrUniversity' : pathname.startsWith('/blog/') ? 'BlogPosting' : pathname === '/faq' ? 'FAQPage' : pathname === '/' ? 'Organization' : null;
   if (type) assert(schemas.some(schema => schema['@type'] === type), `Missing ${type}: ${pathname}`);
   if (type === 'FAQPage') {

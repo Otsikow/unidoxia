@@ -434,8 +434,8 @@ export default function UniversityDirectory() {
   return (
     <div className="min-h-screen bg-background pb-12">
       <SEO
-        title="University Directory - UniDoxia"
-        description="Browse listed universities from around the world. Find detailed profiles, course information, and direct links to help you explore the right institution."
+        title="University Directory for International Students | UniDoxia"
+        description="Browse universities and colleges welcoming international students, with locations, courses and profile details in one directory."
         keywords="university directory, listed universities, college listings, international universities, student recruitment directory, university finder"
       />
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-8">
@@ -448,9 +448,9 @@ export default function UniversityDirectory() {
             <div className="space-y-2">
               <h1 className="text-4xl font-bold text-foreground">University Directory</h1>
               <p className="max-w-2xl text-base text-muted-foreground">
-                Discover listed universities with key information, courses,
-                and direct links to explore admissions further.
+                Explore listed institutions by destination, then compare courses and entry requirements. A listing does not by itself indicate a formal partnership.
               </p>
+              <Link to="/destinations/united-kingdom" className="text-primary underline">Plan your UK university shortlist</Link>
             </div>
           </div>
           <Badge variant="secondary" className="h-fit px-3 py-2 text-xs uppercase tracking-wide">

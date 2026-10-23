@@ -1,3 +1,4 @@
+import { coursePage } from '@/lib/publicSeo.mjs';
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, Clock, ExternalLink, MapPin } from "lucide-react";
@@ -71,6 +72,7 @@ export default function CourseDetail() {
 
   const university = course.universities;
   const sections = buildCourseSections(course);
+  const seo = coursePage(course, university);
   const duration = course.duration_months ? `${course.duration_months} months` : "Check official duration";
   const checked = course.source_last_checked_at
     ? new Date(course.source_last_checked_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
@@ -116,7 +118,7 @@ export default function CourseDetail() {
             <Link to={`/student/applications/new?program=${course.id}`}>Apply Through UniDoxia</Link>
           </Button>
           <Button variant="outline" className="w-full" asChild>
-            <Link to={`/contact?${enquiry.toString()}`}>Ask About This Course</Link>
+            <Link to="/free-consultation">Ask About This Course</Link>
           </Button>
         </div>
       </CardContent>
@@ -234,8 +236,10 @@ export default function CourseDetail() {
   return (
     <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 md:py-10">
       <SEO
-        title={`${course.name} | ${university.name}`}
-        description={sections.summary || `Official-source course information for ${course.name} at ${university.name}.`}
+        title={seo.title}
+        description={seo.description}
+        canonicalPath={seo.path}
+        jsonLd={seo.jsonLd}
       />
       <BackButton fallback="/courses" label={backState?.label || "Browse courses"} showHistoryMenu={false} />
       <header className="max-w-4xl space-y-4">

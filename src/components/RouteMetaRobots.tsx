@@ -37,13 +37,14 @@ export const RouteMetaRobots = () => {
   useEffect(() => {
     if (typeof document === "undefined") return;
     const priv = isPrivate(pathname);
-    const existing = document.head.querySelectorAll<HTMLMetaElement>('meta[name="robots"]');
+    const existing = document.head.querySelectorAll<HTMLMetaElement>(priv ? 'meta[name="robots"]' : 'meta[name="robots"][data-private-route]');
     existing.forEach((n) => n.parentNode?.removeChild(n));
     if (priv) {
       const m = document.createElement("meta");
       m.setAttribute("name", "robots");
       m.setAttribute("content", "noindex,nofollow");
       m.setAttribute(OWNED_ATTR, "1");
+      m.setAttribute("data-private-route", "1");
       document.head.appendChild(m);
     }
   }, [pathname]);

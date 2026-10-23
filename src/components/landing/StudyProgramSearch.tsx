@@ -211,7 +211,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                       value={selectedDestination}
                       onValueChange={setSelectedDestination}
                     >
-                      <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
+                      <SelectTrigger aria-label="Preferred destination" className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
                         <SelectValue placeholder="Destination" />
                       </SelectTrigger>
                       <SelectContent>
@@ -230,7 +230,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   {/* Level of Study Dropdown */}
                   <div className="flex-1">
                     <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-                      <SelectTrigger className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
+                      <SelectTrigger aria-label="Study level" className="h-12 md:h-14 bg-background/50 dark:bg-background/30 border-border/60">
                         <SelectValue placeholder="Level of Study" />
                       </SelectTrigger>
                       <SelectContent>

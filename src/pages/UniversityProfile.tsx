@@ -1,3 +1,4 @@
+import { universityPage } from '@/lib/publicSeo.mjs';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, useParams, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -326,9 +327,10 @@ export default function UniversityProfile() {
     { label: "YouTube", url: profileDetails.social.youtube, icon: Youtube },
   ].filter((link) => Boolean(link.url));
 
+  const seo = universityPage(university, []);
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={university.slug === "lethbridge-polytechnic" ? "Lethbridge Polytechnic Courses, Fees & International Admissions | UniDoxia" : university.slug === "lambton-college" ? "Lambton College Courses, Fees & International Admissions | UniDoxia" : `${university.name} - Courses and International Study | UniDoxia`} description={university.slug === "lethbridge-polytechnic" ? "Explore Lethbridge Polytechnic international courses, fees, admissions and current intakes in Lethbridge, Alberta, Canada." : university.slug === "lambton-college" ? "Explore Lambton College international programmes, fees, current intakes and admission requirements in Sarnia, Ontario." : (university.description || `Explore courses and international study information for ${university.name}.`)} />
+      <SEO title={seo.title} description={seo.description} canonicalPath={seo.path} jsonLd={seo.jsonLd} />
       <div className="mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-6">
         <BackButton
           fallback="/universities"
@@ -641,6 +643,12 @@ export default function UniversityProfile() {
             )}
           </TabsContent>
 
+          <div className="rounded-xl border bg-muted/40 p-5 space-y-2">
+            <h2 className="text-lg font-semibold">Plan your application</h2>
+            <p>A directory listing does not by itself indicate a formal university partnership.</p>
+            <Link className="text-primary underline mr-4" to={`/courses?university=${university.id}`}>Browse courses at {university.name}</Link>
+            <Link className="text-primary underline" to="/free-consultation">Ask UniDoxia about studying here</Link>
+          </div>
           {/* Programs Tab */}
           <TabsContent value="programs" className="space-y-6">
             {/* Filters */}
@@ -731,7 +739,7 @@ export default function UniversityProfile() {
 
                     <CardHeader className="space-y-4 p-4 pb-4 sm:p-5 sm:pb-4 lg:p-6 lg:pb-4">
                       <CardTitle className="line-clamp-3 min-h-[4.5rem] text-xl leading-6 transition-colors group-hover:text-primary">
-                        {program.name}
+                        <Link to={`/courses/${program.id}`} onClick={event => event.stopPropagation()}>{program.name}</Link>
                       </CardTitle>
                       <CardDescription className="flex flex-wrap gap-2">
                         <Badge className="rounded-full px-3" variant="secondary">{program.level}</Badge>

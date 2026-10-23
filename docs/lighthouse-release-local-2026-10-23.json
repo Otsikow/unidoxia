@@ -1,0 +1,18 @@
+{
+  "url": "http://127.0.0.1:4173/",
+  "fetchTime": "2026-10-23T14:02:57.020Z",
+  "lighthouseVersion": "13.5.0",
+  "mode": "Local production build; default mobile Lighthouse simulation; uncompressed local server; no field-performance or conversion claim.",
+  "scores": {
+    "performance": 56,
+    "accessibility": 100,
+    "seo": 100
+  },
+  "metrics": {
+    "first-contentful-paint": "8.7 s",
+    "largest-contentful-paint": "9.3 s",
+    "total-blocking-time": "130 ms",
+    "cumulative-layout-shift": "0",
+    "total-byte-weight": "Total size was 1,772 KiB"
+  }
+}

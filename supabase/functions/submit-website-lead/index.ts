@@ -238,17 +238,26 @@ Deno.serve(async (req) => {
       );
     }
 
-    const firstName = str(body.firstName, 80);
-    const lastName = str(body.lastName, 80);
+    const initial = body.enquiryType === 'initial';
+    const name = str(body.name, 160);
+    const firstName = initial ? name : str(body.firstName, 80);
+    const lastName = initial ? null : str(body.lastName, 80);
     const email = str(body.email, 200);
     const phone = str(body.phone, 40);
     const consentGranted = bool(body.consent) ?? false;
 
     const errors: Record<string, string> = {};
     if (!firstName) errors.firstName = 'First name is required';
-    if (!lastName) errors.lastName = 'Last name is required';
-    if (!email || !EMAIL_RE.test(email)) errors.email = 'A valid email is required';
-    if (!phone || !PHONE_RE.test(phone)) errors.phone = 'A valid phone number is required';
+    if (!initial && !lastName) errors.lastName = 'Last name is required';
+    const preferredContact = str(body.preferredContact, 20);
+    if (!initial || preferredContact === 'email') {
+      if (!email || !EMAIL_RE.test(email)) errors.email = 'A valid email is required';
+    } else if (email && !EMAIL_RE.test(email)) errors.email = 'A valid email is required';
+    if (!initial || ['phone', 'whatsapp'].includes(preferredContact ?? '')) {
+      if (!phone || !PHONE_RE.test(phone) || phone.replace(/\D/g, '').length < 6) errors.phone = 'A valid phone number is required';
+    } else if (phone && !PHONE_RE.test(phone)) errors.phone = 'A valid phone number is required';
+    if (initial && !['email', 'phone', 'whatsapp'].includes(preferredContact ?? '')) errors.preferredContact = 'Choose a contact method';
+    if (initial && arr(body.preferredDestinations).length !== 1) errors.preferredDestinations = 'Choose a destination';
     if (!consentGranted) errors.consent = 'Consent is required';
 
     if (Object.keys(errors).length > 0) {
@@ -280,7 +289,7 @@ Deno.serve(async (req) => {
       programLevel,
     });
 
-    const fullName = `${firstName} ${lastName}`.trim();
+    const fullName = [firstName, lastName].filter(Boolean).join(' ');
     const nowIso = new Date().toISOString();
     const followUpAt = computeNextFollowUp().toISOString();
 
@@ -290,8 +299,8 @@ Deno.serve(async (req) => {
     const medium = str(body.medium ?? body.utm_medium, 120);
     const campaign = str(body.campaign ?? body.utm_campaign, 120);
 
-    const normalizedEmail = normalizeEmail(email!);
-    const normalizedPhone = normalizePhone(phone!);
+    const normalizedEmail = email ? normalizeEmail(email) : null;
+    const normalizedPhone = phone ? normalizePhone(phone) : null;
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -303,18 +312,21 @@ Deno.serve(async (req) => {
     const dedupeSince = new Date(
       Date.now() - DEDUPE_WINDOW_MINUTES * 60 * 1000,
     ).toISOString();
-    const { data: existing } = await supabase
-      .from('website_leads')
+    let dedupeQuery = supabase.from('website_leads')
       .select('id, reference_code, phone, email')
       .eq('tenant_id', DEFAULT_TENANT_ID)
-      .ilike('email', normalizedEmail)
-      .gte('created_at', dedupeSince)
-      .limit(5);
+      .gte('created_at', dedupeSince);
+    // Compare only real supplied contacts. Null email must not match every
+    // phone-only visitor; phone-only lookups use the normalized stored value.
+    dedupeQuery = normalizedEmail
+      ? dedupeQuery.eq('email', normalizedEmail)
+      : dedupeQuery.eq('phone', normalizedPhone);
+    const { data: existing } = await dedupeQuery.limit(5);
 
     if (existing && existing.length > 0) {
       const match = existing.find(
         (row: { email: string | null; phone: string | null }) =>
-          normalizePhone(row.phone ?? '') === normalizedPhone,
+          (normalizePhone(row.phone ?? '') || null) === normalizedPhone,
       );
       if (match) {
         return new Response(
@@ -338,8 +350,8 @@ Deno.serve(async (req) => {
       last_name: lastName,
       full_name: fullName,
       email: normalizedEmail,
-      phone,
-      whatsapp: str(body.whatsapp, 40),
+      phone: normalizedPhone,
+      whatsapp: preferredContact === 'whatsapp' ? normalizedPhone : str(body.whatsapp, 40),
       preferred_contact: str(body.preferredContact, 20),
       citizenship: str(body.citizenship, 80),
       current_country: str(body.currentLocation ?? body.currentCountry, 80),
@@ -410,7 +422,7 @@ Deno.serve(async (req) => {
       tenant_id: DEFAULT_TENANT_ID,
       website_lead_id: data.id,
       title: `Follow up with ${fullName} (${data.reference_code})`,
-      description: `New website lead — ${normalizedEmail}. Score: ${score} (${temperature}). Preferred: ${preferredDestinations.join(', ') || 'n/a'}.`,
+      description: `New website lead — ${normalizedEmail || normalizedPhone}. Score: ${score} (${temperature}). Preferred: ${preferredDestinations.join(', ') || 'n/a'}.`,
       due_at: followUpAt,
       priority: temperature === 'hot' ? 'high' : 'medium',
       status: 'open',

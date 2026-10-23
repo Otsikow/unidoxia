@@ -1,4 +1,5 @@
 "use client";
+import { scholarshipPage } from '@/lib/publicSeo.mjs';
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
@@ -22,8 +23,9 @@ export default function ScholarshipDetail() {
     queryFn: async () => {
       const { data, error } = await db
         .from("scholarships")
-        .select("*")
+        .select("id,slug,title,name,summary,description,full_description,seo_title,seo_description,status,updated_at,published_at,institution_name,sponsor_name,country,study_level,academic_year,deadline,opening_date,scholarship_value,funding_type,number_of_awards,last_verified_at,eligible_nationalities,academic_requirements,english_requirements,work_experience_requirements,age_requirements,important_conditions,application_steps,official_source_url,official_application_url,featured_image,og_image,verification_status")
         .eq("slug", slug)
+        .in("status", ["Published", "Closing Soon", "Upcoming", "Closed", "Archived"])
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -62,48 +64,20 @@ export default function ScholarshipDetail() {
   const nationalities: string[] = Array.isArray(s.eligible_nationalities) ? s.eligible_nationalities : [];
   const steps: string[] = Array.isArray(s.application_steps) ? s.application_steps : [];
 
-  const jsonLd: Record<string, unknown>[] = [
-    {
-      "@context": "https://schema.org",
-      "@type": "EducationalOccupationalProgram",
-      name: title,
-      description,
-      url: canonicalUrl,
-      provider: {
-        "@type": "CollegeOrUniversity",
-        name: s.institution_name ?? s.sponsor_name ?? "UniDoxia partner",
-      },
-      educationalCredentialAwarded: s.study_level,
-      applicationDeadline: s.deadline ?? undefined,
-      applicationStartDate: s.opening_date ?? undefined,
-      offers: s.scholarship_value ? {
-        "@type": "Offer",
-        description: s.scholarship_value,
-      } : undefined,
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_ORIGIN}/` },
-        { "@type": "ListItem", position: 2, name: "Scholarships", item: `${SITE_ORIGIN}/scholarships` },
-        { "@type": "ListItem", position: 3, name: title, item: canonicalUrl },
-      ],
-    },
-  ];
+  const seo = scholarshipPage(s);
 
   return (
     <div className="container max-w-4xl mx-auto py-8 space-y-6">
       <SEO
-        title={`${title} — UniDoxia`}
-        description={description.slice(0, 155)}
+        title={seo.title}
+        description={seo.description}
         canonicalPath={canonicalPath}
         ogType="article"
         ogImage={s.featured_image ?? s.og_image ?? undefined}
         publishedTime={s.published_at ?? undefined}
         modifiedTime={s.updated_at ?? undefined}
         robots={isClosed ? "noindex,follow" : undefined}
-        jsonLd={jsonLd}
+        jsonLd={seo.jsonLd}
       />
 
       <nav className="text-sm text-muted-foreground">
@@ -199,6 +173,7 @@ export default function ScholarshipDetail() {
         </div>
       )}
 
+      <p><Link className="text-primary underline" to="/free-consultation">Ask UniDoxia about scholarship eligibility</Link></p>
       <Separator />
 
       <div className="text-xs text-muted-foreground space-y-1">

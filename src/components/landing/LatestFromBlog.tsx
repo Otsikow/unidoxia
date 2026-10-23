@@ -45,7 +45,7 @@ export default function LatestFromBlog() {
             Latest from the Blog
           </h2>
           <p className="text-muted-foreground">
-            Weekly, source-checked guidance on visas, scholarships, and admissions.
+            Study-abroad guidance on visas, scholarships, and admissions.
           </p>
         </div>
         <Link

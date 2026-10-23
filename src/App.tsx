@@ -1,4 +1,6 @@
 "use client";
+import StudyUK from '@/pages/StudyUK';
+import FreeConsultation from '@/pages/FreeConsultation';
 
 import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -163,9 +165,9 @@ import Index from "./pages/Index";
 // Auth login is imported eagerly to avoid chunk loading issues that prevent
 // the sign-in form from rendering when users click the call-to-action.
 import Login from "./pages/auth/Login";
-// Dashboard is imported eagerly to avoid users getting stuck on a blank
-// suspense shell when the dashboard chunk fails to load in production.
-import Dashboard from "./pages/Dashboard";
+// Keep private dashboard code off public pages. The existing guarded loader
+// retries stale chunks and provides an actionable error screen on failure.
+const Dashboard = lazyWithErrorHandling(() => import("./pages/Dashboard"));
 
 // Student onboarding flow removed (kept agent onboarding).
 
@@ -618,7 +620,8 @@ const App = () => {
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
-                        <Route path="/free-consultation" element={<PublicLayout><IntakeForm /></PublicLayout>} />
+                        <Route path="/destinations/united-kingdom" element={<PublicLayout><StudyUK /></PublicLayout>} />
+                        <Route path="/free-consultation" element={<PublicLayout><FreeConsultation /></PublicLayout>} />
                         <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />
 
                         {/* University Search */}
