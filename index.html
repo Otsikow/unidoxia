@@ -3,6 +3,38 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Recover from a stale page after a new publish. Each publish replaces the
+      hashed files in /assets, so a tab or restored session still holding the
+      previous HTML can no longer load its script or stylesheet and is left
+      showing only the plain SEO fallback. If an /assets file fails to load,
+      reload once to fetch the current HTML. Guarded so it cannot loop.
+    -->
+    <script>
+      (function () {
+        var KEY = "unidoxia:stale-asset-reload";
+        function recover() {
+          try {
+            var last = Number(sessionStorage.getItem(KEY) || 0);
+            if (Date.now() - last < 30000) return false;
+            sessionStorage.setItem(KEY, String(Date.now()));
+          } catch (e) {
+            return false;
+          }
+          window.location.reload();
+          return true;
+        }
+        window.addEventListener("error", function (event) {
+          var el = event.target;
+          if (!el || (el.tagName !== "SCRIPT" && el.tagName !== "LINK")) return;
+          var url = el.src || el.href || "";
+          if (url.indexOf("/assets/") !== -1) recover();
+        }, true);
+        window.addEventListener("vite:preloadError", function (event) {
+          if (recover()) event.preventDefault();
+        });
+      })();
+    </script>
     <title>Study Abroad Support for International Students | UniDoxia</title>
     <meta name="description" content="UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements.">
     <meta name="author" content="UniDoxia" />
