@@ -90,10 +90,10 @@ export const ScholarshipCard = ({
           onSelect?.(scholarship);
         }
       }}
-      className={cn("flex flex-col h-full cursor-pointer transition-transform hover:-translate-y-1", className)}
+      className={cn("flex min-w-0 flex-col h-full cursor-pointer transition-transform hover:-translate-y-1", className)}
     >
       <CardHeader className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3">
           <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-muted/40">
               {scholarship.logoUrl ? (
@@ -221,7 +221,7 @@ export const ScholarshipCard = ({
             <Clock className="h-4 w-4 text-primary" />
             {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Rolling"}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             {scholarship.slug && <Button asChild variant="outline" size="sm"><Link to={`/scholarships/${scholarship.slug}`} onClick={event => event.stopPropagation()}>Read scholarship details</Link></Button>}
             <Button variant="ghost" size="sm" onClick={handleShare}>
               <Share2 className="mr-1.5 h-4 w-4" /> Share

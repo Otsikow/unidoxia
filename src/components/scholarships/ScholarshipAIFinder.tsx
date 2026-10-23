@@ -66,21 +66,20 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
   };
 
   return (
-    <Card className="border-primary/20 bg-primary/5">
+    <Card className="min-w-0 border-primary/20 bg-primary/5 shadow-none">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-xl">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Sparkles className="h-5 w-5 text-primary" />
           AI Scholarship Finder
         </CardTitle>
         <CardDescription>
-          Tell Zoe a few details. She will automatically filter scholarships by GPA, location, course, deadlines, tuition coverage
-, and experience.
+          Tell Zoe a few details. She will automatically filter scholarships by GPA, location, course, deadlines, tuition coverage, and experience.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="grid gap-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor="gpa">Your GPA</Label>
               <Input
                 id="gpa"
@@ -93,10 +92,10 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
                 onChange={(event) => setField("gpa", event.target.value ? Number(event.target.value) : undefined)}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Preferred Country</Label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="scholarship-profile-0">Preferred Country</Label>
               <Select value={formState.country ?? undefined} onValueChange={(value) => setField("country", value)}>
-                <SelectTrigger>
+                <SelectTrigger id="scholarship-profile-0" className="h-11 min-w-0 [&>span]:truncate">
                   <SelectValue placeholder="Choose a destination" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
@@ -108,10 +107,10 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Course level</Label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="scholarship-profile-1">Course level</Label>
               <Select value={formState.programLevel ?? undefined} onValueChange={(value) => setField("programLevel", value)}>
-                <SelectTrigger>
+                <SelectTrigger id="scholarship-profile-1" className="h-11 min-w-0 [&>span]:truncate">
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -123,10 +122,10 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Field of study</Label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="scholarship-profile-2">Field of study</Label>
               <Select value={formState.fieldOfStudy ?? undefined} onValueChange={(value) => setField("fieldOfStudy", value)}>
-                <SelectTrigger>
+                <SelectTrigger id="scholarship-profile-2" className="h-11 min-w-0 [&>span]:truncate">
                   <SelectValue placeholder="Pick a discipline" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
@@ -138,13 +137,13 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Deadline preference</Label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="scholarship-profile-3">Deadline preference</Label>
               <Select
                 value={formState.deadlinePreference ?? undefined}
                 onValueChange={(value) => setField("deadlinePreference", value as ScholarshipMatchProfile["deadlinePreference"])}
               >
-                <SelectTrigger>
+                <SelectTrigger id="scholarship-profile-3" className="h-11 min-w-0 [&>span]:truncate">
                   <SelectValue placeholder="When do you want to apply?" />
                 </SelectTrigger>
                 <SelectContent>
@@ -156,13 +155,13 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Tuition coverage</Label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="scholarship-profile-4">Tuition coverage</Label>
               <Select
                 value={formState.fundingNeed ?? undefined}
                 onValueChange={(value) => setField("fundingNeed", value as ScholarshipMatchProfile["fundingNeed"])}
               >
-                <SelectTrigger>
+                <SelectTrigger id="scholarship-profile-4" className="h-11 min-w-0 [&>span]:truncate">
                   <SelectValue placeholder="Funding need" />
                 </SelectTrigger>
                 <SelectContent>
@@ -174,13 +173,13 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label>Work experience</Label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="scholarship-profile-5">Work experience</Label>
               <Select
                 value={formState.workExperience ?? undefined}
                 onValueChange={(value) => setField("workExperience", value as ScholarshipMatchProfile["workExperience"])}
               >
-                <SelectTrigger>
+                <SelectTrigger id="scholarship-profile-5" className="h-11 min-w-0 [&>span]:truncate">
                   <SelectValue placeholder="Experience level" />
                 </SelectTrigger>
                 <SelectContent>
@@ -194,7 +193,7 @@ export const ScholarshipAIFinder = ({ onApplyProfile, activeProfile, loading }: 
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <Label htmlFor="context">Anything else?</Label>
             <Textarea
               id="context"
