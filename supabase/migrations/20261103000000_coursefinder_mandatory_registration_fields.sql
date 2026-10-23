@@ -20,6 +20,7 @@
 -- and an optional reason from a fixed list). There is deliberately no free-text
 -- field, and the reason list has no criminal or health options.
 --
+-- Section 4 adds the server-side complete-profile check for applications.
 -- A commented rollback script is at the end of this file.
 
 -- 1. New columns ------------------------------------------------------------
@@ -295,9 +296,326 @@ CREATE TRIGGER enforce_coursefinder_education_record
   FOR EACH ROW
   EXECUTE FUNCTION public.enforce_coursefinder_education_record();
 
--- 4. Rollback (not run). To undo this migration, run the following by hand.
--- Note: this deletes any answers students have saved in these columns.
+-- 4. Applications: complete profile before sending on to CourseFinder ---------
+-- Moving an application on from draft or submitted (to screening, any offer,
+-- CAS or LOA, visa or enrolled) needs a complete CourseFinder profile. This is
+-- enforced here for every route (staff screens, the university review dialog,
+-- RPCs) and the app asks application_profile_gate_status() so the screens give
+-- the same answer. Withdrawn and deferred are never blocked.
 --
+-- Exceptions:
+--   * Applications that already exist when this migration runs are grandfathered
+--     (coursefinder_gate_exempt = true). New applications default to false.
+--   * An admin can override the check for one application with a logged reason
+--     (application_profile_gate_overrides, through override_application_profile_gate()).
+-- There is no service-role bypass: backend jobs moving incomplete applications on
+-- are blocked too, unless the application is exempt or overridden.
+
+-- Existing rows get true (grandfathered) without an UPDATE, so no triggers fire.
+ALTER TABLE public.applications
+  ADD COLUMN IF NOT EXISTS coursefinder_gate_exempt boolean NOT NULL DEFAULT true;
+ALTER TABLE public.applications
+  ALTER COLUMN coursefinder_gate_exempt SET DEFAULT false;
+
+COMMENT ON COLUMN public.applications.coursefinder_gate_exempt IS
+  'True for applications that existed when the CourseFinder profile check went live. They can move on without a complete profile.';
+
+CREATE TABLE IF NOT EXISTS public.application_profile_gate_overrides (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  application_id uuid NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
+  reason text NOT NULL CHECK (char_length(btrim(reason)) >= 10),
+  overridden_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS application_profile_gate_overrides_application_idx
+  ON public.application_profile_gate_overrides (application_id);
+
+COMMENT ON TABLE public.application_profile_gate_overrides IS
+  'Audit log of admin overrides of the CourseFinder complete-profile check. Written only by override_application_profile_gate().';
+
+ALTER TABLE public.application_profile_gate_overrides ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admins and staff can read profile gate overrides" ON public.application_profile_gate_overrides;
+CREATE POLICY "Admins and staff can read profile gate overrides"
+  ON public.application_profile_gate_overrides
+  FOR SELECT
+  USING (public.is_admin_or_staff(auth.uid()));
+-- No insert, update or delete policies: rows are added by the function below only.
+
+-- Every missing CourseFinder item for a student (empty when complete).
+-- Mirrors getCourseFinderSubmissionBlockers() in src/lib/coursefinderProfile.ts.
+CREATE OR REPLACE FUNCTION public.coursefinder_profile_missing(p_student_id uuid)
+RETURNS text[]
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  s jsonb;
+  missing text[] := ARRAY[]::text[];
+  col text;
+  er record;
+  er_number integer := 0;
+  entry jsonb;
+  entry_number integer := 0;
+  secondary_end date;
+  last_study_end date;
+  still_studying boolean;
+  waec boolean;
+BEGIN
+  SELECT to_jsonb(st) INTO s FROM public.students st WHERE st.id = p_student_id;
+  IF s IS NULL THEN
+    RETURN ARRAY['student profile'];
+  END IF;
+
+  FOREACH col IN ARRAY ARRAY[
+    'first_name', 'last_name', 'contact_phone', 'contact_email', 'date_of_birth', 'gender',
+    'marital_status', 'dependants_travelling', 'nationality', 'citizenship', 'city_of_birth', 'country_of_birth',
+    'passport_number', 'passport_issue_date', 'passport_expiry', 'passport_issue_country',
+    'address_line_1', 'country_of_residence', 'state_region', 'city', 'postal_code',
+    'emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone', 'emergency_contact_email',
+    'has_other_citizenship', 'lived_or_studied_abroad', 'previous_immigration_applications', 'has_visa_refusals',
+    'country_of_education', 'highest_education_level', 'secondary_board', 'secondary_qualification',
+    'secondary_school_name', 'secondary_school_country', 'secondary_school_state', 'secondary_school_city',
+    'secondary_start_month', 'secondary_start_year', 'secondary_end_month', 'secondary_end_year',
+    'secondary_language_of_instruction', 'secondary_grades_band', 'secondary_final_grade'
+  ] LOOP
+    IF COALESCE(btrim(s ->> col), '') = '' THEN
+      missing := array_append(missing, col);
+    END IF;
+  END LOOP;
+
+  IF COALESCE(btrim(s ->> 'emergency_contact_email'), '') <> ''
+     AND (s ->> 'emergency_contact_email') !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$' THEN
+    missing := array_append(missing, 'emergency_contact_email (valid email)');
+  END IF;
+
+  IF (s -> 'permanent_same_as_mailing') IS DISTINCT FROM 'true'::jsonb THEN
+    FOREACH col IN ARRAY ARRAY['permanent_address_line_1', 'permanent_country', 'permanent_state_region',
+                               'permanent_city', 'permanent_postal_code'] LOOP
+      IF COALESCE(btrim(s ->> col), '') = '' THEN
+        missing := array_append(missing, col);
+      END IF;
+    END LOOP;
+  END IF;
+
+  IF (s -> 'has_other_citizenship') = 'true'::jsonb AND COALESCE(btrim(s ->> 'other_citizenship'), '') = '' THEN
+    missing := array_append(missing, 'other_citizenship');
+  END IF;
+
+  IF (s -> 'has_visa_refusals') = 'true'::jsonb THEN
+    FOREACH col IN ARRAY ARRAY['visa_refusal_country', 'visa_refusal_year', 'visa_refusal_type'] LOOP
+      IF COALESCE(btrim(s ->> col), '') = '' THEN
+        missing := array_append(missing, col);
+      END IF;
+    END LOOP;
+  END IF;
+
+  waec := lower(concat_ws(' ', s ->> 'secondary_board', s ->> 'secondary_qualification')) ~ '\m(waec|wassce|ssce|nabteb|neco)\M'
+    OR lower(btrim(COALESCE(s ->> 'country_of_education', ''))) IN ('ghana', 'nigeria', 'sierra leone', 'liberia', 'gambia', 'the gambia')
+    OR lower(btrim(COALESCE(s ->> 'secondary_school_country', ''))) IN ('ghana', 'nigeria', 'sierra leone', 'liberia', 'gambia', 'the gambia');
+  IF waec THEN
+    IF COALESCE(btrim(s ->> 'waec_scratch_card_pin'), '') = '' THEN
+      missing := array_append(missing, 'waec_scratch_card_pin');
+    END IF;
+    IF COALESCE(btrim(s ->> 'waec_scratch_card_serial'), '') = '' THEN
+      missing := array_append(missing, 'waec_scratch_card_serial');
+    END IF;
+  END IF;
+
+  FOR er IN
+    SELECT to_jsonb(e) AS r FROM public.education_records e
+    WHERE e.student_id = p_student_id AND e.level IS DISTINCT FROM 'high_school'
+    ORDER BY e.start_date NULLS LAST
+  LOOP
+    er_number := er_number + 1;
+    FOREACH col IN ARRAY ARRAY['institution_name', 'country', 'state_region', 'city', 'degree_title', 'final_grade',
+                               'grade_scale', 'gpa', 'language_of_instruction', 'start_date', 'end_date'] LOOP
+      IF COALESCE(btrim(er.r ->> col), '') = '' THEN
+        missing := array_append(missing, format('degree %s: %s', er_number, col));
+      END IF;
+    END LOOP;
+  END LOOP;
+
+  -- Gap or work history since the last study.
+  IF (s -> 'no_gap_since_study') = 'true'::jsonb THEN
+    IF (s ->> 'secondary_end_year') ~ '^\d{4}$' AND (s ->> 'secondary_end_month') ~ '^\d{1,2}$'
+       AND (s ->> 'secondary_end_month')::integer BETWEEN 1 AND 12 THEN
+      secondary_end := make_date((s ->> 'secondary_end_year')::integer, (s ->> 'secondary_end_month')::integer, 1);
+    END IF;
+    SELECT max(e.end_date), bool_or(e.end_date IS NULL AND e.start_date IS NOT NULL)
+      INTO last_study_end, still_studying
+    FROM public.education_records e
+    WHERE e.student_id = p_student_id AND e.level IS DISTINCT FROM 'high_school';
+    last_study_end := GREATEST(last_study_end, secondary_end);
+    IF NOT (COALESCE(still_studying, false)
+            OR (last_study_end IS NOT NULL AND last_study_end >= (date_trunc('month', now()) - interval '6 months')::date)) THEN
+      missing := array_append(missing, 'gap or work history ("no gap" no longer applies)');
+    END IF;
+  ELSIF jsonb_typeof(s -> 'work_experience') IS DISTINCT FROM 'array'
+        OR jsonb_array_length(s -> 'work_experience') = 0 THEN
+    missing := array_append(missing, 'gap or work history');
+  END IF;
+
+  IF jsonb_typeof(s -> 'work_experience') = 'array' THEN
+    FOR entry IN SELECT value FROM jsonb_array_elements(s -> 'work_experience') LOOP
+      entry_number := entry_number + 1;
+      IF COALESCE(btrim(entry ->> 'employer'), '') = '' THEN
+        missing := array_append(missing, format('history entry %s: activity or employer', entry_number));
+      END IF;
+      IF COALESCE(btrim(entry ->> 'start_date'), '') = '' THEN
+        missing := array_append(missing, format('history entry %s: from date', entry_number));
+      END IF;
+      IF COALESCE(btrim(entry ->> 'end_date'), '') = '' AND (entry -> 'is_current') IS DISTINCT FROM 'true'::jsonb THEN
+        missing := array_append(missing, format('history entry %s: to date', entry_number));
+      END IF;
+    END LOOP;
+  END IF;
+
+  RETURN missing;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.coursefinder_profile_missing(uuid) FROM PUBLIC, anon, authenticated;
+
+-- What the app shows before a status change. Students and universities get the
+-- count only; admins and staff also get the list of missing items.
+CREATE OR REPLACE FUNCTION public.application_profile_gate_status(p_application_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  app record;
+  missing text[];
+  overridden boolean;
+  result jsonb;
+BEGIN
+  SELECT a.id, a.student_id, a.coursefinder_gate_exempt INTO app
+  FROM public.applications a WHERE a.id = p_application_id;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Application not found.' USING ERRCODE = 'no_data_found';
+  END IF;
+  overridden := EXISTS (SELECT 1 FROM public.application_profile_gate_overrides o WHERE o.application_id = app.id);
+  missing := public.coursefinder_profile_missing(app.student_id);
+  result := jsonb_build_object(
+    'exempt', app.coursefinder_gate_exempt,
+    'overridden', overridden,
+    'missing_count', COALESCE(cardinality(missing), 0)
+  );
+  IF public.is_admin_or_staff(auth.uid()) THEN
+    result := result || jsonb_build_object('missing', to_jsonb(missing));
+  END IF;
+  RETURN result;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.application_profile_gate_status(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.application_profile_gate_status(uuid) TO authenticated;
+
+-- Admin override with a required reason, logged against the application.
+CREATE OR REPLACE FUNCTION public.override_application_profile_gate(p_application_id uuid, p_reason text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  new_id uuid;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin'::app_role) THEN
+    RAISE EXCEPTION 'Only admins can override the profile check.' USING ERRCODE = '42501';
+  END IF;
+  IF char_length(btrim(COALESCE(p_reason, ''))) < 10 THEN
+    RAISE EXCEPTION 'Please give a reason of at least 10 characters.' USING ERRCODE = 'check_violation';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.applications a WHERE a.id = p_application_id) THEN
+    RAISE EXCEPTION 'Application not found.' USING ERRCODE = 'no_data_found';
+  END IF;
+  INSERT INTO public.application_profile_gate_overrides (application_id, reason, overridden_by)
+  VALUES (p_application_id, btrim(p_reason), auth.uid())
+  RETURNING id INTO new_id;
+  RETURN new_id;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.override_application_profile_gate(uuid, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.override_application_profile_gate(uuid, text) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.enforce_application_profile_gate()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  old_status text := CASE WHEN TG_OP = 'UPDATE' THEN OLD.status::text END;
+  new_status text := NEW.status::text;
+  missing text[];
+BEGIN
+  -- The exempt flag is not the app's to set: new rows from signed-in users are
+  -- never exempt, and only the service role or a direct session can change it.
+  IF TG_OP = 'INSERT' THEN
+    IF COALESCE(auth.role(), '') <> 'service_role' THEN
+      NEW.coursefinder_gate_exempt := false;
+    END IF;
+  ELSIF NEW.coursefinder_gate_exempt IS DISTINCT FROM OLD.coursefinder_gate_exempt
+        AND NOT (COALESCE(auth.role(), '') = 'service_role' OR auth.uid() IS NULL) THEN
+    NEW.coursefinder_gate_exempt := OLD.coursefinder_gate_exempt;
+  END IF;
+
+  IF new_status IS NULL OR new_status IN ('draft', 'submitted', 'withdrawn', 'deferred')
+     OR (old_status IS NOT NULL AND old_status NOT IN ('draft', 'submitted')) THEN
+    RETURN NEW;
+  END IF;
+
+  IF NEW.coursefinder_gate_exempt IS TRUE THEN
+    RETURN NEW;
+  END IF;
+  IF TG_OP = 'UPDATE' AND EXISTS (
+    SELECT 1 FROM public.application_profile_gate_overrides o WHERE o.application_id = NEW.id
+  ) THEN
+    RETURN NEW;
+  END IF;
+
+  missing := public.coursefinder_profile_missing(NEW.student_id);
+  IF COALESCE(cardinality(missing), 0) > 0 THEN
+    RAISE EXCEPTION 'Profile not complete for CourseFinder: % items missing. Please complete the student profile first.', cardinality(missing)
+      USING ERRCODE = 'check_violation', DETAIL = array_to_string(missing, ', ');
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+COMMENT ON FUNCTION public.enforce_application_profile_gate() IS
+  'Blocks moving an application on from draft or submitted until the student profile is complete for CourseFinder, unless the application is grandfathered or an admin has overridden it.';
+
+DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
+CREATE TRIGGER enforce_application_profile_gate
+  BEFORE INSERT OR UPDATE ON public.applications
+  FOR EACH ROW
+  EXECUTE FUNCTION public.enforce_application_profile_gate();
+
+-- 5. Rollback (not run). To undo this migration, run the following by hand.
+-- Note: this deletes any answers students have saved in these columns, and the
+-- log of profile check overrides.
+-- Re-applying after a rollback: every student who signed up after launch becomes
+-- an existing (legacy) student again (coursefinder_fields_required = false), and
+-- every application created after launch becomes grandfathered
+-- (coursefinder_gate_exempt = true). Fix those flags by hand if you re-apply.
+--
+-- DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
+-- DROP FUNCTION IF EXISTS public.enforce_application_profile_gate();
+-- DROP FUNCTION IF EXISTS public.override_application_profile_gate(uuid, text);
+-- DROP FUNCTION IF EXISTS public.application_profile_gate_status(uuid);
+-- DROP FUNCTION IF EXISTS public.coursefinder_profile_missing(uuid);
+-- DROP TABLE IF EXISTS public.application_profile_gate_overrides;
+-- ALTER TABLE public.applications DROP COLUMN IF EXISTS coursefinder_gate_exempt;
 -- DROP TRIGGER IF EXISTS enforce_coursefinder_required_fields ON public.students;
 -- DROP FUNCTION IF EXISTS public.enforce_coursefinder_required_fields();
 -- DROP TRIGGER IF EXISTS enforce_coursefinder_education_record ON public.education_records;

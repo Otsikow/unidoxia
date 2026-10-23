@@ -118,14 +118,52 @@ export const gateOptions = (student: CourseFinderStudent | null | undefined): Co
   strict: isStrictStudent(student),
 });
 
+/** Statuses before an application is sent on from UniDoxia. */
+export const PRE_SUBMISSION_STATUSES = new Set(['draft', 'submitted']);
+
 /**
  * Statuses that send an application on from UniDoxia (to CourseFinder or the
- * university). Moving an application into one of these needs a complete profile.
+ * university), including a jump straight to an offer. Moving an application
+ * from draft or submitted into one of these needs a complete profile. The same
+ * rule is enforced on the server by the enforce_application_profile_gate trigger.
  */
-export const COURSEFINDER_SUBMISSION_STATUSES = new Set(['screening']);
+export const COURSEFINDER_SUBMISSION_STATUSES = new Set([
+  'screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled',
+]);
 
 export const requiresCompleteProfileForStatus = (oldStatus: string | null | undefined, newStatus: string) =>
-  COURSEFINDER_SUBMISSION_STATUSES.has(newStatus) && !COURSEFINDER_SUBMISSION_STATUSES.has(String(oldStatus ?? ''));
+  COURSEFINDER_SUBMISSION_STATUSES.has(newStatus) && PRE_SUBMISSION_STATUSES.has(String(oldStatus ?? 'draft'));
+
+/** What the server says about one application (application_profile_gate_status). */
+export type ApplicationProfileGate = {
+  exempt?: boolean | null;
+  overridden?: boolean | null;
+  missing_count?: number | null;
+};
+
+/**
+ * Whether an application may move on. Applications created before go-live
+ * (exempt) and those with a logged admin override are never held back.
+ */
+export const isProfileGateClear = (gate: ApplicationProfileGate | null | undefined) =>
+  Boolean(gate?.exempt) || Boolean(gate?.overridden) || Number(gate?.missing_count ?? 0) === 0;
+
+/** The short staff message: a count, not the full list. */
+export const profileGateMessage = (missingCount: number) =>
+  `${missingCount} ${missingCount === 1 ? 'item is' : 'items are'} missing from the student's profile.`;
+
+/** An admin override needs a reason; the server asks for at least 10 characters. */
+export const OVERRIDE_REASON_MIN_LENGTH = 10;
+export const isValidOverrideReason = (reason: string | null | undefined) =>
+  (reason ?? '').trim().length >= OVERRIDE_REASON_MIN_LENGTH;
+
+/** Which profile page staff should open for a student, by role. */
+export const studentProfileLink = (role: string | null | undefined, studentId: string) =>
+  role === 'admin' || role === 'staff'
+    ? `/admin/students/${studentId}`
+    : role === 'agent'
+      ? `/agent/students/${studentId}`
+      : null;
 
 /**
  * Every missing CourseFinder field (including final grades and gap history) for

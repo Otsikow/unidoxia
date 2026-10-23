@@ -9,6 +9,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { getCourseFinderProfileSections, getMissingProfileFields } from '@/lib/coursefinderProfile';
 import {
+  IN_PROGRESS_APPLICATION_STATUSES,
+  canDismissPrompt,
   dismissPrompt,
   isPromptDismissed,
   shouldShowCompleteProfilePrompt,
@@ -17,8 +19,9 @@ import {
 
 /**
  * A gentle reminder for students whose profile is missing any field
- * CourseFinder needs. It never blocks navigation and can be dismissed until
- * the next login (browser session).
+ * CourseFinder needs. It never blocks navigation. It can be dismissed until
+ * the next login (browser session), unless the student has an application in
+ * progress, in which case it stays up until the profile is complete.
  */
 export function CompleteProfilePrompt() {
   const { user, profile } = useAuth();
@@ -39,6 +42,22 @@ export function CompleteProfilePrompt() {
     },
   });
 
+  const { data: hasApplicationInProgress, isLoading: applicationsLoading } = useQuery({
+    queryKey: ['complete-profile-prompt-applications', student?.id],
+    enabled: Boolean(student?.id),
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('applications')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', student!.id)
+        .in('status', [...IN_PROGRESS_APPLICATION_STATUSES]);
+      if (error) throw error;
+      return (count ?? 0) > 0;
+    },
+  });
+  const dismissible = canDismissPrompt(Boolean(hasApplicationInProgress));
+
   const missingFields = useMemo(
     () => (student ? getMissingProfileFields(getCourseFinderProfileSections(student as unknown as Record<string, unknown>, degrees ?? [])) : []),
     [student, degrees],
@@ -46,9 +65,10 @@ export function CompleteProfilePrompt() {
 
   const show = shouldShowCompleteProfilePrompt({
     isStudent: isStudent && Boolean(student),
-    isLoading: studentLoading || degreesLoading,
+    isLoading: studentLoading || degreesLoading || applicationsLoading,
     missingFields,
     dismissed,
+    hasApplicationInProgress: Boolean(hasApplicationInProgress),
   });
   if (!show) return null;
 
@@ -64,6 +84,7 @@ export function CompleteProfilePrompt() {
             <p>
               Universities now ask for a few more details before we can submit your application. Still needed:{' '}
               {summariseMissingFields(missingFields)}.
+              {!dismissible && ' You have an application in progress, so please finish these soon to avoid delays.'}
             </p>
             {!onProfilePage && (
               <Button asChild size="sm" variant="outline" className="border-amber-600 bg-transparent">
@@ -72,6 +93,7 @@ export function CompleteProfilePrompt() {
             )}
           </AlertDescription>
         </div>
+        {dismissible && (
         <Button
           type="button"
           size="icon"
@@ -85,6 +107,7 @@ export function CompleteProfilePrompt() {
         >
           <X className="h-4 w-4" />
         </Button>
+        )}
       </div>
     </Alert>
   );

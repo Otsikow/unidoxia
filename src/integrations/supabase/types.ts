@@ -444,6 +444,38 @@ export type Database = {
           },
         ]
       }
+      application_profile_gate_overrides: {
+        Row: {
+          application_id: string
+          created_at: string
+          id: string
+          overridden_by: string | null
+          reason: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          id?: string
+          overridden_by?: string | null
+          reason: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          id?: string
+          overridden_by?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_profile_gate_overrides_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_reviews: {
         Row: {
           application_id: string
@@ -510,6 +542,7 @@ export type Database = {
           agent_id: string | null
           app_number: string | null
           created_at: string | null
+          coursefinder_gate_exempt: boolean
           decision_json: Json | null
           fees_json: Json | null
           id: string
@@ -532,6 +565,7 @@ export type Database = {
           agent_id?: string | null
           app_number?: string | null
           created_at?: string | null
+          coursefinder_gate_exempt?: boolean
           decision_json?: Json | null
           fees_json?: Json | null
           id?: string
@@ -554,6 +588,7 @@ export type Database = {
           agent_id?: string | null
           app_number?: string | null
           created_at?: string | null
+          coursefinder_gate_exempt?: boolean
           decision_json?: Json | null
           fees_json?: Json | null
           id?: string
@@ -5171,6 +5206,14 @@ export type Database = {
       }
     }
     Functions: {
+      application_profile_gate_status: {
+        Args: { p_application_id: string }
+        Returns: Json
+      }
+      override_application_profile_gate: {
+        Args: { p_application_id: string; p_reason: string }
+        Returns: string
+      }
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean

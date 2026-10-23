@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateCourseFinderCompleteness,
+  isProfileGateClear,
+  isValidOverrideReason,
+  profileGateMessage,
+  studentProfileLink,
   gateOptions,
   getCourseFinderProfileSections,
   getCourseFinderSubmissionBlockers,
@@ -134,5 +138,50 @@ describe('sending an application on to CourseFinder', () => {
 
   it('lets a complete profile through without documents being checked here', () => {
     expect(getCourseFinderSubmissionBlockers(completeStudent, [completeDegree], TODAY)).toEqual([]);
+  });
+});
+
+describe('application profile gate (grandfathering, override, bypasses)', () => {
+  it('lets a grandfathered application through even with items missing', () => {
+    expect(isProfileGateClear({ exempt: true, overridden: false, missing_count: 12 })).toBe(true);
+  });
+
+  it('lets an overridden application through, and needs a real reason to override', () => {
+    expect(isProfileGateClear({ exempt: false, overridden: true, missing_count: 12 })).toBe(true);
+    expect(isValidOverrideReason('too short')).toBe(false);
+    expect(isValidOverrideReason('   short   ')).toBe(false);
+    expect(isValidOverrideReason('Passport renewal in progress')).toBe(true);
+  });
+
+  it('holds back a new application with items missing, and clears a complete one', () => {
+    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 3 })).toBe(false);
+    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 0 })).toBe(true);
+  });
+
+  it('blocks skipping straight to an offer or later stage', () => {
+    for (const next of ['conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled']) {
+      expect(requiresCompleteProfileForStatus('submitted', next)).toBe(true);
+      expect(requiresCompleteProfileForStatus('draft', next)).toBe(true);
+    }
+  });
+
+  it("blocks the university review dialog's Under Review (screening) move", () => {
+    expect(requiresCompleteProfileForStatus('submitted', 'screening')).toBe(true);
+  });
+
+  it('never blocks withdrawing, deferring, or moves between later stages', () => {
+    expect(requiresCompleteProfileForStatus('submitted', 'withdrawn')).toBe(false);
+    expect(requiresCompleteProfileForStatus('draft', 'deferred')).toBe(false);
+    expect(requiresCompleteProfileForStatus('conditional_offer', 'cas_loa')).toBe(false);
+    expect(requiresCompleteProfileForStatus('screening', 'submitted')).toBe(false);
+  });
+
+  it('gives staff a short count and the right profile link', () => {
+    expect(profileGateMessage(1)).toBe("1 item is missing from the student's profile.");
+    expect(profileGateMessage(7)).toBe("7 items are missing from the student's profile.");
+    expect(studentProfileLink('admin', 's1')).toBe('/admin/students/s1');
+    expect(studentProfileLink('staff', 's1')).toBe('/admin/students/s1');
+    expect(studentProfileLink('agent', 's1')).toBe('/agent/students/s1');
+    expect(studentProfileLink('school_rep', 's1')).toBeNull();
   });
 });

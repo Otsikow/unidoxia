@@ -23,7 +23,18 @@ import type { Database } from '@/integrations/supabase/types';
 import { Search, ArrowUpDown, ExternalLink, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { getCourseFinderSubmissionBlockers, requiresCompleteProfileForStatus, type CourseFinderDegree } from '@/lib/coursefinderProfile';
+import { useAuth } from '@/hooks/useAuth';
+import { isProfileGateClear, requiresCompleteProfileForStatus, studentProfileLink } from '@/lib/coursefinderProfile';
+import { fetchApplicationProfileGate, overrideApplicationProfileGate } from '@/lib/applicationProfileGate';
+import { ProfileGateDialog } from '@/components/applications/ProfileGateDialog';
+
+type StatusChange = {
+  applicationId: string;
+  studentId: string;
+  oldStatus: string;
+  newStatus: Database['public']['Enums']['application_status'];
+  missingCount: number;
+};
 
 interface Application {
   id: string;
@@ -57,6 +68,8 @@ export default function ApplicationsTab() {
   const [sortField, setSortField] = useState<'created_at' | 'status'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const [gateBlock, setGateBlock] = useState<StatusChange | null>(null);
 
   useEffect(() => {
     fetchApplications();
@@ -155,25 +168,14 @@ export default function ApplicationsTab() {
     newStatus: Database['public']['Enums']['application_status'],
   ) => {
     try {
-      // Sending an application on to CourseFinder needs a complete profile, for new and existing students alike.
+      // Moving on from draft or submitted needs a complete profile, unless the
+      // application was created before go-live or an admin has overridden it.
+      // The server enforces the same rule (enforce_application_profile_gate).
       if (requiresCompleteProfileForStatus(oldStatus, newStatus)) {
-        const studentId = applications.find((app) => app.id === applicationId)?.student_id;
-        if (!studentId) throw new Error('Student not found for this application.');
-        const [{ data: studentRow, error: studentError }, { data: degreeRows, error: degreeError }] = await Promise.all([
-          supabase.from('students').select('*').eq('id', studentId).maybeSingle(),
-          supabase.from('education_records').select('*').eq('student_id', studentId).neq('level', 'high_school'),
-        ]);
-        if (studentError) throw studentError;
-        if (degreeError) throw degreeError;
-        const blockers = studentRow
-          ? getCourseFinderSubmissionBlockers(studentRow as unknown as Record<string, unknown>, (degreeRows ?? []) as unknown as CourseFinderDegree[])
-          : ['student profile'];
-        if (blockers.length) {
-          toast({
-            title: 'Profile not complete for CourseFinder',
-            description: `Ask the student to complete: ${blockers.join(', ')}.`,
-            variant: 'destructive',
-          });
+        const gate = await fetchApplicationProfileGate(applicationId);
+        if (!isProfileGateClear(gate)) {
+          const studentId = applications.find((app) => app.id === applicationId)?.student_id ?? '';
+          setGateBlock({ applicationId, studentId, oldStatus, newStatus, missingCount: Number(gate.missing_count ?? 0) });
           return;
         }
       }
@@ -408,6 +410,26 @@ export default function ApplicationsTab() {
           </Table>
         </div>
       </CardContent>
+      <ProfileGateDialog
+        open={Boolean(gateBlock)}
+        onOpenChange={(open) => !open && setGateBlock(null)}
+        missingCount={gateBlock?.missingCount ?? 0}
+        profileHref={gateBlock?.studentId ? studentProfileLink(profile?.role, gateBlock.studentId) : null}
+        canOverride={profile?.role === 'admin'}
+        onOverride={async (reason) => {
+          if (!gateBlock) return;
+          const change = gateBlock;
+          try {
+            await overrideApplicationProfileGate(change.applicationId, reason);
+          } catch (error: any) {
+            toast({ title: 'Override not saved', description: error?.message ?? 'Please try again.', variant: 'destructive' });
+            return;
+          }
+          setGateBlock(null);
+          toast({ title: 'Override logged', description: 'The reason has been saved against this application.' });
+          await handleStatusUpdate(change.applicationId, change.oldStatus, change.newStatus);
+        }}
+      />
     </Card>
   );
 }

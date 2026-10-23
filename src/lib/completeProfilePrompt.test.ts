@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canDismissPrompt,
   dismissPrompt,
   isPromptDismissed,
   shouldShowCompleteProfilePrompt,
@@ -64,5 +65,19 @@ describe('complete profile prompt for existing students', () => {
     expect(summariseMissingFields(['marital status'])).toBe('marital status');
     expect(summariseMissingFields(['a', 'b'])).toBe('a and b');
     expect(summariseMissingFields(['a', 'b', 'c', 'd', 'e'])).toBe('a, b, c and 2 more');
+  });
+});
+
+describe('prompt for existing students with an application in progress', () => {
+  it('cannot be dismissed and stays up while an application is in progress', () => {
+    expect(canDismissPrompt(true)).toBe(false);
+    expect(canDismissPrompt(false)).toBe(true);
+    const base = { isStudent: true, isLoading: false, missingFields: ['passport number'], dismissed: true };
+    expect(shouldShowCompleteProfilePrompt({ ...base, hasApplicationInProgress: true })).toBe(true);
+    expect(shouldShowCompleteProfilePrompt({ ...base, hasApplicationInProgress: false })).toBe(false);
+  });
+
+  it('goes once the profile is complete', () => {
+    expect(shouldShowCompleteProfilePrompt({ isStudent: true, isLoading: false, missingFields: [], dismissed: false, hasApplicationInProgress: true })).toBe(false);
   });
 });
