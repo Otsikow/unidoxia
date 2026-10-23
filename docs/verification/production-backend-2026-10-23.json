@@ -1,0 +1,11 @@
+{
+  "preflightStatus": 200,
+  "validationStatus": 400,
+  "validationBody": {
+    "error": "Validation failed",
+    "fields": {
+      "email": "A valid email is required",
+      "consent": "Consent is required"
+    }
+  }
+}

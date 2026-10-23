@@ -1,0 +1,126 @@
+{
+  "checkedAt": "2026-10-23T14:36:08.451Z",
+  "pages": [
+    {
+      "path": "/",
+      "status": 200,
+      "title": "Study Abroad Support for International Students | UniDoxia",
+      "canonical": "https://unidoxia.com/",
+      "h1Count": 1,
+      "mainCharacters": 997,
+      "internalLinks": 3,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/free-consultation",
+      "status": 200,
+      "title": "Free Study Abroad Consultation | UniDoxia",
+      "canonical": "https://unidoxia.com/free-consultation",
+      "h1Count": 1,
+      "mainCharacters": 645,
+      "internalLinks": 1,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/destinations/united-kingdom",
+      "status": 200,
+      "title": "Study in the UK: Universities and Course Planning | UniDoxia",
+      "canonical": "https://unidoxia.com/destinations/united-kingdom",
+      "h1Count": 1,
+      "mainCharacters": 2398,
+      "internalLinks": 15,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/courses",
+      "status": 200,
+      "title": "Search Courses at Universities Abroad | UniDoxia",
+      "canonical": "https://unidoxia.com/courses",
+      "h1Count": 1,
+      "mainCharacters": 107949,
+      "internalLinks": 1466,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/universities",
+      "status": 200,
+      "title": "University Directory for International Students | UniDoxia",
+      "canonical": "https://unidoxia.com/universities",
+      "h1Count": 1,
+      "mainCharacters": 1248,
+      "internalLinks": 24,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/blog",
+      "status": 200,
+      "title": "Study Abroad & Student Visa Blog | UniDoxia",
+      "canonical": "https://unidoxia.com/blog",
+      "h1Count": 1,
+      "mainCharacters": 911,
+      "internalLinks": 11,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/scholarships",
+      "status": 200,
+      "title": "Scholarships for International Students | UniDoxia",
+      "canonical": "https://unidoxia.com/scholarships",
+      "h1Count": 1,
+      "mainCharacters": 1420,
+      "internalLinks": 19,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/blog/international-student-visa-study-policy-updates-4-september-2026",
+      "status": 200,
+      "title": "International Student Visa Updates | 4 September 2026",
+      "canonical": "https://unidoxia.com/blog/international-student-visa-study-policy-updates-4-september-2026",
+      "h1Count": 1,
+      "mainCharacters": 5480,
+      "internalLinks": 6,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/courses/001a318c-d4b0-418e-bf6e-c6dac75837fd",
+      "status": 200,
+      "title": "Criminology BSc (Hons) at Northumbria University (UUSCMG1) | UniDoxia",
+      "canonical": "https://unidoxia.com/courses/001a318c-d4b0-418e-bf6e-c6dac75837fd",
+      "h1Count": 1,
+      "mainCharacters": 971,
+      "internalLinks": 2,
+      "newOffice": true,
+      "oldOffice": false
+    },
+    {
+      "path": "/scholarships/lambton-agbs-entrance-2026-27",
+      "status": 200,
+      "title": "Agribusiness Management International Entrance Scholarship | UniDoxia",
+      "canonical": "https://unidoxia.com/scholarships/lambton-agbs-entrance-2026-27",
+      "h1Count": 1,
+      "mainCharacters": 663,
+      "internalLinks": 1,
+      "newOffice": true,
+      "oldOffice": false
+    }
+  ],
+  "sitemap": {
+    "urlCount": 1537,
+    "consultation": true,
+    "ukGuide": true,
+    "containsDashboard": false
+  },
+  "remainingHostIssues": {
+    "unknownStatus": 200,
+    "wwwStatus": 302,
+    "wwwLocation": "https://unidoxia.com/courses?release-check=1"
+  }
+}
