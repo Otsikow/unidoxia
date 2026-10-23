@@ -424,9 +424,9 @@ BEGIN
     END LOOP;
   END IF;
 
-  waec := lower(concat_ws(' ', s ->> 'secondary_board', s ->> 'secondary_qualification')) ~ '\m(waec|wassce|ssce|nabteb|neco)\M'
-    OR lower(btrim(COALESCE(s ->> 'country_of_education', ''))) IN ('ghana', 'nigeria', 'sierra leone', 'liberia', 'gambia', 'the gambia')
-    OR lower(btrim(COALESCE(s ->> 'secondary_school_country', ''))) IN ('ghana', 'nigeria', 'sierra leone', 'liberia', 'gambia', 'the gambia');
+  -- Match the explicit awarding body/qualification, never the country.
+  -- NECO/NABTEB and generic SSCE/GCE are not proof of a WAEC award.
+  waec := lower(concat_ws(' ', s ->> 'secondary_board', s ->> 'secondary_qualification')) ~ '\m(waec|wassce|west african examinations? council)\M';
   IF waec THEN
     IF COALESCE(btrim(s ->> 'waec_scratch_card_pin'), '') = '' THEN
       missing := array_append(missing, 'waec_scratch_card_pin');
