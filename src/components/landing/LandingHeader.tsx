@@ -38,7 +38,7 @@ export function LandingHeader() {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-black/30 px-4 py-2 shadow-lg shadow-black/10 backdrop-blur-md">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="UniDoxia home">
-            <img src={unidoxiaLogo} alt="UniDoxia" className="h-8 w-auto brightness-0 invert" />
+            <img src={unidoxiaLogo} alt="UniDoxia" className="h-8 w-auto box-content bg-white rounded-lg p-1 shadow-sm" />
             <span className="hidden sm:inline text-white font-semibold tracking-tight">UniDoxia</span>
           </Link>
 

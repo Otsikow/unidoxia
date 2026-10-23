@@ -401,7 +401,7 @@ const AdminLayout = () => {
         <img
           src={unidoxiaLogo}
           alt={t("admin.layout.sidebar.logoAlt", { defaultValue: "UniDoxia" })}
-          className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white object-contain p-1 dark:bg-transparent dark:brightness-0 dark:invert"
+          className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-white object-contain p-1"
         />
         {(!isCollapsed || !showCollapseButton) && (
           <div className="min-w-0 flex-1">

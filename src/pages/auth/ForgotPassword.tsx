@@ -62,7 +62,7 @@ const ForgotPassword = () => {
               />
             </div>
             <div className="flex justify-center mb-4">
-              <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-20 w-20 rounded-lg object-contain dark:brightness-0 dark:invert" />
+              <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-20 w-20 rounded-lg object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm" />
             </div>
             <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
             <CardDescription>

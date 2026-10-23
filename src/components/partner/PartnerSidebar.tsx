@@ -46,7 +46,7 @@ export function PartnerSidebar() {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia"
-            className="h-10 w-10 flex-shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1 shadow-sm transition-colors dark:border-slate-800/70 dark:bg-transparent dark:brightness-0 dark:invert"
+            className="h-10 w-10 flex-shrink-0 rounded-lg border border-slate-200 bg-white object-contain p-1 shadow-sm transition-colors dark:border-slate-800/70"
           />
           {state !== "collapsed" && (
             <div className="space-y-1">

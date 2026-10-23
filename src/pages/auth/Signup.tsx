@@ -729,7 +729,7 @@ const Signup = () => {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia Logo"
-            className="mx-auto mb-4 h-20 w-20 rounded-lg object-contain dark:brightness-0 dark:invert"
+            className="mx-auto mb-4 h-20 w-20 rounded-lg object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
           />
 
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">

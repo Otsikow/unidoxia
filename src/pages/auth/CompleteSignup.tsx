@@ -235,7 +235,7 @@ const CompleteSignup = () => {
           <img
             src={unidoxiaLogo}
             alt="UniDoxia"
-            className="mx-auto h-10 w-auto"
+            className="mx-auto h-10 w-auto dark:rounded-lg dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
           />
           <CardTitle className="text-xl">One More Step</CardTitle>
           <CardDescription>
