@@ -1,7 +1,7 @@
 import { businessFooter } from '@/config/business';
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import unidoxiaLogo from "@/assets/unidoxia-logo.webp";
 import {
   Mail,
   Search,
@@ -122,6 +122,7 @@ export function AppFooter() {
             <div className="flex items-center gap-3">
               <img
                 src={unidoxiaLogo}
+                width={192} height={192} loading="lazy"
                 alt={t("layout.navbar.brand.full")}
                 className="h-9 w-9 rounded-md object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm"
               />

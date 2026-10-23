@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowRight, UserPlus, Users, Award } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { buildStudentSignupPath } from "@/lib/authRedirect";
-import storyboardProfile from "@/assets/storyboard-profile-premium.jpg";
-import storyboardMatched from "@/assets/storyboard-matching-premium.jpg";
-import storyboardOffers from "@/assets/storyboard-application-premium.jpg";
+import storyboardProfile from "@/assets/storyboard-profile-premium.webp";
+import storyboardMatched from "@/assets/storyboard-matching-premium.webp";
+import storyboardOffers from "@/assets/storyboard-application-premium.webp";
 
 type StoryboardStepKey = "profile" | "matched" | "offers";
 
@@ -78,13 +78,13 @@ const StoryboardSection = () => {
               <Link
                 to={buildStudentSignupPath(scene.destination)}
                 className="block h-full rounded-[var(--radius)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-4"
-                aria-label={`${scene.action}. Register or sign in to continue.`}
               >
                 <Card className="h-full cursor-pointer border-primary/20 transition-all duration-300 group-hover:-translate-y-2 group-hover:border-primary group-hover:shadow-xl">
                   <CardContent className="flex h-full flex-col gap-5 p-6 pt-8 text-center sm:pt-9">
                     <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-background/40 shadow-lg ring-1 ring-primary/10">
                       <img
                         src={scene.image}
+                        width={800} height={500} loading="lazy" decoding="async"
                         alt={scene.imageAlt}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />

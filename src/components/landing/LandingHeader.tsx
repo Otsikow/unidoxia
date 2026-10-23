@@ -4,7 +4,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LogIn, LogOut, Menu, PanelsTopLeft, UserPlus, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo, useState } from "react";
-import unidoxiaLogo from "@/assets/unidoxia-logo.png";
+import unidoxiaLogo from "@/assets/unidoxia-logo.webp";
 
 const PUBLIC_NAV = [
   { to: "/courses", label: "Courses" },
@@ -38,7 +38,7 @@ export function LandingHeader() {
         <div className="flex items-center justify-between gap-3 rounded-xl border border-white/20 bg-black/30 px-4 py-2 shadow-lg shadow-black/10 backdrop-blur-md">
           {/* Brand */}
           <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="UniDoxia home">
-            <img src={unidoxiaLogo} alt="UniDoxia" className="h-8 w-auto box-content bg-white rounded-lg p-1 shadow-sm" />
+            <img width={192} height={192} src={unidoxiaLogo} alt="UniDoxia" className="h-8 w-auto box-content bg-white rounded-lg p-1 shadow-sm" />
             <span className="hidden sm:inline text-white font-semibold tracking-tight">UniDoxia</span>
           </Link>
 
@@ -109,7 +109,7 @@ export function LandingHeader() {
                     size="sm"
                     className="gap-2 rounded-full border-white/25 bg-white/15 text-white hover:bg-white/20 hover:text-white hover:border-white/35"
                   >
-                    <Link to="/auth/signup" aria-label="Create a UniDoxia account">
+                    <Link to="/auth/signup" aria-label="Sign up for a UniDoxia account">
                       <UserPlus className="h-4 w-4" />
                       Sign Up
                     </Link>

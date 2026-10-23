@@ -26,12 +26,12 @@ import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarque
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 
 /* ---------- Static Assets ---------- */
-import unidoxiaLogo from "@/assets/unidoxia-logo.png";
-import agentsCta from "@/assets/agents-cta.jpeg";
-import destinationsCta from "@/assets/destinations-cta.jpeg";
-import applyEasilyImage from "@/assets/features/apply-easily.jpeg";
-import trackRealTimeImage from "@/assets/keeping-you-informed.png";
-import connectAgentImage from "@/assets/features/connect-agent.jpeg";
+import unidoxiaLogo from "@/assets/unidoxia-logo.webp";
+import agentsCta from "@/assets/agents-cta.webp";
+import destinationsCta from "@/assets/destinations-cta.webp";
+import applyEasilyImage from "@/assets/features/apply-easily.webp";
+import trackRealTimeImage from "@/assets/keeping-you-informed.webp";
+import connectAgentImage from "@/assets/features/connect-agent.webp";
 
 /* ---------- Lazy Loaded Sections ---------- */
 const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
@@ -207,7 +207,7 @@ const Index = () => {
 
         <div
           className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
-          style={{ backgroundColor: "#0e1a2b", backgroundImage: "linear-gradient(135deg, #0e1a2b99, #0e1a2b66), url(/videos/hero-poster.jpg)", backgroundSize: "cover", backgroundPosition: "center" }}
+          style={{ backgroundColor: "#0e1a2b", backgroundImage: "linear-gradient(135deg, #0e1a2b99, #0e1a2b66), url(/videos/hero-poster.webp)", backgroundSize: "cover", backgroundPosition: "center" }}
           aria-hidden
         />
 
@@ -220,7 +220,7 @@ const Index = () => {
             muted
             playsInline
             preload="none"
-            poster="/videos/hero-poster.jpg"
+            poster="/videos/hero-poster.webp"
           >
             <source src="/videos/hero-video.mp4" type="video/mp4" />
           </video>
@@ -232,6 +232,7 @@ const Index = () => {
           <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
             <img
               src={unidoxiaLogo}
+              width={192} height={192}
               alt="UniDoxia logo"
               className="hero-logo mb-1 h-16 w-16 object-contain box-content bg-white rounded-2xl p-3 shadow-md"
             />
@@ -309,6 +310,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row md:items-center gap-5">
             <img
               src={britishCouncilLogo}
+              width={320} height={89}
               alt="British Council"
               loading="lazy"
               className="h-10 w-auto self-center md:self-auto shrink-0 dark:brightness-0 dark:invert"
@@ -347,6 +349,7 @@ const Index = () => {
             <Card key={f.key} className="landing-feature-card flex flex-col h-full overflow-hidden shadow-card">
               <img
                 src={f.image}
+                width={800} height={450} decoding="async"
                 alt={f.title}
                 loading="lazy"
                 className="h-48 w-full object-cover rounded-t-xl"
@@ -413,6 +416,7 @@ const Index = () => {
               <div className="aspect-[4/3] overflow-hidden">
                 <img
                   src={cta.image}
+                  width={800} height={600} decoding="async"
                   alt={cta.title}
                   loading="lazy"
                   className="h-full w-full object-cover transition duration-500 hover:scale-105"

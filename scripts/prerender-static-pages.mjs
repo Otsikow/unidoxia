@@ -211,7 +211,7 @@ const render = (page) => {
     .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${t}">`)
     .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${d}">`)
     .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${d}">`);
-  if (page.path !== "/") html = html.replace(/<link rel="preload" as="image" href="\/videos\/hero-poster.jpg"[^>]*>/, "");
+  if (page.path !== "/") html = html.replace(/<link rel="preload" as="image" href="\/videos\/hero-poster.webp"[^>]*>/, "");
   html = html.replace('</head>', `<meta name="prerender-path" content="${esc(page.path)}">\n</head>`);
   if (page.noindex) {
     html = html.replace('</head>', '<meta name="robots" content="noindex">\n</head>');
