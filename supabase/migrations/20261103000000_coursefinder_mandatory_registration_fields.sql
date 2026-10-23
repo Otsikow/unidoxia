@@ -305,7 +305,9 @@ CREATE TRIGGER enforce_coursefinder_education_record
 -- deferred, rejected, under review, pending documents or interview, so leaving
 -- and re-entering cannot get round it. Moves into non-gated statuses (for
 -- example rejecting, withdrawing, deferring, asking for documents or an
--- interview) and moves between gated statuses are never blocked.
+-- interview) and moves between gated statuses are not profile-checked. Moves
+-- between gated statuses and submitting an existing application still need a
+-- current sharing authorisation (see the trigger below).
 -- This is enforced here for every route (staff screens, the university review
 -- dialog, RPCs) and the app asks application_profile_gate_status() so the
 -- screens give the same answer.
@@ -496,7 +498,8 @@ REVOKE EXECUTE ON FUNCTION public.coursefinder_profile_missing(uuid) FROM PUBLIC
 -- auth.uid() is the student's own user, so staff, agents, universities and the
 -- service role cannot record it for a student. A withdrawal (by email) is
 -- recorded by staff or admins as withdrawn_at; nothing else can change and rows
--- cannot be deleted. The admin profile override does NOT bypass this.
+-- cannot be deleted, except by the cascade when the student row itself is
+-- hard-deleted (erasure). The admin profile override does NOT bypass this.
 -- Grandfathered (exempt) applications are not blocked; the app prompts those
 -- students to give it.
 CREATE TABLE IF NOT EXISTS public.application_sharing_authorisations (
@@ -551,6 +554,11 @@ BEGIN
     END IF;
     RAISE EXCEPTION 'Sharing authorisations cannot be changed, only withdrawn.' USING ERRCODE = '42501';
   END IF;
+  -- Erasure: when the student row itself is hard-deleted, the cascade may remove
+  -- their log rows. Any other delete is refused.
+  IF NOT EXISTS (SELECT 1 FROM public.students WHERE id = OLD.student_id) THEN
+    RETURN OLD;
+  END IF;
   RAISE EXCEPTION 'Sharing authorisations cannot be deleted.' USING ERRCODE = '42501';
 END;
 $$;
@@ -560,6 +568,32 @@ CREATE TRIGGER guard_application_sharing_authorisations
   BEFORE INSERT OR UPDATE OR DELETE ON public.application_sharing_authorisations
   FOR EACH ROW
   EXECUTE FUNCTION public.guard_application_sharing_authorisations();
+
+-- Neither log may be wiped in one go.
+CREATE OR REPLACE FUNCTION public.refuse_log_truncate()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
+BEGIN
+  RAISE EXCEPTION '% is a log and cannot be truncated.', TG_TABLE_NAME USING ERRCODE = '42501';
+END;
+$$;
+
+REVOKE TRUNCATE ON public.application_sharing_authorisations FROM PUBLIC, anon, authenticated, service_role;
+REVOKE TRUNCATE ON public.application_profile_gate_overrides FROM PUBLIC, anon, authenticated, service_role;
+
+DROP TRIGGER IF EXISTS refuse_truncate ON public.application_sharing_authorisations;
+CREATE TRIGGER refuse_truncate
+  BEFORE TRUNCATE ON public.application_sharing_authorisations
+  FOR EACH STATEMENT
+  EXECUTE FUNCTION public.refuse_log_truncate();
+
+DROP TRIGGER IF EXISTS refuse_truncate ON public.application_profile_gate_overrides;
+CREATE TRIGGER refuse_truncate
+  BEFORE TRUNCATE ON public.application_profile_gate_overrides
+  FOR EACH STATEMENT
+  EXECUTE FUNCTION public.refuse_log_truncate();
 
 -- Whether a student has a current (not withdrawn) authorisation.
 CREATE OR REPLACE FUNCTION public.has_sharing_authorisation(p_student_id uuid)
@@ -734,6 +768,9 @@ DECLARE
   -- Must match COURSEFINDER_SUBMISSION_STATUSES in src/lib/coursefinderProfile.ts.
   gated_statuses constant text[] := ARRAY['screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled'];
   missing text[];
+  status_changed boolean := TG_OP = 'INSERT' OR old_status IS DISTINCT FROM NEW.status::text;
+  enters_gate boolean;
+  needs_authorisation boolean;
 BEGIN
   -- The exempt flag is not the app's to set: new rows from signed-in users are
   -- never exempt, and only the service role or a direct session can change it.
@@ -746,20 +783,33 @@ BEGIN
     NEW.coursefinder_gate_exempt := OLD.coursefinder_gate_exempt;
   END IF;
 
-  -- Only moves INTO a gated status from outside the list are checked.
-  IF new_status IS NULL OR NOT (new_status = ANY (gated_statuses))
-     OR (old_status IS NOT NULL AND old_status = ANY (gated_statuses)) THEN
+  IF NEW.coursefinder_gate_exempt IS TRUE OR NOT status_changed OR new_status IS NULL THEN
     RETURN NEW;
   END IF;
 
-  IF NEW.coursefinder_gate_exempt IS TRUE THEN
-    RETURN NEW;
-  END IF;
+  -- The profile check applies only to moves INTO a gated status from outside it.
+  enters_gate := new_status = ANY (gated_statuses)
+    AND (old_status IS NULL OR NOT (old_status = ANY (gated_statuses)));
+
+  -- The sharing authorisation is needed for every move into or between gated
+  -- statuses (so a withdrawal stops further moves), and for submitting an
+  -- existing application (for example draft to submitted). A new application
+  -- created as submitted by staff or an agent for the student is allowed; the
+  -- student is then prompted, and it cannot reach screening without it.
+  needs_authorisation := new_status = ANY (gated_statuses)
+    OR (new_status = 'submitted' AND (
+      TG_OP = 'UPDATE'
+      OR EXISTS (SELECT 1 FROM public.students st WHERE st.id = NEW.student_id AND st.profile_id = auth.uid())
+    ));
 
   -- Checked before the admin override, which must not bypass it.
-  IF NOT public.has_sharing_authorisation(NEW.student_id) THEN
+  IF needs_authorisation AND NOT public.has_sharing_authorisation(NEW.student_id) THEN
     RAISE EXCEPTION 'Sharing authorisation not given. The student must authorise sharing with KC Overseas in their own UniDoxia account first.'
       USING ERRCODE = 'check_violation';
+  END IF;
+
+  IF NOT enters_gate THEN
+    RETURN NEW;
   END IF;
 
   IF TG_OP = 'UPDATE' AND EXISTS (
@@ -779,7 +829,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.enforce_application_profile_gate() IS
-  'Blocks moving an application into a sent-on status (screening, offers, CAS or LOA, visa, enrolled) from any other status until the student has given their sharing authorisation and their profile is complete for CourseFinder. Grandfathered applications are not checked; an admin override covers the profile only, never the authorisation.';
+  'Blocks moving an application into a sent-on status (screening, offers, CAS or LOA, visa, enrolled) from any other status until the student has given their sharing authorisation and their profile is complete for CourseFinder. Moves between sent-on statuses, and submitting an existing application, also need a current authorisation. Grandfathered applications are not checked; an admin override covers the profile only, never the authorisation.';
 
 DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
 CREATE TRIGGER enforce_application_profile_gate
@@ -790,6 +840,9 @@ CREATE TRIGGER enforce_application_profile_gate
 -- 5. Rollback (not run). To undo this migration, run the following by hand.
 -- Note: this deletes any answers students have saved in these columns, and the
 -- log of profile check overrides and the log of sharing authorisations.
+-- Before rolling back, export public.application_sharing_authorisations (for
+-- example COPY ... TO a CSV kept securely). Rollback deletes it, and it is the
+-- only record of each student's consent to sharing with KC Overseas.
 -- Re-applying after a rollback: every student who signed up after launch becomes
 -- an existing (legacy) student again (coursefinder_fields_required = false), and
 -- every application created after launch becomes grandfathered
@@ -806,6 +859,7 @@ CREATE TRIGGER enforce_application_profile_gate
 -- DROP TABLE IF EXISTS public.application_sharing_authorisations;
 -- DROP FUNCTION IF EXISTS public.has_sharing_authorisation(uuid);
 -- DROP FUNCTION IF EXISTS public.guard_application_sharing_authorisations();
+-- DROP FUNCTION IF EXISTS public.refuse_log_truncate();
 -- ALTER TABLE public.applications DROP COLUMN IF EXISTS coursefinder_gate_exempt;
 -- DROP TRIGGER IF EXISTS enforce_coursefinder_required_fields ON public.students;
 -- DROP FUNCTION IF EXISTS public.enforce_coursefinder_required_fields();

@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SharingAuthorisationConsent } from '@/components/student/SharingAuthorisationConsent';
-import { recordSharingAuthorisation } from '@/lib/sharingAuthorisation';
+import { recordSharingAuthorisation, STAFF_SUBMIT_AUTHORISATION_NOTE } from '@/lib/sharingAuthorisation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import {
@@ -29,6 +29,8 @@ interface ReviewSubmitStepProps {
   onNotesChange: (notes: string) => void;
   existingDocuments?: ExistingDocumentMap;
   validationIssues: string[];
+  /** False when staff or an agent submits for the student: only the student can authorise. */
+  submitterIsStudent?: boolean;
 }
 
 type ProgramDetailsRow = Pick<
@@ -61,6 +63,7 @@ export default function ReviewSubmitStep({
   onNotesChange,
   existingDocuments,
   validationIssues,
+  submitterIsStudent = true,
 }: ReviewSubmitStepProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   // Separate from the terms, never pre-ticked, saved on the server at submit.
@@ -124,6 +127,10 @@ export default function ReviewSubmitStep({
 
     if (!agreedToTerms) {
       alert('Please agree to the terms and conditions before submitting');
+      return;
+    }
+    if (!submitterIsStudent) {
+      onSubmit();
       return;
     }
     if (!authorisedSharing) {
@@ -461,15 +468,19 @@ export default function ReviewSubmitStep({
       {/* Sharing authorisation: its own box, not part of the terms */}
       <Card>
         <CardContent className="pt-6 space-y-4">
-          <SharingAuthorisationConsent
-            id="sharing-authorisation-submit"
-            checked={authorisedSharing}
-            onCheckedChange={(checked) => {
-              setAuthorisedSharing(checked);
-              setAuthorisationError(null);
-            }}
-            disabled={submitting || savingAuthorisation}
-          />
+          {submitterIsStudent ? (
+            <SharingAuthorisationConsent
+              id="sharing-authorisation-submit"
+              checked={authorisedSharing}
+              onCheckedChange={(checked) => {
+                setAuthorisedSharing(checked);
+                setAuthorisationError(null);
+              }}
+              disabled={submitting || savingAuthorisation}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">{STAFF_SUBMIT_AUTHORISATION_NOTE}</p>
+          )}
           {authorisationError && (
             <p className="text-sm text-destructive" role="alert">
               {authorisationError}
@@ -487,7 +498,7 @@ export default function ReviewSubmitStep({
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!agreedToTerms || !authorisedSharing || submitting || savingAuthorisation || hasBlockingIssues}
+              disabled={!agreedToTerms || (submitterIsStudent && !authorisedSharing) || submitting || savingAuthorisation || hasBlockingIssues}
               size="lg"
               className="min-w-[200px]"
             >

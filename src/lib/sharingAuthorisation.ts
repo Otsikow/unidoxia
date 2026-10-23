@@ -68,3 +68,7 @@ export const shouldShowSharingAuthorisationPrompt = ({
 
 /** Applications in these statuses no longer need the prompt. Drafts get the box at submit. */
 export const SHARING_PROMPT_IGNORED_STATUSES = ['draft', 'withdrawn', 'rejected'] as const;
+
+/** Shown instead of the box when staff or an agent submits for a student. */
+export const STAFF_SUBMIT_AUTHORISATION_NOTE =
+  'Only the student can give the sharing authorisation, in their own UniDoxia account. They will be asked to give it, and this application cannot move to screening until they do.';

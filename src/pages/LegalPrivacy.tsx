@@ -33,7 +33,8 @@ const sections: Section[] = [
     title: 'Overview',
     content: (
       <p>
-        This Privacy Policy describes how UniDoxia (“UniDoxia”, “we”, “us”, or “our”) collects, uses, shares, and
+        This Privacy Notice describes how UniDoxia (Global Talent Gateway Ltd), the controller of your personal
+        information (“UniDoxia”, “we”, “us”, or “our”), collects, uses, shares, and
         safeguards your personal information when you access our websites, applications, and related services
         (collectively, the “Services”).
       </p>
@@ -72,7 +73,7 @@ const sections: Section[] = [
         <p>Personal information supports essential platform experiences, including to:</p>
         <ul className="list-disc pl-6">
           <li>Operate and maintain your account, applications, and communication preferences.</li>
-          <li>Match you with programs, advisors, and services relevant to your interests.</li>
+          <li>Match you with programmes, advisors, and services relevant to your interests.</li>
           <li>Provide customer support, respond to inquiries, and resolve issues.</li>
           <li>Conduct analytics to improve product quality, safety, and reliability.</li>
           <li>Meet legal, regulatory, and compliance obligations, including fraud prevention.</li>
@@ -140,7 +141,7 @@ const sections: Section[] = [
       <p>
         We retain personal information only for as long as it is needed to provide the Services, comply with legal
         obligations, resolve disputes, and enforce our agreements. When data is no longer required, we securely delete or
-        anonymize it.
+        anonymise it.
       </p>
     )
   },
@@ -156,6 +157,8 @@ const sections: Section[] = [
           <li>Object to or restrict certain processing activities.</li>
           <li>Receive a copy of your data in a portable format.</li>
           <li>Opt out of marketing communications using the unsubscribe link or by contacting support.</li>
+          <li>Withdraw your sharing authorisation at any time by emailing info@unidoxia.com.</li>
+          <li>Complain to the Information Commissioner's Office (ico.org.uk) if you are unhappy with how we use your data.</li>
         </ul>
       </div>
     )
@@ -166,7 +169,7 @@ const sections: Section[] = [
     content: (
       <p>
         We implement administrative, technical, and physical safeguards designed to protect personal information against
-        loss, misuse, unauthorized access, disclosure, alteration, or destruction. These safeguards include encryption in
+        loss, misuse, unauthorised access, disclosure, alteration, or destruction. These safeguards include encryption in
         transit and at rest, access controls, and regular security assessments.
       </p>
     )
@@ -204,15 +207,15 @@ const LegalPrivacy = () => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <SEO
-        title="Privacy Policy - UniDoxia"
-        description="Read the UniDoxia privacy policy to understand how we collect, use, and protect your personal information throughout your study abroad journey."
-        keywords="privacy policy, data protection, student data, GDPR, student privacy, university application data"
+        title="Privacy Notice - UniDoxia"
+        description="Read the UniDoxia Privacy Notice to understand how we collect, use, and protect your personal information throughout your study abroad journey."
+        keywords="privacy notice, data protection, student data, GDPR, student privacy, university application data"
       />
       <header className="border-b bg-background/60 backdrop-blur">
         <div className="container mx-auto max-w-6xl px-4 py-6">
           <div className="space-y-1">
             <p className="text-xs font-medium uppercase tracking-wide text-primary">Legal</p>
-            <h1 className="text-2xl font-semibold md:text-3xl">Privacy Policy</h1>
+            <h1 className="text-2xl font-semibold md:text-3xl">Privacy Notice</h1>
             <p className="text-sm text-muted-foreground">Last reviewed {lastReviewed}. Updated whenever practices change.</p>
           </div>
         </div>
@@ -241,7 +244,7 @@ const LegalPrivacy = () => {
         <section className="space-y-12">
           <div className="prose dark:prose-invert max-w-none">
             <p>
-              Our privacy program centers on respect, transparency, and strong controls. Review this policy to understand how
+              Our privacy programme centres on respect, transparency, and strong controls. Review this notice to understand how
               data flows through UniDoxia and the safeguards that accompany every step.
             </p>
           </div>

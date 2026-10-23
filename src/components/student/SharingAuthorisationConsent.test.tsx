@@ -47,7 +47,8 @@ describe('sharing authorisation wording', () => {
     const source = readFileSync('src/components/application/ReviewSubmitStep.tsx', 'utf8');
     expect(source).toContain('useState(false);\n  // Separate from the terms');
     expect(source).toMatch(/const \[authorisedSharing, setAuthorisedSharing\] = useState\(false\)/);
-    expect(source).toContain('disabled={!agreedToTerms || !authorisedSharing');
+    expect(source).toContain('disabled={!agreedToTerms || (submitterIsStudent && !authorisedSharing)');
+    expect(readFileSync('src/pages/student/NewApplication.tsx', 'utf8')).toContain('submitterIsStudent={isStudent}');
     expect(source).toContain('await recordSharingAuthorisation();');
   });
 });
@@ -124,9 +125,28 @@ describe('server side', () => {
     }
   });
 
+  it('lets erasure cascade, refuses truncation and says to export before rollback', () => {
+    expect(sql).toContain('IF NOT EXISTS (SELECT 1 FROM public.students WHERE id = OLD.student_id) THEN\n    RETURN OLD;');
+    expect(sql).toContain('REVOKE TRUNCATE ON public.application_sharing_authorisations FROM PUBLIC, anon, authenticated, service_role;');
+    expect(sql).toContain('REVOKE TRUNCATE ON public.application_profile_gate_overrides FROM PUBLIC, anon, authenticated, service_role;');
+    expect(sql.match(/BEFORE TRUNCATE ON/g)).toHaveLength(2);
+    expect(sql).toContain('-- Before rolling back, export public.application_sharing_authorisations');
+  });
+
   it('the Privacy Notice points to the in-account authorisation', () => {
     const page = readFileSync('src/pages/LegalPrivacy.tsx', 'utf8');
     expect(page).toContain('and only after you have given your authorisation in your UniDoxia account.');
     expect(page).not.toContain('signed authorisation');
+  });
+});
+
+describe('Privacy Notice wording added at re-QC', () => {
+  const page = readFileSync('src/pages/LegalPrivacy.tsx', 'utf8');
+  it('names the controller, adds the rights lines and uses UK spelling', () => {
+    expect(page).toContain('This Privacy Notice describes how UniDoxia (Global Talent Gateway Ltd), the controller of your personal');
+    expect(page).toContain('<li>Withdraw your sharing authorisation at any time by emailing info@unidoxia.com.</li>');
+    expect(page).toContain("Complain to the Information Commissioner's Office (ico.org.uk) if you are unhappy with how we use your data.");
+    expect(page).toContain('>Privacy Notice</h1>');
+    expect(page).not.toMatch(/Privacy Policy|anonymize|unauthorized|program centers/);
   });
 });
