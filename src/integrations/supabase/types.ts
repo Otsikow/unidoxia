@@ -444,76 +444,6 @@ export type Database = {
           },
         ]
       }
-      application_profile_gate_overrides: {
-        Row: {
-          application_id: string
-          created_at: string
-          id: string
-          overridden_by: string | null
-          reason: string
-        }
-        Insert: {
-          application_id: string
-          created_at?: string
-          id?: string
-          overridden_by?: string | null
-          reason: string
-        }
-        Update: {
-          application_id?: string
-          created_at?: string
-          id?: string
-          overridden_by?: string | null
-          reason?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "application_profile_gate_overrides_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "applications"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      application_sharing_authorisations: {
-        Row: {
-          authorised_at: string
-          authorised_by: string
-          id: string
-          student_id: string
-          withdrawn_at: string | null
-          withdrawn_by: string | null
-          wording_version: string
-        }
-        Insert: {
-          authorised_at?: string
-          authorised_by: string
-          id?: string
-          student_id: string
-          withdrawn_at?: string | null
-          withdrawn_by?: string | null
-          wording_version: string
-        }
-        Update: {
-          authorised_at?: string
-          authorised_by?: string
-          id?: string
-          student_id?: string
-          withdrawn_at?: string | null
-          withdrawn_by?: string | null
-          wording_version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "application_sharing_authorisations_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       application_reviews: {
         Row: {
           application_id: string
@@ -580,7 +510,6 @@ export type Database = {
           agent_id: string | null
           app_number: string | null
           created_at: string | null
-          coursefinder_gate_exempt: boolean
           decision_json: Json | null
           fees_json: Json | null
           id: string
@@ -603,7 +532,6 @@ export type Database = {
           agent_id?: string | null
           app_number?: string | null
           created_at?: string | null
-          coursefinder_gate_exempt?: boolean
           decision_json?: Json | null
           fees_json?: Json | null
           id?: string
@@ -626,7 +554,6 @@ export type Database = {
           agent_id?: string | null
           app_number?: string | null
           created_at?: string | null
-          coursefinder_gate_exempt?: boolean
           decision_json?: Json | null
           fees_json?: Json | null
           id?: string
@@ -1798,7 +1725,6 @@ export type Database = {
           country: string
           created_at: string | null
           degree_title: string | null
-          final_grade: string | null
           end_date: string | null
           gpa: number | null
           grade_scale: string | null
@@ -1818,7 +1744,6 @@ export type Database = {
           country: string
           created_at?: string | null
           degree_title?: string | null
-          final_grade?: string | null
           end_date?: string | null
           gpa?: number | null
           grade_scale?: string | null
@@ -1838,7 +1763,6 @@ export type Database = {
           country?: string
           created_at?: string | null
           degree_title?: string | null
-          final_grade?: string | null
           end_date?: string | null
           gpa?: number | null
           grade_scale?: string | null
@@ -3738,15 +3662,6 @@ export type Database = {
           lived_or_studied_abroad: boolean | null
           manual_status: string | null
           marital_status: string | null
-          coursefinder_fields_required: boolean
-          dependants_travelling: number | null
-          no_gap_since_study: boolean | null
-          other_citizenship: string | null
-          secondary_final_grade: string | null
-          visa_refusal_country: string | null
-          visa_refusal_reason: string | null
-          visa_refusal_type: string | null
-          visa_refusal_year: number | null
           middle_name: string | null
           nationality: string | null
           passport_expiry: string | null
@@ -3841,15 +3756,6 @@ export type Database = {
           lived_or_studied_abroad?: boolean | null
           manual_status?: string | null
           marital_status?: string | null
-          coursefinder_fields_required?: boolean
-          dependants_travelling?: number | null
-          no_gap_since_study?: boolean | null
-          other_citizenship?: string | null
-          secondary_final_grade?: string | null
-          visa_refusal_country?: string | null
-          visa_refusal_reason?: string | null
-          visa_refusal_type?: string | null
-          visa_refusal_year?: number | null
           middle_name?: string | null
           nationality?: string | null
           passport_expiry?: string | null
@@ -3944,15 +3850,6 @@ export type Database = {
           lived_or_studied_abroad?: boolean | null
           manual_status?: string | null
           marital_status?: string | null
-          coursefinder_fields_required?: boolean
-          dependants_travelling?: number | null
-          no_gap_since_study?: boolean | null
-          other_citizenship?: string | null
-          secondary_final_grade?: string | null
-          visa_refusal_country?: string | null
-          visa_refusal_reason?: string | null
-          visa_refusal_type?: string | null
-          visa_refusal_year?: number | null
           middle_name?: string | null
           nationality?: string | null
           passport_expiry?: string | null
@@ -5244,22 +5141,6 @@ export type Database = {
       }
     }
     Functions: {
-      application_profile_gate_status: {
-        Args: { p_application_id: string }
-        Returns: Json
-      }
-      override_application_profile_gate: {
-        Args: { p_application_id: string; p_reason: string }
-        Returns: string
-      }
-      record_sharing_authorisation: {
-        Args: { p_wording_version: string }
-        Returns: string
-      }
-      withdraw_sharing_authorisation: {
-        Args: { p_student_id: string }
-        Returns: number
-      }
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean
