@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { pdfIntegrityCases } from '../../../tests/fixtures/pdfIntegrity';
+import { pdfIntegrityCases } from '../../../tests/fixtures/pdfIntegrity.ts';
 
 const { list, download } = vi.hoisted(() => ({ list: vi.fn(), download: vi.fn() }));
 vi.mock('https://esm.sh/@supabase/supabase-js@2.110.2', () => ({
@@ -15,10 +15,10 @@ beforeAll(async () => {
   });
   await import('./index');
 });
-afterAll(() => vi.unstubAllGlobals());
+afterAll(() => { vi.unstubAllGlobals(); });
 
 describe('server PDF upload validation', () => {
-  it.each(pdfIntegrityCases)('$name', async ({ content, valid }) => {
+  it.each(pdfIntegrityCases)('$name', async ({ content, valid }: { content: BlobPart; valid: boolean }) => {
     const file = new Blob([content]);
     list.mockResolvedValue({ data: [{ metadata: { size: file.size } }], error: null });
     download.mockResolvedValue({ data: file, error: null });
