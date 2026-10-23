@@ -46,17 +46,17 @@ const FilterPopover = ({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="justify-start gap-2 min-w-[150px]">
+        <Button variant="outline" size="sm" className="h-11 w-full min-w-0 justify-start gap-2">
           <Icon className="h-4 w-4" />
           <span>{label}</span>
           {count ? (
-            <Badge variant="secondary" className="ml-auto">
+            <Badge variant="secondary" className="mt-2 h-11 w-full">
               {count}
             </Badge>
           ) : null}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 p-0" align="start">
+      <PopoverContent className="w-72 max-w-[calc(100vw-2rem)] p-0" align="start">
         {children}
       </PopoverContent>
     </Popover>
@@ -94,8 +94,8 @@ export const ScholarshipFilters = ({
   };
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-2", className)}>
-      <Badge variant="outline" className="gap-2">
+    <div className={cn("grid min-w-0 grid-cols-1 gap-2", className)}>
+      <Badge variant="outline" className="mb-2 w-fit gap-2">
         <Filter className="h-4 w-4" />
         Advanced Filters
         {activeCount ? <span className="text-primary">{activeCount}</span> : null}
@@ -241,7 +241,7 @@ export const ScholarshipFilters = ({
       <Button
         variant="ghost"
         size="sm"
-        className="ml-auto"
+        className="mt-2 h-11 w-full"
         onClick={() =>
           onFiltersChange({
             countries: [],

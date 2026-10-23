@@ -12,7 +12,6 @@ import { ScholarshipDetailDialog } from "@/components/scholarships/ScholarshipDe
 import { ScholarshipShareDialog } from "@/components/scholarships/ScholarshipShareDialog";
 import { ScholarshipAIFinder } from "@/components/scholarships/ScholarshipAIFinder";
 import { useScholarshipSearch } from "@/hooks/useScholarshipSearch";
-import BackButton from "@/components/BackButton";
 import type {
   ScholarshipSearchFilters,
   ScholarshipSearchResult,
@@ -143,6 +142,7 @@ const inferFiltersFromPrompt = (
 
 const ScholarshipsPage = () => {
   const [query, setQuery] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] =
     useState<ScholarshipSearchFilters>(DEFAULT_FILTERS);
 
@@ -325,26 +325,19 @@ const ScholarshipsPage = () => {
       />
       
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <BackButton 
-            variant="ghost" 
-            size="sm" 
-            fallback="/dashboard" 
-            wrapperClassName="mb-4"
-            showHistoryMenu={false}
-          />
-          <div className="mb-6">
-            <h1 className="text-4xl font-bold mb-2">Find Scholarships</h1>
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+          <div className="mb-8 max-w-3xl">
+            <h1 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">Find Scholarships</h1>
             <p className="text-muted-foreground">
               Verified funding opportunities for international students worldwide heading to the UK, Canada and USA.
             </p>
           </div>
 
-          <Alert className="mb-6">
+          <Alert className="mb-6 rounded-xl border-border/70 bg-muted/30 p-4 sm:p-5">
             <AlertTitle>Important notice</AlertTitle>
-            <AlertDescription className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <span>{EDITORIAL_DISCLAIMER}</span>
-              <div className="flex gap-2 shrink-0">
+            <AlertDescription className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <span className="min-w-0 leading-relaxed">{EDITORIAL_DISCLAIMER}</span>
+              <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
                 <Button asChild size="sm" variant="outline">
                   <Link to="/scholarships/archive">View archive</Link>
                 </Button>
@@ -377,8 +370,19 @@ const ScholarshipsPage = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <aside className="lg:col-span-1">
+          <div className="grid min-w-0 grid-cols-1 items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-8">
+            <aside className="min-w-0 rounded-xl border bg-card p-4" aria-label="Scholarship filters">
+              <Button
+                variant="outline"
+                className="h-11 w-full justify-between lg:hidden"
+                aria-expanded={filtersOpen}
+                aria-controls="scholarship-filter-options"
+                onClick={() => setFiltersOpen((open) => !open)}
+              >
+                <span className="flex items-center gap-2"><Filter className="h-4 w-4" />Filters</span>
+                {filtersOpen ? "Hide" : "Show"}
+              </Button>
+              <div id="scholarship-filter-options" className={`${filtersOpen ? "mt-4 block" : "hidden"} lg:mt-0 lg:block`}>
               <ScholarshipFilters
                 filters={filters}
                 onFiltersChange={setFilters}
@@ -388,26 +392,32 @@ const ScholarshipsPage = () => {
                 fieldOptions={SCHOLARSHIP_FIELDS}
                 eligibilityOptions={SCHOLARSHIP_ELIGIBILITY_TAGS}
               />
+              </div>
             </aside>
 
-            <main className="lg:col-span-3">
+            <section className="min-w-0" aria-label="Scholarship search and results">
               <div className="mb-6 space-y-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Search scholarships..."
+                  aria-label="Search scholarships"
+                  placeholder="Search by scholarship, university or keyword"
                   value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="pl-9"
+                    className="h-12 rounded-xl pl-11 text-base"
                   />
                 </div>
 
-                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                <details className="group rounded-xl border bg-card p-4 sm:p-5">
+                  <summary className="cursor-pointer text-sm font-semibold marker:text-primary">Search with AI</summary>
+                  <div className="mt-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
                     <span className="font-medium">AI-Powered Search</span>
                   </div>
                   <Textarea
+                    aria-label="Describe your scholarship preferences"
+                    className="min-h-24 resize-y text-base"
                     placeholder="Describe what you're looking for... (e.g., 'Full scholarships for women studying engineering in Canada')"
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
@@ -416,13 +426,19 @@ const ScholarshipsPage = () => {
                   <Button onClick={handleAiPromptSubmit} size="sm">
                     Apply AI Filters
                   </Button>
-                </div>
+                  </div>
+                </details>
 
-                <ScholarshipAIFinder
-                  onApplyProfile={applyProfileFilters}
-                  activeProfile={matchProfile}
-                  loading={loading}
-                />
+                <details className="rounded-xl border bg-card p-4 sm:p-5">
+                  <summary className="cursor-pointer text-sm font-semibold marker:text-primary">AI Scholarship Finder — match your profile</summary>
+                  <div className="mt-4">
+                    <ScholarshipAIFinder
+                      onApplyProfile={applyProfileFilters}
+                      activeProfile={matchProfile}
+                      loading={loading}
+                    />
+                  </div>
+                </details>
               </div>
 
               {loading && <LoadingState message="Searching scholarships..." />}
@@ -499,7 +515,7 @@ const ScholarshipsPage = () => {
                     <Sparkles className="h-4 w-4 text-primary" />
                     Recommended for You
                   </h3>
-                  <div className="grid gap-4 md:grid-cols-2">
+                  <div className="grid min-w-0 gap-4 xl:grid-cols-2">
                     {recommendations.map((scholarship) => (
                       <ScholarshipCard
                         key={scholarship.id}
@@ -515,19 +531,22 @@ const ScholarshipsPage = () => {
               )}
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-semibold">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
                     {allResults.length} Scholarships Found
                   </h2>
                   {stats && (
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => {
+                      setFiltersOpen(true);
+                      document.getElementById("scholarship-filter-options")?.parentElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}>
                       <Filter className="mr-2 h-4 w-4" />
                       Filter Results
                     </Button>
                   )}
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid min-w-0 gap-4 xl:grid-cols-2">
                   {allResults.map((scholarship) => (
                     <ScholarshipCard
                       key={scholarship.id}
@@ -540,7 +559,7 @@ const ScholarshipsPage = () => {
                   ))}
                 </div>
               </div>
-            </main>
+            </section>
           </div>
         </div>
       </div>
