@@ -9,12 +9,13 @@ type Section = {
   summary?: string;
 };
 
-const lastReviewed = 'October 22, 2025';
+const lastReviewed = '23 October 2026';
 
 const highlights = [
   {
     title: 'No Data Sales',
-    description: 'We never sell your personal information and only share it when necessary to provide our services.'
+    description:
+      'We never sell your personal information. We share it only when needed to provide our services, for example with the universities you apply to and our application partner CourseFinder.'
   },
   {
     title: 'Transparent Practices',
@@ -96,13 +97,40 @@ const sections: Section[] = [
       <div className="space-y-4">
         <p>We share data only with trusted parties that support the Services:</p>
         <ul className="list-disc pl-6">
-          <li>Educational institutions, advisors, or agents assisting with your applications.</li>
+          <li>
+            The universities and colleges you choose to apply to, and their admissions teams, so they can consider your
+            application.
+          </li>
+          <li>
+            Our application partner KC Overseas Education Private Limited, based in Nagpur, India, which runs the
+            CourseFinder application portal. We share only the details needed for your application, such as your contact
+            details, education history, passport and citizenship details, marital status, number of dependants and any
+            previous visa refusals. KC Overseas uses this information as a separate controller under its own privacy
+            notice.
+          </li>
           <li>Vetted technology vendors that provide infrastructure, analytics, and communications tools.</li>
           <li>Payment processors and financial institutions that manage tuition or service payments.</li>
           <li>Regulators or law enforcement when required by applicable law.</li>
         </ul>
         <p>We do not sell your personal information.</p>
       </div>
+    )
+  },
+  {
+    id: 'international-transfers',
+    title: 'International transfers',
+    content: (
+      <p>
+        Some of the organisations we share your data with are outside the UK. When you apply to a university abroad, we
+        send your application to that university because this is necessary to provide the service you have asked us for.
+        Our application partner KC Overseas Education is based in India, which the UK does not treat as having equivalent
+        data protection laws. We send your details to them only when this is needed to prepare and submit your
+        applications, and only with your signed authorisation. You can ask us for more information by emailing{' '}
+        <a className="text-primary" href="mailto:info@unidoxia.com">
+          info@unidoxia.com
+        </a>
+        .
+      </p>
     )
   },
   {
@@ -140,17 +168,6 @@ const sections: Section[] = [
         We implement administrative, technical, and physical safeguards designed to protect personal information against
         loss, misuse, unauthorized access, disclosure, alteration, or destruction. These safeguards include encryption in
         transit and at rest, access controls, and regular security assessments.
-      </p>
-    )
-  },
-  {
-    id: 'international-transfers',
-    title: 'International Transfers',
-    content: (
-      <p>
-        Because education pathways often span multiple countries, your data may be transferred internationally. We use
-        approved transfer mechanisms and contractual protections to ensure equivalent levels of protection wherever your
-        data travels.
       </p>
     )
   },

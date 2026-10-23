@@ -24,7 +24,7 @@ export const FINAL_GRADE_HELPER =
 
 /** Shown under Background. Wording confirmed by Kojo, 23 October 2026. */
 export const BACKGROUND_PRIVACY_LINE =
-  "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner CourseFinder (KC Overseas Education).";
+  "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner KC Overseas Education (CourseFinder).";
 export const PRIVACY_NOTICE_PATH = '/legal/privacy';
 
 /** WAEC results cards are only asked of students who sat a WAEC exam or studied in a WAEC country. */

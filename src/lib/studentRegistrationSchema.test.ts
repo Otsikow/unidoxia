@@ -335,7 +335,7 @@ describe('"no gap" edge cases', () => {
 describe('Background privacy line', () => {
   it('uses the wording agreed with Kojo', () => {
     expect(`${BACKGROUND_PRIVACY_LINE} See our Privacy Notice.`).toBe(
-      "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner CourseFinder (KC Overseas Education). See our Privacy Notice.",
+      "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner KC Overseas Education (CourseFinder). See our Privacy Notice.",
     );
   });
 });
