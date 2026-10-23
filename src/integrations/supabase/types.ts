@@ -1725,6 +1725,7 @@ export type Database = {
           country: string
           created_at: string | null
           degree_title: string | null
+          final_grade: string | null
           end_date: string | null
           gpa: number | null
           grade_scale: string | null
@@ -1744,6 +1745,7 @@ export type Database = {
           country: string
           created_at?: string | null
           degree_title?: string | null
+          final_grade?: string | null
           end_date?: string | null
           gpa?: number | null
           grade_scale?: string | null
@@ -1763,6 +1765,7 @@ export type Database = {
           country?: string
           created_at?: string | null
           degree_title?: string | null
+          final_grade?: string | null
           end_date?: string | null
           gpa?: number | null
           grade_scale?: string | null
@@ -3662,6 +3665,12 @@ export type Database = {
           lived_or_studied_abroad: boolean | null
           manual_status: string | null
           marital_status: string | null
+          coursefinder_fields_required: boolean
+          dependants_travelling: number | null
+          no_gap_since_study: boolean | null
+          other_citizenship: string | null
+          secondary_final_grade: string | null
+          visa_refusal_details: string | null
           middle_name: string | null
           nationality: string | null
           passport_expiry: string | null
@@ -3756,6 +3765,12 @@ export type Database = {
           lived_or_studied_abroad?: boolean | null
           manual_status?: string | null
           marital_status?: string | null
+          coursefinder_fields_required?: boolean
+          dependants_travelling?: number | null
+          no_gap_since_study?: boolean | null
+          other_citizenship?: string | null
+          secondary_final_grade?: string | null
+          visa_refusal_details?: string | null
           middle_name?: string | null
           nationality?: string | null
           passport_expiry?: string | null
@@ -3850,6 +3865,12 @@ export type Database = {
           lived_or_studied_abroad?: boolean | null
           manual_status?: string | null
           marital_status?: string | null
+          coursefinder_fields_required?: boolean
+          dependants_travelling?: number | null
+          no_gap_since_study?: boolean | null
+          other_citizenship?: string | null
+          secondary_final_grade?: string | null
+          visa_refusal_details?: string | null
           middle_name?: string | null
           nationality?: string | null
           passport_expiry?: string | null

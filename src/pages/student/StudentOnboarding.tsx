@@ -22,7 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
 import { NextStepNavigator, type NavigatorStep } from '@/components/student/NextStepNavigator';
 import { areRequiredStudentDocumentsComplete } from '@/lib/studentDocuments';
-import { calculateCourseFinderCompleteness, getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
+import { calculateCourseFinderCompleteness, getCourseFinderProfileSections, sectionTab } from '@/lib/coursefinderProfile';
 
 interface ChecklistItem {
   id: string;
@@ -358,7 +358,7 @@ export default function StudentOnboarding() {
         }
       }
 
-      const iconBySection = { personal: FileText, passport: IdCard, addresses: FileText, emergency: FileText, background: FileCheck, academic: GraduationCap, documents: FileCheck } as const;
+      const iconBySection = { personal: FileText, passport: IdCard, addresses: FileText, emergency: FileText, background: FileCheck, academic: GraduationCap, history: GraduationCap, documents: FileCheck } as const;
       const sections = getCourseFinderProfileSections(
         currentStudent as unknown as Record<string, unknown>,
         educationRecords.filter((degree) => degree.level !== 'high_school'),
@@ -371,7 +371,7 @@ export default function StudentOnboarding() {
         description: section.completed ? section.description : `Missing: ${section.missing.join(', ')}`,
         completed: section.completed,
         icon: iconBySection[section.id],
-        link: section.id === 'documents' ? '/student/documents' : section.id === 'academic' ? '/student/profile#education' : '/student/profile#personal',
+        link: sectionTab(section.id) === 'documents' ? '/student/documents' : `/student/profile#${sectionTab(section.id)}`,
       }));
 
       setChecklist(items);
