@@ -78,6 +78,9 @@ import {
 } from "@/lib/applicationStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { logDocumentAuditEvent } from "@/lib/auditLogger";
+import { isProfileGateClear, profileStillBlocks, requiresCompleteProfileForStatus } from "@/lib/coursefinderProfile";
+import { fetchApplicationProfileGate } from "@/lib/applicationProfileGate";
+import { ProfileGateDialog } from "@/components/applications/ProfileGateDialog";
 import type { ApplicationCategorization } from "@/lib/applicationCategorization";
 import {
   buildMissingRpcError,
@@ -490,6 +493,8 @@ export function ApplicationReviewDialog({
 
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
+  const [profileGateMissing, setProfileGateMissing] = useState<number | null>(null);
+  const [profileGateAuthorised, setProfileGateAuthorised] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -941,6 +946,24 @@ export function ApplicationReviewDialog({
 
   const confirmStatusChange = useCallback(async () => {
     if (!application?.id || !selectedStatus) return;
+
+    // Moving on from draft or submitted (for example to Under Review or an
+    // offer) needs a complete student profile. The server enforces the same rule.
+    if (requiresCompleteProfileForStatus(application.status, selectedStatus)) {
+      try {
+        const gate = await fetchApplicationProfileGate(application.id);
+        if (!isProfileGateClear(gate)) {
+          setConfirmStatus(false);
+          setProfileGateAuthorised(Boolean(gate.sharing_authorised));
+          setProfileGateMissing(profileStillBlocks(gate) ? Number(gate.missing_count ?? 0) : 0);
+          return;
+        }
+      } catch (gateError) {
+        console.error("[ApplicationReview] Profile check failed:", gateError);
+        toast({ title: "Could not check the student profile", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+    }
 
     setUpdatingStatus(true);
     console.log("[ApplicationReview] Updating status:", { applicationId: application.id, newStatus: selectedStatus });
@@ -2547,6 +2570,14 @@ export function ApplicationReviewDialog({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ProfileGateDialog
+        open={profileGateMissing !== null}
+        onOpenChange={(open) => !open && setProfileGateMissing(null)}
+        missingCount={profileGateMissing ?? 0}
+        sharingAuthorised={profileGateAuthorised}
+        profileHref={null}
+        canOverride={false}
+      />
     </>
   );
 }

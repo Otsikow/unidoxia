@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { SharingAuthorisationConsent } from '@/components/student/SharingAuthorisationConsent';
+import { recordSharingAuthorisation, STAFF_SUBMIT_AUTHORISATION_NOTE } from '@/lib/sharingAuthorisation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';
 import {
@@ -27,6 +29,8 @@ interface ReviewSubmitStepProps {
   onNotesChange: (notes: string) => void;
   existingDocuments?: ExistingDocumentMap;
   validationIssues: string[];
+  /** False when staff or an agent submits for the student: only the student can authorise. */
+  submitterIsStudent?: boolean;
 }
 
 type ProgramDetailsRow = Pick<
@@ -59,8 +63,13 @@ export default function ReviewSubmitStep({
   onNotesChange,
   existingDocuments,
   validationIssues,
+  submitterIsStudent = true,
 }: ReviewSubmitStepProps) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  // Separate from the terms, never pre-ticked, saved on the server at submit.
+  const [authorisedSharing, setAuthorisedSharing] = useState(false);
+  const [authorisationError, setAuthorisationError] = useState<string | null>(null);
+  const [savingAuthorisation, setSavingAuthorisation] = useState(false);
   const [programDetails, setProgramDetails] = useState<ProgramDetails | null>(null);
   const [loadingProgram, setLoadingProgram] = useState(true);
   const hasBlockingIssues = validationIssues.length > 0;
@@ -111,7 +120,7 @@ export default function ReviewSubmitStep({
     fetchProgramDetails();
   }, [formData.programSelection.programId]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (hasBlockingIssues) {
       return;
     }
@@ -119,6 +128,26 @@ export default function ReviewSubmitStep({
     if (!agreedToTerms) {
       alert('Please agree to the terms and conditions before submitting');
       return;
+    }
+    if (!submitterIsStudent) {
+      onSubmit();
+      return;
+    }
+    if (!authorisedSharing) {
+      setAuthorisationError('Please give your sharing authorisation before submitting.');
+      return;
+    }
+    setSavingAuthorisation(true);
+    setAuthorisationError(null);
+    try {
+      await recordSharingAuthorisation();
+    } catch (error) {
+      setAuthorisationError(
+        error instanceof Error ? error.message : 'Your authorisation was not saved. Please try again.',
+      );
+      return;
+    } finally {
+      setSavingAuthorisation(false);
     }
     onSubmit();
   };
@@ -436,20 +465,44 @@ export default function ReviewSubmitStep({
         </CardContent>
       </Card>
 
+      {/* Sharing authorisation: its own box, not part of the terms */}
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          {submitterIsStudent ? (
+            <SharingAuthorisationConsent
+              id="sharing-authorisation-submit"
+              checked={authorisedSharing}
+              onCheckedChange={(checked) => {
+                setAuthorisedSharing(checked);
+                setAuthorisationError(null);
+              }}
+              disabled={submitting || savingAuthorisation}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">{STAFF_SUBMIT_AUTHORISATION_NOTE}</p>
+          )}
+          {authorisationError && (
+            <p className="text-sm text-destructive" role="alert">
+              {authorisationError}
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Navigation Buttons */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex justify-between">
-            <Button variant="outline" onClick={onBack} disabled={submitting}>
+            <Button variant="outline" onClick={onBack} disabled={submitting || savingAuthorisation}>
               Back
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={!agreedToTerms || submitting || hasBlockingIssues}
+              disabled={!agreedToTerms || (submitterIsStudent && !authorisedSharing) || submitting || savingAuthorisation || hasBlockingIssues}
               size="lg"
               className="min-w-[200px]"
             >
-              {submitting ? (
+              {submitting || savingAuthorisation ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Submitting...

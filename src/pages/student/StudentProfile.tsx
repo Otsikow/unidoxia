@@ -22,7 +22,7 @@ import BackButton from '@/components/BackButton';
 import { useErrorHandler, ErrorDisplay } from '@/hooks/useErrorHandler';
 import { useStudentRecord, studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useAuth } from '@/hooks/useAuth';
-import { calculateCourseFinderCompleteness, getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
+import { calculateCourseFinderCompleteness, getCourseFinderProfileSections, sectionTab, type CourseFinderSection } from '@/lib/coursefinderProfile';
 
 export default function StudentProfile() {
   const navigate = useNavigate();
@@ -81,7 +81,7 @@ export default function StudentProfile() {
         title: section.title,
         description: section.completed ? section.description : `Missing: ${section.missing.join(', ')}`,
         completed: section.completed,
-        link: section.id === 'documents' ? '/student/documents' : section.id === 'academic' ? '/student/profile#education' : '/student/profile#personal',
+        link: sectionTab(section.id) === 'documents' ? '/student/documents' : `/student/profile#${sectionTab(section.id)}`,
       })));
 
       if (record.profile_completeness !== percent) {
@@ -323,7 +323,7 @@ export default function StudentProfile() {
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                {completeness}% complete • {completedSteps} of {checklist.length || 7} steps completed
+                {completeness}% complete • {completedSteps} of {checklist.length || 8} steps completed
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -404,7 +404,7 @@ export default function StudentProfile() {
                   if (item.id === 'documents') {
                     navigate('/student/documents');
                   } else {
-                    setActiveTab(item.id === 'academic' ? 'education' : 'personal');
+                    setActiveTab(sectionTab(item.id as CourseFinderSection['id']));
                     // Smooth scroll to tabs section
                     const tabsElement = document.querySelector('[role="tablist"]');
                     if (tabsElement) {

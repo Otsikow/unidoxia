@@ -1,3 +1,25 @@
+import {
+  addressesSchema,
+  backgroundSchema,
+  degreeSchema,
+  emergencySchema,
+  issueMessages,
+  passportSchema,
+  personalSchema,
+  secondaryEducationSchema,
+  isStrictStudent,
+  validateGapHistory,
+} from './studentRegistrationSchema';
+
+export type CourseFinderSectionOptions = {
+  /**
+   * true: every CourseFinder field, used for the banner, checklist and staff submission.
+   * false: leave out the fields added in October 2026, used to gate saves and pages for
+   * existing students (coursefinder_fields_required = false) so they are never blocked.
+   */
+  strict?: boolean;
+};
+
 export type CourseFinderStudent = Record<string, unknown>;
 
 export type CourseFinderDegree = {
@@ -6,6 +28,7 @@ export type CourseFinderDegree = {
   state_region?: string | null;
   city?: string | null;
   degree_title?: string | null;
+  final_grade?: string | null;
   grade_scale?: string | null;
   gpa?: number | null;
   language_of_instruction?: string | null;
@@ -20,7 +43,7 @@ export type CourseFinderTest = {
 };
 
 export type CourseFinderSection = {
-  id: 'personal' | 'passport' | 'addresses' | 'emergency' | 'background' | 'academic' | 'documents';
+  id: 'personal' | 'passport' | 'addresses' | 'emergency' | 'background' | 'academic' | 'history' | 'documents';
   title: string;
   description: string;
   completed: boolean;
@@ -33,21 +56,8 @@ const present = (value: unknown) =>
 const requiredFields = (record: CourseFinderStudent, fields: Array<[string, string]>) =>
   fields.filter(([key]) => !present(record[key])).map(([, label]) => label);
 
-export const validateCourseFinderDegree = (degree: CourseFinderDegree): string[] => {
-  const missing = requiredFields(degree as CourseFinderStudent, [
-    ['institution_name', 'institution'],
-    ['country', 'country'],
-    ['state_region', 'state or region'],
-    ['city', 'city'],
-    ['degree_title', 'degree title'],
-    ['grade_scale', 'grading scale'],
-    ['gpa', 'score'],
-    ['language_of_instruction', 'language of instruction'],
-    ['start_date', 'start date'],
-    ['end_date', 'end date'],
-  ]);
-  return missing;
-};
+export const validateCourseFinderDegree = (degree: CourseFinderDegree, strict = true): string[] =>
+  issueMessages(degreeSchema.safeParse(degree), strict);
 
 export const validateCourseFinderTest = (test: CourseFinderTest): string[] =>
   requiredFields(test as CourseFinderStudent, [
@@ -61,96 +71,115 @@ export const getCourseFinderProfileSections = (
   degrees: CourseFinderDegree[] = [],
   tests: CourseFinderTest[] = [],
   documentsComplete = false,
+  today: Date = new Date(),
+  { strict = true }: CourseFinderSectionOptions = {},
 ): CourseFinderSection[] => {
-  const personal = requiredFields(student, [
-    ['first_name', 'first name'],
-    ['last_name', 'last name'],
-    ['contact_phone', 'mobile number'],
-    ['contact_email', 'email'],
-    ['date_of_birth', 'date of birth'],
-    ['gender', 'gender'],
-    ['marital_status', 'marital status'],
-    ['nationality', 'nationality'],
-    ['citizenship', 'citizenship'],
-    ['city_of_birth', 'city of birth'],
-    ['country_of_birth', 'country of birth'],
-  ]);
+  const personal = issueMessages(personalSchema.safeParse(student), strict);
+  const passport = issueMessages(passportSchema.safeParse(student), strict);
+  const addresses = issueMessages(addressesSchema.safeParse(student), strict);
+  const emergency = issueMessages(emergencySchema.safeParse(student), strict);
+  const background = issueMessages(backgroundSchema.safeParse(student), strict);
 
-  const passport = requiredFields(student, [
-    ['passport_number', 'passport number'],
-    ['passport_issue_date', 'passport issue date'],
-    ['passport_expiry', 'passport expiry date'],
-    ['passport_issue_country', 'passport issue country'],
-  ]);
-
-  const addresses = requiredFields(student, [
-    ['address_line_1', 'mailing address line 1'],
-    ['country_of_residence', 'mailing country'],
-    ['state_region', 'mailing state or region'],
-    ['city', 'mailing city'],
-    ['postal_code', 'mailing postcode'],
-  ]);
-  if (student.permanent_same_as_mailing !== true) {
-    addresses.push(
-      ...requiredFields(student, [
-        ['permanent_address_line_1', 'permanent address line 1'],
-        ['permanent_country', 'permanent country'],
-        ['permanent_state_region', 'permanent state or region'],
-        ['permanent_city', 'permanent city'],
-        ['permanent_postal_code', 'permanent postcode'],
-      ]),
-    );
-  }
-
-  const emergency = requiredFields(student, [
-    ['emergency_contact_name', 'emergency contact name'],
-    ['emergency_contact_relationship', 'emergency contact relationship'],
-    ['emergency_contact_phone', 'emergency contact phone'],
-    ['emergency_contact_email', 'emergency contact email'],
-  ]);
-
-  const background = [
-    ['has_other_citizenship', 'other citizenship'],
-    ['lived_or_studied_abroad', 'lived or studied in another country'],
-    ['previous_immigration_applications', 'previous immigration applications'],
-    ['has_visa_refusals', 'visa refusals'],
-  ].filter(([key]) => typeof student[key] !== 'boolean').map(([, label]) => label);
-
-  const academic = requiredFields(student, [
-    ['country_of_education', 'country of education'],
-    ['highest_education_level', 'highest education level'],
-    ['secondary_board', 'secondary board'],
-    ['secondary_qualification', 'secondary qualification'],
-    ['secondary_school_name', 'secondary school name'],
-    ['secondary_school_country', 'secondary school country'],
-    ['secondary_school_state', 'secondary school state'],
-    ['secondary_school_city', 'secondary school city'],
-    ['secondary_start_month', 'secondary start month'],
-    ['secondary_start_year', 'secondary start year'],
-    ['secondary_end_month', 'secondary end month'],
-    ['secondary_end_year', 'secondary end year'],
-    ['secondary_language_of_instruction', 'secondary language of instruction'],
-    ['secondary_grades_band', 'secondary grades band'],
-    ['waec_scratch_card_pin', 'WAEC scratch-card PIN'],
-    ['waec_scratch_card_serial', 'WAEC scratch-card serial number'],
-  ]);
+  const academic = issueMessages(secondaryEducationSchema.safeParse(student), strict);
   degrees.forEach((degree, index) => {
-    academic.push(...validateCourseFinderDegree(degree).map((field) => `degree ${index + 1}: ${field}`));
+    academic.push(...validateCourseFinderDegree(degree, strict).map((field) => `degree ${index + 1}: ${field}`));
   });
   tests.forEach((test, index) => {
     academic.push(...validateCourseFinderTest(test).map((field) => `English test ${index + 1}: ${field}`));
   });
 
+  const history = strict ? validateGapHistory(student, degrees, today) : [];
+
   return [
     { id: 'personal', title: 'Personal details', description: 'Registration and personal information', completed: personal.length === 0, missing: personal },
     { id: 'passport', title: 'Passport details', description: 'Passport number, dates and issue country', completed: passport.length === 0, missing: passport },
-    { id: 'addresses', title: 'Addresses', description: 'Mailing and permanent addresses', completed: addresses.length === 0, missing: addresses },
+    { id: 'addresses', title: 'Addresses', description: 'Home address, and permanent address if different', completed: addresses.length === 0, missing: addresses },
     { id: 'emergency', title: 'Emergency contact', description: 'One complete emergency contact', completed: emergency.length === 0, missing: emergency },
-    { id: 'background', title: 'Background questions', description: 'All four yes or no answers', completed: background.length === 0, missing: background },
-    { id: 'academic', title: 'Academic background', description: 'Secondary education, WAEC details and complete added records', completed: academic.length === 0, missing: academic },
+    { id: 'background', title: 'Background questions', description: 'All four yes or no answers, with details where needed', completed: background.length === 0, missing: background },
+    { id: 'academic', title: 'Education history', description: 'Secondary education, final grades, WAEC details where they apply, and complete added records', completed: academic.length === 0, missing: academic },
+    { id: 'history', title: 'Gap or work history', description: 'What you have done since your last study', completed: history.length === 0, missing: history },
     { id: 'documents', title: 'Required documents', description: 'All documents, including one accepted form of English proof', completed: documentsComplete, missing: documentsComplete ? [] : ['required documents'] },
   ];
 };
 
+/** Field sections only (not documents), used for the "complete your profile" prompt. */
+export const getMissingProfileFields = (sections: CourseFinderSection[]) =>
+  sections.filter((section) => section.id !== 'documents').flatMap((section) => section.missing);
+
+/** Which profile tab a section's fields live on. */
+export const sectionTab = (id: CourseFinderSection['id']) =>
+  id === 'documents' ? 'documents' : id === 'academic' || id === 'history' ? 'education' : 'personal';
+
 export const calculateCourseFinderCompleteness = (sections: CourseFinderSection[]) =>
   Math.round((sections.filter((section) => section.completed).length / sections.length) * 100);
+
+/** Options for gating saves and pages: strict only for students flagged as new. */
+export const gateOptions = (student: CourseFinderStudent | null | undefined): CourseFinderSectionOptions => ({
+  strict: isStrictStudent(student),
+});
+
+/**
+ * Statuses that send an application on from UniDoxia (to CourseFinder or the
+ * university), including a jump straight to an offer. Moving an application
+ * into one of these from any other status (draft, submitted, withdrawn,
+ * deferred, rejected, pending documents, interview and so on) needs a complete
+ * profile. The server trigger enforce_application_profile_gate uses exactly
+ * this list.
+ */
+export const COURSEFINDER_SUBMISSION_STATUSES = new Set([
+  'screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled',
+]);
+
+export const requiresCompleteProfileForStatus = (oldStatus: string | null | undefined, newStatus: string) =>
+  COURSEFINDER_SUBMISSION_STATUSES.has(newStatus) && !COURSEFINDER_SUBMISSION_STATUSES.has(String(oldStatus ?? 'draft'));
+
+/** What the server says about one application (application_profile_gate_status). */
+export type ApplicationProfileGate = {
+  exempt?: boolean | null;
+  overridden?: boolean | null;
+  missing_count?: number | null;
+  /** Whether the student has given their sharing authorisation (yes or no only). */
+  sharing_authorised?: boolean | null;
+};
+
+/**
+ * Whether an application may move on. Applications created before go-live
+ * (exempt) are never held back. Every other application needs the student's
+ * sharing authorisation, which an admin override does not replace, and a
+ * complete profile or a logged admin override.
+ */
+export const isProfileGateClear = (gate: ApplicationProfileGate | null | undefined) =>
+  Boolean(gate?.exempt) ||
+  (Boolean(gate?.sharing_authorised) && (Boolean(gate?.overridden) || Number(gate?.missing_count ?? 0) === 0));
+
+/** The profile part of the gate still blocks (not exempt, not overridden, items missing). */
+export const profileStillBlocks = (gate: ApplicationProfileGate | null | undefined) =>
+  !gate?.exempt && !gate?.overridden && Number(gate?.missing_count ?? 0) > 0;
+
+/** The short staff message: a count, not the full list. */
+export const profileGateMessage = (missingCount: number) =>
+  `${missingCount} ${missingCount === 1 ? 'item is' : 'items are'} missing from the student's profile.`;
+
+/** An admin override needs a reason; the server asks for at least 10 characters. */
+export const OVERRIDE_REASON_MIN_LENGTH = 10;
+export const isValidOverrideReason = (reason: string | null | undefined) =>
+  (reason ?? '').trim().length >= OVERRIDE_REASON_MIN_LENGTH;
+
+/** Which profile page staff should open for a student, by role. */
+export const studentProfileLink = (role: string | null | undefined, studentId: string) =>
+  role === 'admin' || role === 'staff'
+    ? `/admin/students/${studentId}`
+    : role === 'agent'
+      ? `/agent/students/${studentId}`
+      : null;
+
+/**
+ * Every missing CourseFinder field (including final grades and gap history) for
+ * a student, regardless of whether they are new or existing. Empty when the
+ * profile can be sent to CourseFinder.
+ */
+export const getCourseFinderSubmissionBlockers = (
+  student: CourseFinderStudent,
+  degrees: CourseFinderDegree[] = [],
+  today: Date = new Date(),
+) => getMissingProfileFields(getCourseFinderProfileSections(student, degrees, [], false, today, { strict: true }));

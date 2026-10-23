@@ -1745,6 +1745,7 @@ export default function NewApplication() {
             onNotesChange={(notes) => setFormData((prev) => ({ ...prev, notes }))}
             existingDocuments={existingDocumentsForStep}
             validationIssues={validationIssues}
+            submitterIsStudent={isStudent}
           />
         )}
       </div>

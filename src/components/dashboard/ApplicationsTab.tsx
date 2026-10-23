@@ -23,6 +23,19 @@ import type { Database } from '@/integrations/supabase/types';
 import { Search, ArrowUpDown, ExternalLink, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { isProfileGateClear, profileStillBlocks, requiresCompleteProfileForStatus, studentProfileLink } from '@/lib/coursefinderProfile';
+import { fetchApplicationProfileGate, overrideApplicationProfileGate } from '@/lib/applicationProfileGate';
+import { ProfileGateDialog } from '@/components/applications/ProfileGateDialog';
+
+type StatusChange = {
+  applicationId: string;
+  studentId: string;
+  oldStatus: string;
+  newStatus: Database['public']['Enums']['application_status'];
+  missingCount: number;
+  sharingAuthorised: boolean;
+};
 
 interface Application {
   id: string;
@@ -56,6 +69,8 @@ export default function ApplicationsTab() {
   const [sortField, setSortField] = useState<'created_at' | 'status'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const { toast } = useToast();
+  const { profile } = useAuth();
+  const [gateBlock, setGateBlock] = useState<StatusChange | null>(null);
 
   useEffect(() => {
     fetchApplications();
@@ -154,6 +169,25 @@ export default function ApplicationsTab() {
     newStatus: Database['public']['Enums']['application_status'],
   ) => {
     try {
+      // Moving on from draft or submitted needs a complete profile, unless the
+      // application was created before go-live or an admin has overridden it.
+      // The server enforces the same rule (enforce_application_profile_gate).
+      if (requiresCompleteProfileForStatus(oldStatus, newStatus)) {
+        const gate = await fetchApplicationProfileGate(applicationId);
+        if (!isProfileGateClear(gate)) {
+          const studentId = applications.find((app) => app.id === applicationId)?.student_id ?? '';
+          setGateBlock({
+            applicationId,
+            studentId,
+            oldStatus,
+            newStatus,
+            missingCount: profileStillBlocks(gate) ? Number(gate.missing_count ?? 0) : 0,
+            sharingAuthorised: Boolean(gate.sharing_authorised),
+          });
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from('applications')
         .update({ status: newStatus })
@@ -384,6 +418,27 @@ export default function ApplicationsTab() {
           </Table>
         </div>
       </CardContent>
+      <ProfileGateDialog
+        open={Boolean(gateBlock)}
+        onOpenChange={(open) => !open && setGateBlock(null)}
+        missingCount={gateBlock?.missingCount ?? 0}
+        sharingAuthorised={gateBlock?.sharingAuthorised ?? false}
+        profileHref={gateBlock?.studentId ? studentProfileLink(profile?.role, gateBlock.studentId) : null}
+        canOverride={profile?.role === 'admin'}
+        onOverride={async (reason) => {
+          if (!gateBlock) return;
+          const change = gateBlock;
+          try {
+            await overrideApplicationProfileGate(change.applicationId, reason);
+          } catch (error: any) {
+            toast({ title: 'Override not saved', description: error?.message ?? 'Please try again.', variant: 'destructive' });
+            return;
+          }
+          setGateBlock(null);
+          toast({ title: 'Override logged', description: 'The reason has been saved against this application.' });
+          await handleStatusUpdate(change.applicationId, change.oldStatus, change.newStatus);
+        }}
+      />
     </Card>
   );
 }
