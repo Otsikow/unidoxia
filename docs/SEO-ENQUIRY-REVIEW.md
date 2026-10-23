@@ -1,5 +1,7 @@
 # SEO and enquiry review — 23 October 2026
 
+Pre-release review record. See `SEO-PUBLICATION.md` for the subsequent authorized release and remaining access requirements.
+
 ## Implemented
 
 - Extended the existing Vite static rendering pipeline rather than replacing the framework. Published blog HTML/Markdown is sanitized and rendered in full, with shared title removal and Markdown conversion in the browser. Added profile guidance, study levels, sources, course links, course modules and official-source links. Scholarship pages include full descriptions, eligibility, conditions, steps, funding, dates and source links.

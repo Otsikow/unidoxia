@@ -105,6 +105,7 @@ const StoryboardSection = () => {
                     </div>
                     <span className="inline-flex items-center justify-center gap-2 font-semibold text-primary">
                       {scene.action}
+                      <span className="sr-only">. Register or sign in to continue.</span>
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
                     </span>
                   </CardContent>

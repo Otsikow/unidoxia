@@ -72,3 +72,11 @@ test('short enquiry is usable on a simulated Slow 3G connection', async ({ page,
   await expect(page.getByRole('button', { name: 'Send enquiry', exact: true })).toBeVisible();
   await expect(page.locator('video')).toHaveCount(0);
 });
+
+test('private dashboard still redirects anonymous visitors to the sign-in form', async ({ page }) => {
+  await page.route('**/*.supabase.co/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  await page.goto('/dashboard');
+  await expect(page).toHaveURL(/\/auth\/login/);
+  await expect(page.locator('input[type="email"]').first()).toBeVisible();
+  await expect(page.locator('input[type="password"]').first()).toBeVisible();
+});
