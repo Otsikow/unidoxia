@@ -94,7 +94,7 @@ const fr = {
         "Nous connectons les étudiants internationaux aux universités de renommée mondiale grâce à des agents vérifiés et une gestion transparente des candidatures.",
       contactEmailLabel: "Nous écrire",
       followUs: "Suivez UniDoxia",
-      followUsSubtitle: "Suivez-nous sur X, LinkedIn, Facebook, Instagram et notre canal WhatsApp.",
+      followUsSubtitle: "Suivez-nous sur X, LinkedIn, Facebook, Instagram, TikTok, Reddit et notre canal WhatsApp.",
       social: {
         x: "Suivez-nous sur X",
         xShort: "X",
@@ -104,6 +104,8 @@ const fr = {
         facebookShort: "Facebook",
         instagram: "Suivez-nous sur Instagram",
         instagramShort: "Instagram",
+        tiktok: "UniDoxia sur TikTok",
+        tiktokShort: "TikTok",
         whatsapp: "Suivez le canal UniDoxia.com sur WhatsApp",
         whatsappShort: "WhatsApp",
       },
