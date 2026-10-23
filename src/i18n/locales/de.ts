@@ -92,7 +92,7 @@ const de = {
         "Wir verbinden internationale Studierende mit erstklassigen Universitäten über verifizierte Agenten und eine transparente Antragsverwaltung.",
       contactEmailLabel: "E-Mail an uns",
       followUs: "Folgen Sie UniDoxia",
-      followUsSubtitle: "Folgen Sie uns auf X, LinkedIn, Facebook, Instagram, TikTok und unserem WhatsApp-Kanal.",
+      followUsSubtitle: "Folgen Sie uns auf X, LinkedIn, Facebook, Instagram, TikTok, Reddit und unserem WhatsApp-Kanal.",
       social: {
         x: "Folgen Sie uns auf X",
         xShort: "X",

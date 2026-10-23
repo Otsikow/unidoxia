@@ -148,11 +148,11 @@ export function AppFooter() {
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("layout.footer.followUsSubtitle", {
-                  defaultValue: "Follow us on X, LinkedIn, Facebook, Instagram, TikTok, and our WhatsApp channel.",
+                  defaultValue: "Follow us on X, LinkedIn, Facebook, Instagram, TikTok, Reddit, and our WhatsApp channel.",
                 })}
               </p>
-              <div className="mt-3 flex items-center gap-2">
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://x.com/unidoxia"
                     target="_blank"
@@ -163,7 +163,7 @@ export function AppFooter() {
                     <XIcon className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://www.linkedin.com/company/110137778/"
                     target="_blank"
@@ -174,7 +174,7 @@ export function AppFooter() {
                     <Linkedin className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://www.facebook.com/profile.php?id=61584297605909"
                     target="_blank"
@@ -185,7 +185,7 @@ export function AppFooter() {
                     <Facebook className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://www.instagram.com/unidoxia/"
                     target="_blank"
@@ -196,7 +196,7 @@ export function AppFooter() {
                     <Instagram className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://www.tiktok.com/@unidoxia.com1"
                     target="_blank"
@@ -207,7 +207,7 @@ export function AppFooter() {
                     <TikTokIcon className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://whatsapp.com/channel/0029Vawx2lA2kNFjQrxOc640"
                     target="_blank"
@@ -220,7 +220,7 @@ export function AppFooter() {
                     <WhatsAppIcon className="h-4 w-4" />
                   </a>
                 </Button>
-                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                <Button asChild variant="ghost" size="icon" className="h-10 w-10 shrink-0 rounded-full">
                   <a
                     href="https://www.reddit.com/r/UniDoxia"
                     target="_blank"
