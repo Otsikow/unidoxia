@@ -78,7 +78,7 @@ import {
 } from "@/lib/applicationStatus";
 import { useAuth } from "@/hooks/useAuth";
 import { logDocumentAuditEvent } from "@/lib/auditLogger";
-import { isProfileGateClear, requiresCompleteProfileForStatus } from "@/lib/coursefinderProfile";
+import { isProfileGateClear, profileStillBlocks, requiresCompleteProfileForStatus } from "@/lib/coursefinderProfile";
 import { fetchApplicationProfileGate } from "@/lib/applicationProfileGate";
 import { ProfileGateDialog } from "@/components/applications/ProfileGateDialog";
 import type { ApplicationCategorization } from "@/lib/applicationCategorization";
@@ -494,6 +494,7 @@ export function ApplicationReviewDialog({
   const [selectedStatus, setSelectedStatus] = useState<ApplicationStatus | null>(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [profileGateMissing, setProfileGateMissing] = useState<number | null>(null);
+  const [profileGateAuthorised, setProfileGateAuthorised] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -953,7 +954,8 @@ export function ApplicationReviewDialog({
         const gate = await fetchApplicationProfileGate(application.id);
         if (!isProfileGateClear(gate)) {
           setConfirmStatus(false);
-          setProfileGateMissing(Number(gate.missing_count ?? 0));
+          setProfileGateAuthorised(Boolean(gate.sharing_authorised));
+          setProfileGateMissing(profileStillBlocks(gate) ? Number(gate.missing_count ?? 0) : 0);
           return;
         }
       } catch (gateError) {
@@ -2572,6 +2574,7 @@ export function ApplicationReviewDialog({
         open={profileGateMissing !== null}
         onOpenChange={(open) => !open && setProfileGateMissing(null)}
         missingCount={profileGateMissing ?? 0}
+        sharingAuthorised={profileGateAuthorised}
         profileHref={null}
         canOverride={false}
       />

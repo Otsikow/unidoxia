@@ -24,7 +24,7 @@ import { Search, ArrowUpDown, ExternalLink, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { isProfileGateClear, requiresCompleteProfileForStatus, studentProfileLink } from '@/lib/coursefinderProfile';
+import { isProfileGateClear, profileStillBlocks, requiresCompleteProfileForStatus, studentProfileLink } from '@/lib/coursefinderProfile';
 import { fetchApplicationProfileGate, overrideApplicationProfileGate } from '@/lib/applicationProfileGate';
 import { ProfileGateDialog } from '@/components/applications/ProfileGateDialog';
 
@@ -34,6 +34,7 @@ type StatusChange = {
   oldStatus: string;
   newStatus: Database['public']['Enums']['application_status'];
   missingCount: number;
+  sharingAuthorised: boolean;
 };
 
 interface Application {
@@ -175,7 +176,14 @@ export default function ApplicationsTab() {
         const gate = await fetchApplicationProfileGate(applicationId);
         if (!isProfileGateClear(gate)) {
           const studentId = applications.find((app) => app.id === applicationId)?.student_id ?? '';
-          setGateBlock({ applicationId, studentId, oldStatus, newStatus, missingCount: Number(gate.missing_count ?? 0) });
+          setGateBlock({
+            applicationId,
+            studentId,
+            oldStatus,
+            newStatus,
+            missingCount: profileStillBlocks(gate) ? Number(gate.missing_count ?? 0) : 0,
+            sharingAuthorised: Boolean(gate.sharing_authorised),
+          });
           return;
         }
       }
@@ -414,6 +422,7 @@ export default function ApplicationsTab() {
         open={Boolean(gateBlock)}
         onOpenChange={(open) => !open && setGateBlock(null)}
         missingCount={gateBlock?.missingCount ?? 0}
+        sharingAuthorised={gateBlock?.sharingAuthorised ?? false}
         profileHref={gateBlock?.studentId ? studentProfileLink(profile?.role, gateBlock.studentId) : null}
         canOverride={profile?.role === 'admin'}
         onOverride={async (reason) => {

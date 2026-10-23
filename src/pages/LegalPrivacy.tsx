@@ -125,7 +125,7 @@ const sections: Section[] = [
         send your application to that university because this is necessary to provide the service you have asked us for.
         Our application partner KC Overseas Education is based in India, which the UK does not treat as having equivalent
         data protection laws. We send your details to them only when this is needed to prepare and submit your
-        applications, and only with your signed authorisation. You can ask us for more information by emailing{' '}
+        applications, and only after you have given your authorisation in your UniDoxia account. You can ask us for more information by emailing{' '}
         <a className="text-primary" href="mailto:info@unidoxia.com">
           info@unidoxia.com
         </a>

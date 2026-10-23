@@ -313,8 +313,10 @@ CREATE TRIGGER enforce_coursefinder_education_record
 -- Exceptions:
 --   * Applications that already exist when this migration runs are grandfathered
 --     (coursefinder_gate_exempt = true). New applications default to false.
---   * An admin can override the check for one application with a logged reason
---     (application_profile_gate_overrides, through override_application_profile_gate()).
+--   * An admin can override the profile check for one application with a logged
+--     reason (application_profile_gate_overrides, through
+--     override_application_profile_gate()). The override does not cover the
+--     sharing authorisation (see below), which non-exempt applications always need.
 -- There is no service-role bypass: backend jobs moving incomplete applications on
 -- are blocked too, unless the application is exempt or overridden.
 
@@ -487,8 +489,162 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.coursefinder_profile_missing(uuid) FROM PUBLIC, anon, authenticated;
 
+-- Sharing authorisation. Before an application moves into a gated status the
+-- student must have authorised, in their own account, sharing their details
+-- with KC Overseas Education (India) and the universities they apply to.
+-- Append-only log: rows are added only by record_sharing_authorisation() when
+-- auth.uid() is the student's own user, so staff, agents, universities and the
+-- service role cannot record it for a student. A withdrawal (by email) is
+-- recorded by staff or admins as withdrawn_at; nothing else can change and rows
+-- cannot be deleted. The admin profile override does NOT bypass this.
+-- Grandfathered (exempt) applications are not blocked; the app prompts those
+-- students to give it.
+CREATE TABLE IF NOT EXISTS public.application_sharing_authorisations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL REFERENCES public.students(id) ON DELETE CASCADE,
+  authorised_by uuid NOT NULL,
+  wording_version text NOT NULL,
+  authorised_at timestamptz NOT NULL DEFAULT now(),
+  withdrawn_at timestamptz,
+  withdrawn_by uuid
+);
+
+CREATE INDEX IF NOT EXISTS application_sharing_authorisations_student_idx
+  ON public.application_sharing_authorisations (student_id);
+
+COMMENT ON TABLE public.application_sharing_authorisations IS
+  'Append-only log of students authorising UniDoxia to share their application details with KC Overseas Education (India) and their chosen universities. Written only by record_sharing_authorisation() for the signed-in student.';
+
+ALTER TABLE public.application_sharing_authorisations ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Students can read their own sharing authorisations" ON public.application_sharing_authorisations;
+CREATE POLICY "Students can read their own sharing authorisations"
+  ON public.application_sharing_authorisations
+  FOR SELECT
+  USING (authorised_by = auth.uid());
+-- No insert, update or delete policies. Staff and agents see only whether it
+-- has been given, through application_profile_gate_status().
+
+-- Guards that also apply to the service role (which bypasses RLS).
+CREATE OR REPLACE FUNCTION public.guard_application_sharing_authorisations()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    IF auth.uid() IS NULL OR NEW.authorised_by IS DISTINCT FROM auth.uid() OR NOT EXISTS (
+      SELECT 1 FROM public.students st WHERE st.id = NEW.student_id AND st.profile_id = auth.uid()
+    ) THEN
+      RAISE EXCEPTION 'Only the student can give this authorisation, from their own account.' USING ERRCODE = '42501';
+    END IF;
+    NEW.authorised_at := now();
+    NEW.withdrawn_at := NULL;
+    NEW.withdrawn_by := NULL;
+    RETURN NEW;
+  ELSIF TG_OP = 'UPDATE' THEN
+    IF OLD.withdrawn_at IS NULL AND NEW.withdrawn_at IS NOT NULL
+       AND (NEW.id, NEW.student_id, NEW.authorised_by, NEW.wording_version, NEW.authorised_at)
+           IS NOT DISTINCT FROM (OLD.id, OLD.student_id, OLD.authorised_by, OLD.wording_version, OLD.authorised_at) THEN
+      RETURN NEW;
+    END IF;
+    RAISE EXCEPTION 'Sharing authorisations cannot be changed, only withdrawn.' USING ERRCODE = '42501';
+  END IF;
+  RAISE EXCEPTION 'Sharing authorisations cannot be deleted.' USING ERRCODE = '42501';
+END;
+$$;
+
+DROP TRIGGER IF EXISTS guard_application_sharing_authorisations ON public.application_sharing_authorisations;
+CREATE TRIGGER guard_application_sharing_authorisations
+  BEFORE INSERT OR UPDATE OR DELETE ON public.application_sharing_authorisations
+  FOR EACH ROW
+  EXECUTE FUNCTION public.guard_application_sharing_authorisations();
+
+-- Whether a student has a current (not withdrawn) authorisation.
+CREATE OR REPLACE FUNCTION public.has_sharing_authorisation(p_student_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.application_sharing_authorisations sa
+    WHERE sa.student_id = p_student_id AND sa.withdrawn_at IS NULL
+  );
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.has_sharing_authorisation(uuid) FROM PUBLIC, anon, authenticated;
+
+-- The signed-in student records their own authorisation. There is no student
+-- ID argument: it is always the caller's own student record. Must match
+-- SHARING_AUTHORISATION_VERSION in src/lib/sharingAuthorisation.ts.
+CREATE OR REPLACE FUNCTION public.record_sharing_authorisation(p_wording_version text)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  current_version constant text := 'kc-share-v1-2026-10-23';
+  caller uuid := auth.uid();
+  own_student uuid;
+  row_id uuid;
+BEGIN
+  IF caller IS NULL THEN
+    RAISE EXCEPTION 'Only the student can give this authorisation, from their own account.' USING ERRCODE = '42501';
+  END IF;
+  SELECT st.id INTO own_student FROM public.students st WHERE st.profile_id = caller ORDER BY st.created_at LIMIT 1;
+  IF own_student IS NULL THEN
+    RAISE EXCEPTION 'Only the student can give this authorisation, from their own account.' USING ERRCODE = '42501';
+  END IF;
+  IF p_wording_version IS DISTINCT FROM current_version THEN
+    RAISE EXCEPTION 'This authorisation wording is out of date. Please reload the page.' USING ERRCODE = 'check_violation';
+  END IF;
+  SELECT sa.id INTO row_id FROM public.application_sharing_authorisations sa
+  WHERE sa.student_id = own_student AND sa.withdrawn_at IS NULL AND sa.wording_version = current_version
+  ORDER BY sa.authorised_at DESC LIMIT 1;
+  IF row_id IS NOT NULL THEN
+    RETURN row_id;
+  END IF;
+  INSERT INTO public.application_sharing_authorisations (student_id, authorised_by, wording_version)
+  VALUES (own_student, caller, current_version)
+  RETURNING id INTO row_id;
+  RETURN row_id;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.record_sharing_authorisation(text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.record_sharing_authorisation(text) TO authenticated;
+
+-- Staff or admins record a withdrawal the student asked for by email.
+CREATE OR REPLACE FUNCTION public.withdraw_sharing_authorisation(p_student_id uuid)
+RETURNS integer
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  changed integer;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.is_admin_or_staff(auth.uid()) THEN
+    RAISE EXCEPTION 'Only staff can record a withdrawal.' USING ERRCODE = '42501';
+  END IF;
+  UPDATE public.application_sharing_authorisations
+  SET withdrawn_at = now(), withdrawn_by = auth.uid()
+  WHERE student_id = p_student_id AND withdrawn_at IS NULL;
+  GET DIAGNOSTICS changed = ROW_COUNT;
+  RETURN changed;
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.withdraw_sharing_authorisation(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.withdraw_sharing_authorisation(uuid) TO authenticated;
+
 -- What the app shows before a status change. Students and universities get the
--- count only; admins and staff also get the list of missing items.
+-- count only; admins and staff also get the list of missing items. Everyone
+-- allowed to ask sees only whether the sharing authorisation has been given.
 CREATE OR REPLACE FUNCTION public.application_profile_gate_status(p_application_id uuid)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -524,7 +680,8 @@ BEGIN
   result := jsonb_build_object(
     'exempt', app.coursefinder_gate_exempt,
     'overridden', overridden,
-    'missing_count', COALESCE(cardinality(missing), 0)
+    'missing_count', COALESCE(cardinality(missing), 0),
+    'sharing_authorised', public.has_sharing_authorisation(app.student_id)
   );
   IF public.is_admin_or_staff(auth.uid()) THEN
     result := result || jsonb_build_object('missing', to_jsonb(missing));
@@ -598,6 +755,13 @@ BEGIN
   IF NEW.coursefinder_gate_exempt IS TRUE THEN
     RETURN NEW;
   END IF;
+
+  -- Checked before the admin override, which must not bypass it.
+  IF NOT public.has_sharing_authorisation(NEW.student_id) THEN
+    RAISE EXCEPTION 'Sharing authorisation not given. The student must authorise sharing with KC Overseas in their own UniDoxia account first.'
+      USING ERRCODE = 'check_violation';
+  END IF;
+
   IF TG_OP = 'UPDATE' AND EXISTS (
     SELECT 1 FROM public.application_profile_gate_overrides o WHERE o.application_id = NEW.id
   ) THEN
@@ -615,7 +779,7 @@ END;
 $$;
 
 COMMENT ON FUNCTION public.enforce_application_profile_gate() IS
-  'Blocks moving an application into a sent-on status (screening, offers, CAS or LOA, visa, enrolled) from any other status until the student profile is complete for CourseFinder, unless the application is grandfathered or an admin has overridden it.';
+  'Blocks moving an application into a sent-on status (screening, offers, CAS or LOA, visa, enrolled) from any other status until the student has given their sharing authorisation and their profile is complete for CourseFinder. Grandfathered applications are not checked; an admin override covers the profile only, never the authorisation.';
 
 DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
 CREATE TRIGGER enforce_application_profile_gate
@@ -625,7 +789,7 @@ CREATE TRIGGER enforce_application_profile_gate
 
 -- 5. Rollback (not run). To undo this migration, run the following by hand.
 -- Note: this deletes any answers students have saved in these columns, and the
--- log of profile check overrides.
+-- log of profile check overrides and the log of sharing authorisations.
 -- Re-applying after a rollback: every student who signed up after launch becomes
 -- an existing (legacy) student again (coursefinder_fields_required = false), and
 -- every application created after launch becomes grandfathered
@@ -634,9 +798,14 @@ CREATE TRIGGER enforce_application_profile_gate
 -- DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
 -- DROP FUNCTION IF EXISTS public.enforce_application_profile_gate();
 -- DROP FUNCTION IF EXISTS public.override_application_profile_gate(uuid, text);
+-- DROP FUNCTION IF EXISTS public.withdraw_sharing_authorisation(uuid);
+-- DROP FUNCTION IF EXISTS public.record_sharing_authorisation(text);
 -- DROP FUNCTION IF EXISTS public.application_profile_gate_status(uuid);
 -- DROP FUNCTION IF EXISTS public.coursefinder_profile_missing(uuid);
 -- DROP TABLE IF EXISTS public.application_profile_gate_overrides;
+-- DROP TABLE IF EXISTS public.application_sharing_authorisations;
+-- DROP FUNCTION IF EXISTS public.has_sharing_authorisation(uuid);
+-- DROP FUNCTION IF EXISTS public.guard_application_sharing_authorisations();
 -- ALTER TABLE public.applications DROP COLUMN IF EXISTS coursefinder_gate_exempt;
 -- DROP TRIGGER IF EXISTS enforce_coursefinder_required_fields ON public.students;
 -- DROP FUNCTION IF EXISTS public.enforce_coursefinder_required_fields();

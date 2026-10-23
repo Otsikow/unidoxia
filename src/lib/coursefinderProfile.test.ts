@@ -4,6 +4,7 @@ import {
   calculateCourseFinderCompleteness,
   COURSEFINDER_SUBMISSION_STATUSES,
   isProfileGateClear,
+  profileStillBlocks,
   isValidOverrideReason,
   profileGateMessage,
   studentProfileLink,
@@ -149,15 +150,15 @@ describe('application profile gate (grandfathering, override, bypasses)', () => 
   });
 
   it('lets an overridden application through, and needs a real reason to override', () => {
-    expect(isProfileGateClear({ exempt: false, overridden: true, missing_count: 12 })).toBe(true);
+    expect(isProfileGateClear({ exempt: false, overridden: true, missing_count: 12, sharing_authorised: true })).toBe(true);
     expect(isValidOverrideReason('too short')).toBe(false);
     expect(isValidOverrideReason('   short   ')).toBe(false);
     expect(isValidOverrideReason('Passport renewal in progress')).toBe(true);
   });
 
   it('holds back a new application with items missing, and clears a complete one', () => {
-    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 3 })).toBe(false);
-    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 0 })).toBe(true);
+    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 3, sharing_authorised: true })).toBe(false);
+    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 0, sharing_authorised: true })).toBe(true);
   });
 
   it('blocks skipping straight to an offer or later stage', () => {
@@ -209,5 +210,22 @@ describe('gated statuses (re-entry and non-gated moves)', () => {
     expect(match).not.toBeNull();
     const serverList = [...match![1].matchAll(/'([a-z_]+)'/g)].map((m) => m[1]).sort();
     expect(serverList).toEqual([...COURSEFINDER_SUBMISSION_STATUSES].sort());
+  });
+});
+
+describe('sharing authorisation in the gate', () => {
+  it('blocks a complete profile without the authorisation', () => {
+    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 0, sharing_authorised: false })).toBe(false);
+    expect(isProfileGateClear({ exempt: false, overridden: false, missing_count: 0, sharing_authorised: true })).toBe(true);
+  });
+
+  it('an admin override does not bypass the authorisation', () => {
+    expect(isProfileGateClear({ exempt: false, overridden: true, missing_count: 12, sharing_authorised: false })).toBe(false);
+    expect(isProfileGateClear({ exempt: false, overridden: true, missing_count: 12, sharing_authorised: true })).toBe(true);
+    expect(profileStillBlocks({ exempt: false, overridden: true, missing_count: 12 })).toBe(false);
+  });
+
+  it('does not block a grandfathered (exempt) application', () => {
+    expect(isProfileGateClear({ exempt: true, overridden: false, missing_count: 12, sharing_authorised: false })).toBe(true);
   });
 });

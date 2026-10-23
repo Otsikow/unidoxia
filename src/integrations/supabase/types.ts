@@ -476,6 +476,44 @@ export type Database = {
           },
         ]
       }
+      application_sharing_authorisations: {
+        Row: {
+          authorised_at: string
+          authorised_by: string
+          id: string
+          student_id: string
+          withdrawn_at: string | null
+          withdrawn_by: string | null
+          wording_version: string
+        }
+        Insert: {
+          authorised_at?: string
+          authorised_by: string
+          id?: string
+          student_id: string
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+          wording_version: string
+        }
+        Update: {
+          authorised_at?: string
+          authorised_by?: string
+          id?: string
+          student_id?: string
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+          wording_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_sharing_authorisations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_reviews: {
         Row: {
           application_id: string
@@ -5213,6 +5251,14 @@ export type Database = {
       override_application_profile_gate: {
         Args: { p_application_id: string; p_reason: string }
         Returns: string
+      }
+      record_sharing_authorisation: {
+        Args: { p_wording_version: string }
+        Returns: string
+      }
+      withdraw_sharing_authorisation: {
+        Args: { p_student_id: string }
+        Returns: number
       }
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }

@@ -138,14 +138,23 @@ export type ApplicationProfileGate = {
   exempt?: boolean | null;
   overridden?: boolean | null;
   missing_count?: number | null;
+  /** Whether the student has given their sharing authorisation (yes or no only). */
+  sharing_authorised?: boolean | null;
 };
 
 /**
  * Whether an application may move on. Applications created before go-live
- * (exempt) and those with a logged admin override are never held back.
+ * (exempt) are never held back. Every other application needs the student's
+ * sharing authorisation, which an admin override does not replace, and a
+ * complete profile or a logged admin override.
  */
 export const isProfileGateClear = (gate: ApplicationProfileGate | null | undefined) =>
-  Boolean(gate?.exempt) || Boolean(gate?.overridden) || Number(gate?.missing_count ?? 0) === 0;
+  Boolean(gate?.exempt) ||
+  (Boolean(gate?.sharing_authorised) && (Boolean(gate?.overridden) || Number(gate?.missing_count ?? 0) === 0));
+
+/** The profile part of the gate still blocks (not exempt, not overridden, items missing). */
+export const profileStillBlocks = (gate: ApplicationProfileGate | null | undefined) =>
+  !gate?.exempt && !gate?.overridden && Number(gate?.missing_count ?? 0) > 0;
 
 /** The short staff message: a count, not the full list. */
 export const profileGateMessage = (missingCount: number) =>
