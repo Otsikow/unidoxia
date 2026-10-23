@@ -27,12 +27,14 @@ export const BACKGROUND_PRIVACY_LINE =
   "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner KC Overseas Education (CourseFinder).";
 export const PRIVACY_NOTICE_PATH = '/legal/privacy';
 
-/** WAEC results cards are only asked of students who sat a WAEC exam or studied in a WAEC country. */
-export const WAEC_COUNTRIES = ['ghana', 'nigeria', 'sierra leone', 'liberia', 'gambia', 'the gambia'];
+/** Require a WAEC card only for an explicitly identified WAEC qualification.
+ * Country and generic SSCE/GCE names cannot identify the awarding body: schools
+ * in West Africa also offer Cambridge, IB, NECO and NABTEB qualifications.
+ * An unknown board remains incomplete under secondaryEducationSchema.
+ */
 export const isWaecApplicable = (value: Record<string, unknown>) => {
   const text = (key: string) => (typeof value[key] === 'string' ? (value[key] as string).trim().toLowerCase() : '');
-  if (/\b(waec|wassce|ssce|nabteb|neco)\b/.test(`${text('secondary_board')} ${text('secondary_qualification')}`)) return true;
-  return [text('country_of_education'), text('secondary_school_country')].some((country) => WAEC_COUNTRIES.includes(country));
+  return /\b(waec|wassce|west african examinations? council)\b/.test(`${text('secondary_board')} ${text('secondary_qualification')}`);
 };
 
 /** Visa refusal: structured answers only, no free text. */
@@ -292,7 +294,7 @@ export const secondaryEducationSchema = withChecks(
     const end = toMonthIndex(value.secondary_end_year, value.secondary_end_month);
     return start === null || end === null || end >= start;
   }, { ...always, path: ['secondary_end_year'], message: newRule('secondary end date must not be before the start date') }),
-  // WAEC results cards only apply to WAEC exams or West African countries.
+  // The awarding body/qualification determines whether a WAEC card applies.
   (value: Loose, ctx) => {
     if (!isWaecApplicable(value)) return;
     if (!blankToUndefined(value.waec_scratch_card_pin)) ctx.addIssue({ code: 'custom', path: ['waec_scratch_card_pin'], message: 'WAEC scratch-card PIN' });
