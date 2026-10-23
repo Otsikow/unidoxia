@@ -46,7 +46,7 @@ const en = {
       faq: "FAQ",
       feedback: "Feedback",
       visaCalculator: "Visa Calculator",
-      privacy: "Privacy Policy",
+      privacy: "Privacy Notice",
       terms: "Terms of Service",
     },
     status: {
@@ -127,7 +127,7 @@ const en = {
       accountLinks: {
         login: "Sign In",
         signup: "Get Started",
-        privacy: "Privacy Policy",
+        privacy: "Privacy Notice",
         terms: "Terms of Service",
       },
       copyright: "© {{year}} UniDoxia. All rights reserved.",

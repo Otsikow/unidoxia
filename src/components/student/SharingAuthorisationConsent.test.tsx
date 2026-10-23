@@ -152,6 +152,6 @@ describe('Privacy Notice wording added at re-QC', () => {
     );
     expect(page).toContain("Complain to the Information Commissioner's Office (ico.org.uk) if you are unhappy with how we use your data.");
     expect(page).toContain('>Privacy Notice</h1>');
-    expect(page).not.toMatch(/Privacy Policy|anonymize|unauthorized|program centers/);
+    expect(page).not.toMatch(/Privacy Policy|anonymize|unauthorized|program centers|advisors/);
   });
 });

@@ -58,7 +58,7 @@ export default function FreeConsultation() {
           <div><label htmlFor="enquiry-destination">Preferred destination</label><select id="enquiry-destination" name="destination" required defaultValue="" className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="" disabled>Select a destination</option>{['United Kingdom', 'Canada', 'United States', 'Australia', 'New Zealand', 'Ireland', 'Other', 'Not sure yet'].map(d => <option key={d}>{d}</option>)}</select></div>
           <div><label htmlFor="enquiry-question">Your question (optional)</label><Textarea id="enquiry-question" name="question" maxLength={1000} rows={4} /></div>
           <div className="hidden" aria-hidden="true"><label>Website<Input name="website" tabIndex={-1} autoComplete="off" /></label></div>
-          <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="consent" required className="mt-1" /><span>I agree to UniDoxia using these details to respond to my enquiry. Read our <Link to="/legal/privacy" className="text-primary underline">privacy policy</Link>.</span></label>
+          <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="consent" required className="mt-1" /><span>I agree to UniDoxia using these details to respond to my enquiry. Read our <Link to="/legal/privacy" className="text-primary underline">Privacy Notice</Link>.</span></label>
           {error && <p role="alert" className="text-destructive">{error}</p>}
           <Button type="submit" disabled={pending} className="w-full">{pending ? 'Sending enquiry…' : 'Send enquiry'}</Button>
         </form>}
