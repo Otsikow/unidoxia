@@ -1,51 +1,33 @@
-# University Showcase & Claim System — production readiness report
+# Release capabilities and blockers (inspection only, nothing changed)
 
-Read-only audit. Nothing was changed in code or the database.
+## 1. Deploying `submit-website-lead`
+- This project runs on Lovable Cloud. Pushing to GitHub or merging PR #1239 does **not** deploy edge functions. Migrations also never apply automatically.
+- Supported route: once the PR is merged into the synced branch and its code shows up in this project, ask me in chat. I then deploy `submit-website-lead` with the Cloud deploy tool, check its logs, and call it with a test request.
+- `supabase/config.toml` already has `[functions.submit-website-lead] verify_jwt = false`. Leave that unchanged.
+- Any secrets the new function needs have to be present in Cloud secrets first. I check this before deploying.
 
-## Findings
+## 2. Hosting checks (live as of 23 Oct 2026)
+- `/this-page-does-not-exist` returns HTTP 200. The SPA fallback is active.
+- `/about` already returns its own canonical in raw HTML. The `dist/<route>/index.html` prerender files are being served.
+- `www` → apex redirect is **302**, with path and query preserved.
 
-**1. Migration `20260812110000_university_showcase_claims.sql` — NOT applied**
-- `university_claims` and `university_memberships` do not exist in the production database.
-- None of the new `universities` columns exist (`slug`, `listing_status`, `verification_status`, `partnership_tier`, `claimed_at`, `source_url`, `source_type`, `last_source_checked_at`, `academic_year`, `fee_year`, `outreach_status`).
+## 3. What Lovable hosting can and cannot do
+| Requirement | Possible through Lovable? |
+|---|---|
+| Serve nested `dist/<route>/index.html` | Yes. It works in production today |
+| Real HTTP 404 + `X-Robots-Tag: noindex` for unknown paths | No. The fallback is fixed, and `_redirects`, `_headers` and similar files are ignored. The React NotFound page only adds a meta noindex, and the status stays 200 |
+| Keep auth/dashboard routes as SPA routes | Yes. This is the default |
+| University UUID → slug 301 | No server-side redirect is available. Client-side only |
+| www → apex | The Domains toggle exists, but its status code is not documented or configurable. Today it is 302 |
 
-**2. Edge Functions — NOT deployed**
-- `submit-university-claim` and `verify-university-claim` both return `NOT_FOUND` on the live functions host. The code exists in the repo and both are declared in `supabase/config.toml` with `verify_jwt = false`.
+## 4. Configuration outside Lovable
+- **www 301**: a Cloudflare Single Redirect rule as written in `docs/SEO-HOSTING.md`. This needs whoever controls the unidoxia.com Cloudflare zone. I cannot verify that from here.
+- **Real 404s and selective fallback**: either (a) Lovable hosting support adds selective fallback, which I cannot confirm exists, or (b) the opt-in Cloudflare Worker in `hosting/`. Option (b) replaces the frontend origin, requires a deliberate hosting decision, a Cloudflare account and the wrangler deploy, and future releases must deploy the Worker and `dist` together.
+- Proxying the zone in front of Lovable is a separate option. Lovable supports that through proxy mode, but this was not tested.
 
-**3. Secrets**
-- `RESEND_API_KEY` — configured.
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — injected automatically into every function at runtime; no action needed.
-- `SITE_URL` — not configured. Not a blocker: `submit-university-claim` falls back to `https://unidoxia.com`, which is the correct production origin.
-
-**4. Published frontend**
-- The live bundle at unidoxia.com already contains the claim code (the `submit-university-claim` / `university-claims/verify` strings are present in the deployed JS), and the public routes `/universities/:id/claim`, `/university-claims/verify` and admin `university-claims` are registered. The published site is on the 41c0ce31 feature code; the frontend is ahead of the backend, so the claim UI currently fails at the API layer.
-
-**5. Migration conflict check against live data**
-- 3 universities exist; no duplicate name-derived slugs, so the backfill plus `NOT NULL` plus unique index is safe.
-- No tenant with slug `teesside-university`, `university-of-sunderland` or `northumbria-university`; no university named the same; none of the seed program IDs exist. The seed adds 3 new tenants, 3 universities and 6 programs without touching existing records.
-- `tenants.slug` is unique, so the `ON CONFLICT (slug)` upserts are valid.
-- The `set_university_slug` trigger fires on insert/update of `name`/`slug` only; it does not conflict with existing university triggers.
-
-**Defect found in the migration — missing table grants**
-The migration creates `university_claims` and `university_memberships`, enables RLS and adds policies, but issues no `GRANT` statements. Without grants the Data API returns a permission error, so the admin claim-review page (`AdminUniversityClaims.tsx`) and the claimant read policy will fail even after the migration runs. This must be fixed before applying.
-
-## Blockers
-
-1. Migration not applied (and missing grants as written).
-2. Edge Functions not deployed.
-
-Neither blocks anything else; both are actionable from this project.
-
-## Safest activation sequence
-
-1. Apply the migration with grants added — a `GRANT SELECT, INSERT, UPDATE, DELETE ON public.university_claims TO authenticated`, the same for `university_memberships`, and `GRANT ALL` on both to `service_role` (no `anon` grant; claims are never publicly readable). Everything else in the file is already idempotent.
-2. Deploy `submit-university-claim` and `verify-university-claim` (automatic once the functions are touched in a build step).
-3. Smoke test read-only first: confirm `/universities` still lists, then confirm a claim submission with a public-domain email is rejected and a mismatched-domain email is rejected, before any real institutional submission.
-4. Verify one real end-to-end claim: submit, receive the Resend verification email, follow the link, confirm the claim moves to `awaiting_admin_review`, then approve it from the admin queue.
-5. Optionally set `SITE_URL` as a secret only if you ever want verification links pointed at a non-production origin.
-
-## What I can do from here
-
-- Apply the migration (with the grant fix) — yes, via the migration flow with your approval.
-- Deploy both Edge Functions — yes.
-- Set secrets — no; `SITE_URL` would need to be added by you in Project Settings → Secrets, and it is not required.
-- Publish the frontend — not required; the live site already has the code.
+## 5. Release steps once you give the instruction
+1. Merge PR #1239 into the synced branch and confirm the sync reached this project.
+2. In chat: deploy `submit-website-lead`, then smoke test it and check its logs (no notifications).
+3. Apply any new migrations only if you list them.
+4. Publish the frontend (Publish → Update).
+5. Re-run the `curl` acceptance checks. 404 and 301 will only pass after the external steps in section 4.
