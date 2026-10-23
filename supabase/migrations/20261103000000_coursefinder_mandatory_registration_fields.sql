@@ -580,6 +580,18 @@ BEGIN
 END;
 $$;
 
+-- Explicit access for both new tables, as other migrations do for new tables
+-- (the project does not rely on default privileges). Signed-in users may only
+-- read, and RLS decides which rows. Writes go through the SECURITY DEFINER
+-- functions in this migration. The service role gets what it needs to read,
+-- export and maintain the rows, still subject to the guard triggers, but never
+-- TRUNCATE.
+REVOKE ALL ON public.application_sharing_authorisations FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON public.application_profile_gate_overrides FROM PUBLIC, anon, authenticated;
+GRANT SELECT ON public.application_sharing_authorisations TO authenticated;
+GRANT SELECT ON public.application_profile_gate_overrides TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.application_sharing_authorisations TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.application_profile_gate_overrides TO service_role;
 REVOKE TRUNCATE ON public.application_sharing_authorisations FROM PUBLIC, anon, authenticated, service_role;
 REVOKE TRUNCATE ON public.application_profile_gate_overrides FROM PUBLIC, anon, authenticated, service_role;
 
@@ -837,6 +849,12 @@ CREATE TRIGGER enforce_application_profile_gate
   FOR EACH ROW
   EXECUTE FUNCTION public.enforce_application_profile_gate();
 
+-- Trigger functions are never called directly. Triggers still fire for every
+-- role without EXECUTE, so nobody needs it.
+REVOKE EXECUTE ON FUNCTION public.enforce_application_profile_gate() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.guard_application_sharing_authorisations() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.refuse_log_truncate() FROM PUBLIC, anon, authenticated;
+
 -- 5. Rollback (not run). To undo this migration, run the following by hand.
 -- Note: this deletes any answers students have saved in these columns, and the
 -- log of profile check overrides and the log of sharing authorisations.
@@ -847,6 +865,9 @@ CREATE TRIGGER enforce_application_profile_gate
 -- an existing (legacy) student again (coursefinder_fields_required = false), and
 -- every application created after launch becomes grandfathered
 -- (coursefinder_gate_exempt = true). Fix those flags by hand if you re-apply.
+--
+-- Dropping the two tables also removes the grants above, so there is nothing
+-- extra to revoke. The function grants go with the functions.
 --
 -- DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
 -- DROP FUNCTION IF EXISTS public.enforce_application_profile_gate();
