@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateCourseFinderCompleteness,
+  gateOptions,
   getCourseFinderProfileSections,
+  getCourseFinderSubmissionBlockers,
+  getMissingProfileFields,
+  requiresCompleteProfileForStatus,
   validateCourseFinderDegree,
   validateCourseFinderTest,
 } from './coursefinderProfile';
@@ -56,5 +60,79 @@ describe('CourseFinder profile rules', () => {
   it('keeps English tests optional but validates an added test', () => {
     expect(validateCourseFinderTest({})).toHaveLength(3);
     expect(getCourseFinderProfileSections(completeStudent, [], [], true).find((s) => s.id === 'academic')?.completed).toBe(true);
+  });
+});
+
+const TODAY = new Date('2026-10-23T12:00:00Z');
+const completeDegree = {
+  institution_name: 'University of Ghana', country: 'Ghana', state_region: 'Greater Accra', city: 'Legon', degree_title: 'BSc Economics',
+  final_grade: 'Second Class Upper', grade_scale: 'CGPA out of 4', gpa: 3.4, language_of_instruction: 'English', start_date: '2019-09-01', end_date: '2023-07-31',
+};
+const gateSections = ['personal', 'passport', 'addresses', 'emergency', 'background'];
+const legacyStudent = {
+  ...completeStudent,
+  coursefinder_fields_required: false,
+  dependants_travelling: null,
+  secondary_final_grade: null,
+  emergency_contact_email: 'kojo at example',
+  work_experience: [],
+};
+
+describe('existing students are never locked out', () => {
+  it('does not hide My Documents or refuse a personal details save for the new fields', () => {
+    // Same call shape as Documents.tsx and PersonalInfoTab.tsx.
+    const missing = getCourseFinderProfileSections(legacyStudent, [], [], false, TODAY, gateOptions(legacyStudent))
+      .filter((section) => gateSections.includes(section.id))
+      .flatMap((section) => section.missing);
+    expect(missing).toEqual([]);
+  });
+
+  it('treats a student with no flag yet (before the migration) as existing', () => {
+    const { coursefinder_fields_required: _flag, ...noFlag } = legacyStudent;
+    expect(gateOptions(noFlag)).toEqual({ strict: false });
+  });
+
+  it('still shows the new fields in the banner and checklist', () => {
+    const missing = getMissingProfileFields(getCourseFinderProfileSections(legacyStudent, [], [], false, TODAY));
+    expect(missing).toEqual(expect.arrayContaining(['number of dependant children travelling', 'secondary final grade']));
+  });
+
+  it('holds new students to every field when they save', () => {
+    const newStudent = { ...legacyStudent, coursefinder_fields_required: true };
+    const missing = getCourseFinderProfileSections(newStudent, [], [], false, TODAY, gateOptions(newStudent))
+      .filter((section) => gateSections.includes(section.id))
+      .flatMap((section) => section.missing);
+    expect(missing).toEqual(expect.arrayContaining(['number of dependant children travelling', 'emergency contact email must be a valid email address']));
+  });
+
+  it('does not count a degree without a final grade against an existing student when saving', () => {
+    expect(validateCourseFinderDegree({ ...completeDegree, final_grade: '' }, false)).toEqual([]);
+    expect(validateCourseFinderDegree({ ...completeDegree, final_grade: '' }, true)).toEqual(['final grade']);
+  });
+});
+
+describe('sending an application on to CourseFinder', () => {
+  it('needs a complete profile when moving into screening', () => {
+    expect(requiresCompleteProfileForStatus('submitted', 'screening')).toBe(true);
+    expect(requiresCompleteProfileForStatus('draft', 'screening')).toBe(true);
+    expect(requiresCompleteProfileForStatus('screening', 'screening')).toBe(false);
+    expect(requiresCompleteProfileForStatus('screening', 'conditional_offer')).toBe(false);
+    expect(requiresCompleteProfileForStatus('submitted', 'withdrawn')).toBe(false);
+  });
+
+  it('blocks existing students too, including missing final grades and gap history', () => {
+    const blockers = getCourseFinderSubmissionBlockers(legacyStudent, [{ ...completeDegree, final_grade: '' }], TODAY);
+    expect(blockers).toEqual(expect.arrayContaining(['secondary final grade', 'degree 1: final grade', 'number of dependant children travelling']));
+    expect(blockers.some((field) => field.startsWith('gap or work history'))).toBe(true);
+  });
+
+  it('keeps the six-month rule for "no gap"', () => {
+    const student = { ...completeStudent, work_experience: [], no_gap_since_study: true };
+    expect(getCourseFinderSubmissionBlockers(student, [{ ...completeDegree, end_date: '2026-07-31' }], TODAY)).toEqual([]);
+    expect(getCourseFinderSubmissionBlockers(student, [{ ...completeDegree, end_date: '2025-07-31' }], TODAY).length).toBeGreaterThan(0);
+  });
+
+  it('lets a complete profile through without documents being checked here', () => {
+    expect(getCourseFinderSubmissionBlockers(completeStudent, [completeDegree], TODAY)).toEqual([]);
   });
 });

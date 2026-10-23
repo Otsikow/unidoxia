@@ -7,8 +7,18 @@ import {
   passportSchema,
   personalSchema,
   secondaryEducationSchema,
+  isStrictStudent,
   validateGapHistory,
 } from './studentRegistrationSchema';
+
+export type CourseFinderSectionOptions = {
+  /**
+   * true: every CourseFinder field, used for the banner, checklist and staff submission.
+   * false: leave out the fields added in October 2026, used to gate saves and pages for
+   * existing students (coursefinder_fields_required = false) so they are never blocked.
+   */
+  strict?: boolean;
+};
 
 export type CourseFinderStudent = Record<string, unknown>;
 
@@ -46,8 +56,8 @@ const present = (value: unknown) =>
 const requiredFields = (record: CourseFinderStudent, fields: Array<[string, string]>) =>
   fields.filter(([key]) => !present(record[key])).map(([, label]) => label);
 
-export const validateCourseFinderDegree = (degree: CourseFinderDegree): string[] =>
-  issueMessages(degreeSchema.safeParse(degree));
+export const validateCourseFinderDegree = (degree: CourseFinderDegree, strict = true): string[] =>
+  issueMessages(degreeSchema.safeParse(degree), strict);
 
 export const validateCourseFinderTest = (test: CourseFinderTest): string[] =>
   requiredFields(test as CourseFinderStudent, [
@@ -62,22 +72,23 @@ export const getCourseFinderProfileSections = (
   tests: CourseFinderTest[] = [],
   documentsComplete = false,
   today: Date = new Date(),
+  { strict = true }: CourseFinderSectionOptions = {},
 ): CourseFinderSection[] => {
-  const personal = issueMessages(personalSchema.safeParse(student));
-  const passport = issueMessages(passportSchema.safeParse(student));
-  const addresses = issueMessages(addressesSchema.safeParse(student));
-  const emergency = issueMessages(emergencySchema.safeParse(student));
-  const background = issueMessages(backgroundSchema.safeParse(student));
+  const personal = issueMessages(personalSchema.safeParse(student), strict);
+  const passport = issueMessages(passportSchema.safeParse(student), strict);
+  const addresses = issueMessages(addressesSchema.safeParse(student), strict);
+  const emergency = issueMessages(emergencySchema.safeParse(student), strict);
+  const background = issueMessages(backgroundSchema.safeParse(student), strict);
 
-  const academic = issueMessages(secondaryEducationSchema.safeParse(student));
+  const academic = issueMessages(secondaryEducationSchema.safeParse(student), strict);
   degrees.forEach((degree, index) => {
-    academic.push(...validateCourseFinderDegree(degree).map((field) => `degree ${index + 1}: ${field}`));
+    academic.push(...validateCourseFinderDegree(degree, strict).map((field) => `degree ${index + 1}: ${field}`));
   });
   tests.forEach((test, index) => {
     academic.push(...validateCourseFinderTest(test).map((field) => `English test ${index + 1}: ${field}`));
   });
 
-  const history = validateGapHistory(student, degrees, today);
+  const history = strict ? validateGapHistory(student, degrees, today) : [];
 
   return [
     { id: 'personal', title: 'Personal details', description: 'Registration and personal information', completed: personal.length === 0, missing: personal },
@@ -85,7 +96,7 @@ export const getCourseFinderProfileSections = (
     { id: 'addresses', title: 'Addresses', description: 'Home address, and permanent address if different', completed: addresses.length === 0, missing: addresses },
     { id: 'emergency', title: 'Emergency contact', description: 'One complete emergency contact', completed: emergency.length === 0, missing: emergency },
     { id: 'background', title: 'Background questions', description: 'All four yes or no answers, with details where needed', completed: background.length === 0, missing: background },
-    { id: 'academic', title: 'Education history', description: 'Secondary education, final grades, WAEC details and complete added records', completed: academic.length === 0, missing: academic },
+    { id: 'academic', title: 'Education history', description: 'Secondary education, final grades, WAEC details where they apply, and complete added records', completed: academic.length === 0, missing: academic },
     { id: 'history', title: 'Gap or work history', description: 'What you have done since your last study', completed: history.length === 0, missing: history },
     { id: 'documents', title: 'Required documents', description: 'All documents, including one accepted form of English proof', completed: documentsComplete, missing: documentsComplete ? [] : ['required documents'] },
   ];
@@ -101,3 +112,28 @@ export const sectionTab = (id: CourseFinderSection['id']) =>
 
 export const calculateCourseFinderCompleteness = (sections: CourseFinderSection[]) =>
   Math.round((sections.filter((section) => section.completed).length / sections.length) * 100);
+
+/** Options for gating saves and pages: strict only for students flagged as new. */
+export const gateOptions = (student: CourseFinderStudent | null | undefined): CourseFinderSectionOptions => ({
+  strict: isStrictStudent(student),
+});
+
+/**
+ * Statuses that send an application on from UniDoxia (to CourseFinder or the
+ * university). Moving an application into one of these needs a complete profile.
+ */
+export const COURSEFINDER_SUBMISSION_STATUSES = new Set(['screening']);
+
+export const requiresCompleteProfileForStatus = (oldStatus: string | null | undefined, newStatus: string) =>
+  COURSEFINDER_SUBMISSION_STATUSES.has(newStatus) && !COURSEFINDER_SUBMISSION_STATUSES.has(String(oldStatus ?? ''));
+
+/**
+ * Every missing CourseFinder field (including final grades and gap history) for
+ * a student, regardless of whether they are new or existing. Empty when the
+ * profile can be sent to CourseFinder.
+ */
+export const getCourseFinderSubmissionBlockers = (
+  student: CourseFinderStudent,
+  degrees: CourseFinderDegree[] = [],
+  today: Date = new Date(),
+) => getMissingProfileFields(getCourseFinderProfileSections(student, degrees, [], false, today, { strict: true }));

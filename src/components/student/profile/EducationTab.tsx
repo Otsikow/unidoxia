@@ -8,8 +8,12 @@ import { useToast } from '@/hooks/use-toast';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { validateCourseFinderDegree } from '@/lib/coursefinderProfile';
 import {
+  FINAL_GRADE_HELPER,
+  NO_GAP_MESSAGES,
   NO_GAP_THRESHOLD_MONTHS,
-  canDeclareNoGap,
+  getNoGapStatus,
+  isStrictStudent,
+  isWaecApplicable,
   gapHistoryEntrySchema,
   getLastStudyEndMonthIndex,
   issueMessages,
@@ -32,6 +36,7 @@ const emptyWork: Work = { employer: '', job_title: '', city: '', country: '', st
 const text = (value: unknown) => typeof value === 'string' ? value : '';
 
 export function EducationTab({ student, onUpdate }: Props) {
+  const strict = isStrictStudent(student);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -61,14 +66,22 @@ export function EducationTab({ student, onUpdate }: Props) {
 
   const saveSecondary = async (event: React.FormEvent) => {
     event.preventDefault();
-    const problems = issueMessages(secondaryEducationSchema.safeParse(secondary));
+    // Existing students are only held to the fields they had before October 2026.
+    const problems = issueMessages(secondaryEducationSchema.safeParse(secondary), strict);
     if (problems.length) { toast({ title: 'Check your education details', description: `Still needed: ${problems.join(', ')}.`, variant: 'destructive' }); return; }
     setLoading(true);
-    const payload = { ...secondary, secondary_start_month: Number(secondary.secondary_start_month), secondary_start_year: Number(secondary.secondary_start_year), secondary_end_month: Number(secondary.secondary_end_month), secondary_end_year: Number(secondary.secondary_end_year) };
+    const waec = isWaecApplicable(secondary);
+    // If the new dates mean "no gap" no longer applies, clear the tick rather than keep a stale answer.
+    const clearNoGap = noGap && getNoGapStatus(getLastStudyEndMonthIndex(secondary, degrees)) !== 'allowed';
+    const payload = { ...secondary, secondary_start_month: Number(secondary.secondary_start_month), secondary_start_year: Number(secondary.secondary_start_year), secondary_end_month: Number(secondary.secondary_end_month), secondary_end_year: Number(secondary.secondary_end_year), waec_scratch_card_pin: waec ? secondary.waec_scratch_card_pin : null, waec_scratch_card_serial: waec ? secondary.waec_scratch_card_serial : null, ...(clearNoGap ? { no_gap_since_study: false } : {}) };
     const { error } = await supabase.from('students').update(payload).eq('id', student.id);
     setLoading(false);
     if (error) toast({ title: 'Unable to save academic details', description: error.message, variant: 'destructive' });
-    else { toast({ title: 'Academic details saved' }); await refresh(); }
+    else {
+      if (clearNoGap) setNoGap(false);
+      toast({ title: 'Academic details saved', description: clearNoGap ? 'Your dates mean "no gap" no longer applies, so please add your gap or work history.' : undefined });
+      await refresh();
+    }
   };
 
   const openDegree = (record?: Degree) => {
@@ -80,7 +93,7 @@ export function EducationTab({ student, onUpdate }: Props) {
   const saveDegree = async (event: React.FormEvent) => {
     event.preventDefault();
     const payload = { ...degree, level: 'degree', gpa: Number(degree.gpa), student_id: student.id };
-    const missing = validateCourseFinderDegree(payload);
+    const missing = validateCourseFinderDegree(payload, strict);
     if (missing.length) { toast({ title: 'Check this education entry', description: `Still needed: ${missing.join(', ')}.`, variant: 'destructive' }); return; }
     setLoading(true);
     const result = editing ? await supabase.from('education_records').update(payload).eq('id', editing.id) : await supabase.from('education_records').insert(payload);
@@ -113,9 +126,16 @@ export function EducationTab({ student, onUpdate }: Props) {
   };
 
   const lastStudyEnd = useMemo(() => getLastStudyEndMonthIndex(secondary, degrees), [secondary, degrees]);
-  const noGapAllowed = canDeclareNoGap(lastStudyEnd);
+  const noGapStatus = getNoGapStatus(lastStudyEnd);
+  const noGapAllowed = noGapStatus === 'allowed';
+  // Ticked earlier, but later date changes mean it no longer applies.
+  const noGapStale = noGap && !noGapAllowed;
 
   const saveNoGap = async (checked: boolean) => {
+    if (checked && !noGapAllowed) {
+      toast({ title: 'You cannot choose "no gap" yet', description: noGapStatus === 'no-dates' ? NO_GAP_MESSAGES['no-dates'] : NO_GAP_MESSAGES['too-long-ago'], variant: 'destructive' });
+      return;
+    }
     setNoGap(checked);
     const { error } = await supabase.from('students').update({ no_gap_since_study: checked }).eq('id', student.id);
     if (error) { setNoGap(!checked); toast({ title: 'Unable to save your answer', description: error.message, variant: 'destructive' }); }
@@ -131,8 +151,8 @@ export function EducationTab({ student, onUpdate }: Props) {
     <form onSubmit={saveSecondary}><Card><CardHeader><CardTitle>Education history: secondary school</CardTitle><CardDescription>All fields in this section are required. Add any college or university below.</CardDescription></CardHeader><CardContent className="space-y-4"><div className={grid}>
       {field('country_of_education', 'Country of education')}{field('highest_education_level', 'Highest level of education')}{field('secondary_board', 'Board', 'text')}{field('secondary_qualification', 'Qualification')}{field('secondary_school_name', 'School name')}{field('secondary_school_country', 'School country')}{field('secondary_school_state', 'School state or region')}{field('secondary_school_city', 'School city')}{field('secondary_start_month', 'Start month', 'number', 'Month as a number, for example 9 for September.', month)}{field('secondary_start_year', 'Start year', 'number', undefined, year)}{field('secondary_end_month', 'End month', 'number', 'Must not be before your start date.', month)}{field('secondary_end_year', 'End year', 'number', undefined, year)}{field('secondary_language_of_instruction', 'Language of instruction')}
       <div className="space-y-2"><Label>Grades band *</Label><Select value={secondary.secondary_grades_band} onValueChange={(value) => setSecondary((current) => ({ ...current, secondary_grades_band: value }))}><SelectTrigger><SelectValue placeholder="Select percentage band" /></SelectTrigger><SelectContent>{['90-100%', '80-89%', '70-79%', '60-69%', '50-59%', 'Below 50%'].map((band) => <SelectItem key={band} value={band}>{band}</SelectItem>)}</SelectContent></Select></div>
-      <div className="md:col-span-2">{field('secondary_final_grade', 'Final grade', 'text', 'Your WASSCE result as shown on your certificate, for example "Aggregate 12" or "A1 x 6, B2 x 2".')}</div>
-      {field('waec_scratch_card_pin', 'WAEC results scratch-card PIN')}{field('waec_scratch_card_serial', 'WAEC results scratch-card serial number')}
+      <div className="md:col-span-2">{field('secondary_final_grade', 'Final grade', 'text', FINAL_GRADE_HELPER)}</div>
+      {isWaecApplicable(secondary) && <>{field('waec_scratch_card_pin', 'WAEC results scratch-card PIN')}{field('waec_scratch_card_serial', 'WAEC results scratch-card serial number')}</>}
     </div><Button type="submit" disabled={loading}>{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save secondary school details</Button></CardContent></Card></form>
 
     <Card><CardHeader><div className="flex items-center justify-between gap-4"><div><CardTitle>Education history: college and university</CardTitle><CardDescription>Add each diploma or degree you have studied for. Every field is required for each entry.</CardDescription></div><Button type="button" onClick={() => openDegree()}><Plus className="mr-2 h-4 w-4" />Add entry</Button></div></CardHeader><CardContent className="space-y-3">{degrees.length === 0 ? <p className="text-sm text-muted-foreground">No college or university entries added yet.</p> : degrees.map((record) => <div key={record.id} className="flex items-center justify-between rounded-lg border p-4"><div><p className="font-medium">{record.degree_title}</p><p className="text-sm text-muted-foreground">{record.institution_name}, {record.city}, {record.country}</p><p className="text-sm text-muted-foreground">{record.start_date?.slice(0, 7)} to {record.end_date?.slice(0, 7) || 'present'}{record.final_grade ? `, ${record.final_grade}` : ''}</p></div><div className="flex gap-2"><Button type="button" size="icon" variant="outline" onClick={() => openDegree(record)} aria-label="Edit degree"><Pencil className="h-4 w-4" /></Button><Button type="button" size="icon" variant="outline" onClick={() => void removeDegree(record)} aria-label="Remove degree"><Trash2 className="h-4 w-4" /></Button></div></div>)}</CardContent></Card>
@@ -140,7 +160,7 @@ export function EducationTab({ student, onUpdate }: Props) {
     <Card><CardHeader><CardTitle>Gap or work history since your last study *</CardTitle><CardDescription>Tell us what you have done since you finished studying, for example jobs, national service, volunteering, caring for family or time out. Add one entry for each period.</CardDescription></CardHeader><CardContent className="space-y-4">
       {work.map((role, index) => <div key={`${role.employer}-${index}`} className="flex items-start justify-between rounded-lg border p-3"><div><p className="font-medium">{role.job_title ? `${role.job_title}, ${role.employer}` : role.employer}</p><p className="text-sm text-muted-foreground">{role.start_date} to {role.end_date || 'present'}</p></div><Button type="button" size="icon" variant="ghost" aria-label="Remove entry" onClick={() => void saveWork(work.filter((_, itemIndex) => itemIndex !== index))}><Trash2 className="h-4 w-4" /></Button></div>)}
       {!noGap && <><div className={grid}>
-        <div className="space-y-2"><Label htmlFor="work-employer">Activity or employer *</Label><Input id="work-employer" value={workDraft.employer} placeholder="For example National Service or Mensah Traders" onChange={(event) => setWorkDraft((current) => ({ ...current, employer: event.target.value }))} /></div>
+        <div className="space-y-2"><Label htmlFor="work-employer">Activity or employer *</Label><Input id="work-employer" value={workDraft.employer} placeholder="For example National Service" onChange={(event) => setWorkDraft((current) => ({ ...current, employer: event.target.value }))} /></div>
         <div className="space-y-2"><Label htmlFor="work-job_title">Role or what you did (optional)</Label><Input id="work-job_title" value={workDraft.job_title} onChange={(event) => setWorkDraft((current) => ({ ...current, job_title: event.target.value }))} /></div>
         <div className="space-y-2"><Label htmlFor="work-start_date">From *</Label><Input id="work-start_date" type="date" value={workDraft.start_date} onChange={(event) => setWorkDraft((current) => ({ ...current, start_date: event.target.value }))} /></div>
         <div className="space-y-2"><Label htmlFor="work-end_date">To *</Label><Input id="work-end_date" type="date" disabled={workDraft.is_current} min={workDraft.start_date || undefined} value={workDraft.is_current ? '' : workDraft.end_date} onChange={(event) => setWorkDraft((current) => ({ ...current, end_date: event.target.value }))} /><div className="flex items-center gap-2"><Checkbox id="work-is_current" checked={workDraft.is_current === true} onCheckedChange={(checked) => setWorkDraft((current) => ({ ...current, is_current: checked === true }))} /><Label htmlFor="work-is_current" className="font-normal">I am still doing this</Label></div></div>
@@ -150,7 +170,9 @@ export function EducationTab({ student, onUpdate }: Props) {
       </div><Button type="button" variant="outline" onClick={() => void addWork()}><Plus className="mr-2 h-4 w-4" />Add to history</Button></>}
       <div className="space-y-1 rounded-lg border border-dashed p-3">
         <div className="flex items-center gap-2"><Checkbox id="no-gap" checked={noGap} disabled={!noGap && !noGapAllowed} onCheckedChange={(checked) => void saveNoGap(checked === true)} /><Label htmlFor="no-gap" className="font-normal">I have had no gap since my last study</Label></div>
-        <p className="text-xs text-muted-foreground">{noGapAllowed ? `Only tick this if you finished studying in the past ${NO_GAP_THRESHOLD_MONTHS} months or are still studying.` : `You finished studying more than ${NO_GAP_THRESHOLD_MONTHS} months ago, so please add what you have done since.`}</p>
+        {noGapStale
+          ? <p className="text-xs font-medium text-destructive" role="alert">{noGapStatus === 'no-dates' ? NO_GAP_MESSAGES['no-dates'] : NO_GAP_MESSAGES['too-long-ago']} Untick this box and add your history instead.</p>
+          : <p className="text-xs text-muted-foreground">{noGapAllowed ? `Only tick this if you finished studying in the past ${NO_GAP_THRESHOLD_MONTHS} months or are still studying.` : NO_GAP_MESSAGES[noGapStatus]}</p>}
       </div>
     </CardContent></Card>
 

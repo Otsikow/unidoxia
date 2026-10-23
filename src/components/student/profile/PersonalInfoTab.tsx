@@ -6,9 +6,15 @@ import type { Tables } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
-import { getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
+import { Link } from 'react-router-dom';
+import { gateOptions, getCourseFinderProfileSections } from '@/lib/coursefinderProfile';
 import {
+  BACKGROUND_PRIVACY_LINE,
   EMERGENCY_EMAIL_HINT,
+  PRIVACY_NOTICE_PATH,
+  VISA_REFUSAL_REASONS,
+  VISA_TYPES,
+  isStrictStudent,
   PASSPORT_NOTE,
   PROFILE_FORM_SCHEMAS,
   fieldErrors,
@@ -23,7 +29,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 
 interface Props { student: Tables<'students'>; onUpdate: () => void }
 type Form = ReturnType<typeof extractForm>;
@@ -40,7 +45,7 @@ const extractForm = (student: Tables<'students'>) => {
     address_line_1: text(student.address_line_1), country_of_residence: text(student.country_of_residence), state_region: text(student.state_region), city: text(student.city), postal_code: text(student.postal_code),
     permanent_address_line_1: text(student.permanent_address_line_1), permanent_country: text(student.permanent_country), permanent_state_region: text(student.permanent_state_region), permanent_city: text(student.permanent_city), permanent_postal_code: text(student.permanent_postal_code), permanent_same_as_mailing: student.permanent_same_as_mailing,
     emergency_contact_name: text(student.emergency_contact_name), emergency_contact_relationship: text(student.emergency_contact_relationship), emergency_contact_phone: text(student.emergency_contact_phone), emergency_contact_email: text(student.emergency_contact_email),
-    has_other_citizenship: answer(student.has_other_citizenship), other_citizenship: text(student.other_citizenship), lived_or_studied_abroad: answer(student.lived_or_studied_abroad), previous_immigration_applications: answer(student.previous_immigration_applications), has_visa_refusals: answer(student.has_visa_refusals), visa_refusal_details: text(student.visa_refusal_details),
+    has_other_citizenship: answer(student.has_other_citizenship), other_citizenship: text(student.other_citizenship), lived_or_studied_abroad: answer(student.lived_or_studied_abroad), previous_immigration_applications: answer(student.previous_immigration_applications), has_visa_refusals: answer(student.has_visa_refusals), visa_refusal_country: text(student.visa_refusal_country), visa_refusal_year: student.visa_refusal_year?.toString() || '', visa_refusal_type: text(student.visa_refusal_type), visa_refusal_reason: text(student.visa_refusal_reason),
     preferred_course: text(student.preferred_course), preferred_university: text(student.preferred_university), preferred_intake_month: student.preferred_intake_month?.toString() || '', preferred_intake_year: student.preferred_intake_year?.toString() || '',
   };
 };
@@ -66,9 +71,9 @@ const Field = ({ form, setForm, name, label, type = 'text', optional = false, he
   );
 };
 
-const Choice = ({ form, setForm, name, label, options }: { form: Form; setForm: React.Dispatch<React.SetStateAction<Form>>; name: keyof Form; label: string; options: string[] }) => (
+const Choice = ({ form, setForm, name, label, options, optional = false }: { form: Form; setForm: React.Dispatch<React.SetStateAction<Form>>; name: keyof Form; label: string; options: string[]; optional?: boolean }) => (
   <div className="space-y-2">
-    <Label>{label} *</Label>
+    <Label>{label}{optional ? ' (optional)' : ' *'}</Label>
     <Select value={String(form[name] || '')} onValueChange={(value) => setForm((current) => ({ ...current, [name]: value }))}>
       <SelectTrigger aria-label={label}><SelectValue placeholder="Select" /></SelectTrigger>
       <SelectContent>{options.map((option) => <SelectItem key={option} value={option}>{option === 'yes' ? 'Yes' : option === 'no' ? 'No' : option}</SelectItem>)}</SelectContent>
@@ -108,16 +113,21 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
       has_visa_refusals: form.has_visa_refusals === 'yes' ? true : form.has_visa_refusals === 'no' ? false : null,
       dependants_travelling: form.dependants_travelling.trim() === '' ? null : Number(form.dependants_travelling),
       other_citizenship: form.has_other_citizenship === 'yes' ? form.other_citizenship.trim() || null : null,
-      visa_refusal_details: form.has_visa_refusals === 'yes' ? form.visa_refusal_details.trim() || null : null,
+      visa_refusal_country: form.has_visa_refusals === 'yes' ? form.visa_refusal_country.trim() || null : null,
+      visa_refusal_year: form.has_visa_refusals === 'yes' && form.visa_refusal_year.trim() ? Number(form.visa_refusal_year) : null,
+      visa_refusal_type: form.has_visa_refusals === 'yes' ? form.visa_refusal_type || null : null,
+      visa_refusal_reason: form.has_visa_refusals === 'yes' ? form.visa_refusal_reason || null : null,
       preferred_intake_month: form.preferred_intake_month ? Number(form.preferred_intake_month) : null,
       preferred_intake_year: form.preferred_intake_year ? Number(form.preferred_intake_year) : null,
       whatsapp_number: resolveWhatsAppNumber(form.contact_phone, form.whatsapp_number, whatsappSameAsMobile),
       legal_name: [form.first_name, form.middle_name, form.last_name].filter(Boolean).join(' '),
     };
-    const relevant = getCourseFinderProfileSections(payload).filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id));
+    // Existing students (flag false) are only held to the fields they had before October 2026.
+    const strict = isStrictStudent(student);
+    const relevant = getCourseFinderProfileSections(payload, [], [], false, new Date(), gateOptions(student)).filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id));
     const missing = relevant.flatMap((section) => section.missing);
     const nextErrors = Object.values(PROFILE_FORM_SCHEMAS).reduce<Record<string, string>>(
-      (all, schema) => ({ ...fieldErrors(schema.safeParse(payload)), ...all }),
+      (all, schema) => ({ ...fieldErrors(schema.safeParse(payload), strict), ...all }),
       {},
     );
     setErrors(nextErrors);
@@ -163,7 +173,7 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
     <Card><CardHeader><CardTitle>Home address</CardTitle><CardDescription>Your full current home address, where we can send letters.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="address_line_1" label="House number and street" /><Country form={form} setForm={setForm} name="country_of_residence" label="Country" /><Field form={form} setForm={setForm} name="state_region" label="State or region" /><Field form={form} setForm={setForm} name="city" label="City or town" /><Field form={form} setForm={setForm} name="postal_code" label={getPostcodeLabel(form.country_of_residence)} helper={getPostcodeHelper(form.country_of_residence)} /></CardContent></Card>
     <Card><CardHeader><CardTitle>Permanent address</CardTitle><CardDescription>Only needed if your permanent address is different from your home address.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="flex items-center gap-2"><Checkbox id="same" checked={form.permanent_same_as_mailing} onCheckedChange={(checked) => setForm((current) => ({ ...current, permanent_same_as_mailing: checked === true }))} /><Label htmlFor="same">My permanent address is the same as my home address</Label></div>{!form.permanent_same_as_mailing && <div className={grid}><Field form={form} setForm={setForm} name="permanent_address_line_1" label="House number and street" /><Country form={form} setForm={setForm} name="permanent_country" label="Country" /><Field form={form} setForm={setForm} name="permanent_state_region" label="State or region" /><Field form={form} setForm={setForm} name="permanent_city" label="City or town" /><Field form={form} setForm={setForm} name="permanent_postal_code" label={getPostcodeLabel(form.permanent_country)} helper={getPostcodeHelper(form.permanent_country)} /></div>}</CardContent></Card>
     <Card><CardHeader><CardTitle>Emergency contact</CardTitle><CardDescription>Add one person we can contact in an emergency, usually a parent or guardian.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="emergency_contact_name" label="Full name" /><Field form={form} setForm={setForm} name="emergency_contact_relationship" label="Relationship" /><Field form={form} setForm={setForm} name="emergency_contact_phone" label="Phone (with country code)" type="tel" /><Field form={form} setForm={setForm} name="emergency_contact_email" label="Email" type="email" helper={EMERGENCY_EMAIL_HINT} /></CardContent></Card>
-    <Card><CardHeader><CardTitle>Background</CardTitle><CardDescription>Please answer every question.</CardDescription></CardHeader><CardContent className={grid}><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_other_citizenship" label="Do you have another citizenship?" options={['yes', 'no']} />{form.has_other_citizenship === 'yes' && <Field form={form} setForm={setForm} name="other_citizenship" label="Which other citizenship?" helper="For example British. List all if more than one." />}</div><Choice form={form} setForm={setForm} name="lived_or_studied_abroad" label="Have you lived or studied in another country?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="previous_immigration_applications" label="Have you made previous immigration applications?" options={['yes', 'no']} /><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_visa_refusals" label="Have you ever been refused a visa for any country?" options={['yes', 'no']} />{form.has_visa_refusals === 'yes' && <div className="space-y-2"><Label htmlFor="visa_refusal_details">Visa refusal details *</Label><Textarea id="visa_refusal_details" value={form.visa_refusal_details} onChange={(event) => setForm((current) => ({ ...current, visa_refusal_details: event.target.value }))} placeholder="For each refusal: country, type of visa, year and the reason given." aria-invalid={Boolean(errors.visa_refusal_details)} /><FieldError name="visa_refusal_details" /></div>}</div></CardContent></Card>
+    <Card><CardHeader><CardTitle>Background</CardTitle><CardDescription>Please answer every question. {BACKGROUND_PRIVACY_LINE} See our <Link to={PRIVACY_NOTICE_PATH} className="underline underline-offset-2">Privacy Notice</Link>.</CardDescription></CardHeader><CardContent className={grid}><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_other_citizenship" label="Do you have another citizenship?" options={['yes', 'no']} />{form.has_other_citizenship === 'yes' && <Field form={form} setForm={setForm} name="other_citizenship" label="Which other citizenship?" helper="For example British. List all if more than one." />}</div><Choice form={form} setForm={setForm} name="lived_or_studied_abroad" label="Have you lived or studied in another country?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="previous_immigration_applications" label="Have you made previous immigration applications?" options={['yes', 'no']} /><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_visa_refusals" label="Have you ever been refused a visa for any country?" options={['yes', 'no']} />{form.has_visa_refusals === 'yes' && <div className="space-y-4"><p className="text-xs text-muted-foreground">Tell us about your most recent refusal. Our team will ask for anything else they need.</p><Country form={form} setForm={setForm} name="visa_refusal_country" label="Country that refused the visa" /><Field form={form} setForm={setForm} name="visa_refusal_year" label="Year of refusal" type="number" min={1950} /><Choice form={form} setForm={setForm} name="visa_refusal_type" label="Type of visa" options={[...VISA_TYPES]} /><Choice form={form} setForm={setForm} name="visa_refusal_reason" label="Main reason given" options={[...VISA_REFUSAL_REASONS]} optional /></div>}</div></CardContent></Card>
     <Card><CardHeader><CardTitle>Course preferences</CardTitle><CardDescription>Optional preferences only. UniDoxia staff will confirm your final course, university and intake.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="preferred_course" label="Preferred course" optional /><Field form={form} setForm={setForm} name="preferred_university" label="Preferred university" optional /><Field form={form} setForm={setForm} name="preferred_intake_month" label="Preferred intake month" type="number" optional /><Field form={form} setForm={setForm} name="preferred_intake_year" label="Preferred intake year" type="number" optional /></CardContent></Card>
     <Button type="submit" disabled={loading} className="w-full">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save profile details</Button>
   </form></ErrorsContext.Provider>;

@@ -33,7 +33,7 @@ import { validateFileUpload } from "@/lib/fileUpload";
 import { verifyUploadedFileSize } from "@/lib/fileUpload";
 import { logError, formatErrorForToast } from "@/lib/errorUtils";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
-import { getCourseFinderProfileSections } from "@/lib/coursefinderProfile";
+import { gateOptions, getCourseFinderProfileSections } from "@/lib/coursefinderProfile";
 
 import {
   FileText,
@@ -664,7 +664,8 @@ export default function Documents() {
       contact_email: studentRecord.contact_email || profile?.email,
       contact_phone: studentRecord.contact_phone || profile?.phone,
     };
-    return getCourseFinderProfileSections(value as unknown as Record<string, unknown>)
+    // Existing students (coursefinder_fields_required = false) are never held back by the October 2026 fields.
+    return getCourseFinderProfileSections(value as unknown as Record<string, unknown>, [], [], false, new Date(), gateOptions(studentRecord as unknown as Record<string, unknown>))
       .filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id))
       .flatMap((section) => section.missing);
   }, [studentRecord, profile]);

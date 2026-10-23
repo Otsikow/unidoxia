@@ -3670,7 +3670,10 @@ export type Database = {
           no_gap_since_study: boolean | null
           other_citizenship: string | null
           secondary_final_grade: string | null
-          visa_refusal_details: string | null
+          visa_refusal_country: string | null
+          visa_refusal_reason: string | null
+          visa_refusal_type: string | null
+          visa_refusal_year: number | null
           middle_name: string | null
           nationality: string | null
           passport_expiry: string | null
@@ -3770,7 +3773,10 @@ export type Database = {
           no_gap_since_study?: boolean | null
           other_citizenship?: string | null
           secondary_final_grade?: string | null
-          visa_refusal_details?: string | null
+          visa_refusal_country?: string | null
+          visa_refusal_reason?: string | null
+          visa_refusal_type?: string | null
+          visa_refusal_year?: number | null
           middle_name?: string | null
           nationality?: string | null
           passport_expiry?: string | null
@@ -3870,7 +3876,10 @@ export type Database = {
           no_gap_since_study?: boolean | null
           other_citizenship?: string | null
           secondary_final_grade?: string | null
-          visa_refusal_details?: string | null
+          visa_refusal_country?: string | null
+          visa_refusal_reason?: string | null
+          visa_refusal_type?: string | null
+          visa_refusal_year?: number | null
           middle_name?: string | null
           nationality?: string | null
           passport_expiry?: string | null

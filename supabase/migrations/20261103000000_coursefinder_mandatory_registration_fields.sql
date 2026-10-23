@@ -10,13 +10,27 @@
 -- values can only be enforced as the student fills the profile in. The trigger
 -- below therefore (a) validates every conditional rule whenever the related
 -- columns change and (b) stops a student clearing a required answer once given.
+--
+-- The coursefinder_fields_required flag itself is protected: any insert that
+-- does not come from the service role is forced to true, and a signed-in user
+-- (student or staff, through the app) cannot change it on update. Only the
+-- service role or a direct database session (no signed-in user) can change it.
+--
+-- Visa refusals are stored as structured answers only (country, year, visa type
+-- and an optional reason from a fixed list). There is deliberately no free-text
+-- field, and the reason list has no criminal or health options.
+--
+-- A commented rollback script is at the end of this file.
 
 -- 1. New columns ------------------------------------------------------------
 
 ALTER TABLE public.students
   ADD COLUMN IF NOT EXISTS dependants_travelling integer,
   ADD COLUMN IF NOT EXISTS other_citizenship text,
-  ADD COLUMN IF NOT EXISTS visa_refusal_details text,
+  ADD COLUMN IF NOT EXISTS visa_refusal_country text,
+  ADD COLUMN IF NOT EXISTS visa_refusal_year integer,
+  ADD COLUMN IF NOT EXISTS visa_refusal_type text,
+  ADD COLUMN IF NOT EXISTS visa_refusal_reason text,
   ADD COLUMN IF NOT EXISTS secondary_final_grade text,
   ADD COLUMN IF NOT EXISTS no_gap_since_study boolean;
 
@@ -28,7 +42,10 @@ ALTER TABLE public.students
 
 COMMENT ON COLUMN public.students.dependants_travelling IS 'CourseFinder: number of dependant children travelling with the student (0 or more).';
 COMMENT ON COLUMN public.students.other_citizenship IS 'CourseFinder: which other citizenship(s) the student holds, required when has_other_citizenship is true.';
-COMMENT ON COLUMN public.students.visa_refusal_details IS 'CourseFinder: details of previous visa refusals, required when has_visa_refusals is true.';
+COMMENT ON COLUMN public.students.visa_refusal_country IS 'CourseFinder: country that refused the most recent visa. Required when has_visa_refusals is true.';
+COMMENT ON COLUMN public.students.visa_refusal_year IS 'CourseFinder: year of the most recent visa refusal. Required when has_visa_refusals is true.';
+COMMENT ON COLUMN public.students.visa_refusal_type IS 'CourseFinder: type of visa refused, from a fixed list. Required when has_visa_refusals is true.';
+COMMENT ON COLUMN public.students.visa_refusal_reason IS 'CourseFinder: optional main reason given, from a fixed list with no criminal or health options. No free text.';
 COMMENT ON COLUMN public.students.secondary_final_grade IS 'CourseFinder: final secondary result, for example WASSCE aggregate or grades.';
 COMMENT ON COLUMN public.students.no_gap_since_study IS 'CourseFinder: true when the student says there is no gap since their last study. Allowed only if the last study ended within 6 months.';
 COMMENT ON COLUMN public.students.coursefinder_fields_required IS 'True for students created after the CourseFinder mandatory fields went live. False for legacy students, who are prompted but never blocked.';
@@ -42,6 +59,25 @@ BEGIN
     ALTER TABLE public.students
       ADD CONSTRAINT students_dependants_travelling_range
       CHECK (dependants_travelling IS NULL OR dependants_travelling BETWEEN 0 AND 20);
+  END IF;
+  -- Visa refusal answers: fixed lists only (the columns are new, so existing values are NULL).
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'students_visa_refusal_year_range') THEN
+    ALTER TABLE public.students
+      ADD CONSTRAINT students_visa_refusal_year_range
+      CHECK (visa_refusal_year IS NULL OR visa_refusal_year BETWEEN 1950 AND 2100);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'students_visa_refusal_type_list') THEN
+    ALTER TABLE public.students
+      ADD CONSTRAINT students_visa_refusal_type_list
+      CHECK (visa_refusal_type IS NULL OR visa_refusal_type IN (
+        'Student', 'Visitor or tourist', 'Work', 'Family or dependant', 'Transit', 'Other'));
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'students_visa_refusal_reason_list') THEN
+    ALTER TABLE public.students
+      ADD CONSTRAINT students_visa_refusal_reason_list
+      CHECK (visa_refusal_reason IS NULL OR visa_refusal_reason IN (
+        'Financial evidence', 'Missing or incomplete documents', 'Course or study plans',
+        'Intention to return home', 'Previous immigration history', 'Other', 'Prefer not to say'));
   END IF;
 END $$;
 
@@ -67,7 +103,21 @@ DECLARE
   entry_number integer := 0;
   secondary_end date;
   last_study_end date;
+  still_studying boolean;
+  secondary_dates_changed boolean;
+  no_gap_ok boolean;
+  privileged boolean := COALESCE(auth.role(), '') = 'service_role' OR auth.uid() IS NULL;
 BEGIN
+  -- The flag is not the student's to set. Runs before the legacy early return.
+  IF is_insert THEN
+    IF COALESCE(auth.role(), '') <> 'service_role' THEN
+      NEW.coursefinder_fields_required := true;
+    END IF;
+  ELSIF NEW.coursefinder_fields_required IS DISTINCT FROM OLD.coursefinder_fields_required
+        AND NOT privileged THEN
+    NEW.coursefinder_fields_required := OLD.coursefinder_fields_required;
+  END IF;
+
   IF NEW.coursefinder_fields_required IS NOT TRUE THEN
     RETURN NEW;
   END IF;
@@ -81,13 +131,20 @@ BEGIN
     RAISE EXCEPTION 'Please say which other citizenship you hold.' USING ERRCODE = 'check_violation';
   END IF;
 
-  -- Visa refusals: details required.
+  -- Visa refusals: country, year and visa type required (structured, no free text).
   IF NEW.has_visa_refusals IS TRUE
-     AND COALESCE(btrim(NEW.visa_refusal_details), '') = ''
      AND (is_insert
           OR NEW.has_visa_refusals IS DISTINCT FROM OLD.has_visa_refusals
-          OR NEW.visa_refusal_details IS DISTINCT FROM OLD.visa_refusal_details) THEN
-    RAISE EXCEPTION 'Please give details of your previous visa refusal.' USING ERRCODE = 'check_violation';
+          OR NEW.visa_refusal_country IS DISTINCT FROM OLD.visa_refusal_country
+          OR NEW.visa_refusal_year IS DISTINCT FROM OLD.visa_refusal_year
+          OR NEW.visa_refusal_type IS DISTINCT FROM OLD.visa_refusal_type) THEN
+    IF COALESCE(btrim(NEW.visa_refusal_country), '') = '' OR NEW.visa_refusal_year IS NULL
+       OR COALESCE(btrim(NEW.visa_refusal_type), '') = '' THEN
+      RAISE EXCEPTION 'Please give the country, year and type of visa for your previous visa refusal.' USING ERRCODE = 'check_violation';
+    END IF;
+    IF NEW.visa_refusal_year > EXTRACT(YEAR FROM now())::integer THEN
+      RAISE EXCEPTION 'The visa refusal year must not be in the future.' USING ERRCODE = 'check_violation';
+    END IF;
   END IF;
 
   -- Emergency contact email must look like an email address.
@@ -134,18 +191,33 @@ BEGIN
     END LOOP;
   END IF;
 
-  -- "No gap since last study" is allowed only if the last study ended in the past 6 months.
+  -- "No gap since last study" is allowed only if the last study ended in the past
+  -- 6 months, or a college or university entry has no end date (still studying).
+  -- Checked when the answer is given, and again when the secondary dates change.
+  secondary_dates_changed := NOT is_insert
+    AND (NEW.secondary_end_year IS DISTINCT FROM OLD.secondary_end_year
+         OR NEW.secondary_end_month IS DISTINCT FROM OLD.secondary_end_month);
   IF NEW.no_gap_since_study IS TRUE
-     AND (is_insert OR OLD.no_gap_since_study IS DISTINCT FROM TRUE) THEN
+     AND (is_insert OR OLD.no_gap_since_study IS DISTINCT FROM TRUE OR secondary_dates_changed) THEN
     IF NEW.secondary_end_year IS NOT NULL AND NEW.secondary_end_month BETWEEN 1 AND 12 THEN
       secondary_end := make_date(NEW.secondary_end_year, NEW.secondary_end_month, 1);
     END IF;
-    SELECT max(er.end_date) INTO last_study_end
+    SELECT max(er.end_date), bool_or(er.end_date IS NULL AND er.start_date IS NOT NULL)
+      INTO last_study_end, still_studying
     FROM public.education_records er
     WHERE er.student_id = NEW.id AND er.level IS DISTINCT FROM 'high_school';
     last_study_end := GREATEST(last_study_end, secondary_end);
-    IF last_study_end IS NULL OR last_study_end < (date_trunc('month', now()) - interval '6 months')::date THEN
-      RAISE EXCEPTION 'You can only choose "no gap" if your last study ended in the past 6 months. Please add what you have done since.' USING ERRCODE = 'check_violation';
+    no_gap_ok := COALESCE(still_studying, false)
+      OR (last_study_end IS NOT NULL AND last_study_end >= (date_trunc('month', now()) - interval '6 months')::date);
+    IF NOT no_gap_ok THEN
+      IF NOT is_insert AND OLD.no_gap_since_study IS TRUE THEN
+        -- Earlier answer no longer applies after a date change: clear it rather than block the save.
+        NEW.no_gap_since_study := false;
+      ELSIF last_study_end IS NULL THEN
+        RAISE EXCEPTION 'Add your education dates first, then choose "no gap".' USING ERRCODE = 'check_violation';
+      ELSE
+        RAISE EXCEPTION 'You can only choose "no gap" if your last study ended in the past 6 months. Please add what you have done since.' USING ERRCODE = 'check_violation';
+      END IF;
     END IF;
   END IF;
 
@@ -222,3 +294,26 @@ CREATE TRIGGER enforce_coursefinder_education_record
   BEFORE INSERT OR UPDATE ON public.education_records
   FOR EACH ROW
   EXECUTE FUNCTION public.enforce_coursefinder_education_record();
+
+-- 4. Rollback (not run). To undo this migration, run the following by hand.
+-- Note: this deletes any answers students have saved in these columns.
+--
+-- DROP TRIGGER IF EXISTS enforce_coursefinder_required_fields ON public.students;
+-- DROP FUNCTION IF EXISTS public.enforce_coursefinder_required_fields();
+-- DROP TRIGGER IF EXISTS enforce_coursefinder_education_record ON public.education_records;
+-- DROP FUNCTION IF EXISTS public.enforce_coursefinder_education_record();
+-- ALTER TABLE public.students
+--   DROP CONSTRAINT IF EXISTS students_dependants_travelling_range,
+--   DROP CONSTRAINT IF EXISTS students_visa_refusal_year_range,
+--   DROP CONSTRAINT IF EXISTS students_visa_refusal_type_list,
+--   DROP CONSTRAINT IF EXISTS students_visa_refusal_reason_list,
+--   DROP COLUMN IF EXISTS dependants_travelling,
+--   DROP COLUMN IF EXISTS other_citizenship,
+--   DROP COLUMN IF EXISTS visa_refusal_country,
+--   DROP COLUMN IF EXISTS visa_refusal_year,
+--   DROP COLUMN IF EXISTS visa_refusal_type,
+--   DROP COLUMN IF EXISTS visa_refusal_reason,
+--   DROP COLUMN IF EXISTS secondary_final_grade,
+--   DROP COLUMN IF EXISTS no_gap_since_study,
+--   DROP COLUMN IF EXISTS coursefinder_fields_required;
+-- ALTER TABLE public.education_records DROP COLUMN IF EXISTS final_grade;

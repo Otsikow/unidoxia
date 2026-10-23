@@ -19,6 +19,52 @@ export const getPostcodeLabel = (country: unknown) => (isGhana(country) ? GHANA_
 
 const postcodeWord = (country: unknown) => (isGhana(country) ? GHANA_POSTCODE_LABEL : 'postcode');
 
+export const FINAL_GRADE_HELPER =
+  'As shown on your certificate, for example WASSCE aggregate 12, A level AAB or IB 34.';
+
+/** Shown under Background. Wording confirmed by Kojo, 23 October 2026. */
+export const BACKGROUND_PRIVACY_LINE =
+  "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner CourseFinder (KC Overseas Education).";
+export const PRIVACY_NOTICE_PATH = '/legal/privacy';
+
+/** WAEC results cards are only asked of students who sat a WAEC exam or studied in a WAEC country. */
+export const WAEC_COUNTRIES = ['ghana', 'nigeria', 'sierra leone', 'liberia', 'gambia', 'the gambia'];
+export const isWaecApplicable = (value: Record<string, unknown>) => {
+  const text = (key: string) => (typeof value[key] === 'string' ? (value[key] as string).trim().toLowerCase() : '');
+  if (/\b(waec|wassce|ssce|nabteb|neco)\b/.test(`${text('secondary_board')} ${text('secondary_qualification')}`)) return true;
+  return [text('country_of_education'), text('secondary_school_country')].some((country) => WAEC_COUNTRIES.includes(country));
+};
+
+/** Visa refusal: structured answers only, no free text. */
+export const VISA_TYPES = ['Student', 'Visitor or tourist', 'Work', 'Family or dependant', 'Transit', 'Other'] as const;
+export const VISA_REFUSAL_REASONS = [
+  'Financial evidence',
+  'Missing or incomplete documents',
+  'Course or study plans',
+  'Intention to return home',
+  'Previous immigration history',
+  'Other',
+  'Prefer not to say',
+] as const;
+
+/**
+ * Fields and rules added for CourseFinder in October 2026. Existing students
+ * (coursefinder_fields_required = false) only see these in the banner and the
+ * checklist; they never block a save or hide a page.
+ */
+export const NEW_COURSEFINDER_FIELDS = new Set([
+  'dependants_travelling',
+  'other_citizenship',
+  'visa_refusal_country',
+  'visa_refusal_year',
+  'visa_refusal_type',
+  'visa_refusal_reason',
+  'secondary_final_grade',
+  'final_grade',
+]);
+export const isStrictStudent = (student: Record<string, unknown> | null | undefined) =>
+  student?.coursefinder_fields_required === true;
+
 export const getPostcodeHelper = (country: unknown) =>
   isGhana(country) ? 'For example GA-123-4567.' : undefined;
 
@@ -52,6 +98,16 @@ const requiredInt = (label: string, min: number, max: number, rangeMessage: stri
   );
 
 const requiredYesNo = (label: string) => z.boolean({ error: label });
+
+/** Messages for rules that are new in October 2026 (soft for existing students). */
+export const NEW_RULE_MESSAGES = new Set<string>();
+const newRule = (message: string) => {
+  NEW_RULE_MESSAGES.add(message);
+  return message;
+};
+const VISA_YEAR_RULE = newRule('visa refusal year must be a four-digit year, not in the future');
+const VISA_TYPE_RULE = newRule('visa refusal type must be one of the listed options');
+const VISA_REASON_RULE = newRule('visa refusal reason must be one of the listed options');
 
 /**
  * Zod skips refinements once an object already has issues. These rules must
@@ -147,24 +203,61 @@ export const emergencySchema = z.object({
   emergency_contact_name: requiredText('emergency contact full name'),
   emergency_contact_relationship: requiredText('emergency contact relationship'),
   emergency_contact_phone: requiredText('emergency contact phone'),
-  emergency_contact_email: requiredEmail('emergency contact email', 'emergency contact email must be a valid email address'),
+  emergency_contact_email: requiredEmail('emergency contact email', newRule('emergency contact email must be a valid email address')),
 });
 
-export const backgroundSchema = z
-  .object({
+/**
+ * Runs a base schema, then extra checks that must run even when the base has
+ * issues (zod skips refinements once an object has issues).
+ */
+const withChecks = (base: z.ZodType, checks: (value: Loose, ctx: z.RefinementCtx) => void) =>
+  z.any().superRefine((value: Loose, ctx) => {
+    const result = base.safeParse(value);
+    if (!result.success) {
+      for (const issue of result.error.issues) ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message });
+    }
+    checks(value ?? {}, ctx);
+  });
+
+export const backgroundSchema = withChecks(
+  z.object({
     has_other_citizenship: requiredYesNo('other citizenship'),
     other_citizenship: optionalText,
     lived_or_studied_abroad: requiredYesNo('lived or studied in another country'),
     previous_immigration_applications: requiredYesNo('previous immigration applications'),
     has_visa_refusals: requiredYesNo('visa refusals'),
-    visa_refusal_details: optionalText,
-  })
-  .refine((value: Loose) => value.has_other_citizenship !== true || Boolean(blankToUndefined(value.other_citizenship)), {
-    ...always, path: ['other_citizenship'], message: 'other citizenship (which country)',
-  })
-  .refine((value: Loose) => value.has_visa_refusals !== true || Boolean(blankToUndefined(value.visa_refusal_details)), {
-    ...always, path: ['visa_refusal_details'], message: 'visa refusal details',
-  });
+    visa_refusal_country: optionalText,
+    visa_refusal_year: z.any(),
+    visa_refusal_type: optionalText,
+    visa_refusal_reason: optionalText,
+  }),
+  // Run even when the answers above are blank.
+  (value: Loose, ctx) => {
+    if (value.has_other_citizenship === true && !blankToUndefined(value.other_citizenship)) {
+      ctx.addIssue({ code: 'custom', path: ['other_citizenship'], message: 'other citizenship (which country)' });
+    }
+    if (value.has_visa_refusals !== true) return;
+    if (!blankToUndefined(value.visa_refusal_country)) {
+      ctx.addIssue({ code: 'custom', path: ['visa_refusal_country'], message: 'visa refusal country' });
+    }
+    const refusalYear = toNumber(value.visa_refusal_year);
+    if (refusalYear === undefined) {
+      ctx.addIssue({ code: 'custom', path: ['visa_refusal_year'], message: 'visa refusal year' });
+    } else if (!Number.isInteger(refusalYear) || refusalYear < 1950 || refusalYear > new Date().getFullYear()) {
+      ctx.addIssue({ code: 'custom', path: ['visa_refusal_year'], message: VISA_YEAR_RULE });
+    }
+    const type = blankToUndefined(value.visa_refusal_type);
+    if (!type) {
+      ctx.addIssue({ code: 'custom', path: ['visa_refusal_type'], message: 'visa refusal type' });
+    } else if (!(VISA_TYPES as readonly string[]).includes(type as string)) {
+      ctx.addIssue({ code: 'custom', path: ['visa_refusal_type'], message: VISA_TYPE_RULE });
+    }
+    const reason = blankToUndefined(value.visa_refusal_reason);
+    if (reason && !(VISA_REFUSAL_REASONS as readonly string[]).includes(reason as string)) {
+      ctx.addIssue({ code: 'custom', path: ['visa_refusal_reason'], message: VISA_REASON_RULE });
+    }
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Education history
@@ -173,7 +266,8 @@ export const backgroundSchema = z
 const month = (label: string) => requiredInt(label, 1, 12, `${label} must be a number from 1 to 12`);
 const year = (label: string) => requiredInt(label, 1950, 2100, `${label} must be a four-digit year`);
 
-export const secondaryEducationSchema = z
+export const secondaryEducationSchema = withChecks(
+  z
   .object({
     country_of_education: requiredText('country of education'),
     highest_education_level: requiredText('highest education level'),
@@ -190,14 +284,21 @@ export const secondaryEducationSchema = z
     secondary_language_of_instruction: requiredText('secondary language of instruction'),
     secondary_grades_band: requiredText('secondary grades band'),
     secondary_final_grade: requiredText('secondary final grade'),
-    waec_scratch_card_pin: requiredText('WAEC scratch-card PIN'),
-    waec_scratch_card_serial: requiredText('WAEC scratch-card serial number'),
+    waec_scratch_card_pin: optionalText,
+    waec_scratch_card_serial: optionalText,
   })
   .refine((value: Loose) => {
     const start = toMonthIndex(value.secondary_start_year, value.secondary_start_month);
     const end = toMonthIndex(value.secondary_end_year, value.secondary_end_month);
     return start === null || end === null || end >= start;
-  }, { ...always, path: ['secondary_end_year'], message: 'secondary end date must not be before the start date' });
+  }, { ...always, path: ['secondary_end_year'], message: newRule('secondary end date must not be before the start date') }),
+  // WAEC results cards only apply to WAEC exams or West African countries.
+  (value: Loose, ctx) => {
+    if (!isWaecApplicable(value)) return;
+    if (!blankToUndefined(value.waec_scratch_card_pin)) ctx.addIssue({ code: 'custom', path: ['waec_scratch_card_pin'], message: 'WAEC scratch-card PIN' });
+    if (!blankToUndefined(value.waec_scratch_card_serial)) ctx.addIssue({ code: 'custom', path: ['waec_scratch_card_serial'], message: 'WAEC scratch-card serial number' });
+  },
+);
 
 export const degreeSchema = z
   .object({
@@ -214,7 +315,7 @@ export const degreeSchema = z
     end_date: requiredText('end date'),
   })
   .refine((value: Loose) => !isEndBeforeStart(value.start_date, value.end_date), {
-    ...always, path: ['end_date'], message: 'end date must not be before the start date',
+    ...always, path: ['end_date'], message: newRule('end date must not be before the start date'),
   });
 
 // ---------------------------------------------------------------------------
@@ -247,10 +348,15 @@ export const gapHistoryEntrySchema = z
   });
 
 /** Latest month index at which the student finished any recorded study. */
+/** Marker for study that is still in progress. */
+export const ONGOING_STUDY = Number.POSITIVE_INFINITY;
+
 export const getLastStudyEndMonthIndex = (
   student: Record<string, unknown>,
-  degrees: Array<{ end_date?: string | null }> = [],
+  degrees: Array<{ start_date?: string | null; end_date?: string | null }> = [],
 ): number | null => {
+  // A degree with a start date but no end date is still in progress.
+  if (degrees.some((degree) => !degree.end_date && Boolean(degree.start_date))) return ONGOING_STUDY;
   const candidates = [
     toMonthIndex(student.secondary_end_year, student.secondary_end_month),
     ...degrees.map((degree) => dateToMonthIndex(degree.end_date)),
@@ -258,22 +364,35 @@ export const getLastStudyEndMonthIndex = (
   return candidates.length ? Math.max(...candidates) : null;
 };
 
-/** "No gap" is allowed only when the last study ended no more than NO_GAP_THRESHOLD_MONTHS ago (or is still ongoing). */
-export const canDeclareNoGap = (lastStudyEnd: number | null, today: Date = new Date()) => {
-  if (lastStudyEnd === null) return false;
+export type NoGapStatus = 'no-dates' | 'allowed' | 'too-long-ago';
+
+export const getNoGapStatus = (lastStudyEnd: number | null, today: Date = new Date()): NoGapStatus => {
+  if (lastStudyEnd === null) return 'no-dates';
   const now = today.getFullYear() * 12 + today.getMonth();
-  return now - lastStudyEnd <= NO_GAP_THRESHOLD_MONTHS;
+  return now - lastStudyEnd <= NO_GAP_THRESHOLD_MONTHS ? 'allowed' : 'too-long-ago';
 };
+
+export const NO_GAP_MESSAGES: Record<Exclude<NoGapStatus, 'allowed'>, string> = {
+  'no-dates': 'Add your education dates first.',
+  'too-long-ago': `You finished studying more than ${NO_GAP_THRESHOLD_MONTHS} months ago, so please add what you have done since.`,
+};
+
+/** "No gap" is allowed only when the last study ended no more than NO_GAP_THRESHOLD_MONTHS ago (or is still ongoing). */
+export const canDeclareNoGap = (lastStudyEnd: number | null, today: Date = new Date()) =>
+  getNoGapStatus(lastStudyEnd, today) === 'allowed';
 
 export const validateGapHistory = (
   student: Record<string, unknown>,
-  degrees: Array<{ end_date?: string | null }> = [],
+  degrees: Array<{ start_date?: string | null; end_date?: string | null }> = [],
   today: Date = new Date(),
 ): string[] => {
   const entries = Array.isArray(student.work_experience) ? (student.work_experience as GapHistoryEntry[]) : [];
   const issues: string[] = [];
   if (student.no_gap_since_study === true) {
-    if (!canDeclareNoGap(getLastStudyEndMonthIndex(student, degrees), today)) {
+    const status = getNoGapStatus(getLastStudyEndMonthIndex(student, degrees), today);
+    if (status === 'no-dates') {
+      issues.push('gap or work history (add your education dates first, then choose "no gap")');
+    } else if (status === 'too-long-ago') {
       issues.push(
         `gap or work history (you can only choose "no gap" if your last study ended in the past ${NO_GAP_THRESHOLD_MONTHS} months)`,
       );
@@ -294,13 +413,20 @@ export const validateGapHistory = (
 // Whole registration
 // ---------------------------------------------------------------------------
 
-export const issueMessages = (result: { success: boolean; error?: z.ZodError }) =>
-  result.success || !result.error ? [] : result.error.issues.map((issue) => issue.message);
+/** True for a field or rule added in October 2026, which existing students may leave for later. */
+export const isNewCourseFinderIssue = (issue: { path: PropertyKey[]; message: string }) =>
+  NEW_COURSEFINDER_FIELDS.has(String(issue.path[0] ?? '')) || NEW_RULE_MESSAGES.has(issue.message);
 
-export const fieldErrors = (result: { success: boolean; error?: z.ZodError }) => {
+/** strict = false (existing students): the October 2026 fields and rules are left out. */
+const relevantIssues = (result: { success: boolean; error?: z.ZodError }, strict: boolean) =>
+  result.success || !result.error ? [] : result.error.issues.filter((issue) => strict || !isNewCourseFinderIssue(issue));
+
+export const issueMessages = (result: { success: boolean; error?: z.ZodError }, strict = true) =>
+  relevantIssues(result, strict).map((issue) => issue.message);
+
+export const fieldErrors = (result: { success: boolean; error?: z.ZodError }, strict = true) => {
   const errors: Record<string, string> = {};
-  if (result.success || !result.error) return errors;
-  for (const issue of result.error.issues) {
+  for (const issue of relevantIssues(result, strict)) {
     const key = String(issue.path[0] ?? '');
     if (key && !errors[key]) errors[key] = issue.message;
   }
@@ -320,14 +446,15 @@ export const validateStudentRegistration = (
   student: Record<string, unknown>,
   degrees: Array<Record<string, unknown>> = [],
   today: Date = new Date(),
+  strict = true,
 ): { success: boolean; issues: string[] } => {
   const issues = [
-    ...Object.values(PROFILE_FORM_SCHEMAS).flatMap((schema) => issueMessages(schema.safeParse(student))),
-    ...issueMessages(secondaryEducationSchema.safeParse(student)),
+    ...Object.values(PROFILE_FORM_SCHEMAS).flatMap((schema) => issueMessages(schema.safeParse(student), strict)),
+    ...issueMessages(secondaryEducationSchema.safeParse(student), strict),
     ...degrees.flatMap((degree, index) =>
-      issueMessages(degreeSchema.safeParse(degree)).map((message) => `degree ${index + 1}: ${message}`),
+      issueMessages(degreeSchema.safeParse(degree), strict).map((message) => `degree ${index + 1}: ${message}`),
     ),
-    ...validateGapHistory(student, degrees as Array<{ end_date?: string | null }>, today),
+    ...(strict ? validateGapHistory(student, degrees as Array<{ start_date?: string | null; end_date?: string | null }>, today) : []),
   ];
   return { success: issues.length === 0, issues };
 };

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BACKGROUND_PRIVACY_LINE,
+  FINAL_GRADE_HELPER,
+  NO_GAP_MESSAGES,
+  VISA_REFUSAL_REASONS,
+  backgroundSchema,
   canDeclareNoGap,
+  getNoGapStatus,
+  isWaecApplicable,
   getPostcodeLabel,
   getLastStudyEndMonthIndex,
   toMonthIndex,
@@ -19,7 +26,7 @@ const completeRegistration: Record<string, unknown> = {
   permanent_same_as_mailing: false, permanent_address_line_1: '4 Castle Road', permanent_country: 'Ghana', permanent_state_region: 'Ashanti', permanent_city: 'Kumasi', permanent_postal_code: 'AK-039-5028',
   emergency_contact_name: 'Kojo Mensah', emergency_contact_relationship: 'Uncle', emergency_contact_phone: '+233201111111', emergency_contact_email: 'kojo@example.com',
   has_other_citizenship: true, other_citizenship: 'British', lived_or_studied_abroad: false, previous_immigration_applications: true,
-  has_visa_refusals: true, visa_refusal_details: 'UK student visa refused in 2023 for insufficient funds evidence',
+  has_visa_refusals: true, visa_refusal_country: 'United Kingdom', visa_refusal_year: 2023, visa_refusal_type: 'Student', visa_refusal_reason: 'Financial evidence',
   country_of_education: 'Ghana', highest_education_level: 'Undergraduate', secondary_board: 'WAEC', secondary_qualification: 'WASSCE',
   secondary_school_name: 'Accra High', secondary_school_country: 'Ghana', secondary_school_state: 'Greater Accra', secondary_school_city: 'Accra',
   secondary_start_month: 9, secondary_start_year: 2015, secondary_end_month: 6, secondary_end_year: 2018,
@@ -85,7 +92,9 @@ const REQUIRED_FIELDS: Array<[string, string]> = [
   ['waec_scratch_card_pin', 'WAEC scratch-card PIN'],
   ['waec_scratch_card_serial', 'WAEC scratch-card serial number'],
   ['other_citizenship', 'other citizenship (which country)'],
-  ['visa_refusal_details', 'visa refusal details'],
+  ['visa_refusal_country', 'visa refusal country'],
+  ['visa_refusal_year', 'visa refusal year'],
+  ['visa_refusal_type', 'visa refusal type'],
 ];
 
 const YES_NO_FIELDS: Array<[string, string]> = [
@@ -133,7 +142,7 @@ describe('student registration schema', () => {
   });
 
   it('does not ask for other citizenship or refusal details when the answer is no', () => {
-    expect(validate({ ...completeRegistration, has_other_citizenship: false, other_citizenship: '', has_visa_refusals: false, visa_refusal_details: '' }).success).toBe(true);
+    expect(validate({ ...completeRegistration, has_other_citizenship: false, other_citizenship: '', has_visa_refusals: false, visa_refusal_country: '', visa_refusal_year: null, visa_refusal_type: '' }).success).toBe(true);
   });
 
   it('does not require permanent address fields when the permanent address is the same', () => {
@@ -205,7 +214,128 @@ describe('gap or work history', () => {
 
 describe('reporting every problem at once', () => {
   it('lists conditional problems even when other fields in the section are blank', () => {
-    const result = validate({ ...completeRegistration, country_of_residence: '', postal_code: '', has_visa_refusals: true, visa_refusal_details: '', lived_or_studied_abroad: null });
-    expect(result.issues).toEqual(expect.arrayContaining(['home country', 'home postcode', 'visa refusal details', 'lived or studied in another country']));
+    const result = validate({ ...completeRegistration, country_of_residence: '', postal_code: '', has_visa_refusals: true, visa_refusal_country: '', lived_or_studied_abroad: null });
+    expect(result.issues).toEqual(expect.arrayContaining(['home country', 'home postcode', 'visa refusal country', 'lived or studied in another country']));
+  });
+});
+
+describe('existing students (coursefinder_fields_required = false)', () => {
+  // A student who signed up before October 2026 and only filled in the fields required then.
+  const legacy: Record<string, unknown> = {
+    ...completeRegistration,
+    coursefinder_fields_required: false,
+    dependants_travelling: null,
+    has_other_citizenship: true,
+    other_citizenship: '',
+    has_visa_refusals: true,
+    visa_refusal_country: null,
+    visa_refusal_year: null,
+    visa_refusal_type: null,
+    visa_refusal_reason: null,
+    secondary_final_grade: '',
+    emergency_contact_email: 'not-an-email',
+    secondary_end_year: 2010,
+    work_experience: [],
+    no_gap_since_study: null,
+  };
+  const legacyDegree = { ...completeDegree, final_grade: '', end_date: '2017-01-01' };
+
+  it('are not blocked by the fields and rules added for CourseFinder', () => {
+    expect(validateStudentRegistration(legacy, [legacyDegree], TODAY, false)).toEqual({ success: true, issues: [] });
+  });
+
+  it('are still asked for the new fields when the full check runs (banner and checklist)', () => {
+    const result = validateStudentRegistration(legacy, [legacyDegree], TODAY, true);
+    expect(result.issues).toEqual(expect.arrayContaining([
+      'number of dependant children travelling',
+      'other citizenship (which country)',
+      'visa refusal country',
+      'secondary final grade',
+      'degree 1: final grade',
+    ]));
+  });
+
+  it('are still held to the fields that were required before', () => {
+    const result = validateStudentRegistration({ ...legacy, passport_number: '' }, [legacyDegree], TODAY, false);
+    expect(result.issues).toEqual(['passport number']);
+  });
+});
+
+describe('visa refusals are structured, with no free text', () => {
+  const parse = (value: Record<string, unknown>) => backgroundSchema.safeParse({ ...completeRegistration, ...value });
+
+  it('needs country, year and visa type, and the reason is optional', () => {
+    expect(parse({ visa_refusal_reason: null }).success).toBe(true);
+    const issues = parse({ visa_refusal_country: '', visa_refusal_year: '', visa_refusal_type: '' }).error?.issues.map((issue) => issue.message);
+    expect(issues).toEqual(['visa refusal country', 'visa refusal year', 'visa refusal type']);
+  });
+
+  it('only accepts listed visa types and reasons', () => {
+    expect(parse({ visa_refusal_type: 'Something else' }).success).toBe(false);
+    expect(parse({ visa_refusal_reason: 'They said I lied on the form' }).success).toBe(false);
+  });
+
+  it('has no criminal or health reasons in the list', () => {
+    expect(VISA_REFUSAL_REASONS.join(' ').toLowerCase()).not.toMatch(/crimin|convict|health|medical|tuberculosis/);
+  });
+
+  it('rejects a future or implausible refusal year', () => {
+    expect(parse({ visa_refusal_year: 2099 }).success).toBe(false);
+    expect(parse({ visa_refusal_year: 1900 }).success).toBe(false);
+  });
+});
+
+describe('WAEC results card', () => {
+  const nonWaec = {
+    ...completeRegistration,
+    country_of_education: 'India', secondary_school_country: 'India', secondary_board: 'CBSE', secondary_qualification: 'Class XII',
+    waec_scratch_card_pin: '', waec_scratch_card_serial: '',
+  };
+
+  it('is only asked for a WAEC board or a West African country', () => {
+    expect(isWaecApplicable(completeRegistration)).toBe(true);
+    expect(isWaecApplicable(nonWaec)).toBe(false);
+    expect(isWaecApplicable({ ...nonWaec, secondary_school_country: 'Nigeria' })).toBe(true);
+    expect(isWaecApplicable({ ...nonWaec, secondary_school_country: 'The Gambia' })).toBe(true);
+    expect(isWaecApplicable({ ...nonWaec, secondary_qualification: 'WASSCE' })).toBe(true);
+  });
+
+  it('is not required for students outside West Africa', () => {
+    expect(validate(nonWaec).success).toBe(true);
+  });
+
+  it('uses worldwide wording for the final grade helper', () => {
+    expect(FINAL_GRADE_HELPER).toBe('As shown on your certificate, for example WASSCE aggregate 12, A level AAB or IB 34.');
+  });
+});
+
+describe('"no gap" edge cases', () => {
+  it('treats a degree with no end date as still in progress', () => {
+    const ongoing = { ...completeDegree, end_date: null };
+    expect(getNoGapStatus(getLastStudyEndMonthIndex(completeRegistration, [ongoing]), TODAY)).toBe('allowed');
+    const student = { ...completeRegistration, work_experience: [], no_gap_since_study: true };
+    expect(validateGapHistory(student, [ongoing], TODAY)).toEqual([]);
+  });
+
+  it('asks for education dates first when there are none', () => {
+    expect(getNoGapStatus(getLastStudyEndMonthIndex({}, []), TODAY)).toBe('no-dates');
+    expect(NO_GAP_MESSAGES['no-dates']).toBe('Add your education dates first.');
+    const student = { ...completeRegistration, secondary_end_year: null, secondary_end_month: null, work_experience: [], no_gap_since_study: true };
+    expect(validateGapHistory(student, [], TODAY)).toEqual(['gap or work history (add your education dates first, then choose "no gap")']);
+  });
+
+  it('re-checks a "no gap" tick when the dates change later', () => {
+    const ticked = { ...completeRegistration, work_experience: [], no_gap_since_study: true, secondary_end_month: 7, secondary_end_year: 2026 };
+    expect(validateStudentRegistration(ticked, [], TODAY).success).toBe(true);
+    const datesChanged = { ...ticked, secondary_end_year: 2020 };
+    expect(validateStudentRegistration(datesChanged, [], TODAY).success).toBe(false);
+  });
+});
+
+describe('Background privacy line', () => {
+  it('uses the wording agreed with Kojo', () => {
+    expect(`${BACKGROUND_PRIVACY_LINE} See our Privacy Notice.`).toBe(
+      "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner CourseFinder (KC Overseas Education). See our Privacy Notice.",
+    );
   });
 });

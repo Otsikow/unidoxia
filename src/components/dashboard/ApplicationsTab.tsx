@@ -23,6 +23,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { Search, ArrowUpDown, ExternalLink, Eye } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { getCourseFinderSubmissionBlockers, requiresCompleteProfileForStatus, type CourseFinderDegree } from '@/lib/coursefinderProfile';
 
 interface Application {
   id: string;
@@ -154,6 +155,29 @@ export default function ApplicationsTab() {
     newStatus: Database['public']['Enums']['application_status'],
   ) => {
     try {
+      // Sending an application on to CourseFinder needs a complete profile, for new and existing students alike.
+      if (requiresCompleteProfileForStatus(oldStatus, newStatus)) {
+        const studentId = applications.find((app) => app.id === applicationId)?.student_id;
+        if (!studentId) throw new Error('Student not found for this application.');
+        const [{ data: studentRow, error: studentError }, { data: degreeRows, error: degreeError }] = await Promise.all([
+          supabase.from('students').select('*').eq('id', studentId).maybeSingle(),
+          supabase.from('education_records').select('*').eq('student_id', studentId).neq('level', 'high_school'),
+        ]);
+        if (studentError) throw studentError;
+        if (degreeError) throw degreeError;
+        const blockers = studentRow
+          ? getCourseFinderSubmissionBlockers(studentRow as unknown as Record<string, unknown>, (degreeRows ?? []) as unknown as CourseFinderDegree[])
+          : ['student profile'];
+        if (blockers.length) {
+          toast({
+            title: 'Profile not complete for CourseFinder',
+            description: `Ask the student to complete: ${blockers.join(', ')}.`,
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from('applications')
         .update({ status: newStatus })
