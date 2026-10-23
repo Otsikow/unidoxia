@@ -92,7 +92,7 @@ const en = {
         "Helping international students worldwide explore study options and manage applications.",
       contactEmailLabel: "Email us",
       followUs: "Follow UniDoxia",
-      followUsSubtitle: "Follow us on X, LinkedIn, Facebook, Instagram, and our WhatsApp channel.",
+      followUsSubtitle: "Follow us on X, LinkedIn, Facebook, Instagram, TikTok, and our WhatsApp channel.",
       social: {
         x: "Follow us on X",
         xShort: "X",
@@ -102,6 +102,8 @@ const en = {
         facebookShort: "Facebook",
         instagram: "Follow us on Instagram",
         instagramShort: "Instagram",
+        tiktok: "UniDoxia on TikTok",
+        tiktokShort: "TikTok",
         whatsapp: "Follow the UniDoxia.com channel on WhatsApp",
         whatsappShort: "WhatsApp",
       },

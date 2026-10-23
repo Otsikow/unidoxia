@@ -56,6 +56,19 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
+function TikTokIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.3 0 .6.05.89.14v-3.5a6.34 6.34 0 0 0-5.79 10.68 6.34 6.34 0 0 0 10.89-4.42V8.68a8.24 8.24 0 0 0 4.82 1.55V6.8c-.24 0-.47-.04-.7-.11z" />
+    </svg>
+  );
+}
+
 function RedditIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -135,7 +148,7 @@ export function AppFooter() {
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("layout.footer.followUsSubtitle", {
-                  defaultValue: "Follow us on X, LinkedIn, Facebook, Instagram, and our WhatsApp channel.",
+                  defaultValue: "Follow us on X, LinkedIn, Facebook, Instagram, TikTok, and our WhatsApp channel.",
                 })}
               </p>
               <div className="mt-3 flex items-center gap-2">
@@ -181,6 +194,17 @@ export function AppFooter() {
                     title={t("layout.footer.social.instagramShort", { defaultValue: "Instagram" })}
                   >
                     <Instagram className="h-4 w-4" />
+                  </a>
+                </Button>
+                <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
+                  <a
+                    href="https://www.tiktok.com/@unidoxia.com1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("layout.footer.social.tiktok", { defaultValue: "UniDoxia on TikTok" })}
+                    title={t("layout.footer.social.tiktokShort", { defaultValue: "TikTok" })}
+                  >
+                    <TikTokIcon className="h-4 w-4" />
                   </a>
                 </Button>
                 <Button asChild variant="ghost" size="icon" className="h-9 w-9 rounded-full">
