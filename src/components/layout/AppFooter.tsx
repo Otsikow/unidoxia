@@ -356,7 +356,7 @@ export function AppFooter() {
             </p>
           </div>
           <div className="text-xs text-muted-foreground">
-            <span className="hidden sm:inline">{t("layout.footer.questions")}</span>
+            <span className="hidden sm:inline">{t("layout.footer.questions")} </span>
             <a className="hover:underline" href="mailto:info@unidoxia.com">
               {t("layout.footer.contactEmailLabel")}
             </a>
