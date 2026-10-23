@@ -319,7 +319,7 @@ Deno.serve(async (req) => {
     // Compare only real supplied contacts. Null email must not match every
     // phone-only visitor; phone-only lookups use the normalized stored value.
     dedupeQuery = normalizedEmail
-      ? dedupeQuery.ilike('email', normalizedEmail)
+      ? dedupeQuery.eq('email', normalizedEmail)
       : dedupeQuery.eq('phone', normalizedPhone);
     const { data: existing } = await dedupeQuery.limit(5);
 

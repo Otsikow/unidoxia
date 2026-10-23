@@ -260,7 +260,7 @@ export default function StudentIntakeForm() {
       additionalNotes: '',
       consent: false
     }),
-    [graduationYears, yearOptions, user?.email, currentYear]
+    [graduationYears, user?.email, currentYear]
   );
 
   const form = useForm<StudentIntakeFormValues>({

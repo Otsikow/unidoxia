@@ -1,14 +1,14 @@
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 import { supabase } from '@/integrations/supabase/client';
 import { SEO } from '@/components/SEO';
 
 export default function StudyUK() {
-  const { data = [], isError } = useQuery({ queryKey: ['uk-universities'], queryFn: async () => {
+  const { data = [], isError } = useOptimizedQuery(['uk-universities'], async () => {
     const { data, error } = await supabase.from('universities').select('id,slug,name,city,description').eq('active', true).neq('listing_status', 'archived').eq('country', 'United Kingdom').order('name');
     if (error) throw error;
     return data;
-  } });
+  });
   return <div className="container mx-auto max-w-4xl px-4 py-10 space-y-6">
     <SEO title="Study in the UK: Universities and Course Planning | UniDoxia" description="Explore listed UK universities and their courses. Plan your shortlist, compare entry requirements and prepare questions for a free study-abroad consultation." canonicalPath="/destinations/united-kingdom" />
     <h1 className="text-3xl md:text-4xl font-bold">Study in the UK</h1>

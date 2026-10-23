@@ -23,7 +23,7 @@ export default function ScholarshipDetail() {
     queryFn: async () => {
       const { data, error } = await db
         .from("scholarships")
-        .select("*")
+        .select("id,slug,title,name,summary,description,full_description,seo_title,seo_description,status,updated_at,published_at,institution_name,sponsor_name,country,study_level,academic_year,deadline,opening_date,scholarship_value,funding_type,number_of_awards,last_verified_at,eligible_nationalities,academic_requirements,english_requirements,work_experience_requirements,age_requirements,important_conditions,application_steps,official_source_url,official_application_url,featured_image,og_image,verification_status")
         .eq("slug", slug)
         .in("status", ["Published", "Closing Soon", "Upcoming", "Closed", "Archived"])
         .maybeSingle();

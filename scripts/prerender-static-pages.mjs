@@ -23,7 +23,7 @@ const esc = (s = "") =>
 const { universities, programmes } = await loadPublicCatalogue();
 const featured = universities.filter(u => u.featured).sort((a, b) => (a.featured_priority ?? Infinity) - (b.featured_priority ?? Infinity)).slice(0, 12);
 const posts = await fetchPublicRows("blog_posts?select=id,slug,title,seo_title,seo_description,excerpt,content_html,content_md,tags,published_at,updated_at,cover_image_url&status=eq.published");
-const scholarships = await fetchPublicRows('scholarships?select=*&slug=not.is.null&status=in.(Published,"Closing Soon",Upcoming,Closed,Archived)');
+const scholarships = await fetchPublicRows('scholarships?select=id,slug,title,name,summary,description,full_description,seo_title,seo_description,status,updated_at,published_at,institution_name,sponsor_name,country,study_level,academic_year,deadline,opening_date,scholarship_value,funding_type,number_of_awards,last_verified_at,eligible_nationalities,academic_requirements,english_requirements,work_experience_requirements,age_requirements,important_conditions,application_steps,official_source_url,official_application_url,featured_image,og_image,verification_status&slug=not.is.null&status=in.(Published,"Closing Soon",Upcoming,Closed,Archived)');
 // Same English questions and answers as the React FAQ; fail rather than silently
 // publishing an empty FAQ if its source is unavailable.
 const en = (await import(pathToFileURL(path.resolve("src/i18n/locales/en.ts")).href)).default;

@@ -59,3 +59,16 @@ test('real missing pages and private routes have correct status and indexing', a
   const response = await request.get('/student/applications');
   expect(response.headers()['x-robots-tag']).toBe('noindex');
 });
+
+test('short enquiry is usable on a simulated Slow 3G connection', async ({ page, context }) => {
+  test.setTimeout(90_000);
+  await page.route('**/*.supabase.co/**', route => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 400, downloadThroughput: 500 * 1024 / 8, uploadThroughput: 500 * 1024 / 8, connectionType: 'cellular3g' });
+  await page.goto('/free-consultation', { timeout: 80_000 });
+  await expect(page.getByLabel('Your name')).toBeVisible({ timeout: 80_000 });
+  await page.getByLabel('Your name').fill('Slow connection test');
+  await expect(page.getByRole('button', { name: 'Send enquiry', exact: true })).toBeVisible();
+  await expect(page.locator('video')).toHaveCount(0);
+});
