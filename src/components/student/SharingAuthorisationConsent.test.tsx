@@ -143,8 +143,13 @@ describe('server side', () => {
 describe('Privacy Notice wording added at re-QC', () => {
   const page = readFileSync('src/pages/LegalPrivacy.tsx', 'utf8');
   it('names the controller, adds the rights lines and uses UK spelling', () => {
-    expect(page).toContain('This Privacy Notice describes how UniDoxia (Global Talent Gateway Ltd), the controller of your personal');
-    expect(page).toContain('<li>Withdraw your sharing authorisation at any time by emailing info@unidoxia.com.</li>');
+    const text = page.replace(/\s+/g, ' ');
+    expect(text).toContain(
+      'This Privacy Notice describes how UniDoxia (Global Talent Gateway Ltd, a company registered in England and Wales, company number 16172129, registered office 54 Blakey Close, Redcar TS10 4PB), the controller of your personal information (“UniDoxia”, “we”, “us”, or “our”), collects, uses, shares, and safeguards your personal information',
+    );
+    expect(text).toContain(
+      '<li> Withdraw your sharing authorisation at any time by emailing info@unidoxia.com. Applications we have already sent cannot be recalled. </li>',
+    );
     expect(page).toContain("Complain to the Information Commissioner's Office (ico.org.uk) if you are unhappy with how we use your data.");
     expect(page).toContain('>Privacy Notice</h1>');
     expect(page).not.toMatch(/Privacy Policy|anonymize|unauthorized|program centers/);

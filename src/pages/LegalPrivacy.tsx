@@ -33,8 +33,9 @@ const sections: Section[] = [
     title: 'Overview',
     content: (
       <p>
-        This Privacy Notice describes how UniDoxia (Global Talent Gateway Ltd), the controller of your personal
-        information (“UniDoxia”, “we”, “us”, or “our”), collects, uses, shares, and
+        This Privacy Notice describes how UniDoxia (Global Talent Gateway Ltd, a company registered in England and
+        Wales, company number 16172129, registered office 54 Blakey Close, Redcar TS10 4PB), the controller of your
+        personal information (“UniDoxia”, “we”, “us”, or “our”), collects, uses, shares, and
         safeguards your personal information when you access our websites, applications, and related services
         (collectively, the “Services”).
       </p>
@@ -157,7 +158,10 @@ const sections: Section[] = [
           <li>Object to or restrict certain processing activities.</li>
           <li>Receive a copy of your data in a portable format.</li>
           <li>Opt out of marketing communications using the unsubscribe link or by contacting support.</li>
-          <li>Withdraw your sharing authorisation at any time by emailing info@unidoxia.com.</li>
+          <li>
+            Withdraw your sharing authorisation at any time by emailing info@unidoxia.com. Applications we have already
+            sent cannot be recalled.
+          </li>
           <li>Complain to the Information Commissioner's Office (ico.org.uk) if you are unhappy with how we use your data.</li>
         </ul>
       </div>
