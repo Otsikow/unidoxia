@@ -1,0 +1,18 @@
+{
+  "url": "https://unidoxia.com/",
+  "fetchTime": "2026-10-23T14:34:37.231Z",
+  "lighthouseVersion": "13.5.0",
+  "mode": "Single mobile lab audit of the published site. Host telemetry scripts blocked. Not field Core Web Vitals or a controlled before/after result.",
+  "scores": {
+    "performance": 59,
+    "accessibility": 100,
+    "seo": 100
+  },
+  "metrics": {
+    "first-contentful-paint": "3.2 s",
+    "largest-contentful-paint": "5.4 s",
+    "total-blocking-time": "460 ms",
+    "cumulative-layout-shift": "0",
+    "total-byte-weight": "Total size was 632 KiB"
+  }
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "device": "desktop",
+    "consultation": {
+      "title": "Free Study Abroad Consultation | UniDoxia",
+      "canonical": "https://unidoxia.com/free-consultation",
+      "horizontalOverflow": false,
+      "receipt": "We received your enquiry\n\nReference: INTERCEPTED-LOCAL-ONLY. The admissions team will use your chosen contact method to discuss your plans and next steps.\n\nIf you are ready to share more, complete the full student intake form."
+    },
+    "featured": [
+      "/universities/51e22435-005a-44fd-8cc7-4ad68ad719bd",
+      "/universities/8c9e7946-b9b3-469d-8c4e-879d151d2267",
+      "/universities/3be6c6af-8f3a-4bca-8e06-1822094f7aef"
+    ],
+    "anonymousDashboardRedirect": "https://unidoxia.com/auth/login",
+    "productionEnquiriesCreated": 0
+  },
+  {
+    "device": "mobile",
+    "consultation": {
+      "title": "Free Study Abroad Consultation | UniDoxia",
+      "canonical": "https://unidoxia.com/free-consultation",
+      "horizontalOverflow": false,
+      "receipt": "We received your enquiry\n\nReference: INTERCEPTED-LOCAL-ONLY. The admissions team will use your chosen contact method to discuss your plans and next steps.\n\nIf you are ready to share more, complete the full student intake form."
+    },
+    "featured": [
+      "/universities/51e22435-005a-44fd-8cc7-4ad68ad719bd",
+      "/universities/8c9e7946-b9b3-469d-8c4e-879d151d2267",
+      "/universities/3be6c6af-8f3a-4bca-8e06-1822094f7aef"
+    ],
+    "anonymousDashboardRedirect": "https://unidoxia.com/auth/login",
+    "productionEnquiriesCreated": 0
+  }
+]
