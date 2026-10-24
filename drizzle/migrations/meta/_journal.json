@@ -29,6 +29,13 @@
       "when": 1792329077442,
       "tag": "0003_secure_duplicate_students_rpc",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792837022612,
+      "tag": "0004_coursefinder_mandatory_registration_fields",
+      "breakpoints": true
     }
   ]
 }

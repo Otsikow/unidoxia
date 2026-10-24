@@ -444,6 +444,38 @@ export type Database = {
           },
         ]
       }
+      application_profile_gate_overrides: {
+        Row: {
+          application_id: string
+          created_at: string
+          id: string
+          overridden_by: string | null
+          reason: string
+        }
+        Insert: {
+          application_id: string
+          created_at?: string
+          id?: string
+          overridden_by?: string | null
+          reason: string
+        }
+        Update: {
+          application_id?: string
+          created_at?: string
+          id?: string
+          overridden_by?: string | null
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_profile_gate_overrides_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_reviews: {
         Row: {
           application_id: string
@@ -505,10 +537,49 @@ export type Database = {
           },
         ]
       }
+      application_sharing_authorisations: {
+        Row: {
+          authorised_at: string
+          authorised_by: string
+          id: string
+          student_id: string
+          withdrawn_at: string | null
+          withdrawn_by: string | null
+          wording_version: string
+        }
+        Insert: {
+          authorised_at?: string
+          authorised_by: string
+          id?: string
+          student_id: string
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+          wording_version: string
+        }
+        Update: {
+          authorised_at?: string
+          authorised_by?: string
+          id?: string
+          student_id?: string
+          withdrawn_at?: string | null
+          withdrawn_by?: string | null
+          wording_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_sharing_authorisations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           agent_id: string | null
           app_number: string | null
+          coursefinder_gate_exempt: boolean
           created_at: string | null
           decision_json: Json | null
           fees_json: Json | null
@@ -531,6 +602,7 @@ export type Database = {
         Insert: {
           agent_id?: string | null
           app_number?: string | null
+          coursefinder_gate_exempt?: boolean
           created_at?: string | null
           decision_json?: Json | null
           fees_json?: Json | null
@@ -553,6 +625,7 @@ export type Database = {
         Update: {
           agent_id?: string | null
           app_number?: string | null
+          coursefinder_gate_exempt?: boolean
           created_at?: string | null
           decision_json?: Json | null
           fees_json?: Json | null
@@ -1726,6 +1799,7 @@ export type Database = {
           created_at: string | null
           degree_title: string | null
           end_date: string | null
+          final_grade: string | null
           gpa: number | null
           grade_scale: string | null
           id: string
@@ -1745,6 +1819,7 @@ export type Database = {
           created_at?: string | null
           degree_title?: string | null
           end_date?: string | null
+          final_grade?: string | null
           gpa?: number | null
           grade_scale?: string | null
           id?: string
@@ -1764,6 +1839,7 @@ export type Database = {
           created_at?: string | null
           degree_title?: string | null
           end_date?: string | null
+          final_grade?: string | null
           gpa?: number | null
           grade_scale?: string | null
           id?: string
@@ -3640,9 +3716,11 @@ export type Database = {
           country_of_birth: string | null
           country_of_education: string | null
           country_of_residence: string | null
+          coursefinder_fields_required: boolean
           created_at: string | null
           current_country: string | null
           date_of_birth: string | null
+          dependants_travelling: number | null
           education_history: Json | null
           emergency_contact_country: string | null
           emergency_contact_email: string | null
@@ -3664,6 +3742,8 @@ export type Database = {
           marital_status: string | null
           middle_name: string | null
           nationality: string | null
+          no_gap_since_study: boolean | null
+          other_citizenship: string | null
           passport_expiry: string | null
           passport_issue_country: string | null
           passport_issue_date: string | null
@@ -3697,6 +3777,7 @@ export type Database = {
           secondary_board: string | null
           secondary_end_month: number | null
           secondary_end_year: number | null
+          secondary_final_grade: string | null
           secondary_grades_band: string | null
           secondary_language_of_instruction: string | null
           secondary_qualification: string | null
@@ -3711,6 +3792,10 @@ export type Database = {
           test_scores: Json | null
           updated_at: string | null
           visa_history_json: Json | null
+          visa_refusal_country: string | null
+          visa_refusal_reason: string | null
+          visa_refusal_type: string | null
+          visa_refusal_year: number | null
           waec_scratch_card_pin: string | null
           waec_scratch_card_serial: string | null
           whatsapp_number: string | null
@@ -3734,9 +3819,11 @@ export type Database = {
           country_of_birth?: string | null
           country_of_education?: string | null
           country_of_residence?: string | null
+          coursefinder_fields_required?: boolean
           created_at?: string | null
           current_country?: string | null
           date_of_birth?: string | null
+          dependants_travelling?: number | null
           education_history?: Json | null
           emergency_contact_country?: string | null
           emergency_contact_email?: string | null
@@ -3758,6 +3845,8 @@ export type Database = {
           marital_status?: string | null
           middle_name?: string | null
           nationality?: string | null
+          no_gap_since_study?: boolean | null
+          other_citizenship?: string | null
           passport_expiry?: string | null
           passport_issue_country?: string | null
           passport_issue_date?: string | null
@@ -3791,6 +3880,7 @@ export type Database = {
           secondary_board?: string | null
           secondary_end_month?: number | null
           secondary_end_year?: number | null
+          secondary_final_grade?: string | null
           secondary_grades_band?: string | null
           secondary_language_of_instruction?: string | null
           secondary_qualification?: string | null
@@ -3805,6 +3895,10 @@ export type Database = {
           test_scores?: Json | null
           updated_at?: string | null
           visa_history_json?: Json | null
+          visa_refusal_country?: string | null
+          visa_refusal_reason?: string | null
+          visa_refusal_type?: string | null
+          visa_refusal_year?: number | null
           waec_scratch_card_pin?: string | null
           waec_scratch_card_serial?: string | null
           whatsapp_number?: string | null
@@ -3828,9 +3922,11 @@ export type Database = {
           country_of_birth?: string | null
           country_of_education?: string | null
           country_of_residence?: string | null
+          coursefinder_fields_required?: boolean
           created_at?: string | null
           current_country?: string | null
           date_of_birth?: string | null
+          dependants_travelling?: number | null
           education_history?: Json | null
           emergency_contact_country?: string | null
           emergency_contact_email?: string | null
@@ -3852,6 +3948,8 @@ export type Database = {
           marital_status?: string | null
           middle_name?: string | null
           nationality?: string | null
+          no_gap_since_study?: boolean | null
+          other_citizenship?: string | null
           passport_expiry?: string | null
           passport_issue_country?: string | null
           passport_issue_date?: string | null
@@ -3885,6 +3983,7 @@ export type Database = {
           secondary_board?: string | null
           secondary_end_month?: number | null
           secondary_end_year?: number | null
+          secondary_final_grade?: string | null
           secondary_grades_band?: string | null
           secondary_language_of_instruction?: string | null
           secondary_qualification?: string | null
@@ -3899,6 +3998,10 @@ export type Database = {
           test_scores?: Json | null
           updated_at?: string | null
           visa_history_json?: Json | null
+          visa_refusal_country?: string | null
+          visa_refusal_reason?: string | null
+          visa_refusal_type?: string | null
+          visa_refusal_year?: number | null
           waec_scratch_card_pin?: string | null
           waec_scratch_card_serial?: string | null
           whatsapp_number?: string | null
@@ -5141,6 +5244,10 @@ export type Database = {
       }
     }
     Functions: {
+      application_profile_gate_status: {
+        Args: { p_application_id: string }
+        Returns: Json
+      }
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean
@@ -5154,6 +5261,10 @@ export type Database = {
         Returns: {
           id: string
         }[]
+      }
+      coursefinder_profile_missing: {
+        Args: { p_student_id: string }
+        Returns: string[]
       }
       create_notification: {
         Args: {
@@ -5349,6 +5460,7 @@ export type Database = {
           profile_name: string
         }[]
       }
+      get_university_id_for_user: { Args: { user_id: string }; Returns: string }
       get_unread_count: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: number
@@ -5363,6 +5475,10 @@ export type Database = {
           p_role: Database["public"]["Enums"]["app_role"]
           p_user_id: string
         }
+        Returns: boolean
+      }
+      has_sharing_authorisation: {
+        Args: { p_student_id: string }
         Returns: boolean
       }
       is_admin_or_staff: { Args: { user_id: string }; Returns: boolean }
@@ -5405,6 +5521,10 @@ export type Database = {
         Args: { p_program_id: string; p_reason?: string; p_student_id: string }
         Returns: string
       }
+      override_application_profile_gate: {
+        Args: { p_application_id: string; p_reason: string }
+        Returns: string
+      }
       partner_needs_isolation: {
         Args: { p_profile_id: string }
         Returns: boolean
@@ -5412,6 +5532,10 @@ export type Database = {
       partner_review_student_document: {
         Args: { p_document_id: string; p_notes?: string; p_status: string }
         Returns: boolean
+      }
+      record_sharing_authorisation: {
+        Args: { p_wording_version: string }
+        Returns: string
       }
       review_university_claim: {
         Args: { p_admin_notes?: string; p_claim_id: string; p_decision: string }
@@ -5525,6 +5649,10 @@ export type Database = {
       validate_course_search_filters: {
         Args: { p_filters: Json }
         Returns: Json
+      }
+      withdraw_sharing_authorisation: {
+        Args: { p_student_id: string }
+        Returns: number
       }
     }
     Enums: {
