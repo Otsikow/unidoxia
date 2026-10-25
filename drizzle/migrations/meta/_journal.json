@@ -36,6 +36,13 @@
       "when": 1792837022612,
       "tag": "0004_coursefinder_mandatory_registration_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792941914020,
+      "tag": "0005_tighten_coursefinder_function_grants",
+      "breakpoints": true
     }
   ]
 }
