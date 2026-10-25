@@ -22,7 +22,7 @@ An independent production check returned HTTP 200 for OPTIONS and HTTP 400 for a
 The frontend was then published through Lovable (deployment request `2a055c84-00fe-4939-ba30-4902c33c6a8c`). Delivery is independently verified at **https://unidoxia.com**, including:
 
 - `/free-consultation` serves its own initial HTML, title and canonical.
-- The UK guide, directories and sampled article/course/scholarship pages return 200 with their own canonicals, one H1, substantive content and the corrected office. Sampled HTML contains no Blakey Close address.
+- The UK guide, directories and sampled article/course/scholarship pages return 200 with their own canonicals, one H1, substantive content and the registered office at the time of that check (Office 10 Seagreen Turner Street, TS10 1AZ). That office has since been superseded by 54 Blakey Close, TS10 4PB (Companies House AD01, 19 October 2026); see `docs/SEO-HOSTING.md`.
 - The live sitemap contains 1,537 public URLs, includes consultation and the UK guide, and excludes dashboard URLs.
 - Live desktop and mobile checks pass for the short form and receipt with intercepted submission requests, all three featured profile links and their enquiry routes, and anonymous dashboard redirects to sign-in. There is no horizontal overflow in the checked form. No test request created a production enquiry or notification.
 - A single mobile Lighthouse lab run on the published site scored performance **59**, accessibility **100**, SEO **100**, with a 632 KiB network payload. This is not a controlled before/after benchmark or field Core Web Vitals result. Further startup/rendering performance work remains; a 90+ performance result has not been demonstrated.

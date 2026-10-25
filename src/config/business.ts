@@ -1,4 +1,5 @@
-// Registered office and ICO number: Companies House company 16172129 (AD01 filed 19 October 2026) and ICO registration ZC277440.
+// Registered office: Companies House company 16172129 (AD01 filed 19 October 2026), rechecked 25 October 2026.
+// ICO registration ZC277440 lists the same address (https://ico.org.uk/ESDWebPages/Entry/ZC277440).
 // This is a registered office, not a promise of walk-in consultation availability.
 const address = { streetAddress: '54 Blakey Close', addressLocality: 'Redcar', addressRegion: 'England', postalCode: 'TS10 4PB', addressCountry: 'GB' };
 export const business = {
