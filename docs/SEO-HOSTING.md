@@ -109,4 +109,4 @@ load the app, and one real course/university/blog path returns its own metadata.
 ## Address source
 
 Registered office verified against [Companies House, company 16172129](https://find-and-update.company-information.service.gov.uk/company/16172129):
-Office 10 Seagreen Turner Street, Redcar, England, TS10 1AZ (rechecked 23 October 2026; supersedes the previous address).
+54 Blakey Close, Redcar, England, TS10 4PB (address change AD01 filed 19 October 2026; rechecked 25 October 2026). This supersedes Office 10 Seagreen Turner Street, TS10 1AZ. The ICO register entry [ZC277440](https://ico.org.uk/ESDWebPages/Entry/ZC277440) lists the same address.
