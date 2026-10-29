@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import Refer from './Refer';
 import {
+  REFERRAL_FIGURE_MODE_PROBLEM,
   REFERRAL_GO_LIVE_CONFIG,
   REFERRAL_HEADLINE_MODE,
   REFERRAL_LIVE_READY,
@@ -86,7 +87,7 @@ describe('Refer & Earn page', () => {
     expect(screen.getByTestId('terms-clause-1').textContent?.replace(/\s+/g, ' ').trim()).toBe(V23_CLAUSE_1);
   });
 
-  it('applies the round 2 wording for clause 4, 4A, the hero line and clause 13', () => {
+  it('applies the round 2 wording for clause 4, 4A and clause 13, and the round 3 hero line', () => {
     renderAt();
     const clause4 = screen.getByTestId('terms-clause-4');
     expect(clause4).toHaveTextContent(
@@ -97,9 +98,11 @@ describe('Refer & Earn page', () => {
     expect(screen.getByText(/You can introduce friends and share this page, but you must not/)).toBeInTheDocument();
     expect(screen.queryByText(/share our link/)).not.toBeInTheDocument();
     expect(screen.queryByText(/confirmed commission rates for every university/)).not.toBeInTheDocument();
-    expect(
-      screen.getByText(/For students and friends of students wherever you live, subject to the checks in clause 6\./),
-    ).toBeInTheDocument();
+    const heroLine = screen.getByText(/Open to anyone aged 18 or over\./);
+    expect(heroLine.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'Open to anyone aged 18 or over. Payment is subject to the identity, fraud and sanctions checks in clause 6. Terms below and at unidoxia.com/refer.',
+    );
+    expect(screen.queryByText(/wherever you live/)).not.toBeInTheDocument();
     expect(screen.queryByText(/anywhere in the world/)).not.toBeInTheDocument();
     const clause13 = screen.getByTestId('terms-clause-13');
     const emailFlag = clause13.querySelector('[data-testid="for-eric"]');
@@ -151,12 +154,38 @@ describe('Refer & Earn page', () => {
       expect(document.querySelector('meta[name="robots"]')).toHaveAttribute('content', 'noindex,nofollow');
     }
     expect(
-      getReferralGoLiveProblems({ liveReady: true, showReviewNotes: true, pageIndexable: false, showInFooter: false }),
+      getReferralGoLiveProblems({
+        liveReady: true,
+        showReviewNotes: true,
+        pageIndexable: false,
+        showInFooter: false,
+        headlineMode: 'no-figure',
+      }),
     ).toEqual([
       'REFERRAL_SHOW_REVIEW_NOTES must be false',
       'REFERRAL_PAGE_INDEXABLE must be true',
       'REFERRAL_SHOW_IN_FOOTER must be true',
     ]);
+  });
+
+  it("reports a go-live problem whenever the headline mode is not 'no-figure' (N1)", () => {
+    expect(REFERRAL_HEADLINE_MODE).toBe('no-figure');
+    expect(REFERRAL_FIGURE_MODE_PROBLEM).toMatch(/Kojo and Eric must first clear a named list of courses/);
+    const ready = { liveReady: true, showReviewNotes: false, pageIndexable: true, showInFooter: true } as const;
+    expect(getReferralGoLiveProblems({ ...ready, headlineMode: 'no-figure' })).toEqual([]);
+    expect(getReferralGoLiveProblems({ ...ready, headlineMode: '£500' })).toEqual([REFERRAL_FIGURE_MODE_PROBLEM]);
+    // Also reported while still in draft, so the £500 mode cannot be left switched on by accident.
+    expect(
+      getReferralGoLiveProblems({ ...ready, liveReady: false, showReviewNotes: true, headlineMode: '£500' }),
+    ).toEqual([REFERRAL_FIGURE_MODE_PROBLEM]);
+  });
+
+  it('does not pass fetchPriority to the hero image (React 18.3 warning, N3)', () => {
+    const errors = vi.spyOn(console, 'error');
+    renderAt();
+    const img = screen.getByAltText(/Three smiling students/);
+    expect(img.hasAttribute('fetchpriority')).toBe(false);
+    expect(errors.mock.calls.flat().join(' ')).not.toMatch(/fetchPriority/i);
   });
 
   it('builds an encoded wa.me URL with the entered details', () => {

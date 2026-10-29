@@ -31,15 +31,26 @@ export const REFERRAL_SHOW_IN_FOOTER = false;
 
 /**
  * Set true only when Eric has approved go-live. A test then fails unless the review notes are off,
- * the page is indexable, the footer link is on and no "[...]" placeholders are left on the page.
+ * the page is indexable, the footer link is on, /refer is in the sitemap and no "[...]" placeholders
+ * are left on the page. Until then the prerendered /refer HTML carries a static robots noindex and
+ * the sitemap leaves /refer out (scripts/refer-seo-page.mjs).
  */
 export const REFERRAL_LIVE_READY = false;
+
+/** The page goes into search results and the sitemap only when live-ready and indexable. */
+export const REFERRAL_PAGE_PUBLIC = REFERRAL_LIVE_READY && REFERRAL_PAGE_INDEXABLE;
+
+/** Page title and description, shared by the React page and the prerendered HTML. No £ amounts. */
+export const REFERRAL_SEO_TITLE = 'Refer a Friend and Earn a Reward | UniDoxia';
+export const REFERRAL_SEO_DESCRIPTION =
+  "Refer a friend to UniDoxia and earn a reward when they successfully enrol on a university course abroad. Some courses don't qualify. 18+. Read the Refer & Earn terms.";
 
 export type ReferralGoLiveConfig = {
   liveReady: boolean;
   showReviewNotes: boolean;
   pageIndexable: boolean;
   showInFooter: boolean;
+  headlineMode: ReferralHeadlineMode;
 };
 
 export const REFERRAL_GO_LIVE_CONFIG: ReferralGoLiveConfig = {
@@ -47,12 +58,20 @@ export const REFERRAL_GO_LIVE_CONFIG: ReferralGoLiveConfig = {
   showReviewNotes: REFERRAL_SHOW_REVIEW_NOTES,
   pageIndexable: REFERRAL_PAGE_INDEXABLE,
   showInFooter: REFERRAL_SHOW_IN_FOOTER,
+  headlineMode: REFERRAL_HEADLINE_MODE,
 };
 
-/** Lists the draft settings still switched on. Empty while not live-ready, or when ready to go live. */
+export const REFERRAL_FIGURE_MODE_PROBLEM =
+  "REFERRAL_HEADLINE_MODE must be 'no-figure': Kojo and Eric must first clear a named list of courses with signed commission rates before any £ figure is shown";
+
+/**
+ * Lists the settings that block go-live. The money-figure check always applies (Kojo, v2.3 section I);
+ * the draft settings are checked only once REFERRAL_LIVE_READY is true.
+ */
 export const getReferralGoLiveProblems = (config: ReferralGoLiveConfig = REFERRAL_GO_LIVE_CONFIG): string[] => {
-  if (!config.liveReady) return [];
   const problems: string[] = [];
+  if (config.headlineMode !== 'no-figure') problems.push(REFERRAL_FIGURE_MODE_PROBLEM);
+  if (!config.liveReady) return problems;
   if (config.showReviewNotes) problems.push('REFERRAL_SHOW_REVIEW_NOTES must be false');
   if (!config.pageIndexable) problems.push('REFERRAL_PAGE_INDEXABLE must be true');
   if (!config.showInFooter) problems.push('REFERRAL_SHOW_IN_FOOTER must be true');

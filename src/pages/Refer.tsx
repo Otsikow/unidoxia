@@ -13,8 +13,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { business } from "@/config/business";
 import {
   REFERRAL_HEADLINE_MODE,
-  REFERRAL_PAGE_INDEXABLE,
+  REFERRAL_PAGE_PUBLIC,
   REFERRAL_REWARD_BANDS,
+  REFERRAL_SEO_DESCRIPTION,
+  REFERRAL_SEO_TITLE,
   REFERRAL_SHOW_REVIEW_NOTES,
   ReferralHeadlineMode,
   buildReferralWhatsAppUrl,
@@ -93,10 +95,10 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
   return (
     <div className="bg-background">
       <SEO
-        title="Refer a Friend and Earn a Reward | UniDoxia"
-        description="Refer a friend to UniDoxia and earn a reward when they successfully enrol on a university course abroad. Some courses don't qualify. 18+. Read the Refer & Earn terms."
+        title={REFERRAL_SEO_TITLE}
+        description={REFERRAL_SEO_DESCRIPTION}
         canonicalPath="/refer"
-        robots={REFERRAL_PAGE_INDEXABLE ? undefined : "noindex,nofollow"}
+        robots={REFERRAL_PAGE_PUBLIC ? undefined : "noindex,nofollow"}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "WebPage",
@@ -117,7 +119,8 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
             </h1>
             <p className="text-lg leading-relaxed text-muted-foreground">{headline.subtitle}</p>
             <p className="mt-3 text-sm text-muted-foreground">
-              For students and friends of students wherever you live, subject to the checks in clause 6. Terms below and at{" "}
+              Open to anyone aged 18 or over. Payment is subject to the identity, fraud and sanctions checks in clause 6.
+              Terms below and at{" "}
               <span className="font-medium text-foreground">unidoxia.com/refer</span>.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -135,7 +138,6 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
               alt="Three smiling students from different backgrounds resting on stacks of books at a library table."
               width="1600"
               height="1067"
-              fetchPriority="high"
               className="aspect-[16/10] w-full object-cover object-center"
             />
           </figure>

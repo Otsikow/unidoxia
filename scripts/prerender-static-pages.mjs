@@ -12,6 +12,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { loadPublicCatalogue, fetchPublicRows } from './catalogue/public-catalogue.mjs';
 import { coursePage, universityPage, organisation, blogSchema, scholarshipPage, disambiguateMetadata } from './catalogue/seo-pages.mjs';
+import { referSeoPage } from './refer-seo-page.mjs';
 
 const ORIGIN = "https://unidoxia.com";
 const DIST = path.resolve("dist");
@@ -164,6 +165,8 @@ const pages = [
     description: "How UniDoxia sources, checks and corrects its study-abroad content, including AI-assisted drafting.",
     body: `<h1>Editorial policy</h1>`,
   },
+  // Refer & Earn: noindex and out of the sitemap until REFERRAL_PAGE_PUBLIC (src/config/referral.ts).
+  referSeoPage(),
   {
     path: "/legal/privacy",
     title: "Privacy Notice | UniDoxia",

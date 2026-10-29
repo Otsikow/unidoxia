@@ -50,6 +50,13 @@ for (const url of urls) {
   }
   dom.window.close();
 }
+// /refer stays out of the sitemap and carries a static noindex until REFERRAL_PAGE_PUBLIC.
+const referRoute = JSON.parse(fs.readFileSync(path.join(dist, 'seo-routes.json'), 'utf8')).find(route => route.path === '/refer');
+assert(referRoute, 'Missing /refer prerender route');
+const referDoc = new JSDOM(fs.readFileSync(path.join(dist, 'refer', 'index.html'), 'utf8')).window.document;
+assert.equal(urls.includes('https://unidoxia.com/refer'), !referRoute.noindex, '/refer sitemap entry must follow REFERRAL_PAGE_PUBLIC');
+assert.equal(referDoc.querySelector('meta[name="robots"]')?.content === 'noindex', Boolean(referRoute.noindex), '/refer static robots meta');
+assert(!referDoc.body.textContent.includes('£'), '/refer prerendered HTML must not show £ amounts');
 const notFound = new JSDOM(fs.readFileSync(path.join(dist, '404.html'), 'utf8')).window.document;
 assert.equal(notFound.querySelector('h1')?.textContent, 'Page not found');
 assert.equal(notFound.querySelector('meta[name="robots"]')?.content, 'noindex');
