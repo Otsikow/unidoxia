@@ -9,26 +9,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { business } from "@/config/business";
 import {
   REFERRAL_HEADLINE_MODE,
   REFERRAL_PAGE_PUBLIC,
-  REFERRAL_REWARD_BANDS,
   REFERRAL_SEO_DESCRIPTION,
   REFERRAL_SEO_TITLE,
   REFERRAL_SHOW_REVIEW_NOTES,
   ReferralHeadlineMode,
   buildReferralWhatsAppUrl,
-  getReferralHeadline,
-  showsMoneyFigures,
+  REFERRAL_HEADLINE,
 } from "@/config/referral";
+import { REFERRAL_FIGURE_HEADLINE } from "@/config/referralFigures";
+import { ReferRewardTable } from "@/pages/refer/ReferRewardTable";
 
 /**
  * UniDoxia Refer & Earn (unidoxia.com/refer).
  * Terms text: Kojo, "UniDoxia Refer & Earn: terms" (29 October 2026): section D, the v2.1 clauses
  * 4A to 4C, and the v2.3 no-figure wording in section I (subtitle, clause 1, clause 4, 4A and the
- * "How your reward is worked out" section). The v2.2 £ table renders only in '£500' mode.
+ * "How your reward is worked out" section). The v2.2 £ table renders only in a '£500' build.
  * Square-bracket items are Eric's decisions and stay visibly flagged until he fills them in.
  * No referral data is stored by the website: the form only opens WhatsApp with a prefilled message.
  *
@@ -66,13 +65,20 @@ const STEPS = [
 ];
 
 type ReferProps = {
-  /** Override for tests and previews. Defaults to REFERRAL_HEADLINE_MODE in src/config/referral.ts. */
+  /** Override for tests. Defaults to REFERRAL_HEADLINE_MODE; the figure mode renders only in a '£500' build. */
   headlineMode?: ReferralHeadlineMode;
 };
 
+/**
+ * Build-time constant (Akosua QC N6). In a default no-figure build this is the literal false, so the
+ * bundler drops ReferRewardTable and referralFigures.ts and no £ band reaches the client JavaScript.
+ * Vitest (MODE 'test') keeps the figure mode renderable so its tests still run.
+ */
+const REFERRAL_FIGURES_IN_BUILD = REFERRAL_HEADLINE_MODE === "£500" || import.meta.env.MODE === "test";
+
 const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
-  const headline = getReferralHeadline(headlineMode);
-  const showMoney = showsMoneyFigures(headlineMode);
+  const showMoney = REFERRAL_FIGURES_IN_BUILD && headlineMode === "£500";
+  const headline = showMoney ? REFERRAL_FIGURE_HEADLINE : REFERRAL_HEADLINE;
   const [referrerName, setReferrerName] = useState("");
   const [referrerContact, setReferrerContact] = useState("");
   const [friendFirstName, setFriendFirstName] = useState("");
@@ -179,42 +185,16 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
       <section className="container mx-auto max-w-6xl px-4 py-10 md:py-14">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           {showMoney ? (
-            <div id="reward-table" data-testid="reward-table">
-              <h2 className="mb-3 text-2xl font-semibold">Reward table</h2>
-              {REFERRAL_SHOW_REVIEW_NOTES && (
-                <p className="mb-3 text-sm">
+            <ReferRewardTable
+              reviewNote={
+                REFERRAL_SHOW_REVIEW_NOTES && (
                   <ForEric>
                     For Eric: Kojo's CAP 3.7 ruling is not to publish any £ figure until rates are signed for named
                     courses.
                   </ForEric>
-                </p>
-              )}
-              <p className="mb-4 text-muted-foreground">
-                Your reward is 25% of the net commission UniDoxia actually receives for your friend's enrolment,
-                rounded to these bands and capped at £500.
-              </p>
-              <div className="overflow-hidden rounded-xl border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Commission UniDoxia receives for the student</TableHead>
-                      <TableHead className="text-right">Your reward</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {REFERRAL_REWARD_BANDS.map((band) => (
-                      <TableRow key={band.commission}>
-                        <TableCell>{band.commission}</TableCell>
-                        <TableCell className="text-right font-semibold">{band.reward}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">
-                Based on what we receive; confirmed in writing before your friend applies. Some courses earn no reward.
-              </p>
-            </div>
+                )
+              }
+            />
           ) : (
             <div id="how-reward-works" data-testid="how-reward-works">
               <h2 className="mb-3 text-2xl font-semibold">How your reward is worked out</h2>

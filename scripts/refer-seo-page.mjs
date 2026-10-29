@@ -3,19 +3,19 @@
 // While REFERRAL_PAGE_PUBLIC is false the entry is noindex: the prerenderer writes a static
 // <meta name="robots" content="noindex">, generate-sitemap.cjs leaves /refer out and the
 // unidoxia-seo worker adds X-Robots-Tag: noindex. No £ amounts appear in the starter HTML.
+// The starter HTML always uses the no-figure headline (REFERRAL_HEADLINE); it never imports referralFigures.ts.
 import {
-  REFERRAL_HEADLINE_MODE,
+  REFERRAL_HEADLINE,
   REFERRAL_PAGE_PUBLIC,
   REFERRAL_SEO_DESCRIPTION,
   REFERRAL_SEO_TITLE,
-  getReferralHeadline,
 } from '../src/config/referral.ts';
 
 const esc = (s = '') =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-export function referSeoPage({ isPublic = REFERRAL_PAGE_PUBLIC, mode = REFERRAL_HEADLINE_MODE } = {}) {
-  const headline = getReferralHeadline(mode);
+export function referSeoPage({ isPublic = REFERRAL_PAGE_PUBLIC } = {}) {
+  const headline = REFERRAL_HEADLINE;
   return {
     path: '/refer',
     title: REFERRAL_SEO_TITLE,

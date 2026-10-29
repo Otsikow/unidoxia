@@ -4,15 +4,28 @@
 // Eric decides the headline and approves go-live. Change only the values below.
 
 /**
- * Money-figure switch for /refer (headline, subtitle and reward section).
- * - 'no-figure' (default): Kojo's v2.3 wording. No £ amount appears anywhere on the page.
- * - '£500': "Earn up to £500 when your friend enrols" plus the £ reward table. Kojo's CAP 3.7 ruling
- *   (terms v2.2 section H, v2.3 section I) is not to publish any £ figure until there are signed rates
- *   for named universities or courses. Keep 'no-figure' until Kojo and Eric approve the switch.
+ * Money-figure switch for /refer (headline, subtitle and reward section). Build time only.
+ * - 'no-figure' (default): Kojo's v2.3 wording. No £ amount appears anywhere on the page or in the
+ *   built JavaScript: the money-figure copy lives in src/config/referralFigures.ts and
+ *   src/pages/refer/ReferRewardTable.tsx, which the build drops unless it selects the figure mode.
+ * - The figure mode: set VITE_REFERRAL_HEADLINE_MODE to that mode for the build (vite.config.ts turns it
+ *   into __REFERRAL_HEADLINE_MODE__). Kojo's CAP 3.7 ruling (terms v2.2 section H, v2.3 section I) is
+ *   not to publish any £ figure until there are signed rates for named universities or courses, so
+ *   `npm run build` refuses that mode (scripts/check-referral-go-live.mjs) until Kojo and Eric clear it.
  */
 export type ReferralHeadlineMode = 'no-figure' | '£500';
 
-export const REFERRAL_HEADLINE_MODE: ReferralHeadlineMode = 'no-figure';
+declare const __REFERRAL_HEADLINE_MODE__: string | undefined;
+
+/** Vite replaces __REFERRAL_HEADLINE_MODE__ at build time; Node scripts and vitest read the env var. */
+const buildHeadlineMode =
+  typeof __REFERRAL_HEADLINE_MODE__ === 'string'
+    ? __REFERRAL_HEADLINE_MODE__
+    : typeof process !== 'undefined'
+      ? process.env.VITE_REFERRAL_HEADLINE_MODE
+      : undefined;
+
+export const REFERRAL_HEADLINE_MODE: ReferralHeadlineMode = buildHeadlineMode === '£500' ? '£500' : 'no-figure';
 
 /** WhatsApp number that receives referrals (digits only, international format). */
 export const REFERRAL_WHATSAPP_NUMBER = '447360961803';
@@ -78,35 +91,15 @@ export const getReferralGoLiveProblems = (config: ReferralGoLiveConfig = REFERRA
   return problems;
 };
 
-/** True when the page may show £ amounts (only in '£500' mode). */
-export const showsMoneyFigures = (mode: ReferralHeadlineMode): boolean => mode === '£500';
-
-/**
- * Kofi's reward bands (Kojo terms v2.2 section H). Used when UniDoxia confirms a reward in writing.
- * Rendered on the page only in '£500' mode; never in the default no-figure mode (v2.3 section I).
- */
-export const REFERRAL_REWARD_BANDS = [
-  { commission: '£2,000 or more', reward: '£500' },
-  { commission: '£1,000 to £1,999', reward: '£250' },
-  { commission: '£400 to £999', reward: '£100' },
-  { commission: 'Under £400', reward: 'No reward' },
-] as const;
-
 export type ReferralHeadline = { title: string; subtitle: string };
 
-export const getReferralHeadline = (mode: ReferralHeadlineMode): ReferralHeadline =>
-  mode === '£500'
-    ? {
-        title: 'Earn up to £500 when your friend enrols',
-        subtitle:
-          'Refer a friend to UniDoxia. The amount depends on the course and university, and is paid only after they have successfully enrolled and UniDoxia has received its fee. Some courses earn no reward. 18+.',
-      }
-    : {
-        title: 'Earn a reward when your friend enrols',
-        subtitle:
-          // Kojo terms v2.3, section I, top-of-page subtitle (exact).
-          "Refer a friend and earn a reward when they successfully enrol through UniDoxia. We pay only after they enrol and we receive our commission from the university. The amount depends on the course, some courses don't qualify, and we confirm it in writing before your friend applies. 18+.",
-      };
+/** No-figure headline and subtitle (Kojo terms v2.3, section I). The figure-mode copy is in referralFigures.ts. */
+export const REFERRAL_HEADLINE: ReferralHeadline = {
+  title: 'Earn a reward when your friend enrols',
+  subtitle:
+    // Kojo terms v2.3, section I, top-of-page subtitle (exact).
+    "Refer a friend and earn a reward when they successfully enrol through UniDoxia. We pay only after they enrol and we receive our commission from the university. The amount depends on the course, some courses don't qualify, and we confirm it in writing before your friend applies. 18+.",
+};
 
 export type ReferralDetails = {
   referrerName: string;

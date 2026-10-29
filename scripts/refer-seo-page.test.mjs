@@ -9,7 +9,7 @@ import {
   REFERRAL_PAGE_PUBLIC,
   REFERRAL_SEO_DESCRIPTION,
   REFERRAL_SEO_TITLE,
-  getReferralHeadline,
+  REFERRAL_HEADLINE,
 } from '../src/config/referral.ts';
 
 const sitemapScript = path.resolve('scripts/generate-sitemap.cjs');
@@ -32,7 +32,7 @@ describe('/refer prerender, sitemap and noindex (D6)', () => {
     expect(page.title).toBe(REFERRAL_SEO_TITLE);
     expect(page.description).toBe(REFERRAL_SEO_DESCRIPTION);
     expect(page.body.match(/<h1>/g)).toHaveLength(1);
-    expect(page.body).toContain(`<h1>${getReferralHeadline('no-figure').title}</h1>`);
+    expect(page.body).toContain(`<h1>${REFERRAL_HEADLINE.title}</h1>`);
     expect(`${page.title} ${page.description} ${page.body}`).not.toMatch(/£|\b500\b/);
   });
 

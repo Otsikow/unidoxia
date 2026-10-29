@@ -13,8 +13,8 @@ import {
   buildReferralMessage,
   buildReferralWhatsAppUrl,
   getReferralGoLiveProblems,
-  getReferralHeadline,
 } from '@/config/referral';
+import { REFERRAL_FIGURE_HEADLINE } from '@/config/referralFigures';
 
 const V23_SUBTITLE =
   "Refer a friend and earn a reward when they successfully enrol through UniDoxia. We pay only after they enrol and we receive our commission from the university. The amount depends on the course, some courses don't qualify, and we confirm it in writing before your friend applies. 18+.";
@@ -68,8 +68,8 @@ describe('Refer & Earn page', () => {
     expect(document.querySelector('meta[name="description"]')?.getAttribute('content') ?? '').not.toContain('£');
   });
 
-  it('switches to the £500 headline and the £ reward table only when the mode is £500', () => {
-    expect(getReferralHeadline('£500').title).toBe('Earn up to £500 when your friend enrols');
+  it('switches to the £500 headline and the £ reward table only when the mode is £500 (figure build)', () => {
+    expect(REFERRAL_FIGURE_HEADLINE.title).toBe('Earn up to £500 when your friend enrols');
     renderAt('£500');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Earn up to £500 when your friend enrols');
     expect(screen.getByText(/^Refer a friend to UniDoxia\. The amount depends on the course and university/)).toHaveTextContent(
