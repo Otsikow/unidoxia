@@ -216,6 +216,7 @@ const ScholarshipArchive = lazyWithErrorHandling(() => import("./pages/Scholarsh
 const Blog = lazyWithErrorHandling(() => import("./pages/Blog"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const About = lazyWithErrorHandling(() => import("./pages/About"));
+const Refer = lazyWithErrorHandling(() => import("./pages/Refer"));
 const EditorialPolicy = lazyWithErrorHandling(() => import("./pages/EditorialPolicy"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
 const AdminUniversityClaims = lazyWithErrorHandling(() => import("./pages/admin/AdminUniversityClaims"));
@@ -650,6 +651,7 @@ const App = () => {
                         <Route path="/partnership" element={<PublicLayout><UniversityPartnership /></PublicLayout>} />
 
                         <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+                        <Route path="/refer" element={<PublicLayout><Refer /></PublicLayout>} />
                         <Route path="/editorial-policy" element={<PublicLayout><EditorialPolicy /></PublicLayout>} />
 
 

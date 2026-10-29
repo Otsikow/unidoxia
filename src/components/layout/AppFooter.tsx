@@ -18,6 +18,7 @@ import {
   Linkedin,
   Facebook,
   Instagram,
+  Gift,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
@@ -261,6 +262,12 @@ export function AppFooter() {
                 <Link to="/feedback" className="inline-flex items-center gap-2 hover:underline">
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
                   {t("layout.footer.platformLinks.feedback")}
+                </Link>
+              </li>
+              <li>
+                <Link to="/refer" className="inline-flex items-center gap-2 hover:underline">
+                  <Gift className="h-4 w-4 text-muted-foreground" />
+                  {t("layout.footer.platformLinks.refer", { defaultValue: "Refer a friend" })}
                 </Link>
               </li>
             </ul>
