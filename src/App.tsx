@@ -461,6 +461,13 @@ const ZoeChatbot = lazyWithErrorHandling(() =>
   import("./components/ai/AIChatbot")
 );
 
+/** The /refer page has its own WhatsApp buttons, so the floating launcher would only cover content there. */
+const ChatbotOutsideReferPage = () => {
+  const { pathname } = useLocation();
+  if (pathname === "/refer") return null;
+  return <ZoeChatbot />;
+};
+
 /* ==========================================================================
    PREFETCH HELPERS
    ========================================================================== */
@@ -795,7 +802,7 @@ const App = () => {
                       <RoutePrefetcher />
                     </div>
 
-                    {shouldRenderChatbot && <ZoeChatbot />}
+                    {shouldRenderChatbot && <ChatbotOutsideReferPage />}
                   </div>
                 </Suspense>
               </NavigationHistoryProvider>

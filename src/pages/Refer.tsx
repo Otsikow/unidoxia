@@ -14,36 +14,36 @@ import { business } from "@/config/business";
 import {
   REFERRAL_HEADLINE_MODE,
   REFERRAL_PAGE_INDEXABLE,
+  REFERRAL_REWARD_BANDS,
   REFERRAL_SHOW_REVIEW_NOTES,
   ReferralHeadlineMode,
   buildReferralWhatsAppUrl,
   getReferralHeadline,
+  showsMoneyFigures,
 } from "@/config/referral";
 
 /**
  * UniDoxia Refer & Earn (unidoxia.com/refer).
- * Terms text: Kojo, "UniDoxia Refer & Earn: terms v2.2" (29 October 2026), section D plus the
- * v2.1 clauses 4A to 4C and the v2.2 reward table. Square-bracket items are Eric's decisions and
- * stay visibly flagged until he fills them in. No referral data is stored by the website:
- * the form only opens WhatsApp with a prefilled message.
+ * Terms text: Kojo, "UniDoxia Refer & Earn: terms" (29 October 2026): section D, the v2.1 clauses
+ * 4A to 4C, and the v2.3 no-figure wording in section I (subtitle, clause 1, clause 4, 4A and the
+ * "How your reward is worked out" section). The v2.2 £ table renders only in '£500' mode.
+ * Square-bracket items are Eric's decisions and stay visibly flagged until he fills them in.
+ * No referral data is stored by the website: the form only opens WhatsApp with a prefilled message.
+ *
+ * Photo: Pexels 8199611, "Smiling Students in Library" by Yan Krukau, Pexels Licence
+ * (https://www.pexels.com/photo/smiling-students-in-library-8199611/). Recorded in
+ * unidoxia/referral-2026-10-29/v1/SOURCES.md. No overlay or shade.
  */
 
 /** Visible marker for a placeholder or a decision Kojo's terms leave to Eric. */
 const ForEric = ({ children }: { children: ReactNode }) => (
   <mark
     data-testid="for-eric"
-    className="rounded bg-amber-100 px-1 py-0.5 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
+    className="rounded-sm bg-amber-100 py-0.5 text-amber-900 dark:bg-amber-900/40 dark:text-amber-100"
   >
     {children}
   </mark>
 );
-
-const REWARD_BANDS = [
-  { commission: "£2,000 or more", reward: "£500" },
-  { commission: "£1,000 to £1,999", reward: "£250" },
-  { commission: "£400 to £999", reward: "£100" },
-  { commission: "Under £400", reward: "No reward" },
-];
 
 const STEPS = [
   {
@@ -70,6 +70,7 @@ type ReferProps = {
 
 const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
   const headline = getReferralHeadline(headlineMode);
+  const showMoney = showsMoneyFigures(headlineMode);
   const [referrerName, setReferrerName] = useState("");
   const [referrerContact, setReferrerContact] = useState("");
   const [friendFirstName, setFriendFirstName] = useState("");
@@ -93,7 +94,7 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
     <div className="bg-background">
       <SEO
         title="Refer a Friend and Earn a Reward | UniDoxia"
-        description="Refer a friend to UniDoxia and earn a reward when they successfully enrol on a university course abroad. 18+. Read the Refer & Earn terms and reward table."
+        description="Refer a friend to UniDoxia and earn a reward when they successfully enrol on a university course abroad. Some courses don't qualify. 18+. Read the Refer & Earn terms."
         canonicalPath="/refer"
         robots={REFERRAL_PAGE_INDEXABLE ? undefined : "noindex,nofollow"}
         jsonLd={{
@@ -116,7 +117,7 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
             </h1>
             <p className="text-lg leading-relaxed text-muted-foreground">{headline.subtitle}</p>
             <p className="mt-3 text-sm text-muted-foreground">
-              For students and friends of students anywhere in the world. Terms below and at{" "}
+              For students and friends of students wherever you live, subject to the checks in clause 6. Terms below and at{" "}
               <span className="font-medium text-foreground">unidoxia.com/refer</span>.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -131,9 +132,9 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
           <figure className="overflow-hidden rounded-2xl border bg-muted shadow-lg">
             <img
               src={referStudentsPhoto}
-              alt="A diverse group of university students walking together across a sunny campus."
-              width="1408"
-              height="768"
+              alt="Three smiling students from different backgrounds resting on stacks of books at a library table."
+              width="1600"
+              height="1067"
               fetchPriority="high"
               className="aspect-[16/10] w-full object-cover object-center"
             />
@@ -148,8 +149,8 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
             <p className="font-semibold">Draft for review: not approved for launch.</p>
             <p className="mt-1">
               Items highlighted like <ForEric>this</ForEric> are placeholders or decisions for Eric in Kojo's terms
-              v2.2. Still open: the headline (no figure or "up to £500"), the proposed exclusions and the 5 per 12
-              months limit (clauses 2 and 3), the privacy notice link and contact email (clauses 12 and 13), the
+              v2.3. Still open: whether the page may ever show money figures (Kojo: no money amounts until rates
+              are signed for named courses), the proposed exclusions and the 5 per 12 months limit (clauses 2 and 3), the privacy notice link and contact email (clauses 12 and 13), the
               "last updated" date, and what happens to the old $50 sign-up offer. Before launch: written disclosure
               to partners (and StudyIn's written consent), a check of the CourseFinder and ApplyBoard terms, and the
               clause 4B wording added to the privacy notice. Reward rates are unsigned or benchmark figures and no
@@ -175,34 +176,53 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
 
       <section className="container mx-auto max-w-6xl px-4 py-10 md:py-14">
         <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
-          <div id="reward-table">
-            <h2 className="mb-3 text-2xl font-semibold">Reward table</h2>
-            <p className="mb-4 text-muted-foreground">
-              Your reward is 25% of the net commission UniDoxia actually receives for your friend's enrolment,
-              rounded to these bands and capped at £500.
-            </p>
-            <div className="overflow-hidden rounded-xl border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Commission UniDoxia receives for the student</TableHead>
-                    <TableHead className="text-right">Your reward</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {REWARD_BANDS.map((band) => (
-                    <TableRow key={band.commission}>
-                      <TableCell>{band.commission}</TableCell>
-                      <TableCell className="text-right font-semibold">{band.reward}</TableCell>
+          {showMoney ? (
+            <div id="reward-table" data-testid="reward-table">
+              <h2 className="mb-3 text-2xl font-semibold">Reward table</h2>
+              {REFERRAL_SHOW_REVIEW_NOTES && (
+                <p className="mb-3 text-sm">
+                  <ForEric>
+                    For Eric: Kojo's CAP 3.7 ruling is not to publish any £ figure until rates are signed for named
+                    courses.
+                  </ForEric>
+                </p>
+              )}
+              <p className="mb-4 text-muted-foreground">
+                Your reward is 25% of the net commission UniDoxia actually receives for your friend's enrolment,
+                rounded to these bands and capped at £500.
+              </p>
+              <div className="overflow-hidden rounded-xl border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Commission UniDoxia receives for the student</TableHead>
+                      <TableHead className="text-right">Your reward</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {REFERRAL_REWARD_BANDS.map((band) => (
+                      <TableRow key={band.commission}>
+                        <TableCell>{band.commission}</TableCell>
+                        <TableCell className="text-right font-semibold">{band.reward}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Based on what we receive; confirmed in writing before your friend applies. Some courses earn no reward.
+              </p>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Based on what we receive; confirmed in writing before your friend applies. Some courses earn no reward.
-            </p>
-          </div>
+          ) : (
+            <div id="how-reward-works" data-testid="how-reward-works">
+              <h2 className="mb-3 text-2xl font-semibold">How your reward is worked out</h2>
+              <p className="text-muted-foreground">
+                Your reward is a share of the commission UniDoxia receives from the university for your friend's
+                course. Commission differs between universities and courses, so we confirm your reward in writing
+                before your friend applies. Some courses don't qualify.
+              </p>
+            </div>
+          )}
 
           <Card id="refer-form" className="scroll-mt-20">
             <CardHeader>
@@ -229,7 +249,8 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
                   <Label htmlFor="referrer-contact">Your email or WhatsApp number</Label>
                   <Input
                     id="referrer-contact"
-                    autoComplete="email"
+                    autoComplete="off"
+                    inputMode="text"
                     value={referrerContact}
                     onChange={(e) => setReferrerContact(e.target.value)}
                     maxLength={120}
@@ -249,6 +270,7 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
                 <div className="flex items-start gap-3">
                   <Checkbox
                     id="consent-terms"
+                    aria-required="true"
                     checked={agreesToTerms}
                     onCheckedChange={(checked) => setAgreesToTerms(checked === true)}
                     className="mt-0.5"
@@ -264,6 +286,7 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
                 <div className="flex items-start gap-3">
                   <Checkbox
                     id="consent-friend"
+                    aria-required="true"
                     checked={hasFriendsPermission}
                     onCheckedChange={(checked) => setHasFriendsPermission(checked === true)}
                     className="mt-0.5"
@@ -272,10 +295,27 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
                     My friend has agreed that I can share their first name with UniDoxia and introduce them.
                   </Label>
                 </div>
-                <Button type="submit" className="w-full" disabled={!canSubmit}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={!canSubmit}
+                  aria-describedby="refer-submit-hint refer-privacy-note"
+                >
                   <Send className="mr-2 h-4 w-4" aria-hidden="true" />
                   Send referral on WhatsApp
                 </Button>
+                <p id="refer-submit-hint" className="text-sm text-muted-foreground" aria-live="polite">
+                  {canSubmit
+                    ? "Ready to send. WhatsApp will open with your message."
+                    : "To send, fill in all 3 fields and tick both boxes."}
+                </p>
+                <p id="refer-privacy-note" className="text-sm text-muted-foreground">
+                  Your message goes to UniDoxia through WhatsApp. See our{" "}
+                  <Link to="/legal/privacy" className="underline underline-offset-2">
+                    privacy notice
+                  </Link>
+                  .
+                </p>
                 {openedUrl && (
                   <p role="status" className="text-sm text-muted-foreground">
                     WhatsApp should now be open. If it did not open,{" "}
@@ -308,25 +348,12 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
           {business.companyNumber}).
         </p>
         <ol className="space-y-4 text-muted-foreground [&_strong]:text-foreground">
-          <li>
-            <strong>1. What you can earn.</strong> You can earn up to £500 for each student you refer who successfully
-            enrols. The amount depends on the course and university, as shown in the{" "}
-            <a href="#reward-table" className="underline underline-offset-2">
-              reward table
-            </a>
-            . We confirm the amount for your friend's course in writing before they apply, and that is the amount we
-            pay. There is no reward for signing up or applying, only for successful enrolment. Some courses earn no
-            reward. We'll tell you in writing before your friend applies whether their course qualifies and how much
-            you'll get.
-            {REFERRAL_SHOW_REVIEW_NOTES && (
-              <>
-                {" "}
-                <ForEric>
-                  For Eric: Kojo's CAP 3.7 advice is that the page should not promise £500 until a signed rate supports
-                  it. Keep, reword or remove "up to £500" in this clause.
-                </ForEric>
-              </>
-            )}
+          <li data-testid="terms-clause-1">
+            <strong>1. What you can earn.</strong> Your reward is 25% of the net commission UniDoxia actually receives
+            for your friend's enrolment, up to a maximum per student that we set. If our commission for a course is
+            below the minimum we set, no reward is due, so some courses don't qualify. Before your friend applies, we
+            confirm in writing whether their course qualifies and the exact amount, and that confirmed amount is what
+            we pay. There is no reward for signing up or applying, only for successful enrolment.
           </li>
           <li>
             <strong>2. Who can take part.</strong> Anyone aged 18 or over.{" "}
@@ -343,13 +370,13 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
             You can earn rewards for up to 5 referred students in any 12 months. If you want to refer more, contact us
             about becoming a UniDoxia partner.
           </li>
-          <li>
-            <strong>4. How to refer.</strong> Share your referral link or code, or ask your friend to give your name when
-            they first contact UniDoxia. Only share a friend's details with us if they have agreed. Your friend must be
+          <li data-testid="terms-clause-4">
+            <strong>4. How to refer.</strong> Use the form on this page (it opens a WhatsApp message to UniDoxia),
+            message us on WhatsApp, or ask your friend to give your name when they first contact UniDoxia. Only share a friend's details with us if they have agreed. Your friend must be
             new to UniDoxia (not already registered with us or one of our partners) and must apply through UniDoxia.
           </li>
           <li>
-            <strong>4A. You are not our agent.</strong> You can introduce friends and share our link, but you must not
+            <strong>4A. You are not our agent.</strong> You can introduce friends and share this page, but you must not
             advise on courses, universities or visas, help fill in or submit applications, take any money or documents
             from students, or say you work for or represent UniDoxia. Visa and immigration advice in the UK is
             regulated, so leave all of that to us.
@@ -404,13 +431,19 @@ const Refer = ({ headlineMode = REFERRAL_HEADLINE_MODE }: ReferProps) => {
             <ForEric>[link: confirm once the clause 4B wording is in the privacy notice]</ForEric>. We won't send your
             friend marketing because of your referral unless they ask us to contact them.
           </li>
-          <li>
+          <li data-testid="terms-clause-13">
             <strong>13. Law.</strong> These terms are governed by the law of England and Wales. Questions:{" "}
-            <ForEric>[UniDoxia contact email]</ForEric>.
+            <ForEric>
+              <a href={`mailto:${business.email}`} className="underline underline-offset-2">
+                {business.email}
+              </a>{" "}
+              [for Eric to confirm]
+            </ForEric>
+            .
           </li>
         </ol>
         <p className="mt-6 text-sm text-muted-foreground">
-          Last updated: <ForEric>[date]</ForEric>
+          Last updated: <ForEric>[the go-live date]</ForEric>
         </p>
       </section>
     </div>

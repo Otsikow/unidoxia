@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { REFERRAL_SHOW_IN_FOOTER } from "@/config/referral";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -80,7 +81,12 @@ function RedditIcon({ className }: { className?: string }) {
   );
 }
 
-export function AppFooter() {
+type AppFooterProps = {
+  /** Show the "Refer a friend" link. Defaults to REFERRAL_SHOW_IN_FOOTER (off until go-live). */
+  showReferLink?: boolean;
+};
+
+export function AppFooter({ showReferLink = REFERRAL_SHOW_IN_FOOTER }: AppFooterProps = {}) {
   const year = new Date().getFullYear();
   const { t } = useTranslation();
   const { user, loading, signOut } = useAuth();
@@ -264,12 +270,14 @@ export function AppFooter() {
                   {t("layout.footer.platformLinks.feedback")}
                 </Link>
               </li>
-              <li>
-                <Link to="/refer" className="inline-flex items-center gap-2 hover:underline">
-                  <Gift className="h-4 w-4 text-muted-foreground" />
-                  {t("layout.footer.platformLinks.refer", { defaultValue: "Refer a friend" })}
-                </Link>
-              </li>
+              {showReferLink && (
+                <li>
+                  <Link to="/refer" className="inline-flex items-center gap-2 hover:underline">
+                    <Gift className="h-4 w-4 text-muted-foreground" />
+                    {t("layout.footer.platformLinks.refer", { defaultValue: "Refer a friend" })}
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
