@@ -89,7 +89,7 @@ const pages = [
     title: "About UniDoxia | Study Abroad Support for International Students",
     description:
       "UniDoxia helps international students around the world discover courses, prepare applications and understand next steps — guidance, not guarantees.",
-    body: `<h1>About UniDoxia</h1><p>UniDoxia is a study-abroad support platform for international students worldwide. We help students research courses and universities, prepare applications, and understand common visa and scholarship requirements. We do not guarantee admission, scholarship, or visa outcomes.</p><h2>UK knowledge-trained leadership</h2><p>The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training (certificate code 114757, valid until 16 July 2028).</p>`,
+    body: `<h1>About UniDoxia</h1><p>UniDoxia is a study-abroad support platform for international students worldwide. We help students research courses and universities, prepare applications, and understand common visa and scholarship requirements. We do not guarantee admission, scholarship, or visa outcomes.</p><h2>UK knowledge-trained leadership</h2><p>The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training (certificate code 114757).</p>`,
   },
   {
     path: "/faq",
