@@ -23,7 +23,7 @@ describe('catalogue SEO', () => {
     const page = universityPage(university, [course, { ...course, id: 'other', university_id: 'u2' }]);
     expect(page.body).toContain('/courses/p1');
     expect(page.body).not.toContain('/courses/other');
-    expect(page.jsonLd.location.name).toBe('York, United Kingdom');
+    expect(page.jsonLd.find(item => item["@type"] === "CollegeOrUniversity").location.name).toBe('York, United Kingdom');
   });
   it('uses real article dates/images and omits absent optional data', () => {
     const post = { title: 'Article', slug: 'article', published_at: '2026-01-01', updated_at: '2026-02-01', cover_image_url: '/cover.png' };

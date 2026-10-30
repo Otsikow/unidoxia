@@ -1,6 +1,4 @@
 "use client";
-import StudyUK from '@/pages/StudyUK';
-import FreeConsultation from '@/pages/FreeConsultation';
 
 import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -214,6 +212,9 @@ const ScholarshipShareLanding = lazyWithErrorHandling(() =>
 const ScholarshipDetail = lazyWithErrorHandling(() => import("./pages/ScholarshipDetail"));
 const ScholarshipArchive = lazyWithErrorHandling(() => import("./pages/ScholarshipArchive"));
 const Blog = lazyWithErrorHandling(() => import("./pages/Blog"));
+const StudyUK = lazyWithErrorHandling(() => import("./pages/StudyUK"));
+const FreeConsultation = lazyWithErrorHandling(() => import("./pages/FreeConsultation"));
+const StudyGuide = lazyWithErrorHandling(() => import("./pages/StudyGuide"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const About = lazyWithErrorHandling(() => import("./pages/About"));
 const EditorialPolicy = lazyWithErrorHandling(() => import("./pages/EditorialPolicy"));
@@ -620,6 +621,7 @@ const App = () => {
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
+                        <Route path="/study-guides/:slug" element={<PublicLayout><StudyGuide /></PublicLayout>} />
                         <Route path="/destinations/united-kingdom" element={<PublicLayout><StudyUK /></PublicLayout>} />
                         <Route path="/free-consultation" element={<PublicLayout><FreeConsultation /></PublicLayout>} />
                         <Route path="/feedback" element={<PublicLayout><Feedback /></PublicLayout>} />

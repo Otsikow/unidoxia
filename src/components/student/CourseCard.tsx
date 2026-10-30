@@ -121,15 +121,7 @@ export function CourseCard({ course, comparisonSelected, comparisonDisabled, onC
       <div
         onClick={() => setIsDetailsOpen(true)}
         className="cursor-pointer h-full"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsDetailsOpen(true);
-          }
-        }}
-        aria-label={`View details for ${course.name}`}
+
       >
         <Card className="group h-full overflow-hidden border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg flex flex-col animate-fade-in-up">
           <CardContent className="pt-8 sm:pt-8 pb-4 flex-1">

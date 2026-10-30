@@ -1384,9 +1384,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       })}
                 </h2>
                 <div className="w-full sm:w-56">
-                  <Label>Sort by</Label>
+                  <Label htmlFor="course-sort">Sort by</Label>
                   <Select value={sortBy} onValueChange={(value) => setSortBy(value as ComparisonSort)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="course-sort"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="recommended">Recommended</SelectItem>
                       <SelectItem value="tuition">Lowest Tuition</SelectItem>
@@ -1466,9 +1466,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                                 <PaginationItem>
                                   <PaginationPrevious
                                     href="#"
+                                    aria-disabled={currentCoursePage === 1}
+                                    tabIndex={currentCoursePage === 1 ? -1 : undefined}
                                     className={
                                       currentCoursePage === 1
-                                        ? "pointer-events-none opacity-50"
+                                        ? "pointer-events-none"
                                         : undefined
                                     }
                                     onClick={(e) => {
@@ -1498,9 +1500,11 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                                 <PaginationItem>
                                   <PaginationNext
                                     href="#"
+                                    aria-disabled={currentCoursePage === totalCoursePages}
+                                    tabIndex={currentCoursePage === totalCoursePages ? -1 : undefined}
                                     className={
                                       currentCoursePage === totalCoursePages
-                                        ? "pointer-events-none opacity-50"
+                                        ? "pointer-events-none"
                                         : undefined
                                     }
                                     onClick={(e) => {
@@ -1563,7 +1567,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                         <PaginationItem>
                           <PaginationPrevious
                             href="#"
-                            className={searchPage === 1 ? "pointer-events-none opacity-50" : undefined}
+                            aria-disabled={searchPage === 1}
+                            tabIndex={searchPage === 1 ? -1 : undefined}
+                            className={searchPage === 1 ? "pointer-events-none" : undefined}
                             onClick={(event) => {
                               event.preventDefault();
                               handleSearchPageChange(searchPage - 1);
@@ -1578,7 +1584,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                         <PaginationItem>
                           <PaginationNext
                             href="#"
-                            className={searchPage === searchTotalPages ? "pointer-events-none opacity-50" : undefined}
+                            aria-disabled={searchPage === searchTotalPages}
+                            tabIndex={searchPage === searchTotalPages ? -1 : undefined}
+                            className={searchPage === searchTotalPages ? "pointer-events-none" : undefined}
                             onClick={(event) => {
                               event.preventDefault();
                               handleSearchPageChange(searchPage + 1);

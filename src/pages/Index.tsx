@@ -182,8 +182,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <SEO
-        title="Study Abroad Support for International Students | UniDoxia"
-        description="UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements."
+        title="Study Abroad from Africa: UK Universities & Support | UniDoxia"
+        description="Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants."
         canonicalPath="/"
         jsonLd={[
           organisation,
@@ -239,11 +239,11 @@ const Index = () => {
 
             <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.03em] [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
-                Your Global Study Journey Starts Here
+                Study abroad from Africa and beyond
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
-                Find universities worldwide and get support with course selection, document
-                preparation, applications, visa guidance and every important next step.
+                Explore UK universities and courses, and get support with course selection,
+                application preparation and your next steps towards studying abroad.
               </p>
               <p className="text-xs sm:text-sm text-white/85 italic">
                 One platform. Global opportunities. Expert support.

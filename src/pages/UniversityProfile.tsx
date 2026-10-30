@@ -340,6 +340,7 @@ export default function UniversityProfile() {
           className="-ml-2 h-10 rounded-xl px-3 font-semibold text-foreground hover:bg-muted"
         />
       </div>
+      <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-4 pb-4 text-sm md:px-8"><Link className="text-primary underline" to="/">Home</Link> / <Link className="text-primary underline" to="/universities">Universities</Link> / <span aria-current="page">{university.name}</span></nav>
       {/* Hero Section */}
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="relative min-h-[24rem] overflow-hidden rounded-2xl border border-border/60 shadow-lg md:h-[28rem] md:rounded-3xl">
@@ -646,8 +647,8 @@ export default function UniversityProfile() {
           <div className="rounded-xl border bg-muted/40 p-5 space-y-2">
             <h2 className="text-lg font-semibold">Plan your application</h2>
             <p>A directory listing does not by itself indicate a formal university partnership.</p>
-            <Link className="text-primary underline mr-4" to={`/courses?university=${university.id}`}>Browse courses at {university.name}</Link>
-            <Link className="text-primary underline" to="/free-consultation">Ask UniDoxia about studying here</Link>
+            <Link className="text-foreground underline mr-4" to={`/courses?university=${university.id}`}>Browse courses at {university.name}</Link>
+            <Link className="text-foreground underline" to="/free-consultation">Ask UniDoxia about studying here</Link>
           </div>
           {/* Programs Tab */}
           <TabsContent value="programs" className="space-y-6">

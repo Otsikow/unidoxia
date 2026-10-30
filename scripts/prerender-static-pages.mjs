@@ -1,3 +1,5 @@
+import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
+import { editorialReview } from '../src/lib/editorialReview.mjs';
 import { businessFooter } from '../src/config/business.ts';
 import { articleContent } from '../src/lib/articleContent.ts';
 import { JSDOM } from 'jsdom';
@@ -20,6 +22,7 @@ const template = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
 const esc = (s = "") =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+const guides = publishedStudyGuides();
 const { universities, programmes } = await loadPublicCatalogue();
 const featured = universities.filter(u => u.featured).sort((a, b) => (a.featured_priority ?? Infinity) - (b.featured_priority ?? Infinity)).slice(0, 12);
 const posts = await fetchPublicRows("blog_posts?select=id,slug,title,seo_title,seo_description,excerpt,content_html,content_md,tags,published_at,updated_at,cover_image_url&status=eq.published");
@@ -71,15 +74,15 @@ const pages = [
   {
     path: "/",
     jsonLd: organisation,
-    title: "Study Abroad Support for International Students | UniDoxia",
+    title: "Study Abroad from Africa: UK Universities & Support | UniDoxia",
     description:
-      "UniDoxia helps international students discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements.",
-    body: `<h1>Study abroad support for international students</h1><p>Discover courses and universities, prepare stronger applications, and understand visa and scholarship requirements.</p>${featuredHtml}`,
+      "Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.",
+    body: `<h1>Study abroad from Africa and beyond</h1><p>Explore UK universities and courses, and get support with course selection, application preparation and your next steps towards studying abroad.</p><p><a href="/destinations/united-kingdom">Explore studying in the UK</a> · <a href="/free-consultation">Ask about your study plans</a></p>${featuredHtml}`,
   },
   {
     path: '/free-consultation', title: 'Free Study Abroad Consultation | UniDoxia',
     description: 'Ask UniDoxia about your study-abroad plans. Send a short enquiry with one contact method, your preferred destination and an optional question.',
-    body: '<h1>Free study abroad consultation</h1><p>Tell us where you would like to study and how to contact you. You can share academic and application details later.</p><p>The short enquiry requests your name, one contact method, preferred destination and an optional question. Enable JavaScript to send the form, or email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a>.</p><h2>What happens next?</h2><p>Your enquiry is saved for the admissions team to follow up using your chosen contact method. We can then discuss your study plans and any further information needed. Submitting an enquiry does not submit a university application.</p><p><a href="/intake-form">Use the full student intake form</a> if you are ready to share your academic background.</p>',
+    body: '<h1>Free study abroad consultation</h1><p>Tell us where you would like to study and how to contact you. You can share academic and application details later. This consultation is free; other services and university or government fees may apply. See our <a href="/pricing">service pricing</a>. We cannot guarantee admission, funding or a visa.</p><p>The short enquiry requests your name, one contact method, preferred destination and an optional question. Enable JavaScript to send the form, or email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a>.</p><h2>What happens next?</h2><p>Your enquiry is saved for the admissions team to follow up using your chosen contact method. We can then discuss your study plans and any further information needed. Submitting an enquiry does not submit a university application.</p><p><a href="/intake-form">Use the full student intake form</a> if you are ready to share your academic background.</p>',
   },
   {
     path: "/about",
@@ -103,7 +106,7 @@ const pages = [
       "Student visa updates, scholarship guides and practical study-abroad advice for international students from the UniDoxia Editorial Team.",
     body: `<h1>UniDoxia Blog</h1><p>Explore study-abroad guidance on admissions, visas and scholarships. Confirm current requirements with the linked official sources.</p><ul>${posts
 
-      .map((p) => `<li><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></li>`)
+      .filter(p => !editorialReview[p.slug]).map((p) => `<li><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></li>`)
       .join("")}</ul>`,
   },
   {
@@ -179,19 +182,25 @@ const pages = [
   {
     path: '/destinations/united-kingdom', title: 'Study in the UK: Universities and Course Planning | UniDoxia',
     description: 'Explore listed UK universities and their courses. Plan your shortlist, compare entry requirements and prepare questions for a free study-abroad consultation.',
-    body: `<h1>Study in the UK</h1><p>Start with the course you want to study, then compare locations, entry requirements and costs. UniDoxia's directory brings listed UK universities and their available course information together.</p><h2>Build your shortlist</h2><ol><li>Compare the course content, qualification, study mode and campus.</li><li>Check academic and English entry requirements against your background.</li><li>Review international tuition, scholarship conditions and future intakes using official sources.</li><li>Prepare questions about your choices before starting an application.</li></ol><h2>Explore listed UK universities</h2><p>A directory listing does not by itself indicate a formal university partnership.</p><ul>${universities.filter(u => u.country === 'United Kingdom').map(u => `<li><a href="/universities/${esc(u.slug || u.id)}">${esc(u.name)}</a> — ${esc(u.city || '')}<p>${esc(u.description || '')}</p><a href="/courses?university=${esc(u.id)}">Explore courses at ${esc(u.name)}</a></li>`).join('')}</ul><h2>Prepare your next step</h2><p>Read <a href="/faq">application and study-abroad questions</a> and check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><a href="/free-consultation">Ask about your UK study plans</a>`,
+    body: `<h1>Study in the UK</h1><p>Start with the course you want to study, then compare locations, entry requirements and costs. UniDoxia's directory brings listed UK universities and their available course information together.</p><h2>Planning from Africa</h2><p>Check whether your qualifications meet each course’s requirements, and ask the university about acceptable English language evidence. Budget for tuition, living costs, travel and any application or visa fees. Verify current requirements with the university and <a href="https://www.gov.uk/student-visa">UK government student visa guidance</a>.</p><h2>Build your shortlist</h2><ol><li>Compare the course content, qualification, study mode and campus.</li><li>Check academic and English entry requirements against your background.</li><li>Review international tuition, scholarship conditions and future intakes using official sources.</li><li>Prepare questions about your choices before starting an application.</li></ol><h2>Explore listed UK universities</h2><p>A directory listing does not by itself indicate a formal university partnership.</p><ul>${universities.filter(u => u.country === 'United Kingdom').map(u => `<li><a href="/universities/${esc(u.slug || u.id)}">${esc(u.name)}</a> — ${esc(u.city || '')}<p>${esc(u.description || '')}</p><a href="/courses?university=${esc(u.id)}">Explore courses at ${esc(u.name)}</a></li>`).join('')}</ul>${guides.length ? `<h2>Guides by country of origin</h2><ul>${guides.map(guide => `<li><a href="/study-guides/${esc(guide.slug)}">${esc(guide.title)}</a></li>`).join('')}</ul>` : ''}<h2>Prepare your next step</h2><p>Read <a href="/faq">application and study-abroad questions</a> and check <a href="/scholarships">scholarship eligibility and deadlines</a>. A consultation is free; review <a href="/pricing">service pricing</a> and confirm any university or government fees. Guidance does not guarantee admission, funding or a visa.</p><a href="/free-consultation">Ask about your UK study plans</a>`,
   },
+  ...guides.map(guide => ({
+    path: `/study-guides/${guide.slug}`, title: `${guide.title} | UniDoxia`, description: guide.description,
+    lastmod: guide.checkedAt, jsonLd: studyGuideBreadcrumb(guide),
+    body: `<nav aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/destinations/united-kingdom">Study in the UK</a> / ${esc(guide.title)}</nav><h1>${esc(guide.title)}</h1><p>${esc(guide.description)}</p><p>Reviewed by ${esc(guide.reviewer)}; source checked ${esc(guide.checkedAt)}. Verify current requirements with the official sources before acting.</p>${guide.sections.map(section => `<section><h2>${esc(section.heading)}</h2><p style="white-space:pre-line">${esc(section.body)}</p></section>`).join('')}<h2>Sources</h2><ul>${guide.sources.map(source => `<li><a href="${esc(source.url)}">${esc(source.label)}</a></li>`).join('')}</ul><p>Guidance does not guarantee admission, funding or a visa. Check university and government fees and <a href="/pricing">UniDoxia service pricing</a>.</p><p><a href="/destinations/united-kingdom">Explore UK universities</a> or <a href="/free-consultation">ask about your study plans</a>.</p>`,
+  })),
   ...universities.map(u => universityPage(u, programmes)),
   ...programmes.map(p => coursePage(p, universities.find(u => u.id === p.university_id))),
   ...scholarships.map(scholarshipPage),
   ...posts.map((p) => ({
     path: `/blog/${encodeURIComponent(p.slug)}`,
     lastmod: p.updated_at || p.published_at,
-    jsonLd: blogSchema(p),
-    title: p.seo_title || `${p.title} | UniDoxia`,
-    description: p.seo_description || p.excerpt || p.title,
+    jsonLd: editorialReview[p.slug] ? undefined : blogSchema(p),
+    noindex: Boolean(editorialReview[p.slug]),
+    title: editorialReview[p.slug] ? `${editorialReview[p.slug].title} | UniDoxia` : p.seo_title || `${p.title} | UniDoxia`,
+    description: editorialReview[p.slug]?.message || p.seo_description || p.excerpt || p.title,
     ogType: "article",
-    body: `<article><h1>${esc(p.title)}</h1>${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Explore student visa readiness</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
+    body: `<article>${editorialReview[p.slug] ? `<aside aria-label="Editorial review notice"><p>${esc(editorialReview[p.slug].message)}</p><a href="${esc(editorialReview[p.slug].source)}">${esc(editorialReview[p.slug].label)}</a></aside>` : ""}<h1>${esc(editorialReview[p.slug]?.title || p.title)}</h1>${editorialReview[p.slug] ? "<p>The full article is temporarily unavailable while it is reviewed.</p>" : `${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}`}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Explore student visa readiness</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
   })),
 ];
 

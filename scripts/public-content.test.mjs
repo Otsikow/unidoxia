@@ -24,3 +24,23 @@ describe('complete public content', () => {
     expect(a.title).not.toBe(b.title); expect(a.description).not.toBe(b.description);
   });
 });
+
+describe('university breadcrumbs', () => {
+  it('uses visible, canonical paths and ordered structured data without inventing a relationship', () => {
+    const page = universityPage({ id: '123', slug: 'example', name: 'Example University' }, []);
+    const crumb = page.jsonLd.find(item => item['@type'] === 'BreadcrumbList');
+    expect(crumb.itemListElement.map(item => item.position)).toEqual([1, 2, 3]);
+    expect(crumb.itemListElement.map(item => item.item)).toEqual(['https://unidoxia.com/', 'https://unidoxia.com/universities', 'https://unidoxia.com/universities/example']);
+    expect(page.body).toContain('aria-label="Breadcrumb"');
+    expect(page.body).toContain('does not by itself indicate a formal university partnership');
+  });
+});
+
+describe('dated scholarship safeguards', () => {
+  it('flags a past listed deadline without claiming that future rounds are closed', () => {
+    const page = scholarshipPage({ slug: 'test-award', title: 'Test Award', status: 'Upcoming', deadline: '2000-01-01' });
+    expect(page.body).toContain('Deadline needs review');
+    expect(page.body).toContain('any later rounds');
+    expect(page.body).not.toContain('<dd>Upcoming</dd>');
+  });
+});

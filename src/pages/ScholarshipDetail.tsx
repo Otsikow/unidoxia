@@ -55,6 +55,7 @@ export default function ScholarshipDetail() {
   const s = data as any;
   const title = s.title ?? s.name;
   const isLive = ["Published","Closing Soon","Upcoming"].includes(s.status);
+  const deadlinePassed = !!s.deadline && /^\d{4}-\d{2}-\d{2}$/.test(s.deadline) && s.deadline < new Date().toISOString().slice(0, 10);
   const isClosed = ["Closed","Archived"].includes(s.status);
   const description = s.summary
     ?? `${title} — ${s.funding_type ?? "scholarship"} at ${s.institution_name ?? "a UK institution"} for ${s.academic_year ?? "the upcoming academic year"}.`;
@@ -86,7 +87,7 @@ export default function ScholarshipDetail() {
 
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
-          {s.status && <Badge variant={isLive ? "default" : "outline"}>{s.status}</Badge>}
+          {s.status && <Badge variant={isLive && !deadlinePassed ? "default" : "outline"}>{deadlinePassed && !isClosed ? "Deadline needs review" : s.status}</Badge>}
           {s.verification_status === "Fully Verified" && (
             <Badge variant="secondary" className="gap-1"><ShieldCheck className="h-3.5 w-3.5" /> Verified</Badge>
           )}
@@ -102,6 +103,7 @@ export default function ScholarshipDetail() {
         {s.summary && <p className="text-base text-muted-foreground max-w-3xl">{s.summary}</p>}
       </header>
 
+      {deadlinePassed && !isClosed && <div className="rounded-md border border-amber-500 bg-amber-50 p-4 text-sm text-amber-900">The listed deadline has passed. Check the official source for this intake and any later rounds; this listing needs editorial review.</div>}
       {isClosed && (
         <div className="rounded-md border border-amber-500 bg-amber-50 p-4 text-sm text-amber-900">
           This scholarship is currently <strong>{s.status.toLowerCase()}</strong>. Check the official source for future rounds.
@@ -111,7 +113,7 @@ export default function ScholarshipDetail() {
       <div className="grid md:grid-cols-3 gap-4">
         <KeyFact icon={<Globe2 className="h-4 w-4" />} label="Country" value={s.country} />
         <KeyFact icon={<GraduationCap className="h-4 w-4" />} label="Study level" value={s.study_level} />
-        <KeyFact icon={<CalendarDays className="h-4 w-4" />} label="Deadline" value={s.deadline ? format(new Date(s.deadline), "d MMMM yyyy") : "Rolling / not specified"} />
+        <KeyFact icon={<CalendarDays className="h-4 w-4" />} label="Deadline" value={s.deadline ? format(new Date(s.deadline), "d MMMM yyyy") : "Not specified"} />
         <KeyFact icon={<ShieldCheck className="h-4 w-4" />} label="Funding" value={s.scholarship_value ?? s.funding_type} />
         <KeyFact icon={<Users className="h-4 w-4" />} label="Awards available" value={s.number_of_awards ? String(s.number_of_awards) : "Not specified"} />
         <KeyFact icon={<ShieldCheck className="h-4 w-4" />} label="Last verified" value={s.last_verified_at ? format(new Date(s.last_verified_at), "d MMM yyyy") : "Not specified"} />
