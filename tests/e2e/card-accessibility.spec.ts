@@ -18,7 +18,10 @@ test('reviewed article shows the notice and noindex in HTML and browser', async 
   const response = await request.get(path);
   expect(await response.text()).toContain('Editorial review notice');
   expect(await response.text()).toContain('content="noindex"');
+  expect(await response.text()).not.toContain('Work out which side of that date your course completion falls on');
   await page.goto(path);
   await expect(page.getByLabel('Editorial review notice')).toBeVisible();
+  await expect(page.getByText('The full article is temporarily unavailable while it is reviewed.')).toBeVisible();
+  await expect(page.getByText('Work out which side of that date your course completion falls on')).toHaveCount(0);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex,follow');
 });

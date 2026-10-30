@@ -111,12 +111,12 @@ export default function BlogPost() {
   const publishedLabel = formatDate(data.published_at);
   const updatedLabel = formatDate(data.updated_at);
   const readingMinutes = estimateReadingMinutes(data.content_html || data.content_md || data.excerpt);
-  const coverAlt = data.cover_image_url ? `Cover image for article: ${data.title}` : "";
-
   const review = editorialReview[data.slug];
-  const seoTitle = data.seo_title || `${data.title} | UniDoxia`;
+  const displayTitle = review?.title || data.title;
+  const coverAlt = data.cover_image_url ? `Cover image for article: ${displayTitle}` : "";
+  const seoTitle = review ? `${displayTitle} | UniDoxia` : data.seo_title || `${data.title} | UniDoxia`;
   const seoDescription =
-    data.seo_description ||
+    review?.message || data.seo_description ||
     data.excerpt ||
     data.title;
 
@@ -136,7 +136,7 @@ export default function BlogPost() {
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://unidoxia.com/" },
       { "@type": "ListItem", position: 2, name: "Blog", item: "https://unidoxia.com/blog" },
-      { "@type": "ListItem", position: 3, name: data.title, item: canonicalUrl },
+      { "@type": "ListItem", position: 3, name: displayTitle, item: canonicalUrl },
     ],
   };
 
@@ -151,7 +151,7 @@ export default function BlogPost() {
         publishedTime={data.published_at || undefined}
         modifiedTime={data.updated_at || undefined}
         robots={review ? "noindex,follow" : undefined}
-        jsonLd={[articleJsonLd, breadcrumbJsonLd]}
+        jsonLd={review ? breadcrumbJsonLd : [articleJsonLd, breadcrumbJsonLd]}
       />
 
       <div className="mb-8">
@@ -181,10 +181,10 @@ export default function BlogPost() {
         )}
 
         <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.15]">
-          {data.title}
+          {displayTitle}
         </h1>
 
-        {data.excerpt && (
+        {!review && data.excerpt && (
           <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
             {data.excerpt}
           </p>
@@ -206,10 +206,10 @@ export default function BlogPost() {
               <span>Updated {updatedLabel}</span>
             </span>
           )}
-          <span className="inline-flex items-center gap-1.5">
+          {!review && <span className="inline-flex items-center gap-1.5">
             <Clock className="h-4 w-4" aria-hidden="true" />
             <span>{readingMinutes} min read</span>
-          </span>
+          </span>}
           <Link
             to="/editorial-policy"
             className="underline underline-offset-4 hover:text-foreground"
@@ -230,7 +230,7 @@ export default function BlogPost() {
         </figure>
       )}
 
-      {sanitizedHtml ? (
+      {!review && sanitizedHtml ? (
         <div
           className="prose prose-lg prose-neutral dark:prose-invert max-w-none
             prose-headings:font-semibold prose-headings:tracking-tight prose-headings:scroll-mt-24
@@ -250,9 +250,9 @@ export default function BlogPost() {
             [&_a:focus-visible]:ring-2 [&_a:focus-visible]:ring-ring [&_a:focus-visible]:rounded-sm"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
-      ) : (
+      ) : !review ? (
         <p className="text-muted-foreground italic">No content available.</p>
-      )}
+      ) : <p>The full article is temporarily unavailable while it is reviewed.</p>}
 
       <section className="mt-10 rounded-xl border bg-muted/40 p-6 space-y-3">
         <h2 className="text-xl font-semibold">Plan your next step</h2>
@@ -262,7 +262,7 @@ export default function BlogPost() {
         <p><Link className="text-primary underline" to="/free-consultation">Ask about your study plans in a free consultation</Link>.</p>
       </section>
       <div className="mt-12 border-t border-border/60 pt-6">
-        <ShareButtons slug={data.slug} title={data.title} description={data.excerpt || undefined} />
+        {!review && <ShareButtons slug={data.slug} title={data.title} description={data.excerpt || undefined} />}
       </div>
 
       <aside

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
+import { editorialReview } from '@/lib/editorialReview.mjs';
 import { selectDistinctBlogCards } from "@/lib/blogEditorial";
 
 interface BlogPost {
@@ -61,7 +62,8 @@ export default function Blog() {
   const filtered = useMemo(() => {
     if (!data) return [];
     const term = q.trim().toLowerCase();
-    const matches = !term ? data : data.filter((p) =>
+    const available = data.filter(p => !editorialReview[p.slug]);
+    const matches = !term ? available : available.filter((p) =>
       [p.title, p.excerpt, ...(p.tags || [])]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(term))

@@ -21,7 +21,7 @@ for (const prefix of ['/courses/', '/universities/', '/blog/']) {
   assert.equal(response.status, 200);
   assert((await response.text()).includes(`href="https://unidoxia.com${route.path}"`));
 }
-for (const route of ['/this-page-does-not-exist', '/courses/00000000-0000-0000-0000-000000000000', '/universities/deleted-university', '/blog/deleted-post', '/dashboard/does-not-exist']) {
+for (const route of ['/this-page-does-not-exist', '/courses/00000000-0000-0000-0000-000000000000', '/universities/deleted-university', '/blog/deleted-post', '/study-guides/unreviewed-guide', '/dashboard/does-not-exist']) {
   const response = await request(route);
   assert.equal(response.status, 404, route);
   assert.equal(response.headers.get('X-Robots-Tag'), 'noindex');

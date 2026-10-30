@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight } from "lucide-react";
+import { editorialReview } from '@/lib/editorialReview.mjs';
 import { selectDistinctBlogCards } from "@/lib/blogEditorial";
 
 interface BlogCard {
@@ -35,7 +36,7 @@ export default function LatestFromBlog() {
 
   if (isError || (!isLoading && (!data || data.length === 0))) return null;
 
-  const latestPosts = selectDistinctBlogCards(data ?? [], 3);
+  const latestPosts = selectDistinctBlogCards((data ?? []).filter(post => !editorialReview[post.slug]), 3);
 
   return (
     <section className="container mx-auto px-4 py-16" aria-labelledby="latest-blog-heading">

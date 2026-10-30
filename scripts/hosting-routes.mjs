@@ -12,7 +12,7 @@ export function spaRoutePatterns(source = fs.readFileSync('src/App.tsx', 'utf8')
       const attr = opening.attributes.properties.find(p => p.name?.getText(file) === 'path');
       const route = attr?.initializer && ts.isStringLiteral(attr.initializer) ? attr.initializer.text : '';
       const full = route.startsWith('/') ? route : `${parent}/${route}`.replace(/\/+/g, '/');
-      if (route && route !== '*' && !['/courses/:id', '/universities/:id', '/blog/:slug', '/scholarships/:slug'].includes(full)) routes.add(full);
+      if (route && route !== '*' && !['/courses/:id', '/universities/:id', '/blog/:slug', '/scholarships/:slug', '/study-guides/:slug'].includes(full)) routes.add(full);
       if (ts.isJsxElement(node)) node.children.forEach(child => visit(child, full));
       return;
     }
