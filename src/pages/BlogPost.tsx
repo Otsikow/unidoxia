@@ -1,3 +1,4 @@
+import { editorialReview } from '@/lib/editorialReview.mjs';
 import { blogSchema } from '@/lib/publicSeo.mjs';
 import { articleContent } from '@/lib/articleContent';
 import NotFound from './NotFound';
@@ -112,6 +113,7 @@ export default function BlogPost() {
   const readingMinutes = estimateReadingMinutes(data.content_html || data.content_md || data.excerpt);
   const coverAlt = data.cover_image_url ? `Cover image for article: ${data.title}` : "";
 
+  const review = editorialReview[data.slug];
   const seoTitle = data.seo_title || `${data.title} | UniDoxia`;
   const seoDescription =
     data.seo_description ||
@@ -148,6 +150,7 @@ export default function BlogPost() {
         ogType="article"
         publishedTime={data.published_at || undefined}
         modifiedTime={data.updated_at || undefined}
+        robots={review ? "noindex,follow" : undefined}
         jsonLd={[articleJsonLd, breadcrumbJsonLd]}
       />
 
@@ -165,6 +168,7 @@ export default function BlogPost() {
         </Button>
       </div>
 
+      {review && <aside className="mb-6 rounded-md border border-amber-500 bg-amber-50 p-4 text-sm text-amber-900" aria-label="Editorial review notice"><p>{review.message}</p><a className="underline font-semibold" href={review.source}>{review.label}</a></aside>}
       <header className="mb-10 space-y-5 border-b border-border/60 pb-8">
         {(data.tags || []).length > 0 && (
           <div className="flex flex-wrap items-center gap-2">

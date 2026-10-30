@@ -35,3 +35,12 @@ describe('university breadcrumbs', () => {
     expect(page.body).toContain('does not by itself indicate a formal university partnership');
   });
 });
+
+describe('dated scholarship safeguards', () => {
+  it('flags a past listed deadline without claiming that future rounds are closed', () => {
+    const page = scholarshipPage({ slug: 'test-award', title: 'Test Award', status: 'Upcoming', deadline: '2000-01-01' });
+    expect(page.body).toContain('Deadline needs review');
+    expect(page.body).toContain('any later rounds');
+    expect(page.body).not.toContain('<dd>Upcoming</dd>');
+  });
+});

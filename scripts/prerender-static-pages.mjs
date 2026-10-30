@@ -1,3 +1,4 @@
+import { editorialReview } from '../src/lib/editorialReview.mjs';
 import { businessFooter } from '../src/config/business.ts';
 import { articleContent } from '../src/lib/articleContent.ts';
 import { JSDOM } from 'jsdom';
@@ -188,10 +189,11 @@ const pages = [
     path: `/blog/${encodeURIComponent(p.slug)}`,
     lastmod: p.updated_at || p.published_at,
     jsonLd: blogSchema(p),
+    noindex: Boolean(editorialReview[p.slug]),
     title: p.seo_title || `${p.title} | UniDoxia`,
     description: p.seo_description || p.excerpt || p.title,
     ogType: "article",
-    body: `<article><h1>${esc(p.title)}</h1>${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Explore student visa readiness</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
+    body: `<article>${editorialReview[p.slug] ? `<aside aria-label="Editorial review notice"><p>${esc(editorialReview[p.slug].message)}</p><a href="${esc(editorialReview[p.slug].source)}">${esc(editorialReview[p.slug].label)}</a></aside>` : ""}<h1>${esc(p.title)}</h1>${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Explore student visa readiness</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
   })),
 ];
 

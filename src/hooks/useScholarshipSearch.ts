@@ -168,12 +168,12 @@ const normalise = (value: string) => value.toLowerCase();
 
 const computeDeadlineMeta = (deadline: string | null | undefined) => {
   if (!deadline) {
-    return { daysRemaining: null, label: "Flexible deadline" } as const;
+    return { daysRemaining: null, label: "Deadline not specified" } as const;
   }
 
   const parsed = parseISO(deadline);
   if (Number.isNaN(parsed.getTime())) {
-    return { daysRemaining: null, label: "Flexible deadline" } as const;
+    return { daysRemaining: null, label: "Deadline not specified" } as const;
   }
 
   const today = new Date();

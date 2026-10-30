@@ -76,20 +76,7 @@ export const ScholarshipCard = ({
 
   return (
     <Card
-      role="button"
-      tabIndex={0}
       onClick={handleCardClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          if (onViewDetails) {
-            onViewDetails();
-            return;
-          }
-
-          onSelect?.(scholarship);
-        }
-      }}
       className={cn("flex min-w-0 flex-col h-full cursor-pointer transition-transform hover:-translate-y-1", className)}
     >
       <CardHeader className="space-y-4">
@@ -203,7 +190,7 @@ export const ScholarshipCard = ({
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
             <div className="flex flex-wrap items-center gap-2">
               {scholarship.status && (
-                <Badge variant="outline">{scholarship.status}</Badge>
+                <Badge variant="outline">{typeof scholarship.deadlineDaysRemaining === "number" && scholarship.deadlineDaysRemaining < 0 ? "Deadline needs review" : scholarship.status}</Badge>
               )}
               {scholarship.sponsor && scholarship.sponsor !== scholarship.institution && (
                 <span>Sponsor: {scholarship.sponsor}</span>
@@ -219,9 +206,10 @@ export const ScholarshipCard = ({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Clock className="h-4 w-4 text-primary" />
-            {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Rolling"}
+            {scholarship.deadline ? new Date(scholarship.deadline).toLocaleDateString() : "Not specified"}
           </div>
           <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={(event) => { event.stopPropagation(); handleCardClick(); }}>View details</Button>
             {scholarship.slug && <Button asChild variant="outline" size="sm"><Link to={`/scholarships/${scholarship.slug}`} onClick={event => event.stopPropagation()}>Read scholarship details</Link></Button>}
             <Button variant="ghost" size="sm" onClick={handleShare}>
               <Share2 className="mr-1.5 h-4 w-4" /> Share

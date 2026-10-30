@@ -69,7 +69,7 @@ export const ScholarshipDetailDialog = ({
   const handleSave = () => onToggleSave(scholarship);
   const handleShare = () => onShare?.(scholarship);
 
-  const deadlineDate = scholarship.deadline ? format(new Date(scholarship.deadline), "PPP") : "Rolling";
+  const deadlineDate = scholarship.deadline ? format(new Date(scholarship.deadline), "PPP") : "Not specified";
   const countdownLabel = scholarship.deadlineLabel;
 
   return (

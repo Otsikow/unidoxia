@@ -647,8 +647,8 @@ export default function UniversityProfile() {
           <div className="rounded-xl border bg-muted/40 p-5 space-y-2">
             <h2 className="text-lg font-semibold">Plan your application</h2>
             <p>A directory listing does not by itself indicate a formal university partnership.</p>
-            <Link className="text-primary underline mr-4" to={`/courses?university=${university.id}`}>Browse courses at {university.name}</Link>
-            <Link className="text-primary underline" to="/free-consultation">Ask UniDoxia about studying here</Link>
+            <Link className="text-foreground underline mr-4" to={`/courses?university=${university.id}`}>Browse courses at {university.name}</Link>
+            <Link className="text-foreground underline" to="/free-consultation">Ask UniDoxia about studying here</Link>
           </div>
           {/* Programs Tab */}
           <TabsContent value="programs" className="space-y-6">
