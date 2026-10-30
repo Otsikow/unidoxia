@@ -45,7 +45,7 @@ export default function FreeConsultation() {
     <SEO title="Free Study Abroad Consultation | UniDoxia" description="Ask UniDoxia about your study-abroad plans. Send a short enquiry with one contact method, your preferred destination and an optional question." canonicalPath="/free-consultation" />
     <div className="container mx-auto px-4 max-w-2xl space-y-6">
       <h1 className="text-3xl md:text-4xl font-bold">Free study abroad consultation</h1>
-      <p className="text-muted-foreground">Tell us where you would like to study and how to contact you. You can share academic and application details later.</p>
+      <p className="text-muted-foreground">Tell us where you would like to study and how to contact you. You can share academic and application details later. This consultation is free; other services and university or government fees may apply. See our <Link className="text-primary underline" to="/pricing">service pricing</Link>. We cannot guarantee admission, funding or a visa.</p>
       <Card><CardContent className="pt-6">
         {reference ? <div role="status" className="space-y-4">
           <h2 className="text-xl font-semibold">We received your enquiry</h2>

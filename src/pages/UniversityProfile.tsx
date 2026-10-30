@@ -340,6 +340,7 @@ export default function UniversityProfile() {
           className="-ml-2 h-10 rounded-xl px-3 font-semibold text-foreground hover:bg-muted"
         />
       </div>
+      <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-4 pb-4 text-sm md:px-8"><Link className="text-primary underline" to="/">Home</Link> / <Link className="text-primary underline" to="/universities">Universities</Link> / <span aria-current="page">{university.name}</span></nav>
       {/* Hero Section */}
       <div className="mx-auto max-w-7xl px-4 md:px-8">
         <div className="relative min-h-[24rem] overflow-hidden rounded-2xl border border-border/60 shadow-lg md:h-[28rem] md:rounded-3xl">
