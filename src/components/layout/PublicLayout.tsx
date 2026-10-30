@@ -51,7 +51,7 @@ export const PublicLayout = ({ children, contentClassName, showBackButton }: Pub
               )}
               {location.pathname !== "/courses" && (
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/courses" aria-label="Browse UniDoxia courses">
+                  <Link to="/courses" aria-label="Browse courses">
                     <BookOpen className="h-4 w-4" />
                     <span className="hidden sm:inline">Browse courses</span>
                   </Link>

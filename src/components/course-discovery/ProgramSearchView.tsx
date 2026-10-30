@@ -1384,9 +1384,9 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
                       })}
                 </h2>
                 <div className="w-full sm:w-56">
-                  <Label>Sort by</Label>
+                  <Label htmlFor="course-sort">Sort by</Label>
                   <Select value={sortBy} onValueChange={(value) => setSortBy(value as ComparisonSort)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger id="course-sort"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="recommended">Recommended</SelectItem>
                       <SelectItem value="tuition">Lowest Tuition</SelectItem>

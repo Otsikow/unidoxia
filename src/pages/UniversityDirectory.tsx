@@ -568,12 +568,12 @@ export default function UniversityDirectory() {
               </div>
 
               <div>
-                <Label className="text-sm text-muted-foreground">Country</Label>
+                <Label htmlFor="university-country" className="text-sm text-muted-foreground">Country</Label>
                 <Select
                   value={selectedCountry}
                   onValueChange={setSelectedCountry}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger id="university-country" className="mt-2">
                     <SelectValue placeholder="All countries" />
                   </SelectTrigger>
                   <SelectContent>
@@ -588,12 +588,12 @@ export default function UniversityDirectory() {
               </div>
 
               <div>
-                <Label className="text-sm text-muted-foreground">Sort By</Label>
+                <Label htmlFor="university-sort" className="text-sm text-muted-foreground">Sort By</Label>
                 <Select
                   value={sortOption}
                   onValueChange={(value) => setSortOption(value as SortOption)}
                 >
-                  <SelectTrigger className="mt-2">
+                  <SelectTrigger id="university-sort" className="mt-2">
                     <SelectValue placeholder="Sort results" />
                   </SelectTrigger>
                   <SelectContent>
