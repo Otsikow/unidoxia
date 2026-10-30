@@ -114,7 +114,6 @@ const About = () => {
         <ul className="text-muted-foreground text-sm space-y-1 mb-5">
           <li><span className="font-medium text-foreground">Training:</span> UK knowledge agent and counsellor training (British Council)</li>
           <li><span className="font-medium text-foreground">Certificate code:</span> 114757</li>
-          <li><span className="font-medium text-foreground">Valid until:</span> 16 July 2028</li>
         </ul>
         <p className="text-sm text-muted-foreground">
           The training certificate is awarded to an individual member of our leadership
