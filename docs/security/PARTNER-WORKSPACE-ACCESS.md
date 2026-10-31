@@ -1,6 +1,6 @@
 # Partner workspace and active-staff safeguards
 
-Status: prepared locally; not applied to production.
+Status: explicitly approved, merged via PR #1273 and applied transactionally to production on 31 October 2026. Frontend publication remains separate.
 
 Read-only production inspection confirmed that authenticated users can execute `isolate_partner_profile(uuid)` without an owner/admin check. The routine bypasses row permissions and creates a tenant/university before reassigning the requested partner. Repeating calls also creates duplicate workspaces. Its status helper exposes another partner's isolation state. No live RPC was called to demonstrate these defects.
 
@@ -28,3 +28,10 @@ Frontend validation: 571 tests passed (including the current main staff-settings
 
 
 Local schema-compatibility checks also mirror required tenant/university columns, unique tenant ownership and the production university-slug trigger. They pass without weakening these constraints. Staging is a minimal isolated schema, not a complete production clone. Read-only production preflight found no role entries without an active profile; private live counts are not stored here.
+
+
+## Approved live activation
+
+The owner explicitly approved migration `20261031134909`. PR #1273 merged as `f11901b02c5b7b5856caa46c84a207760456e3c9`. The reviewed SQL hash above was unchanged. An initial transaction-wrapper formatting error was rejected; read-back confirmed no record/new RPC/role guard had applied. The corrected wrapper applied the same reviewed migration and recorded its source/hash in the migration ledger.
+
+Live read-back confirmed both active-role helpers, the guarded versioned RPC, denied anonymous mutation/internal browser helper execution, and retained active-administrator access. Before/after profile and role fingerprints and business-row counts were identical. No partner mutation RPC was called against real production data, no account was reclassified, and email/receipt flags were not changed. The new frontend is ready for a separately controlled preview/publication.

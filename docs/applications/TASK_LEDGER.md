@@ -122,5 +122,10 @@ No provider account/key, live receipt migration, outbound message or operational
 
 ### 31 October — next operational hardening
 - Confirmed the unguarded partner-workspace mutation/status RPCs and repeated-workspace creation risk by source/read-only database review.
-- Prepared a guarded, idempotent forward migration plus active-profile enforcement in the existing staff helper; no production change yet.
-- 37 isolated SQL/RLS checks pass against required-column/unique-tenant/slug-trigger fixtures. Three 19/19 real-Auth staging revisions passed, including the final source covering staff and direct-role helpers with verified fixture cleanup. Partner sign-in uses the guarded versioned RPC; inactive and failed-setup profiles cannot open protected dashboards. 571 frontend/unit tests (combined with current main), TypeScript and production build passed. Production application remains approval-gated.
+- Merged PR #1273 and applied the specifically approved, guarded/idempotent workspace migration with active-profile enforcement in both role helpers. Live profile/role fingerprints and business counts stayed unchanged.
+- 37 isolated SQL/RLS checks pass against required-column/unique-tenant/slug-trigger fixtures. Three 19/19 real-Auth staging revisions passed, including the final source covering staff and direct-role helpers with verified fixture cleanup. Partner sign-in uses the guarded versioned RPC; inactive and failed-setup profiles cannot open protected dashboards. 571 frontend/unit tests (combined with current main), TypeScript and production build passed. Production migration 20261031134909 was explicitly approved, applied and read back; frontend publication remains separate.
+
+### 31 October — public-page loading flash
+- Replaced the bare prerender first view with independently styled public content and the existing homepage hero image/logo.
+- Kept that useful view until the finished React route commits; no intermediate loader or arbitrary timeout, with working no-JavaScript links and preserved SEO content.
+- 575 tests, TypeScript, full production/SEO build and actual built-page desktop/mobile/offline/handoff checks pass. See ../performance/FIRST_PAINT.md. Publication remains separate.
