@@ -68,3 +68,28 @@ describe('branded business signature',()=>{
   expect(emailHtml('Hello',signature)).toBe('<div style="font-family:Arial,sans-serif;line-height:1.65;color:#172033;max-width:640px"><h2 style="color:#12345b">UniDoxia</h2><p>Hello<br><br>Best regards,<br>UniDoxia Team<br>info@unidoxia.com<br>https://unidoxia.com</p></div>');
  });
 });
+
+describe('social signature and immutable archived payloads',()=>{
+ it('includes all website social destinations in HTML and plain-text email',async()=>{
+  const {STUDENT_EMAIL_SOCIAL_LINKS}=await import('./studentEmailSignature');
+  await execute();const message=send.mock.calls[0][0];
+  for(const {label,url} of STUDENT_EMAIL_SOCIAL_LINKS){expect(message.html).toContain(`href="${url}"`);expect(message.html).toContain(`>${label}</a>`);expect(message.text).toContain(`${label}: ${url}`);}
+  expect(message.html).toContain('Follow UniDoxia');
+ });
+ it('preserves the byte-for-byte first branded HTML on an uncertain archived retry',async()=>{
+  const {STUDENT_EMAIL_SIGNATURE_V1}=await import('./studentEmailSignature');
+  const {createHash}=await import('node:crypto');
+  send.mockRejectedValueOnce(new Error('uncertain response'));await expect(execute()).rejects.toThrow('uncertain');
+  rows.get(id).signature=STUDENT_EMAIL_SIGNATURE_V1;
+  await execute();const payload=send.mock.calls[1][0];
+  expect(payload.text).toBe(input.body+'\n\n'+STUDENT_EMAIL_SIGNATURE_V1);
+  expect(createHash('sha256').update(payload.html).digest('hex')).toBe('4295c9fe47d5eabb6b046a04cc80b662195d17b6ca940091b3f8ad8ba2122b87');
+ });
+ it('matches the social destinations maintained in the existing website footer',async()=>{
+  const {STUDENT_EMAIL_SOCIAL_LINKS}=await import('./studentEmailSignature');
+  const {readFile}=await import('node:fs/promises');
+  const footer=await readFile('src/components/layout/AppFooter.tsx','utf8');
+  const urls=[...footer.matchAll(/href="(https:\/\/[^\"]+)"/g)].map(match=>match[1]);
+  expect(new Set(STUDENT_EMAIL_SOCIAL_LINKS.map(link=>link.url))).toEqual(new Set(urls));
+ });
+});

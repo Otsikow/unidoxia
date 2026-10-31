@@ -76,3 +76,9 @@ The identity migration was explicitly approved, merged, applied transactionally 
 ### Branded signature — 31 October follow-up
 
 The owner confirmed that the controlled email arrived with the correct original signature and requested a more professional branded version. New attempts use the official logo (existing production `favicon-96.png`), WhatsApp +44 7360 961803 (existing Contact page), official email/website and the legal identity/office/ICO details already maintained in `src/config/business.ts`. The legal identity and office were cross-checked against the public Contact page. The HTML signature uses presentation tables and inline styles, readable contact text when images are blocked, and a full plain-text alternative. The composer previews the fixed HTML; external email-app drafts retain plain text. Pending legacy attempts retain their exact old HTML/text payload. No second test or sending enablement is implied by this signature change.
+
+### Social signature links — 31 October follow-up
+
+Added the seven official destinations already maintained in the website footer: LinkedIn, Facebook, Instagram, TikTok, X, Reddit and the WhatsApp Channel. The direct WhatsApp contact link remains separate. HTML uses readable text links that wrap without depending on icon images; plain-text email/app drafts include the full URLs. A regression check reconciles these destinations with the website footer.
+
+The original branded V1 renderer/text are retained. An exact provider-payload hash verifies that uncertain V1 retries keep their existing HTML and plaintext after the social-link update, alongside the original legacy signature handling. No new email, recipient action, sending flag, migration or receipt integration is implied by this change. Validation: 578 tests, TypeScript, targeted lint, Deno shared-service check and Vite production build pass; desktop/mobile previews fit at 390px.
