@@ -46,3 +46,7 @@ verify_jwt = true
 
 [functions.student-communication]
 verify_jwt = true
+
+# External provider calls use Svix signature verification, not a Supabase user JWT.
+[functions.student-email-events]
+verify_jwt = false

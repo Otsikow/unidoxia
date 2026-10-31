@@ -87,6 +87,8 @@ export interface CommunicationRecord {
   body: string;
   recipient: string | null;
   provider_id: string | null;
+  delivery_status?: keyof typeof EMAIL_DELIVERY_LABELS | null;
+  delivery_event_at?: string | null;
   created_at: string;
 }
 export const COMMUNICATION_STATUS_LABELS = {
@@ -96,3 +98,12 @@ export const COMMUNICATION_STATUS_LABELS = {
   external_launch: "WhatsApp launch requested — not a send confirmation",
   recorded: "Manual staff note",
 };
+
+export const EMAIL_DELIVERY_LABELS = {
+  delivered: "Delivered to recipient’s mail server",
+  delayed: "Delivery delayed",
+  bounced: "Bounced — recipient server rejected the email",
+  failed: "Email delivery failed",
+  suppressed: "Email suppressed by provider",
+  complained: "Recipient reported this email as spam",
+} as const;

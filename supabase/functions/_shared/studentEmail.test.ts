@@ -39,3 +39,16 @@ describe('audited operational student email',()=>{
  });
  it('escapes message HTML and uses the approved signature',()=>{const html=emailHtml('<script>alert("x")</script> &');expect(html).toContain('&lt;script&gt;');expect(html).not.toContain('<script>');expect(html).toContain('UniDoxia Team');expect(html).toContain('info@unidoxia.com');});
 });
+
+describe('receipt tag payload snapshots',()=>{
+ it('keeps an opted-in retry tagged even if receipt rollout is turned off later',async()=>{
+  send.mockRejectedValueOnce(new Error('lost response'));
+  await expect(sendStudentEmail(input,context,{enabled:true,tagReceipts:true,store,send,now:()=>now})).rejects.toThrow('uncertain');
+  await execute();expect(send.mock.calls[0][0].tags).toEqual([{name:'unidoxia_communication',value:id}]);expect(send.mock.calls[1][0].tags).toEqual(send.mock.calls[0][0].tags);
+ });
+ it('never adds tags to an existing untagged retry after rollout is enabled',async()=>{
+  send.mockRejectedValueOnce(new Error('lost response'));await expect(execute()).rejects.toThrow('uncertain');
+  await sendStudentEmail(input,context,{enabled:true,tagReceipts:true,store,send,now:()=>now});
+  expect(send.mock.calls[0][0]).not.toHaveProperty('tags');expect(send.mock.calls[1][0]).not.toHaveProperty('tags');
+ });
+});

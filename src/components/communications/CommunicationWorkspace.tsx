@@ -31,6 +31,7 @@ import { StudentInternalConversation } from "./StudentInternalConversation";
 import {
   COMMUNICATION_TEMPLATES,
   COMMUNICATION_STATUS_LABELS,
+  EMAIL_DELIVERY_LABELS,
   STUDENT_EMAIL_SIGNATURE,
   communicationTemplate,
   registeredWhatsApp,
@@ -169,7 +170,7 @@ export function CommunicationWorkspace({
         setAccepted(true);
         setEdited(false);
         setMessage(
-          "Accepted by the email provider. Delivery and replies are not confirmed here.",
+          "Accepted by the email provider. Delivery is confirmed only when a verified receipt appears in History. Replies remain in the official inbox.",
         );
       } else
         setMessage(
@@ -328,8 +329,8 @@ export function CommunicationWorkspace({
                   <>
                     <strong>From: UniDoxia &lt;info@unidoxia.com&gt;</strong>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Replies go to the official inbox. Email delivery and inbox
-                      replies are not synchronised here.
+                      Replies go to the official inbox. Check History for available
+                      delivery updates; inbox replies are not imported here.
                     </p>
                     {!capabilities?.emailEnabled && (
                       <p className="mt-2 font-medium">
@@ -585,6 +586,21 @@ export function CommunicationWorkspace({
                         {new Date(row.created_at).toLocaleString("en-GB")}
                       </time>
                     </div>
+                    {row.channel === "email" && row.delivery_status && EMAIL_DELIVERY_LABELS[row.delivery_status] && (
+                      <div className={`mt-2 rounded-lg border p-2 text-xs font-medium ${row.delivery_status === "delivered" ? "border-green-700/25 bg-green-50 text-green-900 dark:bg-green-950 dark:text-green-200" : row.delivery_status === "delayed" ? "border-amber-700/25 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-200" : "border-red-700/25 bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-200"}`}>
+                        {EMAIL_DELIVERY_LABELS[row.delivery_status]}
+                        {row.delivery_event_at && !Number.isNaN(Date.parse(row.delivery_event_at)) && (
+                          <span className="mt-1 block font-normal">
+                            Provider-confirmed {new Date(row.delivery_event_at).toLocaleString("en-GB")}. This does not confirm a human read or reply.
+                          </span>
+                        )}
+                        {!["delivered", "delayed"].includes(row.delivery_status) && row.application_id && student.applications.some(application => application.id === row.application_id) && (
+                          <Link className="mt-2 inline-block underline" to={`/admin/applications?application=${encodeURIComponent(row.application_id)}`}>
+                            Review application
+                          </Link>
+                        )}
+                      </div>
+                    )}
                     <h4 className="mt-2 font-medium">{row.subject}</h4>
                     {row.recipient && (
                       <p className="break-all text-xs text-muted-foreground">
