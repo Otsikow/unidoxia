@@ -19,7 +19,7 @@ export function useStudentBilling() {
   // Fetch student record with billing fields
   const {
     data: billingData,
-    isLoading: billingLoading,
+    isPending: billingLoading,
     error: billingError,
     refetch: refetchBilling,
   } = useQuery({
@@ -56,7 +56,7 @@ export function useStudentBilling() {
   // Fetch count of applications the student has submitted (non-draft applications)
   const {
     data: applicationCount,
-    isLoading: countLoading,
+    isPending: countLoading,
     error: countError,
     refetch: refetchCount,
   } = useQuery({

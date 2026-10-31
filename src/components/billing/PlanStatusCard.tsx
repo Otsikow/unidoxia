@@ -43,25 +43,27 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
     );
   }
 
-  if (billingError || countError || !billingData) return <Alert><AlertDescription className="flex flex-wrap items-center justify-between gap-2"><span>Your plan or application count could not be confirmed.</span><Button size="sm" variant="outline" onClick={() => void refetch()}>Retry</Button></AlertDescription></Alert>;
-  if (countLoading) return <Skeleton className={compact ? 'h-6 w-32' : 'h-24 w-full'} />;
+  if (billingError || !billingData) return <Alert><AlertDescription className="flex flex-wrap items-center justify-between gap-2"><span>Your plan could not be confirmed.</span><Button size="sm" variant="outline" onClick={() => void refetch()}>Retry</Button></AlertDescription></Alert>;
+  const countConfirmed = !countLoading && !countError && typeof applicationCount === 'number';
 
   const Icon = planIcons[planInfo.planType];
 
   // Compact version for sidebar/header
   if (compact) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Badge className={`${planBadgeColors[planInfo.planType]} text-white text-xs px-2 py-0.5`}>
           {planInfo.planType === 'free' ? 'Free' :
            planInfo.planType === 'self_service' ? 'Legacy Self-Service' :
            'Agent-Supported'}
         </Badge>
-        {planInfo.planType === 'free' && remaining !== null && (
+        {planInfo.planType === 'free' && countConfirmed && remaining !== null && (
           <span className="text-xs text-muted-foreground">
             ({remaining} application{remaining !== 1 ? 's' : ''} left)
           </span>
         )}
+        {!countConfirmed && <span className="text-xs text-muted-foreground">{countLoading ? 'Checking application count…' : 'Application count unavailable'}</span>}
+        {countError && <Button size="sm" variant="ghost" onClick={() => void refetch()}>Retry</Button>}
       </div>
     );
   }
@@ -70,7 +72,7 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
   return (
     <Card className={`${planColors[planInfo.planType]} border-0`}>
       <CardContent className="pt-4 pb-4">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-white/50 dark:bg-white/10">
               <Icon className="h-5 w-5" />
@@ -82,20 +84,22 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
               <p className="font-semibold">
                 {planInfo.displayName}
               </p>
-              {planInfo.planType === 'free' && (
+              {countConfirmed && planInfo.planType === 'free' && (
                 <p className="text-xs mt-0.5 opacity-80">
                   {applicationCount} of 1 application used
                 </p>
               )}
-              {planInfo.planType !== 'free' && (
+              {countConfirmed && planInfo.planType !== 'free' && (
                 <p className="text-xs mt-0.5 opacity-80">
                   {applicationCount} application{applicationCount !== 1 ? 's' : ''} submitted
                 </p>
               )}
+              {!countConfirmed && <p className="text-xs mt-0.5">{countLoading ? 'Checking application count…' : 'Application count unavailable'}</p>}
+              {countError && <Button size="sm" variant="ghost" onClick={() => void refetch()}>Retry</Button>}
             </div>
           </div>
 
-          {planInfo.planType === 'free' && (
+          {countConfirmed && planInfo.planType === 'free' && (
             <Button asChild size="sm" variant="secondary" className="shrink-0">
               <Link to="/pricing" className="flex items-center gap-1">
                 Upgrade
