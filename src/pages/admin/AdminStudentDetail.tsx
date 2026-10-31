@@ -787,12 +787,12 @@ const AdminStudentDetail = () => {
           <Card className="border-amber-500/40 bg-amber-500/5">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm flex items-center gap-2 text-amber-500">
+                <CardTitle className="text-sm flex items-center gap-2 text-amber-800 dark:text-amber-500">
                   <AlertTriangle className="h-4 w-4" /> Missing Required Documents ({missingDocuments.length})
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  {docUploading && <Loader2 className="h-4 w-4 animate-spin text-amber-500" />}
-                  <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-500 hover:text-amber-400 h-7 px-2">
+                  {docUploading && <Loader2 className="h-4 w-4 animate-spin text-amber-800 dark:text-amber-500" />}
+                  <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-800 hover:text-amber-900 dark:text-amber-500 dark:hover:text-amber-400 h-7 px-2">
                     <Expand className="h-4 w-4" />
                   </Button>
                 </div>
@@ -805,7 +805,7 @@ const AdminStudentDetail = () => {
                   <Badge
                     key={doc.type}
                     variant="outline"
-                    className="border-amber-500/50 text-amber-400 cursor-pointer hover:bg-amber-500/20 hover:border-amber-400 transition-colors"
+                    className="border-amber-700/50 text-amber-800 dark:border-amber-500/50 dark:text-amber-400 cursor-pointer hover:bg-amber-500/20 hover:border-amber-700 dark:hover:border-amber-400 transition-colors"
                     onClick={() => !docUploading && handleMissingDocClick(doc.type)}
                   >
                     <Upload className="h-3 w-3 mr-1" />
@@ -822,7 +822,7 @@ const AdminStudentDetail = () => {
           <Dialog open={missingDocsExpanded} onOpenChange={setMissingDocsExpanded}>
             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-amber-500">
+                <DialogTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-500">
                   <AlertTriangle className="h-5 w-5" /> Missing Required Documents — {studentName}
                 </DialogTitle>
               </DialogHeader>
@@ -839,9 +839,9 @@ const AdminStudentDetail = () => {
                     <CardContent className="flex items-center gap-3 p-4">
                       <div className="rounded-lg bg-amber-500/10 p-2">
                         {pendingUploadDocType === doc.type && docUploading ? (
-                          <Loader2 className="h-5 w-5 text-amber-500 animate-spin" />
+                          <Loader2 className="h-5 w-5 text-amber-800 dark:text-amber-500 animate-spin" />
                         ) : (
-                          <Upload className="h-5 w-5 text-amber-500" />
+                          <Upload className="h-5 w-5 text-amber-800 dark:text-amber-500" />
                         )}
                       </div>
                       <div>
@@ -866,7 +866,7 @@ const AdminStudentDetail = () => {
           <TabsTrigger value="documents" className="relative">
             <FileText className="h-4 w-4 mr-1" /> Documents
             {documentStats.pending > 0 && (
-              <span className="ml-1 h-5 w-5 rounded-full bg-amber-500 text-[10px] text-white flex items-center justify-center">
+              <span className="ml-1 h-5 w-5 rounded-full bg-amber-700 dark:bg-amber-500 text-[10px] text-white flex items-center justify-center">
                 {documentStats.pending}
               </span>
             )}
@@ -970,7 +970,7 @@ const AdminStudentDetail = () => {
                         href={`https://wa.me/${digits}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-green-500 hover:underline flex items-center gap-1 cursor-pointer"
+                        className="text-green-700 dark:text-green-500 hover:underline flex items-center gap-1 cursor-pointer"
                       >
                         <MessageCircle className="h-3 w-3" /> {whatsapp}
                       </a>
@@ -1033,7 +1033,7 @@ const AdminStudentDetail = () => {
           {isArchived && (
             <Card className="border-amber-500/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-amber-500 flex items-center gap-2">
+                <CardTitle className="text-sm text-amber-800 dark:text-amber-500 flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" /> Archive Information
                 </CardTitle>
               </CardHeader>
@@ -1062,13 +1062,13 @@ const AdminStudentDetail = () => {
                 <div className="flex items-center gap-1">
                   <span className="font-semibold">{documentStats.total}</span> Total
                 </div>
-                <div className="flex items-center gap-1 text-amber-500">
+                <div className="flex items-center gap-1 text-amber-800 dark:text-amber-500">
                   <Clock className="h-3 w-3" /> <span className="font-semibold">{documentStats.pending}</span> Pending
                 </div>
-                <div className="flex items-center gap-1 text-green-500">
+                <div className="flex items-center gap-1 text-green-700 dark:text-green-500">
                   <CheckCircle2 className="h-3 w-3" /> <span className="font-semibold">{documentStats.approved}</span> Approved
                 </div>
-                <div className="flex items-center gap-1 text-red-500">
+                <div className="flex items-center gap-1 text-red-700 dark:text-red-500">
                   <XCircle className="h-3 w-3" /> <span className="font-semibold">{documentStats.rejected}</span> Rejected
                 </div>
               </div>
