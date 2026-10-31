@@ -2,6 +2,8 @@
 
 import { MessagingViewport } from "@/components/messages/MessagingViewport";
 
+import { useSearchParams } from "react-router-dom";
+import { StudentCommunicationCentre } from "@/components/communications/StudentCommunicationCentre";
 import { useCallback, useMemo, useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -63,7 +65,7 @@ const getInitials = (name: string) =>
     .toUpperCase()
     .slice(0, 2);
 
-export default function StaffMessages() {
+function TeamMessages() {
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -604,5 +606,30 @@ export default function StaffMessages() {
         </Tabs>
       </MessagingViewport>
     </DashboardLayout>
+  );
+}
+
+export default function StaffMessages() {
+  const { profile } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const isAdmin = profile?.role === "admin";
+  const team = params.get("mode") === "team";
+  const setTeamMode = (enabled: boolean) => {
+    const next = new URLSearchParams(params);
+    if (enabled) next.set("mode", "team");
+    else next.delete("mode");
+    setParams(next);
+  };
+  if (isAdmin && !team)
+    return <StudentCommunicationCentre onTeamInbox={() => setTeamMode(true)} />;
+  return (
+    <>
+      {isAdmin && (
+        <Button variant="outline" className="mb-3" onClick={() => setTeamMode(false)}>
+          Student communication centre
+        </Button>
+      )}
+      <TeamMessages />
+    </>
   );
 }

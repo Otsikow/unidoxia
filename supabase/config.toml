@@ -43,3 +43,6 @@ verify_jwt = true
 
 [functions.validate-document-upload]
 verify_jwt = true
+
+[functions.student-communication]
+verify_jwt = true

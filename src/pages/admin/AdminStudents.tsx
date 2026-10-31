@@ -1,5 +1,6 @@
 "use client";
 
+import { registeredWhatsApp, whatsAppLink, communicationTemplate } from "@/lib/studentCommunication";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -89,6 +90,7 @@ interface StudentWithDocuments {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  whatsapp_number?: string | null;
   current_country: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
@@ -254,6 +256,7 @@ const AdminStudents = () => {
           preferred_name,
           contact_email,
           contact_phone,
+          whatsapp_number,
           current_country,
           preferred_course,
           preferred_country,
@@ -543,7 +546,7 @@ const AdminStudents = () => {
   };
 
   const studentMenu = (student: StudentWithDocuments) => {
-    const whatsapp = (student.address?.whatsapp || student.contact_phone || student.profile?.phone || '').replace(/\D/g, '');
+    const whatsapp = registeredWhatsApp(student);
     const isArchived = Boolean(student.archived_at);
     return (                        <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -558,7 +561,9 @@ const AdminStudents = () => {
                               <Eye className="h-4 w-4 mr-2" />
                               View Profile
                             </DropdownMenuItem>
-                            {whatsapp && <DropdownMenuItem asChild><a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer"><MessageCircle className="mr-2 h-4 w-4" />Open WhatsApp</a></DropdownMenuItem>}
+                            {whatsapp && <DropdownMenuItem asChild><a href={whatsAppLink(student, communicationTemplate('followup',student).body+'\n\nUniDoxia Team')!} target="_blank" rel="noreferrer"><MessageCircle className="mr-2 h-4 w-4" />Open WhatsApp</a></DropdownMenuItem>}
+                            <DropdownMenuItem onClick={() => navigate(`/admin/messages?student=${encodeURIComponent(student.id)}`)}>Communication centre</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/admin/messages?student=${encodeURIComponent(student.id)}&channel=email`)}>Compose email</DropdownMenuItem>
                             {!isArchived && <DropdownMenuItem onClick={() => navigate(`/dashboard/applications/new?studentId=${student.id}`)}><FileText className="mr-2 h-4 w-4" />New application</DropdownMenuItem>}
                             <DropdownMenuSeparator />
                             <div className="max-w-72 space-y-1 px-2 py-2 text-xs text-muted-foreground"><p className="break-words">{student.contact_email || student.profile?.email || 'Email not recorded'}</p><p>{student.contact_phone || student.profile?.phone || 'Phone not recorded'}</p><p>Referred by: {student.attribution_source || 'Not recorded'}</p><p>Joined: {student.created_at && !Number.isNaN(Date.parse(student.created_at)) ? format(new Date(student.created_at), 'd MMM yyyy') : 'Not recorded'}</p></div>
@@ -677,7 +682,7 @@ const AdminStudents = () => {
           const next = getStudentNextAction(student);
           return <TableRow key={student.id} className={student.archived_at ? 'opacity-70' : ''}><TableCell className="min-w-48"><button className="font-medium text-primary hover:underline" onClick={() => openStudent(student)}>{getStudentName(student)}</button><p className="text-xs text-muted-foreground">{student.reference_code || 'No reference'} · {student.current_country || 'Country not recorded'}</p><p className="text-xs text-muted-foreground">{student.contact_email || student.profile?.email || 'Email not recorded'}</p><div className="mt-2">{studentStatus(student)}</div></TableCell><TableCell>{studyPlans(student)}</TableCell><TableCell><p className="text-sm">{next.label}</p><p className="mt-1 text-xs text-muted-foreground">Files awaiting review: {studentDocumentsToReview(student)} · Applications: {student.applications.length}</p></TableCell><TableCell><div className="flex items-center gap-1"><Button variant="outline" size="sm" onClick={() => openStudent(student, next.tab)} aria-label={`Open student ${getStudentName(student)}`}>Open student</Button>{studentMenu(student)}</div></TableCell></TableRow>;
         })}</TableBody></Table></div>
-        <div className="divide-y lg:hidden">{paginatedStudents.map(student => { const next = getStudentNextAction(student); const whatsappNumber = student.address?.whatsapp || student.contact_phone || student.profile?.phone; const digits = whatsappNumber?.replace(/\D/g, ''); return <article key={student.id} className="space-y-3 p-4"><div className="flex justify-between gap-2"><div><h2 className="font-semibold">{getStudentName(student)}</h2><p className="text-xs text-muted-foreground">{student.reference_code || 'No reference'} · {student.current_country || 'Country not recorded'}</p></div>{studentMenu(student)}</div>{studyPlans(student)}{studentStatus(student)}<div className="rounded-lg bg-muted p-3 text-sm"><p className="font-medium">Next step</p><p>{next.label}</p><p className="mt-1 text-xs text-muted-foreground">Files awaiting review: {studentDocumentsToReview(student)} · Applications: {student.applications.length}</p></div><Button className="w-full" variant="outline" onClick={() => openStudent(student, next.tab)} aria-label={`Open student ${getStudentName(student)}`}>Open student</Button>{digits && <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary"><MessageCircle className="h-4 w-4" />WhatsApp</a>}</article>; })}</div>
+        <div className="divide-y lg:hidden">{paginatedStudents.map(student => { const next = getStudentNextAction(student); const digits = registeredWhatsApp(student); return <article key={student.id} className="space-y-3 p-4"><div className="flex justify-between gap-2"><div><h2 className="font-semibold">{getStudentName(student)}</h2><p className="text-xs text-muted-foreground">{student.reference_code || 'No reference'} · {student.current_country || 'Country not recorded'}</p></div>{studentMenu(student)}</div>{studyPlans(student)}{studentStatus(student)}<div className="rounded-lg bg-muted p-3 text-sm"><p className="font-medium">Next step</p><p>{next.label}</p><p className="mt-1 text-xs text-muted-foreground">Files awaiting review: {studentDocumentsToReview(student)} · Applications: {student.applications.length}</p></div><Button className="w-full" variant="outline" onClick={() => openStudent(student, next.tab)} aria-label={`Open student ${getStudentName(student)}`}>Open student</Button>{digits && <a href={whatsAppLink(student, communicationTemplate('followup',student).body+'\n\nUniDoxia Team')!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary"><MessageCircle className="h-4 w-4" />WhatsApp</a>}</article>; })}</div>
         {filteredStudents.length === 0 && <div className="space-y-3 p-8 text-center"><p className="text-sm text-muted-foreground">{students.length === 0 ? 'No students yet. Registered students will appear here.' : 'No students match this view. Change the filters or search again.'}</p>{students.length > 0 && <Button variant="outline" onClick={resetFilters}>Show active students</Button>}</div>}
         <div className="border-t px-4"><TablePagination currentPage={currentPage} totalItems={filteredStudents.length} pageSize={STUDENTS_PAGE_SIZE} onPageChange={setCurrentPage} itemLabel="students" /></div>
       </CardContent></Card>}
