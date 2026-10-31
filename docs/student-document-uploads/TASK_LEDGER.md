@@ -17,3 +17,9 @@ Export gate: the earlier automatic approval review rejected GitHub export withou
 ## Next build — secure student request receipts, 31 October 2026
 
 Implemented the owned-file server receipt operation and retry-only request confirmation, with private object/size/category checks, request-version locking and preserved staff approval/verification boundaries. Current checks: 587 tests, 25 isolated SQL/RLS checks, TypeScript and production bundle build pass. Actual Auth/private Storage Run 9 passed 18 checks with cleanup independently verified; final HTTP409 acceptance is running. Desktop/mobile retry dialog rendered with isolated adapters. No production mutation yet. Details: REQUEST_RECEIPTS.md. This continues the previously recorded backend request-fulfilment gap rather than adding a broad student UPDATE grant.
+
+## Staff upload recovery — 31 October 2026
+
+The administrator student-profile missing-document action used a separate raw upload/insert path. Its catch block removed the new object on any insert error, including a lost response after a successful save. It now reuses uploadVerifiedDocument and saveStudentDocument, confirms exact stored bytes, recovers a save by a stable record ID and preserves uncertain saves. Unique UUID paths replace timestamp-only names. New uploads remain pending staff review. No permission, schema, existing-file or publication changes.
+
+Validation: 18 focused persistence tests (including new-upload lost-response recovery and unconfirmed-save preservation), TypeScript and targeted lint with zero errors/two existing AdminStudentDetail memo-dependency warnings. No real student upload was performed. Full suite: 580 tests in 88 files passed; Vite production bundle passed. GitHub/Lovable handoff is tracked with the release.

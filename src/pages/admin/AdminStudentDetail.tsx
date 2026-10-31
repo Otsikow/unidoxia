@@ -64,6 +64,7 @@ import { format } from "date-fns";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 import { Checkbox } from "@/components/ui/checkbox";
 import { validateFileUpload } from "@/lib/fileUpload";
+import { DOCUMENT_UPLOAD_VALIDATION, saveStudentDocument, uploadVerifiedDocument } from "@/lib/documentUpload";
 
 /* -------------------------------------------------------------------------- */
 /*                                   Types                                    */
@@ -608,45 +609,19 @@ const AdminStudentDetail = () => {
 
     setDocUploading(true);
     try {
-      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(file, {
-        allowedMimeTypes: [
-          "application/pdf",
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "image/png",
-          "image/jpeg",
-          "image/jpg",
-        ],
-        allowedExtensions: ["pdf", "doc", "docx", "png", "jpg", "jpeg"],
-        maxSizeBytes: 10 * 1024 * 1024,
-      });
-
+      const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(file, DOCUMENT_UPLOAD_VALIDATION);
       const ext = sanitizedFileName.split(".").pop() || "pdf";
-      const storagePath = `${studentId}/${docType}_${Date.now()}.${ext}`;
+      const storagePath = `${studentId}/${docType}_${crypto.randomUUID()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("student-documents")
-        .upload(storagePath, preparedFile, {
-          cacheControl: "3600",
-          upsert: false,
-          contentType: detectedMimeType,
-        });
-      if (uploadError) throw uploadError;
-
-      try {
-        const { error: dbError } = await supabase.from("student_documents").insert({
-          student_id: studentId,
-          document_type: docType,
-          file_name: sanitizedFileName,
-          file_size: preparedFile.size,
-          mime_type: detectedMimeType,
-          storage_path: storagePath,
-        });
-        if (dbError) throw dbError;
-      } catch (dbErr) {
-        await supabase.storage.from("student-documents").remove([storagePath]);
-        throw dbErr;
-      }
+      await uploadVerifiedDocument("student-documents", storagePath, preparedFile, detectedMimeType);
+      await saveStudentDocument({
+        student_id: studentId,
+        document_type: docType,
+        file_name: sanitizedFileName,
+        file_size: preparedFile.size,
+        mime_type: detectedMimeType,
+        storage_path: storagePath,
+      });
 
       const docLabel = missingDocuments.find((d) => d.type === docType)?.label || docType;
       toast({ title: "Document uploaded", description: `${docLabel} has been uploaded successfully.` });
