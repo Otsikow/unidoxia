@@ -133,3 +133,6 @@ No provider account/key, live receipt migration, outbound message or operational
 ### 31 October — signature social links
 - Added all seven existing footer social destinations to the email HTML/plain-text signature, with readable mobile-wrapping labels and a distinct WhatsApp Channel link.
 - Preserved original branded retry payloads byte-for-byte. 578 tests, TypeScript, lint, Deno and production bundle build pass; desktop/mobile preview verified. No email sent or flag/schema changed.
+
+### 31 October — GitHub application guard acceptance
+Manual GitHub run 41221293187 passed 24 actual local Auth/Data API checks and independent zero-fixture SQL read-back, with unchanged reviewed migration hash. See SUBMISSION_GUARD.md for exact source and limits. Lovable builder credits were not used. PR #1282 remains draft pending specific live migration approval; no production activation or Publish.
