@@ -96,3 +96,7 @@ export function followUpDeadline(value: string, today = londonDate()): string | 
   const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', hourCycle: 'h23' }).format(noon));
   return new Date(Date.parse(`${value}T23:59:59.999Z`) - (hour - 12) * 3600000).toISOString();
 }
+
+export function applicationQueueFilter(value: string | null): string {
+  return value && (['attention', 'active', 'all'].includes(value) || WORKFLOW_STATUSES.some(status => status.value === value)) ? value : 'attention';
+}

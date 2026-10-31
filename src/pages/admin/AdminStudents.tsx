@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -72,7 +72,7 @@ import {
 
 import { TablePagination } from "@/components/common/TablePagination";
 import { formatIntakeLabel, getAcademicYearOptions } from "@/lib/intakeOptions";
-import { getStudentNextAction, studentDocumentsToReview, studentMatchesView, studentNeedsAttention, type StudentWorkspaceView } from '@/lib/studentWorkspace';
+import { studentQueueView, getStudentNextAction, studentDocumentsToReview, studentMatchesView, studentNeedsAttention, type StudentWorkspaceView } from '@/lib/studentWorkspace';
 import { DuplicateStudentsPanel } from "@/components/admin/DuplicateStudentsPanel";
 
 const STUDENTS_PAGE_SIZE = 20;
@@ -152,7 +152,13 @@ const AdminStudents = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [view, setView] = useState<StudentWorkspaceView>('active');
+  const [params, setParams] = useSearchParams();
+  const view = studentQueueView(params.get('view'));
+  const setView = (value: StudentWorkspaceView) => {
+    const next = new URLSearchParams(params);
+    next.set('view', studentQueueView(value));
+    setParams(next, { replace: true });
+  };
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
   const [intakeYearFilter, setIntakeYearFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);

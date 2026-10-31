@@ -40,3 +40,7 @@ export const STUDENT_PROFILE_TABS = ['overview', 'documents', 'education', 'appl
 export function studentProfileTab(value: string | null): typeof STUDENT_PROFILE_TABS[number] {
   return STUDENT_PROFILE_TABS.find(tab => tab === value) ?? 'overview';
 }
+
+export function studentQueueView(value: string | null): StudentWorkspaceView {
+  return ['active', 'attention', 'review', 'applications', 'archived', 'all'].includes(value ?? '') ? value as StudentWorkspaceView : 'active';
+}
