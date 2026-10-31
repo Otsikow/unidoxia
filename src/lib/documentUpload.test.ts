@@ -55,6 +55,19 @@ describe('student document persistence', () => {
     await expect(saveStudentDocument(payload, previous)).rejects.toThrow('could not confirm');
     expect(api.remove).not.toHaveBeenCalled();
   });
+  it('recovers a new staff upload by its exact record ID after a lost save response', async () => {
+    api.write.mockResolvedValue({ data: null, error: { status: 0, message: 'Failed to fetch' } });
+    api.read.mockImplementation(async () => ({ data: { id: api.insert.mock.calls[0][1].id, storage_path: payload.storage_path }, error: null }));
+    await expect(saveStudentDocument(payload)).resolves.toBeUndefined();
+    expect(api.insert).toHaveBeenCalledTimes(1);
+    expect(api.remove).not.toHaveBeenCalled();
+  });
+  it('preserves a new file when a staff upload save cannot be confirmed', async () => {
+    api.write.mockResolvedValue({ data: null, error: { status: 503, message: 'Unavailable' } });
+    api.read.mockResolvedValue({ data: null, error: { message: 'offline' } });
+    await expect(saveStudentDocument(payload)).rejects.toThrow('could not confirm');
+    expect(api.remove).not.toHaveBeenCalled();
+  });
   it('creates new uploads pending staff review with a stable record ID', async () => {
     await saveStudentDocument(payload);
     expect(api.insert).toHaveBeenCalledWith('student_documents', expect.objectContaining({ id: expect.any(String), verified_status: 'pending', admin_review_status: 'awaiting_admin_review' }));

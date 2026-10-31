@@ -13,3 +13,9 @@ Validation results and export state are recorded below. Next: explicit GitHub ex
 Validation complete: 411 tests passed in 55 files; TypeScript check passed; Vite production bundle build passed; targeted ESLint passed with no errors or warnings; git diff --check passed. The two legacy NewApplication hook dependency warnings were corrected. These are local automated checks; authenticated managed Storage/browser upload verification and public publication remain unperformed.
 
 Export gate: the earlier automatic approval review rejected GitHub export without explicit repository/payload approval. This focused branch is saved locally only. No push, draft PR, merge, Lovable sync or publication is claimed. Ask Eric to approve uploading this exact commit/branch to Otsikow/unidoxia for a draft PR. That does not authorise publication or a future database permission change.
+
+## Staff upload recovery — 31 October 2026
+
+The administrator student-profile missing-document action used a separate raw upload/insert path. Its catch block removed the new object on any insert error, including a lost response after a successful save. It now reuses uploadVerifiedDocument and saveStudentDocument, confirms exact stored bytes, recovers a save by a stable record ID and preserves uncertain saves. Unique UUID paths replace timestamp-only names. New uploads remain pending staff review. No permission, schema, existing-file or publication changes.
+
+Validation: 18 focused persistence tests (including new-upload lost-response recovery and unconfirmed-save preservation), TypeScript and targeted lint with zero errors/two existing AdminStudentDetail memo-dependency warnings. No real student upload was performed. Full suite/build and GitHub/Lovable handoff are recorded with the release.
