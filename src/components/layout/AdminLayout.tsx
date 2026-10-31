@@ -3,7 +3,7 @@
 import { type ComponentType, type SVGProps, type ReactNode, useState, useCallback, useEffect } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ResizableAdminSidebar } from "./ResizableAdminSidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
@@ -459,8 +459,7 @@ const AdminLayout = ({ children }: { children?: ReactNode } = {}) => {
   const sidebar = (showCollapseButton = true) => (
     <div
       className={cn(
-        "native-sidebar relative flex h-full flex-col border-r-0 transition-all duration-200",
-        isCollapsed && showCollapseButton ? "w-20" : "w-72"
+        "native-sidebar relative flex h-full min-h-0 w-full flex-col border-r-0"
       )}
     >
       {/* Floating collapse toggle button at the edge of sidebar */}
@@ -476,7 +475,7 @@ const AdminLayout = ({ children }: { children?: ReactNode } = {}) => {
           {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
         </Button>
       )}
-      <div className="flex h-14 sm:h-16 items-center gap-2 sm:gap-3 border-b px-3 sm:px-4">
+      <div className="flex h-14 shrink-0 sm:h-16 items-center gap-2 sm:gap-3 border-b px-3 sm:px-4">
         <img
           src={unidoxiaLogo}
           alt={t("admin.layout.sidebar.logoAlt", { defaultValue: "UniDoxia" })}
@@ -493,7 +492,7 @@ const AdminLayout = ({ children }: { children?: ReactNode } = {}) => {
           </div>
         )}
       </div>
-      <ScrollArea className="flex-1">
+      <div role="region" aria-label="Admin menu" tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <nav className="px-2 py-3 sm:py-4">
           {NAV_GROUPS.map((group, groupIndex) => {
             const isGroupCollapsed = collapsedGroups[group.groupKey] ?? false;
@@ -583,10 +582,10 @@ const AdminLayout = ({ children }: { children?: ReactNode } = {}) => {
             );
           })}
         </nav>
-      </ScrollArea>
+      </div>
 
       {/* Footer user profile */}
-      <div className="border-t p-3 sm:p-4">
+      <div className="shrink-0 border-t p-3 sm:p-4">
         <div className={cn("flex items-center gap-2 sm:gap-3", isCollapsed && showCollapseButton && "justify-center")}> 
           <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
             <AvatarImage src={profile?.avatar_url ?? undefined} alt={profile?.full_name ?? "Admin"} />
@@ -634,7 +633,7 @@ const AdminLayout = ({ children }: { children?: ReactNode } = {}) => {
   return (
     <AdminShellContext.Provider value={true}><div className="app-canvas flex min-h-screen">
       {mobileNavSheet}
-      <div className={cn("hidden md:flex shrink-0 overflow-visible", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
+      <ResizableAdminSidebar collapsed={isCollapsed}>{sidebar(true)}</ResizableAdminSidebar>
       <div className="flex w-full min-w-0 flex-col">
         {/* Top Header Bar with Notification Bell */}
         <header className="glass-toolbar sticky top-0 z-40 flex h-14 items-center justify-between gap-2 pl-16 pr-4 md:px-6">

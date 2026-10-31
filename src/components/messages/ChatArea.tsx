@@ -68,17 +68,17 @@ export function ChatArea({
       isAtBottomRef.current = distanceFromBottom < 80;
     };
 
-    handleScroll();
+    isAtBottomRef.current = true;
     container.addEventListener('scroll', handleScroll);
     return () => container.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [conversation?.id, loading]);
 
   useEffect(() => {
     const container = messageListRef.current;
     if (!container || !isAtBottomRef.current) return;
 
     container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-  }, [messages, typingUsers]);
+  }, [conversation?.id, loading, messages, typingUsers]);
 
   /* ---------------- Read Receipts ---------------- */
   useEffect(() => {
@@ -324,12 +324,13 @@ export function ChatArea({
   return (
     <div className="flex-1 flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="p-3 border-b flex items-center gap-3">
+      <div className="shrink-0 p-3 border-b flex items-center gap-3">
         {showBackButton && onBack && (
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
+            aria-label="Back to conversations"
             className="md:hidden"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -343,7 +344,8 @@ export function ChatArea({
       {/* Messages */}
       <div
         ref={messageListRef}
-        className="flex-1 overflow-y-auto px-4 py-6"
+        role="region" aria-label="Message history" tabIndex={0}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6"
       >
         <div className="space-y-2">
           {messages.map((message, index) => {
@@ -439,12 +441,14 @@ export function ChatArea({
       </div>
 
       {/* Input */}
+      <div className="shrink-0">
       <MessageInput
         onSendMessage={onSendMessage}
         onStartTyping={onStartTyping}
         onStopTyping={onStopTyping}
         disabled={loading}
       />
+      </div>
     </div>
   );
 }

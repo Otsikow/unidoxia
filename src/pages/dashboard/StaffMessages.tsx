@@ -1,8 +1,9 @@
 "use client";
 
+import { MessagingViewport } from "@/components/messages/MessagingViewport";
+
 import { useCallback, useMemo, useState, Suspense } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import BackButton from "@/components/BackButton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChatList } from "@/components/messages/ChatList";
 import { ChatArea } from "@/components/messages/ChatArea";
@@ -343,9 +344,9 @@ export default function StaffMessages() {
     onNewChat?: () => void;
     onMarkConversationRead?: () => void;
   }) => (
-    <div className="flex h-full w-full gap-4">
-      <div className="w-full max-w-full md:w-80 lg:w-96 xl:w-[420px] flex-shrink-0">
-        <div className="h-full overflow-hidden rounded-lg border bg-card shadow-sm">
+    <div className="flex h-full min-h-0 min-w-0 w-full gap-4">
+      <div className="min-h-0 min-w-0 w-full max-w-full md:w-2/5 lg:w-80 xl:w-96 flex-shrink-0">
+        <div className="h-full min-h-0 overflow-hidden rounded-lg border bg-card shadow-sm">
           <ChatList
             conversations={conversations}
             currentConversation={currentConversationId}
@@ -356,7 +357,7 @@ export default function StaffMessages() {
           />
         </div>
       </div>
-      <div className="hidden md:flex flex-1 overflow-hidden rounded-lg border bg-card shadow-sm">
+      <div className="hidden md:flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg border bg-card shadow-sm">
         <ChatArea
           conversation={currentConversationData}
           messages={messages}
@@ -372,7 +373,7 @@ export default function StaffMessages() {
         />
       </div>
       {currentConversationId && (
-        <div className="md:hidden fixed inset-0 z-50 bg-background">
+        <div style={{ top: "var(--messaging-screen-top, 0px)", height: "var(--messaging-screen-height, 100dvh)" }} className="md:hidden fixed inset-x-0 z-50 flex min-h-0 flex-col bg-background">
           <ChatArea
             conversation={currentConversationData}
             messages={messages}
@@ -394,9 +395,8 @@ export default function StaffMessages() {
 
   if (messagingError) {
     return (
-      <DashboardLayout showToolbarBackButton={false}>
+      <DashboardLayout>
         <div className="space-y-4">
-          <BackButton variant="ghost" />
           <MessagingUnavailable
             reason={messagingError}
             redirectHref="/dashboard"
@@ -410,9 +410,8 @@ export default function StaffMessages() {
   // Agents use application-linked messaging threads (student/agent/university).
   if (isAgent) {
     return (
-      <DashboardLayout showToolbarBackButton={false}>
+      <DashboardLayout>
         <div className="space-y-4">
-          <BackButton variant="ghost" size="sm" fallback="/dashboard" />
           <MessagesDashboard />
         </div>
       </DashboardLayout>
@@ -420,13 +419,12 @@ export default function StaffMessages() {
   }
 
   return (
-    <DashboardLayout showToolbarBackButton={false}>
-      <div className="flex h-[calc(100vh-4rem)] flex-col bg-background">
-        <div className="border-b bg-background px-4 py-3">
+    <DashboardLayout>
+      <MessagingViewport>
+        <div className="shrink-0 border-b bg-background px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <BackButton variant="ghost" size="sm" fallback="/dashboard" />
-              <div>
+                  <div>
                 <h1 className="text-2xl font-bold">Messaging & Insights</h1>
                 <p className="text-sm text-muted-foreground">
                   Chat with partners, staff, or Zoe AI — and view insights.
@@ -444,10 +442,10 @@ export default function StaffMessages() {
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as TabValue)}
-          className="flex-1 overflow-hidden"
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
         >
-          <div className="px-4 pt-3 pb-2">
-            <TabsList className="w-full justify-start">
+          <div className="shrink-0 overflow-x-auto px-4 pt-3 pb-2">
+            <TabsList className="w-max min-w-full justify-start">
               <TabsTrigger value="zoe">Zoe AI Chat</TabsTrigger>
               <TabsTrigger value="partners">Partner Chats</TabsTrigger>
               <TabsTrigger value="staff">Internal Chats</TabsTrigger>
@@ -455,13 +453,13 @@ export default function StaffMessages() {
             </TabsList>
           </div>
 
-          <TabsContent value="zoe" className="flex-1 px-4 pb-4">
-            <div className="h-full overflow-hidden rounded-lg border bg-card shadow-sm">
+          <TabsContent value="zoe" className="m-0 flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 data-[state=inactive]:hidden">
+            <div className="h-full min-h-0 overflow-hidden rounded-lg border bg-card shadow-sm">
               <AIChatbot />
             </div>
           </TabsContent>
 
-          <TabsContent value="partners" className="flex-1 px-4 pb-4">
+          <TabsContent value="partners" className="m-0 flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 data-[state=inactive]:hidden">
             {partnerEnabled ? (
               renderChatWorkspace({
                 conversations: partnerConversations,
@@ -492,7 +490,7 @@ export default function StaffMessages() {
             )}
           </TabsContent>
 
-          <TabsContent value="staff" className="flex-1 px-4 pb-4">
+          <TabsContent value="staff" className="m-0 flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 data-[state=inactive]:hidden">
             {renderChatWorkspace({
               conversations: staffConversations,
               currentConversationId: staffCurrentConversationId,
@@ -598,13 +596,13 @@ export default function StaffMessages() {
             )}
           </TabsContent>
 
-          <TabsContent value="insights" className="flex-1 px-4 pb-4">
+          <TabsContent value="insights" className="m-0 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 data-[state=inactive]:hidden">
             <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
               <StaffMessagesTable />
             </Suspense>
           </TabsContent>
         </Tabs>
-      </div>
+      </MessagingViewport>
     </DashboardLayout>
   );
 }
