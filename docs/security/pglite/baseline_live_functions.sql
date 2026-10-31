@@ -204,3 +204,83 @@ AS $function$
   );
 $function$;
 ;
+CREATE OR REPLACE FUNCTION public.ensure_user_profile(p_user_id uuid DEFAULT NULL::uuid, p_role text DEFAULT NULL::text, p_full_name text DEFAULT NULL::text, p_email text DEFAULT NULL::text, p_phone text DEFAULT NULL::text, p_country text DEFAULT NULL::text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'auth', 'pg_temp'
+ SET row_security TO 'off'
+AS $function$
+DECLARE
+  v_user_id uuid;
+  v_email text;
+  v_full_name text;
+  v_role_text text;
+  v_role public.app_role;
+  v_phone text;
+  v_country text;
+  v_default_tenant uuid := '00000000-0000-0000-0000-000000000001'::uuid;
+BEGIN
+  v_user_id := COALESCE(p_user_id, auth.uid());
+
+  IF v_user_id IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'No user id provided');
+  END IF;
+
+  -- Already has a profile
+  IF EXISTS (SELECT 1 FROM public.profiles pr WHERE pr.id = v_user_id) THEN
+    RETURN jsonb_build_object('success', true, 'action', 'exists');
+  END IF;
+
+  -- Read basic fields from auth.users (server-side only)
+  SELECT
+    u.email,
+    COALESCE(NULLIF(u.raw_user_meta_data->>'full_name',''), NULLIF(u.raw_user_meta_data->>'name','')),
+    COALESCE(NULLIF(u.raw_user_meta_data->>'role',''), NULLIF(u.raw_user_meta_data->>'app_role','')),
+    NULLIF(u.raw_user_meta_data->>'phone',''),
+    NULLIF(u.raw_user_meta_data->>'country','')
+  INTO v_email, v_full_name, v_role_text, v_phone, v_country
+  FROM auth.users u
+  WHERE u.id = v_user_id;
+
+  v_email := COALESCE(NULLIF(p_email, ''), v_email, 'unknown@example.com');
+  v_full_name := COALESCE(NULLIF(p_full_name, ''), v_full_name, v_email);
+  v_role_text := COALESCE(NULLIF(p_role, ''), v_role_text, 'student');
+
+  -- Safe cast to enum with fallback
+  BEGIN
+    v_role := v_role_text::public.app_role;
+  EXCEPTION WHEN others THEN
+    v_role := 'student'::public.app_role;
+  END;
+
+  -- Insert the minimal required profile row
+  INSERT INTO public.profiles (
+    id,
+    tenant_id,
+    role,
+    full_name,
+    email,
+    phone,
+    country,
+    onboarded,
+    active,
+    created_at,
+    updated_at
+  ) VALUES (
+    v_user_id,
+    v_default_tenant,
+    v_role,
+    v_full_name,
+    v_email,
+    COALESCE(NULLIF(p_phone, ''), v_phone),
+    COALESCE(NULLIF(p_country, ''), v_country),
+    false,
+    true,
+    now(),
+    now()
+  );
+
+  RETURN jsonb_build_object('success', true, 'action', 'created');
+END;
+$function$;

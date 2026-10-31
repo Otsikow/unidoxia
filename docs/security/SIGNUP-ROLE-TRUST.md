@@ -1,104 +1,55 @@
-# Signup role trust — prerequisite for student communication activation
+# Communication activation: security prerequisite
 
-Status: CONFIRMED vulnerability (read-only verification, 31 Oct 2026). Fix prepared, NOT applied.
-Student-communication migration and function deployment are ON HOLD until this is fixed.
+## Current state — 31 October 2026
 
-## Confirmed (live database, read-only)
-- `auth.users` trigger `on_auth_user_created` -> `public.handle_new_user()` sets
-  `new_role := (raw_user_meta_data->>'role')::app_role` with no allow-list, and writes it to
-  `profiles.role` and `user_roles`. Any public signup can send `options.data.role = 'admin'`.
-- Second path: `public.ensure_user_profile(p_user_id, p_role, ...)` is SECURITY DEFINER, executable by
-  `authenticated`, accepts any `p_role`, and any `p_user_id` (not restricted to `auth.uid()`). It creates a
-  profile (not a `user_roles` row) for any profile-less user with the chosen role.
-- `user_roles` policies only allow self-insert of `student`; `prevent_direct_role_update` blocks direct
-  `profiles.role` updates. Neither covers the two SECURITY DEFINER paths above.
-- The communication function and its RLS policy trust `profiles.role in ('admin','staff')`.
-- Current data: 1 admin, 0 staff profiles. No evidence of exploitation was found in role counts; this was not audited further.
+The additional security SQL in `20261107000000_restrict_signup_role_metadata.sql` is a review proposal. It has **not** been applied to production. No existing account has been changed by this review.
 
-## Uncertain
-- Auth "before user created" hooks are Auth service configuration, not visible from the database. No hook
-  function exists in the database (no `*hook*`/`before_user*` functions). Treat as: no hook protection.
+Concurrent work in the shared project applied and recorded the separately authorised `20261106000000` ledger migration and deployed `student-communication` with JWT verification. Managed read-back confirms the ledger is empty, RLS is enabled, and authenticated SELECT is temporarily revoked. Keep that containment: the handler probes the ledger as its caller and refuses history/note/email operations when that read fails. `STUDENT_EMAIL_ENABLED` is absent; email is disabled. Do not restore ledger access or enable email on the strength of local tests alone.
 
-## Fix (proposed, `docs/security/20261107000000_restrict_signup_role_metadata.sql`)
-- `resolve_signup_role(user_meta, app_meta)`: privileged roles only from `raw_app_meta_data` (service-role
-  only); self-service `student`/`agent`/`partner` (+ `university` alias) from user metadata; else `student`.
-- `handle_new_user` uses it; otherwise identical.
-- `ensure_user_profile` only repairs the caller's own profile (service role may target others) and uses the
-  same resolver.
-- Kept working: student/agent/partner signup, `invite-student` / `invite-agent` (they set agent/student and
-  upsert `user_roles` via service role). Trusted staff/admin creation must set `app_metadata.role`.
-- Regression test: `supabase/tests/signup_role_trust.test.sql` (rolls back; run after apply).
+## Findings and proposed changes
 
-## Disposable test fixtures (prepared, NOT executed — needs approval)
-- 2 tenants: slugs `udx-test-a`, `udx-test-b`.
-- Auth users (emails `<role>.<run-id>@udx-test.invalid`, created with the service role
-  `auth.admin.createUser({ email_confirm: true, app_metadata: { role } })`, no invite or confirmation emails):
-  tenant A admin, staff, student, agent, partner, inactive staff (`active=false`); tenant B admin (foreign
-  tenant) + student.
-- Each user's tenant/active state is set by the service role; all created IDs are logged to an audit list.
-- Sessions: real Auth password sign-in with generated one-time passwords held in memory; tokens never printed.
-- Access matrix for `student-communication` + `student_communications` RLS:
-  no token 401; student/agent/partner/inactive staff 403; tenant A admin/staff allowed for tenant A
-  student only; tenant B admin cannot read or write tenant A records. Email stays off (`STUDENT_EMAIL_ENABLED`
-  unset), so only `note` / `whatsapp_launch` records, no external delivery.
-- Cleanup by exact logged IDs: delete ledger rows, students/agents/profiles/user_roles, Auth users, then the 2
-  tenants; verify zero rows remain.
+- Live `handle_new_user()` accepts privileged roles from caller-editable signup metadata. Proposed resolver accepts student/agent/partner (including the university alias) from that metadata; privileged roles require trusted Auth app metadata.
+- Live `ensure_user_profile()` accepts arbitrary target IDs and roles for profile-less users. Proposed repair is restricted to the caller's own identity, with the same role resolver; trusted service operations retain their administrative path.
+- Own-profile UPDATE currently permits tenant and active changes. Proposed invoker trigger prevents self tenant changes and self-reactivation, preserves self-deactivation, and checks active admin/staff authority before changing another profile. Existing trusted server paths remain available.
+- Existing role-management policy ignores active status. Proposed invoker trigger blocks inactive actors from inserting/updating/deleting roles, including promoting an alternate account. It preserves the existing own-student-role insert and trusted signup/role-sync operations.
 
-## Order of release (after approval)
-1. Apply this fix migration; run the regression test.
-2. Then the communication ledger migration (wrapper removed, as approved) and function deployment.
-3. Then fixture setup, access matrix, cleanup.
+The proposed SQL changes functions/triggers and introduces helpers; it does not update existing account rows. It is separate from the already authorised ledger migration and needs migration-specific production approval.
 
-## Addendum (31 Oct 2026): protected profile fields — CONFIRMED by owner's live read
-- `authenticated` can UPDATE `profiles.tenant_id` and `profiles.active`; the own-row policy checks only
-  `id = auth.uid()`; `prevent_direct_role_update` covers `role` only. A user could switch tenant or reactivate
-  themselves, defeating the communication function's tenant/active checks.
-- Fix (appended to the proposed SQL): `trg_guard_protected_profile_fields` (BEFORE UPDATE OF tenant_id, active),
-  SECURITY INVOKER so it sees the real caller; no bypass GUC.
-  - Trusted callers pass: `service_role` (invite-agent, delete-user), SECURITY DEFINER functions such as
-    `isolate_partner_profile` / `sync_profile_role_from_user_roles`, migrations.
-  - Self: may deactivate own account (Settings → Account); may NOT change tenant or reactivate.
-  - Others: only actor with admin/staff in `user_roles` AND `profiles.active = true`
-    (`actor_is_active_admin_or_staff`). Keeps AdminUsers / UserManagement / AdminStudents active toggles.
-- Behaviour change to note: `useAuth.tsx` partner self-isolation does a client `update({ tenant_id })`. That path
-  already depends on a client tenant INSERT, which tenants RLS allows only for admin/staff, so it does not work
-  for partners today; after this fix it stays blocked. Proper route: the existing `isolate_partner_profile` function.
-- Not changed (residual, separate decision): `is_admin_or_staff` (used by the `user_roles` ALL policy and others)
-  ignores `active`. An inactive admin keeps role-management rights until roles are removed. Fixing it touches many
-  policies, so it is left out of this narrow change; recommended follow-up.
-- Tests: `supabase/tests/signup_role_trust.test.sql` part 2 runs real UPDATEs as `authenticated` with JWT claims
-  on throwaway users/tenants inside a rolled-back transaction (self tenant switch blocked, self deactivate allowed,
-  self reactivate blocked, inactive admin blocked, active admin allowed, service role allowed).
+Auth service before-user-created hook settings were not observable. Unsafe database paths were verified by their live definitions and reproduced locally; no privileged production signup or exploitation was attempted. Role counts alone are not a historical security audit.
 
-## Update 2026-10-31 — user_roles guard, isolated PGlite results, fixtures (REVIEW ONLY)
+## Verification
 
-**Added to the proposed migration:** `guard_user_roles_mutation()` (SECURITY INVOKER) + `trg_guard_user_roles_mutation`
-BEFORE INSERT/UPDATE/DELETE on `public.user_roles`. For `authenticated`/`anon` callers it requires
-`actor_is_active_admin_or_staff(auth.uid())`, except the existing self-signup insert of the caller's own `student` row.
-Trusted callers (service_role, SECURITY DEFINER signup/sync owners, migrations) pass via `current_user`; no settable flag.
-Closes: an inactive admin/staff (whose `is_admin_or_staff` still returns true) promoting a newly registered alternate account.
-The existing "Admins can manage user roles" policy is unchanged.
+`pglite/signup-role-trust.pglite.mjs` uses an isolated PostgreSQL runtime, a snapshot of live functions including the actual profile-repair routine, copied role/profile policies, and role-sync triggers. Every case starts fresh. Positive mutations require one affected row and a read-back; zero-row updates are tested separately. The final proposed version passes all 24 behaviour checks in isolated execution. These are database-role/JWT simulations, **not real Auth-issued sessions** and not a full managed-schema replay.
 
-**Isolated test:** `docs/security/pglite/signup-role-trust.pglite.mjs` (PGlite, in-memory; never touches production).
-Baseline = read-only snapshot of live functions (`baseline_live_functions.sql`) + copied live policies/triggers.
-Every case uses a fresh DB and verifies by superuser readback; UPDATE/DELETE "success" counts only with `affected === 1`,
-and 0-row updates are asserted as such. Result 2026-10-31: BASELINE 11 DEFECT / 13 SECURE; PROPOSED 24/24 SECURE.
-Covered: privileged signup metadata, legit student/agent/partner signup, trusted app_metadata invite, self tenant switch,
-self reactivation, self deactivation, AdminUsers active toggle by active admin, inactive-admin tenant/active/role
-insert/update/delete, role-sync (grant staff → profile.role staff; revoke → student), service_role grants, direct
-profiles.role edit, ensure_user_profile cross-user and own privileged repair.
-Limits: the original `ensure_user_profile` is stubbed in baseline (defect previously confirmed against the live definition);
-auth.uid()/role() are local stubs of the JWT claim functions; the live `app.bypass_role_guard` GUC in
-`prevent_direct_role_update` remains (not settable through the Data API; noted, not changed).
+`scripts/verify-signup-role-prerequisite.mjs` additionally replays the proposal twice and exercises actual signup trigger outcomes for every privileged role, ordinary signup variants, trusted staff creation, student/agent record creation, own-only repair, anonymous denial and protected-field regression SQL. It uses a minimal fixture schema, not production Auth.
 
-**Separate existing issue (not in scope, not called):** `public.isolate_partner_profile(uuid)` is SECURITY DEFINER,
-executable by `authenticated`, with no own-id/admin check. Track and fix separately; no RPC rewrite here.
+Use a pinned test-only `@electric-sql/pglite@0.5.14` outside application dependencies, then run from the repository:
 
-**Residual (unchanged):** `is_admin_or_staff()` still ignores `active` for reads under existing policies.
+```sh
+COMMUNICATION_PGLITE_MODULE=/absolute/temp/node_modules/@electric-sql/pglite/dist/index.js node docs/security/pglite/signup-role-trust.pglite.mjs
+COMMUNICATION_PGLITE_MODULE=/absolute/temp/node_modules/@electric-sql/pglite/dist/index.js node scripts/verify-signup-role-prerequisite.mjs
+```
 
-**Fixtures:** must be created in an isolated staging/draft backend, not production — current global admin/staff policies
-mean a test tenant in production cannot contain a new privileged account. Proposed set (reserved `.invalid` emails,
-no notifications): tenants A/B; A: active admin, inactive admin, active staff, student, agent, partner, inactive student;
-B: admin, student. Record created IDs; clean up by exact ID. Requires Eric's specific approval.
+Never run fixture-creating SQL against production as a substitute for isolated testing. Real Auth-issued positive/negative role acceptance remains required.
 
-**Approval gates:** migration not applied to production; communication ledger SELECT remains revoked; no sessions, sends, or fixtures.
+## Disposable Auth fixture proposal — not created
+
+Recommend an isolated managed staging backend with matching schema/function versions and synthetic data only. Do not copy production data, credentials or signing secrets. Existing global admin/staff policies mean a test tenant alone does not isolate a new privileged live account. Confirm any new project cost before provisioning.
+
+Bounded set: two test tenants; nine Auth accounts covering tenant A admin, active staff, inactive staff, students A1/A2, agent and university partner, plus tenant B admin/student. Use reserved `.invalid` identifiers, generated ephemeral credentials, Auth-issued password sessions, and no invitation/confirmation/welcome/reset email or other outbound notification. Record exact fixture IDs; never expose tokens or impersonate real users. Revoke sessions and deactivate only the created identities after testing. Permanent cleanup requires its exact-ID scope and authorisation.
+
+Acceptance must cover capabilities, per-student/tenant history, note write and refresh read-back, application ownership, duplicate operation IDs, failed responses, forbidden direct browser ledger writes, drafts, session expiry, role manipulation, self-reactivation and all requested denied roles. Real student-owned portal chat is tested separately under its existing permissions. Email remains disabled throughout; sending and mailbox delivery require later recipient-specific authorisation.
+
+## Recovery and release gates
+
+Lovable's Backups view lists a backup from **31 October 2026 07:10:28 UTC**. Inventory was verified; restoration was not tested. Use transaction rollback on migration failure and preserve/contain the new ledger after commit. Do not restore a whole production database as a routine test or silently restore insecure function definitions.
+
+1. Obtain specific approval for the reviewed security SQL; recheck live definitions/history, apply transactionally and record its exact version.
+2. Run real Auth tests in approved isolated staging and compare managed schema/function versions. Keep email off and production history contained while acceptance remains incomplete.
+3. Restore ledger SELECT only after the security and scope checks pass; verify the actual published admin flow separately. Do not reapply the original ledger migration blindly because that would restore SELECT during the hold.
+4. Prepare sender/domain verification and request separate approval for one controlled email test. Provider acceptance, mailbox delivery and operational email enablement are separate gates.
+5. Keep WhatsApp PR #1234 separate. No native WhatsApp or historical mailbox synchronisation is provided by this activation.
+
+## Separate existing issues
+
+`isolate_partner_profile(uuid)` is SECURITY DEFINER and callable by authenticated users without a caller-ownership/admin check. It was inspected, never called, and is outside this narrow migration. Existing `is_admin_or_staff()` still ignores active status for other policies, including reads; this proposal closes the role-mutation bypass but does not establish that the whole platform is secure. The existing client-side partner tenant-isolation path also needs a separately reviewed repair. Record and review these before expanding access or calling the platform fully operational.

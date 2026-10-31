@@ -1,10 +1,12 @@
 // Isolated PGlite regression harness for docs/security/20261107000000_restrict_signup_role_metadata.sql
 // REVIEW ONLY. Never connects to production. Run:
-//   mkdir -p /tmp/pgl && cd /tmp/pgl && bun add @electric-sql/pglite
-//   NODE_PATH=/tmp/pgl/node_modules bun docs/security/pglite/signup-role-trust.pglite.mjs
+// Install @electric-sql/pglite@0.5.14 in an isolated temporary directory, then run:
+//   COMMUNICATION_PGLITE_MODULE=/absolute/temp/node_modules/@electric-sql/pglite/dist/index.js node docs/security/pglite/signup-role-trust.pglite.mjs
 // Runs every case twice: BASELINE (live definitions snapshot) and PROPOSED (baseline + fix).
 // Baseline is expected to show the defects; PROPOSED must pass every case.
-import { PGlite } from "@electric-sql/pglite";
+import { pathToFileURL } from "node:url";
+const { PGlite } = await import(process.env.COMMUNICATION_PGLITE_MODULE
+  ? pathToFileURL(process.env.COMMUNICATION_PGLITE_MODULE).href : "@electric-sql/pglite");
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,15 +58,10 @@ create policy "Allow user_roles creation during signup" on public.user_roles for
 create policy "Users can view their own roles" on public.user_roles for select using (user_id = auth.uid() or is_admin_or_staff(auth.uid()));
 `;
 
-// The original ensure_user_profile is not in the baseline snapshot; a no-op stub keeps baseline runnable.
-const ensureStub = `create function public.ensure_user_profile(p_user_id uuid default null, p_role text default null, p_full_name text default null,
-  p_email text default null, p_phone text default null, p_country text default null) returns jsonb language sql as $$ select '{"baseline":"not modelled"}'::jsonb $$;`;
-
 async function build(withProposal) {
   const db = new PGlite();
   await db.exec(schema);
   if (withProposal) await db.exec(proposal);
-  else await db.exec(ensureStub);
   // Seed via trusted path (superuser = migrations/service): signups through auth.users trigger.
   const signup = (id, meta = {}, app = {}) =>
     db.query("insert into auth.users (id,email,raw_user_meta_data,raw_app_meta_data) values ($1,$2,$3,$4)", [id, `u${id.slice(-3)}@test.invalid`, meta, app]);
