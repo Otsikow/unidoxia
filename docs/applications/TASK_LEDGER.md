@@ -119,3 +119,8 @@ No provider account/key, live receipt migration, outbound message or operational
 - Added a branded HTML/plain-text signature using the official logo, existing business WhatsApp, email, website and company/registered-office/ICO details. Pending legacy retries preserve their original payload.
 - Receipt source passed 16 real Auth/REST/RLS isolated staging checks, with exact fixture cleanup; production receipt migration/provider webhook remain unactivated and require their own approval/setup.
 - Validation: 554 automated tests passed; source type/lint/build and desktop/mobile signature checks recorded with the release.
+
+### 31 October — next operational hardening
+- Confirmed the unguarded partner-workspace mutation/status RPCs and repeated-workspace creation risk by source/read-only database review.
+- Prepared a guarded, idempotent forward migration plus active-profile enforcement in the existing staff helper; no production change yet.
+- 37 isolated SQL/RLS checks pass against required-column/unique-tenant/slug-trigger fixtures. Three 19/19 real-Auth staging revisions passed, including the final source covering staff and direct-role helpers with verified fixture cleanup. Partner sign-in uses the guarded versioned RPC; inactive and failed-setup profiles cannot open protected dashboards. 571 frontend/unit tests (combined with current main), TypeScript and production build passed. Production application remains approval-gated.

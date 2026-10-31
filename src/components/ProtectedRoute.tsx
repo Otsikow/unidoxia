@@ -149,6 +149,28 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     );
   }
 
+  if (profile.active !== true || profile._isolationFailed) {
+    const inactive = profile.active !== true;
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>{inactive ? 'Account inactive' : 'Workspace setup needs attention'}</CardTitle>
+            <CardDescription>
+              {inactive
+                ? 'This account is inactive. Please contact UniDoxia if you need help restoring access.'
+                : 'We could not safely prepare your university workspace. Please sign in again, or contact UniDoxia if the problem continues.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full" onClick={() => void signOut({ redirectTo: '/auth/login' })}>Sign out</Button>
+            <a className="block text-center text-sm text-primary underline" href="mailto:info@unidoxia.com">Contact UniDoxia</a>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!user.email_confirmed_at) {
     return <Navigate to="/verify-email" replace state={{ from: requestedPath }} />;
   }
