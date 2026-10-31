@@ -1,0 +1,13 @@
+# Application submission guard — 31 October 2026
+
+Read-only live review found the owning-student INSERT policy checks ownership, but no initial-status allowlist or submission quota. The only current application trigger is the Coursefinder profile/sharing gate; historical limit functions/migrations are not deployed. No live application was inserted or altered during this review.
+
+This new forward trigger preserves trusted service/active staff operations and limits owner/delegated-agent calls to drafts or submitted applications. Ownership/attribution and operational decision/fee/timeline/risk metadata cannot be fabricated. Current programme tenant routing is validated, with the existing student-workspace fallback; unchanged legacy drafts retain ordinary edits. A shared student-row lock serialises free-plan checks, excluding drafts and the same retry ID. Existing paid and legacy paid plans retain their allowance. The deployed student billing guard is a required dependency so a client cannot alter its plan to evade the quota. Existing profile/sharing gates and RLS policies are not replaced or broadened.
+
+This does not introduce agent onboarding/first-referral write permissions or a new draft-to-submit RPC. Existing direct draft UPDATE policy behaviour is retained. The existing form submits a new application and has response-loss recovery by its stable ID. Staff/service exceptions preserve existing authorised processing, not an assertion of global quota enforcement across staff overrides.
+
+Validation: 39 isolated PostgreSQL/RLS checks pass, including every key status/metadata boundary, routing, free/legacy-paid entitlement, profile-gate coexistence and normal draft edits. Auth/consent/delegated write policies are fixtures. Actual Auth/Data API concurrency acceptance is prepared; do not claim concurrent protection as operationally verified until it passes. The minimal staging fixture reproduces write paths and a representative consent gate, not the full Coursefinder fields. Broad historical synthetic SELECT policy remains; no production read-isolation/full-clone claim.
+
+No production activation is authorised for this migration. It needs a separate reviewed release and approval after real-Auth tests/cleanup. No billing changes, payment/provider event, notification, student email or Publish is included.
+
+Pending receipt compatibility follow-up: application requests currently have student/workspace scope, and the held receipt RPC's application-tenant check must also cover the programme-tenant applications created by the existing form. Extend that acceptance before activating the separate document-receipt migration; do not reuse the old student-tenant-only fixture as proof of programme-routed support.
