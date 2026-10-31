@@ -13,3 +13,7 @@ Validation results and export state are recorded below. Next: explicit GitHub ex
 Validation complete: 411 tests passed in 55 files; TypeScript check passed; Vite production bundle build passed; targeted ESLint passed with no errors or warnings; git diff --check passed. The two legacy NewApplication hook dependency warnings were corrected. These are local automated checks; authenticated managed Storage/browser upload verification and public publication remain unperformed.
 
 Export gate: the earlier automatic approval review rejected GitHub export without explicit repository/payload approval. This focused branch is saved locally only. No push, draft PR, merge, Lovable sync or publication is claimed. Ask Eric to approve uploading this exact commit/branch to Otsikow/unidoxia for a draft PR. That does not authorise publication or a future database permission change.
+
+## Next build — secure student request receipts, 31 October 2026
+
+Implemented the owned-file server receipt operation and retry-only request confirmation, with private object/size/category checks, request-version locking and preserved staff approval/verification boundaries. Current local checks: 586 tests, 24 isolated SQL/RLS checks, TypeScript and production bundle build pass. Actual Auth/Storage acceptance prepared; no production mutation yet. Details: REQUEST_RECEIPTS.md. This continues the previously recorded backend request-fulfilment gap rather than adding a broad student UPDATE grant.

@@ -1,0 +1,28 @@
+-- ISOLATED qazshxpvfbhlybkmmkaf ONLY. NEVER APPLY TO PRODUCTION.
+begin;
+do $$begin if exists(select 1 from auth.users) or exists(select 1 from profiles) then raise exception 'Requires empty disposable acceptance backend';end if;end$$;
+do $$begin if to_regtype('public.document_type') is null then create type public.document_type as enum('passport','transcript','ielts','toefl','sop','cv','lor','portfolio','other');end if;end$$;
+create table if not exists public.programs(id uuid primary key,university_id uuid references public.universities(id));
+alter table public.applications add column if not exists program_id uuid references public.programs(id);
+create table if not exists public.application_documents(id uuid primary key default gen_random_uuid(),application_id uuid not null references public.applications(id),document_type public.document_type not null,storage_path text not null,mime_type text not null,file_size int not null,verified boolean default false);
+create table if not exists public.document_requests(id uuid primary key default gen_random_uuid(),tenant_id uuid not null,student_id uuid not null references public.students(id),document_type text not null,status text default 'pending' check(status in('pending','submitted','received','approved','rejected')),storage_path text,document_url text,file_url text,uploaded_file_url text,submitted_at timestamptz,reviewed_at timestamptz,reviewed_by uuid,updated_at timestamptz default now(),notes text);
+create or replace function public.request_fixture_updated_at() returns trigger language plpgsql as $$begin new.updated_at:=now();return new;end$$;
+drop trigger if exists update_document_requests_updated_at on public.document_requests;
+create trigger update_document_requests_updated_at before update on public.document_requests for each row execute function public.request_fixture_updated_at();
+alter table public.application_documents enable row level security;
+alter table public.document_requests enable row level security;
+drop policy if exists fixture_request_owner on public.document_requests;
+create policy fixture_request_owner on public.document_requests for select to authenticated using(student_id in(select id from public.students where profile_id=auth.uid()));
+drop policy if exists fixture_request_staff on public.document_requests;
+create policy fixture_request_staff on public.document_requests for all to authenticated using(public.is_admin_or_staff(auth.uid())) with check(public.is_admin_or_staff(auth.uid()));
+drop policy if exists fixture_application_document_owner on public.application_documents;
+create policy fixture_application_document_owner on public.application_documents for all to authenticated using(application_id in(select a.id from public.applications a join public.students s on s.id=a.student_id where s.profile_id=auth.uid())) with check(application_id in(select a.id from public.applications a join public.students s on s.id=a.student_id where s.profile_id=auth.uid()));
+grant select,insert,update,delete on public.document_requests,public.application_documents to authenticated;
+grant select on public.programs,public.universities to authenticated;
+grant all on public.document_requests,public.application_documents,public.programs to service_role;
+drop policy if exists fixture_request_object_insert on storage.objects;
+create policy fixture_request_object_insert on storage.objects for insert to authenticated with check(bucket_id='application-documents' and split_part(name,'/',1) in(select a.id::text from public.applications a join public.students s on s.id=a.student_id join public.profiles p on p.id=s.profile_id where p.id=auth.uid() and p.active is true));
+drop policy if exists fixture_request_object_select on storage.objects;
+create policy fixture_request_object_select on storage.objects for select to authenticated using(bucket_id='application-documents' and split_part(name,'/',1) in(select a.id::text from public.applications a join public.students s on s.id=a.student_id join public.profiles p on p.id=s.profile_id where p.id=auth.uid() and p.active is true));
+notify pgrst,'reload schema';
+commit;

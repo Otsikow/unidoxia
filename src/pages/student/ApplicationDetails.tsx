@@ -23,6 +23,7 @@ import { DocumentUploadDialog, DocumentRequestInfo } from '@/components/student/
 import { DecisionSurvey } from '@/components/student/DecisionSurvey';
 
 interface University {
+  tenant_id?: string;
   name: string;
   city: string | null;
   country: string;
@@ -47,6 +48,7 @@ interface TimelineItem {
 }
 
 interface Application {
+  tenant_id?: string;
   id: string;
   app_number?: string | null;
   status: string;
@@ -116,6 +118,7 @@ interface DocumentRequest {
   uploaded_file_url?: string | null;
   storage_path?: string | null;
   submitted_at?: string | null;
+  updated_at?: string | null;
   created_at?: string | null;
 }
 
@@ -319,6 +322,7 @@ export default function ApplicationDetails() {
           created_at,
           submitted_at,
           student_id,
+          tenant_id,
           timeline_json,
           program:programs (
             id,
@@ -327,6 +331,7 @@ export default function ApplicationDetails() {
             discipline,
             app_fee,
             university:universities (
+              tenant_id,
               name,
               city,
               country,
@@ -416,7 +421,7 @@ export default function ApplicationDetails() {
       if (appData.student_id) {
         const { data: requestData, error: requestError } = await supabase
           .from('document_requests')
-          .select('id,document_type,request_type,status,requested_at,due_date,description,notes,document_url,file_url,uploaded_file_url,storage_path,submitted_at,created_at')
+          .select('id,tenant_id,document_type,request_type,status,requested_at,due_date,description,notes,document_url,file_url,uploaded_file_url,storage_path,submitted_at,created_at,updated_at')
           .eq('student_id', appData.student_id)
           .order('requested_at', { ascending: false });
 
@@ -425,7 +430,8 @@ export default function ApplicationDetails() {
           // Don't throw - just log and continue with empty array
         }
 
-        setDocumentRequests((requestData ?? []) as DocumentRequest[]);
+        const requestTenants = new Set([appData.tenant_id, appData.program?.university?.tenant_id].filter(Boolean));
+        setDocumentRequests((requestData ?? []).filter(request => requestTenants.has(request.tenant_id)) as DocumentRequest[]);
       }
     } catch (error) {
       logError(error, 'ApplicationDetails.loadAll');
@@ -850,7 +856,7 @@ export default function ApplicationDetails() {
                         <p className="text-xs text-muted-foreground">Notes: {request.notes}</p>
                       )}
                       <div className="flex flex-wrap gap-2">
-                        <DocumentUploadDialog
+                        {['pending','rejected'].includes(request.status ?? '') && <DocumentUploadDialog
                           applicationId={app.id}
                           onUploadComplete={loadAll}
                           documentRequest={{
@@ -860,6 +866,7 @@ export default function ApplicationDetails() {
                             notes: request.notes,
                             description: request.description,
                             due_date: request.due_date,
+                            updated_at: request.updated_at,
                           }}
                           trigger={
                             <Button size="sm" variant="outline" className="gap-2">
@@ -867,7 +874,7 @@ export default function ApplicationDetails() {
                               Upload {request.document_type?.replace(/_/g, ' ') || 'document'}
                             </Button>
                           }
-                        />
+                        />}
                         {(request.document_url || request.file_url || request.uploaded_file_url || request.storage_path) && (
                           <Button
                             variant="ghost"
