@@ -1,7 +1,7 @@
 # Signup role trust — prerequisite for student communication activation
 
 Status: CONFIRMED vulnerability (read-only verification, 31 Oct 2026). Fix prepared, NOT applied.
-Student-communication migration and function deployment are ON HOLD until this is fixed.
+The communication table and function are deployed but contained: authenticated ledger SELECT revoked, email flag off, no sends. Restoring access and operational activation remain ON HOLD until this prerequisite passes.
 
 ## Confirmed (live database, read-only)
 - `auth.users` trigger `on_auth_user_created` -> `public.handle_new_user()` sets
@@ -102,3 +102,9 @@ no notifications): tenants A/B; A: active admin, inactive admin, active staff, s
 B: admin, student. Record created IDs; clean up by exact ID. Requires Eric's specific approval.
 
 **Approval gates:** migration not applied to production; communication ledger SELECT remains revoked; no sessions, sends, or fixtures.
+
+## Release-ready migration — follow-up implementation
+
+The prepared SQL is now packaged as `supabase/migrations/20261108000000_secure_communication_identity.sql` with transaction boundaries. The isolated harness loads this actual forward migration, rather than the earlier review copy, and accepts `COMMUNICATION_PGLITE_MODULE=/absolute/temp/node_modules/@electric-sql/pglite/dist/index.js` so no production connection or application dependency change is needed. The earlier `docs/security/20261107000000...sql` remains the historical review proposal and must not be independently applied as a second migration.
+
+The forward migration does not restore the communication ledger grant, enable email, mint sessions, provision test tenants, modify existing accounts or deploy the separate WhatsApp implementation. Privileged account fixtures require isolated staging and specific authority. The local checks model actual SQL mutation/read-back against fixture policies; they do not prove production Auth behaviour or a complete schema replay. Existing historical privileged accounts are not silently reclassified.
