@@ -26,3 +26,5 @@ drop policy if exists fixture_request_object_select on storage.objects;
 create policy fixture_request_object_select on storage.objects for select to authenticated using(bucket_id='application-documents' and split_part(name,'/',1) in(select a.id::text from public.applications a join public.students s on s.id=a.student_id join public.profiles p on p.id=s.profile_id where p.id=auth.uid() and p.active is true));
 notify pgrst,'reload schema';
 commit;
+
+alter table public.programs add column if not exists tenant_id uuid;

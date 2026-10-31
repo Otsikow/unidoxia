@@ -30,7 +30,7 @@ begin
   left join public.programs pr on pr.id=a.program_id
   left join public.universities u on u.id=pr.university_id
   where d.id=p_document_id and a.student_id=v_request.student_id and s.profile_id=auth.uid()
-    and a.tenant_id=s.tenant_id
+    and (a.tenant_id=s.tenant_id or a.tenant_id=pr.tenant_id or a.tenant_id=u.tenant_id)
   for share of d;
   if not found then
     raise exception 'Saved application file unavailable for this request' using errcode='42501';

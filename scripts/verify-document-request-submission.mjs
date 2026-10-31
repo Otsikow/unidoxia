@@ -17,7 +17,7 @@ try{
  create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;
  create type document_type as enum('passport','transcript','ielts','toefl','sop','cv','lor','portfolio','other');
  create table profiles(id uuid primary key,active boolean);create table students(id uuid primary key,profile_id uuid,tenant_id uuid);
- create table universities(id uuid primary key,tenant_id uuid);create table programs(id uuid primary key,university_id uuid);
+ create table universities(id uuid primary key,tenant_id uuid);create table programs(id uuid primary key,university_id uuid,tenant_id uuid);
  create table applications(id uuid primary key,tenant_id uuid,student_id uuid,program_id uuid);
  create table application_documents(id uuid primary key,application_id uuid,document_type document_type,storage_path text,mime_type text,file_size int,verified boolean default false);
  create table document_requests(id uuid primary key,tenant_id uuid,student_id uuid,document_type text,status text check(status in('pending','submitted','received','approved','rejected')),storage_path text,document_url text,file_url text,uploaded_file_url text,submitted_at timestamptz,reviewed_at timestamptz,reviewed_by uuid,updated_at timestamptz,notes text);
@@ -28,7 +28,7 @@ try{
  create policy owner_read on document_requests for select to authenticated using(student_id in(select id from students where profile_id=auth.uid()));grant select on students to authenticated;`);
  await db.query('insert into profiles values($1,true),($2,true),($3,false)',[actor,foreign,inactive]);
  await db.query('insert into students values($1,$2,$3),($4,$5,$6)',[student,actor,tenant,foreignStudent,foreign,foreignTenant]);
- await db.query('insert into universities values($1,$2)',[university,universityTenant]);await db.query('insert into programs values($1,$2)',[program,university]);
+ await db.query('insert into universities values($1,$2)',[university,universityTenant]);await db.query('insert into programs(id,university_id) values($1,$2)',[program,university]);
  await db.query('insert into applications values($1,$2,$3,$4),($5,$6,$7,$4)',[application,tenant,student,program,foreignApplication,foreignTenant,foreignStudent]);
  for(let n=1;n<=14;n++){
   await db.query("insert into document_requests values($1,$2,$3,'transcript','pending',null,'https://old.invalid',null,null,null,null,null,$4,'Staff instructions')",[id(100+n),tenant,student,expected]);
@@ -60,5 +60,20 @@ try{
  await db.exec('reset role');const photoPath=`${application}/passport_photo_${id(211)}.jpg`;await db.query("update application_documents set storage_path=$1,mime_type='image/jpeg' where id=$2",[photoPath,id(211)]);await db.query("insert into storage.objects(bucket_id,name,metadata) values('application-documents',$1,'{\"size\":10}')",[photoPath]);const photoVersion=(await row(11)).updated_version;await as(actor);ok((await submit(11,11,photoVersion)).status==='received','Dedicated passport photo mapping supported');
  await db.exec('reset role');await db.query("update document_requests set status='rejected',reviewed_by=$1,reviewed_at=now() where id=$2",[foreign,id(112)]);const rejectionVersion=(await row(12)).updated_version;await as(actor);ok((await submit(12,12,rejectionVersion)).status==='received','Rejected request accepts an owned replacement');const replacement=await row(12);ok(!replacement.reviewed_by&&!replacement.reviewed_at,'Prior review markers cleared, never approved automatically');
  await db.exec(sql);await as(actor);ok((await submit(12)).status==='received','Migration replay preserves receipt');
+ await db.exec('reset role');const programmeTenant=id(13),programmeApplication=id(32),universityApplication=id(33),unrelatedApplication=id(34);
+ await db.query('update programs set tenant_id=$1 where id=$2',[programmeTenant,program]);
+ await db.query('insert into applications values($1,$2,$3,$4),($5,$6,$3,$4),($7,$8,$3,$4)',[programmeApplication,programmeTenant,student,program,universityApplication,universityTenant,unrelatedApplication,foreignTenant]);
+ for(const[n,app,requestTenant]of[[13,programmeApplication,universityTenant],[14,universityApplication,universityTenant]]){
+  const path=`${app}/transcript_${id(200+n)}.pdf`;
+  await db.query('update application_documents set application_id=$1,storage_path=$2 where id=$3',[app,path,id(200+n)]);
+  await db.query('update document_requests set tenant_id=$1 where id=$2',[requestTenant,id(100+n)]);
+  await db.query("insert into storage.objects(bucket_id,name,metadata)values('application-documents',$1,'{\"size\":10}')",[path]);
+  const version=(await row(n)).updated_version;await as(actor);ok((await submit(n,n,version)).status==='received','Associated programme/university routed application supported');await db.exec('reset role');
+ }
+ await db.query("insert into document_requests(id,tenant_id,student_id,document_type,status,updated_at)values($1,$2,$3,'transcript','pending',$4)",[id(115),universityTenant,student,expected]);
+ const unrelatedPath=`${unrelatedApplication}/transcript_${id(215)}.pdf`;
+ await db.query("insert into application_documents values($1,$2,'transcript',$3,'application/pdf',10,false)",[id(215),unrelatedApplication,unrelatedPath]);
+ await db.query("insert into storage.objects(bucket_id,name,metadata)values('application-documents',$1,'{\"size\":10}')",[unrelatedPath]);
+ await as(actor);await rejects(()=>submit(15),'42501','Owned file in an unrelated application workspace remains denied');
  console.log(`PASS: ${checks} isolated document-request SQL/RLS checks. Auth and Storage metadata are fixtures, not actual Storage acceptance.`);
 }finally{await db.close();}
