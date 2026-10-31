@@ -5331,6 +5331,10 @@ export type Database = {
       }
     }
     Functions: {
+      actor_is_active_admin_or_staff: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       application_profile_gate_status: {
         Args: { p_application_id: string }
         Returns: Json
@@ -5623,6 +5627,10 @@ export type Database = {
       record_sharing_authorisation: {
         Args: { p_wording_version: string }
         Returns: string
+      }
+      resolve_signup_role: {
+        Args: { p_app_meta: Json; p_user_meta: Json }
+        Returns: Database["public"]["Enums"]["app_role"]
       }
       review_university_claim: {
         Args: { p_admin_notes?: string; p_claim_id: string; p_decision: string }
