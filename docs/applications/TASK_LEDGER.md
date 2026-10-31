@@ -129,3 +129,7 @@ No provider account/key, live receipt migration, outbound message or operational
 - Replaced the bare prerender first view with independently styled public content and the existing homepage hero image/logo.
 - Kept that useful view until the finished React route commits; no intermediate loader or arbitrary timeout, with working no-JavaScript links and preserved SEO content.
 - 575 tests, TypeScript, full production/SEO build and actual built-page desktop/mobile/offline/handoff checks pass. See ../performance/FIRST_PAINT.md. Publication remains separate.
+
+### 31 October — signature social links
+- Added all seven existing footer social destinations to the email HTML/plain-text signature, with readable mobile-wrapping labels and a distinct WhatsApp Channel link.
+- Preserved original branded retry payloads byte-for-byte. 578 tests, TypeScript, lint, Deno and production bundle build pass; desktop/mobile preview verified. No email sent or flag/schema changed.
