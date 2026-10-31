@@ -1,0 +1,19 @@
+# Student billing and ownership guard — 31 October 2026
+
+Read-only live review confirmed table INSERT/UPDATE privilege for authenticated users, an owning-student UPDATE policy, no billing guard, and public student plan/payment/assignment columns. The existing Coursefinder trigger validates admissions fields; it does not restrict billing/ownership changes. No attempt to exploit or alter a live student record was made. Historical repository upgrade/limit functions are absent live, so they are not evidence of current protection.
+
+The forward trigger reserves student ownership/workspace, plan/payment confirmation and staff assignment fields for current active trusted staff, signed service calls or direct trusted database maintenance. Ordinary personal/academic edits remain available, including for existing paid accounts. Student-created records must start free with no payment or assignment claims. Caller-editable metadata is not a privilege source; a missing JWT alone is not trusted. Trigger execution is not exposed as an RPC. No existing rows, plans, files or grants are rewritten by activation.
+
+Local SQL/RLS acceptance uses actual PostgreSQL roles/policies and stub Auth claims in PGlite; real Auth/Data API acceptance against a representative isolated schema is required before live approval. Stage schema fixture only adds required columns and reproduces the write policies under review; its older broad synthetic read policy is preserved and is not evidence of production read isolation. Production RLS read policies stay unchanged.
+
+Stage runner permits only the isolated backend, forbids configured payment/email providers, uses reserved synthetic Auth accounts, bounded calls, checkpointed exact cleanup and actual password sign-ins. No live payment/event/email is created. Migration-specific approval, transaction/ledger registration and source/ACL/data fingerprint read-back are required for production. Existing request-receipt migration approval remains separate.
+
+This does not complete webhook settlement atomicity/idempotency, live application-limit enforcement, agent referral attribution, or inactive-student ordinary-edit policy review; those are separate priorities.
+
+Acceptance completed: 26 isolated PostgreSQL/RLS checks pass. Actual Auth/Data API Run 11 passed 22 checks (21 semantics plus exact cleanup) against unchanged source eab76c41f768373de550883904e4fa62aa5c205b and SDK2.110.2. Migration SHA25659cd893ccfe3f0aaf465eee323db2269d42e5fe866f5ee60af435af013d782c8. Independent root read-back confirmed zero Auth users/profiles/roles/students/agents/objects, with only the two original tenants. No production mutation occurred. Final main integration retains the same guard/harness bytes.
+
+Combined current-main integration also passes 611 automated tests in 93 files and TypeScript; the guard remains byte-identical to the actual-Auth acceptance source. Live activation is not approved or applied.
+
+Follow-up live application review: the only current applications trigger is the Coursefinder profile/sharing gate. The owning-student INSERT policy checks student ownership, with no submitted-application quota or initial-status allowlist. The students profile_id unique index exists, so duplicate student rows are constrained. Add a separately reviewed, concurrency-safe quota/status guard before treating the complete application journey as production-ready; do not assume historical limit migrations are deployed. No live insert/update was attempted during this review.
+
+UI follow-up from release verification: the dashboard plan card currently replaces a known paid-plan card with an error when only the count fails, although paid application access is retained. Preserve the confirmed plan and show an inline count retry in a future scoped UI fix. This is not an entitlement or data loss.
