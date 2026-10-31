@@ -17,6 +17,13 @@ const client = (token) => createClient(url, anon, {
   ...(token ? { global: { headers: { Authorization: `Bearer ${token}` } } } : {}),
 });
 const service = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
+let stopAdapter;
+let endpoint = `${url}/functions/v1/student-communication`;
+if (process.env.STAGING_TEST_TRANSPORT === 'local-handler') {
+  const {startStagingHandlerAdapter} = await import('./handler-adapter.ts');
+  const adapter = await startStagingHandlerAdapter({url,anon,key});
+  endpoint=adapter.endpoint;stopAdapter=adapter.stop;
+}
 const run = randomUUID();
 const ids = { tenants: [], users: [], students: [], applications: [], communications: [] };
 const sessions = [];
@@ -38,6 +45,9 @@ async function account(label, role = 'student', tenant, active = true, requested
   });
   if (created.error || !created.data.user) throw new Error('Synthetic Auth creation failed');
   const id = created.data.user.id; ids.users.push(id);
+  // GoTrue may apply app_metadata after the signup trigger has created a student.
+  // Privileged fixtures therefore use the legitimate trusted server role workflow.
+  if (role !== 'student') requireResult(await service.from('user_roles').upsert({user_id:id,role},{onConflict:'user_id,role',ignoreDuplicates:true}), 'trusted fixture role assignment');
   await patchProfile(id, { tenant_id: tenant, active });
   const student = requireResult(await service.from('students').select('id').eq('profile_id', id).maybeSingle(), 'fixture student lookup');
   if (student) { ids.students.push(student.id); requireResult(await service.from('students').update({ tenant_id: tenant }).eq('id', student.id), 'fixture student scope'); }
@@ -47,7 +57,6 @@ async function account(label, role = 'student', tenant, active = true, requested
   sessions.push(auth);
   return { id, studentId: student?.id, auth, api: client(signed.data.session.access_token), token: signed.data.session.access_token, email };
 }
-const endpoint = `${url}/functions/v1/student-communication`;
 async function edge(actor, body) {
   const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: anon,
     ...(actor ? { Authorization: `Bearer ${actor.token}` } : {}),
@@ -80,7 +89,7 @@ try {
   ]), 'synthetic applications');
   await check('Caller-editable signup metadata cannot create an administrator', async () =>
     (await profile(forged.id)).role === 'student' && !(await userRoles(forged.id)).includes('admin'));
-  await check('Trusted server metadata creates the intended admin and staff fixtures', async () =>
+  await check('Trusted server role assignment creates the intended admin and staff fixtures', async () =>
     (await profile(admin.id)).role === 'admin' && (await profile(staff.id)).role === 'staff');
   await check('Self tenant change is rejected and saved tenant is unchanged', async () => {
     const r = await student.api.from('profiles').update({ tenant_id: b }).eq('id', student.id).select('id');
@@ -201,5 +210,6 @@ try {
   // Store ONLY disposable fixture identifiers and test outcomes; never credentials or sessions.
   await writeFile(process.env.STAGING_ACCEPTANCE_REPORT ?? '/tmp/unidoxia-staging-acceptance.json', JSON.stringify({ run, results, fixtureIds: ids, cleanupOk }, null, 2));
   console.log(`${cleanupOk ? 'PASS' : 'FAIL'} Exact-fixture cleanup and session sign-out`);
+  await stopAdapter?.();
   if (!cleanupOk || results.some(r => !r.pass)) process.exitCode = 1;
 }
