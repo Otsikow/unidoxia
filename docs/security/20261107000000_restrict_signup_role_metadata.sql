@@ -178,3 +178,63 @@ $function$;
 
 revoke all on function public.ensure_user_profile(uuid, text, text, text, text, text) from public, anon;
 grant execute on function public.ensure_user_profile(uuid, text, text, text, text, text) to authenticated, service_role;
+
+-- ---------------------------------------------------------------------------
+-- Protected profile fields: tenant_id and active.
+-- SECURITY INVOKER on purpose: current_user is the real caller role, so trusted
+-- paths (service_role, SECURITY DEFINER functions owned by postgres, migrations)
+-- pass, while Data API callers (authenticated/anon) are checked. No GUC/bypass flag.
+-- ---------------------------------------------------------------------------
+create or replace function public.actor_is_active_admin_or_staff(p_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select p_user_id is not null
+    and exists (select 1 from public.user_roles ur where ur.user_id = p_user_id and ur.role in ('admin', 'staff'))
+    and exists (select 1 from public.profiles p where p.id = p_user_id and p.active is true);
+$$;
+revoke all on function public.actor_is_active_admin_or_staff(uuid) from public, anon;
+grant execute on function public.actor_is_active_admin_or_staff(uuid) to authenticated, service_role;
+
+create or replace function public.guard_protected_profile_fields()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_actor uuid := auth.uid();
+begin
+  if new.tenant_id is not distinct from old.tenant_id and new.active is not distinct from old.active then
+    return new;
+  end if;
+  if current_user not in ('authenticated', 'anon') then
+    return new; -- service_role, SECURITY DEFINER owners (invite/sync/isolate functions), migrations
+  end if;
+  if v_actor is null then
+    raise exception 'Not allowed to change protected profile fields' using errcode = '42501';
+  end if;
+  -- Self: may only deactivate own account; never switch tenant or reactivate.
+  if old.id = v_actor then
+    if new.tenant_id is distinct from old.tenant_id
+       or not (old.active is true and new.active is false) then
+      raise exception 'Not allowed to change own tenant or reactivate own account' using errcode = '42501';
+    end if;
+    return new;
+  end if;
+  -- Other users: only an active admin/staff (roles from user_roles, active checked).
+  if public.actor_is_active_admin_or_staff(v_actor) then
+    return new;
+  end if;
+  raise exception 'Not allowed to change protected profile fields' using errcode = '42501';
+end;
+$$;
+revoke all on function public.guard_protected_profile_fields() from public, anon, authenticated;
+
+drop trigger if exists trg_guard_protected_profile_fields on public.profiles;
+create trigger trg_guard_protected_profile_fields
+before update of tenant_id, active on public.profiles
+for each row execute function public.guard_protected_profile_fields();

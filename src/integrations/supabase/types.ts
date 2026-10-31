@@ -3598,6 +3598,93 @@ export type Database = {
           },
         ]
       }
+      student_communications: {
+        Row: {
+          application_id: string | null
+          author_id: string | null
+          body: string
+          channel: string
+          created_at: string
+          id: string
+          provider_id: string | null
+          recipient: string | null
+          signature: string
+          status: string
+          student_id: string
+          subject: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          application_id?: string | null
+          author_id?: string | null
+          body: string
+          channel: string
+          created_at?: string
+          id: string
+          provider_id?: string | null
+          recipient?: string | null
+          signature?: string
+          status: string
+          student_id: string
+          subject?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string | null
+          author_id?: string | null
+          body?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          provider_id?: string | null
+          recipient?: string | null
+          signature?: string
+          status?: string
+          student_id?: string
+          subject?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_communications_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_communications_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_communications_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "staff_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_communications_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_communications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       student_documents: {
         Row: {
           admin_review_notes: string | null

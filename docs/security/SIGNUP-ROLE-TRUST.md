@@ -48,3 +48,24 @@ Student-communication migration and function deployment are ON HOLD until this i
 1. Apply this fix migration; run the regression test.
 2. Then the communication ledger migration (wrapper removed, as approved) and function deployment.
 3. Then fixture setup, access matrix, cleanup.
+
+## Addendum (31 Oct 2026): protected profile fields — CONFIRMED by owner's live read
+- `authenticated` can UPDATE `profiles.tenant_id` and `profiles.active`; the own-row policy checks only
+  `id = auth.uid()`; `prevent_direct_role_update` covers `role` only. A user could switch tenant or reactivate
+  themselves, defeating the communication function's tenant/active checks.
+- Fix (appended to the proposed SQL): `trg_guard_protected_profile_fields` (BEFORE UPDATE OF tenant_id, active),
+  SECURITY INVOKER so it sees the real caller; no bypass GUC.
+  - Trusted callers pass: `service_role` (invite-agent, delete-user), SECURITY DEFINER functions such as
+    `isolate_partner_profile` / `sync_profile_role_from_user_roles`, migrations.
+  - Self: may deactivate own account (Settings → Account); may NOT change tenant or reactivate.
+  - Others: only actor with admin/staff in `user_roles` AND `profiles.active = true`
+    (`actor_is_active_admin_or_staff`). Keeps AdminUsers / UserManagement / AdminStudents active toggles.
+- Behaviour change to note: `useAuth.tsx` partner self-isolation does a client `update({ tenant_id })`. That path
+  already depends on a client tenant INSERT, which tenants RLS allows only for admin/staff, so it does not work
+  for partners today; after this fix it stays blocked. Proper route: the existing `isolate_partner_profile` function.
+- Not changed (residual, separate decision): `is_admin_or_staff` (used by the `user_roles` ALL policy and others)
+  ignores `active`. An inactive admin keeps role-management rights until roles are removed. Fixing it touches many
+  policies, so it is left out of this narrow change; recommended follow-up.
+- Tests: `supabase/tests/signup_role_trust.test.sql` part 2 runs real UPDATEs as `authenticated` with JWT claims
+  on throwaway users/tenants inside a rolled-back transaction (self tenant switch blocked, self deactivate allowed,
+  self reactivate blocked, inactive admin blocked, active admin allowed, service role allowed).
