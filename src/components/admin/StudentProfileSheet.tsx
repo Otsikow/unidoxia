@@ -1,5 +1,7 @@
 "use client";
 
+import { StudentContactActions } from "@/components/communications/StudentContactActions";
+import { registeredWhatsApp } from "@/lib/studentCommunication";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { formatIntakeLabel } from "@/lib/intakeOptions";
 import {
@@ -88,6 +90,7 @@ interface StudentProfile {
   preferred_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  whatsapp_number?: string | null;
   preferred_course: string | null;
   preferred_country: string | null;
   preferred_intake_year: number | null;
@@ -217,6 +220,7 @@ export function StudentProfileSheet({
           preferred_name,
           contact_email,
           contact_phone,
+          whatsapp_number,
           preferred_course,
           preferred_country,
           preferred_intake_year,
@@ -468,7 +472,7 @@ export function StudentProfileSheet({
 
   const studentName = student?.preferred_name || student?.legal_name || student?.profile?.full_name || "Student";
   const studentEmail = student?.contact_email || student?.profile?.email || "";
-  const whatsappNumber = (student?.address as any)?.whatsapp || student?.contact_phone || null;
+  const whatsappNumber = student ? registeredWhatsApp(student) : null;
 
   const overallStatus = useMemo(() => {
     if (documentStats.pending > 0) return "review_in_progress";
@@ -529,6 +533,7 @@ export function StudentProfileSheet({
                 </Button>
               </div>
             </div>
+            {student && adminProfile?.role === 'admin' && <StudentContactActions student={student} />}
           </SheetHeader>
 
           {loading ? (

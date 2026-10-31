@@ -279,7 +279,8 @@ export function ChatArea({
     );
 
     if (readers.length === 0) {
-      return { state: 'delivered', label: '✓✓ Delivered' } as const;
+      // A saved/optimistic message without a receipt is not proof of delivery.
+      return null;
     }
 
     if (readers.length === others.length) {

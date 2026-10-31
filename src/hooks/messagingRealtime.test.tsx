@@ -1,3 +1,4 @@
+import { MemoryRouter } from "react-router-dom";
 import { StrictMode } from 'react';
 import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -150,7 +151,7 @@ describe('messaging live-update ownership', () => {
 
   it('renders the actual Messages page with both chat hooks and can switch tabs', async () => {
     const user = userEvent.setup();
-    render(<StaffMessages />);
+    render(<MemoryRouter initialEntries={["/admin/messages?mode=team"]}><StaffMessages /></MemoryRouter>);
     await screen.findByRole('heading', {name:'Messaging & Insights'});
     expect(fake.channels.size).toBe(3);
     await act(async () => {await user.click(screen.getByRole('tab',{name:'Internal Chats'}));});

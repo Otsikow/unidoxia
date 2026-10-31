@@ -1,5 +1,7 @@
 "use client";
 
+import { StudentContactActions } from "@/components/communications/StudentContactActions";
+import { registeredWhatsApp } from "@/lib/studentCommunication";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,6 +78,7 @@ interface StudentBundle {
     preferred_name: string | null;
     contact_email: string | null;
     contact_phone: string | null;
+    whatsapp_number?: string | null;
     current_country: string | null;
     preferred_course: string | null;
     preferred_country: string | null;
@@ -235,7 +238,7 @@ const AdminStudentDetail = () => {
       // Also fetch archive status separately
       const { data: archiveData } = await supabase
         .from("students")
-        .select("archived_at, archive_reason, reference_code, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone, emergency_contact_email, emergency_contact_country")
+        .select("archived_at, archive_reason, whatsapp_number, reference_code, preferred_course, preferred_country, preferred_intake_year, preferred_intake_month, emergency_contact_name, emergency_contact_relationship, emergency_contact_phone, emergency_contact_email, emergency_contact_country")
         .eq("id", studentId)
         .maybeSingle();
 
@@ -246,6 +249,7 @@ const AdminStudentDetail = () => {
             ...prev,
             student: {
               ...prev.student,
+              whatsapp_number: archiveData.whatsapp_number ?? null,
               reference_code: archiveData.reference_code ?? prev.student.reference_code ?? null,
               preferred_course: archiveData.preferred_course ?? prev.student.preferred_course ?? null,
               preferred_country: archiveData.preferred_country ?? prev.student.preferred_country ?? null,
@@ -781,6 +785,7 @@ const AdminStudentDetail = () => {
         onChange={handleMissingDocFileSelect}
       />
 
+      <StudentContactActions student={student} />
       {/* Missing Required Documents - prominent position */}
       {missingDocuments.length > 0 && (
         <>
@@ -962,9 +967,9 @@ const AdminStudentDetail = () => {
                 <p className="text-sm text-muted-foreground">WhatsApp</p>
                 <p className="font-medium">
                   {(() => {
-                    const whatsapp = (student.address as any)?.whatsapp || student.contact_phone || null;
-                    if (!whatsapp) return "—";
-                    const digits = whatsapp.replace(/\D/g, "");
+                    const whatsapp = student.whatsapp_number || (student.address as any)?.whatsapp || null;
+                    const digits = registeredWhatsApp(student);
+                    if (!digits) return "Not recorded";
                     return (
                       <a
                         href={`https://wa.me/${digits}`}
