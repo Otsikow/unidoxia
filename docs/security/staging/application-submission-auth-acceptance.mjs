@@ -1,7 +1,9 @@
 /** Real Auth / Data API guard acceptance. Strict isolated backend; no payment or messaging provider. */
+import {assertAcceptanceTarget} from './acceptance-target.mjs';
 import {createClient} from '@supabase/supabase-js';import {randomUUID,randomBytes} from 'node:crypto';import {writeFile} from 'node:fs/promises';
 const url=process.env.STAGING_SUPABASE_URL,key=process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY,anon=process.env.STAGING_SUPABASE_ANON_KEY;
-if(!url||!key||!anon||process.env.EXPECTED_STAGING_PROJECT_REF!=='qazshxpvfbhlybkmmkaf'||new URL(url).hostname!=='qazshxpvfbhlybkmmkaf.supabase.co')throw new Error('Isolated backend required');
+if(!url||!key||!anon)throw new Error('Isolated credentials required');
+assertAcceptanceTarget(url,process.env.EXPECTED_STAGING_PROJECT_REF);
 if(process.env.RESEND_API_KEY||process.env.STRIPE_SECRET_KEY||process.env.STUDENT_EMAIL_ENABLED==='true')throw new Error('No payment or sending providers allowed');
 const boundedFetch=(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(30000)});
 const options={auth:{persistSession:false,autoRefreshToken:false},global:{fetch:boundedFetch}};
