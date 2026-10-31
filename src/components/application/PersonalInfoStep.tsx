@@ -2,8 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { COUNTRIES } from '@/lib/countries';
+import { NationalitySelect } from '@/components/application/NationalitySelect';
 import { User, Mail, Phone, Calendar, Globe, CreditCard, MapPin, MessageCircle } from 'lucide-react';
 import EmergencyContactSection, {
   isEmergencyContactComplete,
@@ -154,21 +153,11 @@ export default function PersonalInfoStep({
               <Globe className="h-4 w-4" />
               Nationality *
             </Label>
-            <Select
-              value={data.nationality || undefined}
+            <NationalitySelect
+              id="nationality"
+              value={data.nationality}
               onValueChange={(value) => handleChange('nationality', value)}
-            >
-              <SelectTrigger id="nationality" className="w-full">
-                <SelectValue placeholder="Select your nationality" />
-              </SelectTrigger>
-              <SelectContent className="max-h-64">
-                {COUNTRIES.map((country) => (
-                  <SelectItem key={country} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
 
           <div className="space-y-2">
