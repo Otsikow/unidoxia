@@ -1,3 +1,4 @@
+import { type TaskView } from "@/lib/taskViews";
 import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -249,7 +250,7 @@ const fetchTasks = async (
   page: number,
   assigneeId: string,
   canManageTenant: boolean,
-  filters?: { status?: string; priority?: string; search?: string },
+  filters?: { status?: string; priority?: string; search?: string; view?: TaskView },
 ): Promise<PaginatedResponse<StaffTaskItem>> => {
   const from = (page - 1) * STAFF_PAGE_SIZE;
   const to = from + STAFF_PAGE_SIZE - 1;
@@ -283,6 +284,19 @@ const fetchTasks = async (
 
   if (filters?.status && filters.status !== "all") {
     query = query.eq("status", filters.status as any);
+  }
+
+  const now = new Date();
+  const soon = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+  switch (filters?.view) {
+    case "open": query = query.or("status.neq.done,status.is.null"); break;
+    case "completed": query = query.eq("status", "done"); break;
+    case "overdue": query = query.or("status.neq.done,status.is.null").lt("due_at", now.toISOString()); break;
+    case "dueSoon": query = query.or("status.neq.done,status.is.null").gte("due_at", now.toISOString()).lte("due_at", soon.toISOString()); break;
+    case "noDueDate": query = query.is("due_at", null); break;
+    case "automated": query = query.is("created_by", null); break;
+    case "manual": query = query.not("created_by", "is", null); break;
+    case "assigned": query = query.not("assignee_id", "is", null); break;
   }
 
   if (filters?.priority && filters.priority !== "all") {
@@ -431,7 +445,7 @@ export const staffTasksKey = (
   tenantId?: string | null,
   page = 1,
   assigneeId?: string | null,
-  filters?: { status?: string; priority?: string; search?: string },
+  filters?: { status?: string; priority?: string; search?: string; view?: TaskView },
 ) => [
   "staff",
   "tasks",
@@ -441,6 +455,7 @@ export const staffTasksKey = (
   filters?.status ?? "all",
   filters?.priority ?? "all",
   filters?.search ?? "",
+  filters?.view ?? "all",
 ];
 
 export const staffTaskSummaryKey = (
@@ -506,7 +521,7 @@ export const useStaffAgents = (page: number) => {
 
 export const useStaffTasks = (
   page: number,
-  options?: { status?: string; priority?: string; search?: string },
+  options?: { status?: string; priority?: string; search?: string; view?: TaskView },
 ) => {
   const { profile } = useAuth();
   const tenantId = profile?.tenant_id;

@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { Link, useSearchParams, useLocation } from "react-router-dom";
+import { TASK_VIEWS, parseTaskView } from "@/lib/taskViews";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, CalendarClock, CheckSquare, Filter, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,18 +27,40 @@ const priorityBadges: Record<string, string> = {
 };
 
 export function StaffTasksBoard() {
-  const [page, setPage] = useState(1);
-  const [status, setStatus] = useState<string>("all");
-  const [priority, setPriority] = useState<string>("all");
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const boardRef = useRef<HTMLDivElement>(null);
+  const view = parseTaskView(params.get("taskView"));
+  const pageValue = Number(params.get("taskPage") ?? 1);
+  const page = Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1;
+  const statusValue = params.get("taskStatus") ?? "all";
+  const status = ["all", "open", "in_progress", "blocked", "done"].includes(statusValue) ? statusValue : "all";
+  const priorityValue = params.get("taskPriority") ?? "all";
+  const priority = ["all", "high", "medium", "low"].includes(priorityValue) ? priorityValue : "all";
+  const changeFilters = (values: Record<string, string>) => {
+    const next = new URLSearchParams(params);
+    next.delete("taskPage");
+    for (const [key, value] of Object.entries(values)) {
+      if (value === "all" || value === "1") next.delete(key);
+      else next.set(key, value);
+    }
+    setParams(next);
+  };
+  const setPage = (value: number) => changeFilters({ taskPage: String(value) });
+  useEffect(() => {
+    if (location.hash !== "#task-list") return;
+    boardRef.current?.scrollIntoView({ block: "start" });
+    boardRef.current?.focus({ preventScroll: true });
+  }, [location.key, location.hash]);
   const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const { data, isLoading, isFetching, isError, error, refetch } = useStaffTasks(page, { status, priority });
+  const { data, isLoading, isFetching, isError, error, refetch } = useStaffTasks(page, { status, priority, view });
   const mutation = useUpdateTaskStatus();
 
   const total = (data as any)?.total ?? 0;
   const rows = (data as any)?.data ?? [];
-  const isFiltered = status !== "all" || priority !== "all";
+  const isFiltered = view !== "all" || status !== "all" || priority !== "all";
 
   const errorMessage =
     error && typeof error === "object" && "message" in error
@@ -93,25 +117,27 @@ export function StaffTasksBoard() {
   };
 
   const handleResetFilters = () => {
-    setStatus("all");
-    setPriority("all");
-    setPage(1);
+    changeFilters({ taskView: "all", taskStatus: "all", taskPriority: "all" });
   };
 
   return (
-    <Card className="rounded-2xl">
+    <Card id="task-list" role="region" ref={boardRef} tabIndex={-1} aria-label="Task results" className="rounded-2xl scroll-mt-24 focus:outline-none">
       <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <CardTitle className="flex items-center gap-2 text-lg">
             <CheckSquare className="h-5 w-5 text-primary" /> Tasks & Workflows
           </CardTitle>
-          <CardDescription>Stay on top of deadlines with Zoe-assisted triage.</CardDescription>
+          <CardDescription>{TASK_VIEWS[view]} · Stay on top of deadlines with Zoe-assisted triage.</CardDescription>
         </div>
         <div className="flex w-full flex-col gap-3 md:w-auto">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-end">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <Select value={status} onValueChange={(value) => { setStatus(value); setPage(1); }}>
-                <SelectTrigger className="sm:w-40">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+              <Select value={view} onValueChange={(value) => changeFilters({ taskView: value, taskStatus: "all", taskPriority: "all" })}>
+                <SelectTrigger aria-label="Task view" className="sm:w-52"><SelectValue /></SelectTrigger>
+                <SelectContent>{Object.entries(TASK_VIEWS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
+              </Select>
+              <Select value={status} onValueChange={(value) => changeFilters({ taskStatus: value })}>
+                <SelectTrigger aria-label="Task status" className="sm:w-40">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -122,8 +148,8 @@ export function StaffTasksBoard() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={priority} onValueChange={(value) => { setPriority(value); setPage(1); }}>
-                <SelectTrigger className="sm:w-40">
+              <Select value={priority} onValueChange={(value) => changeFilters({ taskPriority: value })}>
+                <SelectTrigger aria-label="Task priority" className="sm:w-40">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent>
@@ -147,6 +173,7 @@ export function StaffTasksBoard() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {isFiltered && <Button variant="outline" size="sm" onClick={handleResetFilters}>Reset filters</Button>}
         {isError ? (
           <Alert variant="destructive" className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <AlertCircle className="h-4 w-4 shrink-0" />
@@ -183,11 +210,7 @@ export function StaffTasksBoard() {
                   ? "Try adjusting or resetting the filters to discover more tasks."
                   : "You’re all caught up for now. Zoe will surface new priorities here automatically."}
               </p>
-              {isFiltered ? (
-                <Button variant="ghost" size="sm" className="mt-4" onClick={handleResetFilters}>
-                  Reset filters
-                </Button>
-              ) : null}
+
             </div>
           )}
 
@@ -211,7 +234,7 @@ export function StaffTasksBoard() {
                         {task.dueAt ? new Date(task.dueAt).toLocaleString() : "No due date"}
                       </span>
                       {task.assigneeName && <span>Assigned to {task.assigneeName}</span>}
-                      {task.applicationId && <span>Application #{task.applicationId.slice(0, 8)}</span>}
+                      {task.applicationId && <Link className="text-primary underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" to={`${location.pathname.startsWith("/admin") ? "/admin/applications" : "/dashboard/applications"}?application=${encodeURIComponent(task.applicationId)}`}>Open application #{task.applicationId.slice(0, 8)}</Link>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

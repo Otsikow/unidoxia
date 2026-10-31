@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -10,6 +10,7 @@ const fake = vi.hoisted(() => ({
   channel: vi.fn(),
   remove: vi.fn(),
   reads: vi.fn(),
+  requests: [] as Array<{table: string; filters: Array<unknown[]>}>,
 }));
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({
@@ -53,17 +54,28 @@ vi.mock("@/integrations/supabase/client", () => ({
     channel: (name: string) => fake.channel(name),
     removeChannel: (channel: unknown) => fake.remove(channel),
     from: (table: string) => {
+      const filters: Array<unknown[]> = [];
+      const add = (operation: string, args: unknown[]) => { filters.push([operation, ...args]); return chain; };
       const chain: any = {
         select: () => chain,
         order: () => chain,
-        eq: () => chain,
+        eq: (...args: unknown[]) => add("eq", args),
+        or: (...args: unknown[]) => add("or", args),
+        lt: (...args: unknown[]) => add("lt", args),
+        gte: (...args: unknown[]) => add("gte", args),
+        lte: (...args: unknown[]) => add("lte", args),
+        is: (...args: unknown[]) => add("is", args),
+        not: (...args: unknown[]) => add("not", args),
         in: () => chain,
         range: () => chain,
         ilike: () => chain,
         then: (
           resolve: (result: unknown) => unknown,
           reject?: (reason: unknown) => unknown,
-        ) => Promise.resolve(fake.reads(table)).then(resolve, reject),
+        ) => {
+          fake.requests.push({table, filters: [...filters]});
+          return Promise.resolve(fake.reads(table)).then(resolve, reject);
+        },
       };
       return chain;
     },
@@ -79,16 +91,16 @@ const rawTask = {
   created_at: "2026-10-31T09:00:00Z",
   created_by: "staff",
   assignee_id: "staff",
-  application_id: null,
+  application_id: "application",
   assignee_profile: { full_name: "Test admin", email: "admin@example.test" },
 };
-function show() {
+function show(path = "/admin/tasks") {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: 0 } },
   });
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[path]}>
         <AdminLayout>
           <StaffTasks />
         </AdminLayout>
@@ -99,6 +111,8 @@ function show() {
 beforeEach(() => {
   vi.resetAllMocks();
   fake.channels.clear();
+  fake.requests = [];
+  Element.prototype.scrollIntoView = vi.fn();
   fake.remove.mockResolvedValue("ok");
   fake.reads.mockImplementation((table: string) => ({
     data:
@@ -141,6 +155,7 @@ describe("actual Tasks page inside the unified admin shell", () => {
     );
     expect(screen.getByText("Task health snapshot")).toBeInTheDocument();
     expect(screen.getByText("Tasks & Workflows")).toBeInTheDocument();
+    expect(screen.getByRole("link", {name:"Open application #applicat"})).toHaveAttribute("href", "/admin/applications?application=application");
     expect(screen.getAllByText("Admin Control Centre")).toHaveLength(1);
     await waitFor(() => expect(fake.channel).toHaveBeenCalledTimes(3));
     expect(fake.channels.size).toBe(3);
@@ -165,4 +180,44 @@ describe("actual Tasks page inside the unified admin shell", () => {
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
+  it("opens matching task views from every summary link and resets previous filters", async () => {
+    show();
+    await screen.findByRole("link", {name:"View open tasks"});
+    const views = [
+      ["View open tasks", ["or", "status.neq.done,status.is.null"]],
+      ["View due in next 3 days", ["gte", "due_at"]],
+      ["View overdue tasks", ["lt", "due_at"]],
+      ["View completed tasks", ["eq", "status", "done"]],
+      ["View auto-generated tasks", ["is", "created_by", null]],
+      ["View tasks logged by your team", ["not", "created_by", "is", null]],
+      ["View tasks with no due date", ["is", "due_at", null]],
+      ["View assigned tasks", ["not", "assignee_id", "is", null]],
+    ] as const;
+    for (const [name, expected] of views) {
+      fake.requests = [];
+      await act(async () => { await userEvent.click(screen.getAllByRole("link", { name })[0]); });
+      await waitFor(() => expect(fake.requests.some(request => request.table === "tasks" && request.filters.some(filter => expected.every((value, index) => filter[index] === value)))).toBe(true));
+      expect(screen.getByRole("combobox", {name:"Task view"})).not.toHaveTextContent("All tasks");
+      expect(screen.getByRole("combobox", {name:"Task status"})).toHaveTextContent("All statuses");
+      expect(screen.getByRole("combobox", {name:"Task priority"})).toHaveTextContent("All priorities");
+      expect(screen.getByRole("region", {name:"Task results"})).toHaveFocus();
+    }
+    await act(async () => {await userEvent.click(screen.getByRole("button", {name:"Reset filters"}));});
+    expect(screen.getByRole("combobox", {name:"Task view"})).toHaveTextContent("All tasks");
+    expect(screen.queryByRole("button", {name:"Reset filters"})).not.toBeInTheDocument();
+    expect(screen.getByRole("link", {name:"View all tasks"})).toHaveAttribute("href", "/admin/tasks?taskView=all#task-list");
+  });
+
+  it("restores a shared view URL and exposes card links to keyboard navigation", async () => {
+    show("/admin/tasks?taskView=overdue&taskPriority=high&taskPage=2");
+    const card = await screen.findByRole("link", {name:"View completed tasks"});
+    expect(screen.getByRole("combobox", {name:"Task view"})).toHaveTextContent("Overdue tasks");
+    expect(screen.getByRole("combobox", {name:"Task priority"})).toHaveTextContent("High");
+    expect(card).toHaveAttribute("href", "/admin/tasks?taskView=completed#task-list");
+    act(() => card.focus());
+    await act(async () => {await userEvent.keyboard("{Enter}");});
+    expect(screen.getByRole("combobox", {name:"Task view"})).toHaveTextContent("Completed tasks");
+    expect(screen.getByRole("combobox", {name:"Task priority"})).toHaveTextContent("All priorities");
+  });
+
 });
