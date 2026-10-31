@@ -9,3 +9,7 @@ Local SQL/RLS acceptance uses actual PostgreSQL roles/policies and stub Auth cla
 Stage runner permits only the isolated backend, forbids configured payment/email providers, uses reserved synthetic Auth accounts, bounded calls, checkpointed exact cleanup and actual password sign-ins. No live payment/event/email is created. Migration-specific approval, transaction/ledger registration and source/ACL/data fingerprint read-back are required for production. Existing request-receipt migration approval remains separate.
 
 This does not complete webhook settlement atomicity/idempotency, live application-limit enforcement, agent referral attribution, or inactive-student ordinary-edit policy review; those are separate priorities.
+
+Acceptance completed: 26 isolated PostgreSQL/RLS checks pass. Actual Auth/Data API Run 11 passed 22 checks (21 semantics plus exact cleanup) against unchanged source eab76c41f768373de550883904e4fa62aa5c205b and SDK2.110.2. Migration SHA25659cd893ccfe3f0aaf465eee323db2269d42e5fe866f5ee60af435af013d782c8. Independent root read-back confirmed zero Auth users/profiles/roles/students/agents/objects, with only the two original tenants. No production mutation occurred. Final main integration retains the same guard/harness bytes.
+
+Combined current-main integration also passes 611 automated tests in 93 files and TypeScript; the guard remains byte-identical to the actual-Auth acceptance source. Live activation is not approved or applied.
