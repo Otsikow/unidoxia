@@ -17,6 +17,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/providers/LanguageProvider";
 import type { SupportedLanguage } from "@/i18n/resources";
 
@@ -26,7 +28,56 @@ const previewThemes = [
 ];
 
 export default function StaffSettings() {
-  const { profile } = useAuth();
+  const { profile, user, refreshProfile } = useAuth();
+  const { toast } = useToast();
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    setFullName(profile?.full_name ?? "");
+    setEmail(user?.email ?? profile?.email ?? "");
+    setPhone(profile?.phone ?? "");
+    setPassword("");
+  }, [profile?.id, profile?.full_name, profile?.phone, profile?.email, user?.email]);
+
+  const resetProfile = () => {
+    setFullName(profile?.full_name ?? "");
+    setEmail(user?.email ?? profile?.email ?? "");
+    setPhone(profile?.phone ?? "");
+    setPassword("");
+  };
+
+  const saveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!user || !profile || saving) return;
+    if (!fullName.trim()) {
+      toast({ title: "Enter your full name", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    let profileSaved = false;
+    try {
+      const { data, error } = await supabase.from("profiles")
+        .update({ full_name: fullName.trim(), phone: phone.trim() || null })
+        .eq("id", user.id).select("id").maybeSingle();
+      if (error || !data) throw new Error("Your profile could not be saved. Please try again.");
+      profileSaved = true;
+      if (password) {
+        const { error: authError } = await supabase.auth.updateUser({ password });
+        if (authError) throw new Error(authError.message);
+      }
+      setPassword("");
+      await refreshProfile();
+      toast({ title: "Changes saved" });
+    } catch (error) {
+      if (profileSaved) await refreshProfile();
+      toast({ title: profileSaved ? "Profile saved; account change failed" : "Changes not saved", description: error instanceof Error ? error.message : "Please try again.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
   const { t } = useTranslation();
   const { resolvedTheme, theme, setTheme } = useTheme();
   const { language, setLanguage, availableLanguages } = useLanguage();
@@ -95,28 +146,29 @@ export default function StaffSettings() {
                 </CardTitle>
                 <CardDescription>Update personal information and password.</CardDescription>
               </CardHeader>
-              <CardContent className="grid gap-6 md:grid-cols-2">
+              <CardContent><form onSubmit={saveProfile} className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full name</Label>
-                  <Input id="fullName" defaultValue={profile?.full_name ?? ""} placeholder="Full name" />
+                  <Input id="fullName" value={fullName} onChange={(event) => setFullName(event.target.value)} required placeholder="Full name" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue={profile?.email ?? ""} placeholder="Email" />
+                  <Input id="email" type="email" value={email} readOnly placeholder="Email" />
+                  <p className="text-xs text-muted-foreground">Contact an administrator to change your sign-in email.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" defaultValue={profile?.phone ?? ""} placeholder="Phone number" />
+                  <Input id="phone" value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="Phone number" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input id="password" type="password" placeholder="••••••••" />
+                  <Input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" placeholder="Leave blank to keep current password" />
                 </div>
                 <div className="md:col-span-2 flex justify-end gap-3">
-                  <Button variant="outline">Cancel</Button>
-                  <Button>Save changes</Button>
+                  <Button type="button" variant="outline" onClick={resetProfile} disabled={saving}>Cancel</Button>
+                  <Button type="submit" disabled={saving || !user || !profile}>{saving ? "Saving…" : "Save changes"}</Button>
                 </div>
-              </CardContent>
+              </form></CardContent>
             </Card>
           </TabsContent>
 
