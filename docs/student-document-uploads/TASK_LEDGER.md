@@ -14,8 +14,17 @@ Validation complete: 411 tests passed in 55 files; TypeScript check passed; Vite
 
 Export gate: the earlier automatic approval review rejected GitHub export without explicit repository/payload approval. This focused branch is saved locally only. No push, draft PR, merge, Lovable sync or publication is claimed. Ask Eric to approve uploading this exact commit/branch to Otsikow/unidoxia for a draft PR. That does not authorise publication or a future database permission change.
 
+## Next build — secure student request receipts, 31 October 2026
+
+Implemented the owned-file server receipt operation and retry-only request confirmation, with private object/size/category checks, request-version locking and preserved staff approval/verification boundaries. Current combined checks: 620 tests, 28 isolated SQL/RLS checks, TypeScript and production bundle build pass. Actual Auth/private Storage Run 9 passed 18 checks with cleanup independently verified; final HTTP409 Run 10 also passed all 18 checks, with zero fixtures/accounts/objects independently confirmed after cleanup. Desktop/mobile retry dialog rendered with isolated adapters. No production mutation yet. Details: REQUEST_RECEIPTS.md. This continues the previously recorded backend request-fulfilment gap rather than adding a broad student UPDATE grant.
+
 ## Staff upload recovery — 31 October 2026
 
 The administrator student-profile missing-document action used a separate raw upload/insert path. Its catch block removed the new object on any insert error, including a lost response after a successful save. It now reuses uploadVerifiedDocument and saveStudentDocument, confirms exact stored bytes, recovers a save by a stable record ID and preserves uncertain saves. Unique UUID paths replace timestamp-only names. New uploads remain pending staff review. No permission, schema, existing-file or publication changes.
 
 Validation: 18 focused persistence tests (including new-upload lost-response recovery and unconfirmed-save preservation), TypeScript and targeted lint with zero errors/two existing AdminStudentDetail memo-dependency warnings. No real student upload was performed. Full suite: 580 tests in 88 files passed; Vite production bundle passed. GitHub/Lovable handoff is tracked with the release.
+
+Programme/university application routing compatibility extended before any receipt activation; earlier Run10 did not cover those application workspaces. New local routing cases pass, including unrelated-workspace denial. Extended actual Storage acceptance pending; no receipt SQL applied live.
+
+### GitHub routing acceptance completed — 31 October
+Run 41221294339 passed 21 actual local Auth/private Storage checks and independent zero-fixture SQL read-back against the reviewed routing migration. This supersedes the Lovable credit block. Exact hashes and scope are recorded in REQUEST_RECEIPTS.md. No live receipt migration approval/activation or frontend Publish; PR #1276 remains draft.
