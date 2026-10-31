@@ -217,6 +217,7 @@ const FreeConsultation = lazyWithErrorHandling(() => import("./pages/FreeConsult
 const StudyGuide = lazyWithErrorHandling(() => import("./pages/StudyGuide"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const About = lazyWithErrorHandling(() => import("./pages/About"));
+const Refer = lazyWithErrorHandling(() => import("./pages/Refer"));
 const EditorialPolicy = lazyWithErrorHandling(() => import("./pages/EditorialPolicy"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
 const AdminUniversityClaims = lazyWithErrorHandling(() => import("./pages/admin/AdminUniversityClaims"));
@@ -461,6 +462,13 @@ const ZoeChatbot = lazyWithErrorHandling(() =>
   import("./components/ai/AIChatbot")
 );
 
+/** The /refer page has its own WhatsApp buttons, so the floating launcher would only cover content there. */
+const ChatbotOutsideReferPage = () => {
+  const { pathname } = useLocation();
+  if (pathname === "/refer") return null;
+  return <ZoeChatbot />;
+};
+
 /* ==========================================================================
    PREFETCH HELPERS
    ========================================================================== */
@@ -652,6 +660,7 @@ const App = () => {
                         <Route path="/partnership" element={<PublicLayout><UniversityPartnership /></PublicLayout>} />
 
                         <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+                        <Route path="/refer" element={<PublicLayout><Refer /></PublicLayout>} />
                         <Route path="/editorial-policy" element={<PublicLayout><EditorialPolicy /></PublicLayout>} />
 
 
@@ -795,7 +804,7 @@ const App = () => {
                       <RoutePrefetcher />
                     </div>
 
-                    {shouldRenderChatbot && <ZoeChatbot />}
+                    {shouldRenderChatbot && <ChatbotOutsideReferPage />}
                   </div>
                 </Suspense>
               </NavigationHistoryProvider>

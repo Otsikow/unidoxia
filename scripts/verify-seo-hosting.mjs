@@ -32,6 +32,14 @@ for (const route of ['/this-page-does-not-exist', '/courses/00000000-0000-0000-0
 for (const route of ['/auth/login', '/auth/callback?code=test', '/student/applications/track/test', '/dashboard/settings/profile', '/admin/users']) {
   assert.equal((await request(route)).status, 200, route);
 }
+const refer = routes.find(route => route.path === '/refer');
+assert(refer, 'Missing /refer prerender route');
+{
+  const response = await request('/refer');
+  assert.equal(response.status, 200, '/refer');
+  assert.equal(response.headers.get('X-Robots-Tag'), refer.noindex ? 'noindex' : null, '/refer X-Robots-Tag');
+  assert.equal((await response.text()).includes('<meta name="robots" content="noindex">'), Boolean(refer.noindex), '/refer robots meta');
+}
 const redirect = await worker.fetch(new Request('https://www.unidoxia.com/courses?seo-check=1'), env);
 assert.equal(redirect.status, 301);
 assert.equal(redirect.headers.get('Location'), 'https://unidoxia.com/courses?seo-check=1');

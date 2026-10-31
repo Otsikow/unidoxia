@@ -4,6 +4,8 @@ import routes from '../dist/seo-routes.json' with { type: 'json' };
 import hosting from '../dist/seo-hosting.json' with { type: 'json' };
 
 const pages = new Set(routes.map(route => route.path));
+// Prerendered routes marked noindex (for example /refer before go-live) also get the header.
+const noindexPages = new Set(routes.filter(route => route.noindex).map(route => route.path));
 const patterns = hosting.spaRoutes.map(route => new RegExp(`^${route.split('/').map(segment => segment === '*' ? '.*' : segment.startsWith(':') ? '[^/]+' : segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('/').replace('/.*', '(?:/.*)?')}$`));
 
 export default {
@@ -21,7 +23,11 @@ export default {
     }
     if (pages.has(pathname)) {
       url.pathname = pathname === '/' ? '/index.html' : `${pathname}/index.html`;
-      return env.ASSETS.fetch(new Request(url, request));
+      const page = await env.ASSETS.fetch(new Request(url, request));
+      if (!noindexPages.has(pathname)) return page;
+      const headers = new Headers(page.headers);
+      headers.set('X-Robots-Tag', 'noindex');
+      return new Response(page.body, { status: page.status, headers });
     }
     if (patterns.some(pattern => pattern.test(pathname))) {
       url.pathname = '/index.html';
