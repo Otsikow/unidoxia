@@ -69,3 +69,36 @@ Student-communication migration and function deployment are ON HOLD until this i
 - Tests: `supabase/tests/signup_role_trust.test.sql` part 2 runs real UPDATEs as `authenticated` with JWT claims
   on throwaway users/tenants inside a rolled-back transaction (self tenant switch blocked, self deactivate allowed,
   self reactivate blocked, inactive admin blocked, active admin allowed, service role allowed).
+
+## Update 2026-10-31 — user_roles guard, isolated PGlite results, fixtures (REVIEW ONLY)
+
+**Added to the proposed migration:** `guard_user_roles_mutation()` (SECURITY INVOKER) + `trg_guard_user_roles_mutation`
+BEFORE INSERT/UPDATE/DELETE on `public.user_roles`. For `authenticated`/`anon` callers it requires
+`actor_is_active_admin_or_staff(auth.uid())`, except the existing self-signup insert of the caller's own `student` row.
+Trusted callers (service_role, SECURITY DEFINER signup/sync owners, migrations) pass via `current_user`; no settable flag.
+Closes: an inactive admin/staff (whose `is_admin_or_staff` still returns true) promoting a newly registered alternate account.
+The existing "Admins can manage user roles" policy is unchanged.
+
+**Isolated test:** `docs/security/pglite/signup-role-trust.pglite.mjs` (PGlite, in-memory; never touches production).
+Baseline = read-only snapshot of live functions (`baseline_live_functions.sql`) + copied live policies/triggers.
+Every case uses a fresh DB and verifies by superuser readback; UPDATE/DELETE "success" counts only with `affected === 1`,
+and 0-row updates are asserted as such. Result 2026-10-31: BASELINE 11 DEFECT / 13 SECURE; PROPOSED 24/24 SECURE.
+Covered: privileged signup metadata, legit student/agent/partner signup, trusted app_metadata invite, self tenant switch,
+self reactivation, self deactivation, AdminUsers active toggle by active admin, inactive-admin tenant/active/role
+insert/update/delete, role-sync (grant staff → profile.role staff; revoke → student), service_role grants, direct
+profiles.role edit, ensure_user_profile cross-user and own privileged repair.
+Limits: the original `ensure_user_profile` is stubbed in baseline (defect previously confirmed against the live definition);
+auth.uid()/role() are local stubs of the JWT claim functions; the live `app.bypass_role_guard` GUC in
+`prevent_direct_role_update` remains (not settable through the Data API; noted, not changed).
+
+**Separate existing issue (not in scope, not called):** `public.isolate_partner_profile(uuid)` is SECURITY DEFINER,
+executable by `authenticated`, with no own-id/admin check. Track and fix separately; no RPC rewrite here.
+
+**Residual (unchanged):** `is_admin_or_staff()` still ignores `active` for reads under existing policies.
+
+**Fixtures:** must be created in an isolated staging/draft backend, not production — current global admin/staff policies
+mean a test tenant in production cannot contain a new privileged account. Proposed set (reserved `.invalid` emails,
+no notifications): tenants A/B; A: active admin, inactive admin, active staff, student, agent, partner, inactive student;
+B: admin, student. Record created IDs; clean up by exact ID. Requires Eric's specific approval.
+
+**Approval gates:** migration not applied to production; communication ledger SELECT remains revoked; no sessions, sends, or fixtures.

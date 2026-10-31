@@ -238,3 +238,41 @@ drop trigger if exists trg_guard_protected_profile_fields on public.profiles;
 create trigger trg_guard_protected_profile_fields
 before update of tenant_id, active on public.profiles
 for each row execute function public.guard_protected_profile_fields();
+
+-- ---------------------------------------------------------------------------
+-- user_roles mutation guard. Existing "Admins can manage user roles" (ALL) uses
+-- is_admin_or_staff(), which ignores profiles.active, so an INACTIVE admin/staff
+-- could grant roles (e.g. promote a fresh alternate account). This guard closes
+-- that path without rewriting the policy. SECURITY INVOKER: trusted callers
+-- (service_role, SECURITY DEFINER signup/sync functions, migrations) pass.
+-- ---------------------------------------------------------------------------
+create or replace function public.guard_user_roles_mutation()
+returns trigger
+language plpgsql
+security invoker
+set search_path = public
+as $$
+declare
+  v_actor uuid := auth.uid();
+  v_row public.user_roles%rowtype;
+begin
+  if tg_op = 'DELETE' then v_row := old; else v_row := new; end if;
+  if current_user not in ('authenticated', 'anon') then
+    return v_row;
+  end if;
+  -- Preserve the existing self-service signup path: own row, student only, insert only.
+  if tg_op = 'INSERT' and v_actor is not null and new.user_id = v_actor and new.role = 'student' then
+    return new;
+  end if;
+  if public.actor_is_active_admin_or_staff(v_actor) then
+    return v_row;
+  end if;
+  raise exception 'Only active admin or staff can change user roles' using errcode = '42501';
+end;
+$$;
+revoke all on function public.guard_user_roles_mutation() from public, anon, authenticated;
+
+drop trigger if exists trg_guard_user_roles_mutation on public.user_roles;
+create trigger trg_guard_user_roles_mutation
+before insert or update or delete on public.user_roles
+for each row execute function public.guard_user_roles_mutation();
