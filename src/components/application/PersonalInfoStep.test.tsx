@@ -28,7 +28,7 @@ describe('Application nationality selection', () => {
     await act(async () => { await user.click(screen.getByRole('combobox', { name: 'Nationality *' })); });
     expect(screen.getAllByRole('option')).toHaveLength(RESIDENCE_COUNTRIES.length);
     for (const country of ['Afghanistan', 'Ghana', 'Nigeria', 'Kenya', 'Zimbabwe']) {
-      expect(screen.getByRole('option', { name: country, exact: true })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: country })).toBeInTheDocument();
     }
   });
 
@@ -38,7 +38,7 @@ describe('Application nationality selection', () => {
     await act(async () => { await user.click(screen.getByRole('combobox', { name: 'Nationality *' })); });
     await act(async () => { await user.type(screen.getByRole('combobox', { name: 'Search nationality countries' }), 'gHa'); });
     expect(screen.queryByRole('option', { name: 'Germany' })).not.toBeInTheDocument();
-    await act(async () => { await user.click(screen.getByRole('option', { name: 'Ghana', exact: true })); });
+    await act(async () => { await user.click(screen.getByRole('option', { name: 'Ghana' })); });
     expect(screen.getByRole('combobox', { name: 'Nationality *' })).toHaveTextContent('Ghana');
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Current Country *')).toHaveValue('Ghana');
@@ -55,7 +55,7 @@ describe('Application nationality selection', () => {
     expect(screen.getByRole('combobox', { name: 'Nationality *' })).toHaveTextContent('Zimbabwe');
     await act(async () => { await user.click(screen.getByRole('combobox', { name: 'Nationality *' })); });
     expect(screen.getByRole('combobox', { name: 'Search nationality countries' })).toHaveValue('');
-    expect(screen.getByRole('option', { name: 'Ghana', exact: true })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Ghana' })).toBeInTheDocument();
   });
 
   it('preserves a legacy saved nationality when search has no results or is dismissed', async () => {

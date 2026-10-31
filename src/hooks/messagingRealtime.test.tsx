@@ -39,7 +39,7 @@ vi.mock('@/components/messages/MessagesDashboard', () => ({default: () => null})
 beforeEach(() => {
   vi.stubGlobal('IntersectionObserver', class { observe() {} unobserve() {} disconnect() {} });
   Element.prototype.scrollIntoView = vi.fn();
-  Element.prototype.scrollTo = vi.fn();
+  Element.prototype.scrollTo = vi.fn(() => undefined);
   vi.clearAllMocks();
   fake.channels.clear();
   localStorage.clear();
