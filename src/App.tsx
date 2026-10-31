@@ -392,6 +392,10 @@ const StaffAIInsightsPage = lazyWithErrorHandling(() =>
 const StaffSettingsRouter = lazyWithErrorHandling(() =>
   import("./pages/dashboard/SettingsRouter")
 );
+const AdminApplications = lazyWithErrorHandling(() =>
+  import("./pages/dashboard/StaffApplications")
+);
+
 const ApplicationsRouter = lazyWithErrorHandling(() =>
   import("./pages/dashboard/ApplicationsRouter")
 );
@@ -719,7 +723,8 @@ const App = () => {
                           <Route path="dashboard" element={<Navigate to="/admin/overview" replace />} />
                           <Route path="overview" element={<AdminOverview />} />
                           <Route path="users" element={<AdminUsers />} />
-                          <Route path="admissions" element={<Navigate to="/admin/overview" replace />} />
+                          <Route path="applications" element={<AdminApplications embedded />} />
+                          <Route path="admissions" element={<Navigate to="/admin/applications" replace />} />
                           <Route path="agents" element={<AdminAgentsPage />} />
                           <Route path="payments" element={<AdminPaymentsPage />} />
                           <Route path="partners" element={<AdminPartnersPage />} />

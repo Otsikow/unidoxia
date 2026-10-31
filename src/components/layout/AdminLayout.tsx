@@ -12,6 +12,7 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { LoadingState } from "@/components/LoadingState";
 import {
   Users,
+  FileText,
   GraduationCap,
   CreditCard,
   Library,
@@ -87,6 +88,14 @@ const NAV_GROUPS: NavGroup[] = [
         labelDefault: "Students",
         descriptionDefault: "Document review & approval",
         icon: GraduationCap,
+      },
+      {
+        to: "/admin/applications",
+        labelKey: "admin.layout.navigation.applications.label",
+        descriptionKey: "admin.layout.navigation.applications.description",
+        labelDefault: "Applications",
+        descriptionDefault: "Review applications & follow-ups",
+        icon: FileText,
       },
       {
         to: "/admin/agents",

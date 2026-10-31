@@ -6,6 +6,10 @@ Development/review candidate on `codex/application-workflow-end-to-end`, reconci
 
 The authenticated public Applications page displayed five hard-coded sample applications, three in its default assigned filter. A read-only database reconciliation returned one real application (`submitted`). The old page's totals were not operational evidence.
 
+## Where admins find Applications
+
+The navigation correction adds **Applications** under **Students & Agents** in the main admin sidebar, at `/admin/applications`. The Overview's **Active applications** and **Admissions pipeline** shortcuts open that same page; `/admin/admissions` forwards there for older links. It reuses the existing staff workspace inside AdminLayout, with no second dashboard sidebar. Staff retain `/dashboard/applications`. This navigation correction requires its own merge and publication after #1253.
+
 ## Simple workflow
 
 1. Staff choose New application, then select a real student.

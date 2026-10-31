@@ -49,7 +49,7 @@ const KPI_CONFIG = [
     key: "activeApplications",
     labelKey: "admin.overview.kpis.activeApplications",
     defaultLabel: "Active applications",
-    to: "/admin/admissions",
+    to: "/admin/applications",
     icon: FileText,
   },
   {
@@ -102,7 +102,7 @@ const ACTION_ITEMS = [
     defaultLabel: "Admissions pipeline",
     descriptionKey: "admin.overview.actions.admissionsDescription",
     defaultDescription: "Review offers, interviews and decisions",
-    to: "/admin/admissions",
+    to: "/admin/applications",
     icon: FileText,
   },
 ] as const;

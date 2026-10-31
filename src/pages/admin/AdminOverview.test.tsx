@@ -100,6 +100,14 @@ describe("AdminOverview", () => {
     expect(navigate).toHaveBeenCalledWith("/admin/agents");
   });
 
+  it("opens the applications workspace from both admissions entry points", () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: "Active applications" }));
+    expect(navigate).toHaveBeenLastCalledWith("/admin/applications");
+    fireEvent.click(screen.getByRole("button", { name: /Admissions pipeline/i }));
+    expect(navigate).toHaveBeenLastCalledWith("/admin/applications");
+  });
+
   it("activates KPI panels with the keyboard", () => {
     renderPage();
 
