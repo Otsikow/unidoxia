@@ -1,3 +1,4 @@
+import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
 import { businessFooter } from '../src/config/business.ts';
@@ -77,7 +78,7 @@ const pages = [
     title: "Study Abroad from Africa: UK Universities & Support | UniDoxia",
     description:
       "Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.",
-    body: `<h1>Study abroad from Africa and beyond</h1><p>Explore UK universities and courses, and get support with course selection, application preparation and your next steps towards studying abroad.</p><p><a href="/destinations/united-kingdom">Explore studying in the UK</a> · <a href="/free-consultation">Ask about your study plans</a></p>${featuredHtml}`,
+    body: homeFirstPaint(featuredHtml),
   },
   {
     path: '/free-consultation', title: 'Free Study Abroad Consultation | UniDoxia',
@@ -229,7 +230,8 @@ const render = (page) => {
     const json = JSON.stringify(page.jsonLd).replace(/</g, "\\u003c");
     html = html.replace("</head>", `<script type="application/ld+json" data-prerender-seo="1">${json}</script>\n</head>`);
   }
-  return html.replace('<div id="root"></div>', `<div id="root">${nav}<main>${purifier.sanitize(page.body)}</main>${footer}</div>`);
+  html = html.replace('</head>', `<style id="first-paint-styles">${firstPaintCss}</style>\n</head>`);
+  return html.replace('<div id="root"></div>', renderFirstPaint({path:page.path, body:purifier.sanitize(page.body), nav, footer}));
 };
 
 fs.writeFileSync(path.join(DIST, 'seo-hosting.json'), JSON.stringify({

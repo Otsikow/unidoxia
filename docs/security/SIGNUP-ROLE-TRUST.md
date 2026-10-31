@@ -124,3 +124,8 @@ After these checks, the originally approved communication-table SELECT grant was
 One authorised neutral email test was accepted by the provider and recorded once against the existing nominated test student. The owner subsequently confirmed mailbox receipt with the correct original signature. Provider acceptance alone is not mailbox delivery or a human reply. The sending flag was removed after the test; operational bulk/student messaging is not enabled by this record. Private recipient, audit identifiers and before/after counts stay in the owner’s private workspace evidence, not this public repository.
 
 Residual legacy global inactive reads and the separate partner-isolation RPC issue remain tracked; this migration is not represented as a complete platform-wide security audit.
+
+
+## Follow-on partner/active-role closure — 31 October 2026
+
+The earlier residual findings for inactive shared role helpers and unguarded partner isolation were subsequently addressed in `20261031134909_secure_partner_workspace_access.sql`, explicitly approved and applied after 37 isolated SQL/RLS checks and 19 final real-Auth staging checks. See `PARTNER-WORKSPACE-ACCESS.md` for the exact source, live read-back, unchanged-account evidence and limits. The original findings above are retained as historical context, not current claims that these two paths remain unguarded. This remains a targeted repair rather than a full platform-wide security audit.
