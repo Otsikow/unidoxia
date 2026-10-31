@@ -63,7 +63,7 @@ export function StudentPayments() {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { getPlanInfo, billingData, billingLoading } = useStudentBilling();
+  const { getPlanInfo, billingData, billingLoading, billingError, refetch: refetchBilling } = useStudentBilling();
 
   const planInfo = getPlanInfo();
   const currentPlan = getPlanById(planInfo.planType);
@@ -190,6 +190,8 @@ export function StudentPayments() {
     );
   }
 
+  if (billingError || !billingData) return <div role="alert" className="space-y-4 p-6"><p>Your billing details could not be confirmed. Please retry before making changes.</p><Button variant="outline" onClick={() => void refetchBilling()}>Retry billing check</Button></div>;
+
   return (
     <div className="flex w-full flex-col gap-8 max-w-6xl mx-auto px-3 sm:px-6">
       {/* HEADER */}
@@ -220,12 +222,12 @@ export function StudentPayments() {
                 Your active subscription plan
               </CardDescription>
             </div>
-            {currentPlan && (
+            {(currentPlan || billingData.plan_type === "self_service") && (
               <Badge 
                 variant={planInfo.isPaid ? "default" : "secondary"} 
                 className="text-sm px-3 py-1"
               >
-                {currentPlan.name}
+                {currentPlan?.name ?? "Legacy Self-Service"}
               </Badge>
             )}
           </div>
@@ -234,6 +236,7 @@ export function StudentPayments() {
           <div className="grid gap-6 md:grid-cols-2">
             {/* Plan Details */}
             <div className="space-y-4">
+              {!currentPlan && billingData.plan_type === "self_service" && <p>Your legacy plan retains unlimited application access. See your payment history below for past charges.</p>}
               {currentPlan && (
                 <>
                   <div className="flex items-baseline gap-2">
