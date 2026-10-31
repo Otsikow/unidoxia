@@ -1,6 +1,5 @@
 /** Public content helpers only: this module is also imported by the web client. */
-export const STUDENT_EMAIL_SIGNATURE =
-  "Best regards,\nUniDoxia Team\ninfo@unidoxia.com\nhttps://unidoxia.com";
+export { STUDENT_EMAIL_SIGNATURE } from "./studentEmailSignature.ts";
 export interface ContactStudent {
   id: string;
   legal_name?: string | null;

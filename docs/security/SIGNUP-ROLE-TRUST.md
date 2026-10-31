@@ -1,7 +1,7 @@
 # Signup role trust — prerequisite for student communication activation
 
-Status: CONFIRMED vulnerability (read-only verification, 31 Oct 2026). Fix prepared, NOT applied.
-The communication table and function are deployed but contained: authenticated ledger SELECT revoked, email flag off, no sends. Restoring access and operational activation remain ON HOLD until this prerequisite passes.
+Status: the reviewed identity safeguards were applied and read back on 31 October 2026 after Eric’s migration-specific approval. See the current activation note below; earlier findings and staging limits are retained for audit.
+The communication table/function are deployed. Staff history access was restored after the security read-back; outbound sending was opened only for one owner-approved controlled test and is off. Provider receipts and native external conversations remain separate features.
 
 ## Confirmed (live database, read-only)
 - `auth.users` trigger `on_auth_user_created` -> `public.handle_new_user()` sets
@@ -112,3 +112,15 @@ The forward migration does not restore the communication ledger grant, enable em
 ## Authorised isolated actual-Auth acceptance — 31 October 2026
 
 Eric subsequently approved isolated testing. A separate unpublished Lovable test backend was provisioned, using synthetic reserved-address accounts only. The corrected, production-SDK-pinned run passed 31/31 checks with cleanup; independent managed queries confirmed zero remaining accounts/application fixtures. Details and earlier failed setup attempts: `staging/RESULTS-2026-10-31.md`. The new project's runtime cannot host the original Edge format, so actual Auth/RLS handler checks used a loopback adapter; the Edge-gateway/full-production-clone limit remains explicit. This staging approval did not apply the security migration or restore communication access in production.
+
+## Production identity activation — 31 October 2026
+
+Eric explicitly approved migration `20261108000000_secure_communication_identity.sql` after the real-Auth staging result. Security PR #1268 was merged, and the byte-identical migration (SHA-256 `db396a1fb110cc42c9ed1cdce003cd271bb54c7436bd0e77218484e7af94dbe4`) was applied transactionally and recorded in `supabase_migrations.schema_migrations`. The first oversized apply/log request was rejected; read-back confirmed no partial changes. The successful ledger entry records the GitHub source/hash instead of duplicating the full SQL body.
+
+Live read-back verified both signup/profile-repair paths use the safe resolver, both new guard triggers are enabled, the original direct-role guard remains enabled, anonymous profile repair/client role-resolution execution is denied and the trusted resolver grant remains. Baseline student/account/profile/application/document/message counts were unchanged. No privileged production test account was created and no existing account was reclassified.
+
+After these checks, the originally approved communication-table SELECT grant was restored with active-staff/own-tenant RLS still enabled and browser INSERT/UPDATE still denied. The owner’s existing signed-in dashboard successfully read the live history through the deployed JWT-verified endpoint, providing a read-only check of that current gateway/handler path. This does not replace the stated full-schema/legacy-policy audit limits.
+
+One authorised neutral email test was accepted by the provider and recorded once against the existing nominated test student. The owner subsequently confirmed mailbox receipt with the correct original signature. Provider acceptance alone is not mailbox delivery or a human reply. The sending flag was removed after the test; operational bulk/student messaging is not enabled by this record. Private recipient, audit identifiers and before/after counts stay in the owner’s private workspace evidence, not this public repository.
+
+Residual legacy global inactive reads and the separate partner-isolation RPC issue remain tracked; this migration is not represented as a complete platform-wide security audit.

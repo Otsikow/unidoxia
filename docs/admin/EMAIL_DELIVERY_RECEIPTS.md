@@ -20,7 +20,7 @@ History reads remain compatible with the earlier schema: only an absent delivery
 
 ## Controlled activation — not done by this build
 
-Keep the existing security/identity hold in place. This feature does not authorise applying its new migration, restoring communication-table access, adding a provider webhook, saving a signing secret, enabling sending, or publishing the website.
+The identity migration was separately approved and applied, and the original staff history read grant was restored. The single previously authorised email test was accepted and the owner confirmed receipt with the correct signature; its temporary send flag was removed. This feature does not authorise its new production migration, a provider webhook/signing secret, further sending or frontend publication.
 
 After the relevant approvals and security prerequisites:
 
@@ -28,7 +28,7 @@ After the relevant approvals and security prerequisites:
 2. Deploy the new receipt endpoint and the updated staff communication function/shared modules. Keep receipt and sending flags off during setup.
 3. In the official Resend account create a webhook restricted to the six supported delivery events, using the receipt endpoint for the correct backend. Store its signing secret through the managed secure form as `STUDENT_EMAIL_WEBHOOK_SECRET`; never paste it into chat, frontend code or source control. Leave unrelated providers/mailboxes unconnected.
 4. Enable **`STUDENT_EMAIL_EVENTS_ENABLED=true`** only after the signing secret, migration and endpoint are ready. This enables signature-verified receipts and snapshots tags for new send attempts. It does not itself enable outbound mail, which still requires the separate `STUDENT_EMAIL_ENABLED` flag and the existing server-only send key.
-5. Use the owner-authorised single test recipient after identity/access gates pass. Verify the send audit, actual provider receipt, history status and duplicate/retry behaviour. Check that unrelated provider emails are ignored and no response/read status is invented. Actual inbox placement still needs mailbox confirmation.
+5. Obtain separate authority for a new receipt-enabled test after setup; the earlier one-email authorisation has already been used. Verify the send audit, actual provider receipt, history status and duplicate/retry behaviour. Check that unrelated provider emails are ignored and no response/read status is invented. Actual inbox placement still needs mailbox confirmation.
 6. Roll back operationally by turning the receipt flag off and leaving the additive schema/history intact. Existing pending tagged attempts retain their snapshot. If sending is also held, keep that separate flag off. Do not remove recorded correspondence or weaken authentication to clear an error.
 
 Native email replies require an approved inbound address or narrowly scoped official-mailbox integration and verified thread-to-student association. The separate official WhatsApp proposal retains its own review and account setup. Neither is declared synchronised here.
@@ -38,6 +38,7 @@ Native email replies require an approved inbound address or narrowly scoped offi
 - Focused tests cover signature gating, raw-body preservation, size limits, malformed/future events, unsupported event suppression, retry responses, minimal data retention, schema fallback and immutable send tags.
 - Two Deno tests use real HMAC fixtures against the actual official SDK, including valid signatures, tampering, stale and future replay rejection. The actual receipt entry point is type-checked with Deno in an isolated temporary dependency cache, not by adding frontend dependencies.
 - `scripts/verify-student-email-events.mjs` runs 25 isolated PostgreSQL checks for transactionality, duplicate conflicts, out-of-order events, early receipt recovery, recipient matching, migration replay and privilege/hold preservation. This is fixture-schema testing, not a production replay or real provider delivery.
-- No provider signing key was collected, no webhook was configured, no production receipt migration was applied and no message was sent during development. UI preview uses explicitly synthetic records.
+- The exact committed receipt handler, official Svix 2.9.1 verifier and service-only recorder passed 16 real Auth/REST/RLS staging checks using synthetic signed events and Supabase JS 2.110.2. Independent managed read-back confirmed zero fixture accounts, profiles, students, applications, communications and receipt events after cleanup. The isolated backend has no production data/provider credentials; its loopback adapter does not validate the production Edge gateway or actual provider delivery.
+- No provider signing key was collected, no webhook was configured and no production receipt migration was applied. The separate original controlled live test is recorded above. UI previews use explicitly synthetic records.
 
 Official sources: [Resend webhook verification](https://resend.com/docs/webhooks/verify-webhooks-requests), [delivered event/tag fields](https://resend.com/docs/webhooks/emails/delivered), [supported event types](https://resend.com/docs/webhooks/event-types).

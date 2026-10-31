@@ -52,3 +52,19 @@ describe('receipt tag payload snapshots',()=>{
   expect(send.mock.calls[0][0]).not.toHaveProperty('tags');expect(send.mock.calls[1][0]).not.toHaveProperty('tags');
  });
 });
+
+describe('branded business signature',()=>{
+ it('includes linked business contacts, logo and registration in HTML and plain text',async()=>{
+  await execute();const message=send.mock.calls[0][0];
+  for(const value of ['+44 7360 961803','16172129','Global Talent Gateway Ltd','54 Blakey Close','ZC277440']) {
+   expect(message.html).toContain(value);expect(message.text).toContain(value);
+  }
+  expect(message.html).toContain('href="https://wa.me/447360961803"');
+  expect(message.html).toContain('src="https://unidoxia.com/favicon-96.png"');
+  expect(message.html).toContain('alt="UniDoxia"');
+ });
+ it('keeps the exact original HTML payload for an archived signature on retry',()=>{
+  const signature='Best regards,\nUniDoxia Team\ninfo@unidoxia.com\nhttps://unidoxia.com';
+  expect(emailHtml('Hello',signature)).toBe('<div style="font-family:Arial,sans-serif;line-height:1.65;color:#172033;max-width:640px"><h2 style="color:#12345b">UniDoxia</h2><p>Hello<br><br>Best regards,<br>UniDoxia Team<br>info@unidoxia.com<br>https://unidoxia.com</p></div>');
+ });
+});

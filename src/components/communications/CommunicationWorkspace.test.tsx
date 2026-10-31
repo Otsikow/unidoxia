@@ -18,7 +18,7 @@ async function click(name:string){await act(async()=>{await userEvent.click(scre
 describe('student communication composer',()=>{
  it('uses the student context, approved signature and an audited email send request',async()=>{
   show();expect((screen.getByLabelText('Message to Ama Mensah') as HTMLTextAreaElement).value).toContain('Ama Mensah');
-  expect(screen.getByText(/Best regards,/)).toHaveTextContent('UniDoxia Team');
+  expect(screen.getByLabelText('Email signature preview')).toHaveTextContent('UniDoxia Team');
   await click('Send Email');
   const request=fake.invoke.mock.calls.find(call=>call[1].body.action==='send_email')[1].body;
   expect(request).toMatchObject({studentId:'student-a',expectedEmail:'ama@example.test',applicationId:null});expect(request).not.toHaveProperty('to');

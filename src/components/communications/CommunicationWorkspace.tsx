@@ -1,3 +1,4 @@
+import { STUDENT_EMAIL_SIGNATURE_HTML } from "../../../supabase/functions/_shared/studentEmailSignature";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -411,9 +412,7 @@ export function CommunicationWorkspace({
                 />
               </div>
               {mode === "email" && (
-                <p className="whitespace-pre-line rounded-lg border p-3 text-xs text-muted-foreground">
-                  {STUDENT_EMAIL_SIGNATURE}
-                </p>
+                <div aria-label="Email signature preview" className="rounded-lg border bg-white p-4" dangerouslySetInnerHTML={{ __html: STUDENT_EMAIL_SIGNATURE_HTML }} />
               )}
               <div className="flex flex-wrap gap-2">
                 {mode === "email" ? (

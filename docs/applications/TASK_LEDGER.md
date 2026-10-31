@@ -112,3 +112,10 @@ Follow-up interface checks: 539 tests across 83 files passed; final focused foll
 Continued Eric's operational messaging instructions while isolated identity acceptance completed. Added a separately gated signed-provider receipt service, server-only event metadata/RPC migration, exact email association, retry/deduplication/out-of-order protection, immutable per-attempt tags and receipt-aware history with readable high-contrast outcomes. Existing history reads fall back only for missing new columns, preserving permission denial. Delivery-to-mail-server is distinguished from send acceptance, human reading and replies; external mailbox/WhatsApp synchronisation is not invented.
 
 No provider account/key, live receipt migration, outbound message or operational flag changed. Activation sequence and source-backed limitations: ../admin/EMAIL_DELIVERY_RECEIPTS.md. The separately authorised real-Auth staging run for the security draft passed 31/31 with the production SDK and verified zero synthetic fixture leftovers; its new-runtime Edge gateway limitation remains explicit in the security branch's staging report.
+
+
+### 31 October — branded communication signature and receipt evidence
+- Owner confirmed receipt of the single authorised live test with the correct signature. Sending was switched off after that test; no further email was sent.
+- Added a branded HTML/plain-text signature using the official logo, existing business WhatsApp, email, website and company/registered-office/ICO details. Pending legacy retries preserve their original payload.
+- Receipt source passed 16 real Auth/REST/RLS isolated staging checks, with exact fixture cleanup; production receipt migration/provider webhook remain unactivated and require their own approval/setup.
+- Validation: 554 automated tests passed; source type/lint/build and desktop/mobile signature checks recorded with the release.
