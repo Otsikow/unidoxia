@@ -1,3 +1,4 @@
+import { getDocumentRequestUrl } from '@/lib/documentUpload';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
@@ -152,7 +153,7 @@ const DocumentRequestsPage = () => {
           }
         }
 
-        const mappedRequests: DocumentRequestItem[] = rawRequests.map((request) => {
+        const mappedRequests: DocumentRequestItem[] = await Promise.all(rawRequests.map(async (request) => {
           const student = request.student_id
             ? studentsMap.get(request.student_id)
             : null;
@@ -172,12 +173,7 @@ const DocumentRequestsPage = () => {
             request.file_url ||
             null;
 
-          if (!documentUrl && storagePath) {
-            const { data: publicUrlData } = supabase.storage
-              .from(STORAGE_BUCKET)
-              .getPublicUrl(storagePath);
-            documentUrl = publicUrlData?.publicUrl ?? null;
-          }
+          if (storagePath) documentUrl = await getDocumentRequestUrl(storagePath, request.student_id, documentUrl);
 
           return {
             id: request.id,
@@ -189,7 +185,7 @@ const DocumentRequestsPage = () => {
             documentUrl,
             storagePath,
           };
-        });
+        }));
 
         setDocumentRequests(mappedRequests);
       } catch (error) {

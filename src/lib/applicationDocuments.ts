@@ -1,5 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
-import { persistApplicationDocuments } from '@/lib/applicationWorkflow';
+import { persistApplicationDocuments, uploadVerifiedDocument, saveApplicationDocument } from '@/lib/documentUpload';
+import { validateFileUpload } from '@/lib/fileUpload';
+import { DOCUMENT_UPLOAD_VALIDATION } from '@/lib/documentUpload';
 
 type DocumentType = 'passport_photo' | 'passport' | 'transcript' | 'ielts' | 'sop';
 export interface SubmissionDocument {
@@ -28,22 +30,17 @@ export async function saveApplicationDocuments(applicationId: string, documents:
         file = data;
       }
       if (!file) throw new Error(`Missing ${type.replace(/_/g, ' ')}.`);
+      if (suppliedFile) {
+        const validated = await validateFileUpload(suppliedFile, DOCUMENT_UPLOAD_VALIDATION);
+        file = validated.preparedFile;
+      }
       const path = `${applicationId}/${type}_${crypto.randomUUID()}`;
       const mime = file.type || existing?.mime_type || 'application/octet-stream';
-      const { error: uploadError } = await supabase.storage.from('application-documents')
-        .upload(path, file, { cacheControl: '3600', upsert: false, contentType: mime });
-      if (uploadError) throw new Error(`Could not upload ${type.replace(/_/g, ' ')}. Please try again.`);
-      const { error: recordError } = await supabase.from('application_documents').insert({
+      await uploadVerifiedDocument('application-documents', path, file as File, mime);
+      await saveApplicationDocument({
         application_id: applicationId, document_type: type === 'passport_photo' ? 'other' : type,
-        storage_path: path, file_size: file.size, mime_type: mime, verified: false,
+        storage_path: path, file_size: file.size, mime_type: mime,
       });
-      if (recordError) {
-        // Remove only this attempt's unlinked object, never a saved document.
-        if (/^[0-9A-Z]{5}$/.test(recordError.code ?? '')) {
-          await supabase.storage.from('application-documents').remove([path]);
-        }
-        throw new Error(`Could not save ${type.replace(/_/g, ' ')}. Please try again.`);
-      }
     },
     finalise: async () => {
       const { data, error } = await supabase.from('application_documents')

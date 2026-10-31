@@ -19,11 +19,11 @@ describe('staff application queue', () => {
   it('uses real records, searches by student and opens the correct application', async () => {
     api.range.mockResolvedValue({ data: [application('a', 'Ama Test'), application('b', 'Kojo Test')], error: null });
     show();
-    await screen.findByText('Ama Test');
+    await screen.findAllByText('Ama Test');
     expect(screen.queryByText('John Smith')).not.toBeInTheDocument();
     await userEvent.type(screen.getByRole('textbox', { name: 'Search applications' }), 'Kojo');
     expect(screen.queryByText('Ama Test')).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Open application for Kojo Test' }));
+    await userEvent.click(screen.getAllByRole('button', { name: 'Open application for Kojo Test' })[0]);
     expect(await screen.findByText('Workspace b')).toBeInTheDocument();
   });
   it('shows a genuine empty state and a student-first start action', async () => {
@@ -40,15 +40,15 @@ describe('staff application queue', () => {
     expect(screen.queryByText('John Smith')).not.toBeInTheDocument();
     api.range.mockResolvedValue({ data: [application('a', 'Ama Test')], error: null });
     await userEvent.click(screen.getByRole('button', { name: 'Refresh applications' }));
-    expect(await screen.findByText('Ama Test')).toBeInTheDocument();
+    expect((await screen.findAllByText('Ama Test'))[0]).toBeInTheDocument();
   });
   it('fetches beyond the database page limit and displays 20 rows at a time', async () => {
     api.range.mockResolvedValueOnce({ data: Array.from({ length: 500 }, (_, i) => application(String(i), `Applicant ${i}`)), error: null })
       .mockResolvedValueOnce({ data: [application('last', 'Last applicant')], error: null });
     show();
     await waitFor(() => expect(screen.getByText('501 applications · Page 1 of 26')).toBeInTheDocument());
-    expect(screen.getAllByRole('button', { name: /Open application for/ })).toHaveLength(20);
+    expect(screen.getAllByRole('button', { name: /Open application for/ })).toHaveLength(40);
     await userEvent.type(screen.getByRole('textbox', { name: 'Search applications' }), 'Last applicant');
-    expect(await screen.findByText('Last applicant')).toBeInTheDocument();
+    expect((await screen.findAllByText('Last applicant'))[0]).toBeInTheDocument();
   });
 });

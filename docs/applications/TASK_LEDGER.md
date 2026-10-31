@@ -6,11 +6,11 @@ Request: make UniDoxia's application dashboard simple and operational for studen
 
 Completed locally: real staff queue; student-first application start; focused application workspace; explicit document view/verification; notes/status with conflict detection; manual university submission reference history; failed-upload recovery and durable document read-back; supported passport-photo storage; truthful UniDoxia receipt wording; application-document bucket correction. Existing branding and protected routes retained.
 
-Prepared but not applied: verified university-document SELECT policy.
+Superseded: the never-applied university-document SELECT policy was removed from the 31 October usability candidate. No database access changes are included.
 
 Validation: 398 unit/component tests passed in 54 files; TypeScript check passed; Vite application build passed; diff whitespace check passed; new files lint clean; modified legacy form/review files retain three hook warnings. Local PostgreSQL 16 policy test passed, including repeat application and cross-university/anonymous denial. The queue and application workspace were visually checked at desktop and 390×844 phone size using an isolated local UI fixture with synthetic records (not real Auth/API evidence). No full managed-stack restoration, Auth-issued staging walkthrough or live student mutation performed.
 
-Next: review; authenticated staging verification; migration-specific production approval; resolve first-application agent access and historical student-document compatibility before claiming broad role readiness; exact-commit Lovable preview; Eric's Publish handoff. See README.md for evidence and limitations.
+Next: review; authenticated staging verification; resolve first-application agent access and historical student-document compatibility before claiming broad role readiness; exact-commit Lovable preview; Eric's Publish handoff. See README.md for evidence and limitations.
 
 ## Export gate
 
@@ -19,3 +19,9 @@ Automatic approval review rejected the combined GitHub push: the specific source
 ## Authenticated ApplyBoard benchmark — 31 October 2026
 
 Eric supplied access to the signed-in Brave agent dashboard. Read-only inspection covered Home, Students/student profile, document-vault controls, search/eligibility controls, programme detail, Applications and My Tasks. No student data/actions, invitations, payments or applications were changed. Functional observations and limits are in APPLYBOARD_BENCHMARK.md; no personal student or private commercial data is retained. The key recommended change is separate stage/outcome/requirements/payment/submission evidence, with a simple owner/next-action/deadline queue and student-centred workspace. A complete application case was not available to inspect. Before further implementation, reconcile this older dashboard branch with published upload fix #1252; retain the newer upload code. This audit does not authorise publishing the remaining dashboard or changing production permissions.
+
+## Usability implementation — 31 October 2026
+
+Reconciled with published upload fix #1252; kept its upload helpers and new-application form unchanged. Removed the never-applied access-policy migration/fixture. Replaced sample staff applicants with authorised database records, defaulted the queue to needs attention, showed follow-up owners/dates and overdue/blocked flags, and added mobile cards. Simplified the workspace into Overview, Documents, Follow-ups and History, with next-action guidance, protected unsaved edits and conflict checks. Connected existing application tasks for creation, claim, completion and reopening; added read-only student document requests with explicit scope wording. Internal dates respect UK days and exclude Sundays.
+
+Validation: 432 tests in 60 files passed; TypeScript passed; targeted workflow lint passed; Vite bundle build passed. Local browser checks covered the desktop queue/workspace, adding a synthetic follow-up and a 390×844 phone layout with no horizontal overflow. Screenshots are in `outputs/unidoxia-easier-dashboard` in the surrounding workspace. Synthetic UI checks do not replace authenticated backend mutation tests. No real student data, tasks, documents or permissions changed. GitHub export remains subject to the earlier exact-payload approval gate; no publication performed.

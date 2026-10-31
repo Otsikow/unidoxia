@@ -66,10 +66,10 @@ type StudentDocumentMetadata = {
 
 const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
   passport_photo: ['passport_photo'],
-  transcript: ['transcript', 'degree_certificate'],
+  transcript: ['transcript'],
   passport: ['passport'],
-  ielts: ['english_test'],
-  sop: ['personal_statement'],
+  ielts: ['english_test', 'english_test_certificate', 'ielts'],
+  sop: ['sop', 'personal_statement'],
 };
 
 const TRACKING_ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -638,7 +638,7 @@ export default function NewApplication() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, profile, navigate, toast, studentIdFromUrl, agentId]);
+  }, [user?.id, profile, navigate, toast, studentIdFromUrl, agentId, loadStudentDocuments]);
 
   useEffect(() => {
     const loadAgentId = async () => {
@@ -674,7 +674,7 @@ export default function NewApplication() {
     }
   }, [loadStudentDocuments, studentId]);
 
-  const draftQueryKey = ['application-draft', studentId] as const;
+  const draftQueryKey = useMemo(() => ['application-draft', studentId] as const, [studentId]);
 
   const upsertDraftMutationFn = useCallback(async (
     payload: DraftMutationPayload,
@@ -1414,7 +1414,7 @@ export default function NewApplication() {
   const progressPercentage = (currentStep / STEPS.length) * 100;
   const applicationsListUrl = isAgentFlow ? '/dashboard/applications' : '/student/applications';
   const viewApplicationUrl = isAgentFlow || !applicationId
-    ? (applicationId ? `${applicationsListUrl}?application=${applicationId}` : applicationsListUrl)
+    ? applicationsListUrl
     : `/student/applications/${applicationId}`;
 
   if (isAgent && agentProfileLoading) {
