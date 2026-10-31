@@ -25,3 +25,6 @@ The administrator student-profile missing-document action used a separate raw up
 Validation: 18 focused persistence tests (including new-upload lost-response recovery and unconfirmed-save preservation), TypeScript and targeted lint with zero errors/two existing AdminStudentDetail memo-dependency warnings. No real student upload was performed. Full suite: 580 tests in 88 files passed; Vite production bundle passed. GitHub/Lovable handoff is tracked with the release.
 
 Programme/university application routing compatibility extended before any receipt activation; earlier Run10 did not cover those application workspaces. New local routing cases pass, including unrelated-workspace denial. Extended actual Storage acceptance pending; no receipt SQL applied live.
+
+### GitHub routing acceptance completed — 31 October
+Run 41221294339 passed 21 actual local Auth/private Storage checks and independent zero-fixture SQL read-back against the reviewed routing migration. This supersedes the Lovable credit block. Exact hashes and scope are recorded in REQUEST_RECEIPTS.md. No live receipt migration approval/activation or frontend Publish; PR #1276 remains draft.
