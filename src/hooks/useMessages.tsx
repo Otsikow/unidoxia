@@ -263,7 +263,6 @@ export function useMessages() {
 
   const conversationsRef = useRef<Conversation[]>([]);
   const messagesRef = useRef<Record<string, Message[]>>({});
-  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
 
   /* ======================================================
      Resolve Current Profile
@@ -634,103 +633,122 @@ export function useMessages() {
   useEffect(() => {
     if (usingMockMessaging || !user?.id) return;
 
-    // Subscribe to new messages in conversations the user participates in
-    const channel = supabase
-      .channel(`messages-${user.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "conversation_messages",
-        },
-        async (payload) => {
-          const newMessage = payload.new as any;
-          
-          // Check if user is a participant in this conversation
-          const isParticipant = conversationsRef.current.some(
-            (c) => c.id === newMessage.conversation_id
-          );
-          
-          if (!isParticipant) return;
+    let active = true;
+    let channel: RealtimeChannel | undefined;
+    const removeOwnedChannel = () => {
+      if (!channel) return;
+      const owned = channel;
+      channel = undefined;
+      void supabase.removeChannel(owned).catch((error: unknown) => {
+        console.warn("Message live-update cleanup failed.", error);
+      });
+    };
+    try {
+      // The SDK caches channels by topic; each mounted consumer owns its topic.
+      channel = supabase.channel(`messages-${user.id}-${createId("subscription")}`);
+      channel
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "conversation_messages",
+          },
+          async (payload) => {
+            if (!active) return;
+            try {
+              const newMessage = payload.new as any;
 
-          // Fetch sender info for the message
-          const { data: senderRows, error: senderError } = await supabase
-            .from("profiles")
-            .select("id, full_name, avatar_url")
-            .eq("id", newMessage.sender_id)
-            .limit(1);
+              // Check if user is a participant in this conversation
+              const isParticipant = conversationsRef.current.some(
+                (c) => c.id === newMessage.conversation_id
+              );
 
-          if (senderError) {
-            console.warn("Failed to fetch sender profile:", senderError);
+              if (!isParticipant) return;
+
+              // Fetch sender info for the message
+              const { data: senderRows, error: senderError } = await supabase
+                .from("profiles")
+                .select("id, full_name, avatar_url")
+                .eq("id", newMessage.sender_id)
+                .limit(1);
+
+              if (!active) return;
+              if (senderError) {
+                console.warn("Failed to fetch sender profile:", senderError);
+              }
+
+              const senderData = Array.isArray(senderRows) ? senderRows[0] : null;
+
+              const message: Message = {
+                id: newMessage.id,
+                conversation_id: newMessage.conversation_id,
+                sender_id: newMessage.sender_id,
+                content: newMessage.content,
+                message_type: newMessage.message_type,
+                attachments: newMessage.attachments ?? [],
+                metadata: newMessage.metadata ?? null,
+                reply_to_id: newMessage.reply_to_id,
+                edited_at: newMessage.edited_at,
+                deleted_at: newMessage.deleted_at,
+                created_at: newMessage.created_at,
+                sender: senderData ? {
+                  id: senderData.id,
+                  full_name: senderData.full_name,
+                  avatar_url: senderData.avatar_url,
+                } : undefined,
+              };
+
+              // Update messages cache
+              const mergeWithExisting = (existingMessages: Message[]) => {
+                const duplicateIndex = existingMessages.findIndex((m) =>
+                  isLikelyDuplicateMessage(m, message)
+                );
+
+                if (duplicateIndex !== -1) {
+                  const next = [...existingMessages];
+                  next[duplicateIndex] = message;
+                  return next;
+                }
+
+                return [...existingMessages, message];
+              };
+
+              setMessagesById((prev) => {
+                const existing = prev[newMessage.conversation_id] ?? [];
+                const next = mergeWithExisting(existing);
+                messagesRef.current = { ...prev, [newMessage.conversation_id]: next };
+                return messagesRef.current;
+              });
+
+              // If this is the current conversation, update visible messages
+              setCurrentConversationState((currentId) => {
+                if (currentId === newMessage.conversation_id) {
+                  setMessages((prev) => mergeWithExisting(prev));
+                }
+                return currentId;
+              });
+
+              // Refresh conversations to update last_message_at
+              const convs = await fetchConversationsFromDb();
+              if (!active) return;
+              conversationsRef.current = convs;
+              setConversations(convs);
+            } catch (error) {
+              if (active) console.warn("Message live update failed.", error);
+            }
           }
-
-          const senderData = Array.isArray(senderRows) ? senderRows[0] : null;
-
-          const message: Message = {
-            id: newMessage.id,
-            conversation_id: newMessage.conversation_id,
-            sender_id: newMessage.sender_id,
-            content: newMessage.content,
-            message_type: newMessage.message_type,
-            attachments: newMessage.attachments ?? [],
-            metadata: newMessage.metadata ?? null,
-            reply_to_id: newMessage.reply_to_id,
-            edited_at: newMessage.edited_at,
-            deleted_at: newMessage.deleted_at,
-            created_at: newMessage.created_at,
-            sender: senderData ? {
-              id: senderData.id,
-              full_name: senderData.full_name,
-              avatar_url: senderData.avatar_url,
-            } : undefined,
-          };
-
-          // Update messages cache
-          const mergeWithExisting = (existingMessages: Message[]) => {
-            const duplicateIndex = existingMessages.findIndex((m) =>
-              isLikelyDuplicateMessage(m, message)
-            );
-
-            if (duplicateIndex !== -1) {
-              const next = [...existingMessages];
-              next[duplicateIndex] = message;
-              return next;
-            }
-
-            return [...existingMessages, message];
-          };
-
-          setMessagesById((prev) => {
-            const existing = prev[newMessage.conversation_id] ?? [];
-            const next = mergeWithExisting(existing);
-            messagesRef.current = { ...prev, [newMessage.conversation_id]: next };
-            return messagesRef.current;
-          });
-
-          // If this is the current conversation, update visible messages
-          setCurrentConversationState((currentId) => {
-            if (currentId === newMessage.conversation_id) {
-              setMessages((prev) => mergeWithExisting(prev));
-            }
-            return currentId;
-          });
-
-          // Refresh conversations to update last_message_at
-          const convs = await fetchConversationsFromDb();
-          conversationsRef.current = convs;
-          setConversations(convs);
-        }
-      )
-      .subscribe();
-
-    realtimeChannelRef.current = channel;
+        )
+        .subscribe();
+    } catch (error) {
+      active = false;
+      removeOwnedChannel();
+      console.warn("Message live updates unavailable; normal reads remain active.", error);
+    }
 
     return () => {
-      if (realtimeChannelRef.current) {
-        supabase.removeChannel(realtimeChannelRef.current);
-        realtimeChannelRef.current = null;
-      }
+      active = false;
+      removeOwnedChannel();
     };
   }, [user?.id, usingMockMessaging, fetchConversationsFromDb]);
 
