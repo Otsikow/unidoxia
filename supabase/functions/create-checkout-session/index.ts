@@ -78,7 +78,7 @@ serve(async (req) => {
 
   if (!stripeSecretKey) {
     return new Response(
-      JSON.stringify({ error: "Stripe is not configured. Please contact support.", demo: true }),
+      JSON.stringify({ error: "Stripe is not configured. Please contact support." }),
       { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

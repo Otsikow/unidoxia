@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { startStudentCheckout, CHECKOUT_UNAVAILABLE } from '@/lib/studentCheckout';
 import { 
   PRICING_PLANS, 
   PAYMENT_TERMS,
@@ -39,31 +39,8 @@ export default function Checkout() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const getDemoFallback = (error: unknown, data: unknown): boolean => {
-    if (data && typeof data === 'object' && 'demo' in data && data.demo === true) {
-      return true;
-    }
-
-    if (!error || typeof error !== 'object') return false;
-
-    const contextBody = (error as { context?: { body?: unknown } }).context?.body;
-    if (!contextBody) return false;
-
-    if (typeof contextBody === 'string') {
-      try {
-        const parsed = JSON.parse(contextBody) as { demo?: boolean };
-        return parsed.demo === true;
-      } catch {
-        return false;
-      }
-    }
-
-    if (typeof contextBody === 'object' && 'demo' in contextBody) {
-      return contextBody.demo === true;
-    }
-
-    return false;
-  };
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const checkoutInFlight = useRef(false);
 
   // Redirect if no plan selected
   useEffect(() => {
@@ -91,93 +68,18 @@ export default function Checkout() {
       return;
     }
 
+    if (checkoutInFlight.current) return;
+    checkoutInFlight.current = true;
+    setCheckoutError(null);
     setIsProcessing(true);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData.session?.access_token;
-
-      if (!accessToken) {
-        throw new Error('Please log in to continue');
-      }
-
-      // Call edge function to create Stripe checkout session
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          planCode: plan.id,
-          successUrl: `${window.location.origin}/student/dashboard?payment=success`,
-          cancelUrl: `${window.location.origin}/student/checkout?plan=${plan.id}&payment=cancelled`,
-        },
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (error) {
-        if (getDemoFallback(error, data)) {
-          // Demo mode - simulate payment
-          await handleDemoPayment();
-          return;
-        }
-        throw error;
-      }
-
-      if (data?.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-        return;
-      }
-
-      if (data?.demo) {
-        // Demo mode - simulate payment
-        await handleDemoPayment();
-        return;
-      }
-
-      throw new Error('Unable to create checkout session');
-    } catch (error) {
-      console.error('Checkout error:', error);
-      if (getDemoFallback(error, null)) {
-        await handleDemoPayment();
-        return;
-      }
-      toast({
-        title: 'Payment unavailable',
-        description: 'Stripe checkout could not be started. Please try again or contact support.',
-        variant: 'destructive',
-      });
+      window.location.href = await startStudentCheckout(plan.id, window.location.origin, `/student/checkout?plan=${plan.id}&payment=cancelled`);
+    } catch {
+      setCheckoutError(CHECKOUT_UNAVAILABLE);
+      toast({title:'Payment unavailable', description:CHECKOUT_UNAVAILABLE, variant:'destructive'});
     } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const handleDemoPayment = async () => {
-    try {
-      // Demo mode: Just show success message since billing columns don't exist yet
-      // In production, this would update the student's plan in the database
-
-      toast({
-        title: 'Payment Successful!',
-        description: `Your ${plan!.name} plan is now active.`,
-      });
-
-      // If agent-supported, show agent assignment info
-      if (plan!.id === 'agent_supported') {
-        toast({
-          title: 'Agent Support',
-          description: 'A UniDoxia Agent will be assigned to guide you shortly.',
-        });
-      }
-
-      navigate('/student/dashboard?payment=success');
-    } catch (error) {
-      console.error('Demo payment error:', error);
-      toast({
-        title: 'Payment Failed',
-        description: 'There was an error processing your payment. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
+      checkoutInFlight.current = false;
       setIsProcessing(false);
     }
   };
@@ -355,6 +257,7 @@ export default function Checkout() {
             </CardContent>
 
             <CardFooter className="flex flex-col gap-4">
+              {checkoutError && <Alert variant="destructive"><AlertDescription>{checkoutError}</AlertDescription></Alert>}
               <Button
                 className="w-full"
                 size="lg"
