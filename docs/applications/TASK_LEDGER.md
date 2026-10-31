@@ -15,3 +15,7 @@ Next: review; authenticated staging verification; migration-specific production 
 ## Export gate
 
 Automatic approval review rejected the combined GitHub push: the specific source-code/access-policy payload and repository destination require explicit user approval. The changes were then committed locally only. No branch push, pull request, merge, Lovable sync, managed migration or publication was performed. Request approval to export this exact branch to `Otsikow/unidoxia` and create a draft PR; that approval must not be treated as permission to apply the database migration or publish.
+
+## Authenticated ApplyBoard benchmark — 31 October 2026
+
+Eric supplied access to the signed-in Brave agent dashboard. Read-only inspection covered Home, Students/student profile, document-vault controls, search/eligibility controls, programme detail, Applications and My Tasks. No student data/actions, invitations, payments or applications were changed. Functional observations and limits are in APPLYBOARD_BENCHMARK.md; no personal student or private commercial data is retained. The key recommended change is separate stage/outcome/requirements/payment/submission evidence, with a simple owner/next-action/deadline queue and student-centred workspace. A complete application case was not available to inspect. Before further implementation, reconcile this older dashboard branch with published upload fix #1252; retain the newer upload code. This audit does not authorise publishing the remaining dashboard or changing production permissions.
