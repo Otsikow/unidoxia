@@ -1,3 +1,4 @@
+import { ApplicationReadiness } from "./ApplicationReadiness";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { ApplicationFollowUps } from '@/components/applications/ApplicationFollowUps';
@@ -32,6 +33,8 @@ export function StaffApplicationWorkspace({ applicationId, onClose, onSaved }: {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [taskDirty, setTaskDirty] = useState(false);
+  const [requestDirty, setRequestDirty] = useState(false);
+  const [requestBusy, setRequestBusy] = useState(false);
   const [tab, setTab] = useState('overview');
   const [showSubmission, setShowSubmission] = useState(false);
   const [leaving, setLeaving] = useState<'close' | 'profile' | 'reload' | null>(null);
@@ -66,7 +69,7 @@ export function StaffApplicationWorkspace({ applicationId, onClose, onSaved }: {
     status !== baseline.current.status || notes !== baseline.current.notes || channel.trim() || reference.trim()
   ));
   useEffect(() => {
-    setTab('overview'); setShowSubmission(false); setLeaving(null); setTaskDirty(false);
+    setTab('overview'); setShowSubmission(false); setLeaving(null); setTaskDirty(false); setRequestDirty(false); setRequestBusy(false);
     baseline.current = null;
   }, [applicationId]);
   useEffect(() => {
@@ -76,14 +79,14 @@ export function StaffApplicationWorkspace({ applicationId, onClose, onSaved }: {
   }, [app, dirty]);
 
   const leave = (action: 'close' | 'profile' | 'reload') => {
-    if (saving || reviewingDocument) return;
-    if (dirty || (taskDirty && action !== 'reload')) { setLeaving(action); return; }
+    if (saving || reviewingDocument || requestBusy) return;
+    if (dirty || ((taskDirty || requestDirty) && action !== 'reload')) { setLeaving(action); return; }
     void finishLeave(action);
   };
   const finishLeave = async (action: 'close' | 'profile' | 'reload') => {
     setLeaving(null);
     if (action === 'close') onClose();
-    else if (action === 'profile' && app) navigate(`/agent/students/${app.student_id}`);
+    else if (action === 'profile' && app) navigate(`${profile?.role === "admin" ? "/admin" : "/agent"}/students/${app.student_id}`);
     else if (action === 'reload') {
       const fresh = await query.refetch();
       if (fresh.data) {
@@ -182,6 +185,7 @@ export function StaffApplicationWorkspace({ applicationId, onClose, onSaved }: {
                   <TabsTrigger className="px-1 text-xs sm:text-sm" value="history">History</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview" className="space-y-5">
+                  <ApplicationReadiness application={app} onOpenSection={section => section === "profile" ? leave("profile") : setTab(section)} />
                   <Button variant="outline" onClick={() => leave('profile')}>Open student profile</Button>
                   {app.notes && <section><h3 className="font-medium">Student notes</h3><p className="whitespace-pre-wrap text-sm">{app.notes}</p></section>}
                   <div className="space-y-2"><Label htmlFor="application-stage">Application stage</Label><Select value={status} disabled={saving || app.status === 'draft'} onValueChange={v => setStatus(v as WorkflowStatus)}><SelectTrigger id="application-stage"><SelectValue /></SelectTrigger><SelectContent>{WORKFLOW_STATUSES.filter(s => s.value !== 'draft' || app.status === 'draft').map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent></Select></div>
@@ -196,11 +200,11 @@ export function StaffApplicationWorkspace({ applicationId, onClose, onSaved }: {
                     </div>}
                   </section>
                 </TabsContent>
-                <TabsContent value="documents" className="space-y-5">
+                <TabsContent value="documents" forceMount className="space-y-5 data-[state=inactive]:hidden">
                   <section aria-label="Application documents"><h3 className="mb-2 font-semibold">Application documents</h3><p className="mb-3 text-sm text-muted-foreground">Open each file and check it before marking it verified. Check institution requirements in addition to these files.</p>
                     {app.documents.length === 0 ? <p className="text-sm">No application documents uploaded. Open the student profile to review their saved files.</p> : <ul className="divide-y">{app.documents.map(doc => <li key={doc.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="capitalize">{doc.document_type === 'other' && /\/passport_photo_/.test(doc.storage_path) ? 'Passport photo' : doc.document_type.replace(/_/g, ' ')}</p><p className="text-xs text-muted-foreground">{doc.verified ? 'Verified' : 'Needs review'}{doc.verification_notes ? ` · ${doc.verification_notes}` : ''}</p></div><div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={openingDocument === doc.id} onClick={() => void viewDocument(doc.id, doc.storage_path)}>View</Button><Button size="sm" variant="outline" disabled={Boolean(reviewingDocument) || saving} onClick={() => void reviewDocument(doc.id, !doc.verified)}>{doc.verified ? 'Return for review' : 'Mark verified'}</Button></div></li>)}</ul>}
                   </section>
-                  <StudentDocumentRequests studentId={app.student_id} />
+                  <StudentDocumentRequests key={app.id} studentId={app.student_id} tenantId={app.tenant_id} documents={app.documents} onDirtyChange={setRequestDirty} onBusyChange={setRequestBusy} />
                 </TabsContent>
                 <TabsContent value="followups" forceMount className="data-[state=inactive]:hidden"><ApplicationFollowUps key={app.id} onDirtyChange={setTaskDirty} applicationId={app.id} tenantId={profile?.tenant_id ?? ''} onSaved={() => { void query.refetch(); onSaved(); }} /></TabsContent>
                 <TabsContent value="history"><h3 className="font-semibold">Progress history</h3>{events.length === 0 ? <p className="text-sm text-muted-foreground">No recorded updates yet.</p> : <ol className="mt-3 space-y-3">{events.slice().reverse().map((event, i) => <li key={`${event.timestamp}-${i}`} className="border-l-2 pl-3 text-sm"><p className="font-medium">{event.action}</p>{event.details && <p className="whitespace-pre-wrap break-words">{event.details}</p>}<p className="text-xs text-muted-foreground">{Number.isNaN(Date.parse(event.timestamp)) ? 'Date unavailable' : new Date(event.timestamp).toLocaleString('en-GB')}</p></li>)}</ol>}</TabsContent>
@@ -216,6 +220,6 @@ export function StaffApplicationWorkspace({ applicationId, onClose, onSaved }: {
         </div>
       </DialogContent>
     </Dialog>
-    <AlertDialog open={Boolean(leaving)} onOpenChange={open => { if (!open) setLeaving(null); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Leave without saving?</AlertDialogTitle><AlertDialogDescription>Your unsaved application notes, stage changes or new follow-up will be discarded. Follow-ups already saved are kept.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Keep editing</AlertDialogCancel><AlertDialogAction onClick={() => { if (leaving) void finishLeave(leaving); }}>Discard changes</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <AlertDialog open={Boolean(leaving)} onOpenChange={open => { if (!open) setLeaving(null); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Leave without saving?</AlertDialogTitle><AlertDialogDescription>Your unsaved application edits, follow-up or document-request drafts will be discarded. Records already saved are kept.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Keep editing</AlertDialogCancel><AlertDialogAction onClick={() => { if (leaving) void finishLeave(leaving); }}>Discard changes</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </>;
 }
