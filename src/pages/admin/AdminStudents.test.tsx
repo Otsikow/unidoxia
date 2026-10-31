@@ -13,7 +13,7 @@ vi.mock('@/integrations/supabase/client',()=>({supabase:{from:(table:string)=>{
 }}}));
 const student=(id='one',name='Ama Example',extra:Record<string,unknown>={})=>({ id,profile_id:`profile-${id}`,reference_code:`UDX-${id}`,legal_name:name,preferred_name:null,contact_email:`${id}@example.test`,contact_phone:null,current_country:'Ghana',preferred_course:'Computer Science',preferred_country:'Canada',preferred_intake_year:2027,preferred_intake_month:9,created_at:'2026-10-31T10:00:00Z',manual_status:null,archived_at:null,documents:[],applications:[],profile:null,...extra });
 function Location(){const location=useLocation();return <output aria-label="Current location">{location.pathname}{location.search}</output>;}
-function show(){render(<MemoryRouter><AdminStudents/><Location/></MemoryRouter>);}
+function show(initial='/'){render(<MemoryRouter initialEntries={[initial]}><AdminStudents/><Location/></MemoryRouter>);}
 beforeEach(()=>{vi.resetAllMocks();api.read.mockResolvedValue({data:[],error:null});api.write.mockResolvedValue({data:{id:'one'},error:null});});
 describe('simple student workspace',()=>{
  it('shows real students, keeps archived records separate and opens the needed document tab',async()=>{
@@ -22,6 +22,12 @@ describe('simple student workspace',()=>{
   expect(screen.getAllByText('Review uploaded documents')).toHaveLength(2);
   await userEvent.click(screen.getAllByRole('button',{name:'Open student Ama Example'})[0]);
   expect(screen.getByLabelText('Current location')).toHaveTextContent('/admin/students/one?tab=documents');
+ });
+ it('opens the dashboard document-review deep link with the matching queue selected',async()=>{
+  api.read.mockResolvedValue({data:[student('one','Review Example',{documents:[{id:'doc',document_type:'passport',admin_review_status:'awaiting_admin_review'}]}),student('two','Other Example')],error:null});
+  show('/admin/students?view=review');await screen.findAllByText('Review Example');
+  expect(screen.queryByText('Other Example')).not.toBeInTheDocument();
+  expect(screen.getByRole('combobox',{name:'Student queue'})).toHaveTextContent('Documents to review');
  });
  it('searches by reference or name, clears filters and defers duplicate checking',async()=>{
   api.read.mockResolvedValue({data:[student('one','Amá Example'),student('two','Kojo Example')],error:null});show();await screen.findAllByText('Amá Example');

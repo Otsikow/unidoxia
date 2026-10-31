@@ -1,560 +1,490 @@
-"use client";
-
-import { useCallback, useMemo, type KeyboardEvent } from "react";
-import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  useAdminOverviewMetrics,
-  useAdmissionsTrends,
-  useApplicationsByCountry,
-  useAdminRecentActivity,
-  useSystemHealth,
-} from "@/hooks/admin/useAdminOverviewData";
-import AdminReportExportButton from "@/components/admin/AdminReportExportButton";
-import { LoadingState } from "@/components/LoadingState";
-import {
-  Activity,
+  ArrowDownToLine,
+  ArrowRight,
   ArrowUpRight,
-  ChevronRight,
+  BookOpen,
+  CheckCheck,
+  Clock3,
+  FileCheck2,
   FileText,
   GraduationCap,
+  Handshake,
+  ListTodo,
+  Plus,
+  RefreshCw,
   Sparkles,
-  ShieldCheck,
   Users,
-  Wallet,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-} from "recharts";
-import { formatDistanceToNow } from "date-fns";
-import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useAdminHome } from "@/hooks/admin/useAdminHome";
+import { overviewNextAction } from "@/lib/adminOverview";
+import { formatWorkflowDate, londonDate } from "@/lib/applicationWorkflow";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ChooseApplicationStudent } from "@/components/applications/ChooseApplicationStudent";
+import AdminReportExportButton from "@/components/admin/AdminReportExportButton";
 
-/* -------------------------------------------------------------------------- */
-/* KPI configuration — four essential operations signals                      */
-/* -------------------------------------------------------------------------- */
-const KPI_CONFIG = [
-  {
-    key: "activeApplications",
-    labelKey: "admin.overview.kpis.activeApplications",
-    defaultLabel: "Active applications",
-    to: "/admin/applications",
-    icon: FileText,
-  },
-  {
-    key: "totalStudents",
-    labelKey: "admin.overview.kpis.totalStudents",
-    defaultLabel: "Students",
-    to: "/admin/students",
-    icon: GraduationCap,
-  },
-  {
-    key: "pendingVerifications",
-    labelKey: "admin.overview.kpis.pendingVerifications",
-    defaultLabel: "Needs review",
-    to: "/admin/agents",
-    icon: ShieldCheck,
-    accent: true,
-  },
-  {
-    key: "totalCommissionPaid",
-    labelKey: "admin.overview.kpis.totalCommissionPaid",
-    defaultLabel: "Commission paid",
-    to: "/admin/payments",
-    icon: Wallet,
-    format: "currency",
-  },
-] as const;
-
-const ACTION_ITEMS = [
-  {
-    key: "verification",
-    labelKey: "admin.overview.actions.verification",
-    defaultLabel: "Verification queue",
-    descriptionKey: "admin.overview.actions.verificationDescription",
-    defaultDescription: "Approve agents and university partners",
-    to: "/admin/agents",
-    icon: ShieldCheck,
-  },
-  {
-    key: "leads",
-    labelKey: "admin.overview.actions.leads",
-    defaultLabel: "Website leads",
-    descriptionKey: "admin.overview.actions.leadsDescription",
-    defaultDescription: "Follow up on new consultation requests",
-    to: "/admin/leads",
-    icon: Users,
-  },
-  {
-    key: "admissions",
-    labelKey: "admin.overview.actions.admissions",
-    defaultLabel: "Admissions pipeline",
-    descriptionKey: "admin.overview.actions.admissionsDescription",
-    defaultDescription: "Review offers, interviews and decisions",
-    to: "/admin/applications",
-    icon: FileText,
-  },
-] as const;
-
-/* -------------------------------------------------------------------------- */
-/* Utilities                                                                  */
-/* -------------------------------------------------------------------------- */
-const formatValue = (value: number, format?: "currency", currency = "USD", locale = "en") => {
-  if (format === "currency") {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(value);
-  }
-  return new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(value);
-};
-
-const getHealthStyles = (status: string, t: TFunction) => {
-  switch (status) {
-    case "operational":
-      return {
-        label: t("admin.overview.health.operational", { defaultValue: "Operational" }),
-        badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200",
-        accent: "text-emerald-500",
-      };
-    case "monitoring":
-      return {
-        label: t("admin.overview.health.monitoring", { defaultValue: "Monitoring" }),
-        badge: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
-        accent: "text-amber-500",
-      };
-    case "degraded":
-      return {
-        label: t("admin.overview.health.degraded", { defaultValue: "Degraded" }),
-        badge: "bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-200",
-        accent: "text-orange-500",
-      };
-    case "critical":
-      return {
-        label: t("admin.overview.health.critical", { defaultValue: "Critical" }),
-        badge: "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-200",
-        accent: "text-red-500",
-      };
-    default:
-      return {
-        label: t("admin.overview.health.unknown", { defaultValue: "Unknown" }),
-        badge: "bg-muted text-muted-foreground",
-        accent: "text-muted-foreground",
-      };
-  }
-};
-
-/* -------------------------------------------------------------------------- */
-/* Main component                                                             */
-/* -------------------------------------------------------------------------- */
-const AdminOverview = () => {
-  const { profile } = useAuth();
-  const tenantId = profile?.tenant_id;
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-
-  const translate = useCallback(
-    (key: string, defaultValue: string, options?: Record<string, unknown>) =>
-      t(key, { defaultValue, ...options }),
-    [t],
-  );
-
-  const metricsQuery = useAdminOverviewMetrics(tenantId);
-  const trendsQuery = useAdmissionsTrends(tenantId);
-  const geographyQuery = useApplicationsByCountry(tenantId);
-  const activityQuery = useAdminRecentActivity(tenantId);
-  const healthQuery = useSystemHealth(tenantId);
-
-  const openZoe = (prompt: string) =>
-    typeof window !== "undefined" &&
-    window.dispatchEvent(new CustomEvent("zoe:open-chat", { detail: { prompt } }));
-
-  const topDestination = geographyQuery.data?.[0];
-  const healthStyles = getHealthStyles(healthQuery.data?.status ?? "unknown", t);
-  const recentActivity = useMemo(() => (activityQuery.data ?? []).slice(0, 6), [activityQuery.data]);
-
-  const momentumChart = useMemo(() => {
-    if (trendsQuery.isLoading) {
-      return (
-        <LoadingState
-          message={translate("admin.overview.loading.trends", "Loading admissions trends")}
-          size="sm"
-        />
-      );
-    }
-    if (!trendsQuery.data?.length) {
-      return (
-        <p className="text-sm text-muted-foreground">
-          {translate(
-            "admin.overview.emptyStates.noAdmissions",
-            "No admissions activity recorded for the selected period.",
-          )}
-        </p>
-      );
-    }
+function PanelState({
+  loading,
+  failed,
+  empty,
+  onRetry,
+  children,
+}: {
+  loading: boolean;
+  failed: boolean;
+  empty?: string;
+  onRetry?: () => void;
+  children: React.ReactNode;
+}) {
+  if (loading)
     return (
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={trendsQuery.data} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" vertical={false} />
-          <XAxis
-            dataKey="month"
-            stroke="currentColor"
-            tickLine={false}
-            axisLine={false}
-            className="text-xs text-muted-foreground"
-            tick={{ fill: "hsl(var(--muted-foreground))" }}
-          />
-          <YAxis
-            stroke="currentColor"
-            tickLine={false}
-            axisLine={false}
-            allowDecimals={false}
-            className="text-xs text-muted-foreground"
-            tick={{ fill: "hsl(var(--muted-foreground))" }}
-          />
-          <Tooltip cursor={{ strokeDasharray: "3 3" }} />
-          <Line
-            type="monotone"
-            dataKey="submitted"
-            strokeWidth={2}
-            dot={false}
-            stroke="hsl(var(--chart-1))"
-            name={translate("admin.overview.trends.submitted", "Submitted")}
-          />
-          <Line
-            type="monotone"
-            dataKey="enrolled"
-            strokeWidth={2}
-            dot={false}
-            stroke="hsl(var(--chart-2))"
-            name={translate("admin.overview.trends.enrolled", "Enrolled")}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <div
+        className="space-y-3 py-4"
+        role="status"
+        aria-label="Loading overview"
+      >
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
     );
-  }, [translate, trendsQuery.data, trendsQuery.isLoading]);
+  if (failed)
+    return (
+      <div
+        role="alert"
+        className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-sm"
+      >
+        <p>This section could not be loaded.</p>
+        {onRetry && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3"
+            onClick={onRetry}
+          >
+            Try again
+          </Button>
+        )}
+      </div>
+    );
+  if (empty)
+    return (
+      <div className="flex gap-3 rounded-xl border border-dashed bg-muted/20 p-5">
+        <CheckCheck className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+        <p className="text-sm leading-relaxed text-muted-foreground">{empty}</p>
+      </div>
+    );
+  return <>{children}</>;
+}
 
-  const secondaryFacts = [
+export default function AdminOverview() {
+  const { user, profile } = useAuth();
+  const { students, applications, tasks, taskScopeAvailable } = useAdminHome();
+  const [choosingStudent, setChoosingStudent] = useState(false);
+  const refreshing =
+    students.isFetching || applications.isFetching || tasks.isFetching;
+  const refresh = () => {
+    void Promise.allSettled([
+      students.refetch(),
+      applications.refetch(),
+      ...(taskScopeAvailable ? [tasks.refetch()] : []),
+    ]);
+  };
+  const tasksUnavailable = !taskScopeAvailable || tasks.isError;
+  const today = londonDate();
+  const formatCount = (value: number | undefined) =>
+    value === undefined ? "—" : new Intl.NumberFormat("en-GB").format(value);
+  const cards = [
     {
-      key: "destination",
-      label: translate("admin.overview.facts.topDestination", "Top destination"),
-      value: topDestination?.country ?? "—",
-      hint: topDestination
-        ? translate("admin.overview.facts.applications", "{{count}} applications", {
-            count: topDestination.applications,
-          })
-        : translate("admin.overview.facts.noPipeline", "No pipeline yet"),
+      label: "Students",
+      value: students.data?.students,
+      failed: students.isError,
+      loading: students.isPending,
+      detail: "Current student records",
+      to: "/admin/students",
+      action: "Open students",
+      icon: Users,
+      colour: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     },
     {
-      key: "agents",
-      label: translate("admin.overview.kpis.totalAgents", "Agents"),
-      value: formatValue(metricsQuery.data?.totalAgents ?? 0, undefined, undefined, i18n.language),
-      hint: translate("admin.overview.facts.agentsHint", "Active partner network"),
+      label: "Active applications",
+      value: applications.data?.active,
+      failed: applications.isError,
+      loading: applications.isPending,
+      detail: "Including drafts and deferrals",
+      to: "/admin/applications?stage=active",
+      action: "Open applications",
+      icon: FileText,
+      colour: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
     },
     {
-      key: "universities",
-      label: translate("admin.overview.kpis.totalUniversities", "University partners"),
-      value: formatValue(
-        metricsQuery.data?.totalUniversities ?? 0,
-        undefined,
-        undefined,
-        i18n.language,
-      ),
-      hint: translate("admin.overview.facts.universitiesHint", "Institutions onboarded"),
+      label: "Files to review",
+      value: students.data?.documentsToReview,
+      failed: students.isError,
+      loading: students.isPending,
+      detail: "Student documents awaiting review",
+      to: "/admin/students?view=review",
+      action: "Review documents",
+      icon: FileCheck2,
+      colour: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    },
+    {
+      label: "Overdue tasks",
+      value: tasks.data?.overdue,
+      failed: tasksUnavailable,
+      loading: taskScopeAvailable && tasks.isPending,
+      detail: "Team tasks due before today",
+      to: "/admin/tasks",
+      action: "Open team tasks",
+      icon: Clock3,
+      colour: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
     },
   ];
-
+  const shortcuts = [
+    {
+      title: "Website leads",
+      detail: "Follow up on enquiries",
+      to: "/admin/leads",
+      icon: Handshake,
+    },
+    {
+      title: "Agent review",
+      detail: "Review agency registrations",
+      to: "/admin/agents",
+      icon: Users,
+    },
+    {
+      title: "Courses & intakes",
+      detail: "Manage study options",
+      to: "/admin/programs",
+      icon: BookOpen,
+    },
+    {
+      title: "Reports & finances",
+      detail: "Open reporting tools",
+      to: "/admin/reports",
+      icon: ArrowDownToLine,
+    },
+  ];
   return (
-    <div className="space-y-5 sm:space-y-6">
-      {/* Header */}
-      <div className="page-header">
-        <div className="min-w-0 flex-1 space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            {translate("admin.overview.title", "Operations overview")}
-          </h1>
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            {translate(
-              "admin.overview.subtitle",
-              "Monitor admissions momentum, commercial health, and platform activity in one unified console.",
-            )}
-          </p>
-        </div>
-        <div className="page-header-actions w-full sm:w-auto">
-          <AdminReportExportButton tenantId={tenantId} defaultReportType="admissions" />
-        </div>
-      </div>
-
-      {/* KPI panels */}
-      <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {KPI_CONFIG.map((item) => {
-          const value = metricsQuery.data?.[item.key] ?? 0;
-          const display =
-            "format" in item && item.format === "currency"
-              ? formatValue(value, "currency", metricsQuery.data?.currency, i18n.language)
-              : formatValue(value, undefined, undefined, i18n.language);
-          const label = translate(item.labelKey, item.defaultLabel);
-          const go = () => navigate(item.to);
-          const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              go();
-            }
-          };
-          const Icon = item.icon;
-          const needsAttention = "accent" in item && item.accent && value > 0;
-
-          return (
-            <Card
-              key={item.key}
-              role="button"
-              tabIndex={0}
-              aria-label={label}
-              onClick={go}
-              onKeyDown={handleKeyDown}
-              className="flex h-full min-h-[154px] cursor-pointer flex-col transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    <div className="space-y-6 pb-4 sm:space-y-7">
+      <section className="relative isolate overflow-hidden rounded-2xl border border-blue-900/20 bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 p-5 text-white shadow-sm sm:p-7">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border-[36px] border-white/[0.04]"
+        />
+        <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
+          <div className="max-w-xl">
+            <p className="mb-3 flex items-center gap-2 text-xs font-medium tracking-wide text-blue-100">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
+              YOUR ADMISSIONS WORKSPACE
+            </p>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Admissions overview
+            </h1>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-blue-100/85">
+              A clear view of your students, applications and the work that
+              needs attention.
+            </p>
+            <p className="mt-4 text-xs text-blue-200/75">
+              {new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Europe/London",
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }).format(new Date())}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 lg:shrink-0 lg:flex-col xl:flex-row">
+            <Button
+              className="bg-white text-slate-950 shadow-sm hover:bg-blue-50"
+              onClick={() => setChoosingStudent(true)}
             >
-              <CardHeader className="flex min-h-[60px] flex-row items-start justify-between gap-2 space-y-0 p-4 pb-1.5">
-                <CardTitle className="text-xs font-medium leading-tight text-muted-foreground sm:text-sm">
-                  {label}
-                </CardTitle>
-                <Icon
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    needsAttention ? "text-amber-500" : "text-muted-foreground",
-                  )}
-                />
-              </CardHeader>
-              <CardContent className="p-4 pt-0">
-                {metricsQuery.isLoading ? (
-                  <Skeleton className="h-7 w-20" />
-                ) : (
-                  <p
-                    className={cn(
-                      "text-xl font-semibold tracking-tight sm:text-2xl",
-                      needsAttention && "text-amber-600 dark:text-amber-400",
-                    )}
-                  >
-                    {display}
-                  </p>
-                )}
-                <p className="mt-1 truncate text-[11px] text-muted-foreground">
-                  {translate("admin.overview.kpis.lastUpdated", "Updated {{time}}", {
-                    time: metricsQuery.data?.lastUpdated
-                      ? formatDistanceToNow(new Date(metricsQuery.data.lastUpdated), {
-                          addSuffix: true,
-                        })
-                      : translate("admin.overview.kpis.justNow", "moments ago"),
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+              <Plus className="mr-2 h-4 w-4" />
+              New application
+            </Button>
+            <Button
+              aria-label="Refresh overview"
+              variant="ghost"
+              className="border border-white/20 text-white hover:bg-white/10 hover:text-white"
+              disabled={refreshing}
+              onClick={refresh}
+            >
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              {refreshing ? "Refreshing…" : "Refresh"}
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {cards.map((card) => (
+          <Link
+            key={card.label}
+            to={card.to}
+            aria-label={`${card.label}: ${card.failed ? "unavailable" : card.loading ? "loading" : formatCount(card.value)}. ${card.action}`}
+            className="group flex min-w-0 flex-col rounded-2xl border bg-card p-4 shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:p-5"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <h2 className="min-h-10 text-xs font-medium leading-5 text-muted-foreground sm:text-sm">
+                {card.label}
+              </h2>
+              <span className={`rounded-lg p-2 ${card.colour}`}>
+                <card.icon className="h-4 w-4" />
+              </span>
+            </div>
+            {card.loading ? (
+              <Skeleton className="my-2 h-9 w-16" />
+            ) : (
+              <p className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">
+                {card.failed ? "—" : formatCount(card.value)}
+              </p>
+            )}
+            <p className="mt-2 min-h-8 text-[11px] leading-4 text-muted-foreground sm:text-xs">
+              {card.failed ? "Unavailable · refresh to try again" : card.detail}
+            </p>
+            <span className="mt-4 flex items-center gap-1 text-xs font-medium text-primary">
+              {card.action}
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </span>
+          </Link>
+        ))}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(300px,1fr)]">
-        <div className="min-w-0 space-y-4">
-          {/* Admissions momentum */}
-          <Card>
-            <CardHeader className="p-4 sm:p-5">
-              <CardTitle className="text-sm font-semibold sm:text-base">
-                {translate("admin.overview.trends.title", "Admissions momentum")}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                {translate(
-                  "admin.overview.trends.subtitle",
-                  "Rolling six-month submission and enrollment cadence",
-                )}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,1fr)]">
+        <section className="min-w-0 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="mb-5 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">
+                Applications needing attention
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Review files, finish drafts and follow up on blocked work.
               </p>
-            </CardHeader>
-            <CardContent className="space-y-4 p-4 pt-0 sm:p-5 sm:pt-0">
-              <div className="h-[200px] sm:h-[220px]">{momentumChart}</div>
-              <div className="grid grid-cols-3 gap-2 border-t pt-4">
-                {secondaryFacts.map((fact) => (
-                  <div key={fact.key} className="min-w-0">
-                    <p className="truncate text-[11px] uppercase tracking-wide text-muted-foreground">
-                      {fact.label}
-                    </p>
-                    <p className="truncate text-sm font-semibold sm:text-base">{fact.value}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{fact.hint}</p>
+            </div>
+            <Link
+              to="/admin/applications?stage=attention"
+              className="shrink-0 text-xs font-medium text-primary"
+            >
+              View all
+              <ArrowUpRight className="ml-1 inline h-3 w-3" />
+            </Link>
+          </div>
+          <PanelState
+            loading={applications.isPending}
+            failed={applications.isError}
+            onRetry={() => void applications.refetch()}
+            empty={
+              applications.data?.priorities.length === 0
+                ? "No applications are flagged for attention. Open the pipeline to review your other records."
+                : undefined
+            }
+          >
+            <ul className="divide-y">
+              {applications.data?.priorities.map((app) => (
+                <li key={app.id}>
+                  <Link
+                    to={`/admin/applications?application=${app.id}`}
+                    className="group flex items-start gap-3 rounded-lg py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
+                      <GraduationCap className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold group-hover:text-primary">
+                        {app.student?.legal_name ||
+                          "Student details unavailable"}
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {app.program?.name || "Course unavailable"} ·{" "}
+                        {app.app_number || app.id.slice(0, 8)}
+                      </p>
+                      <p className="mt-2 break-words text-xs leading-5 text-foreground/75">
+                        {overviewNextAction(app)}
+                      </p>
+                    </div>
+                    <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </PanelState>
+        </section>
+        <div className="min-w-0 space-y-6">
+          <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h2 className="text-base font-semibold">Team follow-ups</h2>
+              <Link
+                to="/admin/tasks"
+                aria-label="View team tasks"
+                className="text-primary"
+              >
+                <ListTodo className="h-4 w-4" />
+              </Link>
+            </div>
+            <PanelState
+              loading={taskScopeAvailable && tasks.isPending}
+              failed={tasksUnavailable}
+              onRetry={
+                taskScopeAvailable ? () => void tasks.refetch() : undefined
+              }
+              empty={
+                tasks.data?.priorities.length === 0
+                  ? "No overdue or blocked follow-ups in this workspace."
+                  : undefined
+              }
+            >
+              <ul className="divide-y">
+                {tasks.data?.priorities.map((task) => (
+                  <li key={task.id} className="py-3">
+                    <Link
+                      to={
+                        task.application_id
+                          ? `/admin/applications?application=${task.application_id}`
+                          : "/admin/tasks"
+                      }
+                      className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      <p className="break-words text-sm font-medium hover:text-primary">
+                        {task.title}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {task.assignee_id === user?.id
+                          ? "You"
+                          : task.assignee?.full_name || "Unassigned"}{" "}
+                        · {formatWorkflowDate(task.due_at)}
+                      </p>
+                      <span className="mt-2 inline-flex rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-800 dark:text-amber-300">
+                        {task.status === "blocked"
+                          ? "Blocked"
+                          : task.due_at && londonDate(task.due_at) < today
+                            ? "Overdue"
+                            : "To follow up"}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </PanelState>
+            {tasks.data && !tasks.isError && (
+              <Link
+                to="/admin/tasks"
+                className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary"
+              >
+                View all tasks · {tasks.data.open} open
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            )}
+          </section>
+          <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="text-base font-semibold">Application pipeline</h2>
+              <Link
+                to="/admin/applications?stage=all"
+                aria-label="Open full application pipeline"
+                className="text-primary"
+              >
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <PanelState
+              loading={applications.isPending}
+              failed={applications.isError}
+              onRetry={() => void applications.refetch()}
+              empty={
+                applications.data?.total === 0
+                  ? "Your pipeline will appear when applications are created."
+                  : undefined
+              }
+            >
+              <div className="space-y-3">
+                {applications.data?.pipeline.map((stage) => (
+                  <div key={stage.label}>
+                    <div className="mb-1.5 flex justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        {stage.label}
+                      </span>
+                      <span className="font-medium">{stage.count}</span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={`h-full rounded-full ${stage.className}`}
+                        style={{
+                          width: `${applications.data?.pipelineTotal ? (stage.count / applications.data.pipelineTotal) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent activity */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 p-4 sm:p-5">
-              <div className="min-w-0">
-                <CardTitle className="text-sm font-semibold sm:text-base">
-                  {translate("admin.overview.recentActivity.title", "Recent activity")}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground sm:text-sm">
-                  {translate(
-                    "admin.overview.recentActivity.subtitle",
-                    "Latest tenant-wide audit events",
-                  )}
-                </p>
-              </div>
-              <Button size="sm" variant="ghost" onClick={() => navigate("/admin/logs")}>
-                {translate("admin.overview.recentActivity.viewAll", "View all")}
-                <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-              </Button>
-            </CardHeader>
-            <CardContent className="p-0 pb-2">
-              {activityQuery.isLoading ? (
-                <div className="px-4 pb-4">
-                  <LoadingState
-                    message={translate("admin.overview.loading.activity", "Loading activity")}
-                    size="sm"
-                  />
-                </div>
-              ) : recentActivity.length === 0 ? (
-                <p className="px-4 pb-4 text-sm text-muted-foreground">
-                  {translate("admin.overview.recentActivity.empty", "No recent activity recorded.")}
-                </p>
-              ) : (
-                <ul className="divide-y">
-                  {recentActivity.map((item) => (
-                    <li key={item.id} className="flex items-start justify-between gap-3 px-4 py-3">
-                      <div className="min-w-0 space-y-0.5">
-                        <p className="truncate text-sm font-medium">{item.action}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {item.user?.full_name
-                            ? translate("admin.overview.recentActivity.entityByUser", "{{entity}} · {{name}}", {
-                                entity: item.entity,
-                                name: item.user.full_name,
-                              })
-                            : item.entity}
-                        </p>
-                      </div>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right rail */}
-        <div className="min-w-0 space-y-4">
-          {/* Action centre */}
-          <Card>
-            <CardHeader className="p-4 sm:p-5">
-              <CardTitle className="text-sm font-semibold sm:text-base">
-                {translate("admin.overview.actions.title", "Action centre")}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                {translate("admin.overview.actions.subtitle", "Jump straight into daily operations")}
+              <p className="mt-4 text-[10px] leading-4 text-muted-foreground">
+                Current recorded stages. Deferred, withdrawn and rejected
+                records are outside these stages.
               </p>
-            </CardHeader>
-            <CardContent className="space-y-1 p-2 pt-0 sm:p-3 sm:pt-0">
-              {ACTION_ITEMS.map((action) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={action.key}
-                    type="button"
-                    onClick={() => navigate(action.to)}
-                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                      <Icon className="h-4 w-4 text-foreground/70" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">
-                        {translate(action.labelKey, action.defaultLabel)}
-                      </span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {translate(action.descriptionKey, action.defaultDescription)}
-                      </span>
-                    </span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                  </button>
-                );
-              })}
-            </CardContent>
-          </Card>
-
-          {/* Platform status */}
-          <Card>
-            <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 p-4 sm:p-5">
-              <div className="min-w-0">
-                <CardTitle className="text-sm font-semibold sm:text-base">
-                  {translate("admin.overview.health.title", "Platform status")}
-                </CardTitle>
-                <p className="text-xs text-muted-foreground sm:text-sm">
-                  {translate(
-                    "admin.overview.health.subtitle",
-                    "Security signals aggregated from the last 30 days",
-                  )}
-                </p>
-              </div>
-              <Badge className={cn(healthStyles.badge, "shrink-0 text-xs")}>{healthStyles.label}</Badge>
-            </CardHeader>
-            <CardContent className="flex items-baseline gap-2 p-4 pt-0 sm:p-5 sm:pt-0">
-              <Activity className={cn("h-4 w-4", healthStyles.accent)} />
-              <p className={cn("text-2xl font-semibold", healthStyles.accent)}>
-                {healthQuery.data?.score ?? 0}
-              </p>
-              <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                {translate("admin.overview.health.scoreLabel", "risk score")}
-              </span>
-            </CardContent>
-          </Card>
-
-          {/* Zoe operations briefing */}
-          <Card>
-            <CardHeader className="p-4 sm:p-5">
-              <CardTitle className="flex items-center gap-2 text-sm font-semibold sm:text-base">
-                <Sparkles className="h-4 w-4 text-primary" />
-                {translate("admin.overview.zoe.title", "Operations briefing")}
-              </CardTitle>
-              <p className="text-xs text-muted-foreground sm:text-sm">
-                {translate(
-                  "admin.overview.zoe.subtitle",
-                  "Ask Zoe for today's priorities across admissions and verifications",
-                )}
-              </p>
-            </CardHeader>
-            <CardContent className="p-4 pt-0 sm:p-5 sm:pt-0">
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full"
-                onClick={() =>
-                  openZoe(
-                    translate(
-                      "admin.overview.zoe.prompt",
-                      "Give me a concise briefing of today's top operational priorities across admissions, verifications and leads.",
-                    ),
-                  )
-                }
-              >
-                {translate("admin.overview.zoe.cta", "Get today's briefing")}
-              </Button>
-            </CardContent>
-          </Card>
+            </PanelState>
+          </section>
         </div>
       </div>
+
+      <section>
+        <h2 className="mb-3 text-sm font-semibold">Keep recruitment moving</h2>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {shortcuts.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className="group rounded-xl border bg-card p-4 transition-colors hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <item.icon className="mb-3 h-4 w-4 text-primary" />
+              <p className="text-sm font-medium">{item.title}</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                {item.detail}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <Link className="hover:text-primary" to="/admin/logs">
+            System activity
+          </Link>
+          <Link className="hover:text-primary" to="/admin/commissions">
+            Commissions
+          </Link>
+          <button
+            className="inline-flex items-center gap-1 hover:text-primary"
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("zoe:open-chat", {
+                  detail: {
+                    prompt:
+                      "Help me review my admissions priorities. Ask me to confirm any information you cannot access.",
+                  },
+                }),
+              )
+            }
+          >
+            <Sparkles className="h-3 w-3" />
+            Ask Zoe
+          </button>
+        </div>
+        <AdminReportExportButton
+          tenantId={profile?.tenant_id}
+          defaultReportType="admissions"
+          buttonVariant="ghost"
+          buttonSize="sm"
+        />
+      </footer>
+      <ChooseApplicationStudent
+        open={choosingStudent}
+        onClose={() => setChoosingStudent(false)}
+      />
     </div>
   );
-};
-
-export default AdminOverview;
+}

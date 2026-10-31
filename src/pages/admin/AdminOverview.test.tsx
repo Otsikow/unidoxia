@@ -1,127 +1,143 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import AdminOverview from "./AdminOverview";
-
-const navigate = vi.fn();
-
-vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
-  return { ...actual, useNavigate: () => navigate };
-});
-
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    t: (_key: string, options?: { defaultValue?: string }) => options?.defaultValue ?? _key,
-    i18n: { language: "en" },
-  }),
+const fake = vi.hoisted(() => ({
+  home: {} as Record<string, any>,
+  refetch: vi.fn(),
 }));
-
 vi.mock("@/hooks/useAuth", () => ({
-  useAuth: () => ({ profile: { tenant_id: "tenant-1", role: "admin" } }),
+  useAuth: () => ({ user: { id: "admin" }, profile: { tenant_id: "tenant" } }),
 }));
-
+vi.mock("@/hooks/admin/useAdminHome", () => ({
+  useAdminHome: () => fake.home,
+}));
 vi.mock("@/components/admin/AdminReportExportButton", () => ({
-  default: () => <button type="button">Export</button>,
+  default: () => <button>Export reports</button>,
 }));
-
-vi.mock("@/hooks/admin/useAdminOverviewData", () => ({
-  useAdminOverviewMetrics: () => ({
-    data: {
-      totalStudents: 42,
-      totalAgents: 7,
-      totalUniversities: 5,
-      activeApplications: 18,
-      totalCommissionPaid: 1200,
-      pendingVerifications: 3,
-      currency: "USD",
-      lastUpdated: new Date().toISOString(),
-    },
-    isLoading: false,
-  }),
-  useAdmissionsTrends: () => ({
-    data: [{ month: "Jan", submitted: 4, enrolled: 2 }],
-    isLoading: false,
-  }),
-  useApplicationsByCountry: () => ({
-    data: [{ country: "United Kingdom", applications: 12 }],
-    isLoading: false,
-  }),
-  useAdminRecentActivity: () => ({
-    data: Array.from({ length: 10 }, (_, index) => ({
-      id: `log-${index}`,
-      action: `Action ${index}`,
-      entity: "applications",
-      created_at: new Date().toISOString(),
-      user: null,
-    })),
-    isLoading: false,
-  }),
-  useSystemHealth: () => ({
-    data: { status: "operational", score: 0, incidents: [], updatedAt: "", recommendations: [] },
-    isLoading: false,
-  }),
+vi.mock("@/components/applications/ChooseApplicationStudent", () => ({
+  ChooseApplicationStudent: ({ open }: { open: boolean }) =>
+    open ? <p>Choose a student</p> : null,
 }));
-
-const renderPage = () =>
-  render(
+function show() {
+  return render(
     <MemoryRouter>
       <AdminOverview />
     </MemoryRouter>,
   );
-
-describe("AdminOverview", () => {
-  beforeEach(() => {
-    navigate.mockClear();
+}
+beforeEach(() => {
+  vi.resetAllMocks();
+  const query = (data: unknown) => ({
+    data,
+    isPending: false,
+    isError: false,
+    isFetching: false,
+    refetch: fake.refetch,
   });
-
-  it("shows exactly four essential KPI panels", () => {
-    renderPage();
-
-    const kpis = ["Active applications", "Students", "Needs review", "Commission paid"];
-    kpis.forEach((label) => {
-      expect(screen.getByRole("button", { name: label })).toBeTruthy();
-    });
+  fake.home = {
+    students: query({ students: 71, documentsToReview: 3 }),
+    applications: query({
+      active: 1,
+      attention: 1,
+      total: 1,
+      pipelineTotal: 1,
+      pipeline: [
+        { label: "UniDoxia review", count: 1, className: "bg-blue-500" },
+      ],
+      priorities: [
+        {
+          id: "app",
+          app_number: "DEMO-1",
+          status: "submitted",
+          student: { legal_name: "Test student" },
+          program: { name: "Test course" },
+          documents: [],
+          tasks: [],
+        },
+      ],
+    }),
+    tasks: query({ overdue: 0, open: 2, priorities: [] }),
+    taskScopeAvailable: true,
+  };
+});
+describe("professional admissions overview", () => {
+  it("shows four operational summaries with links to the matching queues", () => {
+    show();
+    expect(
+      screen.getByRole("link", { name: /Open students$/ }),
+    ).toHaveAttribute("href", "/admin/students");
+    expect(
+      screen.getByRole("link", { name: /Open applications$/ }),
+    ).toHaveAttribute("href", "/admin/applications?stage=active");
+    expect(
+      screen.getByRole("link", { name: /Review documents$/ }),
+    ).toHaveAttribute("href", "/admin/students?view=review");
+    expect(
+      screen.getByRole("link", { name: /Open team tasks$/ }),
+    ).toHaveAttribute("href", "/admin/tasks");
+    expect(screen.getByText("71")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
-
-  it("does not embed the student insights block, admissions oversight page, or a large Zoe textarea", () => {
-    const { container } = renderPage();
-
-    expect(screen.queryByText("Student insights")).toBeNull();
-    expect(screen.queryByText(/Admissions oversight/i)).toBeNull();
-    expect(container.querySelector("textarea")).toBeNull();
+  it("opens the real selected application and the student-first new-application picker", async () => {
+    show();
+    expect(screen.getByRole("link", { name: /Test student/ })).toHaveAttribute(
+      "href",
+      "/admin/applications?application=app",
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "New application" }),
+    );
+    expect(screen.getByText("Choose a student")).toBeInTheDocument();
   });
-
-  it("navigates to the verification queue from the action centre", () => {
-    renderPage();
-
-    fireEvent.click(screen.getByRole("button", { name: /Verification queue/i }));
-
-    expect(navigate).toHaveBeenCalledWith("/admin/agents");
+  it("shows unavailable states rather than false zeros or health claims", () => {
+    fake.home.students = {
+      ...fake.home.students,
+      data: undefined,
+      isError: true,
+    };
+    fake.home.tasks = { ...fake.home.tasks, data: undefined, isError: true };
+    fake.home.applications = {
+      ...fake.home.applications,
+      data: undefined,
+      isError: true,
+    };
+    show();
+    expect(screen.getAllByText("—")).toHaveLength(4);
+    expect(screen.getAllByRole("alert")).toHaveLength(3);
+    expect(screen.queryByText("Operational")).not.toBeInTheDocument();
+    expect(screen.queryByText("US$0")).not.toBeInTheDocument();
   });
-
-  it("opens the applications workspace from both admissions entry points", () => {
-    renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Active applications" }));
-    expect(navigate).toHaveBeenLastCalledWith("/admin/applications");
-    fireEvent.click(screen.getByRole("button", { name: /Admissions pipeline/i }));
-    expect(navigate).toHaveBeenLastCalledWith("/admin/applications");
+  it("does not turn loading or an unavailable task scope into a no-work claim", () => {
+    fake.home.applications = {
+      ...fake.home.applications,
+      data: undefined,
+      isPending: true,
+    };
+    fake.home.tasks = { ...fake.home.tasks, data: undefined, isPending: true };
+    fake.home.taskScopeAvailable = false;
+    show();
+    expect(screen.getAllByLabelText("Loading overview")).toHaveLength(2);
+    expect(
+      screen.queryByText("No overdue or blocked follow-ups in this workspace."),
+    ).not.toBeInTheDocument();
   });
-
-  it("activates KPI panels with the keyboard", () => {
-    renderPage();
-
-    fireEvent.keyDown(screen.getByRole("button", { name: "Students" }), { key: "Enter" });
-
-    expect(navigate).toHaveBeenCalledWith("/admin/students");
-  });
-
-  it("limits recent activity to six items and links to the logs page", () => {
-    renderPage();
-
-    expect(screen.getAllByText(/^Action \d$/)).toHaveLength(6);
-
-    fireEvent.click(screen.getByRole("button", { name: /View all/i }));
-    expect(navigate).toHaveBeenCalledWith("/admin/logs");
+  it("refreshes each independent source and preserves reporting and finance access", async () => {
+    show();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Refresh overview" }),
+    );
+    expect(fake.refetch).toHaveBeenCalledTimes(3);
+    expect(
+      screen.getByRole("link", { name: /Reports & finances/ }),
+    ).toHaveAttribute("href", "/admin/reports");
+    expect(screen.getByRole("link", { name: "Commissions" })).toHaveAttribute(
+      "href",
+      "/admin/commissions",
+    );
+    expect(
+      screen.getByRole("button", { name: "Export reports" }),
+    ).toBeInTheDocument();
   });
 });

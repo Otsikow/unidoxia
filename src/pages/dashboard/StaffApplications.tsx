@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { applicationNeedsAttention, formatWorkflowDate, openFollowUps, isFollowUpOverdue, type ApplicationFollowUp, getNextApplicationAction, isActiveApplication, WORKFLOW_STATUSES } from '@/lib/applicationWorkflow';
+import { applicationQueueFilter, applicationNeedsAttention, formatWorkflowDate, openFollowUps, isFollowUpOverdue, type ApplicationFollowUp, getNextApplicationAction, isActiveApplication, WORKFLOW_STATUSES } from '@/lib/applicationWorkflow';
 import { StaffApplicationWorkspace } from '@/components/applications/StaffApplicationWorkspace';
 import { ChooseApplicationStudent } from '@/components/applications/ChooseApplicationStudent';
 import { Plus, RefreshCw } from 'lucide-react';
@@ -39,7 +39,12 @@ export default function StaffApplications({ embedded = false }: { embedded?: boo
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('attention');
+  const filter = applicationQueueFilter(params.get('stage'));
+  const setFilter = (value: string) => {
+    const next = new URLSearchParams(params);
+    next.set('stage', applicationQueueFilter(value));
+    setParams(next, { replace: true });
+  };
   const [page, setPage] = useState(0);
   const [choosingStudent, setChoosingStudent] = useState(false);
   const applicationId = params.get('application');

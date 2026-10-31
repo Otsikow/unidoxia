@@ -11,8 +11,8 @@ vi.mock('@/components/layout/DashboardLayout', () => ({ DashboardLayout: ({ chil
 vi.mock('@/components/applications/ChooseApplicationStudent', () => ({ ChooseApplicationStudent: ({ open }: { open: boolean }) => open ? <div>Student picker opened</div> : null }));
 vi.mock('@/components/applications/StaffApplicationWorkspace', () => ({ StaffApplicationWorkspace: ({ applicationId }: { applicationId: string | null }) => applicationId ? <div>Workspace {applicationId}</div> : null }));
 const application = (id: string, name: string, status = 'submitted') => ({ id, app_number: `REF-${id}`, student_id: id, program_id: 'course', status, intake_month: 9, intake_year: 2027, updated_at: '', student: { legal_name: name, contact_email: '' }, program: { name: 'Computer Science', university: { name: 'Test institution', country: 'UK' } }, documents: [] });
-function show(embedded = false) {
-  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter><StaffApplications embedded={embedded} /></MemoryRouter></QueryClientProvider>);
+function show(embedded = false, initial = '/') {
+  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter initialEntries={[initial]}><StaffApplications embedded={embedded} /></MemoryRouter></QueryClientProvider>);
 }
 beforeEach(() => { vi.resetAllMocks(); });
 describe('staff application queue', () => {
@@ -31,6 +31,13 @@ describe('staff application queue', () => {
     show(true);
     await screen.findByText('No applications yet. Choose a student to start.');
     expect(screen.queryByTestId('shared-dashboard-layout')).not.toBeInTheDocument();
+  });
+  it('opens the dashboard active-pipeline link without retaining the needs-attention default', async () => {
+    api.range.mockResolvedValue({ data: [{...application('a', 'Reviewed Example', 'screening'),documents:[{id:'doc',verified:true}]}, application('b', 'Enrolled Example','enrolled')], error: null });
+    show(false, '/admin/applications?stage=active');
+    expect((await screen.findAllByText('Reviewed Example'))[0]).toBeInTheDocument();
+    expect(screen.queryByText('Enrolled Example')).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', {name:'Application stage'})).toHaveTextContent('Active applications');
   });
   it('shows a genuine empty state and a student-first start action', async () => {
     api.range.mockResolvedValue({ data: [], error: null });

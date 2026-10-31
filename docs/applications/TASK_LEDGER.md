@@ -43,3 +43,7 @@ Eric selected Students and confirmed the simple Applications style. Built a focu
 ## Admin consolidation — 31 October 2026
 
 Eric supplied screenshots of `/dashboard/applications` and `/admin/applications` and explicitly requested one dashboard using the simplified version. Prepared a separate follow-up from the now-merged Students build (#1255): one AdminLayout owner, context-based suppression of nested navigation, canonical admin redirects after existing route guards, preserved query/hash/history state, registered shared-tool aliases and accessible mobile menu behaviour. Other roles keep their existing shared navigation. Existing tools and distinct payment/report/resource workflows remain available. Architecture and release limitations: `../admin/ADMIN_WORKSPACE.md`. No production mutation, merge or publication performed during implementation.
+
+## Professional admin overview — 31 October 2026
+
+Eric requested that the main dashboard be beautiful, professional and useful. Built a focused admissions overview in the unified shell: compact summary cards, real priority cases, tenant-scoped follow-ups, truthful recorded-stage bars, New application and recruitment shortcuts. Added bounded URL filters to Students and Applications so the summary links open the matching queues. Existing uploads, reporting, financial operations, auth guards and role policies are preserved. Definitions, validation and limits are in `../admin/OVERVIEW.md`. No real student/task/account mutations or publication performed during development.
