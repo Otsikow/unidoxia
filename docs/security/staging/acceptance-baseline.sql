@@ -36,21 +36,21 @@ DECLARE
   new_role app_role;
   raw_phone text;
 BEGIN
-  SELECT id INTO default_tenant_id 
-  FROM public.tenants 
-  WHERE slug IN ('geg-global', 'unidoxia', 'default') 
-  ORDER BY 
-    CASE slug 
-      WHEN 'geg-global' THEN 1 
-      WHEN 'unidoxia' THEN 2 
-      WHEN 'default' THEN 3 
-    END 
+  SELECT id INTO default_tenant_id
+  FROM public.tenants
+  WHERE slug IN ('geg-global', 'unidoxia', 'default')
+  ORDER BY
+    CASE slug
+      WHEN 'geg-global' THEN 1
+      WHEN 'unidoxia' THEN 2
+      WHEN 'default' THEN 3
+    END
   LIMIT 1;
 
   IF default_tenant_id IS NULL THEN
-    SELECT id INTO default_tenant_id 
-    FROM public.tenants 
-    ORDER BY created_at ASC 
+    SELECT id INTO default_tenant_id
+    FROM public.tenants
+    ORDER BY created_at ASC
     LIMIT 1;
   END IF;
 
@@ -65,8 +65,8 @@ BEGIN
   INSERT INTO public.profiles (
     id, tenant_id, email, full_name, role, phone, country, username, onboarded
   ) VALUES (
-    NEW.id, 
-    default_tenant_id, 
+    NEW.id,
+    default_tenant_id,
     NEW.email,
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'),
     new_role,
@@ -86,21 +86,21 @@ BEGIN
 
   IF new_role = 'student'::app_role THEN
     INSERT INTO public.students (
-      tenant_id, profile_id, referral_source, 
-      contact_email, contact_phone, 
+      tenant_id, profile_id, referral_source,
+      contact_email, contact_phone,
       legal_name, current_country,
       address,
       address_line_1, address_line_2, city, state_region, postal_code, country_of_residence
     )
     VALUES (
-      default_tenant_id, 
+      default_tenant_id,
       NEW.id,
       NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'referral_source', '')), ''),
       NEW.email,
       raw_phone,
       COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'),
       NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'country', '')), ''),
-      CASE WHEN raw_phone IS NOT NULL 
+      CASE WHEN raw_phone IS NOT NULL
         THEN jsonb_build_object('whatsapp', raw_phone)
         ELSE '{}'::jsonb
       END,
