@@ -26,6 +26,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ApplicationFollowUps } from "@/components/applications/ApplicationFollowUps";
 import { StudentInternalConversation } from "./StudentInternalConversation";
 import {
   COMMUNICATION_TEMPLATES,
@@ -85,7 +86,7 @@ export function CommunicationWorkspace({
 }) {
   const { user, profile } = useAuth();
   const [channel, setChannel] = useState(
-    ["email", "whatsapp", "internal", "history"].includes(initialChannel)
+    ["email", "whatsapp", "internal", "history", "followups"].includes(initialChannel)
       ? initialChannel
       : "email",
   );
@@ -96,6 +97,8 @@ export function CommunicationWorkspace({
   const [draft, setDraft] = useState(() =>
     communicationTemplate("update", student),
   );
+  const [followUpDirty, setFollowUpDirty] = useState(false);
+  const [followUpsOpened, setFollowUpsOpened] = useState(initialChannel === "followups");
   const [edited, setEdited] = useState(false);
   const [busy, setBusy] = useState(false);
   const [attempted, setAttempted] = useState(false);
@@ -108,8 +111,8 @@ export function CommunicationWorkspace({
   const id = useRef<string>(crypto.randomUUID());
   const noteId = useRef<string>(crypto.randomUUID());
   useEffect(() => {
-    onDirtyChange(edited || Boolean(note) || (attempted && !accepted));
-  }, [edited, note, attempted, accepted, onDirtyChange]);
+    onDirtyChange(edited || followUpDirty || Boolean(note) || (attempted && !accepted));
+  }, [edited, followUpDirty, note, attempted, accepted, onDirtyChange]);
   const history = useQuery({
     queryKey: [
       "student-communications",
@@ -127,7 +130,7 @@ export function CommunicationWorkspace({
       }) as Promise<{ rows: CommunicationRecord[]; total: number }>,
   });
   const change = (action: () => void) => {
-    if (edited || (attempted && !accepted)) setPendingAction(() => action);
+    if (edited || followUpDirty || (attempted && !accepted)) setPendingAction(() => action);
     else action();
   };
   const useTemplate = () =>
@@ -272,6 +275,11 @@ export function CommunicationWorkspace({
                   ),
                 );
                 setEdited(false);
+                setAttempted(false);
+                setAccepted(false);
+                id.current = crypto.randomUUID();
+                setError("");
+                setMessage("");
               });
             }}
           >
@@ -296,15 +304,16 @@ export function CommunicationWorkspace({
       </header>
       <Tabs
         value={channel}
-        onValueChange={setChannel}
+        onValueChange={(value) => { setChannel(value); if (value === "followups") setFollowUpsOpened(true); }}
         className="flex min-h-0 flex-1 flex-col overflow-hidden"
       >
         <div className="shrink-0 overflow-x-auto p-3">
-          <TabsList className="w-max min-w-full">
-            <TabsTrigger value="email">Email</TabsTrigger>
-            <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-            <TabsTrigger value="internal">Internal chat</TabsTrigger>
-            <TabsTrigger value="history">History & notes</TabsTrigger>
+          <TabsList className="grid h-auto w-full grid-cols-3 gap-1 sm:flex sm:w-max sm:min-w-full">
+            <TabsTrigger className="text-xs sm:text-sm" value="email">Email</TabsTrigger>
+            <TabsTrigger className="text-xs sm:text-sm" value="whatsapp">WhatsApp</TabsTrigger>
+            <TabsTrigger className="text-xs sm:text-sm" value="internal">Internal chat</TabsTrigger>
+            <TabsTrigger className="text-xs sm:text-sm" value="history">History & notes</TabsTrigger>
+            <TabsTrigger className="text-xs sm:text-sm" value="followups">Follow-ups</TabsTrigger>
           </TabsList>
         </div>
         {["email", "whatsapp"].map((mode) => (
@@ -489,6 +498,39 @@ export function CommunicationWorkspace({
           </TabsContent>
         ))}
         <TabsContent
+          value="followups"
+          forceMount
+          className="m-0 min-h-0 flex-1 overflow-y-auto px-4 pb-4 data-[state=inactive]:hidden"
+        >
+          <p className="mb-4 text-xs text-muted-foreground">
+            Schedule the next action for the selected application. These are your
+            team’s tasks, not automatic proof that an email or WhatsApp reply is outstanding.
+          </p>
+          {!app ? (
+            <div className="space-y-3 rounded-xl border p-4">
+              <h3 className="font-semibold">Choose an application</h3>
+              <p className="text-sm text-muted-foreground">
+                {student.applications.length
+                  ? "Choose an application in Application context above to add, assign or complete its follow-ups."
+                  : "This student has no application yet. Open their student profile to start one; use History & notes for an undated communication note."}
+              </p>
+              <Link className="text-sm text-primary underline" to={`/admin/students/${encodeURIComponent(student.id)}?tab=applications`}>
+                View student applications
+              </Link>
+            </div>
+          ) : followUpsOpened && profile?.tenant_id ? (
+            <ApplicationFollowUps
+              key={app.id}
+              applicationId={app.id}
+              tenantId={profile.tenant_id}
+              enabled={active && channel === "followups"}
+              idPrefix={`communication-${student.id}-${app.id}`}
+              onSaved={() => setMessage("Application follow-ups updated.")}
+              onDirtyChange={setFollowUpDirty}
+            />
+          ) : null}
+        </TabsContent>
+        <TabsContent
           value="internal"
           className="m-0 flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 data-[state=inactive]:hidden"
         >
@@ -667,7 +709,7 @@ export function CommunicationWorkspace({
             <AlertDialogTitle>Replace this draft?</AlertDialogTitle>
             <AlertDialogDescription>
               Unsent edits will be replaced. If an earlier email attempt is
-              pending, check its history before creating another message.
+              pending, check its history before creating another message. Switching applications also clears unsaved follow-up edits.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
