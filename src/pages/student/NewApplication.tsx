@@ -23,9 +23,9 @@ import type { ApplicationFormData } from '@/types/application';
 import { EMPTY_EMERGENCY_CONTACT } from '@/types/application';
 
 import { normalizeEducationLevel } from '@/lib/education';
-import type { PostgrestError } from '@supabase/supabase-js';
 import { useAgentProfileCompletion } from '@/hooks/useAgentProfileCompletion';
 import { AgentProfileCompletionCard } from '@/components/agent/AgentProfileCompletionCard';
+import { saveApplicationDocuments } from '@/lib/applicationDocuments';
 import { useApplicationLimitCheck } from '@/hooks/useStudentBilling';
 import { Link } from 'react-router-dom';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -66,10 +66,10 @@ type StudentDocumentMetadata = {
 
 const STUDENT_DOCUMENT_TYPE_MAP: Record<ApplicationDocumentType, string[]> = {
   passport_photo: ['passport_photo'],
-  transcript: ['transcript', 'degree_certificate'],
+  transcript: ['transcript'],
   passport: ['passport'],
-  ielts: ['english_test'],
-  sop: ['personal_statement'],
+  ielts: ['english_test', 'english_test_certificate', 'ielts'],
+  sop: ['sop', 'personal_statement'],
 };
 
 const TRACKING_ID_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -113,23 +113,6 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isValidUuidString = (value: string | null | undefined) =>
   typeof value === 'string' &&
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-
-const isMissingColumnError = (error: PostgrestError | null, column: string) => {
-  if (!error) return false;
-
-  const normalizedColumn = column.toLowerCase();
-  const message = error.message?.toLowerCase() ?? '';
-  const details = error.details?.toLowerCase() ?? '';
-  const hint = error.hint?.toLowerCase() ?? '';
-  const mentionsColumn =
-    message.includes(normalizedColumn) || details.includes(normalizedColumn) || hint.includes(normalizedColumn);
-
-  return (
-    (error.code === '42703' && mentionsColumn) ||
-    mentionsColumn ||
-    message.includes('schema cache')
-  );
-};
 
 const normalizeName = (value: string | null | undefined) => value?.trim().replace(/\s+/g, ' ').toLowerCase() ?? '';
 
@@ -308,6 +291,10 @@ export default function NewApplication() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const submissionInFlight = useRef(false);
+  const pendingApplication = useRef<ApplicationRow | null>(null);
+  const pendingApplicationId = useRef<string | null>(null);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
   const [agentId, setAgentId] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -651,7 +638,7 @@ export default function NewApplication() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, profile, navigate, toast, studentIdFromUrl, agentId]);
+  }, [user?.id, profile, navigate, toast, studentIdFromUrl, agentId, loadStudentDocuments]);
 
   useEffect(() => {
     const loadAgentId = async () => {
@@ -687,7 +674,7 @@ export default function NewApplication() {
     }
   }, [loadStudentDocuments, studentId]);
 
-  const draftQueryKey = ['application-draft', studentId] as const;
+  const draftQueryKey = useMemo(() => ['application-draft', studentId] as const, [studentId]);
 
   const upsertDraftMutationFn = useCallback(async (
     payload: DraftMutationPayload,
@@ -1078,6 +1065,7 @@ export default function NewApplication() {
 
   // Handle form submission
   const handleSubmit = async () => {
+    if (submissionInFlight.current) return;
     if (!studentId || !formData.programSelection.programId) {
       toast({
         title: 'Error',
@@ -1109,7 +1097,9 @@ export default function NewApplication() {
     const submittedByAgent = profile?.role === 'agent' && Boolean(agentId);
     const submissionChannel = submittedByAgent ? 'agent_portal' : 'student_portal';
 
+    submissionInFlight.current = true;
     setSubmitting(true);
+    setSubmissionError(null);
     try {
       // Persist the student particulars captured in this application so universities
       // can reliably review identity + background from the application record.
@@ -1139,7 +1129,7 @@ export default function NewApplication() {
 
         const emergency = formDataRef.current.emergencyContact;
         if (emergency?.fullName?.trim()) {
-          const { error: ecError } = await supabase
+          const { data: emergencySaved, error: ecError } = await supabase
             .from('students')
             .update({
               emergency_contact_name: emergency.fullName.trim(),
@@ -1148,10 +1138,9 @@ export default function NewApplication() {
               emergency_contact_email: emergency.email.trim() || null,
               emergency_contact_country: emergency.country.trim() || null,
             } as never)
-            .eq('id', studentId);
-          if (ecError) {
-            console.warn('[NewApplication] Emergency contact update failed:', ecError);
-          }
+            .eq('id', studentId).select('id').maybeSingle();
+          if (ecError) throw ecError;
+          if (!emergencySaved) throw new Error('Emergency contact details could not be saved. Please check your access.');
         }
 
         const rpcResult = await supabase.rpc(
@@ -1194,9 +1183,7 @@ export default function NewApplication() {
           msg.includes('schema cache');
 
         if (!isMissingRpc) {
-          // Permission or other error: don't block submission, but log for diagnosis.
-          console.warn('[NewApplication] Student sync RPC failed:', rpcResult.error);
-          return;
+          throw rpcResult.error;
         }
 
         const updateStudent: Record<string, unknown> = {};
@@ -1217,13 +1204,12 @@ export default function NewApplication() {
         }
 
         if (Object.keys(updateStudent).length > 0) {
-          const { error: stuErr } = await supabase
+          const { data: savedStudent, error: stuErr } = await supabase
             .from('students')
             .update(updateStudent as never)
-            .eq('id', studentId);
-          if (stuErr) {
-            console.warn('[NewApplication] Student update fallback failed:', stuErr);
-          }
+            .eq('id', studentId).select('id').maybeSingle();
+          if (stuErr) throw stuErr;
+          if (!savedStudent) throw new Error('Student details could not be saved. Please check your access.');
         }
 
         const eduRows = educationRecords
@@ -1249,9 +1235,7 @@ export default function NewApplication() {
             .upsert(eduRows as never, { onConflict: 'id' })
             .select('id')
             .limit(1);
-          if (eduErr) {
-            console.warn('[NewApplication] Education upsert fallback failed:', eduErr);
-          }
+          if (eduErr) throw eduErr;
         }
       };
 
@@ -1274,184 +1258,57 @@ export default function NewApplication() {
           ? programMeta.tenant_id
           : tenantId;
 
-      const trackingId = await getUniqueTrackingId();
-
-      const baseApplicationPayload = {
-        app_number: trackingId,
-        student_id: studentId,
-        program_id: programId,
-        intake_year: formData.programSelection.intakeYear,
-        intake_month: formData.programSelection.intakeMonth,
-        intake_id: formData.programSelection.intakeId || null,
-        status: 'submitted',
-        notes: formData.notes || null,
-        tenant_id: applicationTenantId,
-        submitted_at: new Date().toISOString(),
-      };
-
-      const optionalApplicationColumns = {
-        application_source: 'UniDoxia' as const, // Attribution: track that this application came through UniDoxia platform
-        submitted_by_agent: submittedByAgent,
-        submission_channel: submissionChannel,
-        agent_id: submittedByAgent ? agentId : null,
-      };
-
-      const attemptInsert = async (
-        payload: Record<string, unknown>,
-      ) => supabase.from('applications').insert(payload as never).select().single();
-
-      // Keep retrying by stripping optional columns that are missing from the target schema
-      // until the insert succeeds or we exhaust all optional columns.
-      const optionalColumnEntries = Object.entries(optionalApplicationColumns);
-      const excludedColumns = new Set<string>();
-      let currentPayload: Record<string, unknown> = {
-        ...baseApplicationPayload,
-        ...optionalApplicationColumns,
-      };
-      let lastError: PostgrestError | null = null;
+      // Keep a stable ID across a retry or browser refresh. Only IDs are stored;
+      // no student particulars or files go into this recovery marker.
+      const recoveryKey = `unidoxia:submission:${user?.id}:${studentId}:${programId}:${formData.programSelection.intakeYear}:${formData.programSelection.intakeMonth}`;
+      let recoveryId = pendingApplication.current?.id || pendingApplicationId.current;
+      try { recoveryId ||= window.sessionStorage.getItem(recoveryKey) || undefined; } catch { /* memory recovery remains available */ }
       let createdApplication: ApplicationRow | null = null;
-
-      for (let attempt = 0; attempt <= optionalColumnEntries.length; attempt++) {
-        const { data, error } = await attemptInsert(currentPayload);
-
-        if (!error && data) {
-          createdApplication = data;
-          break;
+      if (recoveryId) {
+        const { data, error } = await supabase.from('applications').select('*').eq('id', recoveryId).maybeSingle();
+        if (error) throw new Error('We could not reopen the saved application. Please refresh and try again; do not create a duplicate.');
+        if (data && (data.student_id !== studentId || data.program_id !== programId || data.intake_year !== formData.programSelection.intakeYear || data.intake_month !== formData.programSelection.intakeMonth)) {
+          throw new Error('This recovery record belongs to a different course or intake. Return to Applications and open the original record.');
         }
-
-        lastError = error;
-
-        const missingColumns = optionalColumnEntries
-          .map(([column]) => column)
-          .filter((column) => !excludedColumns.has(column) && isMissingColumnError(error, column));
-
-        if (missingColumns.length === 0) {
-          break;
-        }
-
-        missingColumns.forEach((column) => excludedColumns.add(column));
-
-        console.warn(
-          'Optional application columns missing, retrying insert without them',
-          missingColumns,
-        );
-
-        const nextPayload: Record<string, unknown> = {
-          ...baseApplicationPayload,
-        };
-
-        for (const [column, value] of optionalColumnEntries) {
-          if (!excludedColumns.has(column)) {
-            nextPayload[column] = value;
-          }
-        }
-
-        currentPayload = nextPayload;
+        if (data && data.status !== 'submitted') throw new Error('This application has already progressed. Open it from Applications to review its current status.');
+        createdApplication = data;
       }
-
       if (!createdApplication) {
-        if (
-          lastError &&
-          typeof lastError.message === "string" &&
-          lastError.message.includes("APPLICATION_LIMIT_REACHED")
-        ) {
-          toast({
-            title: "Application Limit Reached",
-            description:
-              "You have used your free application. Upgrade to Self-Service ($49) for unlimited applications or choose Agent-Supported ($200) for guided support.",
-            variant: "destructive",
-          });
-          return;
+        const trackingId = await getUniqueTrackingId();
+        const id = recoveryId || crypto.randomUUID();
+        pendingApplicationId.current = id;
+        // Set before insert: if the server saves but the response is lost, the
+        // next attempt checks this ID before inserting another application.
+        try { window.sessionStorage.setItem(recoveryKey, id); } catch { /* storage may be unavailable */ }
+        const payload = {
+          id, app_number: trackingId, student_id: studentId, program_id: programId,
+          intake_year: formData.programSelection.intakeYear,
+          intake_month: formData.programSelection.intakeMonth,
+          intake_id: formData.programSelection.intakeId || null,
+          status: 'submitted' as const, notes: formData.notes || null,
+          tenant_id: applicationTenantId, submitted_at: new Date().toISOString(),
+          submission_channel: submissionChannel, agent_id: submittedByAgent ? agentId : null,
+        };
+        const { data, error } = await supabase.from('applications').insert(payload).select().single();
+        if (error) {
+          // A definite database rejection means nothing was inserted. Keep the
+          // marker for ambiguous transport errors to prevent duplicate retries.
+          if (/^[0-9A-Z]{5}$/.test(error.code ?? '') && !error.code.startsWith('PGRST')) {
+            try { window.sessionStorage.removeItem(recoveryKey); } catch { /* optional */ }
+            pendingApplicationId.current = null;
+          }
+          throw error;
         }
-        throw lastError || new Error('Failed to create application');
+        createdApplication = data;
       }
-
+      if (!createdApplication) throw new Error('Application could not be saved.');
+      pendingApplication.current = createdApplication;
       setApplicationId(createdApplication.id);
-      setTrackingCode(createdApplication.app_number ?? trackingId);
+      setTrackingCode(createdApplication.app_number);
 
-      // Upload documents to storage and create document records
-      for (const docType of APPLICATION_DOCUMENT_TYPES) {
-        const file = formData.documents[docType];
-        if (file) {
-          try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${docType}_${Date.now()}.${fileExt}`;
-            const filePath = `${createdApplication.id}/${fileName}`;
-
-            // Upload to storage
-            const { error: uploadError } = await supabase.storage
-              .from('application-documents')
-              .upload(filePath, file, {
-                cacheControl: '3600',
-                upsert: false,
-              });
-
-            if (uploadError) {
-              console.error(`Failed to upload ${docType}:`, uploadError);
-              continue; // Continue with other documents
-            }
-
-            // Create document record
-            // Retrieve verification status if available
-            const verificationStatus = (formData.documents as any)[`${docType}_verificationStatus`];
-
-            await supabase.from('application_documents').insert([{
-              application_id: createdApplication.id,
-              document_type: docType as any,
-              storage_path: filePath,
-              file_size: file.size,
-              mime_type: file.type,
-              verification_status: verificationStatus || 'Pending',
-            } as any]);
-
-          } catch (error) {
-            console.error(`Error processing ${docType}:`, error);
-          }
-        } else {
-          const studentDocument = studentDocuments[docType];
-
-          if (!studentDocument) {
-            continue;
-          }
-
-          try {
-            const { data: existingFile, error: downloadError } = await supabase.storage
-              .from('student-documents')
-              .download(studentDocument.storage_path);
-
-            if (downloadError || !existingFile) {
-              console.error(`Failed to fetch existing ${docType} for reuse:`, downloadError);
-              continue;
-            }
-
-            const fileName = `${docType}_${Date.now()}_${studentDocument.file_name}`;
-            const filePath = `${createdApplication.id}/${fileName}`;
-
-            const { error: uploadError } = await supabase.storage
-              .from('application-documents')
-              .upload(filePath, existingFile, {
-                cacheControl: '3600',
-                upsert: false,
-                contentType: studentDocument.mime_type,
-              });
-
-            if (uploadError) {
-              console.error(`Failed to reuse ${docType}:`, uploadError);
-              continue;
-            }
-
-            await supabase.from('application_documents').insert([{
-              application_id: createdApplication.id,
-              document_type: docType as any,
-              storage_path: filePath,
-              file_size: studentDocument.file_size,
-              mime_type: studentDocument.mime_type,
-            }]);
-          } catch (error) {
-            console.error(`Error reusing ${docType}:`, error);
-          }
-        }
-      }
+      await saveApplicationDocuments(createdApplication.id, APPLICATION_DOCUMENT_TYPES
+        .filter(type => formData.documents[type] || studentDocuments[type])
+        .map(type => ({ type, file: formData.documents[type], existing: studentDocuments[type] })));
 
       // Get program details for notifications
       try {
@@ -1469,7 +1326,7 @@ export default function NewApplication() {
           .maybeSingle();
 
         if (assignmentData?.counselor_id) {
-          await supabase.from('notifications').insert({
+          const { error: notificationError } = await supabase.from('notifications').insert({
             user_id: assignmentData.counselor_id,
             tenant_id: tenantId,
             type: 'general',
@@ -1482,6 +1339,7 @@ export default function NewApplication() {
             },
             action_url: '/dashboard/applications',
           });
+          if (notificationError) throw notificationError;
         }
       } catch (notificationError) {
         logError(notificationError, 'NewApplication.notifications');
@@ -1489,10 +1347,11 @@ export default function NewApplication() {
 
       // Clear stored draft after successful submission
       try {
-        await supabase
+        const { error: cleanupError } = await supabase
           .from('application_drafts')
           .delete()
           .eq('student_id', studentId);
+        if (cleanupError) throw cleanupError;
         queryClient.removeQueries({ queryKey: draftQueryKey });
         setLastSavedAt(null);
         setAutoSaveError(null);
@@ -1505,22 +1364,31 @@ export default function NewApplication() {
 
         // Send email notification (submission)
         try {
-          await supabase.functions.invoke('send-application-update', {
+          const { error: emailError } = await supabase.functions.invoke('send-application-update', {
             body: {
               applicationId: createdApplication.id,
               type: 'submitted'
             }
           });
+          if (emailError) throw emailError;
         } catch (emailError) {
           console.error("Failed to send submission email:", emailError);
         }
 
-        // Show success modal
+        // Report success only after document records have been read back.
+        pendingApplication.current = null;
+        pendingApplicationId.current = null;
+        try { window.sessionStorage.removeItem(recoveryKey); } catch { /* optional */ }
         setShowSuccessModal(true);
     } catch (error) {
       logError(error, 'NewApplication.handleSubmit');
-      toast(formatErrorForToast(error, 'Failed to submit application'));
+      const message = pendingApplication.current
+        ? `Your application reference is saved, but its documents are incomplete. Please retry here to finish the same application. ${getErrorMessage(error)}`
+        : getErrorMessage(error);
+      setSubmissionError(message);
+      toast({ title: 'Application needs attention', description: message, variant: 'destructive' });
     } finally {
+      submissionInFlight.current = false;
       setSubmitting(false);
     }
   };
@@ -1583,7 +1451,12 @@ export default function NewApplication() {
   }
 
   // Application limit check for students on Free plan
-  if (isStudent && !canCreateApplication) {
+  let hasRecoverableApplication = Boolean(pendingApplication.current || pendingApplicationId.current);
+  try {
+    hasRecoverableApplication ||= Boolean(window.sessionStorage.getItem(`unidoxia:submission:${user?.id}:${studentId}:${formData.programSelection.programId}:${formData.programSelection.intakeYear}:${formData.programSelection.intakeMonth}`));
+  } catch { /* optional */ }
+
+  if (isStudent && !canCreateApplication && !hasRecoverableApplication) {
     return (
       <div className="container mx-auto py-8 max-w-3xl space-y-6">
         <BackButton variant="ghost" size="sm" wrapperClassName="mb-2" fallback="/student/dashboard" />
@@ -1789,6 +1662,8 @@ export default function NewApplication() {
         </CardContent>
       </Card>
 
+      {submissionError && <Alert variant="destructive"><AlertTitle>Application needs attention</AlertTitle><AlertDescription>{submissionError}</AlertDescription></Alert>}
+
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
         <DialogContent className="w-[min(92vw,34rem)] sm:max-w-lg p-6 sm:p-8">
@@ -1799,12 +1674,11 @@ export default function NewApplication() {
               </div>
             </div>
             <DialogTitle className="text-center text-xl sm:text-2xl">
-              Application Submitted!
+              Application received by UniDoxia
             </DialogTitle>
             <DialogDescription className="text-center space-y-4 text-sm sm:text-base">
               <p className="text-muted-foreground">
-                Your application has been successfully submitted. You will receive updates via
-                email and notifications.
+                Your application and documents are saved for review by UniDoxia. This does not confirm submission to the university. Track progress in your dashboard.
               </p>
               {trackingCode && (
                 <div className="bg-muted/70 border border-muted-foreground/10 p-4 sm:p-5 rounded-xl">
@@ -1828,19 +1702,8 @@ export default function NewApplication() {
             >
               View Application
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => navigate(applicationsListUrl)}
-              className="flex-1"
-            >
-              Track Applications
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate(applicationsListUrl)}
-              className="flex-1"
-            >
-              My Applications
+            <Button variant="outline" onClick={() => navigate(applicationsListUrl)} className="flex-1">
+              Back to applications
             </Button>
           </div>
         </DialogContent>

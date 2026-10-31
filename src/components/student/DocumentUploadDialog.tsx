@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
-import { validateFileUpload, verifyUploadedFileSize } from '@/lib/fileUpload';
+import { validateFileUpload } from '@/lib/fileUpload';
 import {
   Dialog,
   DialogContent,
@@ -22,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { applicationDocumentType, uploadVerifiedDocument, saveApplicationDocument, type ApplicationUploadType } from '@/lib/documentUpload';
 import { Upload, Loader2, FileCheck, AlertCircle, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -63,7 +63,7 @@ const DOCUMENT_TYPES = [
   { value: 'other', label: 'Other' },
 ];
 
-type DocumentType = Database['public']['Enums']['document_type'];
+type DocumentType = ApplicationUploadType;
 
 /**
  * Maps a document request type to the corresponding enum value for application_documents.
@@ -74,7 +74,8 @@ function mapRequestTypeToDocumentType(requestType: string): DocumentType {
   
   const mappings: Record<string, DocumentType> = {
     'passport': 'passport',
-    'passportphoto': 'passport',
+    'passportphoto': 'passport_photo',
+    'passportphotopage': 'passport',
     'transcript': 'transcript',
     'academictranscript': 'transcript',
     'ielts': 'ielts',
@@ -121,6 +122,7 @@ export function DocumentUploadDialog({
   const [documentType, setDocumentType] = useState<DocumentType | ''>('');
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const uploadInFlight = useRef(false);
   const { toast } = useToast();
 
   // Determine if this is a locked document request mode
@@ -146,6 +148,7 @@ export function DocumentUploadDialog({
   };
 
   const handleUpload = async () => {
+    if (uploadInFlight.current) return;
     if (!file || !documentType) {
       toast({
         title: 'Missing information',
@@ -156,6 +159,7 @@ export function DocumentUploadDialog({
     }
 
     try {
+      uploadInFlight.current = true;
       setUploading(true);
 
       const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(file, {
@@ -175,77 +179,30 @@ export function DocumentUploadDialog({
       const fileExt = sanitizedFileName.split('.').pop();
       // IMPORTANT: application-documents bucket policies expect the first folder
       // segment to be the application id (no extra prefix like `documents/`).
-      const filePath = `${applicationId}/${documentType}_${Date.now()}.${fileExt}`;
+      const filePath = `${applicationId}/${documentType}_${crypto.randomUUID()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('application-documents')
-        .upload(filePath, preparedFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: detectedMimeType,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // FIX: Verify uploaded file size matches original to catch truncation during upload
-      const verification = await verifyUploadedFileSize(
-        supabase,
-        'application-documents',
-        filePath,
-        preparedFile.size
-      );
-
-      if (!verification.valid) {
-        // Upload was truncated - clean up and fail with clear error
-        await supabase.storage.from('application-documents').remove([filePath]);
-        throw new Error(
-          verification.error || 
-          'Upload was incomplete. Please check your internet connection and try again.'
-        );
-      }
-
-      // Create document record in database
-      const { error: dbError } = await supabase
-        .from('application_documents')
-        .insert({
-          application_id: applicationId,
-          document_type: documentType,
-          storage_path: filePath,
-          mime_type: detectedMimeType,
-          file_size: preparedFile.size,
-        });
-
-      if (dbError) throw dbError;
+      await uploadVerifiedDocument('application-documents', filePath, preparedFile, detectedMimeType);
+      await saveApplicationDocument({
+        application_id: applicationId, document_type: applicationDocumentType(documentType),
+        storage_path: filePath, mime_type: detectedMimeType, file_size: preparedFile.size,
+      });
 
       // If this is a response to a document request, update the request status
       if (documentRequest?.id) {
-        // Get the public URL for the uploaded document
-        const { data: urlData } = supabase.storage
-          .from('application-documents')
-          .getPublicUrl(filePath);
-        
-        const publicUrl = urlData?.publicUrl ?? null;
-
-        const { error: requestUpdateError } = await supabase
-          .from('document_requests')
-          .update({
-            status: 'received',
-            storage_path: filePath,
-            document_url: publicUrl,
-            submitted_at: new Date().toISOString(),
-          })
-          .eq('id', documentRequest.id);
-
-        if (requestUpdateError) {
-          // Log but don't fail the entire operation - the document was uploaded
-          logError(requestUpdateError, 'DocumentUploadDialog.updateDocumentRequest');
-          console.warn('Failed to update document request status, but document was uploaded successfully');
-        }
-
+        const { data: updatedRequest, error: requestUpdateError } = await supabase
+          .from('document_requests').update({
+            status: 'received', storage_path: filePath, document_url: null,
+            file_url: null, uploaded_file_url: null, submitted_at: new Date().toISOString(),
+          }).eq('id', documentRequest.id).select('id').maybeSingle();
+        if (requestUpdateError || !updatedRequest) {
+          logError(requestUpdateError || new Error('Document request could not be updated'), 'DocumentUploadDialog.updateDocumentRequest');
+          toast({ title: 'File saved; request needs attention', description: 'Your file is saved in the application, but the request could not be marked received. Please contact UniDoxia with your application reference.', variant: 'destructive' });
+        } else {
         toast({
           title: 'Document submitted',
-          description: `Your ${lockedDocumentLabel} has been uploaded and submitted to the university.`,
+          description: `Your ${lockedDocumentLabel} is saved and the document request is marked received.`,
         });
+        }
       } else {
         toast({
           title: 'Success',
@@ -263,12 +220,13 @@ export function DocumentUploadDialog({
       logError(error, 'DocumentUploadDialog.handleUpload');
       toast(formatErrorForToast(error, 'Failed to upload document'));
     } finally {
+      uploadInFlight.current = false;
       setUploading(false);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={value => { if (!uploadInFlight.current) setOpen(value); }}>
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm">
@@ -327,6 +285,7 @@ export function DocumentUploadDialog({
               </div>
             ) : (
               <Select
+                disabled={uploading}
                 value={documentType}
                 onValueChange={(value) => setDocumentType(value as DocumentType)}
               >
@@ -369,6 +328,7 @@ export function DocumentUploadDialog({
             <Label htmlFor="file">Select File</Label>
             <Input
               id="file"
+              disabled={uploading}
               type="file"
               onChange={handleFileChange}
               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"

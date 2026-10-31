@@ -164,25 +164,24 @@ export async function verifyUploadedFileSize(
         search: path.split('/').pop(),
       });
 
-    if (error) {
-      return { valid: false, error: error.message };
+    const objectName = path.split('/').pop();
+    const exactFile = !error ? data?.find((entry: { name: string }) => entry.name === objectName) : null;
+    const size = exactFile?.metadata?.size;
+    let actualSize: number;
+    if (size !== undefined && size !== null && Number.isFinite(Number(size))) {
+      actualSize = Number(size);
+    } else {
+      // Search can return a similarly named file first, or omit metadata.
+      // Confirm the exact object directly rather than deleting a valid upload.
+      const download = await supabaseClient.storage.from(bucket).download(path);
+      if (download.error || !download.data) {
+        return { valid: false, error: 'We could not confirm the uploaded file. Please check your connection and try again.' };
+      }
+      actualSize = download.data.size;
     }
-
-    if (!data || data.length === 0) {
-      return { valid: false, error: 'Uploaded file not found in storage' };
-    }
-
-    const fileMetadata = data[0];
-    const actualSize = fileMetadata.metadata?.size ?? 0;
-
     if (actualSize !== expectedSize) {
-      return {
-        valid: false,
-        actualSize,
-        error: `Upload verification failed: file was truncated (expected ${expectedSize} bytes, got ${actualSize} bytes)`,
-      };
+      return { valid: false, actualSize, error: 'The uploaded file size does not match the original. Please try uploading it again.' };
     }
-
     return { valid: true, actualSize };
   } catch (err) {
     return {

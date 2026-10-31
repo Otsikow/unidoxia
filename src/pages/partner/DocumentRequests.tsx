@@ -1,3 +1,4 @@
+import { getDocumentRequestUrl } from '@/lib/documentUpload';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   SidebarInset,
@@ -169,7 +170,7 @@ export default function PartnerDocumentRequestsPage() {
           }
         }
 
-        const mappedRequests: DocumentRequestItem[] = rawRequests.map((request) => {
+        const mappedRequests: DocumentRequestItem[] = await Promise.all(rawRequests.map(async (request) => {
           const student = request.student_id ? studentsMap.get(request.student_id) : null;
           const studentName =
             student?.preferred_name || student?.legal_name || "Unknown student";
@@ -184,12 +185,7 @@ export default function PartnerDocumentRequestsPage() {
             request.file_url ||
             null;
 
-          if (!documentUrl && storagePath) {
-            const { data: publicUrlData } = supabase.storage
-              .from(STORAGE_BUCKET)
-              .getPublicUrl(storagePath);
-            documentUrl = publicUrlData?.publicUrl ?? null;
-          }
+          if (storagePath) documentUrl = await getDocumentRequestUrl(storagePath, request.student_id, documentUrl);
 
           const rawStatus = (request.status || "pending").toLowerCase();
           const normalizedStatus =
@@ -211,7 +207,7 @@ export default function PartnerDocumentRequestsPage() {
             documentUrl,
             storagePath,
           };
-        });
+        }));
 
         setDocumentRequests(mappedRequests);
       } catch (error) {
