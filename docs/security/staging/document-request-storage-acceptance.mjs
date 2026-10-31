@@ -1,9 +1,11 @@
 /** Actual Auth + private Storage acceptance. Synthetic bytes only; strict test-backend guard. */
+import {assertAcceptanceTarget} from './acceptance-target.mjs';
 import {createClient} from '@supabase/supabase-js';
 import {randomUUID,randomBytes} from 'node:crypto';
 import {writeFile} from 'node:fs/promises';
 const url=process.env.STAGING_SUPABASE_URL,anon=process.env.STAGING_SUPABASE_ANON_KEY,key=process.env.STAGING_SUPABASE_SERVICE_ROLE_KEY;
-if(!url||!anon||!key||process.env.EXPECTED_STAGING_PROJECT_REF!=='qazshxpvfbhlybkmmkaf'||new URL(url).hostname!=='qazshxpvfbhlybkmmkaf.supabase.co')throw new Error('Only isolated Storage acceptance backend allowed');
+if(!url||!anon||!key)throw new Error('Isolated credentials required');
+assertAcceptanceTarget(url,process.env.EXPECTED_STAGING_PROJECT_REF);
 if(process.env.RESEND_API_KEY||process.env.STUDENT_EMAIL_ENABLED==='true')throw new Error('External messaging must remain off');
 const boundedFetch=(input,init={})=>{const timeout=AbortSignal.timeout(30000);return fetch(input,{...init,signal:init.signal&&typeof AbortSignal.any==='function'?AbortSignal.any([init.signal,timeout]):timeout});};
 const options={auth:{persistSession:false,autoRefreshToken:false},global:{fetch:boundedFetch}},db=createClient(url,key,options),sessions=[],results=[];
