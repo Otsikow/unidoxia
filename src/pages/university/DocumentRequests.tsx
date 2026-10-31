@@ -1,3 +1,4 @@
+import { getDocumentRequestUrl } from '@/lib/documentUpload';
 import {
   ChangeEvent,
   useCallback,
@@ -118,10 +119,10 @@ const buildDocumentTypeOptions = (items: DocumentRequestItem[]) => {
   ];
 };
 
-const buildDocumentRequestItem = (
+const buildDocumentRequestItem = async (
   raw: DocumentRequestRow,
   studentsMap: Map<string, Pick<StudentRow, "id" | "legal_name" | "preferred_name">>,
-): DocumentRequestItem => {
+): Promise<DocumentRequestItem> => {
   const student = raw.student_id ? studentsMap.get(raw.student_id) : null;
   const studentName =
     student?.preferred_name ?? student?.legal_name ?? "Unknown student";
@@ -130,12 +131,7 @@ const buildDocumentRequestItem = (
   let documentUrl =
     raw.document_url ?? raw.uploaded_file_url ?? raw.file_url ?? null;
 
-  if (!documentUrl && storagePath) {
-    const { data: publicUrlData } = supabase.storage
-      .from(STORAGE_BUCKET)
-      .getPublicUrl(storagePath);
-    documentUrl = publicUrlData?.publicUrl ?? null;
-  }
+  if (storagePath) documentUrl = await getDocumentRequestUrl(storagePath, raw.student_id, documentUrl);
 
   const status = (raw.status ?? "pending").toLowerCase();
 
@@ -256,9 +252,9 @@ const UniversityDocumentRequestsPage = () => {
           }
         }
 
-        const mapped = documentRows.map((row: any) =>
+        const mapped = await Promise.all(documentRows.map((row: any) =>
           buildDocumentRequestItem(row as DocumentRequestRow, studentsMap),
-        );
+        ));
 
         setDocumentRequests(mapped);
         

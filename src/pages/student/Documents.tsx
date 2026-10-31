@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useStudentRecord } from "@/hooks/useStudentRecord";
 import { validateFileUpload } from "@/lib/fileUpload";
-import { verifyUploadedFileSize } from "@/lib/fileUpload";
+import { saveStudentDocument, uploadVerifiedDocument } from "@/lib/documentUpload";
 import { logError, formatErrorForToast } from "@/lib/errorUtils";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 import { gateOptions, getCourseFinderProfileSections } from "@/lib/coursefinderProfile";
@@ -126,6 +126,7 @@ export default function Documents() {
   const [documents, setDocuments] = useState<StudentDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const uploadInFlight = useRef(false);
 
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
   const [downloadingDocId, setDownloadingDocId] = useState<string | null>(null);
@@ -231,40 +232,14 @@ export default function Documents() {
     mime_type: string;
     storage_path: string;
   }) => {
-    const { error: dbError } = await supabase.from("student_documents").insert(args);
-    if (dbError) throw dbError;
+    await saveStudentDocument(args);
   };
 
-  const uploadToStorage = async (storagePath: string, file: File, contentType: string) => {
-    const { error: uploadError } = await supabase.storage
-      .from("student-documents")
-      .upload(storagePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType,
-      });
-
-    if (uploadError) throw uploadError;
-
-    // FIX: Verify uploaded file size matches original to catch truncation during upload
-    const verification = await verifyUploadedFileSize(
-      supabase,
-      "student-documents",
-      storagePath,
-      file.size
-    );
-
-    if (!verification.valid) {
-      // Upload was truncated - clean up and fail with clear error
-      await supabase.storage.from("student-documents").remove([storagePath]);
-      throw new Error(
-        verification.error || 
-        'Upload was incomplete. Please check your internet connection and try again.'
-      );
-    }
-  };
+  const uploadToStorage = (path: string, file: File, contentType: string) =>
+    uploadVerifiedDocument('student-documents', path, file, contentType);
 
   const handleOutstandingFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (uploadInFlight.current) return;
     const file = e.target.files?.[0];
     const selectedDocType = pendingDocType;
 
@@ -274,6 +249,7 @@ export default function Documents() {
       return;
     }
 
+    uploadInFlight.current = true;
     setUploading(true);
 
     try {
@@ -283,24 +259,18 @@ export default function Documents() {
       );
 
       const ext = sanitizedFileName.split(".").pop() || "pdf";
-      const storagePath = `${studentId}/${selectedDocType}_${Date.now()}.${ext}`;
+      const storagePath = `${studentId}/${selectedDocType}_${crypto.randomUUID()}.${ext}`;
 
       await uploadToStorage(storagePath, preparedFile, detectedMimeType);
 
-      try {
-        await insertDocumentRow({
-          student_id: studentId,
-          document_type: selectedDocType,
-          file_name: sanitizedFileName,
-          file_size: preparedFile.size,
-          mime_type: detectedMimeType,
-          storage_path: storagePath,
-        });
-      } catch (dbErr) {
-        // Clean up uploaded file if DB insert fails
-        await supabase.storage.from("student-documents").remove([storagePath]);
-        throw dbErr;
-      }
+      await insertDocumentRow({
+        student_id: studentId,
+        document_type: selectedDocType,
+        file_name: sanitizedFileName,
+        file_size: preparedFile.size,
+        mime_type: detectedMimeType,
+        storage_path: storagePath,
+      });
 
       const docLabel =
         DOCUMENT_TYPES.find((t) => t.value === selectedDocType)?.label || selectedDocType;
@@ -311,6 +281,7 @@ export default function Documents() {
       logError(err, "Documents.handleOutstandingFileSelect");
       toast(formatErrorForToast(err, "Failed to upload document"));
     } finally {
+      uploadInFlight.current = false;
       setUploading(false);
       setPendingDocType(null);
       e.target.value = "";
@@ -318,6 +289,7 @@ export default function Documents() {
   };
 
   const handleUpload = async () => {
+    if (uploadInFlight.current) return;
     if (!selectedFile || !documentType || !studentId) {
       toast({
         title: "Missing Information",
@@ -327,6 +299,7 @@ export default function Documents() {
       return;
     }
 
+    uploadInFlight.current = true;
     setUploading(true);
 
     try {
@@ -336,23 +309,18 @@ export default function Documents() {
       );
 
       const ext = sanitizedFileName.split(".").pop() || "pdf";
-      const storagePath = `${studentId}/${documentType}_${Date.now()}.${ext}`;
+      const storagePath = `${studentId}/${documentType}_${crypto.randomUUID()}.${ext}`;
 
       await uploadToStorage(storagePath, preparedFile, detectedMimeType);
 
-      try {
-        await insertDocumentRow({
-          student_id: studentId,
-          document_type: documentType,
-          file_name: sanitizedFileName,
-          file_size: preparedFile.size,
-          mime_type: detectedMimeType,
-          storage_path: storagePath,
-        });
-      } catch (dbErr) {
-        await supabase.storage.from("student-documents").remove([storagePath]);
-        throw dbErr;
-      }
+      await insertDocumentRow({
+        student_id: studentId,
+        document_type: documentType,
+        file_name: sanitizedFileName,
+        file_size: preparedFile.size,
+        mime_type: detectedMimeType,
+        storage_path: storagePath,
+      });
 
       toast({ title: "Uploaded", description: "Document uploaded successfully." });
       setSelectedFile(null);
@@ -362,6 +330,7 @@ export default function Documents() {
       logError(err, "Documents.handleUpload");
       toast(formatErrorForToast(err, "Failed to upload document"));
     } finally {
+      uploadInFlight.current = false;
       setUploading(false);
     }
   };
@@ -443,6 +412,7 @@ export default function Documents() {
     file: File,
     resetInput: () => void
   ) => {
+    if (uploadInFlight.current) { resetInput(); return; }
     if (!studentId) {
       toast({
         title: "Profile Required",
@@ -453,6 +423,7 @@ export default function Documents() {
     }
 
     try {
+      uploadInFlight.current = true;
       setReplacingDocId(doc.id);
 
       const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
@@ -461,39 +432,15 @@ export default function Documents() {
       );
 
       const ext = sanitizedFileName.split(".").pop() || "pdf";
-      const newStoragePath = `${studentId}/${doc.document_type}_${Date.now()}.${ext}`;
+      const newStoragePath = `${studentId}/${doc.document_type}_${crypto.randomUUID()}.${ext}`;
 
       await uploadToStorage(newStoragePath, preparedFile, detectedMimeType);
 
-      // Reset all verification-related fields when replacing a document
-      // This ensures the document goes through the full review workflow again
-      const { error: updateError } = await supabase
-        .from("student_documents")
-        .update({
-          file_name: sanitizedFileName,
-          file_size: preparedFile.size,
-          mime_type: detectedMimeType,
-          storage_path: newStoragePath,
-          verified_status: "pending",
-          verification_notes: null,
-          verified_at: null,
-          verified_by: null,
-          // Reset admin review status columns
-          admin_review_status: "awaiting_admin_review",
-          university_access_approved: false,
-          university_access_approved_at: null,
-          university_access_approved_by: null,
-        } as any)
-        .eq("id", doc.id);
-
-      if (updateError) {
-        await supabase.storage.from("student-documents").remove([newStoragePath]);
-        throw updateError;
-      }
-
-      if (doc.storage_path) {
-        await supabase.storage.from("student-documents").remove([doc.storage_path]);
-      }
+      await saveStudentDocument({
+        student_id: studentId, document_type: doc.document_type,
+        file_name: sanitizedFileName, file_size: preparedFile.size,
+        mime_type: detectedMimeType, storage_path: newStoragePath,
+      }, { id: doc.id, storage_path: doc.storage_path });
 
       toast({
         title: "Document replaced",
@@ -506,11 +453,13 @@ export default function Documents() {
       toast(formatErrorForToast(err, "Failed to replace document"));
     } finally {
       resetInput();
+      uploadInFlight.current = false;
       setReplacingDocId(null);
     }
   };
 
   const handleDeleteDocument = async (doc: StudentDocument) => {
+    if (uploadInFlight.current) return;
     if (!studentId) {
       toast({
         title: "Profile Required",

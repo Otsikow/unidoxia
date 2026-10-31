@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { validateFileUpload } from '@/lib/fileUpload';
+import { saveStudentDocument, uploadVerifiedDocument } from '@/lib/documentUpload';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText,
@@ -59,6 +60,7 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const uploadInFlight = useRef(false);
   const [documentType, setDocumentType] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<any>(null);
@@ -136,7 +138,9 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
   });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    if (uploadInFlight.current) return;
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file || !documentType) {
       toast({
         title: 'Missing information',
@@ -146,6 +150,7 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
       return;
     }
 
+    uploadInFlight.current = true;
     setIsUploading(true);
 
     try {
@@ -176,35 +181,14 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
 
       // Upload to storage using student ID (required by RLS policy)
       const fileExt = sanitizedFileName.split('.').pop();
-      const fileName = `${studentData.id}/${Date.now()}-${documentType}.${fileExt}`;
+      const fileName = `${studentData.id}/${crypto.randomUUID()}-${documentType}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('student-documents')
-        .upload(fileName, preparedFile, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: detectedMimeType,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from('student-documents')
-        .getPublicUrl(fileName);
-
-      // Save to database
-      const { error: dbError } = await supabase.from('student_documents').insert({
-        student_id: studentData.id,
-        document_type: documentType,
-        file_name: sanitizedFileName,
-        storage_path: fileName,
-        file_size: preparedFile.size,
-        mime_type: detectedMimeType,
-        verified_status: 'pending',
+      await uploadVerifiedDocument('student-documents', fileName, preparedFile, detectedMimeType);
+      await saveStudentDocument({
+        student_id: studentData.id, document_type: documentType,
+        file_name: sanitizedFileName, storage_path: fileName,
+        file_size: preparedFile.size, mime_type: detectedMimeType,
       });
-
-      if (dbError) throw dbError;
 
       queryClient.invalidateQueries({ queryKey: ['userDocuments', profile.id] });
 
@@ -226,6 +210,8 @@ const DocumentsTab = ({ profile }: DocumentsTabProps) => {
         variant: 'destructive',
       });
     } finally {
+      input.value = '';
+      uploadInFlight.current = false;
       setIsUploading(false);
     }
   };

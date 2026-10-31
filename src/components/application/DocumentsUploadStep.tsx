@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { FileText, Upload, CheckCircle2, X, AlertCircle, Loader2, ShieldCheck, AlertTriangle, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
+import { validateFileUpload } from '@/lib/fileUpload';
+import { DOCUMENT_UPLOAD_VALIDATION } from '@/lib/documentUpload';
+import { useRef, useState } from 'react';
 
 interface Documents {
   passport_photo: File | null;
@@ -28,7 +29,7 @@ export type ExistingDocumentMap = Partial<
 >;
 
 interface VerificationResult {
-  status: 'Verified' | 'Suspicious' | 'Invalid';
+  status: 'Checked' | 'Suspicious' | 'Invalid';
   reason: string;
 }
 
@@ -73,16 +74,6 @@ const DOCUMENT_TYPES = [
   },
 ];
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_TYPES = [
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/jpg',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-];
-
 export default function DocumentsUploadStep({
   data,
   onChange,
@@ -93,66 +84,30 @@ export default function DocumentsUploadStep({
   const [verifying, setVerifying] = useState<Partial<Record<keyof Documents, boolean>>>({});
   const [verificationResults, setVerificationResults] = useState<Partial<Record<keyof Documents, VerificationResult>>>({});
 
-  const verifyDocument = async (key: keyof Documents, file: File) => {
-    setVerifying(prev => ({ ...prev, [key]: true }));
+  const selectionVersions = useRef<Partial<Record<keyof Documents, number>>>({});
+  const handleFileChange = async (key: keyof Documents, file: File | null) => {
+    const version = (selectionVersions.current[key] ?? 0) + 1;
+    selectionVersions.current[key] = version;
+    onChange({ ...data, [key]: file });
+    setVerificationResults(prev => { const next = { ...prev }; delete next[key]; return next; });
+    setVerifying(prev => ({ ...prev, [key]: Boolean(file) }));
+    if (!file) return;
     try {
-      const { data: result, error } = await supabase.functions.invoke('verify-document', {
-        body: {
-          documentType: key,
-          fileName: file.name,
-          fileSize: file.size,
-        }
-      });
-
-      if (error) throw error;
-
-      setVerificationResults(prev => ({
-        ...prev,
-        [key]: result
-      }));
+      // Check actual file contents, including files whose browser MIME is blank.
+      // The old edge function was a filename-only demonstration, not verification.
+      await validateFileUpload(file, DOCUMENT_UPLOAD_VALIDATION);
+      if (selectionVersions.current[key] === version) {
+        setVerificationResults(prev => ({ ...prev, [key]: { status: 'Checked', reason: 'File format checked. UniDoxia staff will review the document contents.' } }));
+      }
     } catch (error) {
-      console.error('Verification failed:', error);
+      if (selectionVersions.current[key] === version) {
+        setVerificationResults(prev => ({ ...prev, [key]: { status: 'Invalid', reason: error instanceof Error ? error.message : 'This file could not be checked. Please select it again.' } }));
+      }
     } finally {
-      setVerifying(prev => ({ ...prev, [key]: false }));
+      if (selectionVersions.current[key] === version) setVerifying(prev => ({ ...prev, [key]: false }));
     }
   };
-
-  const handleFileChange = (key: keyof Documents, file: File | null) => {
-    if (file) {
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        alert('File size must be less than 10MB');
-        return;
-      }
-
-      // Validate file type
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        alert('File type not supported. Please upload PDF, DOC, DOCX, JPG, or PNG files.');
-        return;
-      }
-
-      // Trigger verification
-      verifyDocument(key, file);
-    } else {
-      // Clear verification result if file removed
-      setVerificationResults(prev => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
-    }
-
-    onChange({
-      ...data,
-      [key]: file,
-      // Store verification status in data object to be accessible in parent
-      [`${key}_verificationStatus` as keyof Documents]: undefined // Reset status on new file
-    });
-  };
-
-  const removeFile = (key: keyof Documents) => {
-    onChange({ ...data, [key]: null });
-  };
+  const removeFile = (key: keyof Documents) => { void handleFileChange(key, null); };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
@@ -170,7 +125,7 @@ export default function DocumentsUploadStep({
     // Check if any document is marked as Invalid
     const hasInvalidDocs = Object.values(verificationResults).some(r => r?.status === 'Invalid');
 
-    return allRequiredUploaded && !hasInvalidDocs;
+    return allRequiredUploaded && !hasInvalidDocs && !Object.values(verifying).some(Boolean);
   };
 
   const requiredDocs = DOCUMENT_TYPES.filter((doc) => doc.required);
@@ -285,19 +240,19 @@ export default function DocumentsUploadStep({
                       {isVerifying ? (
                         <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Running AI Verification...
+                          Checking file format…
                         </div>
                       ) : verification ? (
                         <div className={`p-3 rounded-md border text-sm ${
-                          verification.status === 'Verified' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300' :
+                          verification.status === 'Checked' ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300' :
                           verification.status === 'Suspicious' ? 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-300' :
                           'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300'
                         }`}>
                           <div className="flex items-center gap-2 font-medium mb-1">
-                            {verification.status === 'Verified' && <ShieldCheck className="h-4 w-4" />}
+                            {verification.status === 'Checked' && <ShieldCheck className="h-4 w-4" />}
                             {verification.status === 'Suspicious' && <AlertTriangle className="h-4 w-4" />}
                             {verification.status === 'Invalid' && <XCircle className="h-4 w-4" />}
-                            AI Pre-check: {verification.status}
+                            File check: {verification.status}
                           </div>
                           <p className="opacity-90">{verification.reason}</p>
                           <p className="mt-1 text-xs opacity-80">
