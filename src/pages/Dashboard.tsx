@@ -140,7 +140,7 @@ const Dashboard = () => {
     return <Navigate to={target} replace />;
   }
   if (resolvedRole === 'admin') {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin/overview" replace />;
   }
 
   if (resolvedRole === 'staff')

@@ -39,3 +39,7 @@ Validation: 13 focused tests passed, including desktop/mobile admin navigation, 
 ## Next build: Students — 31 October 2026
 
 Eric selected Students and confirmed the simple Applications style. Built a focused student queue with next actions, compact desktop rows, phone cards, optional advanced filters, separate archived records and direct profile-tab links. Preserved the application form, upload fixes, existing account/WhatsApp actions and permissions. Corrected hidden fetch errors, silently limited list reads, absent account confirmation dialogs and unconfirmed-success messages. Implementation, checks and limitations: `../students/README.md`. No production mutations or publication performed.
+
+## Admin consolidation — 31 October 2026
+
+Eric supplied screenshots of `/dashboard/applications` and `/admin/applications` and explicitly requested one dashboard using the simplified version. Prepared a separate follow-up from the now-merged Students build (#1255): one AdminLayout owner, context-based suppression of nested navigation, canonical admin redirects after existing route guards, preserved query/hash/history state, registered shared-tool aliases and accessible mobile menu behaviour. Other roles keep their existing shared navigation. Existing tools and distinct payment/report/resource workflows remain available. Architecture and release limitations: `../admin/ADMIN_WORKSPACE.md`. No production mutation, merge or publication performed during implementation.

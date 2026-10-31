@@ -1,5 +1,6 @@
 "use client";
 
+import { ADMIN_ADDITIONAL_WORKSPACES } from '@/lib/adminNavigation';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -124,6 +125,7 @@ const navigationTools = [
 const AdminTools = () => {
   return (
     <div className="space-y-12">
+      <section className="space-y-3"><h2 className="text-xl font-semibold">Additional workspaces</h2><p className="text-sm text-muted-foreground">Open the tools you need within the same admin workspace.</p><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{ADMIN_ADDITIONAL_WORKSPACES.map(item => <Button key={item.to} asChild variant="outline" className="h-auto justify-start whitespace-normal py-3 text-left"><Link to={item.to}>{item.label}</Link></Button>)}</div></section>
       {/* Zoe-Integrated Utilities Section */}
       <section className="space-y-6">
         <div className="space-y-2">

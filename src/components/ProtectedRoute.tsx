@@ -1,3 +1,4 @@
+import { getAdminDestination } from '@/lib/adminNavigation';
 import { useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -213,6 +214,12 @@ export const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) 
     if (!hasRequiredRole) {
       return <Navigate to="/" replace />;
     }
+  }
+
+  // Run only after authentication, onboarding and existing role checks pass.
+  if (roles.includes('admin')) {
+    const destination = getAdminDestination(location.pathname, location.search, location.hash);
+    if (destination) return <Navigate to={destination} replace state={location.state} />;
   }
 
   return <>{children}</>;

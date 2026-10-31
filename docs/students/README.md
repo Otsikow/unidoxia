@@ -27,3 +27,7 @@ Desktop uses a compact table; narrower screens use cards. Counters represent stu
 445 tests passed across 63 files before final layout refinements, including new queue, search, pagination, error and failed-account-write checks. TypeScript and Vite build passed; targeted lint has no errors and two pre-existing student-detail hook warnings. Desktop and 390×844 browser checks used synthetic records; phone content and viewport widths matched, with no horizontal overflow. Read-only managed-database inspection confirmed the selected student/profile columns; this is not a real Auth-issued mutation test.
 
 No live student records, documents, WhatsApp messages or account permissions changed. Real authenticated staging checks remain necessary before claiming full account-management readiness. Large-volume server-side filtering/counts remain future work; this release loads all authorised list pages. Publication is separate from GitHub export.
+
+## Combined admin review
+
+Eric subsequently requested one simplified admin dashboard. The Students build was merged in #1255. A separate follow-up provides the single-shell admin navigation described in `../admin/ADMIN_WORKSPACE.md`. The canonical list stays `/admin/students`; older admin shared-dashboard links redirect there after the existing route checks.

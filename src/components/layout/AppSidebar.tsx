@@ -101,25 +101,7 @@ const menuItems = {
     { title: "AI Insights", url: "/dashboard/ai-insights", icon: Sparkles },
     { title: "Settings", url: "/dashboard/settings", icon: Settings },
   ],
-  admin: [
-    { title: "Dashboard", url: "/admin/overview", icon: Home },
-    { title: "Users", url: "/admin/users", icon: Users },
-    { title: "Universities", url: "/admin/universities", icon: Building2 },
-    { title: "University Claims", url: "/admin/university-claims", icon: GraduationCap },
-    {
-      title: "Featured Universities",
-      url: "/admin/featured-universities",
-      icon: Sparkles,
-    },
-    { title: "Courses", url: "/admin/programs", icon: BookOpen },
-    { title: "Applications", url: "/dashboard/applications", icon: FileText },
-    { title: "Agents", url: "/dashboard/agents", icon: Share2 },
-    { title: "Notifications", url: "/admin/notifications", icon: Bell },
-    { title: "Commissions", url: "/dashboard/commissions", icon: DollarSign },
-    { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
-    { title: "Settings", url: "/profile/settings", icon: Settings },
-    { title: "Blog", url: "/admin/blog", icon: FileText },
-  ],
+
 };
 
 const formatRoleLabel = (role?: string | null) =>
