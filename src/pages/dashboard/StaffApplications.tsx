@@ -1,501 +1,135 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/StatusBadge';
-import BackButton from '@/components/BackButton';
-import { cn } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Search, Filter, FileText, Download, Eye, Calendar, Shield, Sparkles } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { LoadingState } from '@/components/LoadingState';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { applicationNeedsAttention, formatWorkflowDate, openFollowUps, isFollowUpOverdue, type ApplicationFollowUp, getNextApplicationAction, isActiveApplication, WORKFLOW_STATUSES } from '@/lib/applicationWorkflow';
+import { StaffApplicationWorkspace } from '@/components/applications/StaffApplicationWorkspace';
+import { ChooseApplicationStudent } from '@/components/applications/ChooseApplicationStudent';
+import { Plus, RefreshCw } from 'lucide-react';
 
-type QuickAction = 'total' | 'assigned' | 'highPriority' | 'pendingReview';
-
-interface Application {
+export interface StaffApplicationRow {
   id: string;
-  studentName: string;
-  studentId: string;
-  program: string;
-  university: string;
+  app_number: string | null;
+  student_id: string;
+  program_id: string;
   status: string;
-  submittedDate: string;
-  lastUpdated: string;
-  assignedTo: string;
-  priority: 'high' | 'medium' | 'low';
+  intake_month: number;
+  intake_year: number;
+  updated_at: string;
+  student: { legal_name: string | null; contact_email: string | null } | null;
+  program: { name: string; university: { name: string; country: string } | null } | null;
+  documents: { id: string; verified: boolean }[];
+  tasks?: ApplicationFollowUp[];
 }
 
+const PAGE_SIZE = 20;
 export default function StaffApplications() {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
-  const [activeQuickAction, setActiveQuickAction] = useState<QuickAction>('assigned');
-
-  // Mock data - replace with actual data from your backend
-  const applications: Application[] = [
-    {
-      id: 'APP-001',
-      studentName: 'John Smith',
-      studentId: 'STU-2024-001',
-      program: 'MSc Computer Science',
-      university: 'University of Oxford',
-      status: 'screening',
-      submittedDate: '2024-01-15',
-      lastUpdated: '2024-01-18',
-      assignedTo: 'You',
-      priority: 'high',
-    },
-    {
-      id: 'APP-002',
-      studentName: 'Sarah Johnson',
-      studentId: 'STU-2024-002',
-      program: 'MBA',
-      university: 'Cambridge University',
-      status: 'submitted',
-      submittedDate: '2024-01-16',
-      lastUpdated: '2024-01-17',
-      assignedTo: 'You',
-      priority: 'medium',
-    },
-    {
-      id: 'APP-003',
-      studentName: 'Michael Chen',
-      studentId: 'STU-2024-003',
-      program: 'MA International Business',
-      university: 'Imperial College London',
-      status: 'conditional_offer',
-      submittedDate: '2024-01-10',
-      lastUpdated: '2024-01-19',
-      assignedTo: 'Jane Doe',
-      priority: 'low',
-    },
-    {
-      id: 'APP-004',
-      studentName: 'Emily Davis',
-      studentId: 'STU-2024-004',
-      program: 'MSc Data Science',
-      university: 'University College London',
-      status: 'screening',
-      submittedDate: '2024-01-17',
-      lastUpdated: '2024-01-17',
-      assignedTo: 'You',
-      priority: 'high',
-    },
-    {
-      id: 'APP-005',
-      studentName: 'David Wilson',
-      studentId: 'STU-2024-005',
-      program: 'LLM International Law',
-      university: 'London School of Economics',
-      status: 'visa',
-      submittedDate: '2024-01-05',
-      lastUpdated: '2024-01-20',
-      assignedTo: 'John Smith',
-      priority: 'medium',
-    },
-  ];
-
-  const filteredApplications = applications.filter((app) => {
-    const matchesSearch =
-      app.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.program.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-    const matchesPriority = priorityFilter === 'all' || app.priority === priorityFilter;
-    const matchesQuickAction = (() => {
-      switch (activeQuickAction) {
-        case 'assigned':
-          return app.assignedTo === 'You';
-        case 'highPriority':
-          return app.priority === 'high';
-        case 'pendingReview':
-          return app.status === 'submitted' || app.status === 'screening';
-        default:
-          return true;
-      }
-    })();
-    return matchesSearch && matchesStatus && matchesPriority && matchesQuickAction;
-  });
-
-  const aiRecommendations = filteredApplications.slice(0, 3).map((app) => {
-    const needsOfferDocs = app.status === 'submitted' || app.status === 'screening';
-    const needsVisaDocs = app.status === 'conditional_offer' || app.status === 'visa';
-
-    const actions = [] as string[];
-
-    if (needsOfferDocs) {
-      actions.push('Request transcripts, passport scan, and reference letters to finalise the university review.');
-    }
-
-    if (needsVisaDocs) {
-      actions.push('Confirm CAS/offer details and prompt the student to upload financial evidence for visa readiness.');
-    }
-
-    if (app.priority === 'high') {
-      actions.push('High priority — send a quick update to the student and university contact with next steps.');
-    }
-
-    if (actions.length === 0) {
-      actions.push('All core materials present. Keep the student informed while awaiting the next milestone.');
-    }
-
-    return {
-      id: app.id,
-      label: `${app.studentName} · ${app.university}`,
-      actions,
-    };
-  });
-
-  const quickActionLabels: Record<QuickAction, string> = {
-    total: 'Total Applications',
-    assigned: 'Assigned to Me',
-    highPriority: 'High Priority',
-    pendingReview: 'Pending Review',
-  };
-
-  const activeQuickActionLabel =
-    activeQuickAction !== 'total'
-      ? quickActionLabels[activeQuickAction]
-      : null;
-
-  const handleQuickAction = (action: QuickAction) => {
-    if (action === 'total') {
-      setActiveQuickAction('total');
-      setStatusFilter('all');
-      setPriorityFilter('all');
-      return;
-    }
-
-    const isSameAction = activeQuickAction === action;
-    const nextAction = isSameAction ? 'total' : action;
-
-    setActiveQuickAction(nextAction);
-
-    if (!isSameAction) {
-      setStatusFilter('all');
-      setPriorityFilter('all');
-    }
-  };
-
-  const getCardInteractionProps = (action: QuickAction) => ({
-    role: 'button' as const,
-    tabIndex: 0,
-    'aria-label': quickActionLabels[action],
-    'aria-pressed': activeQuickAction === action,
-    onClick: () => handleQuickAction(action),
-    onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        handleQuickAction(action);
+  const { user } = useAuth();
+  const [params, setParams] = useSearchParams();
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('attention');
+  const [page, setPage] = useState(0);
+  const [choosingStudent, setChoosingStudent] = useState(false);
+  const applicationId = params.get('application');
+  const query = useQuery({
+    queryKey: ['staff-applications-workspace', user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => {
+      // Fetch all pages instead of silently truncating the admissions queue at
+      // PostgREST's row limit. RLS remains the authority for accessible records.
+      const rows: StaffApplicationRow[] = [];
+      for (let offset = 0; ; offset += 500) {
+        const { data, error } = await supabase.from('applications').select(`
+          id, app_number, student_id, program_id, status, intake_month, intake_year, updated_at,
+          student:students(legal_name, contact_email),
+          program:programs(name, university:universities(name, country)),
+          documents:application_documents(id, verified),
+          tasks(id,title,status,due_at,assignee_id,assignee:profiles!tasks_assignee_id_fkey(full_name))
+        `).order('created_at', { ascending: false }).order('id').range(offset, offset + 499);
+        if (error) throw error;
+        rows.push(...(data as unknown as StaffApplicationRow[]));
+        if (data.length < 500) return rows;
       }
     },
-    className: cn(
-      'cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-      activeQuickAction === action &&
-        'border-primary ring-2 ring-primary/50 focus-visible:ring-primary/80',
-    ),
   });
-
-  const getPriorityBadge = (priority: string) => {
-    const colors = {
-      high: 'bg-destructive/10 text-destructive border-destructive/20',
-      medium: 'bg-warning/10 text-warning border-warning/20',
-      low: 'bg-muted text-muted-foreground border-muted',
-    };
-    return colors[priority as keyof typeof colors] || colors.low;
+  const rows = query.data ?? [];
+  const filtered = rows.filter((row) => {
+    const matchesStatus = filter === 'all' || (filter === 'attention' ? applicationNeedsAttention(row) : filter === 'active' ? isActiveApplication(row.status) : row.status === filter);
+    const text = [row.app_number, row.student?.legal_name, row.student?.contact_email, row.program?.name, row.program?.university?.name].join(' ').toLowerCase();
+    return matchesStatus && text.includes(search.trim().toLowerCase());
+  });
+  const maxPage = Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1);
+  const currentPage = Math.min(page, maxPage);
+  const selectApplication = (id: string | null) => {
+    const next = new URLSearchParams(params);
+    if (id) next.set('application', id); else next.delete('application');
+    setParams(next);
   };
 
-  return (
-    <DashboardLayout showToolbarBackButton={false}>
-      <div className="p-4 sm:p-6 lg:p-8 space-y-6">
-        <BackButton variant="ghost" size="sm" fallback="/dashboard" />
+  return <DashboardLayout><div className="space-y-6 p-4 sm:p-6">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div><h1 className="text-2xl font-bold">Applications</h1>
+        <p className="text-muted-foreground">Find a student, check what is needed, and take the next step.</p></div>
+      <div className="flex gap-2"><Button variant="outline" onClick={() => void query.refetch()} disabled={query.isFetching} aria-label="Refresh applications"><RefreshCw className="h-4 w-4" /></Button>
+        <Button onClick={() => setChoosingStudent(true)}><Plus className="mr-2 h-4 w-4" />New application</Button></div>
+    </div>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {[['attention', 'Needs attention', rows.filter(r => applicationNeedsAttention(r)).length], ['active', 'Active applications', rows.filter(r => isActiveApplication(r.status)).length], ['all', 'All applications', rows.length], ['enrolled', 'Enrolled', rows.filter(r => r.status === 'enrolled').length]].map(([value, label, count]) =>
+        <Button key={value} variant={filter === value ? 'secondary' : 'outline'} className="h-auto flex-col items-start p-4" aria-pressed={filter === value} onClick={() => { setFilter(String(value)); setPage(0); }}>
+          <span className="text-sm">{label}</span><span className="text-2xl font-bold">{query.isPending || query.isError ? '—' : count}</span>
+        </Button>)}
+    </div>
+    <div className="flex flex-col gap-3 sm:flex-row">
+      <Input aria-label="Search applications" placeholder="Search student, university, course or reference" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} />
+      <Select value={filter} onValueChange={value => { setFilter(value); setPage(0); }}><SelectTrigger className="sm:w-64" aria-label="Application stage"><SelectValue /></SelectTrigger><SelectContent>
+        <SelectItem value="attention">Needs attention</SelectItem><SelectItem value="active">Active applications</SelectItem><SelectItem value="all">All applications</SelectItem>
+        {WORKFLOW_STATUSES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+      </SelectContent></Select>
+    </div>
+    {query.isPending ? <LoadingState message="Loading applications…" /> : query.isError ?
+      <Alert variant="destructive"><AlertDescription>Applications could not be loaded. Refresh to try again.</AlertDescription></Alert> :
+      <Card><CardContent className="p-0"><div className="hidden overflow-x-auto md:block"><Table>
+        <TableHeader><TableRow><TableHead>Student</TableHead><TableHead>Course and intake</TableHead><TableHead>Stage</TableHead><TableHead>Documents</TableHead><TableHead>Next step</TableHead><TableHead><span className="sr-only">Open</span></TableHead></TableRow></TableHeader>
+        <TableBody>{filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map(row => <TableRow key={row.id}>
+          <TableCell><p className="font-medium">{row.student?.legal_name || 'Student details unavailable'}</p><p className="text-xs text-muted-foreground">{row.app_number || row.id.slice(0, 8)}</p></TableCell>
+          <TableCell><p>{row.program?.name || 'Course unavailable'}</p><p className="text-xs text-muted-foreground">{row.program?.university?.name || 'University unavailable'} · {row.intake_month}/{row.intake_year}</p></TableCell>
+          <TableCell><ApplicationStage status={row.status} /></TableCell>
+          <TableCell>{row.documents.length} uploaded<br /><span className="text-xs text-muted-foreground">{row.documents.filter(d => d.verified).length} verified</span></TableCell>
+          <TableCell className="max-w-64 text-sm"><QueueNextStep row={row} userId={user?.id} /></TableCell>
+          <TableCell><Button variant="outline" onClick={() => selectApplication(row.id)} aria-label={`Open application for ${row.student?.legal_name || row.app_number || 'student'}`}>Open</Button></TableCell>
+        </TableRow>)}</TableBody>
+      </Table></div><div className="divide-y md:hidden">{filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE).map(row => <article key={row.id} className="space-y-3 p-4">
+        <div className="flex items-start justify-between gap-2"><div><h2 className="font-semibold">{row.student?.legal_name || 'Student details unavailable'}</h2><p className="text-xs text-muted-foreground">{row.app_number || row.id.slice(0, 8)}</p></div><ApplicationStage status={row.status} /></div>
+        <div className="text-sm"><p>{row.program?.name || 'Course unavailable'}</p><p className="text-muted-foreground">{row.program?.university?.name || 'University unavailable'} · {row.intake_month}/{row.intake_year}</p></div>
+        <p className="text-xs text-muted-foreground">{row.documents.length} documents · {row.documents.filter(d => d.verified).length} verified</p>
+        <div className="rounded-md bg-muted p-3 text-sm"><p className="mb-1 font-medium">Next step</p><QueueNextStep row={row} userId={user?.id} /></div>
+        <Button className="w-full" variant="outline" onClick={() => selectApplication(row.id)} aria-label={`Open application for ${row.student?.legal_name || row.app_number || 'student'}`}>Open application</Button>
+      </article>)}</div>{filtered.length === 0 && <p className="p-8 text-center text-muted-foreground">{rows.length ? filter === 'attention' && !search ? 'No applications need attention. Choose Active applications to see work in progress.' : 'No applications match. Clear your search or change the stage.' : 'No applications yet. Choose a student to start.'}</p>}
+      <div className="flex items-center justify-between gap-3 border-t p-4"><p className="text-sm text-muted-foreground">{filtered.length} applications · Page {currentPage + 1} of {maxPage + 1}</p><div className="flex gap-2"><Button variant="outline" disabled={currentPage === 0} onClick={() => setPage(currentPage - 1)}>Previous</Button><Button variant="outline" disabled={currentPage >= maxPage} onClick={() => setPage(currentPage + 1)}>Next</Button></div></div>
+      </CardContent></Card>}
+    <ChooseApplicationStudent open={choosingStudent} onClose={() => setChoosingStudent(false)} />
+    <StaffApplicationWorkspace applicationId={applicationId} onClose={() => selectApplication(null)} onSaved={() => void query.refetch()} />
+  </div></DashboardLayout>;
+}
 
-        {/* Header */}
-        <div className="space-y-2 animate-fade-in">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-            Applications Management
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Review and manage student applications
-          </p>
-        </div>
+function QueueNextStep({ row, userId }: { row: StaffApplicationRow; userId?: string }) {
+  const task = openFollowUps(row.tasks)[0];
+  if (!task) return <p>{getNextApplicationAction(row.status)}</p>;
+  return <div><p>{task.title}</p><p className="mt-1 text-xs text-muted-foreground">{task.assignee_id === userId ? 'You' : task.assignee?.full_name || 'Unassigned'} · {formatWorkflowDate(task.due_at)}</p>
+    {(task.status === 'blocked' || isFollowUpOverdue(task)) && <p className="mt-1 text-xs font-medium text-destructive">{task.status === 'blocked' ? 'Blocked' : 'Overdue'}</p>}</div>;
+}
 
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="flex flex-col gap-4 py-4 md:flex-row md:items-start md:justify-between">
-            <div className="flex items-start gap-3">
-              <span className="rounded-full bg-primary/15 p-2 text-primary">
-                <Shield className="h-4 w-4" />
-              </span>
-              <div className="space-y-1 text-sm">
-                <p className="font-semibold text-foreground">You are viewing your assigned students</p>
-                <p className="text-muted-foreground">
-                  Only applications assigned to you are shown by default. Switch filters if you need a wider view for team coverage.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 rounded-xl border border-dashed border-muted-foreground/20 bg-background/60 p-3 text-sm">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <div className="space-y-1">
-                <p className="font-semibold text-foreground">AI checks</p>
-                <p className="text-muted-foreground">We highlight missing documents or next steps so you can advise students before universities review.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card {...getCardInteractionProps('total')}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Total Applications
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{applications.length}</div>
-            </CardContent>
-          </Card>
-          <Card {...getCardInteractionProps('assigned')}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Assigned to Me
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {applications.filter((app) => app.assignedTo === 'You').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card {...getCardInteractionProps('highPriority')}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                High Priority
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">
-                {applications.filter((app) => app.priority === 'high').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card {...getCardInteractionProps('pendingReview')}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                Pending Review
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {applications.filter((app) => app.status === 'submitted' || app.status === 'screening').length}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {activeQuickActionLabel && (
-          <div className="flex items-center justify-between rounded-2xl border border-primary/40 bg-primary/5 px-4 py-3 text-sm">
-            <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="uppercase tracking-wide">
-                {activeQuickActionLabel}
-              </Badge>
-              <span className="text-muted-foreground">Quick filter applied</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => handleQuickAction('total')}>
-              Clear
-            </Button>
-          </div>
-        )}
-
-        {/* Filters and Search */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filter Applications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by student name, ID, or program..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="submitted">Submitted</SelectItem>
-                  <SelectItem value="screening">Screening</SelectItem>
-                  <SelectItem value="conditional_offer">Conditional Offer</SelectItem>
-                  <SelectItem value="unconditional_offer">Unconditional Offer</SelectItem>
-                  <SelectItem value="visa">Visa Stage</SelectItem>
-                  <SelectItem value="enrolled">Enrolled</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="w-full sm:w-[180px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priority</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-dashed">
-          <CardHeader>
-            <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-              <Sparkles className="h-4 w-4" />
-              AI document coach
-            </div>
-            <CardDescription>
-              Quick prompts tailored to the applications you can view so you can nudge students before universities review.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {aiRecommendations.map((recommendation) => (
-              <div
-                key={recommendation.id}
-                className="rounded-xl border border-muted-foreground/20 bg-muted/30 p-3"
-              >
-                <p className="text-sm font-semibold text-foreground">
-                  {recommendation.label}
-                </p>
-                <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-                  {recommendation.actions.map((action, index) => (
-                    <li key={`${recommendation.id}-action-${index}`} className="flex items-start gap-2">
-                      <span className="mt-[6px] h-1.5 w-1.5 rounded-full bg-primary" />
-                      <span>{action}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Applications Table */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Applications List</CardTitle>
-                <CardDescription>
-                  {filteredApplications.length} application(s) found
-                </CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Student</TableHead>
-                    <TableHead>Course</TableHead>
-                    <TableHead>University</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Assigned To</TableHead>
-                    <TableHead>Last Updated</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredApplications.map((app) => (
-                    <TableRow key={app.id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium">{app.id}</TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{app.studentName}</div>
-                          <div className="text-xs text-muted-foreground">{app.studentId}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="max-w-[200px]">
-                        <div className="truncate" title={app.program}>
-                          {app.program}
-                        </div>
-                      </TableCell>
-                      <TableCell className="max-w-[180px]">
-                        <div className="truncate" title={app.university}>
-                          {app.university}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={app.status} />
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className={getPriorityBadge(app.priority)}>
-                          {app.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{app.assignedTo}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(app.lastUpdated).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => navigate(`/student/applications/${app.id}`)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            {filteredApplications.length === 0 && (
-              <div className="text-center py-12 text-muted-foreground">
-                No applications found matching your criteria
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </DashboardLayout>
-  );
+function ApplicationStage({ status }: { status: string }) {
+  return status === 'submitted' ? <Badge className="status-submitted">Received by UniDoxia</Badge> : <StatusBadge status={status} />;
 }

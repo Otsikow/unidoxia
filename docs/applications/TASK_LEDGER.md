@@ -1,0 +1,31 @@
+# Application dashboard task ledger
+
+## Review candidate — 31 October 2026
+
+Request: make UniDoxia's application dashboard simple and operational for student university applications, using ApplyBoard/CourseFinder as functional benchmarks.
+
+Completed locally: real staff queue; student-first application start; focused application workspace; explicit document view/verification; notes/status with conflict detection; manual university submission reference history; failed-upload recovery and durable document read-back; supported passport-photo storage; truthful UniDoxia receipt wording; application-document bucket correction. Existing branding and protected routes retained.
+
+Superseded: the never-applied university-document SELECT policy was removed from the 31 October usability candidate. No database access changes are included.
+
+Validation: 398 unit/component tests passed in 54 files; TypeScript check passed; Vite application build passed; diff whitespace check passed; new files lint clean; modified legacy form/review files retain three hook warnings. Local PostgreSQL 16 policy test passed, including repeat application and cross-university/anonymous denial. The queue and application workspace were visually checked at desktop and 390×844 phone size using an isolated local UI fixture with synthetic records (not real Auth/API evidence). No full managed-stack restoration, Auth-issued staging walkthrough or live student mutation performed.
+
+Next: review; authenticated staging verification; resolve first-application agent access and historical student-document compatibility before claiming broad role readiness; exact-commit Lovable preview; Eric's Publish handoff. See README.md for evidence and limitations.
+
+## Export gate
+
+Automatic approval review rejected the combined GitHub push: the specific source-code/access-policy payload and repository destination require explicit user approval. The changes were then committed locally only. No branch push, pull request, merge, Lovable sync, managed migration or publication was performed. Request approval to export this exact branch to `Otsikow/unidoxia` and create a draft PR; that approval must not be treated as permission to apply the database migration or publish.
+
+## Authenticated ApplyBoard benchmark — 31 October 2026
+
+Eric supplied access to the signed-in Brave agent dashboard. Read-only inspection covered Home, Students/student profile, document-vault controls, search/eligibility controls, programme detail, Applications and My Tasks. No student data/actions, invitations, payments or applications were changed. Functional observations and limits are in APPLYBOARD_BENCHMARK.md; no personal student or private commercial data is retained. The key recommended change is separate stage/outcome/requirements/payment/submission evidence, with a simple owner/next-action/deadline queue and student-centred workspace. A complete application case was not available to inspect. Before further implementation, reconcile this older dashboard branch with published upload fix #1252; retain the newer upload code. This audit does not authorise publishing the remaining dashboard or changing production permissions.
+
+## Usability implementation — 31 October 2026
+
+Reconciled with published upload fix #1252; kept its upload helpers and new-application form unchanged. Removed the never-applied access-policy migration/fixture. Replaced sample staff applicants with authorised database records, defaulted the queue to needs attention, showed follow-up owners/dates and overdue/blocked flags, and added mobile cards. Simplified the workspace into Overview, Documents, Follow-ups and History, with next-action guidance, protected unsaved edits and conflict checks. Connected existing application tasks for creation, claim, completion and reopening; added read-only student document requests with explicit scope wording. Internal dates respect UK days and exclude Sundays.
+
+Validation: 432 tests in 60 files passed; TypeScript passed; targeted workflow lint passed; Vite bundle build passed. Local browser checks covered the desktop queue/workspace, adding a synthetic follow-up and a 390×844 phone layout with no horizontal overflow. Screenshots are in `outputs/unidoxia-easier-dashboard` in the surrounding workspace. Synthetic UI checks do not replace authenticated backend mutation tests. No real student data, tasks, documents or permissions changed. GitHub export remains subject to the earlier exact-payload approval gate; no publication performed.
+
+## GitHub review handoff — 31 October 2026
+
+Eric explicitly approved exporting the tested candidate and opening its PR. Implementation commit `6405878d2cdf56bd0d07269b98bb4e281c894e7a` was pushed to `Otsikow/unidoxia`, branch `codex/application-workflow-end-to-end`. Draft PR #1253: https://github.com/Otsikow/unidoxia/pull/1253. Read-back confirmed OPEN, draft and MERGEABLE against `f0b5b3eac41b457d648dad86dd81dfc8a0274278`; no automated GitHub checks were reported at that read-back. This approval supersedes the earlier export block for this candidate only. No merge, Lovable publication or production database mutation was performed. Real Auth-issued workflow checks remain a release requirement.

@@ -1,3 +1,4 @@
+import { getApplicationDocumentBucket } from '@/lib/applicationWorkflow';
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -425,19 +426,26 @@ const formatDocumentType = (type: string | null) => {
 const normalizeStoragePath = (storagePath: string): string => {
   // Some older rows may store a path like "student-documents/<path>".
   // Supabase storage expects the object path WITHOUT the bucket prefix.
-  return storagePath.replace(/^student-documents\//, "");
+  return storagePath.replace(/^(student-documents|application-documents)\//, "");
 };
 
 const getSignedUrlViaEdge = async (
   documentId: string,
-  storagePath: string | null
+  storagePath: string | null,
+  source: 'student_documents' | 'application_documents'
 ): Promise<string | null> => {
   if (!storagePath) return null;
 
   const objectPath = normalizeStoragePath(storagePath);
 
   try {
-    // Use edge function to generate signed URL (bypasses RLS issues)
+    if (source === 'application_documents') {
+      // Use caller-scoped Storage permissions. The student-document edge
+      // function cannot authorise documents from application_documents.
+      const { data, error } = await supabase.storage.from(getApplicationDocumentBucket(source)).createSignedUrl(objectPath, 3600);
+      return !error ? data?.signedUrl ?? null : null;
+    }
+    // Student documents keep the existing approval-aware edge function.
     const { data, error } = await supabase.functions.invoke("get-document-url", {
       body: { documentId, storagePath: objectPath },
     });
@@ -655,7 +663,7 @@ export function ApplicationReviewDialog({
 
       for (const doc of readyDocuments) {
         if (doc.storagePath) {
-          const signedUrl = await getSignedUrlViaEdge(doc.id, doc.storagePath);
+          const signedUrl = await getSignedUrlViaEdge(doc.id, doc.storagePath, doc.source);
           if (signedUrl) {
             urls[doc.id] = signedUrl;
           }
