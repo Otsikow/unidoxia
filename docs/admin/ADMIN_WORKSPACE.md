@@ -34,3 +34,7 @@ Local browser verification used a synthetic account and synthetic records. An ac
 No database migration or access policy change is required. Real Auth-issued mutation checks for the Students account-management changes remain outstanding. This document is implementation/review evidence, not confirmation of merge or live publication. Use the GitHub-to-Lovable release workflow and verify the exact merged commit before publishing.
 
 Final validation: all 461 tests in 66 files passed; the existing agreement gate remains mounted for shared pages even when their navigation shell is supplied by AdminLayout. Targeted lint has no errors and one pre-existing App.tsx fast-refresh warning. TypeScript and Vite application build passed. The Students detail retains its previously documented hook warnings. No real Auth-issued account mutation acceptance or production publication is implied.
+
+## Actual Tasks page follow-up
+
+The initial task navigation fixture did not exercise StaffTasks' real subscriptions. A later live crash was reproduced and repaired; see `TASKS_REPAIR.md`. Route readiness must include the actual page/providers/data hooks, with synthetic and authenticated evidence stated separately.

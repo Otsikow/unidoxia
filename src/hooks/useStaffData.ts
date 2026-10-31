@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useRealtimeInvalidate } from "@/hooks/useRealtimeInvalidate";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { PostgrestError } from "@supabase/supabase-js";
@@ -410,43 +410,6 @@ const fetchInsights = async (tenantId: string): Promise<StaffInsightSummary> => 
     deadlineApplications: payload.deadlineApplications ?? [],
     recommendations: payload.recommendations ?? [],
   } satisfies StaffInsightSummary;
-};
-
-const useRealtimeInvalidate = (
-  filterValue: string | undefined,
-  queryKey: unknown,
-  table: string,
-  filterColumn = "tenant_id",
-) => {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!filterValue) return;
-
-    const channel = supabase
-      .channel(`staff-${table}-${filterValue}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table,
-          ...(filterColumn
-            ? {
-                filter: `${filterColumn}=eq.${filterValue}`,
-              }
-            : {}),
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: queryKey as any });
-        },
-      )
-      .subscribe();
-
-    return () => {
-      void supabase.removeChannel(channel);
-    };
-  }, [filterValue, queryClient, queryKey, table, filterColumn]);
 };
 
 export const staffStudentsKey = (tenantId?: string | null, page = 1, search?: string) => [
