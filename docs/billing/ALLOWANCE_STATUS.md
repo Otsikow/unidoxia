@@ -1,0 +1,9 @@
+# Billing and application allowance recovery — 31 October 2026
+
+Confirmed: the application-count query swallowed failures and returned zero, exposing a guessed free allowance; the application page also used the same limit message while the count was still loading. The billing refetch action was a no-op. Retiring the public Self-Service offer also left historical customer plan details blank on the payment-history page.
+
+Count queries now request an exact filtered HEAD count instead of downloading rows, propagate errors and distinguish unknown/loading from a confirmed zero. A free application cannot start until its allowance is confirmed; errors show retry rather than an upgrade claim. Confirmed existing paid access is preserved if only the statistics request fails. A real retry refetches billing and available counts. Plan badges/cards/payment views avoid presenting unavailable billing as a free account; historical Self-Service accounts have an account-only legacy label and retained-access explanation, with no new sales offer. Existing recoverable application submissions retain their retry path.
+
+Validation: 611 tests in 93 files pass; seven new real-hook/React Query adapter tests cover pending/error/confirmed/retried counts, unknown plans, retained legacy entitlement and visible retry without upgrade. TypeScript and Vite bundle pass. Targeted lint has zero errors and the existing StudentPayments fetchPayments dependency warning. No new authenticated production browser/data/API count acceptance is claimed; browser connection was unavailable during this cycle. These are UI recovery safeguards, not server enforcement of application limits.
+
+No SQL, billing record/entitlement mutation, payment/provider call, new price, email or frontend Publish. Normal GitHub merge and exact-source Lovable preview remain separate from public publication.
