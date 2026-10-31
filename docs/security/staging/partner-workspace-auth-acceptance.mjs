@@ -36,7 +36,7 @@ try {
  await check('Inactive partner cannot move itself',async()=>denied(await rpc(inactivePartner,'isolate_partner_profile',inactivePartner.id)));
  await check('Anonymous caller cannot mutate partner workspace',async()=>denied(await client().rpc('isolate_partner_profile',{p_profile_id:owner.id})));
  await check('Internal permission guard is not exposed to authenticated callers',async()=>denied(await rpc(owner,'can_manage_partner_workspace',owner.id)));
- await check('Inactive staff loses legacy policy read access',async()=>{const r=await inactive.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===0;});
+ await check('Inactive staff loses legacy and direct-role policy read access',async()=>{const r=await inactive.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===0;});
  await check('Active admin retains existing legacy policy read access',async()=>{const r=await admin.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===1;});
  await check('Owner can see its shared workspace needs isolation',async()=>{const r=await rpc(owner,'partner_needs_isolation',owner.id);return !r.error&&r.data===true;});
  let isolated;
@@ -49,7 +49,7 @@ try {
  await check('Same-tenant active administrator can isolate another partner',async()=>{const r=await rpc(admin,'isolate_partner_profile',other.id);if(!r.error&&r.data)ids.tenants.push(r.data);return !r.error&&r.data!==a;});
  const otherTenant=await ownedTenant(other.id);if(!ids.tenants.includes(otherTenant))ids.tenants.push(otherTenant);
  await check('Trusted service repairs a missing university without changing tenant',async()=>{const r=await db.rpc('ensure_partner_workspace',{p_profile_id:foreign.id});const universities=requireData(await db.from('universities').select('id').eq('tenant_id',b),'repair read');return !r.error&&r.data===b&&universities.length===1;});
- await check('Account deactivation takes effect for an already issued admin session',async()=>{requireData(await db.from('profiles').update({active:false}).eq('id',admin.id),'deactivate fixture');const r=await admin.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===0;});
+ await check('Deactivation blocks both policy paths for an already issued admin session',async()=>{requireData(await db.from('profiles').update({active:false}).eq('id',admin.id),'deactivate fixture');const r=await admin.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===0;});
 }finally{
  let cleanupOk=true;for(const auth of sessions)await auth.auth.signOut().catch(()=>{});
  const remove=async(table,column,values)=>{if(values.length&&(await db.from(table).delete().in(column,values)).error)cleanupOk=false;};

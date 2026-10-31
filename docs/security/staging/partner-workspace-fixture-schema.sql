@@ -16,6 +16,8 @@ alter table public.universities enable row level security;
 alter table public.partner_security_probe enable row level security;
 drop policy if exists synthetic_legacy_staff_policy on public.partner_security_probe;
 create policy synthetic_legacy_staff_policy on public.partner_security_probe for all to authenticated using(public.is_admin_or_staff(auth.uid())) with check(public.is_admin_or_staff(auth.uid()));
+drop policy if exists synthetic_direct_role_policy on public.partner_security_probe;
+create policy synthetic_direct_role_policy on public.partner_security_probe for select to authenticated using(public.has_role(auth.uid(),'admin') or public.has_role(auth.uid(),'staff'));
 grant select,insert,update,delete on public.partner_security_probe to authenticated;
 grant all on public.universities,public.partner_security_probe to service_role;
 notify pgrst,'reload schema';

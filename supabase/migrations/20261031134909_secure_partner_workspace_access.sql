@@ -1,6 +1,17 @@
 -- Forward-only security fix. No existing profiles/tenants/universities are changed here.
 begin;
 
+-- Deactivation must also cover policies that call has_role directly.
+-- Same trusted role table, deployed argument names and existing EXECUTE grants.
+create or replace function public.has_role(p_user_id uuid, p_role public.app_role)
+returns boolean language sql stable security definer set search_path = public set row_security = off
+as $$
+  select exists (
+    select 1 from public.user_roles ur join public.profiles p on p.id = ur.user_id
+    where ur.user_id = p_user_id and ur.role = p_role and p.active is true
+  );
+$$;
+
 -- Same trusted role sources as before, with current active status required.
 -- Preserve the deployed argument name for existing named RPC callers.
 create or replace function public.is_admin_or_staff(user_id uuid)

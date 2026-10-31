@@ -20,10 +20,12 @@ try {
  create function auth.role() returns text language sql stable as $$select current_setting('request.jwt.claim.role',true)$$;
  grant usage on schema auth to anon,authenticated,service_role;
  create type public.app_role as enum('student','agent','partner','admin','staff');
- create table tenants(id uuid primary key default gen_random_uuid(),name text,slug text,email_from text,active boolean default true);
+ create table tenants(id uuid primary key default gen_random_uuid(),name text not null,slug text unique not null,email_from text not null,active boolean default true);
  create table profiles(id uuid primary key,tenant_id uuid references tenants(id),role app_role,active boolean,full_name text,email text,phone text,country text);
  create table user_roles(user_id uuid,role app_role);
- create table universities(id uuid primary key default gen_random_uuid(),tenant_id uuid references tenants(id),name text,country text,active boolean,submission_config_json jsonb);
+ create table universities(id uuid primary key default gen_random_uuid(),tenant_id uuid unique not null references tenants(id),name text not null,country text not null,slug text not null,active boolean,submission_config_json jsonb);
+ create function public.set_university_slug() returns trigger language plpgsql set search_path=public as $$begin if new.slug is null or btrim(new.slug)='' then new.slug:=trim(both '-' from regexp_replace(lower(new.name),'[^a-z0-9]+','-','g'));end if;return new;end$$;
+ create trigger set_university_slug_before_write before insert or update of name,slug on universities for each row execute function public.set_university_slug();
  create function public.has_role(user_id uuid,requested app_role) returns boolean language sql stable security definer set search_path=public as $$select exists(select 1 from public.user_roles r where r.user_id=$1 and r.role=$2)$$;
  create function public.is_admin_or_staff(user_id uuid) returns boolean language sql stable security definer set search_path=public as $$select public.has_role($1,'admin') or public.has_role($1,'staff')$$;
  create function public.guard_protected_profile_fields() returns trigger language plpgsql security invoker set search_path=public as $$begin if new.tenant_id is distinct from old.tenant_id and current_user in ('anon','authenticated') then raise exception 'direct tenant edit denied' using errcode='42501';end if;return new;end$$;
@@ -31,8 +33,9 @@ try {
  create table protected_records(id int primary key,value text);insert into protected_records values(1,'synthetic private row');
  alter table protected_records enable row level security;
  create policy existing_staff_policy on protected_records for all to authenticated using(public.is_admin_or_staff(auth.uid())) with check(public.is_admin_or_staff(auth.uid()));
+ create policy existing_direct_role_policy on protected_records for select to authenticated using(public.has_role(auth.uid(),'admin') or public.has_role(auth.uid(),'staff'));
  grant select,insert,update,delete on protected_records to authenticated;`);
- await db.query("insert into tenants(id,slug) values($1,'unidoxia'),($2,'other')",[tenantA,tenantB]);
+ await db.query("insert into tenants(id,name,slug,email_from) values($1,'Synthetic A','unidoxia','synthetic@fixture.invalid'),($2,'Synthetic B','other','synthetic@fixture.invalid')",[tenantA,tenantB]);
  for(const [user,tenant,role,active]of [[admin,tenantA,'admin',true],[staff,tenantA,'staff',true],[inactive,tenantA,'admin',false],[student,tenantA,'student',true],[owner,tenantA,'partner',true],[other,tenantA,'partner',true],[foreign,tenantB,'partner',true],[inactivePartner,tenantA,'partner',false]]) {
   await db.query('insert into profiles values($1,$2,$3,$4,$5,$6,null,null)',[user,tenant,role,active,'Synthetic Partner','synthetic@example.invalid']);
   await db.query('insert into user_roles values($1,$2)',[user,role]);
@@ -45,7 +48,7 @@ try {
  await db.exec('reset role');const before=await counts();await db.exec(sql);ok(JSON.stringify(await counts())===JSON.stringify(before),'Migration makes no business data changes');
  for(const target of [owner,foreign,missing]){await as(student);await denied(()=>isolate(target),'Student denied');await denied(()=>needs(target),'Foreign partner status denied');}
  await as(owner);await denied(()=>isolate(other),'Partner cannot move another partner');await denied(()=>needs(foreign),'Partner cannot inspect foreign workspace');
- await as(inactive);await denied(()=>isolate(owner),'Inactive admin denied');ok((await db.query('select * from protected_records')).rows.length===0,'Inactive administrator no longer reads protected rows');
+ await as(inactive);ok((await db.query("select public.has_role(auth.uid(),'admin') as allowed")).rows[0].allowed===false,'Direct role helper denies inactive account');await denied(()=>isolate(owner),'Inactive admin denied');ok((await db.query('select * from protected_records')).rows.length===0,'Inactive administrator no longer reads protected rows');
  ok((await db.query("update protected_records set value='forbidden' returning id")).rows.length===0,'Inactive administrator cannot update');
  await denied(()=>db.query("insert into protected_records values(2,'forbidden')"),'Inactive administrator cannot insert');
  await as(inactivePartner);await denied(()=>isolate(inactivePartner),'Inactive partner cannot isolate');
@@ -53,7 +56,7 @@ try {
  await as(owner);await denied(()=>db.query('select public.can_manage_partner_workspace($1)',[owner]),'Internal guard cannot be called by browser');
  ok(await needs(owner),'Own shared workspace detected');const ownTenant=await isolate(owner);ok(ownTenant!==tenantA,'Owner can isolate self through guarded routine');
  ok(await needs(owner)===false,'Dedicated owner workspace no longer needs isolation');const ownCounts=await counts();await as(owner);ok(await isolate(owner)===ownTenant,'Repeat returns existing workspace');ok((await db.query('select public.ensure_partner_workspace($1) as tenant',[owner])).rows[0].tenant===ownTenant,'Versioned client entry point reuses workspace');ok(JSON.stringify(await counts())===JSON.stringify(ownCounts),'Repeat creates no duplicate tenant/university');
- await as(admin);ok((await db.query('select * from protected_records')).rows.length===1,'Active admin retains existing read access');await denied(()=>isolate(owner),'Administrator cannot move a foreign-tenant partner');
+ await as(admin);ok((await db.query("select public.has_role(auth.uid(),'admin') as allowed")).rows[0].allowed===true,'Direct role helper preserves active account');ok((await db.query('select * from protected_records')).rows.length===1,'Active admin retains existing read access');await denied(()=>isolate(owner),'Administrator cannot move a foreign-tenant partner');
  await as(staff);const otherTenant=await isolate(other);ok(otherTenant!==tenantA,'Active same-tenant staff can isolate partner');
  await as(null,'service_role');ok(await isolate(foreign)===tenantB,'Trusted server can handle already isolated partner idempotently');await denied(()=>isolate(inactivePartner),'Inactive target remains protected even for server');await db.exec('reset role');ok((await db.query('select count(*)::int as n from universities where tenant_id=$1',[tenantB])).rows[0].n===1,'Missing university repaired in dedicated workspace');await as(null,'service_role');await isolate(foreign);await db.exec('reset role');ok((await db.query('select count(*)::int as n from universities where tenant_id=$1',[tenantB])).rows[0].n===1,'University repair is idempotent');
  await db.exec('reset role');await db.exec(sql);await as(owner);ok(await isolate(owner)===ownTenant,'Migration replay preserves isolated workspace');
