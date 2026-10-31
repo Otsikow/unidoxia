@@ -2,7 +2,6 @@
 
 import { Suspense } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import BackButton from "@/components/BackButton";
 import StaffTasksBoard from "@/components/staff/StaffTasksBoard";
 import StaffTaskOverview from "@/components/staff/StaffTaskOverview";
 import StaffTaskAutomationPanel from "@/components/staff/StaffTaskAutomationPanel";
@@ -11,10 +10,9 @@ import { StaffTaskComposerProvider } from "@/components/staff/StaffTaskComposerP
 
 export default function StaffTasks() {
   return (
-    <DashboardLayout showToolbarBackButton={false}>
+    <DashboardLayout>
       <StaffTaskComposerProvider>
         <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-          <BackButton fallback="/dashboard" label="Back" />
           <div className="grid gap-6">
             <StaffTaskOverview />
             <StaffTaskAutomationPanel />
