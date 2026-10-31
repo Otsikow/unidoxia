@@ -21,7 +21,8 @@ import {
 import { LandingHeader } from '@/components/landing/LandingHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { startStudentCheckout, CHECKOUT_UNAVAILABLE } from '@/lib/studentCheckout';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   PRICING_PLANS, 
   PRICING_FAQ,
@@ -37,31 +38,8 @@ export default function Pricing() {
   const [searchParams] = useSearchParams();
   const [loadingPlan, setLoadingPlan] = useState<StudentPlanType | null>(null);
 
-  const getDemoFallback = (error: unknown, data: unknown): boolean => {
-    if (data && typeof data === 'object' && 'demo' in data && data.demo === true) {
-      return true;
-    }
-
-    if (!error || typeof error !== 'object') return false;
-
-    const contextBody = (error as { context?: { body?: unknown } }).context?.body;
-    if (!contextBody) return false;
-
-    if (typeof contextBody === 'string') {
-      try {
-        const parsed = JSON.parse(contextBody) as { demo?: boolean };
-        return parsed.demo === true;
-      } catch {
-        return false;
-      }
-    }
-
-    if (typeof contextBody === 'object' && 'demo' in contextBody) {
-      return contextBody.demo === true;
-    }
-
-    return false;
-  };
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const checkoutInFlight = useRef(false);
 
   // Check for payment status from URL
   const paymentStatus = searchParams.get('payment');
@@ -103,53 +81,18 @@ export default function Pricing() {
       return;
     }
 
+    if (checkoutInFlight.current) return;
+    checkoutInFlight.current = true;
+    setCheckoutError(null);
     setLoadingPlan(planId);
 
     try {
-      // Get session token
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        throw new Error('Please log in to continue');
-      }
-
-      // Call edge function to create checkout session
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: {
-          planCode: planId,
-          successUrl: `${window.location.origin}/student/dashboard?payment=success`,
-          cancelUrl: `${window.location.origin}/pricing?payment=cancelled`,
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) {
-        // If Stripe not configured, fallback to demo checkout
-        if (getDemoFallback(error, data)) {
-          navigate(`/student/checkout?plan=${planId}`);
-          return;
-        }
-        throw error;
-      }
-
-      if (data?.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
-      } else {
-        // Fallback to internal checkout
-        navigate(`/student/checkout?plan=${planId}`);
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      if (getDemoFallback(error, null)) {
-        navigate(`/student/checkout?plan=${planId}`);
-        return;
-      }
-      // Fallback to internal checkout page
-      navigate(`/student/checkout?plan=${planId}`);
+      window.location.href = await startStudentCheckout(planId, window.location.origin, '/pricing?payment=cancelled');
+    } catch {
+      setCheckoutError(CHECKOUT_UNAVAILABLE);
+      toast({title:'Payment unavailable', description:CHECKOUT_UNAVAILABLE, variant:'destructive'});
     } finally {
+      checkoutInFlight.current = false;
       setLoadingPlan(null);
     }
   };
@@ -198,7 +141,8 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
+        {checkoutError && <Alert variant="destructive" className="max-w-4xl mx-auto mb-6"><AlertDescription>{checkoutError}</AlertDescription></Alert>}
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
           {PRICING_PLANS.map((plan) => (
             <Card 
               key={plan.id} 
@@ -433,21 +377,11 @@ export default function Pricing() {
             Choose a plan that supports your application preparation and tracking needs.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button 
-              size="lg" 
-              onClick={() => handleSelectPlan('self_service')}
-              disabled={loadingPlan === 'self_service'}
-            >
-              {loadingPlan === 'self_service' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <CreditCard className="h-4 w-4 mr-2" />
-              )}
-              Get Self-Service — $49
+            <Button size="lg" variant="outline" onClick={() => handleSelectPlan('free')}>
+              Get Started Free
             </Button>
             <Button 
               size="lg" 
-              variant="outline"
               onClick={() => handleSelectPlan('agent_supported')}
               disabled={loadingPlan === 'agent_supported'}
             >

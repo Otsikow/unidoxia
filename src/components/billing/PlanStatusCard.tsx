@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Crown, Sparkles, User, ArrowRight } from 'lucide-react';
 import { useStudentBilling } from '@/hooks/useStudentBilling';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import type { StudentPlanType } from '@/types/billing';
 
 const planIcons: Record<StudentPlanType, typeof User> = {
@@ -30,7 +31,7 @@ interface PlanStatusCardProps {
 }
 
 export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
-  const { billingLoading, getPlanInfo, getRemainingApplications, applicationCount } = useStudentBilling();
+  const { billingLoading, billingError, billingData, countLoading, countError, getPlanInfo, getRemainingApplications, applicationCount, refetch } = useStudentBilling();
   const planInfo = getPlanInfo();
   const remaining = getRemainingApplications();
 
@@ -42,6 +43,9 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
     );
   }
 
+  if (billingError || countError || !billingData) return <Alert><AlertDescription className="flex flex-wrap items-center justify-between gap-2"><span>Your plan or application count could not be confirmed.</span><Button size="sm" variant="outline" onClick={() => void refetch()}>Retry</Button></AlertDescription></Alert>;
+  if (countLoading) return <Skeleton className={compact ? 'h-6 w-32' : 'h-24 w-full'} />;
+
   const Icon = planIcons[planInfo.planType];
 
   // Compact version for sidebar/header
@@ -49,8 +53,8 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
     return (
       <div className="flex items-center gap-2">
         <Badge className={`${planBadgeColors[planInfo.planType]} text-white text-xs px-2 py-0.5`}>
-          {planInfo.planType === 'free' ? 'Free' : 
-           planInfo.planType === 'self_service' ? 'Self-Service' : 
+          {planInfo.planType === 'free' ? 'Free' :
+           planInfo.planType === 'self_service' ? 'Legacy Self-Service' :
            'Agent-Supported'}
         </Badge>
         {planInfo.planType === 'free' && remaining !== null && (
@@ -90,7 +94,7 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
               )}
             </div>
           </div>
-          
+
           {planInfo.planType === 'free' && (
             <Button asChild size="sm" variant="secondary" className="shrink-0">
               <Link to="/pricing" className="flex items-center gap-1">
@@ -99,7 +103,7 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
               </Link>
             </Button>
           )}
-          
+
           {planInfo.hasAgent && (
             <Badge variant="outline" className="bg-white/50 dark:bg-white/10">
               Agent Assigned
@@ -113,17 +117,19 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
 
 // Inline badge version for minimal display
 export function PlanBadge() {
-  const { billingLoading, getPlanInfo } = useStudentBilling();
+  const { billingLoading, billingError, billingData, getPlanInfo } = useStudentBilling();
   const planInfo = getPlanInfo();
 
   if (billingLoading) {
     return <Skeleton className="h-5 w-20" />;
   }
 
+  if (billingError || !billingData) return <Badge variant="outline">Plan unavailable</Badge>;
+
   return (
     <Badge className={`${planBadgeColors[planInfo.planType]} text-white`}>
-      {planInfo.planType === 'free' ? 'Free' : 
-       planInfo.planType === 'self_service' ? 'Self-Service' : 
+      {planInfo.planType === 'free' ? 'Free' :
+       planInfo.planType === 'self_service' ? 'Legacy Self-Service' :
        'Agent-Supported'}
     </Badge>
   );
