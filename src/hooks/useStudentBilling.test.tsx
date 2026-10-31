@@ -49,4 +49,19 @@ describe('confirmed application allowances',()=>{
  it('shows a retry instead of an allowance or upgrade when a count is unavailable',async()=>{
   api.count.mockResolvedValue({count:null,error:new Error('offline')});render(<PlanStatusCard/>,{wrapper:wrapper()});expect(await screen.findByRole('button',{name:'Retry'})).toBeInTheDocument();expect(screen.queryByText(/of 1 application used/)).not.toBeInTheDocument();expect(screen.queryByRole('link',{name:/Upgrade/})).not.toBeInTheDocument();
  });
+ it('keeps a confirmed paid plan visible when only its count fails',async()=>{
+  api.billing.mockResolvedValue({data:{...student,plan_type:'self_service'},error:null});api.count.mockResolvedValue({count:null,error:new Error('offline')});
+  render(<PlanStatusCard/>,{wrapper:wrapper()});
+  expect(await screen.findByText(/Legacy Self-Service/)).toBeInTheDocument();
+  expect(await screen.findByText('Application count unavailable')).toBeInTheDocument();
+  expect(screen.getByRole('button',{name:'Retry'})).toBeInTheDocument();
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  expect(screen.queryByText(/0 applications submitted/)).not.toBeInTheDocument();
+ });
+ it('keeps the paid plan visible while its count is loading, then shows the confirmed count',async()=>{
+  let resolve:(value:unknown)=>void=()=>{};api.billing.mockResolvedValue({data:{...student,plan_type:'agent_supported'},error:null});api.count.mockImplementation(()=>new Promise(r=>{resolve=r;}));
+  render(<PlanStatusCard/>,{wrapper:wrapper()});expect(await screen.findByText(/Agent-Supported — Full Guidance/)).toBeInTheDocument();expect(screen.getByText('Checking application count…')).toBeInTheDocument();
+  await act(async()=>resolve({count:2,error:null}));expect(await screen.findByText('2 applications submitted')).toBeInTheDocument();
+ });
+
 });
