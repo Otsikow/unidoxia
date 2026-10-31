@@ -150,7 +150,7 @@ export function useApplicationLimitCheck() {
       toast({
         title: 'Application Limit Reached',
         description: planInfo.planType === 'free'
-          ? 'You have used your free application. Upgrade to Self-Service ($49) for unlimited applications or choose Agent-Supported ($200) for guided support.'
+          ? 'You have used your free application. Choose Agent-Supported ($200) for unlimited applications with guided support.'
           : 'Unable to create new application. Please contact support.',
         variant: 'destructive',
       });

@@ -49,8 +49,8 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
     return (
       <div className="flex items-center gap-2">
         <Badge className={`${planBadgeColors[planInfo.planType]} text-white text-xs px-2 py-0.5`}>
-          {planInfo.planType === 'free' ? 'Free' : 
-           planInfo.planType === 'self_service' ? 'Self-Service' : 
+          {planInfo.planType === 'free' ? 'Free' :
+           planInfo.planType === 'self_service' ? 'Legacy Self-Service' :
            'Agent-Supported'}
         </Badge>
         {planInfo.planType === 'free' && remaining !== null && (
@@ -90,7 +90,7 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
               )}
             </div>
           </div>
-          
+
           {planInfo.planType === 'free' && (
             <Button asChild size="sm" variant="secondary" className="shrink-0">
               <Link to="/pricing" className="flex items-center gap-1">
@@ -99,7 +99,7 @@ export function PlanStatusCard({ compact = false }: PlanStatusCardProps) {
               </Link>
             </Button>
           )}
-          
+
           {planInfo.hasAgent && (
             <Badge variant="outline" className="bg-white/50 dark:bg-white/10">
               Agent Assigned
@@ -122,8 +122,8 @@ export function PlanBadge() {
 
   return (
     <Badge className={`${planBadgeColors[planInfo.planType]} text-white`}>
-      {planInfo.planType === 'free' ? 'Free' : 
-       planInfo.planType === 'self_service' ? 'Self-Service' : 
+      {planInfo.planType === 'free' ? 'Free' :
+       planInfo.planType === 'self_service' ? 'Legacy Self-Service' :
        'Agent-Supported'}
     </Badge>
   );

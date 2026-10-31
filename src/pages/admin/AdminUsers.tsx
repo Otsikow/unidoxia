@@ -890,7 +890,7 @@ const AdminUsers = () => {
                 }
                 className="rounded-lg border p-4 text-left transition hover:border-primary hover:bg-primary/5"
               >
-                <p className="text-xs uppercase text-muted-foreground">$49 subscribers</p>
+                <p className="text-xs uppercase text-muted-foreground">Legacy Self-Service accounts</p>
                 <p className="text-2xl font-semibold">{summaryMetrics.selfServiceUsers}</p>
               </button>
               <button
@@ -1001,7 +1001,7 @@ const AdminUsers = () => {
               <SelectContent>
                 <SelectItem value="all">All plans</SelectItem>
                 <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="self_service">$49 plan</SelectItem>
+                <SelectItem value="self_service">Legacy Self-Service</SelectItem>
                 <SelectItem value="agent_supported">$200 plan</SelectItem>
               </SelectContent>
             </Select>

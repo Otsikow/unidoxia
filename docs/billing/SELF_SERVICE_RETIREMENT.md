@@ -1,0 +1,9 @@
+# Self-Service offer retirement — 31 October 2026
+
+Eric explicitly requested removal of the $49 Self-Service offer. New public offers are Free Access and Agent-Supported, with their existing prices and limits preserved.
+
+Removed the plan card/configuration, checkout link resolution, final pricing CTA and sales copy in help/application upgrade prompts. The checkout service accepts only agent_supported for a new payment session, including protection against prototype-key plan codes. Existing self_service accounts still retain unlimited application access; staff can identify them as Legacy Self-Service. Historical webhook fulfilment and receipt handling remain compatible. No account migration, transaction, refund, price archive or cancellation of previously issued Stripe sessions is performed.
+
+Checks: 588 tests in 90 files passed, including eight new regression checks. The actual checkout handler was executed with isolated Auth/database/Stripe adapters to prove retired-plan denial before student lookup or session creation, supported-plan amount preservation and authentication. These are not live Stripe/payment acceptance tests. TypeScript and Vite production bundle pass; targeted lint has zero errors and one existing HelpCenter effect-dependency warning. Local pricing rendered on desktop and 390px mobile, without retired sales copy or horizontal overflow. Source scan retains only historical account/reporting and receipt references (plus unrelated university tuition).
+
+Release: normal GitHub merge and exact-source Lovable preview. Deploy only the reviewed create-checkout-session function with its authentication protections preserved; no live transaction/test email, SQL, flags or other integration changes. Frontend publication remains separate. Existing already-created Stripe Checkout sessions/payment links outside this application have not been audited or expired by this change.

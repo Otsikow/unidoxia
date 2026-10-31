@@ -58,28 +58,6 @@ export const PRICING_PLANS: PricingPlan[] = [
     paymentLabel: 'Free',
   },
   {
-    id: 'self_service',
-    name: 'Self-Service',
-    price: 4900, // $49.00 USD
-    currency: 'USD',
-    description: 'Apply to unlimited universities independently',
-    features: [
-      'Apply to unlimited universities',
-      'Manage applications independently',
-      'Full access to all course information',
-      'Document upload and management',
-      'Real-time application tracking',
-      'AI-powered Zoe chatbot assistance',
-      'Scholarship discovery tools',
-    ],
-    limitations: [
-      'No dedicated agent support',
-    ],
-    isPopular: true,
-    paymentLabel: 'One-Time Payment',
-    stripePriceId: 'price_1SpAHh4wNWAbnULpZh7NqzqB',
-  },
-  {
     id: 'agent_supported',
     name: 'Agent-Supported',
     price: 20000, // $200.00 USD
@@ -128,7 +106,7 @@ export const PRICING_FAQ = [
   },
   {
     question: 'Can I upgrade my plan later?',
-    answer: 'Yes. You can upgrade from Free to Self-Service or Agent-Supported at any time. Each upgrade is a separate one-time payment.',
+    answer: 'Yes. You can upgrade from Free to Agent-Supported for a one-time payment.',
   },
   {
     question: 'What payment methods are accepted?',
@@ -154,7 +132,7 @@ export function formatPlanPrice(plan: PricingPlan): string {
 export function getPlanDisplayName(planType: StudentPlanType): string {
   const names: Record<StudentPlanType, string> = {
     free: 'Free — 1 Application Only',
-    self_service: 'Self-Service — Unlimited Universities (One-Time Payment)',
+    self_service: 'Legacy Self-Service — Unlimited Universities',
     agent_supported: 'Agent-Supported — Full Guidance (One-Time Payment)',
   };
   return names[planType];

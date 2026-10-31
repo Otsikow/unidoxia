@@ -89,13 +89,13 @@ const HelpCenter = () => {
     {
       id: 'billing-4',
       question: 'What are the available plans?',
-      answer: 'We offer three plans: Free ($0 - 1 application), Self-Service ($49 - unlimited applications), and Agent-Supported ($200 - unlimited applications with dedicated agent guidance).',
+      answer: 'We offer two plans: Free ($0 - 1 application) and Agent-Supported ($200 - unlimited applications with dedicated agent guidance).',
       category: 'Billing & Payments',
     },
     {
       id: 'billing-5',
       question: 'Can I upgrade my plan?',
-      answer: 'Yes. You can upgrade from Free to Self-Service or Agent-Supported at any time. Each upgrade is a separate one-time payment.',
+      answer: 'Yes. You can upgrade from Free to Agent-Supported for a one-time payment.',
       category: 'Billing & Payments',
     },
     {
