@@ -18,6 +18,7 @@ const T2 = "00000000-0000-0000-0000-000000000002";
 const U = (n) => `10000000-0000-0000-0000-${String(n).padStart(12, "0")}`;
 
 const schema = `
+set check_function_bodies = off;
 create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
 create schema auth;
 create table auth.users (id uuid primary key, email text, raw_user_meta_data jsonb default '{}', raw_app_meta_data jsonb default '{}');
