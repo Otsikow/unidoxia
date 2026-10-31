@@ -5339,6 +5339,10 @@ export type Database = {
         Args: { p_application_id: string }
         Returns: Json
       }
+      can_manage_partner_workspace: {
+        Args: { p_profile_id: string }
+        Returns: boolean
+      }
       can_manage_university_application: {
         Args: { p_application_id: string; p_user_id: string }
         Returns: boolean
