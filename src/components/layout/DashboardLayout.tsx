@@ -1,4 +1,7 @@
-import { ReactNode } from "react";
+import AdminLayout from '@/components/layout/AdminLayout';
+import { AdminShellContext } from '@/components/layout/AdminShellContext';
+import { LoadingState } from '@/components/LoadingState';
+import { ReactNode, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   SidebarProvider,
@@ -38,9 +41,17 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children, showToolbarBackButton = true }: DashboardLayoutProps) {
   const { user } = useAuth();
   usePageViewTracking(user?.id);
+  const insideAdminShell = useContext(AdminShellContext);
+  const content = insideAdminShell ? children : <RoleDashboardLayout showToolbarBackButton={showToolbarBackButton}>{children}</RoleDashboardLayout>;
+  return <><AgentAgreementGate />{content}</>;
+}
+
+function RoleDashboardLayout({ children, showToolbarBackButton }: DashboardLayoutProps) {
+  const { primaryRole, loading } = useUserRoles();
+  if (loading) return <LoadingState message="Loading navigation…" />;
+  if (primaryRole === 'admin') return <AdminLayout>{children}</AdminLayout>;
   return (
     <SidebarProvider defaultOpen>
-      <AgentAgreementGate />
       <div className="app-canvas flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="min-w-0 bg-transparent">

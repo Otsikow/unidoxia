@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType, type SVGProps, useState, useCallback, useEffect } from "react";
+import { type ComponentType, type SVGProps, type ReactNode, useState, useCallback, useEffect } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +12,9 @@ import { useUserRoles } from "@/hooks/useUserRoles";
 import { LoadingState } from "@/components/LoadingState";
 import {
   Users,
+  CheckSquare,
+  MessageSquare,
+  Coins,
   FileText,
   GraduationCap,
   CreditCard,
@@ -37,11 +40,13 @@ import {
   Home,
   Megaphone,
 } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { Badge } from "@/components/ui/badge";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { AdminShellContext } from '@/components/layout/AdminShellContext';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import BackButton from "@/components/BackButton";
 
 /* -------------------------------------------------------------------------- */
@@ -68,7 +73,7 @@ const NAV_GROUPS: NavGroup[] = [
     groupDefault: "Overview",
     items: [
       {
-        to: "/admin/dashboard",
+        to: "/admin/overview",
         labelKey: "admin.layout.navigation.dashboard.label",
         descriptionKey: "admin.layout.navigation.dashboard.description",
         labelDefault: "Dashboard",
@@ -96,6 +101,22 @@ const NAV_GROUPS: NavGroup[] = [
         labelDefault: "Applications",
         descriptionDefault: "Review applications & follow-ups",
         icon: FileText,
+      },
+      {
+        to: '/admin/tasks',
+        labelKey: 'admin.layout.navigation.tasks.label',
+        descriptionKey: 'admin.layout.navigation.tasks.description',
+        labelDefault: 'Tasks',
+        descriptionDefault: 'Next actions & follow-ups',
+        icon: CheckSquare,
+      },
+      {
+        to: '/admin/messages',
+        labelKey: 'admin.layout.navigation.messages.label',
+        descriptionKey: 'admin.layout.navigation.messages.description',
+        labelDefault: 'Messages',
+        descriptionDefault: 'Student & team conversations',
+        icon: MessageSquare,
       },
       {
         to: "/admin/agents",
@@ -214,6 +235,14 @@ const NAV_GROUPS: NavGroup[] = [
         icon: CreditCard,
       },
       {
+        to: '/admin/commissions',
+        labelKey: 'admin.layout.navigation.commissions.label',
+        descriptionKey: 'admin.layout.navigation.commissions.description',
+        labelDefault: 'Commissions',
+        descriptionDefault: 'Earnings & payout tracking',
+        icon: Coins,
+      },
+      {
         to: "/admin/resources",
         labelKey: "admin.layout.navigation.resources.label",
         descriptionKey: "admin.layout.navigation.resources.description",
@@ -227,6 +256,22 @@ const NAV_GROUPS: NavGroup[] = [
     groupKey: "admin.layout.navigation.groups.analytics",
     groupDefault: "Analytics",
     items: [
+      {
+        to: '/admin/analytics',
+        labelKey: 'admin.layout.navigation.analytics.label',
+        descriptionKey: 'admin.layout.navigation.analytics.description',
+        labelDefault: 'Analytics',
+        descriptionDefault: 'Performance & activity',
+        icon: BarChart3,
+      },
+      {
+        to: '/admin/reports',
+        labelKey: 'admin.layout.navigation.reports.label',
+        descriptionKey: 'admin.layout.navigation.reports.description',
+        labelDefault: 'Reports',
+        descriptionDefault: 'Admissions & commercial reports',
+        icon: ScrollText,
+      },
       {
         to: "/admin/insights",
         labelKey: "admin.layout.navigation.insights.label",
@@ -258,6 +303,22 @@ const NAV_GROUPS: NavGroup[] = [
     groupDefault: "System",
     items: [
       {
+        to: '/admin/profile',
+        labelKey: 'admin.layout.navigation.profile.label',
+        descriptionKey: 'admin.layout.navigation.profile.description',
+        labelDefault: 'My profile',
+        descriptionDefault: 'Personal details & account',
+        icon: Users,
+      },
+      {
+        to: '/admin/preferences',
+        labelKey: 'admin.layout.navigation.preferences.label',
+        descriptionKey: 'admin.layout.navigation.preferences.description',
+        labelDefault: 'Preferences',
+        descriptionDefault: 'Theme, language & notifications',
+        icon: Settings,
+      },
+      {
         to: "/admin/settings",
         labelKey: "admin.layout.navigation.settings.label",
         descriptionKey: "admin.layout.navigation.settings.description",
@@ -272,6 +333,14 @@ const NAV_GROUPS: NavGroup[] = [
         labelDefault: "Notifications",
         descriptionDefault: "System alerts",
         icon: Bell,
+      },
+      {
+        to: '/admin/blog',
+        labelKey: 'admin.layout.navigation.blog.label',
+        descriptionKey: 'admin.layout.navigation.blog.description',
+        labelDefault: 'Blog',
+        descriptionDefault: 'Manage published articles',
+        icon: BookOpen,
       },
       {
         to: "/admin/broadcast",
@@ -328,7 +397,7 @@ const getInitialCollapsedGroups = (): Record<string, boolean> => {
   }
 };
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }: { children?: ReactNode } = {}) => {
   const { profile, signOut } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
@@ -336,6 +405,7 @@ const AdminLayout = () => {
   const isMobile = useIsMobile();
   const { loading: rolesLoading, hasRole } = useUserRoles();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(getInitialCollapsedGroups);
 
   // Persist collapsed state to localStorage
@@ -480,6 +550,7 @@ const AdminLayout = () => {
                       <NavLink
                         key={item.to}
                         to={item.to}
+                        onClick={() => { if (isMobile) setMobileNavOpen(false); }}
                         aria-label={t(item.labelKey, { defaultValue: item.labelDefault })}
                         title={
                           isCollapsed && showCollapseButton
@@ -542,7 +613,7 @@ const AdminLayout = () => {
   /* ✅ Mobile Navigation Sheet                                            */
   /* ---------------------------------------------------------------------- */
   const mobileNavSheet = isMobile ? (
-    <Sheet>
+    <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="icon" className="fixed left-3 top-3 z-50 h-10 w-10 md:hidden shadow-md">
           <Menu className="h-5 w-5" />
@@ -550,6 +621,8 @@ const AdminLayout = () => {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[280px] p-0">
+        <SheetTitle className="sr-only">Admin navigation</SheetTitle>
+        <SheetDescription className="sr-only">Open a section of the admin workspace.</SheetDescription>
         {sidebar(false)}
       </SheetContent>
     </Sheet>
@@ -559,12 +632,12 @@ const AdminLayout = () => {
   /* ✅ Layout Wrapper                                                       */
   /* ---------------------------------------------------------------------- */
   return (
-    <div className="app-canvas flex min-h-screen">
+    <AdminShellContext.Provider value={true}><div className="app-canvas flex min-h-screen">
       {mobileNavSheet}
       <div className={cn("hidden md:flex shrink-0 overflow-visible", isCollapsed ? "md:w-20" : "md:w-72")}>{sidebar(true)}</div>
       <div className="flex w-full min-w-0 flex-col">
         {/* Top Header Bar with Notification Bell */}
-        <header className="glass-toolbar sticky top-0 z-40 flex h-14 items-center justify-between gap-2 px-4 md:px-6">
+        <header className="glass-toolbar sticky top-0 z-40 flex h-14 items-center justify-between gap-2 pl-16 pr-4 md:px-6">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -575,26 +648,26 @@ const AdminLayout = () => {
             >
               <Home className="h-5 w-5" />
             </Button>
-            {location.pathname !== "/admin/dashboard" && location.pathname !== "/admin" ? (
+            {! ["/admin", "/admin/dashboard", "/admin/overview"].includes(location.pathname) ? (
               <BackButton
                 variant="ghost"
                 size="sm"
                 showHistoryMenu={false}
-                fallback="/admin/dashboard"
+                fallback="/admin/overview"
                 className="h-9 px-2"
                 label="Back"
               />
             ) : null}
           </div>
-          <NotificationBell notificationsUrl="/admin/notifications" maxItems={7} />
+          <div className="flex items-center gap-2"><ThemeToggle /><NotificationBell notificationsUrl="/admin/notifications" maxItems={7} /></div>
         </header>
         <main className="flex-1 bg-transparent">
           <div className="mx-auto w-full max-w-7xl px-3 py-4 sm:px-4 md:px-6 md:py-6 lg:px-8 lg:py-8">
-            <Outlet />
+            {children ?? <Outlet />}
           </div>
         </main>
       </div>
-    </div>
+    </div></AdminShellContext.Provider>
   );
 };
 

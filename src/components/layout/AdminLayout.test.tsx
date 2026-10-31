@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
@@ -27,5 +27,8 @@ describe('admin applications navigation', () => {
     show();
     await userEvent.click(screen.getByRole('button', { name: 'Open navigation' }));
     expect(screen.getByRole('dialog').querySelector('a[href="/admin/applications"]')).toHaveTextContent('Applications');
+    await userEvent.click(screen.getByRole('dialog').querySelector('a[href="/admin/applications"]')!);
+    expect(screen.getByRole('heading', { name: 'Application queue' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

@@ -273,9 +273,6 @@ const Pricing = lazyWithErrorHandling(() => import("./pages/Pricing"));
 const AdminLayout = lazyWithErrorHandling(() =>
   import("./components/layout/AdminLayout")
 );
-const AdminDashboardPage = lazyWithErrorHandling(() =>
-  import("./pages/dashboards/AdminDashboard")
-);
 const AdminOverview = lazyWithErrorHandling(() =>
   import("./pages/admin/AdminOverview")
 );
@@ -695,6 +692,8 @@ const App = () => {
                         <Route path="/dashboard/ai-insights" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffAIInsightsPage /></ProtectedRoute>} />
                         <Route path="/dashboard/notifications" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><DashboardNotifications /></ProtectedRoute>} />
 
+                        <Route path="/dashboard/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><Navigate to="/admin/analytics" replace /></ProtectedRoute>} />
+
                         {/* STUDENT ROUTES */}
                         <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>
                           <Route index element={<Navigate to="/student/dashboard" replace />} />
@@ -724,6 +723,24 @@ const App = () => {
                           <Route path="overview" element={<AdminOverview />} />
                           <Route path="users" element={<AdminUsers />} />
                           <Route path="applications" element={<AdminApplications embedded />} />
+                          <Route path="applications/new" element={<NewApplication />} />
+                          <Route path="tasks" element={<StaffTasks />} />
+                          <Route path="messages" element={<StaffMessages />} />
+                          <Route path="commissions" element={<AgentCommissions />} />
+                          <Route path="offers" element={<OffersManagement />} />
+                          <Route path="document-requests" element={<PartnerDocumentRequests />} />
+                          <Route path="recruitment-leads" element={<AgentLeads />} />
+                          <Route path="team-reports" element={<StaffReports />} />
+                          <Route path="content-workspace" element={<StaffBlogManagement />} />
+                          <Route path="agent-ranking" element={<AgentRanking />} />
+                          <Route path="payment-history" element={<AgentPayments />} />
+                          <Route path="import" element={<AgentImport />} />
+                          <Route path="resource-library" element={<AgentResources />} />
+                          <Route path="partner-directory" element={<AgentPartners />} />
+                          <Route path="preferences/*" element={<StaffSettingsRouter />} />
+                          <Route path="ai-insights" element={<StaffAIInsightsPage />} />
+                          <Route path="profile" element={<ProfileSettingsPage />} />
+                          <Route path="agent-profile" element={<AgentSettingsPage />} />
                           <Route path="admissions" element={<Navigate to="/admin/applications" replace />} />
                           <Route path="agents" element={<AdminAgentsPage />} />
                           <Route path="payments" element={<AdminPaymentsPage />} />

@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRoles } from "@/hooks/useUserRoles";
 
 const roleRedirects: Record<string, string> = {
-  admin: "/admin/dashboard",
+  admin: "/admin/overview",
   staff: "/dashboard/tasks",
   partner: "/university/overview",
   agent: "/dashboard/leads",
