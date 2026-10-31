@@ -74,10 +74,10 @@ begin
     return jsonb_build_object('id',v_request.id,'status',v_request.status,'storage_path',v_request.storage_path);
   end if;
   if v_request.status not in ('pending','rejected') or v_request.status is null then
-    raise exception 'This request has already changed or been reviewed. Refresh before submitting.' using errcode='40001';
+    raise exception 'This request has already changed or been reviewed. Refresh before submitting.' using errcode='PT409';
   end if;
   if v_request.updated_at is distinct from p_expected_updated_at then
-    raise exception 'The document request changed. Refresh before submitting.' using errcode='40001';
+    raise exception 'The document request changed. Refresh before submitting.' using errcode='PT409';
   end if;
   update public.document_requests set status='received',storage_path=v_doc.storage_path,
     document_url=null,file_url=null,uploaded_file_url=null,submitted_at=now(),reviewed_at=null,reviewed_by=null

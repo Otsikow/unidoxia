@@ -1,4 +1,4 @@
-import { submitDocumentRequest } from "@/lib/documentRequestSubmission";
+import { submitDocumentRequest, DocumentRequestSubmissionError } from "@/lib/documentRequestSubmission";
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
@@ -134,6 +134,7 @@ export function DocumentUploadDialog({
   const [uploading, setUploading] = useState(false);
   const [savedRequest, setSavedRequest] = useState<Parameters<typeof submitDocumentRequest>[0] | null>(null);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [requestRefreshRequired, setRequestRefreshRequired] = useState(false);
   const uploadInFlight = useRef(false);
   const { toast } = useToast();
 
@@ -179,6 +180,7 @@ export function DocumentUploadDialog({
       uploadInFlight.current = true;
       setUploading(true);
       setRequestError(null);
+      setRequestRefreshRequired(false);
       if (savedRequest) {
         await submitDocumentRequest(savedRequest);
         setSavedRequest(null);
@@ -233,7 +235,9 @@ export function DocumentUploadDialog({
       onUploadComplete?.();
     } catch (error) {
       logError(error, 'DocumentUploadDialog.handleUpload');
-      setRequestError(error instanceof Error ? error.message : 'The upload could not be completed.');
+      const message=error instanceof Error ? error.message : 'The upload could not be completed.';
+      setRequestError(fileSaved && !message.startsWith('Your file') ? `Your file is saved. ${message}` : message);
+      setRequestRefreshRequired(error instanceof DocumentRequestSubmissionError && error.refreshRequired);
       toast(fileSaved ? {title:'File saved; request needs attention',description:error instanceof Error ? error.message : 'Retry the request update without uploading again.',variant:'destructive'} : formatErrorForToast(error, 'Failed to upload document'));
     } finally {
       uploadInFlight.current = false;
@@ -251,7 +255,7 @@ export function DocumentUploadDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isLockedMode ? (
@@ -339,8 +343,7 @@ export function DocumentUploadDialog({
             </div>
           )}
 
-          {requestError && <Alert variant="destructive"><AlertDescription>{requestError}</AlertDescription></Alert>}
-          {savedRequest && <Alert><AlertDescription>Your file is saved. Retry the request update to confirm receipt without uploading it again.</AlertDescription></Alert>}
+          {(requestError || savedRequest) && <Alert variant={requestError ? 'destructive' : 'default'}><AlertDescription>{requestError || 'Your file is saved. Confirming the request receipt...'}</AlertDescription></Alert>}
           {/* File Input */}
           <div className="space-y-2">
             <Label htmlFor="file">Select File</Label>
@@ -364,14 +367,14 @@ export function DocumentUploadDialog({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
           {savedRequest && onUploadComplete && <Button variant="outline" disabled={uploading} onClick={() => { setOpen(false); onUploadComplete(); }}>Refresh application</Button>}
           <Button variant="outline" onClick={() => setOpen(false)} disabled={uploading}>
             Cancel
           </Button>
-          <Button onClick={handleUpload} disabled={uploading || (!savedRequest && (!file || !documentType))}>
+          <Button onClick={handleUpload} disabled={uploading || requestRefreshRequired || (!savedRequest && (!file || !documentType))}>
             {uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {uploading ? (savedRequest ? 'Confirming receipt...' : 'Uploading...') : savedRequest ? 'Retry request update' : isLockedMode ? 'Submit Document' : 'Upload'}
+            {uploading ? (savedRequest ? 'Confirming receipt...' : 'Uploading...') : requestRefreshRequired ? 'Refresh needed' : savedRequest ? 'Retry request update' : isLockedMode ? 'Submit Document' : 'Upload'}
           </Button>
         </div>
       </DialogContent>
