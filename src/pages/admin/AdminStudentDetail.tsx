@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { studentProfileTab } from '@/lib/studentWorkspace';
 import { formatIntakeLabel } from "@/lib/intakeOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -187,7 +188,13 @@ const AdminStudentDetail = () => {
   const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [actionReason, setActionReason] = useState("");
-  const [activeTab, setActiveTab] = useState("overview");
+  const [tabParams, setTabParams] = useSearchParams();
+  const activeTab = studentProfileTab(tabParams.get('tab'));
+  const setActiveTab = (value: string) => {
+    const next = new URLSearchParams(tabParams);
+    next.set('tab', studentProfileTab(value));
+    setTabParams(next, { replace: true });
+  };
 
   // Document preview
   const [previewDoc, setPreviewDoc] = useState<StudentBundle["documents"][0] | null>(null);
@@ -852,7 +859,7 @@ const AdminStudentDetail = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:w-auto sm:grid-cols-4">
           <TabsTrigger value="overview">
             <User className="h-4 w-4 mr-1" /> Overview
           </TabsTrigger>
