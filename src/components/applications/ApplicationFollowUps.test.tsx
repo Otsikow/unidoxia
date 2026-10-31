@@ -6,7 +6,7 @@ import { ApplicationFollowUps } from './ApplicationFollowUps';
 const fake = vi.hoisted(() => ({ read: vi.fn(), create: vi.fn(), update: vi.fn() }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'staff' } }) }));
 vi.mock('@/lib/applicationFollowUps', () => ({ createApplicationFollowUp: fake.create, updateApplicationFollowUp: fake.update }));
-vi.mock('@/integrations/supabase/client', () => ({ supabase: { from: () => ({ select: () => ({ eq: () => ({ order: () => ({ order: () => ({ range: fake.read }) }) }) }) }) } }));
+vi.mock('@/integrations/supabase/client', () => ({ supabase: { from: () => ({ select: () => ({ eq: () => ({ eq: () => ({ order: () => ({ order: () => ({ range: fake.read }) }) }) }) }) }) } }));
 function show() { const client = new QueryClient({ defaultOptions: { queries: { retry: false } } }); const onSaved = vi.fn(); render(<QueryClientProvider client={client}><ApplicationFollowUps applicationId="app" tenantId="staff-tenant" onSaved={onSaved} /></QueryClientProvider>); return onSaved; }
 beforeEach(() => { vi.resetAllMocks(); fake.read.mockResolvedValue({ data: [], error: null }); fake.create.mockResolvedValue(undefined); fake.update.mockResolvedValue(undefined); });
 describe('application follow-up actions', () => {

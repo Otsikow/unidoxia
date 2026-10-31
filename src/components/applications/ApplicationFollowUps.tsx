@@ -11,8 +11,8 @@ import { getErrorMessage } from '@/lib/errorUtils';
 import { formatWorkflowDate, isFollowUpOverdue, londonDate, openFollowUps, type ApplicationFollowUp } from '@/lib/applicationWorkflow';
 import { createApplicationFollowUp, updateApplicationFollowUp } from '@/lib/applicationFollowUps';
 
-export function ApplicationFollowUps({ applicationId, tenantId, onSaved, onDirtyChange }: {
-  applicationId: string; tenantId: string; onSaved: () => void; onDirtyChange?: (dirty: boolean) => void;
+export function ApplicationFollowUps({ applicationId, tenantId, onSaved, onDirtyChange, enabled = true, idPrefix = applicationId }: {
+  applicationId: string; tenantId: string; onSaved: () => void; onDirtyChange?: (dirty: boolean) => void; enabled?: boolean; idPrefix?: string;
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -23,13 +23,14 @@ export function ApplicationFollowUps({ applicationId, tenantId, onSaved, onDirty
   const writing = useRef(false);
   const pendingId = useRef<string | null>(null);
   useEffect(() => { onDirtyChange?.(Boolean(title || date)); }, [title, date, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
   const query = useQuery({
-    queryKey: ['application-follow-ups', user?.id, applicationId], enabled: Boolean(user?.id),
+    queryKey: ['application-follow-ups', user?.id, tenantId, applicationId], enabled: Boolean(user?.id && tenantId && enabled),
     queryFn: async () => {
       const rows: ApplicationFollowUp[] = [];
       for (let offset = 0; ; offset += 500) {
         const { data, error } = await supabase.from('tasks').select('id,title,status,due_at,assignee_id,updated_at,assignee:profiles!tasks_assignee_id_fkey(full_name)')
-          .eq('application_id', applicationId).order('created_at', { ascending: false }).order('id').range(offset, offset + 499);
+          .eq('application_id', applicationId).eq('tenant_id', tenantId).order('created_at', { ascending: false }).order('id').range(offset, offset + 499);
         if (error) throw error;
         rows.push(...data);
         if (data.length < 500) return rows;
@@ -67,8 +68,8 @@ export function ApplicationFollowUps({ applicationId, tenantId, onSaved, onDirty
   return <section className="space-y-5" aria-label="Application follow-ups">
     <div><h3 className="font-semibold">Follow-ups</h3><p className="text-sm text-muted-foreground">Give the next action an owner and a date. These are internal follow-ups, separate from university deadlines.</p></div>
     <form className="space-y-3 rounded-lg border p-4" onSubmit={e => { e.preventDefault(); void add(); }}>
-      <div className="space-y-2"><Label htmlFor="follow-up-title">Next action</Label><Input id="follow-up-title" maxLength={200} value={title} placeholder="e.g. Check the student's revised statement" disabled={Boolean(busy)} onChange={e => { setTitle(e.target.value); pendingId.current = null; }} /></div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end"><div className="flex-1 space-y-2"><Label htmlFor="follow-up-date">Follow-up date (optional)</Label><Input id="follow-up-date" type="date" min={londonDate()} value={date} disabled={Boolean(busy)} onChange={e => { setDate(e.target.value); pendingId.current = null; }} /></div><Button type="submit" disabled={Boolean(busy) || !title.trim() || !tenantId}>{busy === 'new' ? 'Adding…' : 'Add follow-up'}</Button></div>
+      <div className="space-y-2"><Label htmlFor={`follow-up-title-${idPrefix}`}>Next action</Label><Input id={`follow-up-title-${idPrefix}`} maxLength={200} value={title} placeholder="e.g. Check the student's revised statement" disabled={Boolean(busy)} onChange={e => { setTitle(e.target.value); pendingId.current = null; }} /></div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end"><div className="flex-1 space-y-2"><Label htmlFor={`follow-up-date-${idPrefix}`}>Follow-up date (optional)</Label><Input id={`follow-up-date-${idPrefix}`} type="date" min={londonDate()} value={date} disabled={Boolean(busy)} onChange={e => { setDate(e.target.value); pendingId.current = null; }} /></div><Button type="submit" disabled={Boolean(busy) || !title.trim() || !tenantId}>{busy === 'new' ? 'Adding…' : 'Add follow-up'}</Button></div>
       <p className="text-xs text-muted-foreground">Assigned to you. Choose Monday to Saturday.</p>
     </form>
     {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
