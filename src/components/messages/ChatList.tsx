@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Search, MessageSquarePlus } from 'lucide-react';
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
@@ -318,7 +317,7 @@ export function ChatList({
   );
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex min-h-0 flex-col h-full bg-background">
       {/* Header */}
       <div className="p-3 sm:p-4 border-b flex-shrink-0">
         <div className="flex items-center justify-between mb-3">
@@ -349,7 +348,7 @@ export function ChatList({
       </div>
 
         {/* Messages List */}
-      <ScrollArea className="flex-1">
+      <div role="region" aria-label="Conversations" tabIndex={0} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <div className="divide-y">
           {filteredConversations.length === 0 ? (
               <div className="p-6 sm:p-8 text-center text-muted-foreground">
@@ -443,7 +442,7 @@ export function ChatList({
               })
             )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }
