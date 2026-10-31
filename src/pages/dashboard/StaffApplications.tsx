@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -34,7 +34,8 @@ export interface StaffApplicationRow {
 }
 
 const PAGE_SIZE = 20;
-export default function StaffApplications() {
+export default function StaffApplications({ embedded = false }: { embedded?: boolean }) {
+  const Layout = embedded ? Fragment : DashboardLayout;
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const [search, setSearch] = useState('');
@@ -77,7 +78,7 @@ export default function StaffApplications() {
     setParams(next);
   };
 
-  return <DashboardLayout><div className="space-y-6 p-4 sm:p-6">
+  return <Layout><div className="space-y-6 p-4 sm:p-6">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><h1 className="text-2xl font-bold">Applications</h1>
         <p className="text-muted-foreground">Find a student, check what is needed, and take the next step.</p></div>
@@ -120,7 +121,7 @@ export default function StaffApplications() {
       </CardContent></Card>}
     <ChooseApplicationStudent open={choosingStudent} onClose={() => setChoosingStudent(false)} />
     <StaffApplicationWorkspace applicationId={applicationId} onClose={() => selectApplication(null)} onSaved={() => void query.refetch()} />
-  </div></DashboardLayout>;
+  </div></Layout>;
 }
 
 function QueueNextStep({ row, userId }: { row: StaffApplicationRow; userId?: string }) {

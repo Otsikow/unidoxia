@@ -29,3 +29,9 @@ Validation: 432 tests in 60 files passed; TypeScript passed; targeted workflow l
 ## GitHub review handoff — 31 October 2026
 
 Eric explicitly approved exporting the tested candidate and opening its PR. Implementation commit `6405878d2cdf56bd0d07269b98bb4e281c894e7a` was pushed to `Otsikow/unidoxia`, branch `codex/application-workflow-end-to-end`. Draft PR #1253: https://github.com/Otsikow/unidoxia/pull/1253. Read-back confirmed OPEN, draft and MERGEABLE against `f0b5b3eac41b457d648dad86dd81dfc8a0274278`; no automated GitHub checks were reported at that read-back. This approval supersedes the earlier export block for this candidate only. No merge, Lovable publication or production database mutation was performed. Real Auth-issued workflow checks remain a release requirement.
+
+## Admin navigation correction — 31 October 2026
+
+Eric could not find Applications in the main admin dashboard after publishing #1253. Root cause: AdminLayout had no Applications entry, while both overview admissions shortcuts targeted `/admin/admissions`, which redirected back to the overview. Added `/admin/applications` inside the existing admin shell, reusing the same staff queue without nesting a second dashboard shell. Added a Students & Agents sidebar entry, fixed both overview shortcuts and redirected the legacy admissions URL to Applications. Existing `/dashboard/applications` and its role routing are preserved. No Auth, RLS, data, upload or workflow mutations changed.
+
+Validation: 13 focused tests passed, including desktop/mobile admin navigation, both overview shortcuts and embedded queue rendering; TypeScript and Vite build passed. Targeted lint had no errors and one existing App.tsx fast-refresh warning. Local synthetic browser preview confirmed the Applications link and queue inside the admin navigation. Not yet merged or published at this entry.

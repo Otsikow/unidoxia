@@ -7,12 +7,12 @@ import StaffApplications from './StaffApplications';
 const api = vi.hoisted(() => ({ range: vi.fn() }));
 vi.mock('@/integrations/supabase/client', () => ({ supabase: { from: () => ({ select: () => ({ order: () => ({ order: () => ({ range: api.range }) }) }) }) } }));
 vi.mock('@/hooks/useAuth', () => ({ useAuth: () => ({ user: { id: 'staff' } }) }));
-vi.mock('@/components/layout/DashboardLayout', () => ({ DashboardLayout: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock('@/components/layout/DashboardLayout', () => ({ DashboardLayout: ({ children }: { children: React.ReactNode }) => <div data-testid="shared-dashboard-layout">{children}</div> }));
 vi.mock('@/components/applications/ChooseApplicationStudent', () => ({ ChooseApplicationStudent: ({ open }: { open: boolean }) => open ? <div>Student picker opened</div> : null }));
 vi.mock('@/components/applications/StaffApplicationWorkspace', () => ({ StaffApplicationWorkspace: ({ applicationId }: { applicationId: string | null }) => applicationId ? <div>Workspace {applicationId}</div> : null }));
 const application = (id: string, name: string, status = 'submitted') => ({ id, app_number: `REF-${id}`, student_id: id, program_id: 'course', status, intake_month: 9, intake_year: 2027, updated_at: '', student: { legal_name: name, contact_email: '' }, program: { name: 'Computer Science', university: { name: 'Test institution', country: 'UK' } }, documents: [] });
-function show() {
-  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter><StaffApplications /></MemoryRouter></QueryClientProvider>);
+function show(embedded = false) {
+  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } })}><MemoryRouter><StaffApplications embedded={embedded} /></MemoryRouter></QueryClientProvider>);
 }
 beforeEach(() => { vi.resetAllMocks(); });
 describe('staff application queue', () => {
@@ -25,6 +25,12 @@ describe('staff application queue', () => {
     expect(screen.queryByText('Ama Test')).not.toBeInTheDocument();
     await userEvent.click(screen.getAllByRole('button', { name: 'Open application for Kojo Test' })[0]);
     expect(await screen.findByText('Workspace b')).toBeInTheDocument();
+  });
+  it('renders inside the admin layout without adding a second dashboard shell', async () => {
+    api.range.mockResolvedValue({ data: [], error: null });
+    show(true);
+    await screen.findByText('No applications yet. Choose a student to start.');
+    expect(screen.queryByTestId('shared-dashboard-layout')).not.toBeInTheDocument();
   });
   it('shows a genuine empty state and a student-first start action', async () => {
     api.range.mockResolvedValue({ data: [], error: null });
