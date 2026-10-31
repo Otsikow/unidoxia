@@ -40,15 +40,15 @@ try {
  await check('Active admin retains existing legacy policy read access',async()=>{const r=await admin.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===1;});
  await check('Owner can see its shared workspace needs isolation',async()=>{const r=await rpc(owner,'partner_needs_isolation',owner.id);return !r.error&&r.data===true;});
  let isolated;
- await check('Concurrent owner requests create exactly one workspace',async()=>{const rr=await Promise.all([rpc(owner,'isolate_partner_profile',owner.id),rpc(owner,'isolate_partner_profile',owner.id)]);for(const r of rr)if(!r.error&&r.data&&!ids.tenants.includes(r.data))ids.tenants.push(r.data);if(rr.some(r=>r.error)||!rr[0].data||rr[0].data!==rr[1].data)return false;isolated=rr[0].data;const universities=requireData(await db.from('universities').select('id').eq('tenant_id',isolated),'new university');return isolated!==a&&universities.length===1&&(await ownedTenant(owner.id))===isolated;});
+ await check('Concurrent owner requests create exactly one workspace',async()=>{const rr=await Promise.all([rpc(owner,'ensure_partner_workspace',owner.id),rpc(owner,'ensure_partner_workspace',owner.id)]);for(const r of rr)if(!r.error&&r.data&&!ids.tenants.includes(r.data))ids.tenants.push(r.data);if(rr.some(r=>r.error)||!rr[0].data||rr[0].data!==rr[1].data)return false;isolated=rr[0].data;const universities=requireData(await db.from('universities').select('id').eq('tenant_id',isolated),'new university');return isolated!==a&&universities.length===1&&(await ownedTenant(owner.id))===isolated;});
  // Track any created tenant even if a concurrency assertion fails, for exact cleanup.
  const ownerTenant=await ownedTenant(owner.id);if(!ids.tenants.includes(ownerTenant))ids.tenants.push(ownerTenant);
- await check('Repeated owner call reuses the isolated workspace',async()=>{const r=await rpc(owner,'isolate_partner_profile',owner.id);return !r.error&&r.data===isolated;});
+ await check('Repeated owner call reuses the isolated workspace',async()=>{const r=await rpc(owner,'ensure_partner_workspace',owner.id);return !r.error&&r.data===isolated;});
  await check('Dedicated owner workspace does not need isolation',async()=>{const r=await rpc(owner,'partner_needs_isolation',owner.id);return !r.error&&r.data===false;});
  await check('Administrator cannot move a foreign-tenant partner',async()=>denied(await rpc(admin,'isolate_partner_profile',owner.id)));
  await check('Same-tenant active administrator can isolate another partner',async()=>{const r=await rpc(admin,'isolate_partner_profile',other.id);if(!r.error&&r.data)ids.tenants.push(r.data);return !r.error&&r.data!==a;});
  const otherTenant=await ownedTenant(other.id);if(!ids.tenants.includes(otherTenant))ids.tenants.push(otherTenant);
- await check('Trusted service handles already dedicated workspace idempotently',async()=>{const r=await db.rpc('isolate_partner_profile',{p_profile_id:foreign.id});return !r.error&&r.data===b;});
+ await check('Trusted service repairs a missing university without changing tenant',async()=>{const r=await db.rpc('ensure_partner_workspace',{p_profile_id:foreign.id});const universities=requireData(await db.from('universities').select('id').eq('tenant_id',b),'repair read');return !r.error&&r.data===b&&universities.length===1;});
  await check('Account deactivation takes effect for an already issued admin session',async()=>{requireData(await db.from('profiles').update({active:false}).eq('id',admin.id),'deactivate fixture');const r=await admin.api.from('partner_security_probe').select('id').eq('id',probe);return !r.error&&r.data.length===0;});
 }finally{
  let cleanupOk=true;for(const auth of sessions)await auth.auth.signOut().catch(()=>{});

@@ -5375,6 +5375,10 @@ export type Database = {
         Args: { p_agent_profile_id: string; p_regenerate?: boolean }
         Returns: string
       }
+      ensure_partner_workspace: {
+        Args: { p_profile_id: string }
+        Returns: string
+      }
       ensure_user_profile: {
         Args: {
           p_country?: string

@@ -69,9 +69,12 @@ BEGIN
   END IF;
   
   IF NOT public.partner_needs_isolation(p_profile_id) THEN
-    RETURN v_profile.tenant_id;
-  END IF;
-
+    IF EXISTS (SELECT 1 FROM public.universities u WHERE u.tenant_id = v_profile.tenant_id) THEN
+      RETURN v_profile.tenant_id;
+    END IF;
+    -- Repair a missing university inside the same guarded transaction.
+    v_new_tenant_id := v_profile.tenant_id;
+  ELSE
   -- Generate unique tenant slug
   v_tenant_slug := 'university-' || gen_random_uuid()::text;
   
@@ -85,6 +88,8 @@ BEGIN
   )
   RETURNING id INTO v_new_tenant_id;
   
+  END IF;
+
   -- Create a fresh university for this partner's new tenant
   INSERT INTO public.universities (
     tenant_id,
@@ -124,6 +129,14 @@ BEGIN
 END;
 $$;
 
+
+-- New client entry point: older unguarded deployments have no such RPC.
+-- Never fall back to browser inserts or the old endpoint when this is unavailable.
+create or replace function public.ensure_partner_workspace(p_profile_id uuid)
+returns uuid language sql volatile security invoker set search_path = public
+as $$select public.isolate_partner_profile(p_profile_id);$$;
+revoke all on function public.ensure_partner_workspace(uuid) from public, anon;
+grant execute on function public.ensure_partner_workspace(uuid) to authenticated, service_role;
 
 revoke all on function public.isolate_partner_profile(uuid), public.partner_needs_isolation(uuid) from public, anon;
 grant execute on function public.isolate_partner_profile(uuid), public.partner_needs_isolation(uuid) to authenticated, service_role;
