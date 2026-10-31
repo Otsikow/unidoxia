@@ -1,0 +1,18 @@
+import {beforeEach,describe,expect,it,vi} from 'vitest';
+import {createStudentEmailEventHandler} from './studentEmailEventHandler';
+const now=Date.parse('2026-10-31T13:00:00Z');
+const event={type:'email.delivered',created_at:'2026-10-31T12:59:00Z',data:{email_id:'provider-id',to:['student@example.test'],tags:{unidoxia_communication:'11111111-1111-4111-8111-111111111111'}}};
+const verify=vi.fn(),record=vi.fn();
+const request=(body=JSON.stringify(event),headers:Record<string,string>={})=>new Request('https://example.test/events',{method:'POST',headers:{'svix-id':'receipt-1','svix-timestamp':'timestamp','svix-signature':'signature',...headers},body});
+const handler=(enabled=true)=>createStudentEmailEventHandler({enabled,verify,record,now:()=>now});
+beforeEach(()=>{vi.clearAllMocks();verify.mockReturnValue(event);record.mockResolvedValue('recorded');});
+describe('signed student email receipt boundary',()=>{
+ it('fails closed while unconfigured and refuses non-POST requests',async()=>{expect((await handler(false)(request())).status).toBe(503);expect((await handler()(new Request('https://example.test'))).status).toBe(405);expect(verify).not.toHaveBeenCalled();expect(record).not.toHaveBeenCalled();});
+ it('verifies the untouched raw body and records only typed correlation metadata',async()=>{const raw=' { "unaltered": true } ';expect((await handler()(request(raw))).status).toBe(200);expect(verify).toHaveBeenCalledWith(raw,expect.objectContaining({'svix-id':'receipt-1'}));expect(record).toHaveBeenCalledWith({id:'receipt-1',providerId:'provider-id',type:'email.delivered',occurredAt:'2026-10-31T12:59:00.000Z',communicationId:'11111111-1111-4111-8111-111111111111',recipient:'student@example.test'});expect(record.mock.calls[0][0]).not.toHaveProperty('body');});
+ it('rejects missing and invalid signatures before storage',async()=>{expect((await handler()(request('x',{'svix-signature':''}))).status).toBe(401);verify.mockImplementation(()=>{throw new Error('bad signature');});expect((await handler()(request())).status).toBe(401);expect(record).not.toHaveBeenCalled();});
+ it('bounds bodies even when Content-Length is absent or dishonest',async()=>{expect((await handler()(request('x',{'content-length':'65537'}))).status).toBe(413);expect((await handler()(request('x'.repeat(65537)))).status).toBe(413);expect(verify).not.toHaveBeenCalled();});
+ it('ignores inbound, open tracking and unrelated provider events',async()=>{for(const type of ['email.received','email.opened','email.sent','contact.created']){verify.mockReturnValue({...event,type});expect((await handler()(request())).status).toBe(202);}expect(record).not.toHaveBeenCalled();});
+ it('rejects malformed, future-dated and invalidly correlated receipts',async()=>{for(const value of [null,{}, {...event,created_at:'invalid'}, {...event,created_at:'2099-01-01'}, {...event,data:{email_id:''}}, {...event,data:{email_id:'provider',tags:{unidoxia_communication:'not-a-message-id'}}}]){verify.mockReturnValue(value);expect((await handler()(request())).status).toBe(400);}expect(record).not.toHaveBeenCalled();});
+ it('requests retry on uncertain persistence without leaking provider details',async()=>{record.mockRejectedValue(new Error('private database error'));const r=await handler()(request());expect(r.status).toBe(503);expect(await r.text()).not.toContain('private');record.mockResolvedValue('retry');expect((await handler()(request())).status).toBe(503);});
+ it('acknowledges duplicates and emails belonging to another application without storing content',async()=>{for(const result of ['duplicate','ignored']){record.mockResolvedValue(result);const r=await handler()(request());expect(r.status).toBe(200);expect(await r.json()).toEqual({status:result});}});
+});

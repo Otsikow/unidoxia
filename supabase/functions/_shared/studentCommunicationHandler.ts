@@ -121,17 +121,16 @@ export function createStudentCommunicationHandler(dependencies: {
         const offset = Number(input.offset ?? 0);
         if (!Number.isInteger(offset) || offset < 0 || offset > 100000)
           throw new CommunicationError("Invalid history page.");
-        const { data, error, count } = await caller
+        const baseFields = "id,student_id,application_id,author_id,channel,status,recipient,subject,body,provider_id,created_at";
+        const readHistory = (receipts: boolean) => caller
           .from("student_communications")
-          .select(
-            "id,student_id,application_id,author_id,channel,status,recipient,subject,body,provider_id,created_at",
-            { count: "exact" },
-          )
-          .eq("tenant_id", profile.tenant_id)
-          .eq("student_id", student.id)
-          .order("created_at", { ascending: false })
-          .order("id")
-          .range(offset, offset + 24);
+          .select(baseFields + (receipts ? ",delivery_status,delivery_event_at" : ""), {count:"exact"})
+          .eq("tenant_id", profile.tenant_id).eq("student_id", student.id)
+          .order("created_at", {ascending:false}).order("id").range(offset,offset+24);
+        let result = await readHistory(true);
+        // Keep older managed schemas usable while the receipt migration awaits activation.
+        if (["42703","PGRST204"].includes(result.error?.code)) result = await readHistory(false);
+        const {data,error,count} = result;
         if (error)
           throw new CommunicationError("History could not be loaded.", 503);
         return json({ rows: data, total: count });
@@ -164,6 +163,7 @@ export function createStudentCommunicationHandler(dependencies: {
           },
           {
             enabled: emailEnabled,
+            tagReceipts: env("STUDENT_EMAIL_EVENTS_ENABLED") === "true",
             now: () => Date.now(),
             store: {
               find: async (id) => {
@@ -234,6 +234,7 @@ export function createStudentCommunicationHandler(dependencies: {
                   subject: payload.subject,
                   html: payload.html,
                   text: payload.text,
+                  ...(payload.tags ? {tags:payload.tags} : {}),
                 }),
               });
               const body = await response.json().catch(() => ({}));

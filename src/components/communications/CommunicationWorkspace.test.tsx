@@ -18,11 +18,11 @@ async function click(name:string){await act(async()=>{await userEvent.click(scre
 describe('student communication composer',()=>{
  it('uses the student context, approved signature and an audited email send request',async()=>{
   show();expect((screen.getByLabelText('Message to Ama Mensah') as HTMLTextAreaElement).value).toContain('Ama Mensah');
-  expect(screen.getByText(/Best regards,/)).toHaveTextContent('UniDoxia Team');
+  expect(screen.getByLabelText('Email signature preview')).toHaveTextContent('UniDoxia Team');
   await click('Send Email');
   const request=fake.invoke.mock.calls.find(call=>call[1].body.action==='send_email')[1].body;
   expect(request).toMatchObject({studentId:'student-a',expectedEmail:'ama@example.test',applicationId:null});expect(request).not.toHaveProperty('to');
-  expect(await screen.findByRole('status')).toHaveTextContent('Delivery and replies are not confirmed');expect(screen.getByRole('button',{name:'Email accepted'})).toBeDisabled();
+  expect(await screen.findByRole('status')).toHaveTextContent('Delivery is confirmed only when a verified receipt');expect(screen.getByRole('button',{name:'Email accepted'})).toBeDisabled();
  });
  it('starts a fresh draft when the application context changes after an accepted email',async()=>{
   show();await click('Send Email');await screen.findByRole('button',{name:'Email accepted'});
@@ -64,6 +64,11 @@ describe('student communication composer',()=>{
   await screen.findByLabelText('Next action');await act(async()=>{await userEvent.type(screen.getByLabelText('Next action'),'Keep this follow-up');});await act(async()=>{await userEvent.selectOptions(screen.getByLabelText('Application context'),'');});
   expect(await screen.findByRole('alertdialog')).toHaveTextContent('unsaved follow-up edits');
   await click('Keep draft');expect(screen.getByLabelText('Next action')).toHaveValue('Keep this follow-up');expect(screen.getByLabelText('Application context')).toHaveValue('app-a');
+ });
+ it('shows delivery only from a recorded provider receipt, without claiming a human read',async()=>{
+  fake.invoke.mockResolvedValue({data:{rows:[{id:'receipt-email',student_id:'student-a',application_id:null,author_id:'staff',channel:'email',status:'accepted',subject:'Synthetic email',body:'Synthetic',delivery_status:'delivered',delivery_event_at:'2026-10-31T12:00:00Z',created_at:'2026-10-31T11:59:00Z'}],total:1},error:null});
+  show();await act(async()=>{await userEvent.click(screen.getByRole('tab',{name:'History & notes'}));});
+  await screen.findByText(/Delivered to recipient’s mail server/);expect(screen.getByText(/does not confirm a human read or reply/)).toBeInTheDocument();
  });
  it('shows only the server-scoped history and identifies manual/external status correctly',async()=>{
   fake.invoke.mockResolvedValue({data:{rows:[{id:'one',student_id:'student-a',application_id:null,author_id:'staff',channel:'whatsapp_launch',status:'external_launch',subject:'WhatsApp launch requested',body:'Sample launch',created_at:'2026-10-31T12:00:00Z'}],total:1},error:null});

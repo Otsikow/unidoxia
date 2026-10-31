@@ -27,17 +27,24 @@ export interface EmailStore {
   insert: (row: Record<string, unknown>) => Promise<boolean>;
   find: (
     id: string,
-  ) => Promise<(CommunicationRecord & { tenant_id: string; signature?: string }) | null>;
+  ) => Promise<(CommunicationRecord & { tenant_id: string; signature?: string; receipt_tagged?: boolean }) | null>;
   update: (id: string, values: Record<string, unknown>) => Promise<void>;
   recentCount: () => Promise<number>;
 }
-export const emailHtml = (body: string, signature = STUDENT_EMAIL_SIGNATURE) =>
-  `<div style="font-family:Arial,sans-serif;line-height:1.65;color:#172033;max-width:640px"><h2 style="color:#12345b">UniDoxia</h2><p>${(body + "\n\n" + signature).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\n/g, "<br>")}</p></div>`;
+import { STUDENT_EMAIL_SIGNATURE_HTML } from "./studentEmailSignature.ts";
+const escapeEmailText = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\n/g, "<br>");
+export const emailHtml = (body: string, signature = STUDENT_EMAIL_SIGNATURE) => {
+  // Preserve the exact legacy payload for pending attempts and provider idempotency.
+  if (signature !== STUDENT_EMAIL_SIGNATURE)
+    return `<div style="font-family:Arial,sans-serif;line-height:1.65;color:#172033;max-width:640px"><h2 style="color:#12345b">UniDoxia</h2><p>${escapeEmailText(body + "\n\n" + signature)}</p></div>`;
+  return `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.65;color:#172033;background:#ffffff;max-width:640px;margin:0 auto;padding:20px"><div style="font-size:15px;margin-bottom:28px;overflow-wrap:anywhere">${escapeEmailText(body)}</div>${STUDENT_EMAIL_SIGNATURE_HTML}</div>`;
+};
 export async function sendStudentEmail(
   input: EmailInput,
   context: EmailContext,
   deps: {
     enabled: boolean;
+    tagReceipts?: boolean;
     store: EmailStore;
     now: () => number;
     send: (value: {
@@ -46,6 +53,7 @@ export async function sendStudentEmail(
       html: string;
       text: string;
       key: string;
+      tags?: Array<{name:string;value:string}>;
     }) => Promise<{ ok: boolean; id?: string; uncertain?: boolean }>;
   },
 ) {
@@ -98,8 +106,11 @@ export async function sendStudentEmail(
       subject: input.subject,
       body: input.body,
       signature: STUDENT_EMAIL_SIGNATURE,
+      ...(deps.tagReceipts ? {receipt_tagged:true} : {}),
     });
-    if (!inserted) row = await deps.store.find(input.id);
+    row = await deps.store.find(input.id);
+    if (!inserted && !row)
+      throw new CommunicationError("Message audit could not be confirmed. Nothing was sent.",503);
   }
   if (row) {
     if (
@@ -124,7 +135,7 @@ export async function sendStudentEmail(
         "This earlier attempt needs reconciliation before it can be retried. Do not resend it as a new draft without checking the official mailbox.",
         409,
       );
-  } else if (!(await deps.store.find(input.id))) {
+  } else {
     throw new CommunicationError(
       "Message audit could not be confirmed. Nothing was sent.",
       503,
@@ -138,6 +149,7 @@ export async function sendStudentEmail(
       html: emailHtml(input.body, row?.signature ?? STUDENT_EMAIL_SIGNATURE),
       text: input.body + "\n\n" + (row?.signature ?? STUDENT_EMAIL_SIGNATURE),
       key: `student-email/${input.id}`,
+      ...(row?.receipt_tagged ? {tags:[{name:"unidoxia_communication",value:input.id}]} : {}),
     });
   } catch {
     throw new CommunicationError(
