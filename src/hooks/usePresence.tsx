@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -13,7 +13,6 @@ export interface UserPresence {
 export function usePresence() {
   const { user } = useAuth();
   const [presence, setPresence] = useState<Record<string, UserPresence>>({});
-  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const updatePresence = useCallback(async (status: 'online' | 'offline' | 'away') => {
     if (!user?.id) return;
@@ -98,52 +97,61 @@ export function usePresence() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+    let active = true;
+    let channel: RealtimeChannel | undefined;
+    const removeOwnedChannel = () => {
+      if (!channel) return;
+      const owned = channel;
+      channel = undefined;
+      void supabase.removeChannel(owned).catch((error: unknown) => {
+        console.warn('Presence live-update cleanup failed.', error);
+      });
+    };
+    try {
+      channel = supabase.channel(`user-presence-${user.id}-${crypto.randomUUID()}`);
+      channel
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'user_presence',
+        }, (payload) => {
+          if (!active) return;
+          if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as any)?.user_id;
+            if (!deletedId) return;
+            setPresence(prev => {
+              const updated = { ...prev };
+              delete updated[deletedId];
+              return updated;
+            });
+            return;
+          }
+
+          const record = payload.new as any;
+          setPresence(prev => ({
+            ...prev,
+            [record.user_id]: {
+              id: record.user_id,
+              status: (record.status as UserPresence['status']) ?? 'offline',
+              last_seen: record.last_seen,
+              updated_at: record.updated_at,
+            },
+          }));
+        })
+        .subscribe();
+
+    } catch (error) {
+      active = false;
+      removeOwnedChannel();
+      console.warn('Presence live updates unavailable.', error);
     }
 
-    const channel = supabase
-      .channel(`user-presence-${user.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'user_presence',
-      }, (payload) => {
-        if (payload.eventType === 'DELETE') {
-          const deletedId = (payload.old as any)?.user_id;
-          if (!deletedId) return;
-          setPresence(prev => {
-            const updated = { ...prev };
-            delete updated[deletedId];
-            return updated;
-          });
-          return;
-        }
-
-        const record = payload.new as any;
-        setPresence(prev => ({
-          ...prev,
-          [record.user_id]: {
-            id: record.user_id,
-            status: (record.status as UserPresence['status']) ?? 'offline',
-            last_seen: record.last_seen,
-            updated_at: record.updated_at,
-          },
-        }));
-      })
-      .subscribe();
-
-    channelRef.current = channel;
-
     return () => {
+      active = false;
       clearInterval(heartbeat);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
+      removeOwnedChannel();
       updatePresence('offline');
     };
   }, [fetchPresence, updatePresence, user?.id]);
