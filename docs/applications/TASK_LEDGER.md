@@ -47,3 +47,7 @@ Eric supplied screenshots of `/dashboard/applications` and `/admin/applications`
 ## Professional admin overview — 31 October 2026
 
 Eric requested that the main dashboard be beautiful, professional and useful. Built a focused admissions overview in the unified shell: compact summary cards, real priority cases, tenant-scoped follow-ups, truthful recorded-stage bars, New application and recruitment shortcuts. Added bounded URL filters to Students and Applications so the summary links open the matching queues. Existing uploads, reporting, financial operations, auth guards and role policies are preserved. Definitions, validation and limits are in `../admin/OVERVIEW.md`. No real student/task/account mutations or publication performed during development.
+
+## Tasks page crash — 31 October 2026
+
+Reproduced Eric's `/admin/tasks` failure in the authenticated live browser. Root cause: several actual Tasks consumers reused a subscribed Supabase topic, and unstable query-key array identities repeatedly restarted listeners. Added owned effect-lifetime topics, semantic query-key dependencies, idempotent cleanup/late-event guards and non-fatal realtime setup handling. Actual Tasks components now have integration tests and browser checks with synthetic records; the original navigation placeholder was not proof of task-page readiness. Full suite: 477 tests / 70 files. No task records or access policies changed. Details: `../admin/TASKS_REPAIR.md`.
