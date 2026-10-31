@@ -204,7 +204,7 @@ const cases = [
 let failedProposal = 0;
 for (const mode of ["BASELINE", "PROPOSED"]) {
   console.log(`\n== ${mode} ==`);
-  for (const [name, fn] of cases) {
+  for (let [name, fn] of cases) {
     const ctx = await build(mode === "PROPOSED"); // fresh DB per case: no cross-case leakage
     let pass;
     try { pass = await fn(ctx); } catch (e) { pass = false; name += ` [threw: ${e.message}]`; }
