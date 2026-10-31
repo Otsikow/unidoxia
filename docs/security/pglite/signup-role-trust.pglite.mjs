@@ -4,14 +4,16 @@
 //   NODE_PATH=/tmp/pgl/node_modules bun docs/security/pglite/signup-role-trust.pglite.mjs
 // Runs every case twice: BASELINE (live definitions snapshot) and PROPOSED (baseline + fix).
 // Baseline is expected to show the defects; PROPOSED must pass every case.
-import { PGlite } from "@electric-sql/pglite";
+const { PGlite } = await import(process.env.COMMUNICATION_PGLITE_MODULE
+  ? (await import("node:url")).pathToFileURL(process.env.COMMUNICATION_PGLITE_MODULE).href
+  : "@electric-sql/pglite");
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const baselineFns = readFileSync(join(here, "baseline_live_functions.sql"), "utf8");
-const proposal = readFileSync(join(here, "..", "20261107000000_restrict_signup_role_metadata.sql"), "utf8");
+const proposal = readFileSync(join(here, "../../../supabase/migrations/20261108000000_secure_communication_identity.sql"), "utf8");
 
 const T1 = "00000000-0000-0000-0000-000000000001";
 const T2 = "00000000-0000-0000-0000-000000000002";
