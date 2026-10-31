@@ -1,17 +1,18 @@
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommunicationWorkspace, type CommunicationStudent } from './CommunicationWorkspace';
-const fake=vi.hoisted(()=>({invoke:vi.fn()}));
+const fake=vi.hoisted(()=>({invoke:vi.fn(),tasks:vi.fn(),createTask:vi.fn(),updateTask:vi.fn()}));
 vi.mock('@/hooks/useAuth',()=>({useAuth:()=>({user:{id:'staff'},profile:{id:'staff',tenant_id:'tenant',role:'admin'}})}));
-vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:(...args:unknown[])=>fake.invoke(...args)}}}));
+vi.mock('@/integrations/supabase/client',()=>({supabase:{functions:{invoke:(...args:unknown[])=>fake.invoke(...args)},from:()=>{const query:any={select:()=>query,eq:()=>query,order:()=>query,range:fake.tasks};return query;}}}));
+vi.mock('@/lib/applicationFollowUps',()=>({createApplicationFollowUp:fake.createTask,updateApplicationFollowUp:fake.updateTask}));
 vi.mock('./StudentInternalConversation',()=>({StudentInternalConversation:({profileId}:{profileId:string})=><div>Internal account {profileId}</div>}));
 const student:CommunicationStudent={id:'student-a',profile_id:'profile-a',reference_code:'UDX-123',legal_name:'Ama Mensah',contact_email:'ama@example.test',whatsapp_number:'+233501234567',current_country:'Ghana',applications:[{id:'app-a',app_number:'APP123',program:{name:'Computing',university:{name:'Sample University'}}}]};
 const capabilities={emailEnabled:true,historyEnabled:true,from:'info@unidoxia.com',whatsappMode:'external',emailReplies:'external'};
 function show(enabled=true){return render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false,gcTime:0}}})}><MemoryRouter><CommunicationWorkspace student={student} capabilities={{...capabilities,emailEnabled:enabled}} onDirtyChange={vi.fn()}/></MemoryRouter></QueryClientProvider>);}
-beforeEach(()=>{vi.clearAllMocks();fake.invoke.mockImplementation(async(_name:string,{body}:{body:any})=>({data:body.action==='history'?{rows:[],total:0}:{status:'accepted',providerId:'provider'},error:null}));});
+beforeEach(()=>{vi.clearAllMocks();fake.tasks.mockResolvedValue({data:[],error:null});fake.createTask.mockResolvedValue(undefined);fake.invoke.mockImplementation(async(_name:string,{body}:{body:any})=>({data:body.action==='history'?{rows:[],total:0}:{status:'accepted',providerId:'provider'},error:null}));});
 afterEach(cleanup);
 async function click(name:string){await act(async()=>{await userEvent.click(screen.getByRole('button',{name}));});}
 describe('student communication composer',()=>{
@@ -22,6 +23,11 @@ describe('student communication composer',()=>{
   const request=fake.invoke.mock.calls.find(call=>call[1].body.action==='send_email')[1].body;
   expect(request).toMatchObject({studentId:'student-a',expectedEmail:'ama@example.test',applicationId:null});expect(request).not.toHaveProperty('to');
   expect(await screen.findByRole('status')).toHaveTextContent('Delivery and replies are not confirmed');expect(screen.getByRole('button',{name:'Email accepted'})).toBeDisabled();
+ });
+ it('starts a fresh draft when the application context changes after an accepted email',async()=>{
+  show();await click('Send Email');await screen.findByRole('button',{name:'Email accepted'});
+  await act(async()=>{await userEvent.selectOptions(screen.getByLabelText('Application context'),'app-a');});
+  expect(screen.getByRole('button',{name:'Send Email'})).toBeEnabled();expect(screen.getByLabelText('Message to Ama Mensah')).not.toHaveAttribute('readonly');
  });
  it('keeps an uncertain draft locked and retries with the same operation ID',async()=>{
   let attempts=0;fake.invoke.mockImplementation(async(_name:string,{body}:{body:any})=>body.action==='send_email'&&attempts++===0?{data:null,error:new Error('network lost')}:{data:body.action==='history'?{rows:[],total:0}:{status:'accepted'},error:null});
@@ -40,6 +46,24 @@ describe('student communication composer',()=>{
   expect((screen.getByLabelText('Message to Ama Mensah') as HTMLTextAreaElement).value).toContain('APP123');
   await act(async()=>{await userEvent.type(screen.getByLabelText('Message to Ama Mensah'),' Custom note.');});
   await click('Use template');expect(await screen.findByRole('alertdialog')).toHaveTextContent('Replace this draft?');await click('Keep draft');expect((screen.getByLabelText('Message to Ama Mensah') as HTMLTextAreaElement).value).toContain('Custom note.');
+ });
+ it('keeps an application follow-up draft across channels and saves through the existing task workflow',async()=>{
+  show();await act(async()=>{await userEvent.click(screen.getByRole('tab',{name:'Follow-ups'}));});
+  expect(screen.getByRole('heading',{name:'Choose an application'})).toBeInTheDocument();
+  await act(async()=>{await userEvent.selectOptions(screen.getByLabelText('Application context'),'app-a');});
+  await screen.findByLabelText('Next action');
+  await act(async()=>{await userEvent.type(screen.getByLabelText('Next action'),'Check whether student replied');fireEvent.change(screen.getByLabelText('Follow-up date (optional)'),{target:{value:'2099-01-02'}});});
+  await act(async()=>{await userEvent.click(screen.getByRole('tab',{name:'Email'}));await userEvent.click(screen.getByRole('tab',{name:'Follow-ups'}));});
+  expect(screen.getByLabelText('Next action')).toHaveValue('Check whether student replied');
+  await act(async()=>{await userEvent.click(screen.getByRole('button',{name:'Add follow-up'}));});
+  await waitFor(()=>expect(fake.createTask).toHaveBeenCalledWith(expect.objectContaining({applicationId:'app-a',tenantId:'tenant',userId:'staff',title:'Check whether student replied',date:'2099-01-02'})));
+  expect(screen.getByLabelText('Next action')).toHaveValue('');
+ });
+ it('warns before switching away from an application with unsaved follow-up edits',async()=>{
+  show();await act(async()=>{await userEvent.selectOptions(screen.getByLabelText('Application context'),'app-a');await userEvent.click(screen.getByRole('tab',{name:'Follow-ups'}));});
+  await screen.findByLabelText('Next action');await act(async()=>{await userEvent.type(screen.getByLabelText('Next action'),'Keep this follow-up');});await act(async()=>{await userEvent.selectOptions(screen.getByLabelText('Application context'),'');});
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('unsaved follow-up edits');
+  await click('Keep draft');expect(screen.getByLabelText('Next action')).toHaveValue('Keep this follow-up');expect(screen.getByLabelText('Application context')).toHaveValue('app-a');
  });
  it('shows only the server-scoped history and identifies manual/external status correctly',async()=>{
   fake.invoke.mockResolvedValue({data:{rows:[{id:'one',student_id:'student-a',application_id:null,author_id:'staff',channel:'whatsapp_launch',status:'external_launch',subject:'WhatsApp launch requested',body:'Sample launch',created_at:'2026-10-31T12:00:00Z'}],total:1},error:null});
