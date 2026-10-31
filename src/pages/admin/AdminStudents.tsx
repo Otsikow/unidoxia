@@ -1,13 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,24 +31,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import {
   AlertCircle,
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
   Ban,
-  CheckCircle2,
-  Clock,
   Eye,
   FileText,
-  Filter,
-  Loader2,
   MessageCircle,
+  Loader2,
   MoreHorizontal,
   RefreshCw,
   RotateCcw,
   Search,
   Trash2,
-  Users,
-  XCircle,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -83,6 +72,7 @@ import {
 
 import { TablePagination } from "@/components/common/TablePagination";
 import { formatIntakeLabel, getAcademicYearOptions } from "@/lib/intakeOptions";
+import { getStudentNextAction, studentDocumentsToReview, studentMatchesView, studentNeedsAttention, type StudentWorkspaceView } from '@/lib/studentWorkspace';
 import { DuplicateStudentsPanel } from "@/components/admin/DuplicateStudentsPanel";
 
 const STUDENTS_PAGE_SIZE = 20;
@@ -140,18 +130,6 @@ interface StudentWithDocuments {
   attribution_source: string | null;
 }
 
-type SortField = "name" | "country" | "programme" | "joined";
-type SortDirection = "asc" | "desc";
-type DocumentStatusFilter =
-  | "all"
-  | "awaiting_admin_review"
-  | "ready_for_university_review"
-  | "admin_rejected";
-
-type AccountStatusFilter = "all" | "active" | "archived";
-
-const ALL_FILTER = "all";
-
 const normalizeSearchValue = (value: string | null | undefined) =>
   (value ?? "")
     .normalize("NFD")
@@ -174,19 +152,13 @@ const AdminStudents = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [documentStatusFilter, setDocumentStatusFilter] =
-    useState<DocumentStatusFilter>(ALL_FILTER);
-  const [applicationStatusFilter, setApplicationStatusFilter] =
-    useState<string>(ALL_FILTER);
-  const [studentStatusFilter, setStudentStatusFilter] =
-    useState<string>("all");
-  const [accountStatusFilter, setAccountStatusFilter] =
-    useState<AccountStatusFilter>("all");
-  const [intakeYearFilter, setIntakeYearFilter] = useState<string>("all");
-
-  const [sortField, setSortField] = useState<SortField>("joined");
-  const [sortDirection, setSortDirection] =
-    useState<SortDirection>("desc");
+  const [view, setView] = useState<StudentWorkspaceView>('active');
+  const [studentStatusFilter, setStudentStatusFilter] = useState('all');
+  const [intakeYearFilter, setIntakeYearFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showDuplicates, setShowDuplicates] = useState(false);
+  const loadVersion = useRef(0);
+  const writing = useRef(false);
 
   const [selectedStudent, setSelectedStudent] =
     useState<StudentWithDocuments | null>(null);
@@ -203,7 +175,7 @@ const AdminStudents = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const filteredStudents = useMemo(() => {
-    let result = students;
+    let result = students.filter(student => studentMatchesView(student, view));
 
     // Filter by operational status
     if (studentStatusFilter !== "all") {
@@ -243,15 +215,16 @@ const AdminStudents = () => {
     }
 
     return result;
-  }, [searchTerm, students, studentStatusFilter, intakeYearFilter]);
+  }, [searchTerm, students, studentStatusFilter, intakeYearFilter, view]);
 
   // Reset to page 1 when filters/search change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, studentStatusFilter, intakeYearFilter]);
+  }, [searchTerm, studentStatusFilter, intakeYearFilter, view]);
 
   const paginatedStudents = useMemo(() => {
-    const start = (currentPage - 1) * STUDENTS_PAGE_SIZE;
+    const page = Math.min(currentPage, Math.max(1, Math.ceil(filteredStudents.length / STUDENTS_PAGE_SIZE)));
+    const start = (page - 1) * STUDENTS_PAGE_SIZE;
     return filteredStudents.slice(start, start + STUDENTS_PAGE_SIZE);
   }, [filteredStudents, currentPage]);
 
@@ -263,6 +236,7 @@ const AdminStudents = () => {
   /* ------------------------------------------------------------------------ */
 
   const fetchStudents = useCallback(async () => {
+    const version = ++loadVersion.current;
     setLoading(true);
     setError(null);
 
@@ -314,17 +288,15 @@ const AdminStudents = () => {
       includeAttributions: boolean,
       scopeToTenant: boolean
     ) => {
-      let query = supabase
-        .from("students")
-        .select(buildStudentSelect(includeAttributions));
-
-      if (scopeToTenant && tenantId) {
-        query = query.eq("tenant_id", tenantId);
+      const rows: unknown[] = [];
+      for (let offset = 0; ; offset += 500) {
+        let query = supabase.from('students').select(buildStudentSelect(includeAttributions));
+        if (scopeToTenant && tenantId) query = query.eq('tenant_id', tenantId);
+        const response = await query.order('created_at', { ascending: false }).order('id').range(offset, offset + 499);
+        if (response.error) return { data: null, error: response.error };
+        rows.push(...(response.data ?? []));
+        if ((response.data?.length ?? 0) < 500) return { data: rows, error: null };
       }
-
-      return query.order("created_at", {
-        ascending: false,
-      });
     };
 
     try {
@@ -386,17 +358,19 @@ const AdminStudents = () => {
         };
       });
 
-      setStudents(mapped as StudentWithDocuments[]);
+      if (loadVersion.current === version) setStudents(mapped as StudentWithDocuments[]);
     } catch (err) {
       console.error(err);
-      setError("Unable to load students.");
+      if (loadVersion.current === version) setError("Students could not be loaded. Refresh to try again.");
     } finally {
-      setLoading(false);
+      if (loadVersion.current === version) setLoading(false);
     }
   }, [tenantId, userRole]);
 
   useEffect(() => {
+    setStudents([]);
     void fetchStudents();
+    return () => { loadVersion.current += 1; };
   }, [fetchStudents]);
 
   /* ------------------------------------------------------------------------ */
@@ -410,15 +384,18 @@ const AdminStudents = () => {
     "Unknown Student";
 
   const handleSuspendStudent = async () => {
-    if (!selectedStudent || !profile?.id) return;
+    if (!selectedStudent || !profile?.id || writing.current) return;
+    writing.current = true;
     setActionLoading(true);
     try {
       const now = new Date().toISOString();
 
-      await supabase
+      const { data, error: updateError } = await supabase
         .from("profiles")
         .update({ active: false, updated_at: now })
-        .eq("id", selectedStudent.profile_id);
+        .eq("id", selectedStudent.profile_id).select('id').maybeSingle();
+      if (updateError) throw updateError;
+      if (!data) throw new Error('No account was updated. Refresh and check your access.');
 
       toast({ title: "Student suspended" });
 
@@ -426,23 +403,29 @@ const AdminStudents = () => {
       setSelectedStudent(null);
       setActionReason("");
       fetchStudents();
+    } catch (cause) {
+      toast({ variant: 'destructive', title: 'Change could not be saved', description: cause instanceof Error ? cause.message : 'Please refresh and check your access.' });
     } finally {
+      writing.current = false;
       setActionLoading(false);
     }
   };
 
   const handleArchiveStudent = async () => {
-    if (!selectedStudent || !profile?.id) return;
+    if (!selectedStudent || !profile?.id || writing.current) return;
+    writing.current = true;
     setActionLoading(true);
     try {
-      await supabase
+      const { data, error: updateError } = await supabase
         .from("students")
         .update({
           archived_at: new Date().toISOString(),
           archived_by: profile.id,
           archive_reason: actionReason || null,
         })
-        .eq("id", selectedStudent.id);
+        .eq("id", selectedStudent.id).select('id').maybeSingle();
+      if (updateError) throw updateError;
+      if (!data) throw new Error('No student was updated. Refresh and check your access.');
 
       toast({ title: "Student archived" });
 
@@ -450,36 +433,45 @@ const AdminStudents = () => {
       setSelectedStudent(null);
       setActionReason("");
       fetchStudents();
+    } catch (cause) {
+      toast({ variant: 'destructive', title: 'Change could not be saved', description: cause instanceof Error ? cause.message : 'Please refresh and check your access.' });
     } finally {
+      writing.current = false;
       setActionLoading(false);
     }
   };
 
   const handleRestoreStudent = async () => {
-    if (!selectedStudent || !profile?.id) return;
+    if (!selectedStudent || !profile?.id || writing.current) return;
+    writing.current = true;
     setActionLoading(true);
     try {
-      await supabase
+      const { data, error: updateError } = await supabase
         .from("students")
         .update({
           archived_at: null,
           archived_by: null,
           archive_reason: null,
         })
-        .eq("id", selectedStudent.id);
+        .eq("id", selectedStudent.id).select('id').maybeSingle();
+      if (updateError) throw updateError;
+      if (!data) throw new Error('No student was updated. Refresh and check your access.');
 
       toast({ title: "Student restored" });
 
       setRestoreDialogOpen(false);
       setSelectedStudent(null);
       fetchStudents();
+    } catch (cause) {
+      toast({ variant: 'destructive', title: 'Change could not be saved', description: cause instanceof Error ? cause.message : 'Please refresh and check your access.' });
     } finally {
+      writing.current = false;
       setActionLoading(false);
     }
   };
 
   const handleDeleteStudent = async () => {
-    if (!selectedStudent) return;
+    if (!selectedStudent || writing.current) return;
     if (deleteConfirmText !== "DELETE") {
       toast({
         variant: "destructive",
@@ -488,6 +480,7 @@ const AdminStudents = () => {
       });
       return;
     }
+    writing.current = true;
     setActionLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("delete-user", {
@@ -520,248 +513,35 @@ const AdminStudents = () => {
         description: err?.message ?? "Could not delete student. Please try again.",
       });
     } finally {
+      writing.current = false;
       setActionLoading(false);
     }
   };
 
   const handleChangeStatus = async (student: StudentWithDocuments, newStatus: string) => {
+    if (writing.current) return;
+    writing.current = true; setActionLoading(true);
     try {
       const valueToSave = newStatus === "auto" ? null : newStatus;
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("students")
         .update({ manual_status: valueToSave })
-        .eq("id", student.id);
+        .eq("id", student.id).select('id').maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Status was not updated.');
       toast({ title: "Status updated" });
       fetchStudents();
     } catch {
       toast({ variant: "destructive", title: "Failed to update status" });
-    }
+    } finally { writing.current = false; setActionLoading(false); }
   };
 
-  /* ------------------------------------------------------------------------ */
-  /*                                  Render                                  */
-  /* ------------------------------------------------------------------------ */
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between">
-        <h1 className="text-2xl font-semibold">
-          Student Document Review
-        </h1>
-        <Button onClick={() => fetchStudents()} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Refresh
-        </Button>
-      </div>
-
-      {/* Duplicate Detection Panel */}
-      <DuplicateStudentsPanel />
-
-      <Card>
-        <CardContent className="overflow-x-auto pt-6">
-          {/* Student KPIs and insights now live on the Admin Dashboard. */}
-
-
-
-          <div className="flex flex-wrap items-center gap-3 mb-4">
-            <div className="relative max-w-md flex-1 min-w-[200px]">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search by ID (UDX-…), name, country, or email"
-                className="pl-9"
-                aria-label="Search students"
-              />
-            </div>
-            <Select value={studentStatusFilter} onValueChange={setStudentStatusFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STUDENT_STATUS_FILTER_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={intakeYearFilter} onValueChange={setIntakeYearFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Filter by intake year" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All intake years</SelectItem>
-                {(() => {
-                  const dataYears = students
-                    .map((s) => s.preferred_intake_year)
-                    .filter((y): y is number => !!y);
-                  const academicYears = getAcademicYearOptions().map((y) => y.startYear);
-                  const merged = Array.from(new Set([...academicYears, ...dataYears])).sort(
-                    (a, b) => a - b
-                  );
-                  return merged.map((year) => (
-                    <SelectItem key={year} value={String(year)}>
-                      {year}/{year + 1} Academic Year
-                    </SelectItem>
-                  ));
-                })()}
-              </SelectContent>
-            </Select>
-            {(studentStatusFilter !== "all" || intakeYearFilter !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setStudentStatusFilter("all");
-                  setIntakeYearFilter("all");
-                }}
-              >
-                <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                Reset
-              </Button>
-            )}
-          </div>
-
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student</TableHead>
-                <TableHead>WhatsApp</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Study Preferences</TableHead>
-                <TableHead>Referred By</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={8}>
-                    <Skeleton className="h-6 w-full" />
-                  </TableCell>
-                </TableRow>
-              ) : filteredStudents.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-sm text-muted-foreground">
-                    No students found for "{searchTerm.trim()}".
-                  </TableCell>
-                </TableRow>
-              ) : paginatedStudents.map((student) => {
-                  const isArchived = student.status === "archived";
-                  const whatsappNumber =
-                    (student.address as any)?.whatsapp ||
-                    student.contact_phone ||
-                    student.profile?.phone ||
-                    null;
-                  const whatsappDigits = whatsappNumber
-                    ? whatsappNumber.replace(/\D/g, "")
-                    : null;
-
-                  return (
-                    <TableRow
-                      key={student.id}
-                      className={`${isArchived ? "opacity-60" : ""}`}
-                    >
-                      <TableCell>
-                        <button
-                          className="text-left hover:underline text-primary font-medium"
-                          onClick={() => navigate(`/admin/students/${student.id}`)}
-                        >
-                          {getStudentName(student)}
-                        </button>
-                        {student.reference_code && (
-                          <p className="text-xs font-mono text-muted-foreground mt-0.5">
-                            {student.reference_code}
-                          </p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {whatsappDigits ? (
-                          <a
-                            href={`https://wa.me/${whatsappDigits}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-emerald-500 hover:text-emerald-400 hover:underline text-sm"
-                            title={`WhatsApp ${whatsappNumber}`}
-                          >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            {whatsappNumber}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {student.current_country ?? "—"}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm leading-tight">
-                          <p>{student.preferred_course ?? "—"}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {student.preferred_country ?? "—"}
-                          </p>
-                          {student.preferred_intake_year && student.preferred_intake_month ? (
-                            <p className="text-xs text-primary mt-0.5">
-                              {formatIntakeLabel(
-                                student.preferred_intake_year,
-                                student.preferred_intake_month
-                              )}
-                            </p>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <span className="text-sm text-muted-foreground">
-                          {student.attribution_source ?? "—"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={student.manual_status || "auto"}
-                          onValueChange={(val) => handleChangeStatus(student, val)}
-                        >
-                          <SelectTrigger className="w-[200px] h-8 text-xs border-0 bg-transparent hover:bg-muted/50 focus:ring-1 p-1">
-                            <SelectValue>
-                              {(() => {
-                                const meta = getStudentStatusMeta(student.operationalStatus);
-                                return (
-                                  <Badge variant={meta.variant} className={meta.className}>
-                                    {meta.label}
-                                  </Badge>
-                                );
-                              })()}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="auto">
-                              <span className="text-muted-foreground">Auto-detect</span>
-                            </SelectItem>
-                            {MANUAL_STATUS_OPTIONS.map((opt) => {
-                              const meta = getStudentStatusMeta(opt.value);
-                              return (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  <Badge variant={meta.variant} className={`${meta.className} text-xs`}>
-                                    {meta.label}
-                                  </Badge>
-                                </SelectItem>
-                              );
-                            })}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        {student.created_at
-                          ? format(new Date(student.created_at), "MMM d, yyyy")
-                          : "—"}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
+  const studentMenu = (student: StudentWithDocuments) => {
+    const whatsapp = (student.address?.whatsapp || student.contact_phone || student.profile?.phone || '').replace(/\D/g, '');
+    const isArchived = Boolean(student.archived_at);
+    return (                        <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" disabled={actionLoading} aria-label={`Actions for ${getStudentName(student)}`}>
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -772,6 +552,10 @@ const AdminStudents = () => {
                               <Eye className="h-4 w-4 mr-2" />
                               View Profile
                             </DropdownMenuItem>
+                            {whatsapp && <DropdownMenuItem asChild><a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer"><MessageCircle className="mr-2 h-4 w-4" />Open WhatsApp</a></DropdownMenuItem>}
+                            {!isArchived && <DropdownMenuItem onClick={() => navigate(`/dashboard/applications/new?studentId=${student.id}`)}><FileText className="mr-2 h-4 w-4" />New application</DropdownMenuItem>}
+                            <DropdownMenuSeparator />
+                            <div className="max-w-72 space-y-1 px-2 py-2 text-xs text-muted-foreground"><p className="break-words">{student.contact_email || student.profile?.email || 'Email not recorded'}</p><p>{student.contact_phone || student.profile?.phone || 'Phone not recorded'}</p><p>Referred by: {student.attribution_source || 'Not recorded'}</p><p>Joined: {student.created_at && !Number.isNaN(Date.parse(student.created_at)) ? format(new Date(student.created_at), 'd MMM yyyy') : 'Not recorded'}</p></div>
                             <DropdownMenuSeparator />
                             {isArchived ? (
                               <DropdownMenuItem
@@ -787,7 +571,7 @@ const AdminStudents = () => {
                               <>
                                 <DropdownMenuItem
                                   onClick={() => {
-                                    setSelectedStudent(student);
+                                    setSelectedStudent(student); setActionReason('');
                                     setSuspendDialogOpen(true);
                                   }}
                                 >
@@ -796,7 +580,7 @@ const AdminStudents = () => {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => {
-                                    setSelectedStudent(student);
+                                    setSelectedStudent(student); setActionReason('');
                                     setArchiveDialogOpen(true);
                                   }}
                                 >
@@ -819,27 +603,91 @@ const AdminStudents = () => {
                               </>
                             )}
                           </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
+                        </DropdownMenu>);
+  };
+  const studentStatus = (student: StudentWithDocuments) => (                        <Select
+                          value={student.manual_status || "auto"}
+                          disabled={actionLoading}
+                          onValueChange={(val) => handleChangeStatus(student, val)}
+                        >
+                          <SelectTrigger aria-label={`Status for ${getStudentName(student)}`} className="w-[200px] h-8 text-xs border-0 bg-transparent hover:bg-muted/50 focus:ring-1 p-1">
+                            <SelectValue>
+                              {(() => {
+                                const meta = getStudentStatusMeta(student.operationalStatus);
+                                return (
+                                  <Badge variant={meta.variant} className={meta.className}>
+                                    {student.operationalStatus === 'application_submitted' ? 'Received by UniDoxia' : meta.label}
+                                  </Badge>
+                                );
+                              })()}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">
+                              <span className="text-muted-foreground">Auto-detect</span>
+                            </SelectItem>
+                            {MANUAL_STATUS_OPTIONS.map((opt) => {
+                              const meta = getStudentStatusMeta(opt.value);
+                              return (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  <Badge variant={meta.variant} className={`${meta.className} text-xs`}>
+                                    {meta.label}
+                                  </Badge>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>);
+  const studyPlans = (student: StudentWithDocuments) => <div className="text-sm"><p>{student.preferred_course || 'Course not selected'}</p><p className="text-xs text-muted-foreground">{student.preferred_country || 'Destination not selected'}{student.preferred_intake_year && student.preferred_intake_month ? ` · ${formatIntakeLabel(student.preferred_intake_year, student.preferred_intake_month)}` : ''}</p></div>;
+  const openStudent = (student: StudentWithDocuments, tab = 'overview') => navigate(`/admin/students/${student.id}?tab=${tab}`);
+  const resetFilters = () => { setView('active'); setSearchTerm(''); setStudentStatusFilter('all'); setIntakeYearFilter('all'); setCurrentPage(1); };
+  const views: { value: StudentWorkspaceView; label: string; count: number }[] = [
+    { value: 'active', label: 'Active students', count: students.filter(student => !student.archived_at).length },
+    { value: 'attention', label: 'Needs attention', count: students.filter(studentNeedsAttention).length },
+    { value: 'review', label: 'Documents to review', count: students.filter(student => !student.archived_at && studentDocumentsToReview(student) > 0).length },
+    { value: 'applications', label: 'With applications', count: students.filter(student => !student.archived_at && student.applications.length > 0).length },
+  ];
+  const yearOptions = Array.from(new Set([...getAcademicYearOptions().map(year => year.startYear), ...students.map(student => student.preferred_intake_year).filter((year): year is number => Boolean(year))])).sort((a, b) => a - b);
+  const hasFilters = view !== 'active' || Boolean(searchTerm) || studentStatusFilter !== 'all' || intakeYearFilter !== 'all';
 
-          <TablePagination
-            currentPage={currentPage}
-            totalItems={filteredStudents.length}
-            pageSize={STUDENTS_PAGE_SIZE}
-            onPageChange={setCurrentPage}
-            itemLabel="students"
-          />
-        </CardContent>
-      </Card>
+  /* ------------------------------------------------------------------------ */
+  /*                                  Render                                  */
+  /* ------------------------------------------------------------------------ */
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-semibold">Students</h1><p className="text-sm text-muted-foreground">Find a student, check what is needed, then take the next step.</p></div><Button onClick={() => void fetchStudents()} disabled={loading} variant="outline"><RefreshCw className="mr-2 h-4 w-4" />Refresh students</Button></div>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{views.map(item => <Button key={item.value} variant={view === item.value ? 'secondary' : 'outline'} aria-pressed={view === item.value} className="h-auto flex-col items-start whitespace-normal p-4 text-left" onClick={() => setView(item.value)}><span className="text-xs sm:text-sm">{item.label}</span><span className="text-2xl font-bold">{loading || error ? '—' : item.count}</span></Button>)}</div>
+      <div className="flex flex-col gap-3 lg:flex-row"><div className="relative flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Search name, UDX reference, email or course" className="pl-9" aria-label="Search students" /></div>
+        <Select value={view} onValueChange={value => setView(value as StudentWorkspaceView)}><SelectTrigger className="lg:w-48" aria-label="Student queue"><SelectValue /></SelectTrigger><SelectContent>{[...views, { value: 'archived', label: 'Archived students' }, { value: 'all', label: 'All students' }].map(item => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent></Select>
+        <Button variant="outline" aria-expanded={showFilters} onClick={() => setShowFilters(!showFilters)}>{showFilters ? 'Hide filters' : studentStatusFilter !== 'all' || intakeYearFilter !== 'all' ? 'More filters (applied)' : 'More filters'}</Button>
+        {hasFilters && <Button variant="ghost" onClick={resetFilters}>Clear filters</Button>}
+      </div>
+      {showFilters && <div className="flex flex-col gap-3 sm:flex-row">        <Select value={studentStatusFilter} onValueChange={setStudentStatusFilter}><SelectTrigger className="lg:w-48" aria-label="Student status"><SelectValue /></SelectTrigger><SelectContent>{STUDENT_STATUS_FILTER_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent></Select>
+        <Select value={intakeYearFilter} onValueChange={setIntakeYearFilter}><SelectTrigger className="lg:w-48" aria-label="Intake year"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">All intake years</SelectItem>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year}/{year + 1} Academic Year</SelectItem>)}</SelectContent></Select>
+</div>}
+      {error ? <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertTitle>Unable to load students</AlertTitle><AlertDescription>{error}</AlertDescription></Alert> : loading ? <div role="status" aria-label="Loading students"><Skeleton className="h-32 w-full" /><p className="mt-2 text-sm text-muted-foreground">Loading students…</p></div> : <Card><CardContent className="p-0">
+        <div className="hidden overflow-x-auto lg:block"><Table><TableHeader><TableRow><TableHead>Student</TableHead><TableHead>Study plans</TableHead><TableHead>Next step</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader><TableBody>{paginatedStudents.map(student => {
+          const next = getStudentNextAction(student);
+          return <TableRow key={student.id} className={student.archived_at ? 'opacity-70' : ''}><TableCell className="min-w-48"><button className="font-medium text-primary hover:underline" onClick={() => openStudent(student)}>{getStudentName(student)}</button><p className="text-xs text-muted-foreground">{student.reference_code || 'No reference'} · {student.current_country || 'Country not recorded'}</p><p className="text-xs text-muted-foreground">{student.contact_email || student.profile?.email || 'Email not recorded'}</p><div className="mt-2">{studentStatus(student)}</div></TableCell><TableCell>{studyPlans(student)}</TableCell><TableCell><p className="text-sm">{next.label}</p><p className="mt-1 text-xs text-muted-foreground">Files awaiting review: {studentDocumentsToReview(student)} · Applications: {student.applications.length}</p></TableCell><TableCell><div className="flex items-center gap-1"><Button variant="outline" size="sm" onClick={() => openStudent(student, next.tab)} aria-label={`Open student ${getStudentName(student)}`}>Open student</Button>{studentMenu(student)}</div></TableCell></TableRow>;
+        })}</TableBody></Table></div>
+        <div className="divide-y lg:hidden">{paginatedStudents.map(student => { const next = getStudentNextAction(student); const whatsappNumber = student.address?.whatsapp || student.contact_phone || student.profile?.phone; const digits = whatsappNumber?.replace(/\D/g, ''); return <article key={student.id} className="space-y-3 p-4"><div className="flex justify-between gap-2"><div><h2 className="font-semibold">{getStudentName(student)}</h2><p className="text-xs text-muted-foreground">{student.reference_code || 'No reference'} · {student.current_country || 'Country not recorded'}</p></div>{studentMenu(student)}</div>{studyPlans(student)}{studentStatus(student)}<div className="rounded-lg bg-muted p-3 text-sm"><p className="font-medium">Next step</p><p>{next.label}</p><p className="mt-1 text-xs text-muted-foreground">Files awaiting review: {studentDocumentsToReview(student)} · Applications: {student.applications.length}</p></div><Button className="w-full" variant="outline" onClick={() => openStudent(student, next.tab)} aria-label={`Open student ${getStudentName(student)}`}>Open student</Button>{digits && <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary"><MessageCircle className="h-4 w-4" />WhatsApp</a>}</article>; })}</div>
+        {filteredStudents.length === 0 && <div className="space-y-3 p-8 text-center"><p className="text-sm text-muted-foreground">{students.length === 0 ? 'No students yet. Registered students will appear here.' : 'No students match this view. Change the filters or search again.'}</p>{students.length > 0 && <Button variant="outline" onClick={resetFilters}>Show active students</Button>}</div>}
+        <div className="border-t px-4"><TablePagination currentPage={currentPage} totalItems={filteredStudents.length} pageSize={STUDENTS_PAGE_SIZE} onPageChange={setCurrentPage} itemLabel="students" /></div>
+      </CardContent></Card>}
+      <section className="space-y-3"><Button variant="ghost" aria-expanded={showDuplicates} onClick={() => setShowDuplicates(!showDuplicates)}>{showDuplicates ? 'Hide duplicate checks' : 'Check duplicate records'}</Button>{showDuplicates && <DuplicateStudentsPanel />}</section>
+
+      <AlertDialog open={suspendDialogOpen || archiveDialogOpen || restoreDialogOpen} onOpenChange={open => { if (!open && !actionLoading) { setSuspendDialogOpen(false); setArchiveDialogOpen(false); setRestoreDialogOpen(false); setActionReason(''); } }}>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{suspendDialogOpen ? 'Suspend student account?' : archiveDialogOpen ? 'Archive student?' : 'Restore student?'}</AlertDialogTitle><AlertDialogDescription>{suspendDialogOpen ? 'Mark this student account as inactive.' : archiveDialogOpen ? 'Move this student out of the active list. Their record is kept and can be restored.' : 'Return this student to the active list.'} {selectedStudent ? getStudentName(selectedStudent) : ''}</AlertDialogDescription></AlertDialogHeader>
+          {archiveDialogOpen && <Textarea aria-label="Archive reason" placeholder="Reason (optional)" value={actionReason} disabled={actionLoading} onChange={event => setActionReason(event.target.value)} />}
+          <AlertDialogFooter><AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel><AlertDialogAction disabled={actionLoading} onClick={event => { event.preventDefault(); void (suspendDialogOpen ? handleSuspendStudent() : archiveDialogOpen ? handleArchiveStudent() : handleRestoreStudent()); }}>{actionLoading ? 'Saving…' : suspendDialogOpen ? 'Suspend account' : archiveDialogOpen ? 'Archive student' : 'Restore student'}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog
         open={deleteDialogOpen}
         onOpenChange={(open) => {
+          if (actionLoading) return;
           setDeleteDialogOpen(open);
           if (!open) {
             setDeleteConfirmText("");
