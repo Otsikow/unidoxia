@@ -33,3 +33,9 @@ revoke all on function public.fixture_application_sharing_guard() from public,an
 drop trigger if exists fixture_application_sharing_guard on public.applications;
 create trigger fixture_application_sharing_guard before insert or update on public.applications
 for each row execute function public.fixture_application_sharing_guard();
+-- Existing production helper required by the non-owner branch; preserve its live semantics.
+create or replace function public.is_agent_for_student(_user_id uuid,_student_id uuid)
+returns boolean language sql stable security definer set search_path=public as $$
+ select exists(select 1 from public.applications a inner join public.agents ag on ag.id=a.agent_id
+ where a.student_id=_student_id and ag.profile_id=_user_id);
+$$;
