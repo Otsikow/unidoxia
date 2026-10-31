@@ -15,13 +15,13 @@ interface StudentWithBilling {
 
 export function useStudentBilling() {
   const { user } = useAuth();
-  const { toast } = useToast();
 
   // Fetch student record with billing fields
   const {
     data: billingData,
     isLoading: billingLoading,
-    error: billingError
+    error: billingError,
+    refetch: refetchBilling,
   } = useQuery({
     queryKey: ['student-billing', user?.id],
     queryFn: async (): Promise<StudentWithBilling | null> => {
@@ -37,6 +37,9 @@ export function useStudentBilling() {
         console.error('Error fetching student:', error);
         throw error;
       }
+
+      if (!data) throw new Error('Student billing record unavailable');
+      if (data.plan_type && !['free','self_service','agent_supported'].includes(data.plan_type)) throw new Error('Student billing plan could not be confirmed');
 
       // Return billing data with defaults
       return {
@@ -54,31 +57,33 @@ export function useStudentBilling() {
   const {
     data: applicationCount,
     isLoading: countLoading,
+    error: countError,
+    refetch: refetchCount,
   } = useQuery({
     queryKey: ['application-count', billingData?.id],
     queryFn: async (): Promise<number> => {
       if (!billingData?.id) return 0;
 
       // Get applications for this student (exclude drafts)
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('applications')
-        .select('id')
+        .select('id', {count:'exact', head:true})
         .eq('student_id', billingData.id)
         .neq('status', 'draft');
 
       if (error) {
         console.error('Error fetching application count:', error);
-        return 0;
+        throw error;
       }
-
-      return data?.length ?? 0;
+      if (typeof count !== 'number') throw new Error('Application count unavailable');
+      return count;
     },
     enabled: !!billingData?.id,
   });
 
   // Check if student can create new application (based on application limit for unpaid students)
   const canCreateApplication = (): boolean => {
-    if (!billingData) return false;
+    if (!billingData || billingError || billingLoading) return false;
 
     const planType = billingData.plan_type || 'free';
     const limit = getApplicationLimit(planType);
@@ -87,19 +92,21 @@ export function useStudentBilling() {
     if (limit === null) return true;
 
     // Check against application limit for free plan (1 application max)
-    return (applicationCount || 0) < limit;
+    if (countLoading || countError || typeof applicationCount !== 'number') return false;
+    return applicationCount < limit;
   };
 
   // Get remaining applications for free plan
   const getRemainingApplications = (): number | null => {
-    if (!billingData) return null;
+    if (!billingData || billingError || billingLoading) return null;
 
     const planType = billingData.plan_type || 'free';
     const limit = getApplicationLimit(planType);
 
     if (limit === null) return null; // unlimited
 
-    return Math.max(0, limit - (applicationCount || 0));
+    if (countLoading || countError || typeof applicationCount !== 'number') return null;
+    return Math.max(0, limit - applicationCount);
   };
 
   // Get plan display info
@@ -129,21 +136,28 @@ export function useStudentBilling() {
     billingData,
     billingLoading,
     billingError,
-    applicationCount: applicationCount || 0,
+    applicationCount: countError ? undefined : applicationCount,
+    countError,
+    limitsLoading: billingLoading || (billingData?.plan_type === 'free' && countLoading),
+    limitsUnavailable: Boolean(billingError || (!!user?.id && !billingLoading && !billingData) || (billingData?.plan_type === 'free' && countError)),
     countLoading,
     canCreateApplication,
     getRemainingApplications,
     getPlanInfo,
-    refetch: () => {},
+    refetch: () => Promise.all([refetchBilling(), ...(billingData?.id ? [refetchCount()] : [])]),
   };
 }
 
 // Hook to enforce application limits before creating
 export function useApplicationLimitCheck() {
   const { toast } = useToast();
-  const { canCreateApplication, getRemainingApplications, getPlanInfo } = useStudentBilling();
+  const { canCreateApplication, getRemainingApplications, getPlanInfo, limitsLoading, limitsUnavailable, refetch } = useStudentBilling();
 
   const checkAndWarn = (): boolean => {
+    if (limitsLoading || limitsUnavailable) {
+      toast({title:limitsLoading ? 'Checking application access' : 'Application access unavailable', description:'We could not yet confirm your application allowance. Please retry before starting a new application.', variant:'destructive'});
+      return false;
+    }
     if (!canCreateApplication()) {
       const planInfo = getPlanInfo();
 
@@ -162,6 +176,9 @@ export function useApplicationLimitCheck() {
 
   return {
     canCreate: canCreateApplication(),
+    limitsLoading,
+    limitsUnavailable,
+    retry: refetch,
     remainingApplications: getRemainingApplications(),
     checkAndWarn,
     planInfo: getPlanInfo(),

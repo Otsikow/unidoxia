@@ -315,7 +315,7 @@ export default function NewApplication() {
   // Application limit check for students
   const { 
     canCreate: canCreateApplication, 
-    planInfo 
+    planInfo, limitsLoading, limitsUnavailable, retry: retryApplicationAccess
   } = useApplicationLimitCheck();
 
   const hasHydratedFromDraft = useRef(false);
@@ -1455,6 +1455,17 @@ export default function NewApplication() {
   try {
     hasRecoverableApplication ||= Boolean(window.sessionStorage.getItem(`unidoxia:submission:${user?.id}:${studentId}:${formData.programSelection.programId}:${formData.programSelection.intakeYear}:${formData.programSelection.intakeMonth}`));
   } catch { /* optional */ }
+
+  if (isStudent && !hasRecoverableApplication && (limitsLoading || limitsUnavailable)) {
+    return <div className="container mx-auto py-8 max-w-3xl space-y-6">
+      <BackButton variant="ghost" size="sm" fallback="/student/dashboard" />
+      <Alert><AlertTitle>{limitsLoading ? 'Checking application access' : 'Application access unavailable'}</AlertTitle>
+        <AlertDescription className="space-y-3"><p>{limitsLoading ? 'Please wait while we check your plan and application allowance.' : 'We could not confirm your plan or application count. Retry before starting a new application.'}</p>
+          {!limitsLoading && <Button variant="outline" onClick={() => void retryApplicationAccess()}>Retry access check</Button>}
+        </AlertDescription>
+      </Alert>
+    </div>;
+  }
 
   if (isStudent && !canCreateApplication && !hasRecoverableApplication) {
     return (
