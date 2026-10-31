@@ -9,7 +9,7 @@ const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type PlanCode = "self_service" | "agent_supported";
+type PlanCode = "agent_supported";
 
 interface PlanConfig {
   name: string;
@@ -19,17 +19,9 @@ interface PlanConfig {
   stripePriceId?: string;
 }
 
-const STRIPE_SELF_SERVICE_PRICE_ID = Deno.env.get("STRIPE_SELF_SERVICE_PRICE_ID");
 const STRIPE_AGENT_SUPPORTED_PRICE_ID = Deno.env.get("STRIPE_AGENT_SUPPORTED_PRICE_ID");
 
 const PLAN_CONFIGS: Record<PlanCode, PlanConfig> = {
-  self_service: {
-    name: "Self-Service Plan",
-    priceInCents: 4900,
-    currency: "usd",
-    description: "Apply to unlimited universities independently - One-time payment",
-    stripePriceId: STRIPE_SELF_SERVICE_PRICE_ID,
-  },
   agent_supported: {
     name: "Agent-Supported Plan",
     priceInCents: 20000,
@@ -101,7 +93,7 @@ serve(async (req) => {
     const successUrl = body?.successUrl || `${req.headers.get("origin")}/student/dashboard?payment=success`;
     const cancelUrl = body?.cancelUrl || `${req.headers.get("origin")}/pricing?payment=cancelled`;
 
-    if (!planCode || !(planCode in PLAN_CONFIGS)) {
+    if (planCode !== "agent_supported") {
       return new Response(JSON.stringify({ error: "Invalid plan code" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

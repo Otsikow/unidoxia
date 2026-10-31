@@ -198,7 +198,7 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-16">
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
           {PRICING_PLANS.map((plan) => (
             <Card 
               key={plan.id} 
@@ -433,21 +433,11 @@ export default function Pricing() {
             Choose a plan that supports your application preparation and tracking needs.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button 
-              size="lg" 
-              onClick={() => handleSelectPlan('self_service')}
-              disabled={loadingPlan === 'self_service'}
-            >
-              {loadingPlan === 'self_service' ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <CreditCard className="h-4 w-4 mr-2" />
-              )}
-              Get Self-Service — $49
+            <Button size="lg" variant="outline" onClick={() => handleSelectPlan('free')}>
+              Get Started Free
             </Button>
             <Button 
               size="lg" 
-              variant="outline"
               onClick={() => handleSelectPlan('agent_supported')}
               disabled={loadingPlan === 'agent_supported'}
             >

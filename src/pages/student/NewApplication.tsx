@@ -1472,7 +1472,7 @@ export default function NewApplication() {
               Current plan: <strong>{planInfo.displayName}</strong>
             </p>
             <p>
-              Upgrade to Self-Service ($49) to submit unlimited applications, or choose Agent-Supported ($200) for
+              Choose Agent-Supported ($200) for unlimited applications and
               dedicated help with your applications.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 mt-4">
