@@ -16,7 +16,7 @@ Export gate: the earlier automatic approval review rejected GitHub export withou
 
 ## Next build — secure student request receipts, 31 October 2026
 
-Implemented the owned-file server receipt operation and retry-only request confirmation, with private object/size/category checks, request-version locking and preserved staff approval/verification boundaries. Current checks: 587 tests, 25 isolated SQL/RLS checks, TypeScript and production bundle build pass. Actual Auth/private Storage Run 9 passed 18 checks with cleanup independently verified; final HTTP409 acceptance is running. Desktop/mobile retry dialog rendered with isolated adapters. No production mutation yet. Details: REQUEST_RECEIPTS.md. This continues the previously recorded backend request-fulfilment gap rather than adding a broad student UPDATE grant.
+Implemented the owned-file server receipt operation and retry-only request confirmation, with private object/size/category checks, request-version locking and preserved staff approval/verification boundaries. Current combined checks: 589 tests, 25 isolated SQL/RLS checks, TypeScript and production bundle build pass. Actual Auth/private Storage Run 9 passed 18 checks with cleanup independently verified; final HTTP409 Run 10 also passed all 18 checks, with zero fixtures/accounts/objects independently confirmed after cleanup. Desktop/mobile retry dialog rendered with isolated adapters. No production mutation yet. Details: REQUEST_RECEIPTS.md. This continues the previously recorded backend request-fulfilment gap rather than adding a broad student UPDATE grant.
 
 ## Staff upload recovery — 31 October 2026
 
