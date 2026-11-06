@@ -1,3 +1,4 @@
+import { homeTitle, homeDescription, homePhoto } from '../src/lib/homepage.mjs';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -19,6 +20,7 @@ import { coursePage, universityPage, organisation, blogSchema, scholarshipPage, 
 const ORIGIN = "https://unidoxia.com";
 const DIST = path.resolve("dist");
 const template = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
+const homeStyles = fs.readFileSync("src/components/landing/home.css", "utf8");
 
 const esc = (s = "") =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -58,14 +60,14 @@ const faqJsonLd = faqSections.length
   : null;
 
 const featuredHtml = featured.length
-  ? `<section><h2>Featured universities</h2><ul>${featured
+  ? `<div class="udx-featured"><h3>Featured universities</h3><ul>${featured
       .map(
         (u) =>
           `<li><a href="/universities/${esc(u.slug)}">${esc(u.name)}</a>${
             u.city || u.country ? ` — ${esc([u.city, u.country].filter(Boolean).join(", "))}` : ""
           }${u.featured_summary ? `<p>${esc(u.featured_summary)}</p>` : ""}</li>`,
       )
-      .join("")}</ul></section>`
+      .join("")}</ul><p>Featured listings do not imply a formal recruitment partnership.</p></div>`
   : "";
 
 const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a href="/universities">Universities</a> · <a href="/destinations/united-kingdom">Study in the UK</a> · <a href="/scholarships">Scholarships</a> · <a href="/blog">Blog</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;
@@ -75,9 +77,8 @@ const pages = [
   {
     path: "/",
     jsonLd: organisation,
-    title: "Study Abroad from Africa: UK Universities & Support | UniDoxia",
-    description:
-      "Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.",
+    title: homeTitle,
+    description: homeDescription,
     body: homeFirstPaint(featuredHtml),
   },
   {
@@ -221,7 +222,9 @@ const render = (page) => {
     .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${t}">`)
     .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${d}">`)
     .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${d}">`);
-  if (page.path !== "/") html = html.replace(/<link rel="preload" as="image" href="\/videos\/hero-poster.webp"[^>]*>/, "");
+  if (page.path === "/") {
+    html = html.replace('<title>', `<link rel="preload" as="image" imagesrcset="${homePhoto.srcSet}" imagesizes="${homePhoto.sizes}" fetchpriority="high">\n    <title>`);
+  }
   html = html.replace('</head>', `<meta name="prerender-path" content="${esc(page.path)}">\n</head>`);
   if (page.noindex) {
     html = html.replace('</head>', '<meta name="robots" content="noindex">\n</head>');
@@ -230,8 +233,8 @@ const render = (page) => {
     const json = JSON.stringify(page.jsonLd).replace(/</g, "\\u003c");
     html = html.replace("</head>", `<script type="application/ld+json" data-prerender-seo="1">${json}</script>\n</head>`);
   }
-  html = html.replace('</head>', `<style id="first-paint-styles">${firstPaintCss}</style>\n</head>`);
-  return html.replace('<div id="root"></div>', renderFirstPaint({path:page.path, body:purifier.sanitize(page.body), nav, footer}));
+  html = html.replace('</head>', `<style id="first-paint-styles">${firstPaintCss}${page.path === '/' ? homeStyles : ''}</style>\n</head>`);
+  return html.replace('<div id="root"></div>', renderFirstPaint({path:page.path, body:purifier.sanitize(page.body, { ADD_ATTR: ['fetchpriority'] }), nav, footer}));
 };
 
 fs.writeFileSync(path.join(DIST, 'seo-hosting.json'), JSON.stringify({

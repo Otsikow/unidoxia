@@ -213,7 +213,10 @@ function MessageSources({ sources }: { sources: ZoeSource[] }) {
   );
 }
 
-export default function ZoeChatbot() {
+export default function ZoeChatbot({ hideLauncher = false, homeRequests = 0 }: {
+  hideLauncher?: boolean;
+  homeRequests?: number;
+} = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -234,6 +237,7 @@ export default function ZoeChatbot() {
   const [hasConversationStarted, setHasConversationStarted] = useState(false);
   const [errorState, setErrorState] = useState<ZoeErrorState | null>(null);
 
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -243,6 +247,21 @@ export default function ZoeChatbot() {
 
   const { toast } = useToast();
   const { session, profile } = useAuth();
+
+  useEffect(() => {
+    if (homeRequests > 0) setIsOpen(true);
+  }, [homeRequests]);
+
+  useEffect(() => {
+    if (hideLauncher && isOpen) closeButtonRef.current?.focus();
+  }, [hideLauncher, isOpen]);
+
+  function closeChat() {
+    setIsFullScreen(false);
+    setIsExpanded(false);
+    setIsOpen(false);
+    if (hideLauncher) document.getElementById("home-zoe-launcher")?.focus();
+  }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -837,6 +856,7 @@ export default function ZoeChatbot() {
   }, [input, isLoading, sendMessage]);
 
   if (!isOpen) {
+    if (hideLauncher) return null;
     return (
       <div className="fixed bottom-4 right-4 z-50 md:bottom-5 md:right-5">
         <a
@@ -857,6 +877,11 @@ export default function ZoeChatbot() {
 
   return (
     <Card
+      role="region"
+      aria-label="Zoe assistant"
+      onKeyDown={(event) => {
+        if (hideLauncher && event.key === "Escape") closeChat();
+      }}
       className={cn(
         "fixed z-50 flex flex-col overflow-hidden rounded-3xl border border-primary/15 bg-gradient-to-br from-background via-background to-primary/5 shadow-[0_28px_80px_rgba(15,23,42,0.45)] backdrop-blur transition-all duration-300",
         isFullScreen
@@ -916,11 +941,9 @@ export default function ZoeChatbot() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => {
-                setIsFullScreen(false);
-                setIsExpanded(false);
-                setIsOpen(false);
-              }}
+              ref={closeButtonRef}
+              aria-label="Close Zoe chat"
+              onClick={closeChat}
               className="h-8 w-8"
             >
               <X className="h-4 w-4" />

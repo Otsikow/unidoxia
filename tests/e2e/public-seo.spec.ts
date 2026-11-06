@@ -4,7 +4,7 @@ import { JSDOM } from 'jsdom';
 
 test.skip(!process.env.SEO_PREVIEW, 'Requires a production build and the local routing adapter');
 const routes = fs.existsSync('dist/seo-routes.json') ? JSON.parse(fs.readFileSync('dist/seo-routes.json', 'utf8')) : [];
-const paths = ['/free-consultation', '/destinations/united-kingdom', ...['/blog/', '/universities/', '/courses/', '/scholarships/'].map(prefix => routes.find(r => r.path.startsWith(prefix) && r.path !== '/scholarships/archive' && !r.noindex)?.path).filter(Boolean)];
+const paths = ['/', '/free-consultation', '/destinations/united-kingdom', ...['/blog/', '/universities/', '/courses/', '/scholarships/'].map(prefix => routes.find(r => r.path.startsWith(prefix) && r.path !== '/scholarships/archive' && !r.noindex)?.path).filter(Boolean)];
 for (const path of paths) {
   test(`initial HTML and browser agree: ${path}`, async ({ page, request }) => {
     // No tracking or mutation requests reach production during verification.
@@ -42,9 +42,9 @@ for (const path of paths) {
 test('featured university links resolve to profiles and offer an enquiry route', async ({ page }) => {
   await page.route('**/*.supabase.co/**', route => route.request().method() === 'GET' || route.request().url().includes('/rpc/get_public_') ? route.continue() : route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.goto('/');
-  if (test.info().project.name === 'mobile') expect(await page.locator('video').count()).toBe(0);
+  await expect(page.locator('video')).toHaveCount(0);
   await page.screenshot({ path: `test-results/home-${test.info().project.name}.png`, fullPage: false });
-  const links = page.getByRole('link', { name: /View university profile/ });
+  const links = page.getByRole('region', { name: 'Featured universities' }).getByRole('link');
   await expect(links).toHaveCount(3);
   for (const href of await links.evaluateAll(nodes => nodes.map(node => node.getAttribute('href')))) {
     await page.goto(href!);
@@ -79,4 +79,23 @@ test('private dashboard still redirects anonymous visitors to the sign-in form',
   await expect(page).toHaveURL(/\/auth\/login/);
   await expect(page.locator('input[type="email"]').first()).toBeVisible();
   await expect(page.locator('input[type="password"]').first()).toBeVisible();
+});
+
+test('homepage opens the catalogue with the submitted search and destination', async ({ page }) => {
+  await page.route('**/*.supabase.co/**', route => route.fulfill({
+    status: 200, contentType: 'application/json', body: '[]',
+  }));
+  await page.goto('/');
+  await expect(page.locator('#site-first-paint')).toHaveCount(0);
+  const search = page.getByRole('searchbox', { name: 'Course or university' });
+  await search.fill('  Business & management  ');
+  await search.press('Enter');
+  await expect(page.getByRole('heading', { name: 'Search courses', exact: true })).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('q')).toBe('Business & management');
+
+  await page.goto('/');
+  await expect(page.locator('#site-first-paint')).toHaveCount(0);
+  await page.getByRole('link', { name: 'Canada', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Search courses', exact: true })).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('country')).toBe('Canada');
 });

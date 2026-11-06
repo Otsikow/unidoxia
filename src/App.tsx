@@ -501,8 +501,6 @@ const COMMON_IMPORTS = [
   () => import("./pages/Blog"),
 ];
 
-const preloadCommonRoutes = () => schedulePrefetch(COMMON_IMPORTS, 200);
-
 /* ==========================================================================
    REDIRECT HELPERS
    ========================================================================== */
@@ -522,11 +520,12 @@ const SearchRedirect = () => {
    ========================================================================== */
 
 const RoutePrefetcher = () => {
-  const location = useLocation();
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    schedulePrefetch(COMMON_IMPORTS, 100);
-  }, []);
+    // Let the homepage's image and fonts finish before requesting other routes.
+    if (pathname !== "/") schedulePrefetch(COMMON_IMPORTS, 100);
+  }, [pathname]);
 
   return null;
 };
@@ -535,32 +534,37 @@ const RoutePrefetcher = () => {
    MAIN APP
    ========================================================================== */
 
-const App = () => {
-  const { t } = useTranslation();
-  const [shouldRenderChatbot, setShouldRenderChatbot] = useState(false);
+function SiteChat() {
+  const { pathname } = useLocation();
+  const [load, setLoad] = useState(false);
+  const [homeRequests, setHomeRequests] = useState(0);
+  const isHome = pathname === "/";
 
   useEffect(() => {
-    preloadCommonRoutes();
+    const requestHomeChat = () => {
+      setHomeRequests((count) => count + 1);
+      setLoad(true);
+    };
 
-    let timeoutId: any;
-
-    const loadChatbot = () => setShouldRenderChatbot(true);
-
-    if (document.readyState === "complete") {
-      timeoutId = setTimeout(loadChatbot, 1500);
-    } else {
-      const handleLoad = () => {
-        timeoutId = setTimeout(loadChatbot, 1000);
-      };
-      window.addEventListener("load", handleLoad, { once: true });
-      return () => {
-        window.removeEventListener("load", handleLoad);
-        clearTimeout(timeoutId);
-      };
-    }
-
-    return () => clearTimeout(timeoutId);
+    window.addEventListener("zoe:home-request", requestHomeChat);
+    return () => window.removeEventListener("zoe:home-request", requestHomeChat);
   }, []);
+
+  useEffect(() => {
+    if (isHome || load) return;
+    const timer = window.setTimeout(() => setLoad(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, [isHome, load]);
+
+  return load ? (
+    <Suspense fallback={null}>
+      <ZoeChatbot hideLauncher={isHome} homeRequests={homeRequests} />
+    </Suspense>
+  ) : null;
+}
+
+const App = () => {
+  const { t } = useTranslation();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -590,7 +594,7 @@ const App = () => {
                            PUBLIC ROUTES
                            ============================================================ */}
 
-                        <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+                        <Route path="/" element={<Index />} />
 
                         {/* Student onboarding flow removed */}
 
@@ -820,7 +824,7 @@ const App = () => {
                       <RoutePrefetcher />
                     </div>
 
-                    {shouldRenderChatbot && <ZoeChatbot />}
+                    <SiteChat />
                   </div>
                 </Suspense>
               </NavigationHistoryProvider>

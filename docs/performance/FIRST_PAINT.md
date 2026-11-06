@@ -2,9 +2,9 @@
 
 The post-build renderer previously placed unstyled navigation/article/footer HTML inside React's mount root. Before JavaScript loaded, visitors saw that bare content; React then replaced it with intermediate loaders before the final page appeared.
 
-Public prerenders now include a separately styled, accessible first view. Critical scoped CSS is inline, so it does not depend on the application stylesheet. The homepage uses the existing hero poster, logo, headline and primary links. Other public routes retain their real crawlable content and legal footer. All normal links work without JavaScript.
+Public prerenders now include a separately styled, accessible first view. Critical scoped CSS is inline, so it does not depend on the application stylesheet. The homepage uses the same responsive student photograph, headline and visual styles as the application, plus working navigation and course search. Other public routes retain their real crawlable content and legal footer. All normal links work without JavaScript.
 
-The pending React root is non-visible, inert and hidden from assistive technology while the static view remains available. `InitialPageReady` sits inside the existing route Suspense boundary and switches the first view to the finished route in a layout effect. This avoids showing the intermediate React loader and does not introduce an arbitrary delay. Failure to load the app leaves useful public content instead of a blank overlay. The approved final React page design is unchanged.
+The pending React root is non-visible, inert and hidden from assistive technology while the static view remains available. `InitialPageReady` sits inside the existing route Suspense boundary and switches the first view to the finished route in a layout effect. This avoids showing the intermediate React loader and does not introduce an arbitrary delay. Failure to load the app leaves useful public content instead of a blank overlay.
 
 Validation:
 - First-paint markup and actual suspended-route handoff regression tests.
