@@ -88,10 +88,12 @@ test('homepage opens the catalogue with the submitted search and destination', a
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
   const search = page.getByRole('searchbox', { name: 'Course or university' });
+  await search.scrollIntoViewIfNeeded();
   await search.fill('  Business & management  ');
   await search.press('Enter');
   await expect(page.getByRole('heading', { name: 'Search courses', exact: true })).toBeVisible();
   expect(new URL(page.url()).searchParams.get('q')).toBe('Business & management');
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);

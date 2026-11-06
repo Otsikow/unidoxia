@@ -2,8 +2,8 @@
 
 import { InitialPageReady } from "@/components/InitialPageReady";
 
-import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { lazy, Suspense, ComponentType, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // UI & Global Providers
@@ -534,6 +534,21 @@ const RoutePrefetcher = () => {
    MAIN APP
    ========================================================================== */
 
+function HomeRouteScroll() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+  const previousPath = useRef(pathname);
+
+  useLayoutEffect(() => {
+    if (previousPath.current === "/" && pathname !== "/" && navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+    previousPath.current = pathname;
+  }, [pathname, navigationType]);
+
+  return null;
+}
+
 function SiteChat() {
   const { pathname } = useLocation();
   const [load, setLoad] = useState(false);
@@ -821,6 +836,7 @@ const App = () => {
                       </Routes>
 
                       <InitialPageReady />
+                      <HomeRouteScroll />
                       <RoutePrefetcher />
                     </div>
 
