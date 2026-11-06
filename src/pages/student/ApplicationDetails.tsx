@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -229,6 +229,7 @@ export default function ApplicationDetails() {
     }
   };
 
+  const [searchParams] = useSearchParams();
   const [app, setApp] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -652,7 +653,7 @@ export default function ApplicationDetails() {
         </Card>
       )}
 
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue={searchParams.get("tab") === "documents" ? "documents" : "overview"}>
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
@@ -892,7 +893,10 @@ export default function ApplicationDetails() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Documents</CardTitle>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <CardTitle>Documents</CardTitle>
+                <DocumentUploadDialog applicationId={app.id} onUploadComplete={loadAll} />
+              </div>
             </CardHeader>
             <CardContent>
               {docs.length === 0 ? (
