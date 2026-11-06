@@ -30,7 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useStudentRecord } from "@/hooks/useStudentRecord";
 import { validateFileUpload } from "@/lib/fileUpload";
-import { saveStudentDocument, uploadVerifiedDocument } from "@/lib/documentUpload";
+import { DOCUMENT_UPLOAD_VALIDATION, saveStudentDocument, uploadVerifiedDocument } from "@/lib/documentUpload";
 import { logError, formatErrorForToast } from "@/lib/errorUtils";
 import { getMissingRequiredStudentDocuments } from "@/lib/studentDocuments";
 import { gateOptions, getCourseFinderProfileSections } from "@/lib/coursefinderProfile";
@@ -85,6 +85,7 @@ const DOCUMENT_TYPES = [
   { value: "reference_letter_1", label: "Reference letter 1", required: true },
   { value: "reference_letter_2", label: "Reference letter 2", required: true },
   { value: "cv", label: "CV", required: true },
+  { value: "english_proof", label: "English proof", required: false },
   { value: "english_test_certificate", label: "English test certificate", required: false },
   { value: "english_medium_letter", label: "English-medium-of-instruction letter", required: false },
 ] as const;
@@ -98,20 +99,7 @@ const getDocumentTypeLabel = (value: string): string => {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 };
 
-const UPLOAD_VALIDATION = {
-  allowedMimeTypes: [
-    "application/pdf",
-    "image/jpeg",
-    "image/png",
-    "image/jpg",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ] as string[],
-  allowedExtensions: ["pdf", "jpg", "jpeg", "png", "doc", "docx"] as string[],
-  maxSizeBytes: 10 * 1024 * 1024,
-};
-
-const FILE_ACCEPT = ".pdf,.jpg,.jpeg,.png,.doc,.docx";
+const FILE_ACCEPT = DOCUMENT_UPLOAD_VALIDATION.allowedExtensions.map((ext) => `.${ext}`).join(",");
 
 /* -------------------------------------------------------------------------- */
 /*                                 Component                                  */
@@ -138,6 +126,8 @@ export default function Documents() {
   const [documentType, setDocumentType] = useState("");
 
   const fileInputsRef = useRef<Record<string, HTMLInputElement | null>>({});
+  const manualFileInputRef = useRef<HTMLInputElement | null>(null);
+  const pendingSelectionRef = useRef<{ type: string; replacement?: StudentDocument } | null>(null);
   const outstandingFileInputRef = useRef<HTMLInputElement | null>(null);
   const [pendingDocType, setPendingDocType] = useState<string | null>(null);
 
@@ -162,9 +152,9 @@ export default function Documents() {
   /* ------------------------------------------------------------------------ */
 
   const loadDocuments = useCallback(
-    async (id: string) => {
+    async (id: string, initialLoad = false) => {
       try {
-        setLoading(true);
+        if (initialLoad) setLoading(true);
 
         const { data, error } = await supabase
           .from("student_documents")
@@ -188,6 +178,8 @@ export default function Documents() {
     if (isLoading) return;
 
     if (error) {
+      setStudentId(null);
+      setDocuments([]);
       logError(error, "Documents.studentRecord");
       toast(formatErrorForToast(error, "Failed to load student profile"));
       setLoading(false);
@@ -207,7 +199,7 @@ export default function Documents() {
     }
 
     setStudentId(studentRecord.id);
-    void loadDocuments(studentRecord.id);
+    void loadDocuments(studentRecord.id, true);
   }, [studentRecord, isLoading, error, loadDocuments, toast]);
 
   /* ------------------------------------------------------------------------ */
@@ -219,8 +211,8 @@ export default function Documents() {
     setSelectedFile(file);
   };
 
-  const handleOutstandingDocClick = (docTypeValue: string) => {
-    setPendingDocType(docTypeValue);
+  const handleOutstandingDocClick = (type: string, replacement?: StudentDocument) => {
+    pendingSelectionRef.current = { type, replacement };
     outstandingFileInputRef.current?.click();
   };
 
@@ -239,23 +231,26 @@ export default function Documents() {
     uploadVerifiedDocument('student-documents', path, file, contentType);
 
   const handleOutstandingFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (uploadInFlight.current) return;
-    const file = e.target.files?.[0];
-    const selectedDocType = pendingDocType;
+    const input = e.currentTarget;
+    const file = input.files?.[0];
+    const selection = pendingSelectionRef.current;
+    pendingSelectionRef.current = null;
+    input.value = "";
 
-    if (!file || !selectedDocType || !studentId) {
-      setPendingDocType(null);
-      e.target.value = "";
+    if (uploadInFlight.current || !file || !selection || !studentId) return;
+    if (selection.replacement) {
+      await handleReplaceDocument(selection.replacement, file, () => {});
       return;
     }
-
+    const selectedDocType = selection.type;
+    setPendingDocType(selectedDocType);
     uploadInFlight.current = true;
     setUploading(true);
 
     try {
       const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
         file,
-        UPLOAD_VALIDATION
+        DOCUMENT_UPLOAD_VALIDATION
       );
 
       const ext = sanitizedFileName.split(".").pop() || "pdf";
@@ -284,7 +279,6 @@ export default function Documents() {
       uploadInFlight.current = false;
       setUploading(false);
       setPendingDocType(null);
-      e.target.value = "";
     }
   };
 
@@ -305,7 +299,7 @@ export default function Documents() {
     try {
       const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
         selectedFile,
-        UPLOAD_VALIDATION
+        DOCUMENT_UPLOAD_VALIDATION
       );
 
       const ext = sanitizedFileName.split(".").pop() || "pdf";
@@ -323,6 +317,7 @@ export default function Documents() {
       });
 
       toast({ title: "Uploaded", description: "Document uploaded successfully." });
+      if (manualFileInputRef.current) manualFileInputRef.current.value = "";
       setSelectedFile(null);
       setDocumentType("");
       void loadDocuments(studentId);
@@ -428,7 +423,7 @@ export default function Documents() {
 
       const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(
         file,
-        UPLOAD_VALIDATION
+        DOCUMENT_UPLOAD_VALIDATION
       );
 
       const ext = sanitizedFileName.split(".").pop() || "pdf";
@@ -619,7 +614,6 @@ export default function Documents() {
       .flatMap((section) => section.missing);
   }, [studentRecord, profile]);
 
-  const isPersonalInfoComplete = missingPersonalFields.length === 0;
 
   /* ------------------------------------------------------------------------ */
   /*                                   UI                                     */
@@ -629,18 +623,31 @@ export default function Documents() {
     return <div className="text-center py-10">Loading documents…</div>;
   }
 
-  if (!isPersonalInfoComplete && studentRecord) {
+  if (!studentId) {
     return (
-      <div className="container mx-auto py-8 max-w-3xl space-y-6">
+      <div className="container mx-auto py-8 space-y-4">
         <h1 className="text-3xl font-bold">My Documents</h1>
-        <Alert variant="destructive" className="border-destructive/40 bg-destructive/5">
+        <Alert>
+          <AlertTitle>Your student profile is unavailable</AlertTitle>
+          <AlertDescription>Open <Link className="underline" to="/student/profile">My Profile</Link> to check your account before uploading.</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8 space-y-6">
+      <h1 className="text-3xl font-bold">My Documents</h1>
+
+      {missingPersonalFields.length > 0 && (
+        <Alert>
           <AlertTriangle className="h-5 w-5" />
           <AlertTitle className="text-lg font-semibold">
-            Complete Your Personal Information First
+            Your profile still needs some details
           </AlertTitle>
           <AlertDescription className="mt-2 space-y-3">
             <p className="text-sm text-muted-foreground">
-              Before you can upload documents, please complete the following required fields in your profile:
+              You can upload your documents now. Complete the following details before applying:
             </p>
             <ul className="list-disc list-inside text-sm space-y-1">
               {missingPersonalFields.map((field) => (
@@ -656,13 +663,7 @@ export default function Documents() {
             </div>
           </AlertDescription>
         </Alert>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto py-8 space-y-6">
-      <h1 className="text-3xl font-bold">My Documents</h1>
+      )}
 
       {/* Upload */}
       <Card>
@@ -676,7 +677,7 @@ export default function Documents() {
         <CardContent className="space-y-4">
           <div>
             <Label>Document Type</Label>
-            <Select value={documentType} onValueChange={setDocumentType}>
+            <Select value={documentType} onValueChange={setDocumentType} disabled={uploading || Boolean(replacingDocId)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select document type" />
               </SelectTrigger>
@@ -691,14 +692,17 @@ export default function Documents() {
           </div>
 
           <div>
-            <Label>File</Label>
-            <Input type="file" accept={FILE_ACCEPT} onChange={handleFileSelect} />
+            <Label htmlFor="student-document-file">File</Label>
+            <Input id="student-document-file" type="file" ref={manualFileInputRef} accept={FILE_ACCEPT}
+              aria-describedby="student-document-file-help" disabled={uploading || Boolean(replacingDocId)} onChange={handleFileSelect} />
+            <p id="student-document-file-help" className="mt-1 text-sm text-muted-foreground">
+              PDF, JPG, PNG or Word, up to 10 MB. If your phone saved the photo as HEIC, export it as JPG first.
+            </p>
           </div>
 
           <Button
             onClick={handleUpload}
-            disabled={uploading || !studentId}
-            aria-disabled={uploading || !studentId}
+            disabled={uploading || Boolean(replacingDocId) || !selectedFile || !documentType}
           >
             <Upload className="mr-2 h-4 w-4" />
             {uploading ? "Uploading…" : "Upload"}
@@ -764,14 +768,14 @@ export default function Documents() {
                   </p>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {rejectedDocs.map((doc) => {
-                      const isUploading = uploading && pendingDocType === doc.document_type;
+                      const isUploading = replacingDocId === doc.id;
                       const docLabel = getDocumentTypeLabel(doc.document_type);
 
                       return (
                         <button
                           key={`rejected-${doc.id}`}
-                          onClick={() => handleOutstandingDocClick(doc.document_type)}
-                          disabled={uploading}
+                          onClick={() => handleOutstandingDocClick(doc.document_type, doc)}
+                          disabled={uploading || Boolean(replacingDocId)}
                           className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-red-300 dark:border-red-600 hover:border-red-400 dark:hover:border-red-500 hover:bg-red-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                           type="button"
                         >
@@ -820,7 +824,7 @@ export default function Documents() {
                         <button
                           key={docType.type}
                           onClick={() => handleOutstandingDocClick(docType.type)}
-                          disabled={uploading}
+                          disabled={uploading || Boolean(replacingDocId)}
                           className="flex items-center gap-3 p-4 bg-white dark:bg-slate-800 rounded-lg border-2 border-amber-300 dark:border-amber-600 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-amber-50 dark:hover:bg-slate-700 transition-all duration-200 cursor-pointer text-left group disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                           type="button"
                         >
@@ -951,7 +955,7 @@ export default function Documents() {
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputsRef.current[doc.id]?.click()}
-                    disabled={replacingDocId === doc.id}
+                    disabled={uploading || Boolean(replacingDocId)}
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     {replacingDocId === doc.id ? "Replacing…" : "Replace"}
