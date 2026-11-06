@@ -213,7 +213,7 @@ const generateApplicationNudges = (
         title: `Upload pending documents for ${label}`,
         description,
         actionLabel: 'Upload Documents',
-        actionHref: `/student/documents?application_id=${app.id}`,
+        actionHref: `/student/applications/${app.id}?tab=documents`,
         dueDateLabel,
         daysRemaining: daysUntilDeadline,
       });
