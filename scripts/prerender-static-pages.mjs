@@ -223,7 +223,12 @@ const render = (page) => {
     .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${d}">`)
     .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${d}">`);
   if (page.path === "/") {
-    html = html.replace('<title>', `<link rel="preload" as="image" imagesrcset="${homePhoto.srcSet}" imagesizes="${homePhoto.sizes}" fetchpriority="high">\n    <title>`);
+    const homePreloads = [
+      `<link rel="preload" as="image" imagesrcset="${homePhoto.srcSet}" imagesizes="${homePhoto.sizes}" fetchpriority="high">`,
+      '<link rel="preload" as="font" href="/home/fraunces.woff2" type="font/woff2" crossorigin>',
+      '<link rel="preload" as="font" href="/home/manrope.woff2" type="font/woff2" crossorigin>',
+    ];
+    html = html.replace('<title>', `${homePreloads.join('\n    ')}\n    <title>`);
   }
   html = html.replace('</head>', `<meta name="prerender-path" content="${esc(page.path)}">\n</head>`);
   if (page.noindex) {
