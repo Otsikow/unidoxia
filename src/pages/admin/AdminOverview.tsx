@@ -169,7 +169,7 @@ export default function AdminOverview() {
     },
   ];
   return (
-    <div className="space-y-6 pb-4 sm:space-y-7">
+    <div className="space-y-5 pb-4 sm:space-y-6">
       <section className="relative isolate overflow-hidden rounded-2xl border border-blue-900/20 bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 p-5 text-white shadow-sm sm:p-7">
         <div
           aria-hidden="true"
@@ -222,7 +222,7 @@ export default function AdminOverview() {
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {cards.map((card) => (
           <Link
             key={card.label}
@@ -256,23 +256,139 @@ export default function AdminOverview() {
         ))}
       </div>
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,1fr)]">
+      <section className="min-w-0 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-base font-semibold">
+              Applications needing attention
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              Review files, finish drafts and follow up on blocked work.
+            </p>
+          </div>
+          <Link
+            to="/admin/applications?stage=attention"
+            className="shrink-0 text-xs font-medium text-primary"
+          >
+            View all
+            <ArrowUpRight className="ml-1 inline h-3 w-3" />
+          </Link>
+        </div>
+        <PanelState
+          loading={applications.isPending}
+          failed={applications.isError}
+          onRetry={() => void applications.refetch()}
+          empty={
+            applications.data?.priorities.length === 0
+              ? "No applications are flagged for attention. Open the pipeline to review your other records."
+              : undefined
+          }
+        >
+          <ul className="divide-y">
+            {applications.data?.priorities.map((app) => (
+              <li key={app.id}>
+                <Link
+                  to={`/admin/applications?application=${app.id}`}
+                  className="group flex items-start gap-3 rounded-lg py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
+                    <GraduationCap className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold group-hover:text-primary">
+                      {app.student?.legal_name ||
+                        "Student details unavailable"}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {app.program?.name || "Course unavailable"} ·{" "}
+                      {app.app_number || app.id.slice(0, 8)}
+                    </p>
+                    <p className="mt-2 break-words text-xs leading-5 text-foreground/75">
+                      {overviewNextAction(app)}
+                    </p>
+                  </div>
+                  <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </PanelState>
+      </section>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-4">
         <section className="min-w-0 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
-          <div className="mb-5 flex items-start justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold">
-                Applications needing attention
-              </h2>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Review files, finish drafts and follow up on blocked work.
-              </p>
-            </div>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold">Team follow-ups</h2>
             <Link
-              to="/admin/applications?stage=attention"
-              className="shrink-0 text-xs font-medium text-primary"
+              to="/admin/tasks"
+              aria-label="View team tasks"
+              className="text-primary"
             >
-              View all
-              <ArrowUpRight className="ml-1 inline h-3 w-3" />
+              <ListTodo className="h-4 w-4" />
+            </Link>
+          </div>
+          <PanelState
+            loading={taskScopeAvailable && tasks.isPending}
+            failed={tasksUnavailable}
+            onRetry={
+              taskScopeAvailable ? () => void tasks.refetch() : undefined
+            }
+            empty={
+              tasks.data?.priorities.length === 0
+                ? "No overdue or blocked follow-ups in this workspace."
+                : undefined
+            }
+          >
+            <ul className="divide-y">
+              {tasks.data?.priorities.map((task) => (
+                <li key={task.id} className="py-3">
+                  <Link
+                    to={
+                      task.application_id
+                        ? `/admin/applications?application=${task.application_id}`
+                        : "/admin/tasks"
+                    }
+                    className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <p className="break-words text-sm font-medium hover:text-primary">
+                      {task.title}
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {task.assignee_id === user?.id
+                        ? "You"
+                        : task.assignee?.full_name || "Unassigned"}{" "}
+                      · {formatWorkflowDate(task.due_at)}
+                    </p>
+                    <span className="mt-2 inline-flex rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-800 dark:text-amber-300">
+                      {task.status === "blocked"
+                        ? "Blocked"
+                        : task.due_at && londonDate(task.due_at) < today
+                          ? "Overdue"
+                          : "To follow up"}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </PanelState>
+          {tasks.data && !tasks.isError && (
+            <Link
+              to="/admin/tasks"
+              className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary"
+            >
+              View all tasks · {tasks.data.open} open
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </section>
+        <section className="min-w-0 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+          <div className="mb-4 flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold">Application pipeline</h2>
+            <Link
+              to="/admin/applications?stage=all"
+              aria-label="Open full application pipeline"
+              className="text-primary"
+            >
+              <ArrowUpRight className="h-4 w-4" />
             </Link>
           </div>
           <PanelState
@@ -280,165 +396,47 @@ export default function AdminOverview() {
             failed={applications.isError}
             onRetry={() => void applications.refetch()}
             empty={
-              applications.data?.priorities.length === 0
-                ? "No applications are flagged for attention. Open the pipeline to review your other records."
+              applications.data?.total === 0
+                ? "Your pipeline will appear when applications are created."
                 : undefined
             }
           >
-            <ul className="divide-y">
-              {applications.data?.priorities.map((app) => (
-                <li key={app.id}>
-                  <Link
-                    to={`/admin/applications?application=${app.id}`}
-                    className="group flex items-start gap-3 rounded-lg py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/5 text-primary">
-                      <GraduationCap className="h-4 w-4" />
+            <div className="space-y-3">
+              {applications.data?.pipeline.map((stage) => (
+                <div key={stage.label}>
+                  <div className="mb-1.5 flex justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {stage.label}
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold group-hover:text-primary">
-                        {app.student?.legal_name ||
-                          "Student details unavailable"}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {app.program?.name || "Course unavailable"} ·{" "}
-                        {app.app_number || app.id.slice(0, 8)}
-                      </p>
-                      <p className="mt-2 break-words text-xs leading-5 text-foreground/75">
-                        {overviewNextAction(app)}
-                      </p>
-                    </div>
-                    <ArrowRight className="mt-2 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </li>
+                    <span className="font-medium">{stage.count}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full ${stage.className}`}
+                      style={{
+                        width: `${applications.data?.pipelineTotal ? (stage.count / applications.data.pipelineTotal) * 100 : 0}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
+            <p className="mt-4 text-[10px] leading-4 text-muted-foreground">
+              Current recorded stages. Deferred, withdrawn and rejected
+              records are outside these stages.
+            </p>
           </PanelState>
         </section>
-        <div className="min-w-0 space-y-6">
-          <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-base font-semibold">Team follow-ups</h2>
-              <Link
-                to="/admin/tasks"
-                aria-label="View team tasks"
-                className="text-primary"
-              >
-                <ListTodo className="h-4 w-4" />
-              </Link>
-            </div>
-            <PanelState
-              loading={taskScopeAvailable && tasks.isPending}
-              failed={tasksUnavailable}
-              onRetry={
-                taskScopeAvailable ? () => void tasks.refetch() : undefined
-              }
-              empty={
-                tasks.data?.priorities.length === 0
-                  ? "No overdue or blocked follow-ups in this workspace."
-                  : undefined
-              }
-            >
-              <ul className="divide-y">
-                {tasks.data?.priorities.map((task) => (
-                  <li key={task.id} className="py-3">
-                    <Link
-                      to={
-                        task.application_id
-                          ? `/admin/applications?application=${task.application_id}`
-                          : "/admin/tasks"
-                      }
-                      className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <p className="break-words text-sm font-medium hover:text-primary">
-                        {task.title}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {task.assignee_id === user?.id
-                          ? "You"
-                          : task.assignee?.full_name || "Unassigned"}{" "}
-                        · {formatWorkflowDate(task.due_at)}
-                      </p>
-                      <span className="mt-2 inline-flex rounded-md bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-800 dark:text-amber-300">
-                        {task.status === "blocked"
-                          ? "Blocked"
-                          : task.due_at && londonDate(task.due_at) < today
-                            ? "Overdue"
-                            : "To follow up"}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </PanelState>
-            {tasks.data && !tasks.isError && (
-              <Link
-                to="/admin/tasks"
-                className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary"
-              >
-                View all tasks · {tasks.data.open} open
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </section>
-          <section className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
-            <div className="mb-4 flex items-center justify-between gap-2">
-              <h2 className="text-base font-semibold">Application pipeline</h2>
-              <Link
-                to="/admin/applications?stage=all"
-                aria-label="Open full application pipeline"
-                className="text-primary"
-              >
-                <ArrowUpRight className="h-4 w-4" />
-              </Link>
-            </div>
-            <PanelState
-              loading={applications.isPending}
-              failed={applications.isError}
-              onRetry={() => void applications.refetch()}
-              empty={
-                applications.data?.total === 0
-                  ? "Your pipeline will appear when applications are created."
-                  : undefined
-              }
-            >
-              <div className="space-y-3">
-                {applications.data?.pipeline.map((stage) => (
-                  <div key={stage.label}>
-                    <div className="mb-1.5 flex justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        {stage.label}
-                      </span>
-                      <span className="font-medium">{stage.count}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div
-                        className={`h-full rounded-full ${stage.className}`}
-                        style={{
-                          width: `${applications.data?.pipelineTotal ? (stage.count / applications.data.pipelineTotal) * 100 : 0}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-4 text-[10px] leading-4 text-muted-foreground">
-                Current recorded stages. Deferred, withdrawn and rejected
-                records are outside these stages.
-              </p>
-            </PanelState>
-          </section>
-        </div>
       </div>
 
       <section>
         <h2 className="mb-3 text-sm font-semibold">Keep recruitment moving</h2>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           {shortcuts.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              className="group rounded-xl border bg-card p-4 transition-colors hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group min-w-0 break-words rounded-xl border bg-card p-4 transition-colors hover:border-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <item.icon className="mb-3 h-4 w-4 text-primary" />
               <p className="text-sm font-medium">{item.title}</p>
