@@ -83,7 +83,7 @@ export function homeFirstPaint(featuredHtml, articles = []) {
     <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
       <div class="udx-section-head">
         <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
-        <p>Explore opportunities in the UK, North America, Australia and across Europe. These six destinations are a starting point — browse the live catalogue for other countries with available courses.</p>
+        <p>Compare courses in these six destinations, or search the full catalogue for other countries.</p>
       </div>
       <div class="udx-destination-grid">
         ${homeDestinations.map(({ name, country, image, alt }) => `
@@ -105,8 +105,8 @@ export function homeFirstPaint(featuredHtml, articles = []) {
     <section class="udx-section udx-journey" id="how-it-works" tabindex="-1">
       <div class="udx-wrap">
         <div class="udx-section-head">
-          <div><p class="udx-kicker">How it works</p><h2>A clear path from here</h2></div>
-          <p>Four steps to help you move from an idea to an informed application.</p>
+          <div><p class="udx-kicker">How it works</p><h2>How to apply</h2></div>
+          <p>Choose a course, prepare your documents and follow your application in your account.</p>
         </div>
         <div class="udx-journey-grid">
         ${homeEditorialPhoto('study-planning', 'Two students comparing notes and researching together with a laptop in a library', [640, 1000], .9)}
@@ -125,13 +125,13 @@ export function homeFirstPaint(featuredHtml, articles = []) {
       <div class="udx-wrap udx-next-inner">
         ${homeEditorialPhoto('next-chapter', 'Students talking outside a university building with books and backpacks', [640, 1000], 1.3)}
         <div class="udx-next-copy">
-        <div><h2>Your next step starts here.</h2><p>Have a course in mind? Create your profile and start preparing your application.</p></div>
+        <div><h2>Ready to apply?</h2><p>Create an account to add your details and prepare your application. If you need help choosing a course, book a free consultation.</p></div>
         <div class="udx-actions"><a class="udx-button" href="${studentSignup}">Start your application</a><a class="udx-text-link" href="/free-consultation">Speak to an adviser</a></div>
         </div>
       </div>
     </section>
     <div class="udx-wrap udx-support"><a href="https://wa.me/447360961803">Chat on WhatsApp</a><a href="/contact">Contact us</a><a href="/faq">FAQs</a><a href="/legal/privacy">Privacy policy</a><a href="/legal/terms">Terms of service</a></div>
-    <div class="udx-wrap"><details class="udx-home-contact"><summary>Send the team a message <span aria-hidden="true">+</span></summary><div class="udx-contact-content"><div><h2>A question before you begin?</h2><p>Email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a> or visit our <a href="/contact">contact page</a>. For a free conversation about your options, <a href="/free-consultation">book a consultation</a>.</p></div><p>Enable JavaScript to use the enquiry form.</p></div></details></div>`;
+    <div class="udx-wrap"><details class="udx-home-contact"><summary>Send the team a message <span aria-hidden="true">+</span></summary><div class="udx-contact-content"><div><h2>Have a question?</h2><p>Email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a> or visit our <a href="/contact">contact page</a>. For a free conversation about your options, <a href="/free-consultation">book a consultation</a>.</p></div><p>Enable JavaScript to use the enquiry form.</p></div></details></div>`;
 }
 
 function homeEditorialPhoto(image, alt, widths = [640, 1100], ratio = 1.6) {
@@ -143,7 +143,7 @@ function homeEditorialPhoto(image, alt, widths = [640, 1100], ratio = 1.6) {
 
 function homePartnershipHtml() {
   return `<section class="udx-section udx-partnerships" aria-labelledby="partnerships-title"><div class="udx-wrap">
-    <div class="udx-section-head"><div><p class="udx-kicker">Work with UniDoxia</p><h2 id="partnerships-title">More possibilities, together.</h2></div><p>Shared ambition starts with a conversation. Explore a potential recruitment collaboration.</p></div>
+    <div class="udx-section-head"><div><p class="udx-kicker">Work with UniDoxia</p><h2 id="partnerships-title">Recruit students with UniDoxia</h2></div><p>We welcome enquiries from education agents, universities and colleges interested in recruiting students from Africa.</p></div>
     <div class="udx-partnership-grid">${homePartnerships.map(p => `<article>${homeEditorialPhoto(p.image, p.alt)}<div class="udx-partnership-copy"><p class="udx-partnership-audience">${esc(p.audience)}</p><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p><a class="udx-text-link" href="${p.href}">${esc(p.label)} ↗</a></div></article>`).join('')}</div>
   </div></section>`;
 }
@@ -162,8 +162,8 @@ function homeInsights(articles) {
     <section class="udx-section udx-insights" aria-labelledby="latest-blog-heading" id="insights">
       <div class="udx-wrap">
         <div class="udx-section-head">
-          <div><p class="udx-kicker">Latest insights &amp; student resources</p><h2 id="latest-blog-heading">Make your next move<br class="udx-desktop-break"> an informed one.</h2></div>
-          <div class="udx-insights-intro"><p>Practical reading on applications, scholarships and life as an international student.</p><a href="/blog" class="udx-text-link">View all articles →</a></div>
+          <div><p class="udx-kicker">From the blog</p><h2 id="latest-blog-heading">Advice for studying abroad</h2></div>
+          <div class="udx-insights-intro"><p>Read about applications, scholarships and preparing for student life abroad.</p><a href="/blog" class="udx-text-link">View all articles →</a></div>
         </div>
         <div class="udx-insights-grid">
           ${posts.map((post, index) => `

@@ -3,8 +3,8 @@ export const agentSignupJourney = "/agents/onboarding?next=%2Fauth%2Fsignup%3Fro
 export const homePartnerships = [
   {
     audience: "For education agents",
-    title: "Grow your opportunities. Together.",
-    text: "Help students take their next step. Explore working with UniDoxia to support informed course choices, organised applications and clear communication.",
+    title: "Work with us as an agent.",
+    text: "If you advise students on studying abroad, find out how to work with UniDoxia on course choices and applications.",
     label: "Become a recruitment partner",
     href: agentSignupJourney,
     image: "education-guidance",
@@ -12,8 +12,8 @@ export const homePartnerships = [
   },
   {
     audience: "For universities & colleges",
-    title: "Connect with ambition across Africa.",
-    text: "Meet prospective international students from Africa. Talk with UniDoxia about your institution’s recruitment priorities and a potential collaboration.",
+    title: "Recruit students from Africa.",
+    text: "Tell us about your courses, entry requirements and recruitment plans. We can discuss whether UniDoxia is a suitable recruitment partner for your institution.",
     label: "Partner with UniDoxia",
     href: "/partnership",
     image: "campus-life",
@@ -33,7 +33,7 @@ export const homeSocials = [
 
 export const counsellorCredential = {
   path: "/about/eric-arthur",
-  title: "Eric Arthur — UK Knowledge Training | UniDoxia",
+  title: "Eric Arthur: UK Knowledge Training | UniDoxia",
   description: "Eric Arthur’s British Council UK knowledge agent and counsellor training, individual digital badge and training certificate.",
   descriptor: "I am a UK knowledge trained counsellor. I have successfully completed the British Council’s UK knowledge agent and counsellor training. This demonstrates my knowledge and awareness of the UK as a study destination and that I understand the UK’s national code of ethical practice for education agents.",
 };

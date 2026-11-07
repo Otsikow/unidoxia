@@ -102,7 +102,7 @@ function HomeFooter() {
         <div className="udx-footer-grid">
           <div className="udx-footer-about">
             <div className="udx-footer-brand"><HomeBrand /><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
-            <p>University discovery and application guidance for students from Africa.</p>
+            <p>Course search and application support for students from Africa.</p>
             <a href={`mailto:${business.email}`}>{business.email}</a>
             <HomeSocials />
           </div>
@@ -157,7 +157,7 @@ export default function Index() {
               <p className="udx-kicker">Study destinations</p>
               <h2 id="destinations-title">Where could you study?</h2>
             </div>
-            <p>Explore opportunities in the UK, North America, Australia and across Europe. These six destinations are a starting point — browse the live catalogue for other countries with available courses.</p>
+            <p>Compare courses in these six destinations, or search the full catalogue for other countries.</p>
           </div>
           <div className="udx-destination-grid">
             {homeDestinations.map(({ name, country, image, alt }) => (
@@ -193,9 +193,9 @@ export default function Index() {
             <div className="udx-section-head">
               <div>
                 <p className="udx-kicker">How it works</p>
-                <h2 id="journey-title">A clear path from here</h2>
+                <h2 id="journey-title">How to apply</h2>
               </div>
-              <p>Four steps to help you move from an idea to an informed application.</p>
+              <p>Choose a course, prepare your documents and follow your application in your account.</p>
             </div>
             <div className="udx-journey-grid">
               <HomePhotography image="study-planning" alt="Two students comparing notes and researching together with a laptop in a library" widths={[640, 1000]} ratio={.9} sizes="(max-width: 767px) calc(100vw - 32px), 40vw" />
@@ -248,9 +248,9 @@ export default function Index() {
             <HomePhotography image="next-chapter" alt="Students talking outside a university building with books and backpacks" widths={[640, 1000]} ratio={1.3} />
             <div className="udx-next-copy">
               <div>
-                <p className="udx-kicker">Take the next step</p>
-                <h2 id="next-title">Your next step starts here.</h2>
-                <p>Have a course in mind? Create your profile and start preparing your application.</p>
+                <p className="udx-kicker">Your application</p>
+                <h2 id="next-title">Ready to apply?</h2>
+                <p>Create an account to add your details and prepare your application. If you need help choosing a course, book a free consultation.</p>
               </div>
               <div className="udx-actions">
                 <Link className="udx-button" to={user ? "/dashboard" : studentSignup}>
@@ -263,13 +263,13 @@ export default function Index() {
         </section>
 
         <div className="udx-wrap udx-support">
-          <span>Need a little guidance?</span>
+          <span>Need help?</span>
           <a className="udx-text-link" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => logFreeConsultationWhatsAppClick("homepage_support")}>Chat on WhatsApp <ArrowUpRight size={16} aria-hidden="true" /></a>
           <button type="button" id="home-zoe-launcher" className="udx-text-link" onClick={() => window.dispatchEvent(new Event("zoe:home-request"))}>
             <MessageCircle size={16} aria-hidden="true" /> Ask Zoe
           </button>
         </div>
-      <HomeContact />
+        <HomeContact />
       </main>
       <HomeFooter />
       <HomeWhatsApp />

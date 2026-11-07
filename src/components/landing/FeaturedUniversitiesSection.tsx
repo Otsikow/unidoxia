@@ -33,7 +33,7 @@ export function FeaturedUniversitiesSection() {
   return (
     <section className="udx-featured" aria-labelledby="featured-universities-title">
       <h2 id="featured-universities-title">Featured universities</h2>
-      <p className="udx-featured-intro">Get to know an institution before exploring its courses, entry requirements and application routes.</p>
+      <p className="udx-featured-intro">Read about each university, then check its courses and entry requirements.</p>
       <ul>
         {data.map((university) => (
           <li key={university.id}>

@@ -8,8 +8,8 @@ export function HomePartnerships() {
     <section className="udx-section udx-partnerships" aria-labelledby="partnerships-title">
       <div className="udx-wrap">
         <div className="udx-section-head">
-          <div><p className="udx-kicker">Work with UniDoxia</p><h2 id="partnerships-title">More possibilities, together.</h2></div>
-          <p>Shared ambition starts with a conversation. Explore a potential recruitment collaboration.</p>
+          <div><p className="udx-kicker">Work with UniDoxia</p><h2 id="partnerships-title">Recruit students with UniDoxia</h2></div>
+          <p>We welcome enquiries from education agents, universities and colleges interested in recruiting students from Africa.</p>
         </div>
         <div className="udx-partnership-grid">
           {homePartnerships.map(partner => (

@@ -1,8 +1,8 @@
 export const homeTitle = "Study Abroad from Africa | UniDoxia";
 export const homeDescription = "Find university courses abroad and get help from UniDoxia with entry requirements, application documents and what to do after an offer.";
-export const homeHeadline = ["Your ambition,", "beyond borders."];
-export const homeIntro = "Explore university courses abroad with guidance built around you. We help students from Africa compare their options, prepare applications and plan what comes after an offer.";
-export const homeEyebrow = "International study. Personal guidance.";
+export const homeHeadline = ["Study abroad", "with UniDoxia."];
+export const homeIntro = "We help students from Africa find university courses, prepare their documents and apply to study abroad. Start with a course search or speak to an adviser.";
+export const homeEyebrow = "International study advice";
 export const studentSignup = "/auth/signup?role=student";
 
 export const homeNav = [
@@ -34,10 +34,10 @@ export const homeDestinations = [
 ];
 
 export const homeSteps = [
-  { title: "Explore your options", text: "Compare courses, entry requirements and start dates. Build a shortlist around your interests and qualifications.", href: "/courses", label: "Explore courses" },
-  { title: "Prepare your profile", text: "Register, add your academic background and organise your documents. Ask our team about any course-specific requirements.", href: "/auth/signup?role=student&next=%2Fstudent%2Fprofile", label: "Create your profile" },
-  { title: "Apply and stay informed", text: "Prepare your application, follow its progress and respond to requests through your UniDoxia account.", href: "/auth/signup?role=student&next=%2Fstudent%2Fapplications%2Fnew", label: "Start an application" },
-  { title: "Plan your next chapter", text: "If you receive an offer, review its conditions and discuss the practical steps ahead with our team.", href: "/free-consultation", label: "Discuss your next steps" },
+  { title: "Compare courses", text: "Check courses, entry requirements and start dates. Shortlist the options that suit your qualifications and interests.", href: "/courses", label: "Explore courses" },
+  { title: "Create your profile", text: "Register, add your academic background and organise your documents. Ask us if you are unsure what a course requires.", href: "/auth/signup?role=student&next=%2Fstudent%2Fprofile", label: "Create your profile" },
+  { title: "Prepare your application", text: "Prepare your application in your UniDoxia account. Use it to check progress and respond to requests for information.", href: "/auth/signup?role=student&next=%2Fstudent%2Fapplications%2Fnew", label: "Start an application" },
+  { title: "Review your offer", text: "If a university offers you a place, check the conditions. Speak to us about what you need to do before you accept.", href: "/free-consultation", label: "Discuss your next steps" },
 ];
 
 export function destinationHref(country) {
@@ -46,14 +46,14 @@ export function destinationHref(country) {
 
 export const homeAssurances = [
   {
-    title: "UK knowledge-trained leadership",
+    title: "Eric Arthur’s training",
     text: "Eric Arthur has completed the British Council UK knowledge agent and counsellor training. Certificate 114757 is valid until 16 July 2028.",
     href: "/credentials/eric-arthur-uk-knowledge-training-certificate.pdf",
     label: "View the training certificate",
   },
   {
-    title: "Clear costs from the start",
-    text: "Your first consultation is free. Optional paid services, including agent-supported application guidance, are priced separately. University fees, tuition, deposits and government charges are separate from UniDoxia’s fees. Review the current plan and inclusions before paying.",
+    title: "Consultation and service fees",
+    text: "Your first consultation is free. Optional paid services include agent-supported application guidance. Check the plan and what it includes before paying. University fees, tuition, deposits and government charges are separate from UniDoxia’s fees.",
     href: "/pricing",
     label: "Review service pricing",
   },

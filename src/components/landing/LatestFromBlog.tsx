@@ -29,11 +29,11 @@ export default function LatestFromBlog() {
       <div className="udx-wrap">
       <div className="udx-section-head">
         <div>
-          <p className="udx-kicker">Latest insights &amp; student resources</p>
-          <h2 id="latest-blog-heading">Make your next move<br className="udx-desktop-break" /> an informed one.</h2>
+          <p className="udx-kicker">From the blog</p>
+          <h2 id="latest-blog-heading">Advice for studying abroad</h2>
         </div>
         <div className="udx-insights-intro">
-          <p>Practical reading on applications, scholarships and life as an international student.</p>
+          <p>Read about applications, scholarships and preparing for student life abroad.</p>
           <Link to="/blog" className="udx-text-link">View all articles <ArrowRight size={17} aria-hidden="true" /></Link>
         </div>
       </div>

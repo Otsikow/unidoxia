@@ -1,14 +1,20 @@
-# UniDoxia landing-page consolidation audit — 7 November 2026
+# UniDoxia landing-page consolidation audit: 7 November 2026
 
 The comparison uses the actual running [production homepage](https://unidoxia.com/) and the built local preview at http://127.0.0.1:4192/. Work remains on `redesign/public-homepage` in [draft PR #1288](https://github.com/Otsikow/unidoxia/pull/1288). No production code, data, permissions or hosting was changed. The preview is local, not hosted staging.
 
 ## What the comparison established
 
-Production still has useful capabilities that should survive the redesign: combined course/destination/level search, prominent consultation access, contextual university descriptions, direct profile/application entry links, role-specific FAQs and a homepage enquiry form. Its hero headline explains the service more literally. Its larger feature sections explain the application workspace in greater detail.
+Production still has useful capabilities that should survive the redesign: combined course/destination/level search, prominent consultation access, contextual university descriptions, direct profile/application entry links, role-specific FAQs and a homepage enquiry form. Its larger feature sections explain the application workspace in greater detail.
 
 The local page already had real published articles, all seven social URLs from production, both partnership invitations, six equal destination photographs, an individually attributed credential link, light-default theme behaviour and the compact WhatsApp launcher. These were verified rather than recreated. An early capture made before the live queries settled showed loading states; the final captures explicitly wait for the published articles and real university records.
 
 The [current ApplyBoard homepage](https://www.applyboard.com/) was inspected in the browser as a visual benchmark. Student photography, readable hierarchy and a clear first action informed the review. Its photographs, branding and layouts were not copied.
+
+## Copy review
+
+Eric requested plain, natural language without em dashes. The headline now reads “Study abroad with UniDoxia.” The introduction explains course search, documents and applications for students from Africa. Partnership invitations, application steps, blog headings and the closing invitation describe the actual services rather than using slogans about ambition or possibilities. Initial HTML and the React page use the revised wording.
+
+The updated homepage source and rendered body contain no em dashes. Fresh screenshots at 390, 768 and 1440px were inspected; each fitted its viewport, decoded all 14 images and had no page errors. These screenshots replace the local views in the comparisons below. Published articles, university records and official credential wording were not rewritten. Nine focused unit checks, 40 desktop/mobile browser checks, changed-file lint and the full build passed after this copy update. The broader audit results below were recorded before the copy update; performance audits were not repeated for this text-only change.
 
 ## Improvements completed and verified
 
@@ -73,7 +79,6 @@ Each restored social link was actually opened from the page. Facebook resolved t
 
 ## Where the previous production design is still stronger
 
-- **Immediate literal explanation.** “Study abroad from Africa and beyond” communicates the service in the headline itself. The local “Your ambition, beyond borders” is more distinctive, but relies on its nearby international-study message and Africa-focused introduction for the full explanation.
 - **Always-visible enquiry fields.** Production exposes its form without opening a disclosure. The local version preserves the form behind one explicit action to reduce page density. This is a deliberate convenience/space trade-off for Eric to review.
 - **Role-specific FAQ breadth on the homepage.** Production shows student, agent and university questions directly. The local homepage prioritises four student questions and links to the complete FAQ route, retaining the content with one additional navigation step.
 - **First-screen resource/control access.** Production exposes Visa Guidance and its theme toggle in the header. The local page keeps visa-calculator and theme access in the organised footer. Scholarship navigation and direct consultation access have been restored higher up.

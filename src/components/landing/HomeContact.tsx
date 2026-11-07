@@ -15,7 +15,7 @@ export function HomeContact() {
         <summary>Send the team a message <Plus size={20} aria-hidden="true" /></summary>
         <div className="udx-contact-content">
           <div>
-            <h2>A question before you begin?</h2>
+            <h2>Have a question?</h2>
             <p>Tell us about your study plans or ask the team a question. You can also email <a href={`mailto:${business.email}`}>{business.email}</a>.</p>
             <p>For a free conversation about your options, <Link to="/free-consultation">book a consultation</Link>.</p>
             <p className="udx-contact-privacy">We use these details to respond to your enquiry. Read our <Link to="/legal/privacy">Privacy Notice</Link>.</p>
