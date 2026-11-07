@@ -14,3 +14,11 @@ All five photographs are used under the [Pexels licence](https://www.pexels.com/
 - Germany by Paul Schärf. [Berlin photo](https://www.pexels.com/photo/brandenburg-gate-in-berlin-on-a-cloudy-day-32848467/)
 - Ireland by Selim Karadayı. [Dublin photo](https://www.pexels.com/photo/dublin-28377925/)
 - Australia by Mudassir Ali. [Sydney photo](https://www.pexels.com/photo/sydney-opera-house-australia-1878293/)
+
+## Hero photograph selected in the final premium pass
+
+The hero uses RDNE Stock project's authentic campus portrait of a smiling student with a backpack and book. The photograph is cropped and compressed for responsive delivery, with the original subject and campus retained. [Original photograph](https://www.pexels.com/photo/a-college-student-holding-a-book-and-smiling-7683693/) · [Pexels licence](https://www.pexels.com/license/)
+
+A transparent-background treatment was explored using the built-in imagegen tool and rejected during the visual review. The selected website asset uses the original photograph.
+
+The files in insights/ are compressed derivatives of existing published UniDoxia article covers. Metadata continues to come from the published blog feed. Newly published covers without a local derivative use their original source URL.

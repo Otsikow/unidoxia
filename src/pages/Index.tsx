@@ -3,13 +3,15 @@ import { ArrowDown, ArrowRight, ArrowUpRight, MessageCircle, Plus, Search } from
 import type { FormEvent } from "react";
 import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
+import LatestFromBlog from "@/components/landing/LatestFromBlog";
+import { HomeWhatsApp } from "@/components/landing/HomeWhatsApp";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SEO } from "@/components/SEO";
 import { business, businessFooter } from "@/config/business";
 import { useAuth } from "@/hooks/useAuth";
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
-import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homeSteps, homeAssurances, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import "@/components/landing/home.css";
 
 const WHATSAPP_URL = "https://wa.me/447360961803";
@@ -110,7 +112,12 @@ export default function Index() {
                 <a className="udx-text-link" href="#how-it-works">How it works <ArrowDown size={16} aria-hidden="true" /></a>
               </div>
             </div>
-            <img className="udx-hero-photo" {...homePhoto} fetchPriority="high" />
+            <figure className="udx-hero-portrait">
+              <picture>
+                <source type="image/avif" srcSet={homePhotoAvifSrcSet} sizes={homePhoto.sizes} />
+                <img className="udx-hero-photo" {...homePhoto} fetchPriority="high" />
+              </picture>
+            </figure>
           </div>
         </section>
 
@@ -182,6 +189,8 @@ export default function Index() {
           </div>
         </section>
 
+        <LatestFromBlog />
+
         <section className="udx-section udx-wrap udx-faq" aria-labelledby="faq-title">
           <div>
             <p className="udx-kicker">Before you apply</p>
@@ -223,6 +232,7 @@ export default function Index() {
         </div>
       </main>
       <HomeFooter />
+      <HomeWhatsApp />
     </div>
   );
 }

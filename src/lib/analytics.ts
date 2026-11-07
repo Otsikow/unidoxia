@@ -111,10 +111,10 @@ export function logWhatsAppLauncherClick(): void {
   });
 }
 
-export function logFreeConsultationWhatsAppClick(location: "hero_section" | "homepage_support" = "hero_section"): void {
+export function logFreeConsultationWhatsAppClick(location: "hero_section" | "homepage_support" | "homepage_launcher" = "hero_section"): void {
   logGA4Event('book_free_consultation_whatsapp_click', {
     event_category: 'conversion',
-    event_label: location === 'hero_section' ? 'hero_book_free_consultation_whatsapp_cta' : 'homepage_support_whatsapp_cta',
+    event_label: location === 'hero_section' ? 'hero_book_free_consultation_whatsapp_cta' : location + '_whatsapp_cta',
     cta_location: location,
     destination_channel: 'whatsapp',
     conversion_intent: 'consultation_booking',

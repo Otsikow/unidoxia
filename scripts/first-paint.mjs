@@ -1,4 +1,6 @@
-import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homeSteps, studentSignup } from '../src/lib/homepage.mjs';
+import { articleCover, articleDate, selectHomeArticles } from '../src/lib/homeBlog.ts';
+import { esc } from '../src/lib/publicSeo.mjs';
+import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
 
 // Independent of the downloaded application CSS/JS: public fallback stays usable
 // while the first React route loads, including on slow or failed connections.
@@ -36,6 +38,7 @@ export function renderFirstPaint({ path, body, nav, footer }) {
         </header>
         <main id="main-content" tabindex="-1">${body}</main>
         <div class="udx-footer"><div class="udx-wrap">${footer}</div></div>
+        <a class="udx-whatsapp" href="https://wa.me/447360961803" target="_blank" rel="noopener noreferrer" aria-label="Chat with UniDoxia on WhatsApp (opens in a new tab)"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="${whatsappIconPath}"></path></svg><span>WhatsApp</span></a>
       </div>${pendingRoot}`;
   }
 
@@ -47,7 +50,7 @@ function homeNavigation() {
   return `<nav class="udx-nav" aria-label="Main navigation">${links}</nav><div class="udx-account"><a class="udx-quiet" href="/auth/login">Sign in</a><a class="udx-button udx-button-small" href="${studentSignup}">Get started</a></div>`;
 }
 
-export function homeFirstPaint(featuredHtml) {
+export function homeFirstPaint(featuredHtml, articles = []) {
   return `
     <section class="udx-hero">
       <div class="udx-wrap udx-hero-grid">
@@ -60,7 +63,7 @@ export function homeFirstPaint(featuredHtml) {
             <a class="udx-text-link" href="#how-it-works">How it works <span aria-hidden="true">↓</span></a>
           </div>
         </div>
-        <img class="udx-hero-photo" src="${homePhoto.src}" srcset="${homePhoto.srcSet}" sizes="${homePhoto.sizes}" width="${homePhoto.width}" height="${homePhoto.height}" alt="${homePhoto.alt}" fetchpriority="high">
+        <figure class="udx-hero-portrait"><picture><source type="image/avif" srcset="${homePhotoAvifSrcSet}" sizes="${homePhoto.sizes}"><img class="udx-hero-photo" src="${homePhoto.src}" srcset="${homePhoto.srcSet}" sizes="${homePhoto.sizes}" width="${homePhoto.width}" height="${homePhoto.height}" alt="${homePhoto.alt}" fetchpriority="high"></picture></figure>
       </div>
     </section>
     <section class="udx-search" aria-labelledby="course-search">
@@ -108,6 +111,7 @@ export function homeFirstPaint(featuredHtml) {
         </div>
       </div>
     </section>
+    ${homeInsights(articles)}
     <section class="udx-next">
       <div class="udx-wrap udx-next-inner">
         <div><h2>Your next step starts here.</h2><p>Have a course in mind? Create your profile and start preparing your application.</p></div>
@@ -115,4 +119,35 @@ export function homeFirstPaint(featuredHtml) {
       </div>
     </section>
     <div class="udx-wrap udx-support"><a href="https://wa.me/447360961803">Chat on WhatsApp</a><a href="/contact">Contact us</a><a href="/faq">FAQs</a><a href="/legal/privacy">Privacy policy</a><a href="/legal/terms">Terms of service</a></div>`;
+}
+
+
+function homeInsights(articles) {
+  const posts = selectHomeArticles(articles);
+  return `
+    <section class="udx-section udx-insights" aria-labelledby="latest-blog-heading" id="insights">
+      <div class="udx-wrap">
+        <div class="udx-section-head">
+          <div><p class="udx-kicker">Latest insights &amp; student resources</p><h2 id="latest-blog-heading">Make your next move<br class="udx-desktop-break"> an informed one.</h2></div>
+          <div class="udx-insights-intro"><p>Practical reading on applications, scholarships and life as an international student.</p><a href="/blog" class="udx-text-link">View all articles →</a></div>
+        </div>
+        <div class="udx-insights-grid">
+          ${posts.map(post => `
+            <article class="udx-insight">
+              <a href="/blog/${esc(post.slug)}" class="udx-insight-link">
+                ${post.cover_image_url ? `<img src="${esc(articleCover(post.cover_image_url))}" alt="" width="1280" height="720" loading="lazy" fetchpriority="low" decoding="async">` : ''}
+                <div class="udx-insight-copy">
+                  <div class="udx-article-meta">
+                    ${post.tags?.[0] ? `<span>${esc(post.tags[0])}</span>` : ''}
+                    ${articleDate(post.published_at) ? `<time datetime="${esc(post.published_at)}">${esc(articleDate(post.published_at))}</time>` : ''}
+                  </div>
+                  <h3>${esc(post.title)}</h3>
+                  ${post.excerpt ? `<p>${esc(post.excerpt)}</p>` : ''}
+                  <span class="udx-text-link">Read article →</span>
+                </div>
+              </a>
+            </article>`).join('')}
+        </div>
+      </div>
+    </section>`;
 }

@@ -953,6 +953,11 @@ export default function ZoeChatbot({ hideLauncher = false, homeRequests = 0 }: {
       </CardHeader>
 
       <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+        {!session?.access_token && (
+          <p className="border-b px-5 py-3 text-sm text-muted-foreground">
+            <a href="/auth/login" className="font-medium text-primary underline underline-offset-4">Sign in</a> to ask Zoe about courses and your applications.
+          </p>
+        )}
         {errorState ? (
           <div className="px-5 pt-4">
             <Alert
@@ -1196,6 +1201,7 @@ export default function ZoeChatbot({ hideLauncher = false, homeRequests = 0 }: {
                     void sendMessage();
                   }
                 }}
+                aria-label="Ask Zoe a question"
                 placeholder="Ask Zoe about admissions, partnerships, or agent docs…"
                 disabled={isLoading || isUploading}
                 className="min-h-[52px] w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-foreground placeholder:text-muted-foreground/70 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -1205,6 +1211,7 @@ export default function ZoeChatbot({ hideLauncher = false, homeRequests = 0 }: {
             <div className="flex items-center gap-2">
               <Button
                 type="submit"
+                aria-label="Send message to Zoe"
                 size="icon"
                 disabled={
                   isLoading ||

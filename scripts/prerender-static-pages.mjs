@@ -1,4 +1,4 @@
-import { homeTitle, homeDescription, homePhoto } from '../src/lib/homepage.mjs';
+import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../src/lib/homepage.mjs';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -79,7 +79,7 @@ const pages = [
     jsonLd: organisation,
     title: homeTitle,
     description: homeDescription,
-    body: homeFirstPaint(featuredHtml),
+    body: homeFirstPaint(featuredHtml, posts),
   },
   {
     path: '/free-consultation', title: 'Free Study Abroad Consultation | UniDoxia',
@@ -224,7 +224,7 @@ const render = (page) => {
     .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${d}">`);
   if (page.path === "/") {
     const homePreloads = [
-      `<link rel="preload" as="image" imagesrcset="${homePhoto.srcSet}" imagesizes="${homePhoto.sizes}" fetchpriority="high">`,
+      `<link rel="preload" as="image" type="image/avif" imagesrcset="${homePhotoAvifSrcSet}" imagesizes="${homePhoto.sizes}" fetchpriority="high">`,
       '<link rel="preload" as="font" href="/home/fraunces.woff2" type="font/woff2" crossorigin>',
       '<link rel="preload" as="font" href="/home/manrope.woff2" type="font/woff2" crossorigin>',
     ];
