@@ -79,9 +79,7 @@ Registration and the initial consultation are described as free. Optional paid s
 
 ## Verification and limitations
 
-The initial local run passed 627 unit tests across 97 files. Type checking and changed-file lint passed before the final evidence run. The PostgreSQL harness passed 36 ownership, role, tenant, validation and state checks. The isolated browser test follows the actual student and staff components against the candidate SQL and real PostgreSQL RLS, including failed-save preservation, submission, source-backed sharing, feedback and reload persistence. Its Auth identities are synthetic fixtures; it makes no live account or email changes.
-
-The broader browser run initially passed 112 checks, with four failures in tests still expecting removed homepage fields or checking an asynchronous search URL before completion. Updated those checks for registration-first behaviour; all four focused reruns passed. The final full-run results, actual Auth/Storage acceptance and screenshots are recorded in the accompanying review report when complete.
+Final checks passed 631 unit tests across 98 files, 122 desktop/mobile browser checks, two focused keyboard/accessibility workflow regressions and 36 isolated PostgreSQL security checks. Actual disposable Supabase acceptance passed 15 Auth/Data API/private Storage checks plus 15 target-boundary checks, with independent cleanup read-back. Type checking, changed-file lint and production build/SEO verification passed. See [the final review](REVIEW.md) for screenshots, measured performance, evidence boundaries and remaining production activation/branding requirements.
 
 Existing profile editing now checks read errors before calculating completeness. A failed document-status lookup shows a retry action instead of falsely declaring all documents present. Upload integrity, staff document review, sharing authorisation and billing implementations are unchanged.
 
