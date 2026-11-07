@@ -25,6 +25,7 @@ export interface AgentRecord {
   commissionPaid: number;
   complianceStatus: ComplianceStatus;
   verificationStatus: string | null;
+  verificationDocumentUrl?: string | null;
   lastActivityAt: string | null;
   createdAt: string | null;
   avatarUrl: string | null;

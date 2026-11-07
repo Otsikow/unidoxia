@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
 import { useUniversityBranding } from '@/hooks/useUniversityBranding';
+import { saveAgentDetails } from '@/lib/agentDocuments';
 import { PassportAutofill } from '@/components/settings/PassportAutofill';
 
 interface ProfileInfoTabProps {
@@ -195,19 +196,10 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
       if (error) throw error;
 
       if (profile.role === 'agent') {
-        const { error: agentError } = await supabase
-          .from('agents')
-          .upsert(
-            {
-              tenant_id: profile.tenant_id,
-              profile_id: profile.id,
-              company_name: agentData.company_name || null,
-              verification_document_url: agentData.verification_document_url || null,
-            },
-            { onConflict: 'profile_id' }
-          );
-
-        if (agentError) throw agentError;
+        await saveAgentDetails(profile, {
+          company_name: agentData.company_name.trim() || null,
+          verification_document_url: agentData.verification_document_url.trim() || null,
+        });
       }
 
       setFormData({
@@ -408,10 +400,10 @@ const ProfileInfoTab = ({ profile, roleData }: ProfileInfoTabProps) => {
                     name="verification_document_url"
                     value={agentData.verification_document_url}
                     onChange={handleAgentInputChange}
-                    placeholder="Link to your license or accreditation document"
+                    placeholder="Link to your licence or accreditation document"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Share a secure link to your agency registration or certificate. PDF or cloud storage links work best.
+                    Share a secure HTTPS link, or upload your certificate in the Documents tab.
                   </p>
                 </div>
                 <div className="grid gap-2">

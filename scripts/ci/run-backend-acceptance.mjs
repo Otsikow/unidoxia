@@ -5,7 +5,7 @@ import path from 'node:path';
 import postgres from 'postgres';
 import {assertAcceptanceTarget} from '../../docs/security/staging/acceptance-target.mjs';
 const suite=process.env.ACCEPTANCE_SUITE;
-if(!['application','receipts','placement'].includes(suite)||process.env.CI!=='true')throw new Error('Explicit isolated CI suite required');
+if(!['application','receipts','placement','agents'].includes(suite)||process.env.CI!=='true')throw new Error('Explicit isolated CI suite required');
 const status=JSON.parse(await readFile(process.env.SUPABASE_STATUS_PATH,'utf8'));
 const url=status.API_URL,anon=status.ANON_KEY,service=status.SERVICE_ROLE_KEY,dbUrl=status.DB_URL;
 assertAcceptanceTarget(url,'local-ci-only','true');
@@ -32,6 +32,10 @@ try {
   await apply('docs/security/staging/application-submission-fixture-schema.sql');
   await apply('supabase/migrations/20261031162745_guard_application_submission.sql');
   runner='docs/security/staging/application-submission-auth-acceptance.mjs';
+ }else if(suite==='agents'){
+  await apply('docs/agents/agent-auth-fixture.sql');
+  await apply('supabase/migrations/20261107153640_agent_profile_documents.sql');
+  runner='docs/agents/agent-auth-acceptance.mjs';
  }else if(suite==='placement'){
   await apply('docs/placement/placement-auth-fixture.sql');
   await apply('supabase/migrations/20261107124135_adviser_led_student_placement.sql');
@@ -44,7 +48,7 @@ try {
  }
  await db.unsafe("notify pgrst,'reload schema'");
  // Wait for actual Data API schema visibility, without printing credentials or private responses.
- const probe=suite==='placement'?'student_placement_cases?select=student_id':suite==='application'?'applications?select=id,status':'application_documents?select=id,storage_path';
+ const probe=suite==='agents'?'agents?select=id':suite==='placement'?'student_placement_cases?select=student_id':suite==='application'?'applications?select=id,status':'application_documents?select=id,storage_path';
  let ready=false;
  for(let attempt=0;attempt<30;attempt++){
   const response=await fetch(`${url}/rest/v1/${probe}`,{headers:{apikey:service,Authorization:`Bearer ${service}`},signal:AbortSignal.timeout(5000)});
