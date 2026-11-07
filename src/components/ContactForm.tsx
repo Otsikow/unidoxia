@@ -107,6 +107,7 @@ export const ContactForm = () => {
         <Input
           type="text"
           placeholder={t("components.contactForm.placeholders.name")}
+          aria-label={t("components.contactForm.placeholders.name")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
@@ -117,6 +118,7 @@ export const ContactForm = () => {
         <Input
           type="email"
           placeholder={t("components.contactForm.placeholders.email")}
+          aria-label={t("components.contactForm.placeholders.email")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -127,6 +129,7 @@ export const ContactForm = () => {
         <Input
           type="tel"
           placeholder={t("components.contactForm.placeholders.whatsapp")}
+          aria-label={t("components.contactForm.placeholders.whatsapp")}
           value={whatsapp}
           onChange={(e) => setWhatsapp(e.target.value)}
           maxLength={30}
@@ -135,6 +138,7 @@ export const ContactForm = () => {
       <div>
         <Textarea
           placeholder={t("components.contactForm.placeholders.message")}
+          aria-label={t("components.contactForm.placeholders.message")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           required

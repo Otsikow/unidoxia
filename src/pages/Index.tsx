@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowDown, ArrowRight, ArrowUpRight, MessageCircle, Plus, Search } from "lucide-react";
 import type { FormEvent } from "react";
-import { HomeBrand, HomeHeader, HomeLink } from "@/components/landing/HomeHeader";
+import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SEO } from "@/components/SEO";
@@ -9,25 +9,10 @@ import { business, businessFooter } from "@/config/business";
 import { useAuth } from "@/hooks/useAuth";
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
-import { homeDescription, homeEyebrow, homeHeadline, homeIntro, homePhoto, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homeSteps, homeAssurances, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import "@/components/landing/home.css";
 
 const WHATSAPP_URL = "https://wa.me/447360961803";
-
-const destinations = [
-  { name: "Canada", country: "Canada" },
-  { name: "United States", country: "United States" },
-  { name: "Germany", country: "Germany" },
-  { name: "Ireland", country: "Ireland" },
-  { name: "Australia", country: "Australia" },
-];
-
-const steps = [
-  { title: "Find your course", text: "Compare universities, subjects, start dates and entry requirements to build a shortlist." },
-  { title: "Get your documents ready", text: "Create a profile, organise your documents and ask an adviser what you need for your chosen course." },
-  { title: "Apply and follow your progress", text: "Prepare your application and use your account to check updates and outstanding requests." },
-  { title: "Plan what comes after an offer", text: "Understand offer conditions and work through the next steps with guidance from our team." },
-];
 
 const questions = [
   { question: "How do I know if I can apply?", answer: <>Entry requirements vary by course and institution. Start with the <Link to="/courses">course listings</Link>, then check the university’s own requirements for your qualifications.</> },
@@ -87,7 +72,7 @@ function HomeFooter() {
       <div className="udx-wrap">
         <div className="udx-footer-grid">
           <div className="udx-footer-about">
-            <HomeBrand />
+            <div className="udx-footer-brand"><HomeBrand /><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
             <p>University discovery and application guidance for students from Africa.</p>
             <a href={`mailto:${business.email}`}>{business.email}</a>
           </div>
@@ -95,12 +80,12 @@ function HomeFooter() {
             <div key={title}>
               <h2>{title}</h2>
               <ul>
-                {links.map(([label, href]) => <li key={href}><HomeLink href={href}>{label}</HomeLink></li>)}
+                {links.map(([label, href]) => <li key={href}><Link to={href}>{label}</Link></li>)}
               </ul>
             </div>
           ))}
         </div>
-        <div className="udx-legal"><p>{businessFooter}</p><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
+        <p className="udx-legal">{businessFooter}</p>
       </div>
     </footer>
   );
@@ -137,29 +122,32 @@ export default function Index() {
               <p className="udx-kicker">Study destinations</p>
               <h2 id="destinations-title">Where could you study?</h2>
             </div>
-            <p>Get to know the UK, or browse courses by country to see what’s available elsewhere.</p>
+            <p>Start with a destination that interests you. Compare the courses available in each country.</p>
           </div>
           <div className="udx-destination-grid">
-            <article className="udx-uk">
-              <img src="/home/london.webp" srcSet="/home/london-660.webp 660w, /home/london.webp 1000w" sizes="(max-width: 767px) calc(100vw - 32px), 650px" width={1000} height={688} alt="Westminster Bridge and the Houses of Parliament in London" loading="lazy" decoding="async" />
-              <div>
-                <h3>United Kingdom</h3>
-                <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
-              </div>
-            </article>
-            <div className="udx-other-destinations">
-              <h3>Browse by country</h3>
-              <ul>
-                {destinations.map(({ name, country }) => (
-                  <li key={name}>
-                    <Link to={`/courses?${new URLSearchParams({ country })}`}>
-                      {name} <ArrowUpRight size={17} aria-hidden="true" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-              <Link className="udx-text-link" to="/universities">View the university directory <ArrowRight size={17} aria-hidden="true" /></Link>
-            </div>
+            {homeDestinations.map(({ name, country, image, alt }) => (
+              <article className="udx-destination" key={country}>
+                <Link to={destinationHref(country)} aria-label={`Explore courses in ${name}`}>
+                  <img
+                    src={`/home/${image}.webp`}
+                    srcSet={`/home/${image}-660.webp 660w, /home/${image}.webp 1000w`}
+                    sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px"
+                    width={1000}
+                    height={640}
+                    alt={alt}
+                    loading="lazy"
+                    fetchPriority="low"
+                    decoding="async"
+                  />
+                  <span className="udx-destination-name">{name}<ArrowUpRight size={19} aria-hidden="true" /></span>
+                </Link>
+                <p>Explore courses</p>
+              </article>
+            ))}
+          </div>
+          <div className="udx-destination-resources">
+            <Link className="udx-text-link" to="/universities">Browse all universities <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
           </div>
           <FeaturedUniversitiesSection />
         </section>
@@ -169,12 +157,12 @@ export default function Index() {
             <div className="udx-section-head">
               <div>
                 <p className="udx-kicker">How it works</p>
-                <h2 id="journey-title">From shortlist to next steps</h2>
+                <h2 id="journey-title">A clear path from here</h2>
               </div>
-              <p>See what you can do on your own and where an adviser can help.</p>
+              <p>Four steps to help you move from an idea to an informed application.</p>
             </div>
             <ol className="udx-steps">
-              {steps.map(({ title, text }, index) => (
+              {homeSteps.map(({ title, text }, index) => (
                 <li key={title}>
                   <span aria-hidden="true">0{index + 1}</span>
                   <h3>{title}</h3>
@@ -182,9 +170,14 @@ export default function Index() {
                 </li>
               ))}
             </ol>
-            <div className="udx-training">
-              <p>UniDoxia’s leadership has completed the British Council UK knowledge agent and counsellor training.</p>
-              <Link className="udx-text-link" to="/about">See training details <ArrowRight size={17} aria-hidden="true" /></Link>
+            <div className="udx-assurance">
+              {homeAssurances.map(({ title, text, href, label }) => (
+                <div key={title}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                  <a className="udx-text-link" href={href}>{label}<ArrowUpRight size={16} aria-hidden="true" /></a>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -209,23 +202,23 @@ export default function Index() {
           <div className="udx-wrap udx-next-inner">
             <div>
               <p className="udx-kicker">Take the next step</p>
-              <h2 id="next-title">Ready to apply?</h2>
-              <p>Start your student profile or speak to an adviser about your plans.</p>
+              <h2 id="next-title">Your next step starts here.</h2>
+              <p>Have a course in mind? Create your profile and start preparing your application.</p>
             </div>
             <div className="udx-actions">
               <Link className="udx-button" to={user ? "/dashboard" : studentSignup}>
                 {user ? "Open your dashboard" : "Start your application"} <ArrowRight size={18} aria-hidden="true" />
               </Link>
-              <Link className="udx-text-link" to="/free-consultation">Book a free consultation <ArrowUpRight size={17} aria-hidden="true" /></Link>
+              <Link className="udx-text-link" to="/free-consultation">Speak to an adviser <ArrowUpRight size={17} aria-hidden="true" /></Link>
             </div>
           </div>
         </section>
 
         <div className="udx-wrap udx-support">
-          <span>Need help?</span>
+          <span>Need a little guidance?</span>
           <a className="udx-text-link" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => logFreeConsultationWhatsAppClick("homepage_support")}>Chat on WhatsApp <ArrowUpRight size={16} aria-hidden="true" /></a>
           <button type="button" id="home-zoe-launcher" className="udx-text-link" onClick={() => window.dispatchEvent(new Event("zoe:home-request"))}>
-            <MessageCircle size={16} aria-hidden="true" /> Ask Zoe, the AI assistant
+            <MessageCircle size={16} aria-hidden="true" /> Ask Zoe
           </button>
         </div>
       </main>

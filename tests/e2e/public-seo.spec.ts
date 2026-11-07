@@ -97,7 +97,7 @@ test('homepage opens the catalogue with the submitted search and destination', a
 
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Canada', exact: true }).click();
+  await page.getByRole('link', { name: 'Explore courses in Canada', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Search courses', exact: true })).toBeVisible();
   expect(new URL(page.url()).searchParams.get('country')).toBe('Canada');
 });

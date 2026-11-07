@@ -1,4 +1,4 @@
-import { homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, studentSignup } from '../src/lib/homepage.mjs';
+import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homeSteps, studentSignup } from '../src/lib/homepage.mjs';
 
 // Independent of the downloaded application CSS/JS: public fallback stays usable
 // while the first React route loads, including on slow or failed connections.
@@ -74,19 +74,44 @@ export function homeFirstPaint(featuredHtml) {
       </div>
     </section>
     <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
-      <p class="udx-kicker">Study destinations</p>
-      <h2>Where could you study?</h2>
-      <a class="udx-text-link" href="/destinations/united-kingdom">Read the UK study guide</a>
-      <a class="udx-text-link" href="/universities">View the university directory</a>
+      <div class="udx-section-head">
+        <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
+        <p>Start with a destination that interests you. Compare the courses available in each country.</p>
+      </div>
+      <div class="udx-destination-grid">
+        ${homeDestinations.map(({ name, country, image, alt }) => `
+          <article class="udx-destination">
+            <a href="${destinationHref(country)}" aria-label="Explore courses in ${name}">
+              <img src="/home/${image}.webp" srcset="/home/${image}-660.webp 660w, /home/${image}.webp 1000w" sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px" width="1000" height="640" alt="${alt}" loading="lazy" fetchpriority="low" decoding="async">
+              <span class="udx-destination-name">${name}<span aria-hidden="true">↗</span></span>
+            </a>
+            <p>Explore courses</p>
+          </article>`).join('')}
+      </div>
+      <div class="udx-destination-resources">
+        <a class="udx-text-link" href="/universities">Browse all universities →</a>
+        <a class="udx-text-link" href="/destinations/united-kingdom">Read the UK study guide ↗</a>
+      </div>
       ${featuredHtml}
     </section>
     <section class="udx-section udx-journey" id="how-it-works" tabindex="-1">
-      <div class="udx-wrap"><h2>From shortlist to next steps</h2><p>Find your course, prepare your documents, apply and plan what comes after an offer.</p></div>
+      <div class="udx-wrap">
+        <div class="udx-section-head">
+          <div><p class="udx-kicker">How it works</p><h2>A clear path from here</h2></div>
+          <p>Four steps to help you move from an idea to an informed application.</p>
+        </div>
+        <ol class="udx-steps">
+          ${homeSteps.map(({ title, text }, index) => `<li><span aria-hidden="true">0${index + 1}</span><h3>${title}</h3><p>${text}</p></li>`).join('')}
+        </ol>
+        <div class="udx-assurance">
+          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a></div>`).join('')}
+        </div>
+      </div>
     </section>
     <section class="udx-next">
       <div class="udx-wrap udx-next-inner">
-        <div><h2>Ready to apply?</h2><p>Start your student profile or speak to an adviser about your plans.</p></div>
-        <div class="udx-actions"><a class="udx-button" href="${studentSignup}">Start your application</a><a class="udx-text-link" href="/free-consultation">Book a free consultation</a></div>
+        <div><h2>Your next step starts here.</h2><p>Have a course in mind? Create your profile and start preparing your application.</p></div>
+        <div class="udx-actions"><a class="udx-button" href="${studentSignup}">Start your application</a><a class="udx-text-link" href="/free-consultation">Speak to an adviser</a></div>
       </div>
     </section>
     <div class="udx-wrap udx-support"><a href="https://wa.me/447360961803">Chat on WhatsApp</a><a href="/contact">Contact us</a><a href="/faq">FAQs</a><a href="/legal/privacy">Privacy policy</a><a href="/legal/terms">Terms of service</a></div>`;

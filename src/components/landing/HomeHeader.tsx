@@ -1,18 +1,8 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { homeNav, studentSignup } from "@/lib/homepage.mjs";
-
-export function HomeLink({ href, children, className }: {
-  href: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return href.startsWith("/")
-    ? <Link to={href} className={className}>{children}</Link>
-    : <a href={href} className={className}>{children}</a>;
-}
 
 export function HomeBrand() {
   return (
