@@ -165,7 +165,7 @@ const publicApplicationRouting = (config: unknown): string | null => {
   return typeof value === "string" ? value : null;
 };
 
-export const intakeLabel = (intake: NonNullable<Program["program_intakes"]>[number]) =>
+const intakeLabel = (intake: NonNullable<Program["program_intakes"]>[number]) =>
   getMonthName(intake.intake_month);
 
 const intakeStatusClasses: Record<string, string> = {
@@ -185,6 +185,8 @@ export default function UniversityProfile() {
   const location = useLocation();
   const { profile } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const requestVersion = useRef(0);
   const [university, setUniversity] = useState<University | null>(null);
   const [profileDetails, setProfileDetails] = useState<UniversityProfileDetails>(
     emptyUniversityProfileDetails,
@@ -222,17 +224,23 @@ export default function UniversityProfile() {
   );
 
   const loadUniversityData = useCallback(async (universityId: string, page = 1) => {
+    const version = ++requestVersion.current;
     setLoading(true);
+    setLoadError(false);
     setUniversity(null);
+    setPrograms([]);
+    setScholarships([]);
     try {
       // Load university - fetch by ID to get the specific university
       const baseQuery = (supabase.from("universities") as any).select("*").eq("active", true).neq("listing_status", "archived");
       const lookup = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(universityId)
         ? baseQuery.eq("slug", universityId)
         : baseQuery.eq("id", universityId);
-      const { data: universityData, error: uniError } = await lookup.single();
+      const { data: universityData, error: uniError } = await lookup.abortSignal(AbortSignal.timeout(10000)).maybeSingle();
+      if (version !== requestVersion.current) return;
 
       if (uniError) throw uniError;
+      if (!universityData) return;
       setUniversity(universityData);
       if (trackedUniversityId.current !== universityData.id) {
         trackedUniversityId.current = universityData.id;
@@ -259,7 +267,8 @@ export default function UniversityProfile() {
       if (selectedDiscipline !== "all") programsQuery = programsQuery.eq("discipline", selectedDiscipline);
       const safeProgramSearch = programSearch.trim().replace(/[%_,()]/g, " ").replace(/\s+/g, " ");
       if (safeProgramSearch) programsQuery = programsQuery.or(`name.ilike.%${safeProgramSearch}%,discipline.ilike.%${safeProgramSearch}%`);
-      const { data: programsData, error: progError, count: programCount } = await programsQuery;
+      const { data: programsData, error: progError, count: programCount } = await programsQuery.abortSignal(AbortSignal.timeout(10000));
+      if (version !== requestVersion.current) return;
 
       if (progError) throw progError;
       
@@ -271,11 +280,13 @@ export default function UniversityProfile() {
       setProgramTotal(programCount || 0);
 
       // MULTI-TENANT ISOLATION: Load scholarships ONLY for this specific university
-      const { data: scholarshipsData } = await supabase
+      const { data: scholarshipsData, error: scholarshipError } = await supabase
         .from("scholarships")
         .select("*")
         .eq("university_id", resolvedUniversityId)
-        .eq("active", true);
+        .eq("active", true).abortSignal(AbortSignal.timeout(10000));
+      if (version !== requestVersion.current) return;
+      if (scholarshipError) throw scholarshipError;
 
       // Verification: Ensure all returned scholarships belong to this university
       const validatedScholarships = (scholarshipsData || []).filter(
@@ -283,9 +294,10 @@ export default function UniversityProfile() {
       );
       setScholarships(validatedScholarships);
     } catch (error) {
+      if (version === requestVersion.current) setLoadError(true);
       console.error("Error loading university data:", error);
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
   }, [programSearch, selectedDiscipline, selectedLevel]);
 
@@ -293,6 +305,7 @@ export default function UniversityProfile() {
     if (id) {
       void loadUniversityData(id, programPage);
     }
+    return () => { requestVersion.current += 1; };
   }, [id, loadUniversityData, programPage]);
 
   const filteredPrograms = programs;
@@ -304,6 +317,7 @@ export default function UniversityProfile() {
     return (
       <div className="min-h-screen bg-background p-4 md:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
+          <p role="status">Loading university details…</p>
           <Skeleton className="h-96 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -311,6 +325,14 @@ export default function UniversityProfile() {
     );
   }
 
+  if (loadError) return (
+    <section className="container mx-auto max-w-2xl px-4 py-16 space-y-4">
+      <h1 className="text-2xl font-semibold">We couldn’t load this university</h1>
+      <p role="alert">University details are temporarily unavailable. Please try again or ask an adviser for help.</p>
+      <Button onClick={() => id && void loadUniversityData(id, programPage)}>Try loading the university again</Button>
+      <p><Link className="underline" to="/free-consultation">Speak to an adviser</Link></p>
+    </section>
+  );
   if (!university) return <NotFound />;
 
   const heroImage =

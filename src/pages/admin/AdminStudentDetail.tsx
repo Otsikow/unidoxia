@@ -1,6 +1,6 @@
-import { AdminPlacement } from "@/components/placement/AdminPlacement";
 "use client";
 
+import { AdminPlacement } from "@/components/placement/AdminPlacement";
 import { StudentContactActions } from "@/components/communications/StudentContactActions";
 import { registeredWhatsApp } from "@/lib/studentCommunication";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -14,7 +14,7 @@ import { logSecurityEvent } from "@/lib/securityLogger";
 import { LoadingState } from "@/components/LoadingState";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge, badgeVariants } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -284,7 +284,7 @@ const AdminStudentDetail = () => {
   /* ------------------------------ Derived ------------------------------ */
 
   const student = bundle?.student;
-  const documents = bundle?.documents ?? [];
+  const documents = useMemo(() => bundle?.documents ?? [], [bundle?.documents]);
   const educationRecords = bundle?.education_records ?? [];
 
   const studentName =
@@ -773,7 +773,7 @@ const AdminStudentDetail = () => {
                 </CardTitle>
                 <div className="flex items-center gap-2">
                   {docUploading && <Loader2 className="h-4 w-4 animate-spin text-amber-800 dark:text-amber-500" />}
-                  <Button variant="ghost" size="sm" onClick={() => setMissingDocsExpanded(true)} className="text-amber-800 hover:text-amber-900 dark:text-amber-500 dark:hover:text-amber-400 h-7 px-2">
+                  <Button variant="ghost" size="sm" aria-label="Expand missing required documents" onClick={() => setMissingDocsExpanded(true)} className="text-amber-800 hover:text-amber-900 dark:text-amber-500 dark:hover:text-amber-400 h-7 px-2">
                     <Expand className="h-4 w-4" />
                   </Button>
                 </div>
@@ -783,18 +783,19 @@ const AdminStudentDetail = () => {
               <p className="text-xs text-muted-foreground mb-2">Click any document to upload it</p>
               <div className="flex flex-wrap gap-2">
                 {missingDocuments.map((doc) => (
-                  <Badge
+                  <button
                     key={doc.type}
-                    variant="outline"
-                    className="border-amber-700/50 text-amber-800 dark:border-amber-500/50 dark:text-amber-400 cursor-pointer hover:bg-amber-500/20 hover:border-amber-700 dark:hover:border-amber-400 transition-colors"
-                    onClick={() => !docUploading && handleMissingDocClick(doc.type)}
+                    type="button"
+                    disabled={docUploading}
+                    className={`${badgeVariants({ variant: "outline" })} border-amber-700/50 text-amber-800 dark:border-amber-500/50 dark:text-amber-400 hover:bg-amber-500/20 hover:border-amber-700 dark:hover:border-amber-400 disabled:cursor-wait`}
+                    onClick={() => handleMissingDocClick(doc.type)}
                   >
                     <Upload className="h-3 w-3 mr-1" />
                     {doc.label}
                     {pendingUploadDocType === doc.type && docUploading && (
                       <Loader2 className="h-3 w-3 ml-1 animate-spin" />
                     )}
-                  </Badge>
+                  </button>
                 ))}
               </div>
             </CardContent>

@@ -54,7 +54,7 @@ const estimateReadingMinutes = (text: string | null | undefined) => {
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["blog", slug],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -65,6 +65,7 @@ export default function BlogPost() {
         .eq("slug", slug)
         .eq("status", "published")
         .limit(1)
+        .abortSignal(AbortSignal.timeout(10000))
         .maybeSingle();
       if (error) {
         console.error("[blog] Failed to load article", error.message);
@@ -73,7 +74,7 @@ export default function BlogPost() {
       return (data as BlogPostDetail | null);
     },
     enabled: Boolean(slug),
-    retry: 1,
+    retry: false,
   });
 
   const sanitizedHtml = useMemo(() => {
@@ -84,6 +85,7 @@ export default function BlogPost() {
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-10">
+        <p role="status" className="mb-4 text-muted-foreground">Loading published article…</p>
         <Skeleton className="h-8 w-2/3 mb-6" />
         <Skeleton className="h-64 w-full mb-8" />
         <Skeleton className="h-4 w-full mb-2" />
@@ -97,6 +99,7 @@ export default function BlogPost() {
     return (
       <div className="container mx-auto px-4 py-16 max-w-2xl text-center space-y-4">
         <h1 className="text-2xl font-semibold">We couldn’t load this article</h1>
+        <Button onClick={() => void refetch()}>Try loading the article again</Button>
         <p className="text-muted-foreground">
           Something went wrong while fetching this post. Please refresh the page or try again shortly.
         </p>

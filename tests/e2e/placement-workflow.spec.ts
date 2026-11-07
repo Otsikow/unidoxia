@@ -307,6 +307,20 @@ test("student requests review, adviser shares a researched option, student respo
         exact: true,
       }),
     ).toBeVisible();
+    const upload = staff
+      .getByRole("button", { name: "Transcript(s)", exact: true })
+      .first();
+    await upload.focus();
+    await Promise.all([
+      staff.waitForEvent("filechooser"),
+      staff.keyboard.press("Enter"),
+    ]);
+    await expect(
+      staff.getByRole("button", {
+        name: "Expand missing required documents",
+        exact: true,
+      }),
+    ).toBeVisible();
     await staff
       .getByLabel("Note shared with the student", { exact: true })
       .fill("Checking academic suitability and tuition sources.");
@@ -399,12 +413,65 @@ test("student requests review, adviser shares a researched option, student respo
         student_feedback: "Can we discuss the entry requirements?",
       },
     ]);
-    for (const p of [student, staff])
+    for (const p of [student, staff]) {
+      await p.bringToFront();
       expect(
         await p.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
+      if (process.env.PLACEMENT_AXE_PATH) {
+        await p.evaluate(async () => {
+          await document.fonts.ready;
+          await new Promise((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(resolve)),
+          );
+          await Promise.allSettled(
+            document
+              .getAnimations()
+              .filter(
+                (animation) =>
+                  animation.effect?.getTiming().iterations !== Infinity,
+              )
+              .map((animation) => animation.finished),
+          );
+        });
+        await p.addScriptTag({ path: process.env.PLACEMENT_AXE_PATH });
+        const violations = await p.evaluate(async () => {
+          const engine = (
+            window as unknown as {
+              axe: {
+                run: (options: unknown) => Promise<{
+                  violations: { id: string; nodes: { target: string[] }[] }[];
+                }>;
+              };
+            }
+          ).axe;
+          return (
+            await engine.run({
+              runOnly: {
+                type: "tag",
+                values: [
+                  "wcag2a",
+                  "wcag2aa",
+                  "wcag21a",
+                  "wcag21aa",
+                  "wcag22aa",
+                ],
+              },
+            })
+          ).violations.map((v) => ({
+            id: v.id,
+            targets: v.nodes.map((n) => ({
+              target: n.target,
+              detail: (n as unknown as { failureSummary: string })
+                .failureSummary,
+            })),
+          }));
+        });
+        expect(violations).toEqual([]);
+      }
+    }
     const folder = "../outputs/unidoxia-registration-led/portal";
     fs.mkdirSync(folder, { recursive: true });
     await student.screenshot({

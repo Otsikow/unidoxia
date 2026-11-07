@@ -6,7 +6,7 @@ export const internationalUniversityCandidates = [
   { country: 'Australia', slug: 'griffith-university' },
 ] as const;
 
-export const internationalDirectoryIntro = 'Our advisers can research options across your preferred destinations. These directory listings are optional resources and do not imply recruitment partnerships.';
+export const internationalDirectoryIntro = 'Our advisers can research options across your preferred destinations. These directory listings are optional resources. A listing does not imply a recruitment partnership.';
 
 export interface InternationalUniversityListing {
   id: string;
