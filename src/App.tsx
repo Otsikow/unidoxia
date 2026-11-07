@@ -232,6 +232,8 @@ const AdminUniversityClaims = lazyWithErrorHandling(() => import("./pages/admin/
 const StudentLayout = lazyWithErrorHandling(() =>
   import("./components/layout/StudentLayout")
 );
+const PlacementWorkspace = lazyWithErrorHandling(() => import("./pages/dashboard/PlacementWorkspace"));
+const PlacementDashboard = lazyWithErrorHandling(() => import("./pages/student/PlacementDashboard"));
 const StudentProfile = lazyWithErrorHandling(() =>
   import("./pages/student/StudentProfile")
 );
@@ -698,6 +700,8 @@ const App = () => {
                         <Route path="/dashboard/leads" element={<ProtectedRoute allowedRoles={["agent","admin","staff"]}><AgentLeads /></ProtectedRoute>} />
                         <Route path="/dashboard/website-leads" element={<ProtectedRoute allowedRoles={["admin","staff","counselor"]}><AdminLeadsPage /></ProtectedRoute>} />
                         <Route path="/dashboard/tasks" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffTasks /></ProtectedRoute>} />
+                        <Route path="/dashboard/placement" element={<ProtectedRoute allowedRoles={["staff","admin"]}><PlacementWorkspace /></ProtectedRoute>} />
+                        <Route path="/dashboard/placement/:studentId" element={<ProtectedRoute allowedRoles={["staff","admin"]}><PlacementWorkspace /></ProtectedRoute>} />
                         <Route path="/dashboard/students" element={<ProtectedRoute allowedRoles={["agent","staff","admin"]}><StaffStudents /></ProtectedRoute>} />
                         <Route path="/dashboard/agents" element={<ProtectedRoute allowedRoles={["staff","admin"]}><AdminAgentsPage /></ProtectedRoute>} />
                         <Route path="/dashboard/reports" element={<ProtectedRoute allowedRoles={["staff","admin"]}><StaffReports /></ProtectedRoute>} />
@@ -721,7 +725,7 @@ const App = () => {
                         <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>
                           <Route index element={<Navigate to="/student/dashboard" replace />} />
                           <Route path="onboarding" element={<Navigate to="/student/profile" replace />} />
-                          <Route path="dashboard" element={<StudentProfile />} />
+                          <Route path="dashboard" element={<PlacementDashboard />} />
                           <Route path="profile" element={<StudentProfile />} />
                           <Route path="universities" element={<UniversityDirectory />} />
                           <Route path="documents" element={<Documents />} />

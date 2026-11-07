@@ -81,23 +81,12 @@ test('private dashboard still redirects anonymous visitors to the sign-in form',
   await expect(page.locator('input[type="password"]').first()).toBeVisible();
 });
 
-test('homepage opens the catalogue with the submitted search and destination', async ({ page }) => {
-  await page.route('**/*.supabase.co/**', route => route.fulfill({
-    status: 200, contentType: 'application/json', body: '[]',
-  }));
-  await page.goto('/');
-  await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  const search = page.getByRole('searchbox', { name: 'Course or university' });
-  await search.scrollIntoViewIfNeeded();
-  await search.fill('  Business & management  ');
-  await search.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Search courses', exact: true })).toBeVisible();
-  expect(new URL(page.url()).searchParams.get('q')).toBe('Business & management');
-  expect(await page.evaluate(() => window.scrollY)).toBe(0);
-
-  await page.goto('/');
-  await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Explore courses in Canada', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Search courses', exact: true })).toBeVisible();
-  expect(new URL(page.url()).searchParams.get('country')).toBe('Canada');
+test('registration-first homepage retains optional catalogue and destination navigation',async({page})=>{
+ await page.route('**/*.supabase.co/**',route=>route.fulfill({status:200,contentType:'application/json',body:'[]'}));
+ await page.goto('/');await expect(page.locator('#site-first-paint')).toHaveCount(0);
+ await page.locator('.udx-hero').getByRole('link',{name:'Register Your Interest',exact:true}).click();
+ await expect(page).toHaveURL(/\/auth\/signup/);expect(new URL(page.url()).searchParams.get('next')).toBe('/student/dashboard');
+ await page.goto('/');await expect(page.locator('#site-first-paint')).toHaveCount(0);
+ await page.getByRole('link',{name:'Explore courses in Canada',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Search courses',exact:true})).toBeVisible();expect(new URL(page.url()).searchParams.get('country')).toBe('Canada');
 });

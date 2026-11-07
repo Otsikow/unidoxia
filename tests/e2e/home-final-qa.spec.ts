@@ -43,7 +43,8 @@ test('international listing errors can retry and an empty eligible set does not 
 test('discovery, consultation and intake use aligned destination choices and consultation retains Germany', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  expect(await page.locator('#home-country option').allTextContents()).toEqual(['Any destination', ...STUDY_DESTINATIONS]);
+  await page.goto('/courses');await page.getByLabel('Where?',{exact:true}).click();
+  for(const country of STUDY_DESTINATIONS) await expect(page.getByRole('option',{name:country,exact:true})).toHaveCount(1);
   await page.goto('/free-consultation');
   expect(await page.locator('#enquiry-destination option').allTextContents()).toEqual(['Select a destination', ...STUDY_ENQUIRY_CHOICES]);
   let body: {preferredDestinations?: string[]} = {};

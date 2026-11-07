@@ -56,7 +56,7 @@ test('student registration reaches verification using a simulated account respon
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
   if (test.info().project.name === 'mobile') await page.getByRole('button', { name: 'Menu', exact: true }).click();
-  await page.getByRole('link', { name: 'Get started', exact: true }).click();
+  await page.locator('.udx-account').getByRole('link', { name: 'Register Your Interest', exact: true }).click();
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await expect(page.getByText('First name required', { exact: true })).toBeVisible();

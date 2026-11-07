@@ -1,6 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus, Search } from "lucide-react";
-import type { FormEvent } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus } from "lucide-react";
 import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
 import { InternationalUniversityLinks } from "@/components/landing/InternationalUniversityLinks";
@@ -16,70 +15,27 @@ import { business, businessFooter } from "@/config/business";
 import { useAuth } from "@/hooks/useAuth";
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
-import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
 import { homeFooterGroups } from "@/lib/homeEditorial.mjs";
 import { homeFooterIcons } from "@/lib/homeFooterIcons";
-import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeRegistrationSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import "@/components/landing/home.css";
 
 const WHATSAPP_URL = "https://wa.me/447360961803";
 
 const questions = [
-  { question: "How do I know if I can apply?", answer: <>Entry requirements vary by course and institution. Start with the <Link to="/courses">course listings</Link>, then check the university’s own requirements for your qualifications.</> },
-  { question: "Which documents should I prepare?", answer: <>Start with your academic transcripts and certificates. Depending on your course, you may also need proof of identity, English language evidence, references or a personal statement.</> },
-  { question: "What does it cost to get started?", answer: <>Your initial <Link to="/free-consultation">consultation is free</Link>. Optional paid support is separate. Check <Link to="/pricing">current service pricing</Link>, plan inclusions and any university or government charges before paying.</> },
-  { question: "What happens once I apply?", answer: <>Check your UniDoxia account for updates and requests for further information. The university makes the admissions decision. If you receive an offer, we can help you understand its conditions and plan your next steps.</> },
+  { question: "Do I need to choose a university before registering?", answer: <>No. Register your interest and share your qualifications, preferred subjects, destinations and budget. Our advisers research suitable options for you to review.</> },
+  { question: "Which documents should I upload?", answer: <>Start with your academic transcripts and certificates in your secure student account. Your adviser will explain any additional documents needed for your chosen options.</> },
+  { question: "What does it cost to get started?", answer: <>Registration and your initial <Link to="/free-consultation">consultation are free</Link>. Optional paid support is separate. Check <Link to="/pricing">service pricing</Link>, plan inclusions and university or government charges before paying.</> },
+  { question: "Who chooses my courses and universities?", answer: <>You make the final choice. We explain our recommendations, costs and requirements. Admission and scholarship decisions remain with the university or awarding body; outcomes are not guaranteed.</> },
 ];
 
-function HomeSearch() {
-  const navigate = useNavigate();
-
-  function search(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const fields = new FormData(event.currentTarget);
-    const params = new URLSearchParams();
-    for (const key of ["q", "country", "level"]) {
-      const value = String(fields.get(key) ?? "").trim();
-      if (value) params.set(key, value);
-    }
-    const query = params.toString();
-    navigate(query ? `/courses?${query}` : "/courses");
-  }
-
-  return (
-    <section className="udx-search" aria-labelledby="course-search">
-      <div className="udx-wrap udx-search-inner">
-        <div>
-          <h2 id="course-search">What would you like to study?</h2>
-          <p>Explore the catalogue by subject or university.</p>
-        </div>
-        <form action="/courses" method="get" onSubmit={search} role="search" aria-labelledby="course-search">
-          <div className="udx-home-query">
-            <label className="udx-search-label" htmlFor="course-query">Course or university</label>
-            <div className="udx-search-field">
-              <Search size={18} aria-hidden="true" />
-              <input id="course-query" name="q" type="search" placeholder="Try nursing or business" />
-            </div>
-          </div>
-          <div className="udx-home-country">
-            <label className="udx-search-label" htmlFor="home-country">Destination</label>
-            <select id="home-country" name="country" defaultValue="">
-              <option value="">Any destination</option>
-              {STUDY_DESTINATIONS.map(country => <option key={country}>{country}</option>)}
-            </select>
-          </div>
-          <div className="udx-home-level">
-            <label className="udx-search-label" htmlFor="home-level">Study level</label>
-            <select id="home-level" name="level" defaultValue="">
-              <option value="">Any study level</option>
-              <option>Undergraduate</option><option>Postgraduate</option><option value="PHD">PhD</option>
-            </select>
-          </div>
-          <button type="submit" className="udx-button">Search courses <ArrowRight size={17} aria-hidden="true" /></button>
-        </form>
-      </div>
-    </section>
-  );
+function HomeRegistration() {
+  return <section className="udx-registration" aria-labelledby="registration-title">
+    <div className="udx-wrap udx-registration-inner">
+      <div><p className="udx-kicker">Personalised university matching</p><h2 id="registration-title">Tell us your study plans. We’ll help you find the right university.</h2><p>You do not need to research every university yourself. Share your background and priorities, and our advisers will help you compare suitable options.</p></div>
+      <div><ol className="udx-registration-steps">{homeRegistrationSteps.map((step, index) => <li key={step}><span aria-hidden="true">0{index + 1}</span>{step}</li>)}</ol><Link className="udx-button" to={studentSignup}>Register Your Interest <ArrowRight size={18} aria-hidden="true" /></Link><p className="udx-registration-fees">Registration and your initial consultation are free. <Link to="/pricing">Optional paid services and other fees</Link> are explained separately.</p></div>
+    </div>
+  </section>;
 }
 
 function HomeFooter() {
@@ -89,7 +45,7 @@ function HomeFooter() {
         <div className="udx-footer-grid">
           <div className="udx-footer-about">
             <div className="udx-footer-brand"><HomeBrand /><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
-            <p>Course search and application support for students from Africa.</p>
+            <p>Personalised university matching and admissions support for students from Africa.</p>
             <a href={`mailto:${business.email}`}><Mail size={16} strokeWidth={1.6} aria-hidden="true" /><span>{business.email}</span></a>
             <HomeSocials />
           </div>
@@ -126,8 +82,8 @@ export default function Index() {
               <h1>{homeHeadline[0]} <span>{homeHeadline[1]}</span></h1>
               <p className="udx-intro">{homeIntro}</p>
               <div className="udx-actions">
-                <Link className="udx-button" to="/courses">Find a course <ArrowRight size={18} aria-hidden="true" /></Link>
-                <Link className="udx-text-link" to="/free-consultation">Free consultation <ArrowUpRight size={16} aria-hidden="true" /></Link>
+                <Link className="udx-button" to={studentSignup}>Register Your Interest <ArrowRight size={18} aria-hidden="true" /></Link>
+                <Link className="udx-text-link" to="/free-consultation">Book a Free Consultation <ArrowUpRight size={16} aria-hidden="true" /></Link>
               </div>
             </div>
             <figure className="udx-hero-portrait">
@@ -139,7 +95,7 @@ export default function Index() {
           </div>
         </section>
 
-        <HomeSearch />
+        <HomeRegistration />
 
         <section className="udx-training" aria-labelledby="uk-knowledge-trained-heading">
           <div className="udx-training-inner">
@@ -154,52 +110,14 @@ export default function Index() {
           </div>
         </section>
 
-        <section className="udx-section udx-wrap" id="destinations" tabIndex={-1} aria-labelledby="destinations-title">
-          <div className="udx-section-head">
-            <div>
-              <p className="udx-kicker">Study destinations</p>
-              <h2 id="destinations-title">Where could you study?</h2>
-            </div>
-            <p>Compare courses in these six destinations. For other countries, <Link to="/free-consultation">ask us about current options</Link>.</p>
-          </div>
-          <div className="udx-destination-grid">
-            {homeDestinations.map(({ name, country, image, alt }) => (
-              <article className="udx-destination" key={country}>
-                <Link to={destinationHref(country)} aria-label={`Explore courses in ${name}`}>
-                  <img
-                    src={`/home/${image}.webp`}
-                    srcSet={`/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w`}
-                    sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px"
-                    width={1000}
-                    height={640}
-                    alt={alt}
-                    loading="lazy"
-                    fetchPriority="low"
-                    decoding="async"
-                  />
-                  <span className="udx-destination-name">{name}<ArrowUpRight size={19} aria-hidden="true" /></span>
-                </Link>
-                <p>Explore courses</p>
-              </article>
-            ))}
-          </div>
-          <div className="udx-destination-resources">
-            <Link className="udx-text-link" to="/courses">Explore more destinations <ArrowRight size={17} aria-hidden="true" /></Link>
-            <Link className="udx-text-link" to="/universities">Browse all universities <ArrowRight size={17} aria-hidden="true" /></Link>
-            <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
-          </div>
-          <FeaturedUniversitiesSection />
-          <InternationalUniversityLinks />
-        </section>
-
         <section className="udx-section udx-journey" id="how-it-works" tabIndex={-1} aria-labelledby="journey-title">
           <div className="udx-wrap">
             <div className="udx-section-head">
               <div>
                 <p className="udx-kicker">How it works</p>
-                <h2 id="journey-title">How to apply</h2>
+                <h2 id="journey-title">How UniDoxia works</h2>
               </div>
-              <p>Choose a course, prepare your documents and follow your application in your account.</p>
+              <p>Share your background. We research suitable options, and you decide which applications to pursue.</p>
             </div>
             <div className="udx-journey-grid">
               <HomePhotography image="study-planning" alt="Two students comparing notes and researching together with a laptop in a library" widths={[640, 1000]} ratio={.9} sizes="(max-width: 767px) calc(100vw - 32px), 40vw" />
@@ -224,6 +142,44 @@ export default function Index() {
               ))}
             </div>
           </div>
+        </section>
+
+        <section className="udx-section udx-wrap" id="destinations" tabIndex={-1} aria-labelledby="destinations-title">
+          <div className="udx-section-head">
+            <div>
+              <p className="udx-kicker">Study destinations</p>
+              <h2 id="destinations-title">Where could you study?</h2>
+            </div>
+            <p>Tell us where you would like to study. Our advisers can research options in these destinations. For other countries, <Link to="/free-consultation">ask us about current options</Link>.</p>
+          </div>
+          <div className="udx-destination-grid">
+            {homeDestinations.map(({ name, country, image, alt }) => (
+              <article className="udx-destination" key={country}>
+                <Link to={destinationHref(country)} aria-label={`Explore courses in ${name}`}>
+                  <img
+                    src={`/home/${image}.webp`}
+                    srcSet={`/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w`}
+                    sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px"
+                    width={1000}
+                    height={640}
+                    alt={alt}
+                    loading="lazy"
+                    fetchPriority="low"
+                    decoding="async"
+                  />
+                  <span className="udx-destination-name">{name}<ArrowUpRight size={19} aria-hidden="true" /></span>
+                </Link>
+                <p>Optional course listings</p>
+              </article>
+            ))}
+          </div>
+          <div className="udx-destination-resources">
+            <Link className="udx-text-link" to="/courses">Explore more destinations <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link className="udx-text-link" to="/universities">Browse all universities <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
+          </div>
+          <FeaturedUniversitiesSection />
+          <InternationalUniversityLinks />
         </section>
 
         <LatestFromBlog />
@@ -252,12 +208,12 @@ export default function Index() {
             <div className="udx-next-copy">
               <div>
                 <p className="udx-kicker">Your application</p>
-                <h2 id="next-title">Ready to apply?</h2>
-                <p>Create an account to add your details and prepare your application. If you need help choosing a course, book a free consultation.</p>
+                <h2 id="next-title">Start with your study plans.</h2>
+                <p>Create your account, share your qualifications and let our advisers help you find suitable university options.</p>
               </div>
               <div className="udx-actions">
                 <Link className="udx-button" to={user ? "/dashboard" : studentSignup}>
-                  {user ? "Open your dashboard" : "Start your application"} <ArrowRight size={18} aria-hidden="true" />
+                  {user ? "Open your dashboard" : "Register Your Interest"} <ArrowRight size={18} aria-hidden="true" />
                 </Link>
                 <Link className="udx-text-link" to="/free-consultation">Speak to an adviser <ArrowUpRight size={17} aria-hidden="true" /></Link>
               </div>

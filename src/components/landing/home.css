@@ -276,6 +276,31 @@
 
 /* The portrait keeps its campus context while the arched crop gives the hero a focal point. */
 .udx-hero-portrait { margin: 0; }
+/* Fit the longer registration message and six-stage journey without crowding. */
+@media (min-width: 768px) {
+  .udx-home .udx-hero h1 { font-size: clamp(2rem, 4.25vw, 3.875rem); }
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  .udx-home .udx-journey-grid { grid-template-columns: 1fr; }
+  .udx-home .udx-journey-grid > picture img { height: 300px; aspect-ratio: auto; object-position: 40% 22%; }
+}
+@media (min-width: 1280px) {
+  .udx-home .udx-journey-grid .udx-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+}
+.udx-registration { padding-block: 48px; background: var(--udx-tint); border-block: 1px solid var(--udx-line); }
+.udx-registration-inner { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
+.udx-registration h2 { font: 500 clamp(1.6rem, 2.6vw, 2.25rem) / 1.2 var(--udx-serif); letter-spacing: -.025em; max-width: 25ch; }
+.udx-registration p:not(.udx-kicker) { margin-top: 16px; line-height: 1.65; color: var(--udx-muted); }
+.udx-registration-steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; }
+.udx-registration-steps li { display: flex; align-items: baseline; gap: 10px; font-size: .9375rem; line-height: 1.5; }
+.udx-registration-steps span { color: var(--udx-muted); font-size: .75rem; }
+.udx-registration p.udx-registration-fees { font-size: .8125rem; max-width: 55ch; }
+.udx-registration-fees a { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 767px) {
+  .udx-registration-inner { grid-template-columns: 1fr; gap: 24px; }
+  .udx-registration { padding-block: 36px; }
+  .udx-registration-steps { gap: 16px; }
+}
 .udx-insights { background: var(--udx-white); }
 .udx-insights-intro { max-width: 39ch; justify-self: end; color: var(--udx-muted); }
 .udx-insights-intro > a { margin-top: 9px; }

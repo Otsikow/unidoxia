@@ -10,37 +10,32 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test('homepage search preserves subject, destination and study level together', async ({ page }) => {
+test('registration is primary and optional discovery preserves combined filters', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  await expect(page.locator('.udx-hero').getByRole('link', { name: 'Free consultation', exact: true })).toHaveAttribute('href', '/free-consultation');
-  await page.getByRole('searchbox', { name: 'Course or university' }).fill('  Nursing  ');
-  await page.getByLabel('Destination', { exact: true }).selectOption('Canada');
-  await page.getByLabel('Study level', { exact: true }).selectOption('Undergraduate');
-  await page.getByRole('button', { name: 'Search courses', exact: true }).click();
-  await expect(page).toHaveURL(/\/courses\?/);
-  const params = new URL(page.url()).searchParams;
-  expect(params.get('q')).toBe('Nursing');
-  expect(params.get('country')).toBe('Canada');
-  expect(params.get('level')).toBe('Undergraduate');
+  await expect(page.locator('.udx-hero').getByRole('link', { name: 'Register Your Interest', exact: true })).toHaveAttribute('href','/auth/signup?role=student&next=%2Fstudent%2Fdashboard');
+  await page.locator('.udx-footer').getByRole('link',{name:'Find a course',exact:true}).click();
+  await page.getByRole('textbox',{name:'Search courses and programs',exact:true}).fill('Nursing');
+  await page.getByLabel('Where?',{exact:true}).click();await page.getByRole('option',{name:'Canada',exact:true}).click();
+  await page.getByLabel('Study level',{exact:true}).click();await page.getByRole('option',{name:'Undergraduate',exact:true}).click();
+  await page.getByRole('button',{name:'Search',exact:true}).click();
   await expect(page.getByTestId('applied-filters')).toContainText('Canada');
   await expect(page.getByTestId('applied-filters')).toContainText('Undergraduate');
+  await expect(page).toHaveURL(url=>url.searchParams.get('q')==='Nursing');
 });
 
-test('the initial HTML retains native combined search when JavaScript is disabled', async ({ browser, page }) => {
+test('initial HTML retains registration and destination links without JavaScript', async ({ browser, page }) => {
   await page.goto('/');
-  const context = await browser.newContext({ javaScriptEnabled: false, baseURL: new URL(page.url()).origin });
-  const plain = await context.newPage();
-  await plain.goto('/');
-  await plain.getByRole('searchbox', { name: 'Course or university' }).fill('Business');
-  await plain.getByLabel('Destination', { exact: true }).selectOption('Canada');
-  await plain.getByLabel('Study level', { exact: true }).selectOption('Postgraduate');
-  await plain.getByRole('button', { name: 'Search courses', exact: true }).click();
-  const params = new URL(plain.url()).searchParams;
-  expect(params.get('q')).toBe('Business');
-  expect(params.get('country')).toBe('Canada');
-  expect(params.get('level')).toBe('Postgraduate');
-  await expect(plain.getByRole('heading', { level: 1 })).toBeVisible();
+  const context=await browser.newContext({javaScriptEnabled:false,baseURL:new URL(page.url()).origin});
+  const plain=await context.newPage();await plain.goto('/');
+  await expect(plain.locator('.udx-registration-steps li')).toHaveCount(4);
+  await expect(plain.locator('.udx-steps li')).toHaveCount(6);
+  await plain.locator('.udx-hero').getByRole('link',{name:'Register Your Interest',exact:true}).click();
+  expect(new URL(plain.url()).searchParams.get('role')).toBe('student');
+  expect(new URL(plain.url()).searchParams.get('next')).toBe('/student/dashboard');
+  await plain.goto('/');await plain.getByRole('link',{name:'Explore courses in Canada',exact:true}).click();
+  expect(new URL(plain.url()).searchParams.get('country')).toBe('Canada');
+  await expect(plain.getByRole('heading',{level:1})).toBeVisible();
   await context.close();
 });
 
@@ -88,7 +83,7 @@ test('homepage enquiry opens by keyboard, retains answers on failure and retries
 test('the first-screen consultation and restored scholarship navigation reach working pages', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  await page.locator('.udx-hero').getByRole('link', { name: 'Free consultation', exact: true }).click();
+  await page.locator('.udx-hero').getByRole('link', { name: 'Book a Free Consultation', exact: true }).click();
   await expect(page.getByLabel('Your name', { exact: true })).toBeVisible();
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
@@ -127,13 +122,12 @@ test('a selected course survives the anonymous application and registration hand
   expect(new URL(page.url()).searchParams.get('next')).toBe(destination);
 });
 
-test('journey links retain the original profile and application registration destinations', async ({ page }) => {
-  for (const [label, next] of [['Create your profile', '/student/profile'], ['Start an application', '/student/applications/new']]) {
-    await page.goto('/');
-    await expect(page.locator('#site-first-paint')).toHaveCount(0);
-    await page.locator('#how-it-works').getByRole('link', { name: label, exact: true }).click();
-    await expect(page).toHaveURL(/\/auth\/signup/);
-    expect(new URL(page.url()).searchParams.get('role')).toBe('student');
-    expect(new URL(page.url()).searchParams.get('next')).toBe(next);
+test('journey links preserve secure profile and recommendation handoffs', async ({ page }) => {
+  for (const [label,next] of [['Your student profile','/student/profile'],['Review your options','/student/dashboard#recommendations']]) {
+    await page.goto('/');await expect(page.locator('#site-first-paint')).toHaveCount(0);
+    await page.locator('#how-it-works').getByRole('link',{name:label,exact:true}).click();
+    await expect(page).toHaveURL(/\/auth\/login/);
+    const signup=page.getByRole('link',{name:'Sign up',exact:true});
+    expect(new URL((await signup.getAttribute('href'))!,page.url()).searchParams.get('next')).toBe(next);
   }
 });

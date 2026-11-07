@@ -54,17 +54,22 @@ export default function StudentProfile() {
   const [isCalculatingCompleteness, setIsCalculatingCompleteness] = useState(false);
   const [missingDocuments, setMissingDocuments] = useState<RequiredStudentDocument[]>([]);
   const [missingDocumentsLoading, setMissingDocumentsLoading] = useState(true);
+  const [missingDocumentsError, setMissingDocumentsError] = useState(false);
+  const [calculationError, setCalculationError] = useState(false);
   const hasRedirectedRef = useRef(false);
   const hasInitializedRef = useRef(false);
 
   const recalcCompleteness = useCallback(async (record: Tables<'students'>) => {
     setIsCalculatingCompleteness(true);
+    setCalculationError(false);
     try {
-      const [{ data: degrees }, { data: tests }, { data: documents }] = await Promise.all([
+      const results = await Promise.all([
         supabase.from('education_records').select('*').eq('student_id', record.id),
         supabase.from('test_scores').select('test_type, total_score, test_date').eq('student_id', record.id),
         supabase.from('student_documents').select('document_type').eq('student_id', record.id),
       ]);
+      for (const result of results) if (result.error) throw result.error;
+      const [{ data: degrees }, { data: tests }, { data: documents }] = results;
       const sections = getCourseFinderProfileSections(
         record as unknown as Record<string, unknown>,
         (degrees ?? []).filter((degree) => degree.level !== 'high_school'),
@@ -90,6 +95,9 @@ export default function StudentProfile() {
           .update({ profile_completeness: percent })
           .eq('id', record.id);
       }
+    } catch (error) {
+      setCalculationError(true);
+      throw error;
     } finally {
       setIsCalculatingCompleteness(false);
     }
@@ -98,6 +106,7 @@ export default function StudentProfile() {
   const loadMissingDocuments = useCallback(
     async (studentId: string) => {
       setMissingDocumentsLoading(true);
+      setMissingDocumentsError(false);
       try {
         const { data, error } = await supabase
           .from('student_documents')
@@ -108,6 +117,7 @@ export default function StudentProfile() {
 
         setMissingDocuments(getMissingRequiredStudentDocuments(data ?? []));
       } catch (error) {
+        setMissingDocumentsError(true);
         logError(error, 'StudentProfile.loadMissingDocuments');
         toast(formatErrorForToast(error, 'Failed to load missing documents'));
       } finally {
@@ -323,12 +333,13 @@ export default function StudentProfile() {
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl">Profile Completeness</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                {completeness}% complete • {completedSteps} of {checklist.length || 8} steps completed
+                {isCalculatingCompleteness ? 'Checking saved profile details…' : calculationError ? 'Profile progress could not be checked' : `${completeness}% complete · ${completedSteps} of ${checklist.length || 8} steps completed`}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="relative">
-                <Progress value={completeness} className="h-3" />
+              {calculationError && <div role="alert"><p>We could not check all profile details. No completion status has been assumed.</p><Button variant="outline" onClick={() => void refreshStudentData()}>Check profile progress again</Button></div>}
+              <div className="relative" hidden={calculationError || isCalculatingCompleteness}>
+                <Progress value={completeness} className="h-3" aria-label="Profile completeness" />
                 <span className="absolute right-2 -top-1 text-xs font-medium">
                   {completeness}%
                 </span>
@@ -361,9 +372,9 @@ export default function StudentProfile() {
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Checking document status...
                 </div>
-              ) : missingDocuments.length === 0 ? (
+              ) : missingDocumentsError ? <div role="alert"><p>Document status could not be checked.</p><Button variant="outline" onClick={() => void loadMissingDocuments(studentRecord.id)}>Check documents again</Button></div> : missingDocuments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  All required documents are on file. You are ready for submissions.
+                  Your core documents are on file. UniDoxia still needs to review them and confirm the requirements for each application.
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -399,7 +410,7 @@ export default function StudentProfile() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {checklist.map((item) => {
+              {!calculationError && checklist.map((item) => {
                 const handleItemClick = () => {
                   if (item.id === 'documents') {
                     navigate('/student/documents');

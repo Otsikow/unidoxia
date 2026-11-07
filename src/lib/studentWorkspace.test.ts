@@ -17,7 +17,7 @@ describe('student workspace guidance', () => {
     expect(studentMatchesView(archived,'all')).toBe(true);
   });
   it('does not confuse profile preparation with a guarantee of application readiness', () => {
-    expect(getStudentNextAction(student({ applications:[],operationalStatus:'new_student' })).label).toBe('Review study plans and start an application');
+    expect(getStudentNextAction(student({ applications:[],operationalStatus:'new_student' })).label).toBe('Review study plans and university matching');
     expect(studentNeedsAttention(student({ operationalStatus:'new_student' }))).toBe(true);
     expect(studentNeedsAttention(student())).toBe(false);
   });

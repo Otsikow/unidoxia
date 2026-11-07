@@ -1,3 +1,4 @@
+import { AdminPlacementQueue } from "@/components/placement/AdminPlacementQueue";
 "use client";
 
 import { registeredWhatsApp, whatsAppLink, communicationTemplate } from "@/lib/studentCommunication";
@@ -668,6 +669,7 @@ const AdminStudents = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3"><div><h1 className="text-2xl font-semibold">Students</h1><p className="text-sm text-muted-foreground">Find a student, check what is needed, then take the next step.</p></div><Button onClick={() => void fetchStudents()} disabled={loading} variant="outline"><RefreshCw className="mr-2 h-4 w-4" />Refresh students</Button></div>
+      <AdminPlacementQueue />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{views.map(item => <Button key={item.value} variant={view === item.value ? 'secondary' : 'outline'} aria-pressed={view === item.value} className="h-auto flex-col items-start whitespace-normal p-4 text-left" onClick={() => setView(item.value)}><span className="text-xs sm:text-sm">{item.label}</span><span className="text-2xl font-bold">{loading || error ? '—' : item.count}</span></Button>)}</div>
       <div className="flex flex-col gap-3 lg:flex-row"><div className="relative flex-1"><Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input value={searchTerm} onChange={event => setSearchTerm(event.target.value)} placeholder="Search name, UDX reference, email or course" className="pl-9" aria-label="Search students" /></div>
         <Select value={view} onValueChange={value => setView(value as StudentWorkspaceView)}><SelectTrigger className="lg:w-48" aria-label="Student queue"><SelectValue /></SelectTrigger><SelectContent>{[...views, { value: 'archived', label: 'Archived students' }, { value: 'all', label: 'All students' }].map(item => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent></Select>

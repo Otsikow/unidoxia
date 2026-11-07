@@ -8,7 +8,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 
 // NOTE: Keep dashboards lazy to avoid pulling them into the initial bundle.
-const StudentDashboard = lazy(() => import('@/pages/dashboards/StudentDashboard'));
 const AgentDashboard = lazy(() => import('@/pages/dashboards/AgentDashboard'));
 const StaffDashboard = lazy(() => import('@/pages/dashboards/StaffDashboard'));
 
@@ -106,20 +105,7 @@ const Dashboard = () => {
 
   const resolvedRole = ROLE_PRIORITY.find((role) => roles.includes(role));
 
-  if (resolvedRole === 'student')
-    return (
-      <DashboardLayout>
-        <Suspense
-          fallback={
-            <div className="min-h-screen flex items-center justify-center">
-              <LoadingState message="Loading your dashboard..." size="lg" />
-            </div>
-          }
-        >
-          <StudentDashboard />
-        </Suspense>
-      </DashboardLayout>
-    );
+  if (resolvedRole === 'student') return <Navigate to="/student/dashboard" replace />;
 
   if (resolvedRole === 'agent')
     return (

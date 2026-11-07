@@ -55,13 +55,13 @@ const menuItems = {
   student: [
     { title: "Dashboard", url: "/dashboard", icon: Home },
     { title: "My Profile", url: "/student/profile", icon: UserCircle },
-    { title: "Universities", url: "/student/universities", icon: Building2 },
-    { title: "Discover Courses", url: "/courses", icon: Search },
     { title: "My Applications", url: "/student/applications", icon: FileText },
     { title: "Documents", url: "/student/documents", icon: Upload },
     { title: "Messages", url: "/student/messages", icon: MessageSquare },
     { title: "Payments", url: "/student/payments", icon: DollarSign },
     { title: "Notifications", url: "/student/notifications", icon: Bell },
+    { title: "University directory (optional)", url: "/student/universities", icon: Building2 },
+    { title: "Course finder (optional)", url: "/courses", icon: Search },
   ],
   agent: [
     { title: "Dashboard", url: "/dashboard", icon: Home },
@@ -90,6 +90,7 @@ const menuItems = {
     { title: "Featured Showcase", url: "/university/featured-showcase", icon: Sparkles },
   ],
   staff: [
+    { title: "University matching", url: "/dashboard/placement", icon: Search },
     { title: "My Dashboard", url: "/dashboard", icon: Home },
     { title: "Students", url: "/dashboard/students", icon: Users },
     { title: "Agents", url: "/dashboard/reports", icon: BarChart3 },

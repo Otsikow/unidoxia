@@ -64,7 +64,7 @@ export default function FreeConsultation() {
           <Button type="submit" disabled={pending} className="w-full">{pending ? 'Sending enquiry…' : 'Send enquiry'}</Button>
         </form>}
       </CardContent></Card>
-      <section className="space-y-2"><h2 className="text-xl font-semibold">What happens next?</h2><p className="text-muted-foreground">Your enquiry is saved for the admissions team to follow up using your chosen contact method. We can then discuss your study plans and any further information needed. Submitting an enquiry does not submit a university application.</p></section>
+      <section className="space-y-2"><h2 className="text-xl font-semibold">Prefer to get started now?</h2><p className="text-muted-foreground">Create your student account, share your qualifications and upload your documents securely. Our advisers can then research suitable university options with you.</p><Link className="inline-flex min-h-11 items-center text-primary underline" to="/auth/signup?role=student&next=%2Fstudent%2Fdashboard">Register Your Interest</Link></section><section className="space-y-2"><h2 className="text-xl font-semibold">What happens next?</h2><p className="text-muted-foreground">Your enquiry is saved for the admissions team to follow up using your chosen contact method. We can then discuss your study plans and any further information needed. Submitting an enquiry does not submit a university application.</p></section>
       <p>Ready to provide your academic background? <Link to="/intake-form" className="text-primary underline">Use the full student intake form</Link>.</p>
     </div>
   </div>;
