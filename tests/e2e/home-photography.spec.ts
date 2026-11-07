@@ -41,10 +41,12 @@ test('the badge is attached to Eric Arthur on his personal page and its PDF work
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
   await expect(page.locator('img[src*="knowledge-badge"]')).toHaveCount(0);
   const training = page.getByRole('region', { name: 'UK knowledge-trained guidance', exact: true });
-  await expect(training).toContainText('Eric Arthur, who leads UniDoxia');
-  await expect(training).toContainText('Individual training award');
-  await expect(training.getByRole('link', { name: 'View the training certificate', exact: true })).toHaveAttribute('href', '/credentials/eric-arthur-uk-knowledge-training-certificate.pdf');
+  await expect(training.getByRole('img', { name: 'British Council', exact: true })).toBeVisible();
+  await expect(training).toContainText('The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training');
+  await expect(training.getByRole('link')).toHaveCount(1);
   await training.getByRole('link', { name: 'View training details', exact: true }).click();
+  await expect(page).toHaveURL(/\/about$/);
+  await page.getByRole('link', { name: 'View Eric Arthur’s individual training and badge', exact: true }).click();
   await expect(page).toHaveURL(/\/about\/eric-arthur$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Eric Arthur', exact: true })).toBeVisible();
   await expect(page.getByText(/This training and badge belong to Eric Arthur as an individual/)).toBeVisible();

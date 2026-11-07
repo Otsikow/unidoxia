@@ -46,11 +46,10 @@ export function destinationHref(country) {
 
 export const homeTraining = {
   title: "UK knowledge-trained guidance",
-  text: "Eric Arthur, who leads UniDoxia, has completed the British Council UK knowledge agent and counsellor training, supporting his guidance for students planning to study in the UK.",
-  detail: "Individual training award. Certificate 114757 is valid until 16 July 2028.",
-  href: "/about/eric-arthur",
+  text: "The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training, so students and university partners are supported by advisers trained to recognised UK standards.",
+  href: "/about",
   label: "View training details",
-  certificateHref: "/credentials/eric-arthur-uk-knowledge-training-certificate.pdf",
+  logo: "/home/british-council-logo.png",
 };
 
 export const homeAssurances = [

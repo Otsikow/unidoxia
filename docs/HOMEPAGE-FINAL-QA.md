@@ -1,6 +1,8 @@
 # UniDoxia final homepage quality review
 
-**Subsequent requested refinement:** [Restored prominent British Council training strip](HOMEPAGE-TRAINING-STRIP.md), with the old heading and placement below course search. The personal badge and direct certificate access remain.
+**Latest supplied-reference refinement:** Restored the exact original logo, paragraph and single `/about` training-details action at Eric’s explicit request. See [training-strip follow-up](HOMEPAGE-TRAINING-STRIP.md).
+
+**Earlier refinement:** [Restored prominent British Council training strip](HOMEPAGE-TRAINING-STRIP.md), with the old heading and placement below course search. The personal badge and direct certificate access remain.
 
 Reviewed on 7 November 2026 for [PR #1288](https://github.com/Otsikow/unidoxia/pull/1288), branch `redesign/public-homepage`. This report supersedes the earlier build audit for the checks and changes below. The local preview is http://127.0.0.1:4192/. No production code, catalogue records, database permissions or deployment was changed. One explicitly approved live contact-form test was submitted.
 

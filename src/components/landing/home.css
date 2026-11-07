@@ -442,18 +442,23 @@ html:has(.udx-home) { scroll-padding-bottom: 80px; }
 .udx-contact-content form button[type="submit"] { min-height: 48px; border-radius: 5px; box-shadow: none; background: var(--udx-navy); color: #fff; }
 @media (min-width: 768px) { .udx-contact-content { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 
-/* Restore the original homepage's prominent training strip below search. */
-.udx-training { border-bottom: 1px solid var(--udx-line); background: var(--udx-white); }
-.udx-training-inner { display: grid; gap: 18px 40px; padding-top: 28px; padding-bottom: 28px; }
-.udx-training .udx-kicker { font-size: .65rem; margin-bottom: 10px; }
-.udx-training h2 { font: 600 1.15rem / 1.4 var(--udx-sans); letter-spacing: -.015em; }
-.udx-training-description { margin-top: 9px; max-width: 78ch; font-size: .9rem; line-height: 1.7; color: var(--udx-muted); }
-.udx-training-detail { margin-top: 8px; font-size: .75rem; line-height: 1.6; color: var(--udx-muted); }
-.udx-training-links { display: flex; flex-wrap: wrap; align-content: center; gap: 0 24px; }
-.udx-training-links .udx-text-link { min-height: 44px; font-size: .8rem; }
+/* Match Eric's supplied reference and the original homepage training strip. */
+.udx-training { border-top: 1px solid hsl(var(--border, 240 6% 85%)); border-bottom: 1px solid hsl(var(--border, 240 6% 85%)); background: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif; color: hsl(var(--foreground, 240 6% 10%)); }
+.udx-training-inner { max-width: 1280px; margin-inline: auto; padding: 32px 16px; display: flex; flex-direction: column; gap: 24px; text-align: center; }
+.udx-training-main { display: flex; flex-direction: column; align-items: center; gap: 20px; min-width: 0; }
+.udx-training-logo { height: 40px; width: auto; flex: none; }
+.udx-training h2 { font: 600 1.25rem / 1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif; letter-spacing: -.025em; }
+.udx-training-description { margin-top: 4px; max-width: 672px; font-size: 1rem; line-height: 1.5; color: hsl(var(--muted-foreground, 240 4% 46%)); }
+.udx-training-link { display: inline-flex; align-items: center; justify-content: center; align-self: center; gap: 4px; flex: none; min-height: 44px; font-size: .875rem; line-height: 1.25rem; font-weight: 500; color: hsl(var(--primary, 211 100% 44%)); text-underline-offset: 4px; }
+.udx-training-link:hover { text-decoration: underline; }
+.udx-training-link svg { flex: none; }
+.dark .udx-training { background: #18181a; border-color: #3f3f46; }
+.dark .udx-training-logo { filter: brightness(0) invert(1); }
 .udx-assurance > div:only-child { grid-column: 1 / -1; }
 .udx-assurance > div:only-child p { max-width: 85ch; }
-@media (min-width: 960px) {
-  .udx-training-inner { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-  .udx-training-links { flex-direction: column; align-items: flex-start; }
+@media (min-width: 768px) {
+  .udx-training { margin-inline: 30px; }
+  .udx-training-inner { flex-direction: row; align-items: center; justify-content: space-between; text-align: left; }
+  .udx-training-main { flex-direction: row; }
 }
+@media (max-width: 639px) { .udx-training h2 { font-size: 1.125rem; } .udx-training-description { font-size: .875rem; line-height: 1.5; } }

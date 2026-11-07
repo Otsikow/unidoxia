@@ -142,17 +142,15 @@ export default function Index() {
         <HomeSearch />
 
         <section className="udx-training" aria-labelledby="uk-knowledge-trained-heading">
-          <div className="udx-wrap udx-training-inner">
-            <div>
-              <p className="udx-kicker">British Council training</p>
-              <h2 id="uk-knowledge-trained-heading">{homeTraining.title}</h2>
-              <p className="udx-training-description">{homeTraining.text}</p>
-              <p className="udx-training-detail">{homeTraining.detail}</p>
+          <div className="udx-training-inner">
+            <div className="udx-training-main">
+              <img className="udx-training-logo" src={homeTraining.logo} width={320} height={89} alt="British Council" loading="lazy" />
+              <div>
+                <h2 id="uk-knowledge-trained-heading">{homeTraining.title}</h2>
+                <p className="udx-training-description">{homeTraining.text}</p>
+              </div>
             </div>
-            <div className="udx-training-links">
-              <Link className="udx-text-link" to={homeTraining.href}>{homeTraining.label}<ArrowRight size={16} aria-hidden="true" /></Link>
-              <a className="udx-text-link" href={homeTraining.certificateHref}>View the training certificate<ArrowUpRight size={16} aria-hidden="true" /></a>
-            </div>
+            <Link className="udx-training-link" to={homeTraining.href}>{homeTraining.label}<ArrowRight size={16} aria-hidden="true" /></Link>
           </div>
         </section>
 

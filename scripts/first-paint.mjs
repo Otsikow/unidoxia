@@ -85,9 +85,9 @@ export function homeFirstPaint(featuredHtml, articles = []) {
       </div>
     </section>
     <section class="udx-training" aria-labelledby="uk-knowledge-trained-heading">
-      <div class="udx-wrap udx-training-inner">
-        <div><p class="udx-kicker">British Council training</p><h2 id="uk-knowledge-trained-heading">${homeTraining.title}</h2><p class="udx-training-description">${homeTraining.text}</p><p class="udx-training-detail">${homeTraining.detail}</p></div>
-        <div class="udx-training-links"><a class="udx-text-link" href="${homeTraining.href}">${homeTraining.label} →</a><a class="udx-text-link" href="${homeTraining.certificateHref}">View the training certificate ↗</a></div>
+      <div class="udx-training-inner">
+        <div class="udx-training-main"><img class="udx-training-logo" src="${homeTraining.logo}" width="320" height="89" alt="British Council" loading="lazy"><div><h2 id="uk-knowledge-trained-heading">${homeTraining.title}</h2><p class="udx-training-description">${homeTraining.text}</p></div></div>
+        <a class="udx-training-link" href="${homeTraining.href}">${homeTraining.label}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
       </div>
     </section>
     <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
