@@ -31,7 +31,7 @@ export default function AgentProfileDrawer({ agent, open, onOpenChange, onOpenCo
     setDocumentError('');
     try {
       const url = await getAgentCertificateUrl(agent.verificationDocumentUrl);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.location.assign(url);
     } catch (e) { setDocumentError(e instanceof Error ? e.message : 'Could not open certificate.'); }
   };
 

@@ -44,7 +44,7 @@ export default function AgentDocumentsTab({ profile }: { profile: { id: string; 
     setError('');
     try {
       const url = await getAgentCertificateUrl(query.data.verification_document_url);
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.location.assign(url);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not open certificate.'); }
   };
   return <Card>
