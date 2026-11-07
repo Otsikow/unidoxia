@@ -22,3 +22,17 @@ The hero uses RDNE Stock project's authentic campus portrait of a smiling studen
 A transparent-background treatment was explored using the built-in imagegen tool and rejected during the visual review. The selected website asset uses the original photograph.
 
 The files in insights/ are compressed derivatives of existing published UniDoxia article covers. Metadata continues to come from the published blog feed. Newly published covers without a local derivative use their original source URL.
+
+## Photography refinement — 7 November 2026
+
+The current homepage uses original photographs, cropped and compressed for responsive AVIF/WebP delivery. No generated people, synthetic backgrounds or university logos have been added. The scenes illustrate international education; they do not portray UniDoxia employees, clients, successful applicants or contracted partner institutions.
+
+- Hero, `campus-study-*`: two students in neat winter layers reviewing notes together on campus, by Keira Burton, [Pexels photo 6147369](https://www.pexels.com/photo/6147369/). The earlier short-top campus photograph was replaced following Eric’s request for well-dressed students.
+- Application journey, `study-planning-*`: two students researching with books and a laptop, by Yan Krukau, [Pexels photo 8199759](https://www.pexels.com/photo/students-studying-in-a-library-using-laptop-and-books-8199759/).
+- Education-agent invitation, `education-guidance-*`: a tutor and adult learners discussing work in a university library, [Pexels photo 5940831](https://www.pexels.com/photo/5940831/).
+- University invitation, `campus-life-*`: students walking beside campus gardens and buildings, by Armin Rimoldi, [Pexels photo 5553036](https://www.pexels.com/photo/smiling-diverse-students-having-talk-while-walking-along-campus-5553036/).
+- Closing invitation, `next-chapter-*`: students talking outside a university building, [Pexels photo 6147160](https://www.pexels.com/photo/6147160/).
+
+All are used under the [Pexels licence](https://www.pexels.com/license/). Images were selected for natural expressions, daylight, educational context and complementary warm neutral/blue-green colours. Exaggerated celebration and generic corporate document scenes were rejected. Hero files are prioritised; all added lower-page photographs are lazy-loaded. Responsive derivatives retain original faces and backgrounds.
+
+The British Council badge JPEG is the original 500 × 500 embedded image extracted unchanged from Eric Arthur's awarded `Badge.pdf`. It is shown only on his personal `/about/eric-arthur` page, at least 150px wide, in full colour with clear space. The original award PDF is linked. It is not an organisation badge and is not displayed on the business homepage. Placement follows the supplied `BCACTSBadgeGuidelines2026.pdf`, particularly pages 3–8 and 13. The isolated British Council logo was removed from the organisation About page.

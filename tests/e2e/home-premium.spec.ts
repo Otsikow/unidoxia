@@ -102,6 +102,10 @@ test('WhatsApp opens the configured contact and remains clear of focused control
   await expect(whatsapp).toBeVisible();
   await expect(whatsapp).toHaveAttribute('href', 'https://wa.me/447360961803');
   await expect(whatsapp).toHaveAttribute('target', '_blank');
+  if (test.info().project.name === 'mobile') {
+    await expect(whatsapp).toHaveCSS('width', '44px');
+    await expect(whatsapp).toHaveCSS('height', '44px');
+  }
   const popupPromise = page.waitForEvent('popup');
   await whatsapp.click();
   const popup = await popupPromise;

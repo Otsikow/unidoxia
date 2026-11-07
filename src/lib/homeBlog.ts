@@ -38,3 +38,16 @@ const coverThumbnails: Record<string, string> = {
 export function articleCover(source: string) {
   return coverThumbnails[source] ?? source;
 }
+
+export function articleCoverSources(source: string) {
+  const thumbnail = coverThumbnails[source];
+  if (!thumbnail) return undefined;
+  const stem = thumbnail.replace(/\.webp$/, "");
+  return `${stem}-320.webp 320w, ${stem}-640.webp 640w, ${thumbnail} 1100w`;
+}
+
+export function articleCoverSizes(index: number) {
+  return index === 0
+    ? "(max-width: 639px) calc(100vw - 32px), (max-width: 1023px) 44vw, 570px"
+    : "(max-width: 639px) 25vw, (max-width: 1023px) 44vw, 135px";
+}

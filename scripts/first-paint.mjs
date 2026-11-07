@@ -1,5 +1,6 @@
-import { articleCover, articleDate, selectHomeArticles } from '../src/lib/homeBlog.ts';
+import { articleCover, articleCoverSources, articleCoverSizes, articleDate, selectHomeArticles } from '../src/lib/homeBlog.ts';
 import { esc } from '../src/lib/publicSeo.mjs';
+import { homePartnerships, homeSocials, homeSocialIcons } from '../src/lib/homeEditorial.mjs';
 import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
 
 // Independent of the downloaded application CSS/JS: public fallback stays usable
@@ -37,7 +38,7 @@ export function renderFirstPaint({ path, body, nav, footer }) {
           </div>
         </header>
         <main id="main-content" tabindex="-1">${body}</main>
-        <div class="udx-footer"><div class="udx-wrap">${footer}</div></div>
+        <div class="udx-footer"><div class="udx-wrap">${homeSocialHtml()}${footer}</div></div>
         <a class="udx-whatsapp" href="https://wa.me/447360961803" target="_blank" rel="noopener noreferrer" aria-label="Chat with UniDoxia on WhatsApp (opens in a new tab)"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="${whatsappIconPath}"></path></svg><span>WhatsApp</span></a>
       </div>${pendingRoot}`;
   }
@@ -79,19 +80,20 @@ export function homeFirstPaint(featuredHtml, articles = []) {
     <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
       <div class="udx-section-head">
         <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
-        <p>Start with a destination that interests you. Compare the courses available in each country.</p>
+        <p>Explore opportunities in the UK, North America, Australia and across Europe. These six destinations are a starting point — browse the live catalogue for other countries with available courses.</p>
       </div>
       <div class="udx-destination-grid">
         ${homeDestinations.map(({ name, country, image, alt }) => `
           <article class="udx-destination">
             <a href="${destinationHref(country)}" aria-label="Explore courses in ${name}">
-              <img src="/home/${image}.webp" srcset="/home/${image}-660.webp 660w, /home/${image}.webp 1000w" sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px" width="1000" height="640" alt="${alt}" loading="lazy" fetchpriority="low" decoding="async">
+              <img src="/home/${image}.webp" srcset="/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w" sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px" width="1000" height="640" alt="${alt}" loading="lazy" fetchpriority="low" decoding="async">
               <span class="udx-destination-name">${name}<span aria-hidden="true">↗</span></span>
             </a>
             <p>Explore courses</p>
           </article>`).join('')}
       </div>
       <div class="udx-destination-resources">
+        <a class="udx-text-link" href="/courses">Explore more destinations →</a>
         <a class="udx-text-link" href="/universities">Browse all universities →</a>
         <a class="udx-text-link" href="/destinations/united-kingdom">Read the UK study guide ↗</a>
       </div>
@@ -103,22 +105,50 @@ export function homeFirstPaint(featuredHtml, articles = []) {
           <div><p class="udx-kicker">How it works</p><h2>A clear path from here</h2></div>
           <p>Four steps to help you move from an idea to an informed application.</p>
         </div>
+        <div class="udx-journey-grid">
+        ${homeEditorialPhoto('study-planning', 'Two students comparing notes and researching together with a laptop in a library', [640, 1000], .9)}
         <ol class="udx-steps">
           ${homeSteps.map(({ title, text }, index) => `<li><span aria-hidden="true">0${index + 1}</span><h3>${title}</h3><p>${text}</p></li>`).join('')}
         </ol>
+        </div>
         <div class="udx-assurance">
-          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a></div>`).join('')}
+          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a>${href.includes('training-certificate') ? '<a class="udx-text-link" href="/about/eric-arthur">Eric Arthur’s credentials ↗</a>' : ''}</div>`).join('')}
         </div>
       </div>
     </section>
     ${homeInsights(articles)}
+    ${homePartnershipHtml()}
     <section class="udx-next">
       <div class="udx-wrap udx-next-inner">
+        ${homeEditorialPhoto('next-chapter', 'Students talking outside a university building with books and backpacks', [640, 1000], 1.3)}
+        <div class="udx-next-copy">
         <div><h2>Your next step starts here.</h2><p>Have a course in mind? Create your profile and start preparing your application.</p></div>
         <div class="udx-actions"><a class="udx-button" href="${studentSignup}">Start your application</a><a class="udx-text-link" href="/free-consultation">Speak to an adviser</a></div>
+        </div>
       </div>
     </section>
     <div class="udx-wrap udx-support"><a href="https://wa.me/447360961803">Chat on WhatsApp</a><a href="/contact">Contact us</a><a href="/faq">FAQs</a><a href="/legal/privacy">Privacy policy</a><a href="/legal/terms">Terms of service</a></div>`;
+}
+
+function homeEditorialPhoto(image, alt, widths = [640, 1100], ratio = 1.6) {
+  const largest = widths.at(-1);
+  const sources = extension => widths.map(w => `/home/${image}-${w}.${extension} ${w}w`).join(', ');
+  const sizes = '(max-width: 767px) calc(100vw - 32px), 48vw';
+  return `<picture class="udx-editorial-photo"><source type="image/avif" srcset="${sources('avif')}" sizes="${sizes}"><img src="/home/${image}-${largest}.webp" srcset="${sources('webp')}" sizes="${sizes}" width="${largest}" height="${Math.round(largest / ratio)}" alt="${esc(alt)}" loading="lazy" decoding="async" fetchpriority="low"></picture>`;
+}
+
+function homePartnershipHtml() {
+  return `<section class="udx-section udx-partnerships" aria-labelledby="partnerships-title"><div class="udx-wrap">
+    <div class="udx-section-head"><div><p class="udx-kicker">Work with UniDoxia</p><h2 id="partnerships-title">More possibilities, together.</h2></div><p>Shared ambition starts with a conversation. Explore a potential recruitment collaboration.</p></div>
+    <div class="udx-partnership-grid">${homePartnerships.map(p => `<article>${homeEditorialPhoto(p.image, p.alt)}<div class="udx-partnership-copy"><p class="udx-partnership-audience">${esc(p.audience)}</p><h3>${esc(p.title)}</h3><p>${esc(p.text)}</p><a class="udx-text-link" href="${p.href}">${esc(p.label)} ↗</a></div></article>`).join('')}</div>
+  </div></section>`;
+}
+
+function homeSocialHtml() {
+  return `<nav class="udx-socials" aria-label="UniDoxia social media">${homeSocials.map(({ name, href, icon }) => {
+    const art = icon === 'whatsapp' ? { path: whatsappIconPath, stroke: false } : homeSocialIcons[icon];
+    return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" aria-label="UniDoxia on ${name} (opens in a new tab)" title="${name}"><svg width="19" height="19" viewBox="0 0 24 24" fill="${art.stroke ? 'none' : 'currentColor'}" ${art.stroke ? 'stroke="currentColor" stroke-width="1.8"' : ''} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${art.path}"></path></svg></a>`;
+  }).join('')}</nav>`;
 }
 
 
@@ -132,10 +162,10 @@ function homeInsights(articles) {
           <div class="udx-insights-intro"><p>Practical reading on applications, scholarships and life as an international student.</p><a href="/blog" class="udx-text-link">View all articles →</a></div>
         </div>
         <div class="udx-insights-grid">
-          ${posts.map(post => `
+          ${posts.map((post, index) => `
             <article class="udx-insight">
               <a href="/blog/${esc(post.slug)}" class="udx-insight-link">
-                ${post.cover_image_url ? `<img src="${esc(articleCover(post.cover_image_url))}" alt="" width="1280" height="720" loading="lazy" fetchpriority="low" decoding="async">` : ''}
+                ${post.cover_image_url ? `<img src="${esc(articleCover(post.cover_image_url))}" ${articleCoverSources(post.cover_image_url) ? `srcset="${esc(articleCoverSources(post.cover_image_url))}" sizes="${articleCoverSizes(index)}"` : ''} alt="" width="1280" height="720" loading="lazy" fetchpriority="low" decoding="async">` : ''}
                 <div class="udx-insight-copy">
                   <div class="udx-article-meta">
                     ${post.tags?.[0] ? `<span>${esc(post.tags[0])}</span>` : ''}

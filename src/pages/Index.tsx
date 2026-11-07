@@ -5,6 +5,9 @@ import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
 import LatestFromBlog from "@/components/landing/LatestFromBlog";
 import { HomeWhatsApp } from "@/components/landing/HomeWhatsApp";
+import { HomePhotography } from "@/components/landing/HomePhotography";
+import { HomePartnerships } from "@/components/landing/HomePartnerships";
+import { HomeSocials } from "@/components/landing/HomeSocials";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SEO } from "@/components/SEO";
 import { business, businessFooter } from "@/config/business";
@@ -77,6 +80,7 @@ function HomeFooter() {
             <div className="udx-footer-brand"><HomeBrand /><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
             <p>University discovery and application guidance for students from Africa.</p>
             <a href={`mailto:${business.email}`}>{business.email}</a>
+            <HomeSocials />
           </div>
           {footerGroups.map(({ title, links }) => (
             <div key={title}>
@@ -129,7 +133,7 @@ export default function Index() {
               <p className="udx-kicker">Study destinations</p>
               <h2 id="destinations-title">Where could you study?</h2>
             </div>
-            <p>Start with a destination that interests you. Compare the courses available in each country.</p>
+            <p>Explore opportunities in the UK, North America, Australia and across Europe. These six destinations are a starting point — browse the live catalogue for other countries with available courses.</p>
           </div>
           <div className="udx-destination-grid">
             {homeDestinations.map(({ name, country, image, alt }) => (
@@ -137,7 +141,7 @@ export default function Index() {
                 <Link to={destinationHref(country)} aria-label={`Explore courses in ${name}`}>
                   <img
                     src={`/home/${image}.webp`}
-                    srcSet={`/home/${image}-660.webp 660w, /home/${image}.webp 1000w`}
+                    srcSet={`/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w`}
                     sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px"
                     width={1000}
                     height={640}
@@ -153,6 +157,7 @@ export default function Index() {
             ))}
           </div>
           <div className="udx-destination-resources">
+            <Link className="udx-text-link" to="/courses">Explore more destinations <ArrowRight size={17} aria-hidden="true" /></Link>
             <Link className="udx-text-link" to="/universities">Browse all universities <ArrowRight size={17} aria-hidden="true" /></Link>
             <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
           </div>
@@ -168,21 +173,25 @@ export default function Index() {
               </div>
               <p>Four steps to help you move from an idea to an informed application.</p>
             </div>
-            <ol className="udx-steps">
-              {homeSteps.map(({ title, text }, index) => (
-                <li key={title}>
-                  <span aria-hidden="true">0{index + 1}</span>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </li>
-              ))}
-            </ol>
+            <div className="udx-journey-grid">
+              <HomePhotography image="study-planning" alt="Two students comparing notes and researching together with a laptop in a library" widths={[640, 1000]} ratio={.9} sizes="(max-width: 767px) calc(100vw - 32px), 40vw" />
+              <ol className="udx-steps">
+                {homeSteps.map(({ title, text }, index) => (
+                  <li key={title}>
+                    <span aria-hidden="true">0{index + 1}</span>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
             <div className="udx-assurance">
               {homeAssurances.map(({ title, text, href, label }) => (
                 <div key={title}>
                   <h3>{title}</h3>
                   <p>{text}</p>
                   <a className="udx-text-link" href={href}>{label}<ArrowUpRight size={16} aria-hidden="true" /></a>
+                  {href.includes("training-certificate") && <Link className="udx-text-link" to="/about/eric-arthur">Eric Arthur’s credentials <ArrowUpRight size={16} aria-hidden="true" /></Link>}
                 </div>
               ))}
             </div>
@@ -207,18 +216,23 @@ export default function Index() {
           </div>
         </section>
 
+        <HomePartnerships />
+
         <section className="udx-next" aria-labelledby="next-title">
           <div className="udx-wrap udx-next-inner">
-            <div>
-              <p className="udx-kicker">Take the next step</p>
-              <h2 id="next-title">Your next step starts here.</h2>
-              <p>Have a course in mind? Create your profile and start preparing your application.</p>
-            </div>
-            <div className="udx-actions">
-              <Link className="udx-button" to={user ? "/dashboard" : studentSignup}>
-                {user ? "Open your dashboard" : "Start your application"} <ArrowRight size={18} aria-hidden="true" />
-              </Link>
-              <Link className="udx-text-link" to="/free-consultation">Speak to an adviser <ArrowUpRight size={17} aria-hidden="true" /></Link>
+            <HomePhotography image="next-chapter" alt="Students talking outside a university building with books and backpacks" widths={[640, 1000]} ratio={1.3} />
+            <div className="udx-next-copy">
+              <div>
+                <p className="udx-kicker">Take the next step</p>
+                <h2 id="next-title">Your next step starts here.</h2>
+                <p>Have a course in mind? Create your profile and start preparing your application.</p>
+              </div>
+              <div className="udx-actions">
+                <Link className="udx-button" to={user ? "/dashboard" : studentSignup}>
+                  {user ? "Open your dashboard" : "Start your application"} <ArrowRight size={18} aria-hidden="true" />
+                </Link>
+                <Link className="udx-text-link" to="/free-consultation">Speak to an adviser <ArrowUpRight size={17} aria-hidden="true" /></Link>
+              </div>
             </div>
           </div>
         </section>

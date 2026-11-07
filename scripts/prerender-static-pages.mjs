@@ -1,4 +1,5 @@
 import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../src/lib/homepage.mjs';
+import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -74,6 +75,12 @@ const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a h
 const footer = `<footer><p>${esc(businessFooter)}</p></footer>`;
 
 const pages = [
+  {
+    path: counsellorCredential.path,
+    title: counsellorCredential.title,
+    description: counsellorCredential.description,
+    body: `<h1>Eric Arthur</h1><p>UK knowledge-trained leadership at UniDoxia</p><h2>British Council UK knowledge training</h2><p>${esc(counsellorCredential.descriptor)}</p><img src="/credentials/eric-arthur-uk-knowledge-badge.jpg" width="240" height="240" alt="British Council and UK Agent Quality Framework: I am a UK knowledge trained counsellor"><p>Training certificate 114757 is valid until 16 July 2028. The individual digital badge was awarded 18 July 2026 and is valid until 17 July 2028.</p><p><a href="/credentials/eric-arthur-uk-knowledge-training-certificate.pdf">View Eric’s training certificate</a> · <a href="/credentials/eric-arthur-uk-knowledge-badge.pdf">View Eric’s badge award</a></p><p>This training and badge belong to Eric Arthur as an individual. They do not mean that the British Council endorses, accredits or validates UniDoxia or its services.</p>`,
+  },
   {
     path: "/",
     jsonLd: organisation,

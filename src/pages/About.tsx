@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import britishCouncilLogo from "@/assets/british-council-logo.png";
 
 import { SEO } from "@/components/SEO";
 import { SITE_ORIGIN } from "@/components/SEO";
@@ -98,12 +97,7 @@ const About = () => {
         >
           UK knowledge-trained leadership
         </h2>
-        <img
-          src={britishCouncilLogo}
-          alt="British Council"
-          loading="lazy"
-          className="h-10 w-auto mb-4 dark:brightness-0 dark:invert"
-        />
+        <p className="mb-4"><Link to="/about/eric-arthur" className="text-primary underline underline-offset-4">View Eric Arthur’s individual training and badge</Link></p>
         <p className="text-muted-foreground mb-4">
           The leadership of UniDoxia has completed the British Council{" "}
           <em>UK knowledge agent and counsellor training</em> and agreed to the national

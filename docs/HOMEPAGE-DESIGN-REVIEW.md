@@ -1,5 +1,7 @@
 # UniDoxia homepage design review — 7 November 2026
 
+Historical review of the preceding iteration. See [the subsequent photography and partnership review](HOMEPAGE-PHOTOGRAPHY-REVIEW.md) for the current design and verification evidence.
+
 This is a design review deliverable on `redesign/public-homepage`, draft PR [#1288](https://github.com/Otsikow/unidoxia/pull/1288). Nothing has been merged, published or written to the production database. The working built preview is at http://127.0.0.1:4192/ on Eric's Mac. This is a local preview, not a hosted staging deployment.
 
 ## Visual decisions

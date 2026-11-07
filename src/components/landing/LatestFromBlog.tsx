@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { articleCover, articleDate, selectHomeArticles, type HomeArticle } from "@/lib/homeBlog";
+import { articleCover, articleCoverSources, articleCoverSizes, articleDate, selectHomeArticles, type HomeArticle } from "@/lib/homeBlog";
 
 export default function LatestFromBlog() {
   const { data, isLoading, isError, refetch } = useQuery({
@@ -49,11 +49,11 @@ export default function LatestFromBlog() {
         <p className="udx-insights-state" role="status">No articles are available yet. You can contact our team for help with your study plans.</p>
       ) : (
         <div className="udx-insights-grid">
-          {posts.map((post) => (
+          {posts.map((post, index) => (
             <article className="udx-insight" key={post.id}>
               <Link to={`/blog/${post.slug}`} className="udx-insight-link">
                 {post.cover_image_url && (
-                  <img src={articleCover(post.cover_image_url)} alt="" width={1280} height={720} loading="lazy" fetchPriority="low" decoding="async" />
+                  <img src={articleCover(post.cover_image_url)} srcSet={articleCoverSources(post.cover_image_url)} sizes={articleCoverSizes(index)} alt="" width={1280} height={720} loading="lazy" fetchPriority="low" decoding="async" />
                 )}
                 <div className="udx-insight-copy">
                   <div className="udx-article-meta">
