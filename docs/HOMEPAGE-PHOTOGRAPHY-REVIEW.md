@@ -10,7 +10,7 @@ Draft design work on `redesign/public-homepage`, [PR #1288](https://github.com/O
 - Added a coherent two-column partnership section near the bottom, with an adult education discussion and a campus scene. One invitation leads to existing agent onboarding, the other to the university recruitment enquiry page. Copy describes a potential collaboration and contains no commission or outcome promises.
 - Added a campus photograph to the closing student application invitation. It remains a solid navy split composition with legible text, rather than text over a busy photograph.
 - Retained the real published blog feed and covers. Added responsive small-cover derivatives so compact supporting thumbnails do not fetch the full-size homepage cover. Future article covers without derivatives retain their actual stored image URL.
-- Added smaller destination images and responsive AVIF/WebP student photographs. The hero is prioritised and preloaded; all new lower-page photographs are lazy-loaded. Mobile WhatsApp is now a labelled 44 × 44 px icon button, while desktop retains the text label.
+- Added smaller destination images and responsive AVIF/WebP student photographs. The hero is prioritised and preloaded; all new lower-page photographs are lazy-loaded. WhatsApp now matches the original compact circular appearance: 36px on mobile, 40px on desktop, with a 20px logo. Its invisible 44 × 44 px hit area and accessible label are retained at both sizes.
 
 All five selected photographs are used under the [Pexels licence](https://www.pexels.com/license/). They illustrate education and do not depict UniDoxia staff, customers, successful applicants or contracted partner institutions. [Asset provenance](../public/home/ASSET-CREDITS.md) identifies the sources and derivative files. No ApplyBoard photographs, generated faces or university trademarks were added.
 
@@ -57,3 +57,7 @@ The browser suite tested the actual agent invitation through onboarding and earn
 The code does not modify auth policies, privileged role handling, database permissions, student application operations, agent commission logic or university administration. Existing anonymous protected-route redirects were checked. Authenticated portal operations, message delivery and Zoe’s authenticated answers remain outside the verified scope.
 
 The full-page before/after images for desktop, tablet and mobile, eight final viewport captures, personal-credential screenshots, verification logs and Lighthouse JSON reports are in the local workspace `outputs/unidoxia-photography/` directory. Production release remains approval-gated. The existing Lovable main-branch preview must not be represented as this unmerged branch.
+
+## Compact WhatsApp follow-up
+
+Matched the original launcher’s visible sizes and green circular treatment across mobile and desktop. Removed the visible desktop text pill. The existing contact URL, analytics and new-tab behaviour are unchanged. The production build/SEO checks and focused desktop/mobile WhatsApp interaction checks passed. Browser measurements confirm 36/40px visible circles, a 20px logo and a 44px hit target. No production deployment.
