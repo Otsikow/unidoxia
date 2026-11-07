@@ -18,6 +18,9 @@ async function actor(role,tenant='00000000-0000-0000-0000-000000000001',trusted=
   : data(await api.auth.signUp({email,password,options:{data:{role,full_name:'Synthetic agent',username:`agent_${randomUUID().replaceAll('-','')}`}}}),'public signup');
  const id=signup.user?.id;if(!id)throw Error('No Auth user');users.push(id);
  data(await service.auth.admin.updateUserById(id,{email_confirm:true}),'confirm local account');
+ // Provision reviewers through the same trusted user_roles path used by the
+ // existing acceptance suites. Auth admin metadata alone is not a role grant.
+ if(trusted)data(await service.from('user_roles').upsert({user_id:id,role},{onConflict:'user_id,role'}),'grant synthetic reviewer role');
  data(await service.from('profiles').update({tenant_id:tenant}).eq('id',id),'scope fixture');
  if(role==='agent')data(await service.from('agents').update({tenant_id:tenant}).eq('profile_id',id),'scope agent');
  data(await api.auth.signInWithPassword({email,password}),'password login');
