@@ -44,13 +44,16 @@ export function destinationHref(country) {
   return `/courses?${new URLSearchParams({ country })}`;
 }
 
+export const homeTraining = {
+  title: "UK knowledge-trained guidance",
+  text: "Eric Arthur, who leads UniDoxia, has completed the British Council UK knowledge agent and counsellor training, supporting his guidance for students planning to study in the UK.",
+  detail: "Individual training award. Certificate 114757 is valid until 16 July 2028.",
+  href: "/about/eric-arthur",
+  label: "View training details",
+  certificateHref: "/credentials/eric-arthur-uk-knowledge-training-certificate.pdf",
+};
+
 export const homeAssurances = [
-  {
-    title: "Eric Arthur’s training",
-    text: "Eric Arthur has completed the British Council UK knowledge agent and counsellor training. Certificate 114757 is valid until 16 July 2028.",
-    href: "/credentials/eric-arthur-uk-knowledge-training-certificate.pdf",
-    label: "View the training certificate",
-  },
   {
     title: "Consultation and service fees",
     text: "Your first consultation is free. Optional paid services include agent-supported application guidance. Check the plan and what it includes before paying. University fees, tuition, deposits and government charges are separate from UniDoxia’s fees.",

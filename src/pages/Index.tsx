@@ -19,7 +19,7 @@ import { organisation } from "@/lib/publicSeo.mjs";
 import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
 import { homeFooterGroups } from "@/lib/homeEditorial.mjs";
 import { homeFooterIcons } from "@/lib/homeFooterIcons";
-import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import "@/components/landing/home.css";
 
 const WHATSAPP_URL = "https://wa.me/447360961803";
@@ -141,6 +141,21 @@ export default function Index() {
 
         <HomeSearch />
 
+        <section className="udx-training" aria-labelledby="uk-knowledge-trained-heading">
+          <div className="udx-wrap udx-training-inner">
+            <div>
+              <p className="udx-kicker">British Council training</p>
+              <h2 id="uk-knowledge-trained-heading">{homeTraining.title}</h2>
+              <p className="udx-training-description">{homeTraining.text}</p>
+              <p className="udx-training-detail">{homeTraining.detail}</p>
+            </div>
+            <div className="udx-training-links">
+              <Link className="udx-text-link" to={homeTraining.href}>{homeTraining.label}<ArrowRight size={16} aria-hidden="true" /></Link>
+              <a className="udx-text-link" href={homeTraining.certificateHref}>View the training certificate<ArrowUpRight size={16} aria-hidden="true" /></a>
+            </div>
+          </div>
+        </section>
+
         <section className="udx-section udx-wrap" id="destinations" tabIndex={-1} aria-labelledby="destinations-title">
           <div className="udx-section-head">
             <div>
@@ -207,7 +222,6 @@ export default function Index() {
                   <h3>{title}</h3>
                   <p>{text}</p>
                   <a className="udx-text-link" href={href}>{label}<ArrowUpRight size={16} aria-hidden="true" /></a>
-                  {href.includes("training-certificate") && <Link className="udx-text-link" to="/about/eric-arthur">View Eric Arthur’s training badge <ArrowUpRight size={16} aria-hidden="true" /></Link>}
                 </div>
               ))}
             </div>

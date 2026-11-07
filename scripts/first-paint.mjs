@@ -6,7 +6,7 @@ import { homePartnerships, homeFooterGroups, homeSocials, homeSocialIcons } from
 import { homeFooterIcons } from '../src/lib/homeFooterIcons.ts';
 import { business } from '../src/config/business.ts';
 import { STUDY_DESTINATIONS } from '../src/lib/studyDestinations.ts';
-import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
+import { destinationHref, homeAssurances, homeTraining, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
 
 // Independent of the downloaded application CSS/JS: public fallback stays usable
 // while the first React route loads, including on slow or failed connections.
@@ -84,6 +84,12 @@ export function homeFirstPaint(featuredHtml, articles = []) {
         </form>
       </div>
     </section>
+    <section class="udx-training" aria-labelledby="uk-knowledge-trained-heading">
+      <div class="udx-wrap udx-training-inner">
+        <div><p class="udx-kicker">British Council training</p><h2 id="uk-knowledge-trained-heading">${homeTraining.title}</h2><p class="udx-training-description">${homeTraining.text}</p><p class="udx-training-detail">${homeTraining.detail}</p></div>
+        <div class="udx-training-links"><a class="udx-text-link" href="${homeTraining.href}">${homeTraining.label} →</a><a class="udx-text-link" href="${homeTraining.certificateHref}">View the training certificate ↗</a></div>
+      </div>
+    </section>
     <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
       <div class="udx-section-head">
         <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
@@ -119,7 +125,7 @@ export function homeFirstPaint(featuredHtml, articles = []) {
         </ol>
         </div>
         <div class="udx-assurance">
-          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a>${href.includes('training-certificate') ? '<a class="udx-text-link" href="/about/eric-arthur">View Eric Arthur’s training badge ↗</a>' : ''}</div>`).join('')}
+          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a></div>`).join('')}
         </div>
       </div>
     </section>
