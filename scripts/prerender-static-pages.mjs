@@ -1,5 +1,6 @@
 import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../src/lib/homepage.mjs';
 import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
+import { internationalDirectoryIntro, selectInternationalUniversityListings } from '../src/lib/homeInternationalUniversities.ts';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -29,6 +30,7 @@ const esc = (s = "") =>
 const guides = publishedStudyGuides();
 const { universities, programmes } = await loadPublicCatalogue();
 const featured = universities.filter(u => u.featured).sort((a, b) => (a.featured_priority ?? Infinity) - (b.featured_priority ?? Infinity)).slice(0, 12);
+const international = selectInternationalUniversityListings(universities);
 const posts = await fetchPublicRows("blog_posts?select=id,slug,title,seo_title,seo_description,excerpt,content_html,content_md,tags,published_at,updated_at,cover_image_url&status=eq.published");
 const scholarships = await fetchPublicRows('scholarships?select=id,slug,title,name,summary,description,full_description,seo_title,seo_description,status,updated_at,published_at,institution_name,sponsor_name,country,study_level,academic_year,deadline,opening_date,scholarship_value,funding_type,number_of_awards,last_verified_at,eligible_nationalities,academic_requirements,english_requirements,work_experience_requirements,age_requirements,important_conditions,application_steps,official_source_url,official_application_url,featured_image,og_image,verification_status&slug=not.is.null&status=in.(Published,"Closing Soon",Upcoming,Closed,Archived)');
 // Same English questions and answers as the React FAQ; fail rather than silently
@@ -74,6 +76,8 @@ const featuredHtml = featured.length
 const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a href="/universities">Universities</a> · <a href="/destinations/united-kingdom">Study in the UK</a> · <a href="/scholarships">Scholarships</a> · <a href="/blog">Blog</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;
 const footer = `<footer><p>${esc(businessFooter)}</p></footer>`;
 
+const internationalHtml = international.length ? `<section class="udx-featured udx-international" aria-labelledby="international-universities-title"><h2 id="international-universities-title">Universities beyond the UK</h2><p>${esc(internationalDirectoryIntro)}</p><ul>${international.map(u => `<li><p class="udx-university-location">${esc([u.city, u.country].filter(Boolean).join(', '))}</p><h3><a href="/universities/${esc(u.slug)}">${esc(u.name)} ↗</a></h3></li>`).join('')}</ul></section>` : '';
+
 const pages = [
   {
     path: counsellorCredential.path,
@@ -86,7 +90,7 @@ const pages = [
     jsonLd: organisation,
     title: homeTitle,
     description: homeDescription,
-    body: homeFirstPaint(featuredHtml, posts),
+    body: homeFirstPaint(featuredHtml + internationalHtml, posts),
   },
   {
     path: '/free-consultation', title: 'Free Study Abroad Consultation | UniDoxia',

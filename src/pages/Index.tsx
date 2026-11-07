@@ -3,6 +3,7 @@ import { ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus, Search } from "luc
 import type { FormEvent } from "react";
 import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
+import { InternationalUniversityLinks } from "@/components/landing/InternationalUniversityLinks";
 import LatestFromBlog from "@/components/landing/LatestFromBlog";
 import { HomeWhatsApp } from "@/components/landing/HomeWhatsApp";
 import { HomePhotography } from "@/components/landing/HomePhotography";
@@ -175,6 +176,7 @@ export default function Index() {
             <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
           </div>
           <FeaturedUniversitiesSection />
+          <InternationalUniversityLinks />
         </section>
 
         <section className="udx-section udx-journey" id="how-it-works" tabIndex={-1} aria-labelledby="journey-title">
@@ -205,7 +207,7 @@ export default function Index() {
                   <h3>{title}</h3>
                   <p>{text}</p>
                   <a className="udx-text-link" href={href}>{label}<ArrowUpRight size={16} aria-hidden="true" /></a>
-                  {href.includes("training-certificate") && <Link className="udx-text-link" to="/about/eric-arthur">Eric Arthur’s credentials <ArrowUpRight size={16} aria-hidden="true" /></Link>}
+                  {href.includes("training-certificate") && <Link className="udx-text-link" to="/about/eric-arthur">View Eric Arthur’s training badge <ArrowUpRight size={16} aria-hidden="true" /></Link>}
                 </div>
               ))}
             </div>

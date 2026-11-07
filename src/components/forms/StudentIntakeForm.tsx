@@ -30,6 +30,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { STUDY_ENQUIRY_DESTINATIONS } from '@/lib/studyDestinations';
 import {
   AlertCircle,
   CheckCircle2,
@@ -185,7 +186,7 @@ const studyAreas = [
   'Science & Mathematics'
 ];
 
-const destinations = ['Canada', 'United Kingdom', 'United States', 'Australia', 'New Zealand', 'Ireland'];
+const destinations = STUDY_ENQUIRY_DESTINATIONS;
 
 const seasonMonths: Record<string, number> = { January: 1, May: 5, September: 9 };
 const futureSeasons = (year: string, now = new Date()) => Object.keys(seasonMonths).filter(term => new Date(Number(year), seasonMonths[term] - 1, 1) > now).concat('Rolling Intake');
@@ -891,7 +892,7 @@ export default function StudentIntakeForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Preferred study destinations *</FormLabel>
-                      <FormDescription>Select at least one country you are considering.</FormDescription>
+                      <FormDescription>Select at least one country you are considering. Course availability and application options vary by destination.</FormDescription>
                       <div className="grid gap-3 sm:grid-cols-2">
                         {destinations.map((country) => {
                           const checked = field.value?.includes(country);

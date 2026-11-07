@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +43,8 @@ export const ContactForm = () => {
   const [whatsapp, setWhatsapp] = useState("");
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const sending = useRef(false);
+  const fieldId = useId();
   const { toast } = useToast();
   const { t } = useTranslation();
 
@@ -50,6 +52,7 @@ export const ContactForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sending.current) return;
 
     try {
       // Validate input
@@ -60,13 +63,14 @@ export const ContactForm = () => {
         whatsapp: whatsapp.trim() ? whatsapp.trim() : undefined,
       });
 
+      sending.current = true;
       setIsSubmitting(true);
 
-      const { error } = await invokeEdgeFunction("send-contact-email", {
+      const { data, error } = await invokeEdgeFunction<{ success?: boolean }>("send-contact-email", {
         body: validatedData,
       });
 
-      if (error) throw error;
+      if (error || data?.success !== true) throw error ?? new Error("The contact submission was not confirmed");
 
       toast({
         title: t("components.contactForm.notifications.successTitle"),
@@ -97,6 +101,7 @@ export const ContactForm = () => {
         });
       }
     } finally {
+      sending.current = false;
       setIsSubmitting(false);
     }
   };
@@ -104,9 +109,12 @@ export const ContactForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
+        <label className="mb-2 block text-sm font-medium" htmlFor={`${fieldId}-name`}>{t("components.contactForm.placeholders.name")}</label>
         <Input
+          id={`${fieldId}-name`}
+          name="name"
+          autoComplete="name"
           type="text"
-          placeholder={t("components.contactForm.placeholders.name")}
           aria-label={t("components.contactForm.placeholders.name")}
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -115,9 +123,12 @@ export const ContactForm = () => {
         />
       </div>
       <div>
+        <label className="mb-2 block text-sm font-medium" htmlFor={`${fieldId}-email`}>{t("components.contactForm.placeholders.email")}</label>
         <Input
+          id={`${fieldId}-email`}
+          name="email"
+          autoComplete="email"
           type="email"
-          placeholder={t("components.contactForm.placeholders.email")}
           aria-label={t("components.contactForm.placeholders.email")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -126,9 +137,12 @@ export const ContactForm = () => {
         />
       </div>
       <div>
+        <label className="mb-2 block text-sm font-medium" htmlFor={`${fieldId}-whatsapp`}>{t("components.contactForm.placeholders.whatsapp")}</label>
         <Input
+          id={`${fieldId}-whatsapp`}
+          name="whatsapp"
+          autoComplete="tel"
           type="tel"
-          placeholder={t("components.contactForm.placeholders.whatsapp")}
           aria-label={t("components.contactForm.placeholders.whatsapp")}
           value={whatsapp}
           onChange={(e) => setWhatsapp(e.target.value)}
@@ -136,8 +150,10 @@ export const ContactForm = () => {
         />
       </div>
       <div>
+        <label className="mb-2 block text-sm font-medium" htmlFor={`${fieldId}-message`}>{t("components.contactForm.placeholders.message")}</label>
         <Textarea
-          placeholder={t("components.contactForm.placeholders.message")}
+          id={`${fieldId}-message`}
+          name="message"
           aria-label={t("components.contactForm.placeholders.message")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}

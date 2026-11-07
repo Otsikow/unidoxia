@@ -1,6 +1,8 @@
 # UniDoxia final build and landing-page review
 
-Reviewed on 7 November 2026. This is the latest review record for [PR #1288](https://github.com/Otsikow/unidoxia/pull/1288), superseding the earlier consolidation and photography reports for current verification results. Changes remain on `redesign/public-homepage`; no production deployment, database migration or permission change was made.
+**Latest follow-up:** [Final homepage QA and live contact-test evidence](HOMEPAGE-FINAL-QA.md) records the subsequent destination, international directory and contact-form refinements, fresh screenshots and current limitations.
+
+Reviewed on 7 November 2026. This was the review record for [PR #1288](https://github.com/Otsikow/unidoxia/pull/1288), superseding the earlier consolidation and photography reports for current verification results. Changes remain on `redesign/public-homepage`; no production deployment, database migration or permission change was made.
 
 ## Running environment
 

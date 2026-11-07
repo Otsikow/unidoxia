@@ -40,7 +40,7 @@ test('the badge is attached to Eric Arthur on his personal page and its PDF work
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
   await expect(page.locator('img[src*="knowledge-badge"]')).toHaveCount(0);
-  await page.getByRole('link', { name: 'Eric Arthur’s credentials', exact: true }).click();
+  await page.getByRole('link', { name: 'View Eric Arthur’s training badge', exact: true }).click();
   await expect(page).toHaveURL(/\/about\/eric-arthur$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Eric Arthur', exact: true })).toBeVisible();
   await expect(page.getByText(/This training and badge belong to Eric Arthur as an individual/)).toBeVisible();

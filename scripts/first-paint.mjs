@@ -119,7 +119,7 @@ export function homeFirstPaint(featuredHtml, articles = []) {
         </ol>
         </div>
         <div class="udx-assurance">
-          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a>${href.includes('training-certificate') ? '<a class="udx-text-link" href="/about/eric-arthur">Eric Arthur’s credentials ↗</a>' : ''}</div>`).join('')}
+          ${homeAssurances.map(({ title, text, href, label }) => `<div><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${href}">${label} ↗</a>${href.includes('training-certificate') ? '<a class="udx-text-link" href="/about/eric-arthur">View Eric Arthur’s training badge ↗</a>' : ''}</div>`).join('')}
         </div>
       </div>
     </section>
