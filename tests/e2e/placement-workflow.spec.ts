@@ -413,6 +413,8 @@ test("student requests review, adviser shares a researched option, student respo
         student_feedback: "Can we discuss the entry requirements?",
       },
     ]);
+    const folder = "../outputs/unidoxia-registration-led/portal";
+    fs.mkdirSync(folder, { recursive: true });
     for (const p of [student, staff]) {
       await p.bringToFront();
       expect(
@@ -471,17 +473,12 @@ test("student requests review, adviser shares a researched option, student respo
         });
         expect(violations).toEqual([]);
       }
+      await p.screenshot({
+        path: `${folder}/${p === student ? "student" : "staff"}-${testInfo.project.name}.png`,
+        fullPage: true,
+        animations: "disabled",
+      });
     }
-    const folder = "../outputs/unidoxia-registration-led/portal";
-    fs.mkdirSync(folder, { recursive: true });
-    await student.screenshot({
-      path: `${folder}/student-${testInfo.project.name}.png`,
-      fullPage: true,
-    });
-    await staff.screenshot({
-      path: `${folder}/staff-${testInfo.project.name}.png`,
-      fullPage: true,
-    });
   } catch (e) {
     console.log("STUDENT VIEW", await student.locator("body").innerText());
     console.log("STAFF VIEW", await staff.locator("body").innerText());

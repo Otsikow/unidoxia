@@ -75,6 +75,8 @@ Mobile loading remains a limitation, consistent with the preceding 82–83 sampl
 
 The code is ready to merge after the recorded checks. **The new workflow is not yet approved for production activation or publication.**
 
+Final backend read-back: [run 42381087912](https://github.com/Otsikow/unidoxia/actions/runs/42381087912) also passed on `aa43bfaad3dc60490a20f5e23ca39c722fb7225f`, including stack removal. The subsequent evidence-only update settles animations during portal capture; application source and candidate SQL remain unchanged.
+
 1. Obtain approval to activate exact migration `20261107124135_adviser_led_student_placement.sql` through the managed UniDoxia release process. Until then, the preview can show the explicit backend-unavailable state for adviser review. Existing profile/document/contact links remain available.
 2. After activation, regenerate main database types, verify the actual deployed schema and same-tenant staff/document permissions, and perform authorised disposable-account acceptance before publishing. The isolated private Storage fixture does not certify every existing production policy.
 3. Confirm standalone British Council logo permission, or approve a text-only individual training treatment before publication.
