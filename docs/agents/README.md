@@ -22,10 +22,19 @@
 
 ## Live activation gates
 
-1. Read actual columns, defaults, NOT NULL/check/unique constraints, all triggers/functions on agents, `handle_new_user` and `ensure_user_profile`, and all agent/Storage policies. Confirm live grants and tenant-role helpers. Review other permissive Storage policies because PostgreSQL combines them with OR; do not assume the new bucket's policies override broader existing grants.
+1. Read actual columns, defaults, NOT NULL/check/unique constraints, all triggers/functions on agents, `handle_new_user` and `ensure_user_profile`, and all agent/Storage policies. Confirm live grants and tenant-role helpers. Review all existing Storage policies, including any restrictive policies. This migration adds restrictive boundaries to prevent broad existing permissive grants from exposing certificates; local checks stress this with an intentionally broad grant.
 2. Confirm the exact migration is absent from `supabase_migrations.schema_migrations`. Obtain Eric's migration-specific approval for `20261107153640_agent_profile_documents.sql` after reviewing its exact commit/hash. Apply only that migration transactionally and record the ledger entry. Do not apply unrelated pending migrations.
 3. Read back the bucket privacy/limits, trigger bodies, policies and grants. Run Supabase security advisors. Verify existing profiles/agents/roles fingerprints are unchanged.
 4. Merge only after review/checks and activation coordination. Confirm exact Lovable sync/preview and resolve any attributable build error. Publish only when Eric explicitly authorises it.
 5. Test signed-in agent registration, profile save, certificate upload/open/refresh, rejected upload/retry and authorised reviewer access. Use an agreed isolated account; do not submit documents or mutate another agent's real data. New registrations may have existing Auth accounts and require login/password recovery rather than duplicate signup.
 
 No live migration, publication or live authenticated agent test has been performed by this task. The public registration failure is not certified resolved until the above gates pass.
+
+## Verified implementation result
+
+- Application tests: 643/643 across 100 files; targeted ESLint, TypeScript and Vite build passed. Diff checks passed.
+- Local SQL: 29/29 checks, including baseline reproductions and adversarial broad Storage grants.
+- Actual localhost Auth/Data API/Storage: 18/18 checks passed at implementation commit `af44350` in [GitHub run 42388133126](https://github.com/Otsikow/unidoxia/actions/runs/42388133126). Independent SQL read-back confirmed zero synthetic Auth accounts, fixture rows or Storage objects, with original tenants unchanged. The first attempts exposed a reviewer-fixture role setup issue; the final fixture grants staff through trusted `user_roles`, matching the existing acceptance pattern.
+- Reviewed forward migration SHA-256: `4903601df11645a7abe1bdf02e187e5f060725f4249a2b10072b16d4329b9df9`.
+- Delivery: draft PR #1291, feature branch retained for review. Not merged, activated or published; exact Lovable preview of this change is not verified. The connector's project/database reads returned internal errors.
+- Existing malformed accounts that also lack a profile or trusted role assignment require live reconciliation through the established account-repair/staff process. This task does not silently backfill or grant roles to existing accounts.
