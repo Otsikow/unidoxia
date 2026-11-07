@@ -8,6 +8,7 @@ export const studentSignup = "/auth/signup?role=student";
 export const homeNav = [
   { href: "/courses", label: "Courses" },
   { href: "/universities", label: "Universities" },
+  { href: "/scholarships", label: "Scholarships" },
   { href: "#destinations", label: "Destinations" },
   { href: "#how-it-works", label: "How it works" },
   { href: "/blog", label: "Insights" },
@@ -33,10 +34,10 @@ export const homeDestinations = [
 ];
 
 export const homeSteps = [
-  { title: "Explore your options", text: "Compare courses, entry requirements and start dates. Build a shortlist around your interests and qualifications." },
-  { title: "Prepare your profile", text: "Register, add your academic background and organise your documents. Ask our team about any course-specific requirements." },
-  { title: "Apply and stay informed", text: "Prepare your application, follow its progress and respond to requests through your UniDoxia account." },
-  { title: "Plan your next chapter", text: "If you receive an offer, review its conditions and discuss the practical steps ahead with our team." },
+  { title: "Explore your options", text: "Compare courses, entry requirements and start dates. Build a shortlist around your interests and qualifications.", href: "/courses", label: "Explore courses" },
+  { title: "Prepare your profile", text: "Register, add your academic background and organise your documents. Ask our team about any course-specific requirements.", href: "/auth/signup?role=student&next=%2Fstudent%2Fprofile", label: "Create your profile" },
+  { title: "Apply and stay informed", text: "Prepare your application, follow its progress and respond to requests through your UniDoxia account.", href: "/auth/signup?role=student&next=%2Fstudent%2Fapplications%2Fnew", label: "Start an application" },
+  { title: "Plan your next chapter", text: "If you receive an offer, review its conditions and discuss the practical steps ahead with our team.", href: "/free-consultation", label: "Discuss your next steps" },
 ];
 
 export function destinationHref(country) {
@@ -52,7 +53,7 @@ export const homeAssurances = [
   },
   {
     title: "Clear costs from the start",
-    text: "Your first consultation is free. Review UniDoxia service pricing and any separate university or government fees before you commit.",
+    text: "Your first consultation is free. Optional paid services, including agent-supported application guidance, are priced separately. University fees, tuition, deposits and government charges are separate from UniDoxia’s fees. Review the current plan and inclusions before paying.",
     href: "/pricing",
     label: "Review service pricing",
   },

@@ -1,6 +1,7 @@
 import { articleCover, articleCoverSources, articleCoverSizes, articleDate, selectHomeArticles } from '../src/lib/homeBlog.ts';
 import { esc } from '../src/lib/publicSeo.mjs';
 import { homePartnerships, homeSocials, homeSocialIcons } from '../src/lib/homeEditorial.mjs';
+import { STUDY_DESTINATIONS } from '../src/lib/studyDestinations.ts';
 import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
 
 // Independent of the downloaded application CSS/JS: public fallback stays usable
@@ -61,7 +62,7 @@ export function homeFirstPaint(featuredHtml, articles = []) {
           <p class="udx-intro">${homeIntro}</p>
           <div class="udx-actions">
             <a class="udx-button" href="/courses">Find a course <span aria-hidden="true">→</span></a>
-            <a class="udx-text-link" href="#how-it-works">How it works <span aria-hidden="true">↓</span></a>
+            <a class="udx-text-link" href="/free-consultation">Free consultation <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <figure class="udx-hero-portrait"><picture><source type="image/avif" srcset="${homePhotoAvifSrcSet}" sizes="${homePhoto.sizes}"><img class="udx-hero-photo" src="${homePhoto.src}" srcset="${homePhoto.srcSet}" sizes="${homePhoto.sizes}" width="${homePhoto.width}" height="${homePhoto.height}" alt="${homePhoto.alt}" fetchpriority="high"></picture></figure>
@@ -71,8 +72,10 @@ export function homeFirstPaint(featuredHtml, articles = []) {
       <div class="udx-wrap udx-search-inner">
         <div><h2 id="course-search">What would you like to study?</h2><p>Explore the catalogue by subject or university.</p></div>
         <form action="/courses" method="get" role="search" aria-labelledby="course-search">
-          <label class="udx-sr-only" for="course-query">Course or university</label>
-          <div class="udx-search-field"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg><input id="course-query" name="q" type="search" placeholder="Try nursing or business"></div>
+          <div class="udx-home-query"><label class="udx-search-label" for="course-query">Course or university</label>
+          <div class="udx-search-field"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg><input id="course-query" name="q" type="search" placeholder="Try nursing or business"></div></div>
+          <div class="udx-home-country"><label class="udx-search-label" for="home-country">Destination</label><select id="home-country" name="country"><option value="">Any destination</option>${STUDY_DESTINATIONS.map(country => `<option>${esc(country)}</option>`).join('')}</select></div>
+          <div class="udx-home-level"><label class="udx-search-label" for="home-level">Study level</label><select id="home-level" name="level"><option value="">Any study level</option><option>Undergraduate</option><option>Postgraduate</option><option value="PHD">PhD</option></select></div>
           <button class="udx-button" type="submit">Search courses <span aria-hidden="true">→</span></button>
         </form>
       </div>
@@ -108,7 +111,7 @@ export function homeFirstPaint(featuredHtml, articles = []) {
         <div class="udx-journey-grid">
         ${homeEditorialPhoto('study-planning', 'Two students comparing notes and researching together with a laptop in a library', [640, 1000], .9)}
         <ol class="udx-steps">
-          ${homeSteps.map(({ title, text }, index) => `<li><span aria-hidden="true">0${index + 1}</span><h3>${title}</h3><p>${text}</p></li>`).join('')}
+          ${homeSteps.map(({ title, text, href, label }, index) => `<li><span aria-hidden="true">0${index + 1}</span><h3>${title}</h3><p>${text}</p><a class="udx-text-link" href="${esc(href)}">${label} ↗</a></li>`).join('')}
         </ol>
         </div>
         <div class="udx-assurance">
@@ -127,7 +130,8 @@ export function homeFirstPaint(featuredHtml, articles = []) {
         </div>
       </div>
     </section>
-    <div class="udx-wrap udx-support"><a href="https://wa.me/447360961803">Chat on WhatsApp</a><a href="/contact">Contact us</a><a href="/faq">FAQs</a><a href="/legal/privacy">Privacy policy</a><a href="/legal/terms">Terms of service</a></div>`;
+    <div class="udx-wrap udx-support"><a href="https://wa.me/447360961803">Chat on WhatsApp</a><a href="/contact">Contact us</a><a href="/faq">FAQs</a><a href="/legal/privacy">Privacy policy</a><a href="/legal/terms">Terms of service</a></div>
+    <div class="udx-wrap"><details class="udx-home-contact"><summary>Send the team a message <span aria-hidden="true">+</span></summary><div class="udx-contact-content"><div><h2>A question before you begin?</h2><p>Email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a> or visit our <a href="/contact">contact page</a>. For a free conversation about your options, <a href="/free-consultation">book a consultation</a>.</p></div><p>Enable JavaScript to use the enquiry form.</p></div></details></div>`;
 }
 
 function homeEditorialPhoto(image, alt, widths = [640, 1100], ratio = 1.6) {

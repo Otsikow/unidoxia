@@ -32,18 +32,21 @@ export function FeaturedUniversitiesSection() {
 
   return (
     <section className="udx-featured" aria-labelledby="featured-universities-title">
-      <h3 id="featured-universities-title">Featured universities</h3>
+      <h2 id="featured-universities-title">Featured universities</h2>
+      <p className="udx-featured-intro">Get to know an institution before exploring its courses, entry requirements and application routes.</p>
       <ul>
         {data.map((university) => (
           <li key={university.id}>
-            <Link to={`/universities/${university.id}`}>
+            <h3><Link to={`/universities/${university.id}`}>
               {university.name} <ArrowUpRight size={16} aria-hidden="true" />
-            </Link>
-            <p>{[university.city, university.country].filter(Boolean).join(", ")}</p>
+            </Link></h3>
+            <p className="udx-university-location">{[university.city, university.country].filter(Boolean).join(", ")}</p>
+            {university.featured_summary && <p className="udx-university-summary">{university.featured_summary}</p>}
+            {university.featured_highlight && <p className="udx-university-source">{university.featured_highlight}</p>}
           </li>
         ))}
       </ul>
-      <p>Featured listings do not imply a formal recruitment partnership.</p>
+      <p className="udx-featured-disclaimer">Featured listings do not imply a formal recruitment partnership. Confirm current details with the institution.</p>
     </section>
   );
 }

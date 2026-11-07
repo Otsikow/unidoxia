@@ -61,14 +61,14 @@ const faqJsonLd = faqSections.length
   : null;
 
 const featuredHtml = featured.length
-  ? `<div class="udx-featured"><h3>Featured universities</h3><ul>${featured
+  ? `<section class="udx-featured" aria-labelledby="featured-universities-title"><h2 id="featured-universities-title">Featured universities</h2><p class="udx-featured-intro">Get to know an institution before exploring its courses, entry requirements and application routes.</p><ul>${featured
       .map(
         (u) =>
-          `<li><a href="/universities/${esc(u.slug)}">${esc(u.name)}</a>${
-            u.city || u.country ? ` — ${esc([u.city, u.country].filter(Boolean).join(", "))}` : ""
-          }${u.featured_summary ? `<p>${esc(u.featured_summary)}</p>` : ""}</li>`,
+          `<li><h3><a href="/universities/${esc(u.slug)}">${esc(u.name)} ↗</a></h3>${
+            u.city || u.country ? `<p class="udx-university-location">${esc([u.city, u.country].filter(Boolean).join(", "))}</p>` : ""
+          }${u.featured_summary ? `<p class="udx-university-summary">${esc(u.featured_summary)}</p>` : ""}${u.featured_highlight ? `<p class="udx-university-source">${esc(u.featured_highlight)}</p>` : ""}</li>`,
       )
-      .join("")}</ul><p>Featured listings do not imply a formal recruitment partnership.</p></div>`
+      .join("")}</ul><p class="udx-featured-disclaimer">Featured listings do not imply a formal recruitment partnership. Confirm current details with the institution.</p></section>`
   : "";
 
 const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a href="/universities">Universities</a> · <a href="/destinations/united-kingdom">Study in the UK</a> · <a href="/scholarships">Scholarships</a> · <a href="/blog">Blog</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;

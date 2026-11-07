@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowRight, ArrowUpRight, MessageCircle, Plus, Search } from "lucide-react";
+import { ArrowRight, ArrowUpRight, MessageCircle, Plus, Search } from "lucide-react";
 import type { FormEvent } from "react";
 import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
@@ -8,12 +8,14 @@ import { HomeWhatsApp } from "@/components/landing/HomeWhatsApp";
 import { HomePhotography } from "@/components/landing/HomePhotography";
 import { HomePartnerships } from "@/components/landing/HomePartnerships";
 import { HomeSocials } from "@/components/landing/HomeSocials";
+import { HomeContact } from "@/components/landing/HomeContact";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SEO } from "@/components/SEO";
 import { business, businessFooter } from "@/config/business";
 import { useAuth } from "@/hooks/useAuth";
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
+import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
 import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import "@/components/landing/home.css";
 
@@ -22,7 +24,7 @@ const WHATSAPP_URL = "https://wa.me/447360961803";
 const questions = [
   { question: "How do I know if I can apply?", answer: <>Entry requirements vary by course and institution. Start with the <Link to="/courses">course listings</Link>, then check the university’s own requirements for your qualifications.</> },
   { question: "Which documents should I prepare?", answer: <>Start with your academic transcripts and certificates. Depending on your course, you may also need proof of identity, English language evidence, references or a personal statement.</> },
-  { question: "What does it cost to get started?", answer: <>Your initial <Link to="/free-consultation">consultation is free</Link>. Some UniDoxia services may carry a fee. Check <Link to="/pricing">current service pricing</Link> and confirm any separate university or government fees before committing.</> },
+  { question: "What does it cost to get started?", answer: <>Your initial <Link to="/free-consultation">consultation is free</Link>. Optional paid support is separate. Check <Link to="/pricing">current service pricing</Link>, plan inclusions and any university or government charges before paying.</> },
   { question: "What happens once I apply?", answer: <>Check your UniDoxia account for updates and requests for further information. The university makes the admissions decision. If you receive an offer, we can help you understand its conditions and plan your next steps.</> },
 ];
 
@@ -47,8 +49,14 @@ function HomeSearch() {
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const query = String(new FormData(event.currentTarget).get("q") ?? "").trim();
-    navigate(query ? `/courses?${new URLSearchParams({ q: query })}` : "/courses");
+    const fields = new FormData(event.currentTarget);
+    const params = new URLSearchParams();
+    for (const key of ["q", "country", "level"]) {
+      const value = String(fields.get(key) ?? "").trim();
+      if (value) params.set(key, value);
+    }
+    const query = params.toString();
+    navigate(query ? `/courses?${query}` : "/courses");
   }
 
   return (
@@ -59,10 +67,26 @@ function HomeSearch() {
           <p>Explore the catalogue by subject or university.</p>
         </div>
         <form action="/courses" method="get" onSubmit={search} role="search" aria-labelledby="course-search">
-          <label className="udx-sr-only" htmlFor="course-query">Course or university</label>
-          <div className="udx-search-field">
-            <Search size={18} aria-hidden="true" />
-            <input id="course-query" name="q" type="search" placeholder="Try nursing or business" />
+          <div className="udx-home-query">
+            <label className="udx-search-label" htmlFor="course-query">Course or university</label>
+            <div className="udx-search-field">
+              <Search size={18} aria-hidden="true" />
+              <input id="course-query" name="q" type="search" placeholder="Try nursing or business" />
+            </div>
+          </div>
+          <div className="udx-home-country">
+            <label className="udx-search-label" htmlFor="home-country">Destination</label>
+            <select id="home-country" name="country" defaultValue="">
+              <option value="">Any destination</option>
+              {STUDY_DESTINATIONS.map(country => <option key={country}>{country}</option>)}
+            </select>
+          </div>
+          <div className="udx-home-level">
+            <label className="udx-search-label" htmlFor="home-level">Study level</label>
+            <select id="home-level" name="level" defaultValue="">
+              <option value="">Any study level</option>
+              <option>Undergraduate</option><option>Postgraduate</option><option value="PHD">PhD</option>
+            </select>
           </div>
           <button type="submit" className="udx-button">Search courses <ArrowRight size={17} aria-hidden="true" /></button>
         </form>
@@ -113,7 +137,7 @@ export default function Index() {
               <p className="udx-intro">{homeIntro}</p>
               <div className="udx-actions">
                 <Link className="udx-button" to="/courses">Find a course <ArrowRight size={18} aria-hidden="true" /></Link>
-                <a className="udx-text-link" href="#how-it-works">How it works <ArrowDown size={16} aria-hidden="true" /></a>
+                <Link className="udx-text-link" to="/free-consultation">Free consultation <ArrowUpRight size={16} aria-hidden="true" /></Link>
               </div>
             </div>
             <figure className="udx-hero-portrait">
@@ -176,11 +200,12 @@ export default function Index() {
             <div className="udx-journey-grid">
               <HomePhotography image="study-planning" alt="Two students comparing notes and researching together with a laptop in a library" widths={[640, 1000]} ratio={.9} sizes="(max-width: 767px) calc(100vw - 32px), 40vw" />
               <ol className="udx-steps">
-                {homeSteps.map(({ title, text }, index) => (
+                {homeSteps.map(({ title, text, href, label }, index) => (
                   <li key={title}>
                     <span aria-hidden="true">0{index + 1}</span>
                     <h3>{title}</h3>
                     <p>{text}</p>
+                    <Link className="udx-text-link" to={href}>{label}<ArrowUpRight size={15} aria-hidden="true" /></Link>
                   </li>
                 ))}
               </ol>
@@ -244,6 +269,7 @@ export default function Index() {
             <MessageCircle size={16} aria-hidden="true" /> Ask Zoe
           </button>
         </div>
+      <HomeContact />
       </main>
       <HomeFooter />
       <HomeWhatsApp />

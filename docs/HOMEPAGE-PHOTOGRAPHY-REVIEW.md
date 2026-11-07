@@ -1,5 +1,7 @@
 # UniDoxia photography and partnership review — 7 November 2026
 
+This records the earlier photography pass. For the final production comparison, restored functions, latest screenshots and verification limits, see the [consolidation audit](HOMEPAGE-CONSOLIDATION-AUDIT.md).
+
 Draft design work on `redesign/public-homepage`, [PR #1288](https://github.com/Otsikow/unidoxia/pull/1288). The built preview runs at http://127.0.0.1:4192/ on Eric’s Mac. No merge, production deployment, account creation, message or database write was performed. The preview is local, not hosted staging.
 
 ## Visual refinement
