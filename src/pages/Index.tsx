@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowUpRight, MessageCircle, Plus, Search } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus, Search } from "lucide-react";
 import type { FormEvent } from "react";
 import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
 import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
@@ -16,6 +16,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
 import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
+import { homeFooterGroups } from "@/lib/homeEditorial.mjs";
+import { homeFooterIcons } from "@/lib/homeFooterIcons";
 import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import "@/components/landing/home.css";
 
@@ -26,22 +28,6 @@ const questions = [
   { question: "Which documents should I prepare?", answer: <>Start with your academic transcripts and certificates. Depending on your course, you may also need proof of identity, English language evidence, references or a personal statement.</> },
   { question: "What does it cost to get started?", answer: <>Your initial <Link to="/free-consultation">consultation is free</Link>. Optional paid support is separate. Check <Link to="/pricing">current service pricing</Link>, plan inclusions and any university or government charges before paying.</> },
   { question: "What happens once I apply?", answer: <>Check your UniDoxia account for updates and requests for further information. The university makes the admissions decision. If you receive an offer, we can help you understand its conditions and plan your next steps.</> },
-];
-
-const footerGroups = [
-  { title: "Explore", links: [
-    ["Find a course", "/courses"], ["University directory", "/universities"],
-    ["Study in the UK", "/destinations/united-kingdom"], ["Scholarships", "/scholarships"], ["Student guides", "/blog"],
-  ] },
-  { title: "Student support", links: [
-    ["Contact us", "/contact"], ["Free consultation", "/free-consultation"], ["Help centre", "/help"],
-    ["Visa calculator", "/visa-calculator"], ["Give feedback", "/feedback"],
-  ] },
-  { title: "UniDoxia", links: [
-    ["About us", "/about"], ["For universities", "/partnership"],
-    ["For education agents", "/agents/onboarding?next=%2Fauth%2Fsignup%3Frole%3Dagent"],
-    ["Privacy policy", "/legal/privacy"], ["Terms of service", "/legal/terms"],
-  ] },
 ];
 
 function HomeSearch() {
@@ -103,14 +89,17 @@ function HomeFooter() {
           <div className="udx-footer-about">
             <div className="udx-footer-brand"><HomeBrand /><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
             <p>Course search and application support for students from Africa.</p>
-            <a href={`mailto:${business.email}`}>{business.email}</a>
+            <a href={`mailto:${business.email}`}><Mail size={16} strokeWidth={1.6} aria-hidden="true" /><span>{business.email}</span></a>
             <HomeSocials />
           </div>
-          {footerGroups.map(({ title, links }) => (
+          {homeFooterGroups.map(({ title, links }) => (
             <div key={title}>
               <h2>{title}</h2>
               <ul>
-                {links.map(([label, href]) => <li key={href}><Link to={href}>{label}</Link></li>)}
+                {links.map(({ label, href, icon }) => {
+                  const Icon = homeFooterIcons[icon];
+                  return <li key={href}><Link to={href}><Icon size={16} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></Link></li>;
+                })}
               </ul>
             </div>
           ))}
@@ -157,7 +146,7 @@ export default function Index() {
               <p className="udx-kicker">Study destinations</p>
               <h2 id="destinations-title">Where could you study?</h2>
             </div>
-            <p>Compare courses in these six destinations, or search the full catalogue for other countries.</p>
+            <p>Compare courses in these six destinations. For other countries, <Link to="/free-consultation">ask us about current options</Link>.</p>
           </div>
           <div className="udx-destination-grid">
             {homeDestinations.map(({ name, country, image, alt }) => (

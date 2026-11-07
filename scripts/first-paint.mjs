@@ -1,6 +1,10 @@
 import { articleCover, articleCoverSources, articleCoverSizes, articleDate, selectHomeArticles } from '../src/lib/homeBlog.ts';
 import { esc } from '../src/lib/publicSeo.mjs';
-import { homePartnerships, homeSocials, homeSocialIcons } from '../src/lib/homeEditorial.mjs';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { homePartnerships, homeFooterGroups, homeSocials, homeSocialIcons } from '../src/lib/homeEditorial.mjs';
+import { homeFooterIcons } from '../src/lib/homeFooterIcons.ts';
+import { business } from '../src/config/business.ts';
 import { STUDY_DESTINATIONS } from '../src/lib/studyDestinations.ts';
 import { destinationHref, homeAssurances, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
 
@@ -39,7 +43,7 @@ export function renderFirstPaint({ path, body, nav, footer }) {
           </div>
         </header>
         <main id="main-content" tabindex="-1">${body}</main>
-        <div class="udx-footer"><div class="udx-wrap">${homeSocialHtml()}${footer}</div></div>
+        <div class="udx-footer"><div class="udx-wrap">${homeFooterHtml()}${footer}</div></div>
         <a class="udx-whatsapp" href="https://wa.me/447360961803" target="_blank" rel="noopener noreferrer" aria-label="Chat with UniDoxia on WhatsApp (opens in a new tab)"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="${whatsappIconPath}"></path></svg><span>WhatsApp</span></a>
       </div>${pendingRoot}`;
   }
@@ -83,7 +87,7 @@ export function homeFirstPaint(featuredHtml, articles = []) {
     <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
       <div class="udx-section-head">
         <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
-        <p>Compare courses in these six destinations, or search the full catalogue for other countries.</p>
+        <p>Compare courses in these six destinations. For other countries, <a href="/free-consultation">ask us about current options</a>.</p>
       </div>
       <div class="udx-destination-grid">
         ${homeDestinations.map(({ name, country, image, alt }) => `
@@ -153,6 +157,11 @@ function homeSocialHtml() {
     const art = icon === 'whatsapp' ? { path: whatsappIconPath, stroke: false } : homeSocialIcons[icon];
     return `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" aria-label="UniDoxia on ${name} (opens in a new tab)" title="${name}"><svg width="19" height="19" viewBox="0 0 24 24" fill="${art.stroke ? 'none' : 'currentColor'}" ${art.stroke ? 'stroke="currentColor" stroke-width="1.8"' : ''} stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${art.path}"></path></svg></a>`;
   }).join('')}</nav>`;
+}
+
+function homeFooterHtml() {
+  const icon = name => renderToStaticMarkup(createElement(homeFooterIcons[name], { size: 16, strokeWidth: 1.6, 'aria-hidden': true }));
+  return `<div class="udx-footer-grid"><div class="udx-footer-about"><a class="udx-brand" href="/" aria-label="UniDoxia home"><img src="/home/logo.webp" width="40" height="40" alt="">UniDoxia</a><p>Course search and application support for students from Africa.</p><a href="mailto:${esc(business.email)}">${icon('mail')}<span>${esc(business.email)}</span></a>${homeSocialHtml()}</div>${homeFooterGroups.map(({ title, links }) => `<div><h2>${esc(title)}</h2><ul>${links.map(({ label, href, icon: name }) => `<li><a href="${esc(href)}">${icon(name)}<span>${esc(label)}</span></a></li>`).join('')}</ul></div>`).join('')}</div>`;
 }
 
 

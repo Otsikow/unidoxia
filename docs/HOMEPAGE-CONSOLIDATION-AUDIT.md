@@ -1,5 +1,7 @@
 # UniDoxia landing-page consolidation audit: 7 November 2026
 
+For the latest running-build investigation, footer icons, wider-country availability fix, fresh screenshots and final test results, see the [final build audit](HOMEPAGE-FINAL-BUILD-AUDIT.md).
+
 The comparison uses the actual running [production homepage](https://unidoxia.com/) and the built local preview at http://127.0.0.1:4192/. Work remains on `redesign/public-homepage` in [draft PR #1288](https://github.com/Otsikow/unidoxia/pull/1288). No production code, data, permissions or hosting was changed. The preview is local, not hosted staging.
 
 ## What the comparison established

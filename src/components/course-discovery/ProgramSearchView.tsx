@@ -84,6 +84,7 @@ import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
 
 const PROGRAM_LEVELS = ["Undergraduate", "Postgraduate", "PHD"];
 const MAJOR_DESTINATION_COUNTRIES = [...STUDY_DESTINATIONS];
+const DESTINATION_UNAVAILABLE_MESSAGE = "We do not currently have course listings for this destination. Choose another country or ask an adviser about your options.";
 const MAX_UNIVERSITY_RESULTS = 50;
 const MAX_PROGRAM_RESULTS = 400;
 const COURSES_PER_PAGE = 100;
@@ -244,6 +245,7 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
   const [sortBy, setSortBy] = useState<ComparisonSort>((searchParams.get("sort") as ComparisonSort) || "recommended");
   const [comparisonProfiles, setComparisonProfiles] = useState<Record<string, any>>({});
   const [validationMessage, setValidationMessage] = useState<string | null>(null);
+  const destinationUnavailable = validationMessage === DESTINATION_UNAVAILABLE_MESSAGE;
   const { t } = useTranslation();
   const location = useLocation();
   const returnState = () => navigationStateFromCurrentPage(`${location.pathname}${location.search}`, "Back to search results", (location.state as any) ?? null, typeof window === "undefined" ? 0 : window.scrollY);
@@ -750,7 +752,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
         });
         if (validationError) throw new Error("Course filter validation is temporarily unavailable.");
         if (serverValidation?.success === false) {
-          setValidationMessage(Object.values(serverValidation.fields || {})[0] as string || serverValidation.message);
+          const fields = serverValidation.fields || {};
+          const unavailableCountry = fields.country && Object.keys(fields).length === 1 &&
+            MAJOR_DESTINATION_COUNTRIES.some(country => country === selectedCountry);
+          setValidationMessage(unavailableCountry ? DESTINATION_UNAVAILABLE_MESSAGE : Object.values(fields)[0] as string || serverValidation.message);
           setResults([]);
           setSearchTotal(0);
           return;
@@ -1365,9 +1370,10 @@ export function ProgramSearchView({ variant = "page", showBackButton = true }: P
             )}
 
             {validationMessage && (
-              <div role="alert" aria-live="assertive" className="mx-auto max-w-5xl rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
-                <p className="font-semibold">Please check your selected filters.</p>
+              <div role={destinationUnavailable ? "status" : "alert"} aria-live={destinationUnavailable ? "polite" : "assertive"} className={cn("mx-auto max-w-5xl rounded-lg border p-4 text-sm", destinationUnavailable ? "border-border bg-muted/40" : "border-destructive/30 bg-destructive/5")}>
+                <p className="font-semibold">{destinationUnavailable ? `No course listings for ${selectedCountry} yet` : "Please check your selected filters."}</p>
                 <p className="mt-1 text-muted-foreground">{validationMessage}</p>
+                {destinationUnavailable && <Link className="mt-3 inline-flex min-h-11 items-center font-medium text-primary underline underline-offset-4" to="/free-consultation">Ask about this destination</Link>}
               </div>
             )}
 

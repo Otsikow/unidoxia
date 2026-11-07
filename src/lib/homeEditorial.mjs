@@ -21,6 +21,30 @@ export const homePartnerships = [
   },
 ];
 
+export const homeFooterGroups = [
+  { title: "Explore", links: [
+    { label: "Find a course", href: "/courses", icon: "search" },
+    { label: "University directory", href: "/universities", icon: "university" },
+    { label: "Study in the UK", href: "/destinations/united-kingdom", icon: "globe" },
+    { label: "Scholarships", href: "/scholarships", icon: "graduation" },
+    { label: "Student guides", href: "/blog", icon: "book" },
+  ] },
+  { title: "Student support", links: [
+    { label: "Contact us", href: "/contact", icon: "mail" },
+    { label: "Free consultation", href: "/free-consultation", icon: "calendar" },
+    { label: "Help centre", href: "/help", icon: "help" },
+    { label: "Visa calculator", href: "/visa-calculator", icon: "checklist" },
+    { label: "Give feedback", href: "/feedback", icon: "message" },
+  ] },
+  { title: "UniDoxia", links: [
+    { label: "About us", href: "/about", icon: "info" },
+    { label: "For universities", href: "/partnership", icon: "partnership" },
+    { label: "For education agents", href: agentSignupJourney, icon: "users" },
+    { label: "Privacy policy", href: "/legal/privacy", icon: "shield" },
+    { label: "Terms of service", href: "/legal/terms", icon: "document" },
+  ] },
+];
+
 export const homeSocials = [
   { name: "Facebook", href: "https://www.facebook.com/profile.php?id=61584297605909", icon: "facebook" },
   { name: "Instagram", href: "https://www.instagram.com/unidoxia/", icon: "instagram" },
