@@ -5,7 +5,7 @@ import path from 'node:path';
 import postgres from 'postgres';
 import {assertAcceptanceTarget} from '../../docs/security/staging/acceptance-target.mjs';
 const suite=process.env.ACCEPTANCE_SUITE;
-if(!['application','receipts'].includes(suite)||process.env.CI!=='true')throw new Error('Explicit isolated CI suite required');
+if(!['application','receipts','placement'].includes(suite)||process.env.CI!=='true')throw new Error('Explicit isolated CI suite required');
 const status=JSON.parse(await readFile(process.env.SUPABASE_STATUS_PATH,'utf8'));
 const url=status.API_URL,anon=status.ANON_KEY,service=status.SERVICE_ROLE_KEY,dbUrl=status.DB_URL;
 assertAcceptanceTarget(url,'local-ci-only','true');
@@ -32,6 +32,11 @@ try {
   await apply('docs/security/staging/application-submission-fixture-schema.sql');
   await apply('supabase/migrations/20261031162745_guard_application_submission.sql');
   runner='docs/security/staging/application-submission-auth-acceptance.mjs';
+ }else if(suite==='placement'){
+  await apply('docs/placement/placement-auth-fixture.sql');
+  await apply('supabase/migrations/20261107124135_adviser_led_student_placement.sql');
+  await apply('docs/placement/placement-storage-fixture.sql');
+  runner='docs/placement/placement-auth-acceptance.mjs';
  }else{
   await apply('docs/security/staging/document-request-fixture-schema.sql');
   await apply('supabase/migrations/20261031142407_receive_student_document_request.sql');
@@ -39,7 +44,7 @@ try {
  }
  await db.unsafe("notify pgrst,'reload schema'");
  // Wait for actual Data API schema visibility, without printing credentials or private responses.
- const probe=suite==='application'?'applications?select=id,status':'application_documents?select=id,storage_path';
+ const probe=suite==='placement'?'student_placement_cases?select=student_id':suite==='application'?'applications?select=id,status':'application_documents?select=id,storage_path';
  let ready=false;
  for(let attempt=0;attempt<30;attempt++){
   const response=await fetch(`${url}/rest/v1/${probe}`,{headers:{apikey:service,Authorization:`Bearer ${service}`},signal:AbortSignal.timeout(5000)});
@@ -51,12 +56,13 @@ try {
  const result=spawnSync(process.execPath,[runner],{env,stdio:'inherit',timeout:240000});
  if(result.error||result.status!==0)failure=new Error('Actual Auth/Data API acceptance failed; see semantic results above');
  const tables=['profiles','user_roles','students','agents','applications','programs','universities'];
+ if(suite==='placement')tables.push('student_placement_cases','student_placement_recommendations','education_records','student_documents');
  if(suite==='receipts')tables.push('application_documents','document_requests');
  for(const table of tables){const rows=await db.unsafe(`select count(*)::int as count from public.${table}`);if(rows[0].count!==0)throw new Error(`Fixture cleanup incomplete: ${table}`);}
  const auth=await db`select count(*)::int as count from auth.users`;
  const objects=await db`select count(*)::int as count from storage.objects`;
  if(auth[0].count||objects[0].count||tenantBaseline!==JSON.stringify(await db`select id from public.tenants order by id`))throw new Error('Independent cleanup/baseline read-back failed');
  console.log('PASS: independent SQL read-back: zero Auth accounts/fixture rows/Storage objects; original tenants unchanged.');
- if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,`### ${suite} isolated backend acceptance\n- Source commit: ${process.env.GITHUB_SHA}\n- Actual Auth/Data API${suite==='receipts'?' and private Storage':''}; synthetic accounts only.\n- Independent cleanup verified.\n- ${failure?'Acceptance failed; retain release hold.':'Acceptance passed.'}\n- Minimal representative schema, not a production clone; no hosted backend, Lovable builder, payment, email or deployment.\n`);
+ if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,`### ${suite} isolated backend acceptance\n- Source commit: ${process.env.GITHUB_SHA}\n- Actual Auth/Data API${suite==='receipts'||suite==='placement'?' and private Storage':''}; synthetic accounts only.\n- Independent cleanup verified.\n- ${failure?'Acceptance failed; retain release hold.':'Acceptance passed.'}\n- Minimal representative schema, not a production clone; no hosted backend, Lovable builder, payment, email or deployment.\n`);
  if(failure)throw failure;
 }catch(error){console.error('Acceptance stopped:',error.code??error.name,error.message);process.exitCode=1;}finally{await db.end({timeout:5});}

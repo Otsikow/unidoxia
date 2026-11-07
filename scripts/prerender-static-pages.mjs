@@ -65,7 +65,7 @@ const faqJsonLd = faqSections.length
   : null;
 
 const featuredHtml = featured.length
-  ? `<section class="udx-featured" aria-labelledby="featured-universities-title"><h2 id="featured-universities-title">Featured universities</h2><p class="udx-featured-intro">Read about each university, then check its courses and entry requirements.</p><ul>${featured
+  ? `<section class="udx-featured" aria-labelledby="featured-universities-title"><h2 id="featured-universities-title">Featured universities</h2><p class="udx-featured-intro">Examples from our public directory. Your adviser can help you assess options against your background and budget.</p><ul>${featured
       .map(
         (u) =>
           `<li><h3><a href="/universities/${esc(u.slug)}">${esc(u.name)} ↗</a></h3>${

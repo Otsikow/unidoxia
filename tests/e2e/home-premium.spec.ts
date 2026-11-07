@@ -113,8 +113,8 @@ test('WhatsApp opens the configured contact and remains clear of focused control
   expect(popup.url()).toContain('447360961803');
   await expect(popup.locator('body')).toContainText(/WhatsApp/i);
   await popup.close();
-  await page.locator('#course-query').focus();
-  const overlaps = await page.locator('#course-query').evaluate(input => {
+  await page.locator('.udx-hero .udx-button').focus();
+  const overlaps = await page.locator('.udx-hero .udx-button').evaluate(input => {
     const field = input.getBoundingClientRect();
     const launcher = document.querySelector('.udx-whatsapp')!.getBoundingClientRect();
     return field.left < launcher.right && field.right > launcher.left &&

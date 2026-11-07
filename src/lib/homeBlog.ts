@@ -32,7 +32,7 @@ export function articleDate(value: string | null) {
 const coverThumbnails: Record<string, string> = {
   "/blog/2026-11-04-study-abroad-update-november-2026-cover-16x9.png": "/home/insights/november-study-update.webp",
   "/blog/2026-10-26-uk-student-visa-financial-evidence-cover.png": "/home/student-1260.webp",
-  "/blog/2026-09-18-international-student-visa-updates-cover.png": "/home/campus-life-1100.webp",
+  "/blog/2026-09-18-international-student-visa-updates-cover.png": "/home/insights/library.webp",
 };
 
 export function articleCover(source: string) {
@@ -43,7 +43,6 @@ export function articleCoverSources(source: string) {
   const thumbnail = coverThumbnails[source];
   if (!thumbnail) return undefined;
   if (thumbnail === "/home/student-1260.webp") return "/home/student-660.webp 660w, /home/student-810.webp 810w, /home/student-1260.webp 1260w";
-  if (thumbnail === "/home/campus-life-1100.webp") return "/home/campus-life-640.webp 640w, /home/campus-life-1100.webp 1100w";
   const stem = thumbnail.replace(/\.webp$/, "");
   return `${stem}-320.webp 320w, ${stem}-640.webp 640w, ${thumbnail} 1100w`;
 }

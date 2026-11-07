@@ -72,7 +72,7 @@ export function HomeHeader() {
             ) : (
               <>
                 <Link className="udx-quiet" to="/auth/login">Sign in</Link>
-                <Link className="udx-button udx-button-small" to={studentSignup}>Get started</Link>
+                <Link className="udx-button udx-button-small" to={studentSignup}>Register Your Interest</Link>
               </>
             )}
           </div>

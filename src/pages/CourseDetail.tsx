@@ -33,41 +33,59 @@ export default function CourseDetail() {
   const location = useLocation();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryVersion, setRetryVersion] = useState(0);
   const trackedCourseId = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setLoadError(false);
     void (async () => {
-      const { data } = await supabase
-        .from("programs")
-        .select(`*, universities!inner(id,name,slug,city,country,logo_url,active,listing_status), program_intakes(*), program_fees(*)`)
-        .eq("id", id)
-        .eq("active", true)
-        .eq("catalogue_status", "active")
-        // Courses attached to an inactive university must not be publicly reachable,
-        // matching what course search already returns.
-        .eq("universities.active", true)
-        .neq("universities.listing_status", "archived")
-        .maybeSingle();
-      if (!cancelled) {
-        setCourse(data);
-        setLoading(false);
-        if (data?.id && trackedCourseId.current !== data.id) {
-          trackedCourseId.current = data.id;
-          void logAnalyticsEvent("course_view", {
-            source: "course_detail",
-            properties: { programme_id: data.id, university_id: data.university_id },
-          });
+      try {
+        const { data, error } = await supabase
+          .from("programs")
+          .select(`*, universities!inner(id,name,slug,city,country,logo_url,active,listing_status), program_intakes(*), program_fees(*)`)
+          .eq("id", id)
+          .eq("active", true)
+          .eq("catalogue_status", "active")
+          // Courses attached to an inactive university must not be publicly reachable,
+          // matching what course search already returns.
+          .eq("universities.active", true)
+          .neq("universities.listing_status", "archived")
+          .abortSignal(AbortSignal.timeout(10000))
+          .maybeSingle();
+        if (error) throw error;
+        if (!cancelled) {
+          setCourse(data);
+          if (data?.id && trackedCourseId.current !== data.id) {
+            trackedCourseId.current = data.id;
+            void logAnalyticsEvent("course_view", {
+              source: "course_detail",
+              properties: { programme_id: data.id, university_id: data.university_id },
+            });
+          }
         }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, retryVersion]);
 
   if (loading) return <LoadingState message="Loading course details…" />;
+  if (loadError) return (
+    <section className="container mx-auto max-w-2xl px-4 py-16 space-y-4">
+      <h1 className="text-2xl font-semibold">We couldn’t load this course</h1>
+      <p role="alert">We can’t retrieve the course details right now. Try again or speak to an adviser.</p>
+      <Button onClick={() => setRetryVersion(v => v + 1)}>Try loading the course again</Button>
+      <p><Link className="underline" to="/free-consultation">Ask an adviser for help</Link></p>
+    </section>
+  );
   if (!course) return <NotFound />;
 
   const university = course.universities;

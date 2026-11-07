@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
-import { homeHeadline, homePhoto } from '../src/lib/homepage.mjs';
+import { homeHeadline, homePhoto, studentSignup } from '../src/lib/homepage.mjs';
 
 describe('public first paint', () => {
-  it('ships the same responsive hero and course search before the app loads', () => {
+  it('ships the registration-first hero and adviser-led pathway before the app loads', () => {
     const doc = new JSDOM(renderFirstPaint({
       path: '/',
       body: homeFirstPaint('<div><h3>Featured universities</h3></div>'),
@@ -17,12 +17,14 @@ describe('public first paint', () => {
     expect(photo.getAttribute('src')).toBe(homePhoto.src);
     expect(photo.getAttribute('srcset')).toBe(homePhoto.srcSet);
     expect(photo.getAttribute('fetchpriority')).toBe('high');
-    expect(doc.querySelector('form[action="/courses"] input[name="q"]')).not.toBeNull();
+    expect(doc.querySelector('form[action="/courses"]')).toBeNull();
+    expect(doc.querySelectorAll('.udx-registration-steps li')).toHaveLength(4);
+    expect(doc.querySelectorAll('.udx-steps li')).toHaveLength(6);
     for (const id of ['destinations', 'how-it-works']) {
       expect(doc.querySelector(`a[href="#${id}"]`)).not.toBeNull();
       expect(doc.getElementById(id)).not.toBeNull();
     }
-    expect(doc.querySelector('a[href="/auth/signup?role=student"]')).not.toBeNull();
+    expect([...doc.querySelectorAll('a')].filter(a=>a.getAttribute('href')===studentSignup).length).toBeGreaterThanOrEqual(3);
     expect(doc.querySelector('main')).not.toBeNull();
     expect(doc.querySelector('footer').textContent).toBe('Registered company');
     expect(doc.querySelector('#site-first-paint').hasAttribute('hidden')).toBe(false);

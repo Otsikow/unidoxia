@@ -1,0 +1,122 @@
+{
+  "date": "2026-11-07T12:34:48.284Z",
+  "baseCommit": "df65d99b8a7726ce6d8049e1f0f6aaed371f0847",
+  "branch": "codex/homepage-final-readiness",
+  "productionPublished": false,
+  "unit": {
+    "files": 96,
+    "passed": 622
+  },
+  "browser": {
+    "passed": 114,
+    "writes": "intercepted"
+  },
+  "viewports": [
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "decodedContentImages": 15,
+      "footerIcons": 15,
+      "pageErrors": [],
+      "axeViolations": [],
+      "emDashes": 0
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "decodedContentImages": 15,
+      "footerIcons": 15,
+      "pageErrors": [],
+      "axeViolations": [],
+      "emDashes": 0
+    },
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "decodedContentImages": 15,
+      "footerIcons": 15,
+      "pageErrors": [],
+      "axeViolations": [],
+      "emDashes": 0
+    }
+  ],
+  "countries": [
+    {
+      "country": "United Kingdom",
+      "result": "1,229 courses across 6 universities"
+    },
+    {
+      "country": "United States",
+      "result": "15 courses across 3 universities"
+    },
+    {
+      "country": "Canada",
+      "result": "177 courses across 6 universities"
+    },
+    {
+      "country": "Australia",
+      "result": "15 courses across 3 universities"
+    },
+    {
+      "country": "Ireland",
+      "result": "15 courses across 3 universities"
+    },
+    {
+      "country": "Germany",
+      "result": "15 courses across 3 universities"
+    },
+    {
+      "country": "Spain",
+      "unavailable": true,
+      "adviserLink": "/free-consultation"
+    },
+    {
+      "country": "Malta",
+      "unavailable": true,
+      "adviserLink": "/free-consultation"
+    },
+    {
+      "country": "United Arab Emirates",
+      "unavailable": true,
+      "adviserLink": "/free-consultation"
+    }
+  ],
+  "lighthouse": [
+    {
+      "file": "after/lighthouse-mobile-1.json",
+      "scores": {
+        "performance": 83,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": 3884.46595,
+      "tbt": 253.51135000000045,
+      "cls": 0
+    },
+    {
+      "file": "after/lighthouse-mobile-2.json",
+      "scores": {
+        "performance": 82,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": 4286.762199999999,
+      "tbt": 64.5,
+      "cls": 0
+    },
+    {
+      "file": "after/lighthouse-desktop.json",
+      "scores": {
+        "performance": 99,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": 792.2633000000001,
+      "tbt": 0,
+      "cls": 0
+    }
+  ]
+}

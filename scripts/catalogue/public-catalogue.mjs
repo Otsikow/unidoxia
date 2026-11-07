@@ -19,10 +19,20 @@ export async function fetchPublicRows(query, config = publicBuildConfig(), reque
   const rows = [];
   const pageSize = 500;
   for (let offset = 0; ; offset += pageSize) {
-    const response = await request(`${config.endpoint}/rest/v1/${query}&order=id.asc&limit=${pageSize}&offset=${offset}`, {
-      headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
-      signal: AbortSignal.timeout(60000),
-    });
+    let response;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await request(`${config.endpoint}/rest/v1/${query}&order=id.asc&limit=${pageSize}&offset=${offset}`, {
+          headers: { apikey: config.key, Authorization: `Bearer ${config.key}` },
+          signal: AbortSignal.timeout(60000),
+        });
+        if (![408, 429, 500, 502, 503, 504].includes(response.status) || attempt === 2) break;
+        await response.body?.cancel();
+      } catch (error) {
+        if (attempt === 2) throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt));
+    }
     if (!response.ok) throw new Error(`Public SEO query failed (${query.split('?')[0]}): HTTP ${response.status}`);
     const page = await response.json();
     if (!Array.isArray(page)) throw new Error('Invalid public SEO response');

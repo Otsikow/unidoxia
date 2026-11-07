@@ -9,6 +9,7 @@ on:
         options:
           - application
           - receipts
+          - placement
 permissions:
   contents: read
 concurrency:
@@ -31,7 +32,7 @@ jobs:
         env:
           ACCEPTANCE_SUITE: ${{ inputs.suite }}
         run: |
-          node --input-type=module -e "import {access} from 'node:fs/promises'; const files={application:'docs/security/staging/application-submission-auth-acceptance.mjs',receipts:'docs/security/staging/document-request-storage-acceptance.mjs'}; const file=files[process.env.ACCEPTANCE_SUITE]; if(!file)throw new Error('Unknown suite'); await access(file);"
+          node --input-type=module -e "import {access} from 'node:fs/promises'; const files={application:'docs/security/staging/application-submission-auth-acceptance.mjs',receipts:'docs/security/staging/document-request-storage-acceptance.mjs',placement:'docs/placement/placement-auth-acceptance.mjs'}; const file=files[process.env.ACCEPTANCE_SUITE]; if(!file)throw new Error('Unknown suite'); await access(file);"
       - name: Install isolated test tools
         run: |
           npm install --prefix "$RUNNER_TEMP/unidoxia-tools" --no-audit --no-fund supabase@2.122.0 @supabase/supabase-js@2.110.2 postgres@3.4.9

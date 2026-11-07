@@ -5,8 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { homePartnerships, homeFooterGroups, homeSocials, homeSocialIcons } from '../src/lib/homeEditorial.mjs';
 import { homeFooterIcons } from '../src/lib/homeFooterIcons.ts';
 import { business } from '../src/config/business.ts';
-import { STUDY_DESTINATIONS } from '../src/lib/studyDestinations.ts';
-import { destinationHref, homeAssurances, homeTraining, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
+import { destinationHref, homeAssurances, homeTraining, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeNav, homePhoto, homePhotoAvifSrcSet, homeSteps, homeRegistrationSteps, studentSignup, whatsappIconPath } from '../src/lib/homepage.mjs';
 
 // Independent of the downloaded application CSS/JS: public fallback stays usable
 // while the first React route loads, including on slow or failed connections.
@@ -53,7 +52,7 @@ export function renderFirstPaint({ path, body, nav, footer }) {
 
 function homeNavigation() {
   const links = homeNav.map(({ href, label }) => `<a href="${href}">${label}</a>`).join('');
-  return `<nav class="udx-nav" aria-label="Main navigation">${links}</nav><div class="udx-account"><a class="udx-quiet" href="/auth/login">Sign in</a><a class="udx-button udx-button-small" href="${studentSignup}">Get started</a></div>`;
+  return `<nav class="udx-nav" aria-label="Main navigation">${links}</nav><div class="udx-account"><a class="udx-quiet" href="/auth/login">Sign in</a><a class="udx-button udx-button-small" href="${studentSignup}">Register Your Interest</a></div>`;
 }
 
 export function homeFirstPaint(featuredHtml, articles = []) {
@@ -65,58 +64,25 @@ export function homeFirstPaint(featuredHtml, articles = []) {
           <h1>${homeHeadline[0]} <span>${homeHeadline[1]}</span></h1>
           <p class="udx-intro">${homeIntro}</p>
           <div class="udx-actions">
-            <a class="udx-button" href="/courses">Find a course <span aria-hidden="true">→</span></a>
-            <a class="udx-text-link" href="/free-consultation">Free consultation <span aria-hidden="true">↗</span></a>
+            <a class="udx-button" href="${studentSignup}">Register Your Interest <span aria-hidden="true">→</span></a>
+            <a class="udx-text-link" href="/free-consultation">Book a Free Consultation <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <figure class="udx-hero-portrait"><picture><source type="image/avif" srcset="${homePhotoAvifSrcSet}" sizes="${homePhoto.sizes}"><img class="udx-hero-photo" src="${homePhoto.src}" srcset="${homePhoto.srcSet}" sizes="${homePhoto.sizes}" width="${homePhoto.width}" height="${homePhoto.height}" alt="${homePhoto.alt}" fetchpriority="high"></picture></figure>
       </div>
     </section>
-    <section class="udx-search" aria-labelledby="course-search">
-      <div class="udx-wrap udx-search-inner">
-        <div><h2 id="course-search">What would you like to study?</h2><p>Explore the catalogue by subject or university.</p></div>
-        <form action="/courses" method="get" role="search" aria-labelledby="course-search">
-          <div class="udx-home-query"><label class="udx-search-label" for="course-query">Course or university</label>
-          <div class="udx-search-field"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg><input id="course-query" name="q" type="search" placeholder="Try nursing or business"></div></div>
-          <div class="udx-home-country"><label class="udx-search-label" for="home-country">Destination</label><select id="home-country" name="country"><option value="">Any destination</option>${STUDY_DESTINATIONS.map(country => `<option>${esc(country)}</option>`).join('')}</select></div>
-          <div class="udx-home-level"><label class="udx-search-label" for="home-level">Study level</label><select id="home-level" name="level"><option value="">Any study level</option><option>Undergraduate</option><option>Postgraduate</option><option value="PHD">PhD</option></select></div>
-          <button class="udx-button" type="submit">Search courses <span aria-hidden="true">→</span></button>
-        </form>
-      </div>
-    </section>
+    <section class="udx-registration" aria-labelledby="registration-title"><div class="udx-wrap udx-registration-inner"><div><p class="udx-kicker">Personalised university matching</p><h2 id="registration-title">Tell us your study plans. We’ll help you find the right university.</h2><p>You do not need to research every university yourself. Share your background and priorities, and our advisers will help you compare suitable options.</p></div><div><ol class="udx-registration-steps">${homeRegistrationSteps.map((step,index)=>`<li><span aria-hidden="true">0${index+1}</span>${step}</li>`).join('')}</ol><a class="udx-button" href="${studentSignup}">Register Your Interest →</a><p class="udx-registration-fees">Registration and your initial consultation are free. <a href="/pricing">Optional paid services and other fees</a> are explained separately.</p></div></div></section>
     <section class="udx-training" aria-labelledby="uk-knowledge-trained-heading">
       <div class="udx-training-inner">
         <div class="udx-training-main"><img class="udx-training-logo" src="${homeTraining.logo}" width="320" height="89" alt="British Council" loading="lazy"><div><h2 id="uk-knowledge-trained-heading">${homeTraining.title}</h2><p class="udx-training-description">${homeTraining.text}</p></div></div>
         <a class="udx-training-link" href="${homeTraining.href}">${homeTraining.label}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a>
       </div>
     </section>
-    <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
-      <div class="udx-section-head">
-        <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
-        <p>Compare courses in these six destinations. For other countries, <a href="/free-consultation">ask us about current options</a>.</p>
-      </div>
-      <div class="udx-destination-grid">
-        ${homeDestinations.map(({ name, country, image, alt }) => `
-          <article class="udx-destination">
-            <a href="${destinationHref(country)}" aria-label="Explore courses in ${name}">
-              <img src="/home/${image}.webp" srcset="/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w" sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px" width="1000" height="640" alt="${alt}" loading="lazy" fetchpriority="low" decoding="async">
-              <span class="udx-destination-name">${name}<span aria-hidden="true">↗</span></span>
-            </a>
-            <p>Explore courses</p>
-          </article>`).join('')}
-      </div>
-      <div class="udx-destination-resources">
-        <a class="udx-text-link" href="/courses">Explore more destinations →</a>
-        <a class="udx-text-link" href="/universities">Browse all universities →</a>
-        <a class="udx-text-link" href="/destinations/united-kingdom">Read the UK study guide ↗</a>
-      </div>
-      ${featuredHtml}
-    </section>
     <section class="udx-section udx-journey" id="how-it-works" tabindex="-1">
       <div class="udx-wrap">
         <div class="udx-section-head">
-          <div><p class="udx-kicker">How it works</p><h2>How to apply</h2></div>
-          <p>Choose a course, prepare your documents and follow your application in your account.</p>
+          <div><p class="udx-kicker">How it works</p><h2>How UniDoxia works</h2></div>
+          <p>Share your background. We research suitable options, and you decide which applications to pursue.</p>
         </div>
         <div class="udx-journey-grid">
         ${homeEditorialPhoto('study-planning', 'Two students comparing notes and researching together with a laptop in a library', [640, 1000], .9)}
@@ -129,14 +95,36 @@ export function homeFirstPaint(featuredHtml, articles = []) {
         </div>
       </div>
     </section>
+    <section class="udx-section udx-wrap" id="destinations" tabindex="-1">
+      <div class="udx-section-head">
+        <div><p class="udx-kicker">Study destinations</p><h2>Where could you study?</h2></div>
+        <p>Tell us where you would like to study. Our advisers can research options in these destinations. For other countries, <a href="/free-consultation">ask us about current options</a>.</p>
+      </div>
+      <div class="udx-destination-grid">
+        ${homeDestinations.map(({ name, country, image, alt }) => `
+          <article class="udx-destination">
+            <a href="${destinationHref(country)}" aria-label="Explore courses in ${name}">
+              <img src="/home/${image}.webp" srcset="/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w" sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px" width="1000" height="640" alt="${alt}" loading="lazy" fetchpriority="low" decoding="async">
+              <span class="udx-destination-name">${name}<span aria-hidden="true">↗</span></span>
+            </a>
+            <p>Optional course listings</p>
+          </article>`).join('')}
+      </div>
+      <div class="udx-destination-resources">
+        <a class="udx-text-link" href="/courses">Explore more destinations →</a>
+        <a class="udx-text-link" href="/universities">Browse all universities →</a>
+        <a class="udx-text-link" href="/destinations/united-kingdom">Read the UK study guide ↗</a>
+      </div>
+      ${featuredHtml}
+    </section>
     ${homeInsights(articles)}
     ${homePartnershipHtml()}
     <section class="udx-next">
       <div class="udx-wrap udx-next-inner">
         ${homeEditorialPhoto('next-chapter', 'Students talking outside a university building with books and backpacks', [640, 1000], 1.3)}
         <div class="udx-next-copy">
-        <div><h2>Ready to apply?</h2><p>Create an account to add your details and prepare your application. If you need help choosing a course, book a free consultation.</p></div>
-        <div class="udx-actions"><a class="udx-button" href="${studentSignup}">Start your application</a><a class="udx-text-link" href="/free-consultation">Speak to an adviser</a></div>
+        <div><h2>Start with your study plans.</h2><p>Create your account, share your qualifications and let our advisers help you find suitable university options.</p></div>
+        <div class="udx-actions"><a class="udx-button" href="${studentSignup}">Register Your Interest</a><a class="udx-text-link" href="/free-consultation">Speak to an adviser</a></div>
         </div>
       </div>
     </section>
@@ -167,7 +155,7 @@ function homeSocialHtml() {
 
 function homeFooterHtml() {
   const icon = name => renderToStaticMarkup(createElement(homeFooterIcons[name], { size: 16, strokeWidth: 1.6, 'aria-hidden': true }));
-  return `<div class="udx-footer-grid"><div class="udx-footer-about"><a class="udx-brand" href="/" aria-label="UniDoxia home"><img src="/home/logo.webp" width="40" height="40" alt="">UniDoxia</a><p>Course search and application support for students from Africa.</p><a href="mailto:${esc(business.email)}">${icon('mail')}<span>${esc(business.email)}</span></a>${homeSocialHtml()}</div>${homeFooterGroups.map(({ title, links }) => `<div><h2>${esc(title)}</h2><ul>${links.map(({ label, href, icon: name }) => `<li><a href="${esc(href)}">${icon(name)}<span>${esc(label)}</span></a></li>`).join('')}</ul></div>`).join('')}</div>`;
+  return `<div class="udx-footer-grid"><div class="udx-footer-about"><a class="udx-brand" href="/" aria-label="UniDoxia home"><img src="/home/logo.webp" width="40" height="40" alt="">UniDoxia</a><p>Personalised university matching and admissions support for students from Africa.</p><a href="mailto:${esc(business.email)}">${icon('mail')}<span>${esc(business.email)}</span></a>${homeSocialHtml()}</div>${homeFooterGroups.map(({ title, links }) => `<div><h2>${esc(title)}</h2><ul>${links.map(({ label, href, icon: name }) => `<li><a href="${esc(href)}">${icon(name)}<span>${esc(label)}</span></a></li>`).join('')}</ul></div>`).join('')}</div>`;
 }
 
 
