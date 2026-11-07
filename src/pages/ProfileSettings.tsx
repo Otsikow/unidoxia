@@ -10,6 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { LoadingState } from '@/components/LoadingState';
 import { EmptyState } from '@/components/EmptyState';
 import ProfileInfoTab from '@/components/settings/ProfileInfoTab';
+import AgentDocumentsTab from '@/components/settings/AgentDocumentsTab';
 import DocumentsTab from '@/components/settings/DocumentsTab';
 import NotificationsTab from '@/components/settings/NotificationsTab';
 import PasswordSecurityTab from '@/components/settings/PasswordSecurityTab';
@@ -463,7 +464,7 @@ export default function ProfileSettings() {
           </TabsContent>
 
           <TabsContent value="documents">
-            <DocumentsTab profile={profile} />
+            {isAgent ? <AgentDocumentsTab profile={profile} /> : <DocumentsTab profile={profile} />}
           </TabsContent>
 
           <TabsContent value="notifications">

@@ -46,6 +46,7 @@ const AdminAgents = () => {
         commission_rate_l1,
         commission_rate_l2,
         verification_status,
+        verification_document_url,
         created_at,
         profiles:profiles (
           full_name,
@@ -84,6 +85,7 @@ const AdminAgents = () => {
           commissionPaid: 0,
           complianceStatus: verStatus === "approved" ? "verified" as const : "pending" as const,
           verificationStatus: verStatus,
+          verificationDocumentUrl: agent.verification_document_url ?? null,
           lastActivityAt: null,
           createdAt: agent.created_at,
           avatarUrl: agent.profiles?.avatar_url ?? null,

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { getAgentCertificateUrl } from '@/lib/agentDocuments';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,11 +24,22 @@ interface Props {
 }
 
 export default function AgentProfileDrawer({ agent, open, onOpenChange, onOpenCommission }: Props) {
+  const [documentError, setDocumentError] = useState('');
   if (!agent) return null;
+  const openCertificate = async () => {
+    if (!agent.verificationDocumentUrl) return;
+    setDocumentError('');
+    try {
+      const url = await getAgentCertificateUrl(agent.verificationDocumentUrl);
+      window.location.assign(url);
+    } catch (e) { setDocumentError(e instanceof Error ? e.message : 'Could not open certificate.'); }
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+        {agent.verificationDocumentUrl && <Button variant="outline" onClick={openCertificate}>Open agency certificate</Button>}
+        {documentError && <p role="alert" className="text-destructive">{documentError}</p>}
         <SheetHeader className="pb-0">
           <div className="flex items-start gap-4">
             <Avatar className="h-14 w-14 border-2 border-primary/20">
