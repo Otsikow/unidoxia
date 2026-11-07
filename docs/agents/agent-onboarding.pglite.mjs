@@ -73,6 +73,11 @@ await denied(ids[1],`insert into storage.objects(bucket_id,name) values('agent-d
 await denied(ids[0],`delete from storage.objects where name='${ids[0]}/certificate.pdf'`,'linked certificate protected from cleanup');
 await asUser(ids[0],`insert into storage.objects(bucket_id,name) values('agent-documents','${ids[0]}/unlinked.pdf')`);
 check((await asUser(ids[0],`delete from storage.objects where name='${ids[0]}/unlinked.pdf' returning id`)).rows.length===1,'failed upload can clean up only an unlinked own file');
+await db.exec('create policy overly_broad_storage_fixture on storage.objects for all to authenticated using(true) with check(true)');
+check((await asUser(ids[1],"select * from storage.objects")).rows.length===0,'restrictive boundary blocks broad pre-existing Storage grants');
+await denied(ids[1],`insert into storage.objects(bucket_id,name) values('agent-documents','${ids[0]}/broad.pdf')`,'broad Storage grant cannot bypass upload ownership');
+await denied(ids[0],`update storage.objects set name='${ids[0]}/overwrite.pdf' where name='${ids[0]}/certificate.pdf'`,'broad Storage grant cannot overwrite certificates');
+await denied(ids[0],`delete from storage.objects where name='${ids[0]}/certificate.pdf'`,'broad Storage grant cannot delete a linked certificate');
 await db.query('update profiles set active=false where id=$1',[ids[0]]);
 await denied(ids[0],`update agents set company_name='inactive' where profile_id='${ids[0]}'`,'inactive agent cannot save');
 check((await asUser(ids[0],"select * from storage.objects")).rows.length===0,'inactive agent cannot read certificate');

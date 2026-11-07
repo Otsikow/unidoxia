@@ -42,7 +42,12 @@ try{
  check(Buffer.from(await downloaded.arrayBuffer()).equals(body),'uploaded file round trips byte for byte');
  check(!!(await b.api.storage.from('agent-documents').download(path)).error,'other agent cannot download file');
  check(!!(await foreign.api.storage.from('agent-documents').download(path)).error,'foreign tenant reviewer cannot download file');
- check(!(await reviewer.api.storage.from('agent-documents').download(path)).error,'same tenant reviewer can download file');
+ check(data(await reviewer.api.rpc('is_admin_or_staff',{user_id:reviewer.id}),'reviewer role helper')===true,'reviewer has trusted active staff role');
+ check(data(await reviewer.api.rpc('get_user_tenant',{user_id:reviewer.id}),'reviewer tenant helper')===row.tenant_id,'reviewer tenant matches agent tenant');
+ check(data(await reviewer.api.from('agents').select('id').eq('id',row.id),'reviewer agent read').length===1,'reviewer can read agent record');
+ const reviewDownload=await reviewer.api.storage.from('agent-documents').download(path);
+ if(reviewDownload.error)console.log('Reviewer download diagnostic:',reviewDownload.error.statusCode,reviewDownload.error.message);
+ check(!reviewDownload.error,'same tenant reviewer can download file');
  const signed=data(await a.api.storage.from('agent-documents').createSignedUrl(path,60),'signed link');
  const response=await fetch(signed.signedUrl);check(response.ok&&Buffer.from(await response.arrayBuffer()).equals(body),'short lived signed link serves exact uploaded file');
  data(await service.from('agents').update({verification_status:'approved'}).eq('id',row.id),'review fixture');

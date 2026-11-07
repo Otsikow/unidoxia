@@ -100,4 +100,31 @@ CREATE POLICY "Agent certificates owner cleanup" ON storage.objects FOR DELETE T
 USING (bucket_id = 'agent-documents' AND (storage.foldername(name))[1] = auth.uid()::text
  AND EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role::text = 'agent' AND p.active IS TRUE)
  AND NOT EXISTS (SELECT 1 FROM public.agents a WHERE a.verification_document_url = 'agent-documents/' || name));
+-- Restrictive boundaries keep unrelated broad permissive Storage policies from
+-- granting access to this new bucket. Other buckets retain their existing rules.
+DROP POLICY IF EXISTS "Agent certificate authenticated boundary" ON storage.objects;
+CREATE POLICY "Agent certificate authenticated boundary" ON storage.objects AS RESTRICTIVE FOR ALL TO authenticated
+USING (bucket_id <> 'agent-documents' OR (
+  ((storage.foldername(name))[1] = auth.uid()::text AND EXISTS (
+    SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role::text = 'agent' AND p.active IS TRUE))
+  OR (public.is_admin_or_staff(auth.uid()) AND EXISTS (
+    SELECT 1 FROM public.agents a WHERE a.profile_id::text = (storage.foldername(name))[1]
+      AND a.tenant_id = public.get_user_tenant(auth.uid())))
+))
+WITH CHECK (bucket_id <> 'agent-documents' OR (
+  (storage.foldername(name))[1] = auth.uid()::text AND EXISTS (
+    SELECT 1 FROM public.profiles p WHERE p.id = auth.uid() AND p.role::text = 'agent' AND p.active IS TRUE)
+));
+DROP POLICY IF EXISTS "Agent certificate no overwrite" ON storage.objects;
+CREATE POLICY "Agent certificate no overwrite" ON storage.objects AS RESTRICTIVE FOR UPDATE TO authenticated
+USING (bucket_id <> 'agent-documents') WITH CHECK (bucket_id <> 'agent-documents');
+DROP POLICY IF EXISTS "Agent certificate linked file protection" ON storage.objects;
+CREATE POLICY "Agent certificate linked file protection" ON storage.objects AS RESTRICTIVE FOR DELETE TO authenticated
+USING (bucket_id <> 'agent-documents' OR (
+  (storage.foldername(name))[1] = auth.uid()::text AND NOT EXISTS (
+    SELECT 1 FROM public.agents a WHERE a.verification_document_url = 'agent-documents/' || name)
+));
+DROP POLICY IF EXISTS "Agent certificate anonymous boundary" ON storage.objects;
+CREATE POLICY "Agent certificate anonymous boundary" ON storage.objects AS RESTRICTIVE FOR ALL TO anon
+USING (bucket_id <> 'agent-documents') WITH CHECK (bucket_id <> 'agent-documents');
 COMMIT;
