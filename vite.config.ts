@@ -45,27 +45,10 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           // Core React runtime - rarely changes
           "vendor-react": ["react", "react-dom", "react-router-dom"],
-          // UI framework - Radix primitives
-          "vendor-radix": [
-            "@radix-ui/react-accordion",
-            "@radix-ui/react-alert-dialog",
-            "@radix-ui/react-avatar",
-            "@radix-ui/react-checkbox",
-            "@radix-ui/react-dialog",
-            "@radix-ui/react-dropdown-menu",
-            "@radix-ui/react-label",
-            "@radix-ui/react-popover",
-            "@radix-ui/react-progress",
-            "@radix-ui/react-scroll-area",
-            "@radix-ui/react-select",
-            "@radix-ui/react-separator",
-            "@radix-ui/react-slot",
-            "@radix-ui/react-switch",
-            "@radix-ui/react-tabs",
-            "@radix-ui/react-toast",
-            "@radix-ui/react-toggle",
-            "@radix-ui/react-tooltip",
-          ],
+          // Keep homepage primitives separate from forms/dialogs used on later routes.
+          "vendor-radix": ["@radix-ui/react-slot", "@radix-ui/react-toast", "@radix-ui/react-tooltip", "@radix-ui/react-dropdown-menu"],
+          "vendor-radix-dialog": ["@radix-ui/react-dialog", "@radix-ui/react-alert-dialog"],
+          "vendor-radix-select": ["@radix-ui/react-select"],
           // Data fetching and state management
           "vendor-query": ["@tanstack/react-query", "@supabase/supabase-js"],
           // Animation library - loaded when needed

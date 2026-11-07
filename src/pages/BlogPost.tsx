@@ -1,3 +1,4 @@
+import { articleCover, articleCoverSources } from "@/lib/homeBlog";
 import { editorialReview } from '@/lib/editorialReview.mjs';
 import { blogSchema } from '@/lib/publicSeo.mjs';
 import { articleContent } from '@/lib/articleContent';
@@ -122,13 +123,14 @@ export default function BlogPost() {
 
   const canonicalPath = `/blog/${data.slug}`;
   const canonicalUrl = `https://unidoxia.com${canonicalPath}`;
-  const absoluteCover = data.cover_image_url
-    ? (data.cover_image_url.startsWith("http")
-        ? data.cover_image_url
-        : `https://unidoxia.com${data.cover_image_url.startsWith("/") ? "" : "/"}${data.cover_image_url}`)
+  const displayCover = data.cover_image_url ? articleCover(data.cover_image_url) : undefined;
+  const absoluteCover = displayCover
+    ? (displayCover.startsWith("http")
+        ? displayCover
+        : `https://unidoxia.com${displayCover.startsWith("/") ? "" : "/"}${displayCover}`)
     : undefined;
 
-  const articleJsonLd = blogSchema(data);
+  const articleJsonLd = blogSchema({...data, cover_image_url: displayCover ?? null});
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -146,7 +148,7 @@ export default function BlogPost() {
         title={seoTitle}
         description={seoDescription}
         canonicalPath={canonicalPath}
-        ogImage={data.cover_image_url || undefined}
+        ogImage={displayCover}
         ogType="article"
         publishedTime={data.published_at || undefined}
         modifiedTime={data.updated_at || undefined}
@@ -222,7 +224,9 @@ export default function BlogPost() {
       {data.cover_image_url && (
         <figure className="mb-10 -mx-4 sm:mx-0">
           <img
-            src={data.cover_image_url}
+            src={displayCover}
+            srcSet={articleCoverSources(data.cover_image_url)}
+            sizes="(max-width: 767px) 100vw, 900px"
             alt={coverAlt}
             className="w-full max-h-[460px] object-cover sm:rounded-xl shadow-sm"
             loading="lazy"
@@ -254,7 +258,7 @@ export default function BlogPost() {
         <p className="text-muted-foreground italic">No content available.</p>
       ) : <p>The full article is temporarily unavailable while it is reviewed.</p>}
 
-      <section className="mt-10 rounded-xl border bg-muted/40 p-6 space-y-3">
+      <section className="mt-10 rounded-xl border bg-muted/40 p-6 space-y-3 [&_a]:!text-blue-800 dark:[&_a]:!text-blue-300">
         <h2 className="text-xl font-semibold">Plan your next step</h2>
         {/\b(UK|United Kingdom|British)\b/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/destinations/united-kingdom">Plan your UK university shortlist</Link>.</p>}
         {/visa/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/visa-calculator">Explore student visa readiness</Link> and <Link className="text-primary underline" to="/faq">read common application questions</Link>.</p>}

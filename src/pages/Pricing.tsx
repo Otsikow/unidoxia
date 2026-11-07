@@ -9,7 +9,6 @@ import {
   X, 
   Shield, 
   CreditCard, 
-  ArrowLeft, 
   Loader2,
   Zap,
   Users,
@@ -18,7 +17,7 @@ import {
   Globe,
   Clock,
 } from 'lucide-react';
-import { LandingHeader } from '@/components/landing/LandingHeader';
+import { SEO } from '@/components/SEO';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { startStudentCheckout, CHECKOUT_UNAVAILABLE } from '@/lib/studentCheckout';
@@ -27,7 +26,8 @@ import {
   PRICING_PLANS, 
   PRICING_FAQ,
   PAYMENT_TERMS,
-  formatPlanPrice, 
+  formatPlanPrice,
+  SERVICE_FEE_SCOPE,
   type StudentPlanType 
 } from '@/types/billing';
 
@@ -99,20 +99,9 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <LandingHeader />
+      <SEO title="Student Application Plans and Service Fees | UniDoxia" description="Compare free access with UniDoxia’s optional USD 200 Agent-Supported plan. Your initial consultation is free; university and government charges are separate." canonicalPath="/pricing" />
       
-      <main className="container mx-auto px-4 pt-20 sm:pt-24 pb-12">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mb-6"
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-
+      <div className="container mx-auto px-4 pb-12">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <Badge variant="secondary" className="mb-4">Transparent Pricing</Badge>
@@ -120,9 +109,10 @@ export default function Pricing() {
             Choose Your Study Abroad Plan
           </h1>
           <p className="text-lg text-muted-foreground mb-6">
-            Simple, one-time payments with no hidden fees. Select the plan that fits your needs.
+            Your first consultation is free. Free Access includes one application. Choose optional paid support if you need help preparing your applications.
           </p>
           
+          <p className="text-sm text-muted-foreground mb-6">{SERVICE_FEE_SCOPE}</p>
           {/* Payment Terms Banner */}
           <div className="inline-flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
@@ -169,7 +159,7 @@ export default function Pricing() {
                 {/* Price */}
                 <div className="text-center py-4">
                   <div className="text-5xl font-bold tracking-tight">
-                    {formatPlanPrice(plan)}
+                    {formatPlanPrice(plan)}<span className="ml-2 text-sm font-medium text-muted-foreground">{plan.currency}</span>
                   </div>
                   {plan.price > 0 ? (
                     <p className="text-sm font-medium text-primary mt-2">
@@ -248,7 +238,7 @@ export default function Pricing() {
               <div>
                 <h3 className="font-semibold mb-1">University Discovery</h3>
                 <p className="text-sm text-muted-foreground">
-                  Browse and search 500+ universities worldwide
+                  Browse the universities currently listed in our directory
                 </p>
               </div>
             </div>
@@ -292,7 +282,7 @@ export default function Pricing() {
               <div>
                 <h3 className="font-semibold mb-1">Scholarship Finder</h3>
                 <p className="text-sm text-muted-foreground">
-                  Discover scholarships matching your profile
+                  Explore published scholarships and check their eligibility criteria
                 </p>
               </div>
             </div>
@@ -303,7 +293,7 @@ export default function Pricing() {
               <div>
                 <h3 className="font-semibold mb-1">Deadline Reminders</h3>
                 <p className="text-sm text-muted-foreground">
-                  Never miss important application deadlines
+                  Keep track of application deadlines in your account
                 </p>
               </div>
             </div>
@@ -326,7 +316,7 @@ export default function Pricing() {
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Globe className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">Accepted Worldwide</span>
+            <span className="text-sm font-medium">International card payments</span>
           </div>
         </div>
 
@@ -398,7 +388,7 @@ export default function Pricing() {
             <Link to="/legal/terms" className="underline hover:text-foreground">Terms of Service</Link>.
           </p>
         </section>
-      </main>
+      </div>
     </div>
   );
 }

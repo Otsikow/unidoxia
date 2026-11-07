@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactForm } from "@/components/ContactForm";
-import professionalConsultant from "@/assets/zoe-portrait.png";
+import { HomePhotography } from "@/components/landing/HomePhotography";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SEO } from "@/components/SEO";
@@ -43,11 +43,7 @@ const Contact = () => {
                 </div>
             </div>
             <div className="hidden md:block">
-              <img 
-                src={professionalConsultant} 
-                  alt={t("pages.contact.imageAlt")}
-                className="w-full h-auto rounded-2xl shadow-2xl object-cover"
-              />
+              <HomePhotography image="education-guidance" alt="A tutor and adult learners discussing their work in a university library" className="overflow-hidden" sizes="(max-width: 767px) 0px, 460px" />
             </div>
           </div>
 

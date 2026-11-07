@@ -2,8 +2,8 @@
 
 import { InitialPageReady } from "@/components/InitialPageReady";
 
-import { lazy, Suspense, ComponentType, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { lazy, Suspense, ComponentType, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigationType } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // UI & Global Providers
@@ -219,6 +219,7 @@ const FreeConsultation = lazyWithErrorHandling(() => import("./pages/FreeConsult
 const StudyGuide = lazyWithErrorHandling(() => import("./pages/StudyGuide"));
 const BlogPost = lazyWithErrorHandling(() => import("./pages/BlogPost"));
 const About = lazyWithErrorHandling(() => import("./pages/About"));
+const EricArthur = lazyWithErrorHandling(() => import("./pages/EricArthur"));
 const EditorialPolicy = lazyWithErrorHandling(() => import("./pages/EditorialPolicy"));
 const NotFound = lazyWithErrorHandling(() => import("./pages/NotFound"));
 const AdminUniversityClaims = lazyWithErrorHandling(() => import("./pages/admin/AdminUniversityClaims"));
@@ -501,8 +502,6 @@ const COMMON_IMPORTS = [
   () => import("./pages/Blog"),
 ];
 
-const preloadCommonRoutes = () => schedulePrefetch(COMMON_IMPORTS, 200);
-
 /* ==========================================================================
    REDIRECT HELPERS
    ========================================================================== */
@@ -522,11 +521,12 @@ const SearchRedirect = () => {
    ========================================================================== */
 
 const RoutePrefetcher = () => {
-  const location = useLocation();
+  const { pathname } = useLocation();
 
   useEffect(() => {
-    schedulePrefetch(COMMON_IMPORTS, 100);
-  }, []);
+    // Let the homepage's image and fonts finish before requesting other routes.
+    if (pathname !== "/") schedulePrefetch(COMMON_IMPORTS, 100);
+  }, [pathname]);
 
   return null;
 };
@@ -535,32 +535,52 @@ const RoutePrefetcher = () => {
    MAIN APP
    ========================================================================== */
 
-const App = () => {
-  const { t } = useTranslation();
-  const [shouldRenderChatbot, setShouldRenderChatbot] = useState(false);
+function HomeRouteScroll() {
+  const { pathname } = useLocation();
+  const navigationType = useNavigationType();
+  const previousPath = useRef(pathname);
+
+  useLayoutEffect(() => {
+    if (previousPath.current === "/" && pathname !== "/" && navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+    previousPath.current = pathname;
+  }, [pathname, navigationType]);
+
+  return null;
+}
+
+function SiteChat() {
+  const { pathname } = useLocation();
+  const [load, setLoad] = useState(false);
+  const [homeRequests, setHomeRequests] = useState(0);
+  const isHome = pathname === "/";
 
   useEffect(() => {
-    preloadCommonRoutes();
+    const requestHomeChat = () => {
+      setHomeRequests((count) => count + 1);
+      setLoad(true);
+    };
 
-    let timeoutId: any;
-
-    const loadChatbot = () => setShouldRenderChatbot(true);
-
-    if (document.readyState === "complete") {
-      timeoutId = setTimeout(loadChatbot, 1500);
-    } else {
-      const handleLoad = () => {
-        timeoutId = setTimeout(loadChatbot, 1000);
-      };
-      window.addEventListener("load", handleLoad, { once: true });
-      return () => {
-        window.removeEventListener("load", handleLoad);
-        clearTimeout(timeoutId);
-      };
-    }
-
-    return () => clearTimeout(timeoutId);
+    window.addEventListener("zoe:home-request", requestHomeChat);
+    return () => window.removeEventListener("zoe:home-request", requestHomeChat);
   }, []);
+
+  useEffect(() => {
+    if (isHome || load) return;
+    const timer = window.setTimeout(() => setLoad(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, [isHome, load]);
+
+  return load ? (
+    <Suspense fallback={null}>
+      <ZoeChatbot hideLauncher={isHome} homeRequests={homeRequests} />
+    </Suspense>
+  ) : null;
+}
+
+const App = () => {
+  const { t } = useTranslation();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -590,7 +610,7 @@ const App = () => {
                            PUBLIC ROUTES
                            ============================================================ */}
 
-                        <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+                        <Route path="/" element={<Index />} />
 
                         {/* Student onboarding flow removed */}
 
@@ -655,6 +675,7 @@ const App = () => {
                         <Route path="/partnership" element={<PublicLayout><UniversityPartnership /></PublicLayout>} />
 
                         <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+                        <Route path="/about/eric-arthur" element={<PublicLayout><EricArthur /></PublicLayout>} />
                         <Route path="/editorial-policy" element={<PublicLayout><EditorialPolicy /></PublicLayout>} />
 
 
@@ -817,10 +838,11 @@ const App = () => {
                       </Routes>
 
                       <InitialPageReady />
+                      <HomeRouteScroll />
                       <RoutePrefetcher />
                     </div>
 
-                    {shouldRenderChatbot && <ZoeChatbot />}
+                    <SiteChat />
                   </div>
                 </Suspense>
               </NavigationHistoryProvider>

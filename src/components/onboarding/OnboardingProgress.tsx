@@ -52,7 +52,7 @@ export function OnboardingProgress({
           You&apos;re {Math.round(displayValue)}% done
         </span>
       </div>
-      <Progress value={displayValue} className="h-2" />
+      <Progress aria-label="Onboarding progress" aria-valuetext={`Step ${currentStep} of ${totalSteps}`} value={displayValue} className="h-2" />
     </div>
   );
 }

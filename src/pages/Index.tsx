@@ -1,509 +1,281 @@
-"use client";
-import { organisation } from '@/lib/publicSeo.mjs';
-
-import { Link } from "react-router-dom";
-import britishCouncilLogo from "@/assets/british-council-logo.png";
-
-import { useEffect, useMemo, useState, lazy, Suspense, useRef } from "react";
-import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import {
-  Users,
-  FileCheck,
-  Clock,
-  Sparkles,
-  ArrowRight,
-  MessageCircle,
-  CalendarCheck,
-} from "lucide-react";
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { StudyProgramSearch } from "@/components/landing/StudyProgramSearch";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, ArrowUpRight, Mail, MessageCircle, Plus, Search } from "lucide-react";
+import type { FormEvent } from "react";
+import { HomeBrand, HomeHeader } from "@/components/landing/HomeHeader";
+import { FeaturedUniversitiesSection } from "@/components/landing/FeaturedUniversitiesSection";
+import { InternationalUniversityLinks } from "@/components/landing/InternationalUniversityLinks";
+import LatestFromBlog from "@/components/landing/LatestFromBlog";
+import { HomeWhatsApp } from "@/components/landing/HomeWhatsApp";
+import { HomePhotography } from "@/components/landing/HomePhotography";
+import { HomePartnerships } from "@/components/landing/HomePartnerships";
+import { HomeSocials } from "@/components/landing/HomeSocials";
+import { HomeContact } from "@/components/landing/HomeContact";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SEO } from "@/components/SEO";
-import { SuccessStoriesMarquee } from "@/components/landing/SuccessStoriesMarquee";
+import { business, businessFooter } from "@/config/business";
+import { useAuth } from "@/hooks/useAuth";
 import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
-
-/* ---------- Static Assets ---------- */
-import unidoxiaLogo from "@/assets/unidoxia-logo.webp";
-import agentsCta from "@/assets/agents-cta.webp";
-import destinationsCta from "@/assets/destinations-cta.webp";
-import applyEasilyImage from "@/assets/features/apply-easily.webp";
-import trackRealTimeImage from "@/assets/keeping-you-informed.webp";
-import connectAgentImage from "@/assets/features/connect-agent.webp";
-
-/* ---------- Lazy Loaded Sections ---------- */
-const FeaturedUniversitiesSection = lazy(() => import("@/components/landing/FeaturedUniversitiesSection"));
-const StoryboardSection = lazy(() => import("@/components/landing/StoryboardSection"));
-const ZoeExperienceSection = lazy(() => import("@/components/landing/ZoeExperienceSection"));
-const LatestFromBlog = lazy(() => import("@/components/landing/LatestFromBlog"));
-const ContactForm = lazy(() => import("@/components/ContactForm").then((m) => ({ default: m.ContactForm })));
+import { organisation } from "@/lib/publicSeo.mjs";
+import { STUDY_DESTINATIONS } from "@/lib/studyDestinations";
+import { homeFooterGroups } from "@/lib/homeEditorial.mjs";
+import { homeFooterIcons } from "@/lib/homeFooterIcons";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import "@/components/landing/home.css";
 
 const WHATSAPP_URL = "https://wa.me/447360961803";
 
-/* ---------- Skeleton Loader ---------- */
-const SectionLoader = () => (
-  <div className="container mx-auto px-4 py-20">
-    <div className="space-y-8">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-8 w-64 bg-muted animate-pulse rounded" />
-        <div className="h-4 w-96 bg-muted animate-pulse rounded" />
-      </div>
-      <div className="grid gap-6 md:grid-cols-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-64 bg-muted animate-pulse rounded-xl" />
-        ))}
-      </div>
-    </div>
-  </div>
-);
+const questions = [
+  { question: "How do I know if I can apply?", answer: <>Entry requirements vary by course and institution. Start with the <Link to="/courses">course listings</Link>, then check the university’s own requirements for your qualifications.</> },
+  { question: "Which documents should I prepare?", answer: <>Start with your academic transcripts and certificates. Depending on your course, you may also need proof of identity, English language evidence, references or a personal statement.</> },
+  { question: "What does it cost to get started?", answer: <>Your initial <Link to="/free-consultation">consultation is free</Link>. Optional paid support is separate. Check <Link to="/pricing">current service pricing</Link>, plan inclusions and any university or government charges before paying.</> },
+  { question: "What happens once I apply?", answer: <>Check your UniDoxia account for updates and requests for further information. The university makes the admissions decision. If you receive an offer, we can help you understand its conditions and plan your next steps.</> },
+];
 
-const Index = () => {
-  const { t } = useTranslation();
+function HomeSearch() {
+  const navigate = useNavigate();
 
-  /* ---------- Hero Video State ---------- */
-  const [shouldRenderHeroVideo, setShouldRenderHeroVideo] = useState(false);
-  useEffect(() => {
-    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
-    if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 767px)').matches || connection?.saveData || ['slow-2g', '2g'].includes(connection?.effectiveType)) return;
-    const enable = () => setShouldRenderHeroVideo(true);
-    // The poster and essential content get the first network opportunity.
-    const timer = window.setTimeout(enable, 2500);
-    return () => window.clearTimeout(timer);
-  }, []);
-  const [heroVideoReady, setHeroVideoReady] = useState(false);
-  const heroVideoRef = useRef<HTMLVideoElement | null>(null);
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const fields = new FormData(event.currentTarget);
+    const params = new URLSearchParams();
+    for (const key of ["q", "country", "level"]) {
+      const value = String(fields.get(key) ?? "").trim();
+      if (value) params.set(key, value);
+    }
+    const query = params.toString();
+    navigate(query ? `/courses?${query}` : "/courses");
+  }
 
-  useEffect(() => {
-    if (!shouldRenderHeroVideo) return;
-    const videoEl = heroVideoRef.current;
-    if (!videoEl) return;
-
-    const activateVideo = () => {
-      setHeroVideoReady(true);
-      videoEl.currentTime = 0;
-      const playPromise = videoEl.play();
-      if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {});
-      }
-    };
-
-    activateVideo();
-
-    const handleCanPlay = () => setHeroVideoReady(true);
-    videoEl.addEventListener("loadeddata", handleCanPlay);
-    videoEl.addEventListener("canplay", handleCanPlay);
-    return () => {
-      videoEl.removeEventListener("loadeddata", handleCanPlay);
-      videoEl.removeEventListener("canplay", handleCanPlay);
-    };
-  }, [shouldRenderHeroVideo]);
-
-  /* ---------- Partner CTAs (Agents + Universities) ---------- */
-  const partnerCtas = useMemo(
-    () =>
-      [
-        {
-          key: "agents",
-          href: `/agents/onboarding?next=${encodeURIComponent("/auth/signup?role=agent")}`,
-          image: agentsCta,
-          badge: "Agents",
-          title: "Manage students and applications",
-          description: "Add authorised students, organise documents and track application activity from one workspace. Commission information is shown only where supported and agreed.",
-          action: "Explore Agent Tools",
-        },
-        {
-          key: "universities",
-          href: "/partnership",
-          image: destinationsCta,
-          badge: "Universities",
-          title: "Discuss international student recruitment",
-          description: "Explore a transparent recruitment relationship across global student markets, supported by structured application workflows.",
-          action: "Discuss a Partnership",
-        },
-      ],
-    [],
-  );
-
-  /* ---------- Features ---------- */
-  const features = useMemo(
-    () =>
-      [
-        {
-          key: "applyEasily",
-          icon: FileCheck,
-          color: "from-blue-500 to-cyan-500",
-          image: applyEasilyImage,
-          href: "/auth/signup?role=student",
-          title: "Prepare Your Application With Confidence",
-          description: "Build one profile, organise your documents and prepare applications with clear guidance.",
-          action: "Start Your Application",
-        },
-        {
-          key: "trackRealtime",
-          icon: Clock,
-          color: "from-purple-500 to-pink-500",
-          image: trackRealTimeImage,
-          href: "/courses",
-          title: "Keep Track of Your Next Steps",
-          description: "Review application activity, outstanding information and status updates in one place.",
-          action: "Explore Courses",
-        },
-        {
-          key: "connectAgents",
-          icon: Users,
-          color: "from-orange-500 to-red-500",
-          image: connectAgentImage,
-          href: "/free-consultation",
-          title: "Get Personal Guidance",
-          description: "Speak with the UniDoxia team about course discovery, application preparation and practical next steps.",
-          action: "Speak With an Adviser",
-        },
-      ],
-    [],
-  );
-
-  /* ---------- FAQ ---------- */
-  const faqs = useMemo(
-    () =>
-      t("pages.index.faq.sections", { returnObjects: true }) as Array<{
-        audience: string;
-        items: { question: string; answer: string }[];
-      }>,
-    [t],
-  );
-
-  const featuresHeading = "Why UniDoxia?";
-  const faqHeading = t("pages.index.faq.heading");
-  const faqSubtitle = t("pages.index.faq.subtitle");
-  const contactHeading = t("pages.index.contact.heading");
-  const contactSubtitle = t("pages.index.contact.subtitle");
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <SEO
-        title="Study Abroad from Africa: UK Universities & Support | UniDoxia"
-        description="Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants."
-        canonicalPath="/"
-        jsonLd={[
-          organisation,
-          {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            name: "UniDoxia",
-            url: "https://unidoxia.com",
-            potentialAction: {
-              "@type": "SearchAction",
-              target: "https://unidoxia.com/courses?q={search_term_string}",
-              "query-input": "required name=search_term_string",
-            },
-          },
-        ]}
-      />
-
-      {/* ---------- HERO ---------- */}
-      <section className="hero-video-container">
-        <LandingHeader />
-
-        <div
-          className={`hero-fallback ${heroVideoReady ? "is-hidden" : ""}`}
-          style={{ backgroundColor: "#0e1a2b", backgroundImage: "linear-gradient(135deg, #0e1a2b99, #0e1a2b66), url(/videos/hero-poster.webp)", backgroundSize: "cover", backgroundPosition: "center" }}
-          aria-hidden
-        />
-
-        {shouldRenderHeroVideo && (
-          <video
-            ref={heroVideoRef}
-            className={`hero-video ${heroVideoReady ? "is-ready" : "is-loading"}`}
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="none"
-            poster="/videos/hero-poster.webp"
-          >
-            <source src="/videos/hero-video.mp4" type="video/mp4" />
-          </video>
-        )}
-
-        <div className="hero-overlay" aria-hidden />
-
-        <div className="hero-content">
-          <div className="hero-content-inner flex flex-col items-center gap-6 text-white">
-            <img
-              src={unidoxiaLogo}
-              width={192} height={192}
-              alt="UniDoxia logo"
-              className="hero-logo mb-1 h-16 w-16 object-contain box-content bg-white rounded-2xl p-3 shadow-md"
-            />
-
-            <div className="hero-text space-y-3 md:space-y-4 text-white max-w-4xl text-center">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[3.75rem] font-bold leading-[1.08] tracking-[-0.03em] [text-shadow:0_2px_16px_rgba(0,0,0,0.55)]">
-                Study abroad from Africa and beyond
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed max-w-2xl mx-auto [text-shadow:0_1px_8px_rgba(0,0,0,0.55)]">
-                Explore UK universities and courses, and get support with course selection,
-                application preparation and your next steps towards studying abroad.
-              </p>
-              <p className="text-xs sm:text-sm text-white/85 italic">
-                One platform. Global opportunities. Expert support.
-              </p>
-
-            </div>
-
-            {/* Primary + Secondary CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
-              <Button
-                asChild
-                size="lg"
-                className="hero-cta-button bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-xl w-full sm:w-auto"
-              >
-                <Link to="/auth/signup?role=student">
-                  <Sparkles className="mr-2 h-5 w-5" />
-                  Start Your Application
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="bg-white/10 backdrop-blur-md border-white/60 text-white hover:bg-white/20 hover:text-white font-semibold shadow-lg w-full sm:w-auto"
-              >
-                <Link to="/free-consultation">
-                  <CalendarCheck className="mr-2 h-5 w-5" />
-                  Book a Free Consultation
-                </Link>
-              </Button>
-            </div>
-
-            {/* Tertiary WhatsApp */}
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={logFreeConsultationWhatsAppClick}
-              className="inline-flex items-center gap-2 text-sm sm:text-base text-white/90 hover:text-white underline underline-offset-4 decoration-white/40 hover:decoration-white transition"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Chat on WhatsApp
-            </a>
-
-            {/* Trust ribbon — matches hero CTA pill shape */}
-            <p className="mt-1 inline-flex max-w-2xl items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-4 text-center text-xs sm:text-sm font-medium leading-relaxed tracking-tight text-white/90 shadow-lg backdrop-blur-md">
-              Explore universities and study opportunities across the UK, Europe, Canada, USA,
-              Australia and beyond.
-            </p>
-
-          </div>
+    <section className="udx-search" aria-labelledby="course-search">
+      <div className="udx-wrap udx-search-inner">
+        <div>
+          <h2 id="course-search">What would you like to study?</h2>
+          <p>Explore the catalogue by subject or university.</p>
         </div>
-      </section>
-
-      {/* ---------- STUDY PROGRAM SEARCH ---------- */}
-      <StudyProgramSearch />
-
-      {/* ---------- TRUST BAND: UK knowledge-trained guidance ---------- */}
-      <section
-        aria-labelledby="uk-knowledge-trained-heading"
-        className="border-y bg-muted/30"
-      >
-        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6 text-center md:text-left">
-          <div className="flex flex-col md:flex-row md:items-center gap-5">
-            <img
-              src={britishCouncilLogo}
-              width={320} height={89}
-              alt="British Council"
-              loading="lazy"
-              className="h-10 w-auto self-center md:self-auto shrink-0 dark:brightness-0 dark:invert"
-            />
-            <div className="space-y-1">
-              <h2
-                id="uk-knowledge-trained-heading"
-                className="text-lg sm:text-xl font-semibold tracking-tight"
-              >
-                UK knowledge-trained guidance
-              </h2>
-              <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-                The leadership of UniDoxia has completed the British Council UK knowledge agent and
-                counsellor training, so students and university partners are supported by advisers
-                trained to recognised UK standards.
-              </p>
+        <form action="/courses" method="get" onSubmit={search} role="search" aria-labelledby="course-search">
+          <div className="udx-home-query">
+            <label className="udx-search-label" htmlFor="course-query">Course or university</label>
+            <div className="udx-search-field">
+              <Search size={18} aria-hidden="true" />
+              <input id="course-query" name="q" type="search" placeholder="Try nursing or business" />
             </div>
           </div>
+          <div className="udx-home-country">
+            <label className="udx-search-label" htmlFor="home-country">Destination</label>
+            <select id="home-country" name="country" defaultValue="">
+              <option value="">Any destination</option>
+              {STUDY_DESTINATIONS.map(country => <option key={country}>{country}</option>)}
+            </select>
+          </div>
+          <div className="udx-home-level">
+            <label className="udx-search-label" htmlFor="home-level">Study level</label>
+            <select id="home-level" name="level" defaultValue="">
+              <option value="">Any study level</option>
+              <option>Undergraduate</option><option>Postgraduate</option><option value="PHD">PhD</option>
+            </select>
+          </div>
+          <button type="submit" className="udx-button">Search courses <ArrowRight size={17} aria-hidden="true" /></button>
+        </form>
+      </div>
+    </section>
+  );
+}
 
-          <Link
-            to="/about"
-            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm shrink-0"
-          >
-            View training details
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </section>
-
-
-      {/* ---------- WHY UNIDOXIA / FEATURES ---------- */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="text-4xl font-bold text-center mb-12">{featuresHeading}</h2>
-        <div className="grid md:grid-cols-3 gap-5 lg:gap-6">
-          {features.map((f) => (
-            <Card key={f.key} className="landing-feature-card flex flex-col h-full overflow-hidden shadow-card">
-              <img
-                src={f.image}
-                width={800} height={450} decoding="async"
-                alt={f.title}
-                loading="lazy"
-                className="h-48 w-full object-cover rounded-t-xl"
-              />
-              <CardContent className="p-8 flex flex-col gap-4 h-full">
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/10">
-                  <f.icon className="h-5 w-5" />
-                </div>
-                <h3 className="text-xl font-bold leading-snug">{f.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{f.description}</p>
-                <div className="mt-auto">
-                  <Button
-                    asChild
-                    className="w-full justify-between bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-                  >
-                    <Link to={f.href}>
-                      <span>{f.action}</span>
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+function HomeFooter() {
+  return (
+    <footer className="udx-footer">
+      <div className="udx-wrap">
+        <div className="udx-footer-grid">
+          <div className="udx-footer-about">
+            <div className="udx-footer-brand"><HomeBrand /><ThemeToggle className="motion-reduce:transform-none motion-reduce:transition-none" /></div>
+            <p>Course search and application support for students from Africa.</p>
+            <a href={`mailto:${business.email}`}><Mail size={16} strokeWidth={1.6} aria-hidden="true" /><span>{business.email}</span></a>
+            <HomeSocials />
+          </div>
+          {homeFooterGroups.map(({ title, links }) => (
+            <div key={title}>
+              <h2>{title}</h2>
+              <ul>
+                {links.map(({ label, href, icon }) => {
+                  const Icon = homeFooterIcons[icon];
+                  return <li key={href}><Link to={href}><Icon size={16} strokeWidth={1.6} aria-hidden="true" /><span>{label}</span></Link></li>;
+                })}
+              </ul>
+            </div>
           ))}
         </div>
-      </section>
+        <p className="udx-legal">{businessFooter}</p>
+      </div>
+    </footer>
+  );
+}
 
-      {/* ---------- HOW IT WORKS ---------- */}
-      <Suspense fallback={<SectionLoader />}>
-        <StoryboardSection />
-      </Suspense>
+export default function Index() {
+  const { user } = useAuth();
 
-      {/* ---------- ZOE AI ---------- */}
-      <Suspense fallback={<SectionLoader />}>
-        <ZoeExperienceSection />
-      </Suspense>
-
-      {/* ---------- FEATURED UNIVERSITIES ---------- */}
-      <Suspense fallback={<SectionLoader />}>
-        <FeaturedUniversitiesSection />
-      </Suspense>
-
-      {/* ---------- FACTUAL TRUST ---------- */}
-      <SuccessStoriesMarquee />
-
-      {/* ---------- LATEST FROM BLOG ---------- */}
-      <Suspense fallback={<SectionLoader />}>
-        <LatestFromBlog />
-      </Suspense>
-
-      {/* ---------- PARTNER WITH UNIDOXIA ---------- */}
-      <section className="container mx-auto px-4 py-16" aria-labelledby="partner-heading">
-        <div className="max-w-3xl mx-auto text-center mb-10">
-          <h2 id="partner-heading" className="text-3xl font-bold mb-3">
-            Partner with UniDoxia
-          </h2>
-          <p className="text-muted-foreground">
-            Grow with us — whether you recruit international students or represent a university.
-          </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
-          {partnerCtas.map((cta) => (
-            <Card key={cta.key} className="h-full overflow-hidden shadow-card">
-              <div className="aspect-[4/3] overflow-hidden">
-                <img
-                  src={cta.image}
-                  width={800} height={600} decoding="async"
-                  alt={cta.title}
-                  loading="lazy"
-                  className="h-full w-full object-cover transition duration-500 hover:scale-105"
-                />
+  return (
+    <div className="udx-home">
+      <SEO title={homeTitle} description={homeDescription} canonicalPath="/" jsonLd={organisation} />
+      <HomeHeader />
+      <main id="main-content" tabIndex={-1}>
+        <section className="udx-hero">
+          <div className="udx-wrap udx-hero-grid">
+            <div className="udx-hero-copy">
+              <p className="udx-kicker">{homeEyebrow}</p>
+              <h1>{homeHeadline[0]} <span>{homeHeadline[1]}</span></h1>
+              <p className="udx-intro">{homeIntro}</p>
+              <div className="udx-actions">
+                <Link className="udx-button" to="/courses">Find a course <ArrowRight size={18} aria-hidden="true" /></Link>
+                <Link className="udx-text-link" to="/free-consultation">Free consultation <ArrowUpRight size={16} aria-hidden="true" /></Link>
               </div>
-              <CardContent className="p-6 space-y-4 flex flex-col">
-                <Badge variant="secondary" className="uppercase tracking-wide text-xs px-3 py-1 w-max">
-                  {cta.badge}
-                </Badge>
-                <h3 className="text-xl font-semibold leading-snug text-card-foreground">{cta.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{cta.description}</p>
-                <Button asChild className="w-full mt-auto">
-                  <Link to={cta.href}>{cta.action}</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
+            </div>
+            <figure className="udx-hero-portrait">
+              <picture>
+                <source type="image/avif" srcSet={homePhotoAvifSrcSet} sizes={homePhoto.sizes} />
+                <img className="udx-hero-photo" {...homePhoto} fetchPriority="high" />
+              </picture>
+            </figure>
+          </div>
+        </section>
 
-      {/* ---------- FAQ ---------- */}
-      <section className="container mx-auto px-4 py-20">
-        <h2 className="text-3xl font-bold text-center mb-4">{faqHeading}</h2>
-        <p className="text-muted-foreground text-center mb-12">{faqSubtitle}</p>
+        <HomeSearch />
 
-        {faqs.map((section, i) => (
-          <div key={i} className="max-w-4xl mx-auto mb-12">
-            <h3 className="text-xl font-semibold mb-4">
-              {t("pages.index.faq.audienceHeading", { audience: section.audience })}
-            </h3>
-            <Accordion type="single" collapsible>
-              {section.items.map((faq, j) => (
-                <AccordionItem key={j} value={`${i}-${j}`}>
-                  <AccordionTrigger>{faq.question}</AccordionTrigger>
-                  <AccordionContent>{faq.answer}</AccordionContent>
-                </AccordionItem>
+        <section className="udx-training" aria-labelledby="uk-knowledge-trained-heading">
+          <div className="udx-training-inner">
+            <div className="udx-training-main">
+              <img className="udx-training-logo" src={homeTraining.logo} width={320} height={89} alt="British Council" loading="lazy" />
+              <div>
+                <h2 id="uk-knowledge-trained-heading">{homeTraining.title}</h2>
+                <p className="udx-training-description">{homeTraining.text}</p>
+              </div>
+            </div>
+            <Link className="udx-training-link" to={homeTraining.href}>{homeTraining.label}<ArrowRight size={16} aria-hidden="true" /></Link>
+          </div>
+        </section>
+
+        <section className="udx-section udx-wrap" id="destinations" tabIndex={-1} aria-labelledby="destinations-title">
+          <div className="udx-section-head">
+            <div>
+              <p className="udx-kicker">Study destinations</p>
+              <h2 id="destinations-title">Where could you study?</h2>
+            </div>
+            <p>Compare courses in these six destinations. For other countries, <Link to="/free-consultation">ask us about current options</Link>.</p>
+          </div>
+          <div className="udx-destination-grid">
+            {homeDestinations.map(({ name, country, image, alt }) => (
+              <article className="udx-destination" key={country}>
+                <Link to={destinationHref(country)} aria-label={`Explore courses in ${name}`}>
+                  <img
+                    src={`/home/${image}.webp`}
+                    srcSet={`/home/${image}-320.webp 320w, /home/${image}-660.webp 660w, /home/${image}.webp 1000w`}
+                    sizes="(max-width: 519px) calc(50vw - 24px), (max-width: 959px) 44vw, 380px"
+                    width={1000}
+                    height={640}
+                    alt={alt}
+                    loading="lazy"
+                    fetchPriority="low"
+                    decoding="async"
+                  />
+                  <span className="udx-destination-name">{name}<ArrowUpRight size={19} aria-hidden="true" /></span>
+                </Link>
+                <p>Explore courses</p>
+              </article>
+            ))}
+          </div>
+          <div className="udx-destination-resources">
+            <Link className="udx-text-link" to="/courses">Explore more destinations <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link className="udx-text-link" to="/universities">Browse all universities <ArrowRight size={17} aria-hidden="true" /></Link>
+            <Link className="udx-text-link" to="/destinations/united-kingdom">Read the UK study guide <ArrowUpRight size={17} aria-hidden="true" /></Link>
+          </div>
+          <FeaturedUniversitiesSection />
+          <InternationalUniversityLinks />
+        </section>
+
+        <section className="udx-section udx-journey" id="how-it-works" tabIndex={-1} aria-labelledby="journey-title">
+          <div className="udx-wrap">
+            <div className="udx-section-head">
+              <div>
+                <p className="udx-kicker">How it works</p>
+                <h2 id="journey-title">How to apply</h2>
+              </div>
+              <p>Choose a course, prepare your documents and follow your application in your account.</p>
+            </div>
+            <div className="udx-journey-grid">
+              <HomePhotography image="study-planning" alt="Two students comparing notes and researching together with a laptop in a library" widths={[640, 1000]} ratio={.9} sizes="(max-width: 767px) calc(100vw - 32px), 40vw" />
+              <ol className="udx-steps">
+                {homeSteps.map(({ title, text, href, label }, index) => (
+                  <li key={title}>
+                    <span aria-hidden="true">0{index + 1}</span>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                    <Link className="udx-text-link" to={href}>{label}<ArrowUpRight size={15} aria-hidden="true" /></Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="udx-assurance">
+              {homeAssurances.map(({ title, text, href, label }) => (
+                <div key={title}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                  <a className="udx-text-link" href={href}>{label}<ArrowUpRight size={16} aria-hidden="true" /></a>
+                </div>
               ))}
-            </Accordion>
+            </div>
           </div>
-        ))}
-      </section>
+        </section>
 
-      {/* ---------- CONTACT + FINAL CTA ---------- */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto mb-12 rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-background p-8 sm:p-10 text-center shadow-card">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
-            Ready to take the next step?
-          </h2>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Book a free consultation with our advisors and get a clear plan for your study-abroad
-            journey — or reach us instantly on WhatsApp.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button asChild size="lg">
-              <Link to="/free-consultation">
-                <CalendarCheck className="mr-2 h-5 w-5" />
-                Book a Free Consultation
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={logFreeConsultationWhatsAppClick}
-              >
-                <MessageCircle className="mr-2 h-5 w-5" />
-                Chat on WhatsApp
-              </a>
-            </Button>
+        <LatestFromBlog />
+
+        <section className="udx-section udx-wrap udx-faq" aria-labelledby="faq-title">
+          <div>
+            <p className="udx-kicker">Before you apply</p>
+            <h2 id="faq-title">Common questions</h2>
+            <Link className="udx-text-link" to="/faq">See all FAQs <ArrowRight size={17} aria-hidden="true" /></Link>
           </div>
+          <div>
+            {questions.map(({ question, answer }) => (
+              <details key={question}>
+                <summary>{question}<Plus size={20} aria-hidden="true" /></summary>
+                <p>{answer}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        <HomePartnerships />
+
+        <section className="udx-next" aria-labelledby="next-title">
+          <div className="udx-wrap udx-next-inner">
+            <HomePhotography image="next-chapter" alt="Students talking outside a university building with books and backpacks" widths={[640, 1000]} ratio={1.3} />
+            <div className="udx-next-copy">
+              <div>
+                <p className="udx-kicker">Your application</p>
+                <h2 id="next-title">Ready to apply?</h2>
+                <p>Create an account to add your details and prepare your application. If you need help choosing a course, book a free consultation.</p>
+              </div>
+              <div className="udx-actions">
+                <Link className="udx-button" to={user ? "/dashboard" : studentSignup}>
+                  {user ? "Open your dashboard" : "Start your application"} <ArrowRight size={18} aria-hidden="true" />
+                </Link>
+                <Link className="udx-text-link" to="/free-consultation">Speak to an adviser <ArrowUpRight size={17} aria-hidden="true" /></Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="udx-wrap udx-support">
+          <span>Need help?</span>
+          <a className="udx-text-link" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => logFreeConsultationWhatsAppClick("homepage_support")}>Chat on WhatsApp <ArrowUpRight size={16} aria-hidden="true" /></a>
+          <button type="button" id="home-zoe-launcher" className="udx-text-link" onClick={() => window.dispatchEvent(new Event("zoe:home-request"))}>
+            <MessageCircle size={16} aria-hidden="true" /> Ask Zoe
+          </button>
         </div>
-
-        <h2 className="text-3xl font-bold text-center mb-4">{contactHeading}</h2>
-        <p className="text-muted-foreground text-center mb-12">{contactSubtitle}</p>
-
-        <Card className="max-w-2xl mx-auto">
-          <CardContent className="p-8 pt-8 sm:pt-8">
-            <Suspense fallback={<SectionLoader />}>
-              <ContactForm />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
-
+        <HomeContact />
+      </main>
+      <HomeFooter />
+      <HomeWhatsApp />
     </div>
   );
-};
-
-export default Index;
+}

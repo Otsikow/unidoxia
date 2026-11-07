@@ -10,6 +10,7 @@ export default function VisaCalculatorPage() {
         keywords="student visa calculator, visa requirements, study abroad visa, visa application timeline, international student visa, university visa support"
       />
       <div className="container mx-auto px-4 py-8">
+        <h1 className="sr-only">Student visa readiness calculator</h1>
         <VisaCalculator />
       </div>
     </div>

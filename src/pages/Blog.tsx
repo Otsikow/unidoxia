@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/SEO";
 import { editorialReview } from '@/lib/editorialReview.mjs';
+import { articleCover, articleCoverSources } from "@/lib/homeBlog";
 import { selectDistinctBlogCards } from "@/lib/blogEditorial";
 
 interface BlogPost {
@@ -202,7 +203,7 @@ export default function Blog() {
             <div className="space-y-3">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Insights & Guides</h1>
               <p className="text-base sm:text-lg text-muted-foreground">
-                Explore our published guidance on visa rule changes, scholarships, admissions, and the most common application mistakes — so you can plan with clarity. We share guidance, not guarantees of visa or scholarship outcomes.
+                Explore our published guidance on visa rule changes, scholarships, admissions, and the most common application mistakes so you can plan with clarity. We share guidance, not guarantees of visa or scholarship outcomes.
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-center">
@@ -211,6 +212,7 @@ export default function Blog() {
                 <Input
                   className="pl-11"
                   placeholder="Search articles…"
+                  aria-label="Search articles"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                 />
@@ -232,7 +234,7 @@ export default function Blog() {
             <div>
               <h2 className="text-2xl font-semibold">Latest from the blog</h2>
               <p className="text-sm text-muted-foreground">
-                Fresh perspectives from our research team, admissions experts, and partner network.
+                Published study-abroad guidance from the UniDoxia editorial team.
               </p>
             </div>
             <Button variant="ghost" className="w-full justify-start gap-2 sm:w-auto" asChild>
@@ -274,7 +276,9 @@ export default function Blog() {
                 <Card key={post.id} className="flex h-full min-w-0 flex-col overflow-hidden border-border/70">
                   {post.cover_image_url ? (
                     <img
-                      src={post.cover_image_url}
+                      src={articleCover(post.cover_image_url)}
+                      srcSet={articleCoverSources(post.cover_image_url)}
+                      sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 1279px) 44vw, 380px"
                       alt={post.title}
                       className="aspect-[16/10] w-full bg-muted object-contain"
                     />
@@ -346,7 +350,7 @@ export default function Blog() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-sm font-semibold">{section.label}</p>
-                    <p className="text-xs text-muted-foreground">{section.headline}</p>
+                    <p className="text-xs text-foreground whitespace-normal">{section.headline}</p>
                   </div>
                 </TabsTrigger>
               ))}

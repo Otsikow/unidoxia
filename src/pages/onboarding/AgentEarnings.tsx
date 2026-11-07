@@ -13,35 +13,28 @@ import { useToast } from "@/hooks/use-toast";
 
 /* -------------------------- STATIC DATA -------------------------- */
 
-const earningsTiers = [
-  { tier: "Starter", enrollments: "1-5", commission: "10%", highlight: false },
-  { tier: "Growth", enrollments: "6-15", commission: "12%", highlight: false },
-  { tier: "Pro", enrollments: "16-30", commission: "15%", highlight: true },
-  { tier: "Elite", enrollments: "31+", commission: "18%", highlight: false },
-];
-
 const payoutFeatures = [
   {
     icon: Clock,
-    title: "Weekly Payouts",
-    description: "Get paid every Friday, no delays.",
+    title: "Payment Timing",
+    description: "Check the agreed schedule and the conditions that must be met before payment.",
   },
   {
     icon: Shield,
-    title: "Protected Earnings",
-    description: "Commission locked in at enrollment.",
+    title: "Payment Conditions",
+    description: "Confirm eligible applications, required evidence and any applicable adjustments.",
   },
   {
     icon: TrendingUp,
-    title: "Performance Bonuses",
-    description: "Extra rewards for top performers.",
+    title: "Written Agreement",
+    description: "Review responsibilities and commercial terms with UniDoxia before you start.",
   },
 ];
 
 const commissionHighlights = [
-  "Transparent rate structure",
-  "No hidden fees or deductions",
-  "Multi-currency support",
+  "Confirm rates",
+  "Check payment conditions",
+  "Review currency and timing",
 ];
 
 /* =====================================================================
@@ -147,54 +140,19 @@ const AgentEarnings = () => {
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-              Earn More as You Grow
+              Understand Your Commission Terms
             </h1>
             
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Our tiered commission structure rewards your success. 
-              The more students you enroll, the higher your earnings.
+              Discuss recruitment opportunities and confirm the terms that apply to your work with UniDoxia.
             </p>
           </div>
 
-          {/* Commission Tiers */}
-          <Card className="border-border/50">
-            <CardContent className="p-6">
-              <h2 className="font-semibold text-foreground mb-4">Commission Tiers</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {earningsTiers.map((tier) => (
-                  <div
-                    key={tier.tier}
-                    className={`rounded-xl p-4 text-center transition-all ${
-                      tier.highlight
-                        ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <p className={`text-xs font-medium uppercase tracking-wide mb-1 ${
-                      tier.highlight ? "text-primary-foreground/80" : "text-muted-foreground"
-                    }`}>
-                      {tier.tier}
-                    </p>
-                    <p className={`text-2xl font-bold mb-1 ${
-                      tier.highlight ? "text-primary-foreground" : "text-foreground"
-                    }`}>
-                      {tier.commission}
-                    </p>
-                    <p className={`text-sm ${
-                      tier.highlight ? "text-primary-foreground/80" : "text-muted-foreground"
-                    }`}>
-                      {tier.enrollments} enrollments
-                    </p>
-                    {tier.highlight && (
-                      <span className="inline-block mt-2 text-xs bg-primary-foreground/20 rounded-full px-2 py-0.5">
-                        Most Popular
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <section className="border-y py-6 space-y-3">
+            <h2 className="text-xl font-semibold">Confirm your commission terms</h2>
+            <p className="text-muted-foreground">Before recruiting students, ask UniDoxia to confirm the applicable commission rate, payment conditions, currency and expected timing in writing. These depend on the agreed recruitment arrangement.</p>
+            <Link to="/contact" className="inline-flex min-h-11 items-center text-primary underline underline-offset-4">Discuss agent terms with UniDoxia</Link>
+          </section>
 
           {/* Payout Features */}
           <div className="grid md:grid-cols-3 gap-4">
@@ -218,7 +176,7 @@ const AgentEarnings = () => {
           <Card className="border-border/50">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8">
-                <p className="font-medium text-foreground shrink-0">What you get:</p>
+                <p className="font-medium text-foreground shrink-0">Discuss with UniDoxia:</p>
                 <div className="flex flex-wrap gap-3">
                   {commissionHighlights.map((highlight) => (
                     <span
@@ -239,7 +197,7 @@ const AgentEarnings = () => {
             <p className="text-muted-foreground">
               {isAgent
                 ? "You're all set. Head to your dashboard and start adding students."
-                : "Ready to start earning? Create your account in less than 2 minutes."}
+                : "Create an agent account to discuss the recruitment process with our team."}
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Button
