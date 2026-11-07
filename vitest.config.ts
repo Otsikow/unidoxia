@@ -10,6 +10,9 @@ export default defineConfig({
     },
   },
   test: {
+    // Bound UI-test concurrency so large staff/admin fixtures keep reliable timing.
+    maxWorkers: 2,
+    minWorkers: 1,
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     environment: './vitest.environment.ts',
     setupFiles: ['./vitest.setup.ts'],

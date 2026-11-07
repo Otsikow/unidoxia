@@ -1,3 +1,4 @@
+import "./public.css";
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AppFooter } from "@/components/layout/AppFooter";
@@ -14,7 +15,7 @@ interface PublicLayoutProps {
 }
 
 /** Paths where the back button should be hidden by default */
-const HIDDEN_BACK_BUTTON_PATHS = new Set(["/", "/home", "/pricing"]);
+const HIDDEN_BACK_BUTTON_PATHS = new Set(["/", "/home"]);
 
 /** Path prefixes where the back button should be hidden (pages with their own back navigation) */
 const HIDDEN_BACK_BUTTON_PREFIXES = ["/auth/", "/agents/", "/onboarding/"];
@@ -29,7 +30,7 @@ export const PublicLayout = ({ children, contentClassName, showBackButton }: Pub
   const shouldShowBackButton = showBackButton ?? (!isHiddenPath && !isHiddenPrefix);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="udx-public min-h-screen flex flex-col bg-background text-foreground">
       {shouldShowBackButton && (
         <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <nav aria-label="Page navigation" className="container mx-auto flex min-h-12 items-center justify-between gap-2 px-4 py-1.5">

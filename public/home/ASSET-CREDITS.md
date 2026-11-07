@@ -40,3 +40,7 @@ The British Council badge JPEG is the original 500 × 500 embedded image extract
 ## Original training-strip reference restoration
 
 Following Eric's explicit supplied-screenshot instruction, the existing `src/assets/british-council-logo.png` was copied unchanged to `public/home/british-council-logo.png` for the original homepage training strip and its initial HTML. The original purple image is displayed in light mode and the original site's white filter treatment in dark mode. This restores a pre-existing brand asset at the owner's request; it is separate from the awarded individual badge and does not establish new permission or endorsement.
+
+## Public-page QA photography
+
+The UK student-funds article thumbnail now uses Charlotte May's original Pexels photo 5965546 (`student-*`), already credited above. The international visa-update thumbnail uses Armin Rimoldi's Pexels photo 5553036 (`campus-life-*`). Both are illustrative student/campus photographs, not named applicants or affiliated institutions. These two known cover replacements are shared by homepage cards, blog cards and article presentation; published database cover URLs and article content are unchanged. The November update's published graphic remains intact. Contact now uses the credited Pexels education-guidance photograph rather than the unverified `zoe-portrait.png` image. No generated portrait was added.

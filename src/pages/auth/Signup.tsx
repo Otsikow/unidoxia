@@ -707,6 +707,7 @@ const Signup = () => {
         keywords="sign up, create account, student registration, agent registration, university registration, student recruitment platform"
       />
 
+      <h1 className="sr-only">Create your UniDoxia account</h1>
       <Card className="w-full max-w-3xl shadow-2xl border-2 relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-muted">
           <div

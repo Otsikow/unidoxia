@@ -23,13 +23,13 @@ import { OnboardingProgress } from "@/components/onboarding/OnboardingProgress";
 const benefits = [
   {
     icon: Globe,
-    title: "Global University Network",
-    description: "Access 500+ verified programs across top destinations worldwide.",
+    title: "International Study Options",
+    description: "Browse current programme information and check requirements with the institution.",
   },
   {
     icon: DollarSign,
-    title: "High Commissions",
-    description: "Earn competitive rates with transparent tracking and timely payouts.",
+    title: "Clear Commercial Terms",
+    description: "Discuss applicable rates and payment conditions before starting recruitment.",
   },
   {
     icon: Users,
@@ -39,9 +39,9 @@ const benefits = [
 ];
 
 const highlights = [
-  "Verified programs ready to promote",
-  "Real-time commission tracking",
-  "Dedicated partner support",
+  "Programme information to review",
+  "Application tracking tools",
+  "Discuss support with our team",
 ];
 
 /* =====================================================================

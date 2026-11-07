@@ -1,0 +1,6 @@
+/* Shared identity for public discovery, advice and contact pages. */
+@font-face { font-family: "UniDoxia Fraunces"; src: url("/home/fraunces.woff2") format("woff2"); font-style: normal; font-weight: 500; font-display: swap; }
+@font-face { font-family: "UniDoxia Manrope"; src: url("/home/manrope.woff2") format("woff2"); font-style: normal; font-weight: 400 700; font-display: swap; }
+.udx-public { font-family: "UniDoxia Manrope", Arial, sans-serif; }
+:root:not(.dark) .udx-public { --background: 42 47% 97%; --foreground: 215 58% 16%; --primary: 211 54% 31%; --primary-foreground: 0 0% 100%; --card: 40 100% 99%; --muted: 48 20% 92%; }
+.udx-public h1, .udx-public h2 { font-family: "UniDoxia Fraunces", Georgia, serif; font-weight: 500; letter-spacing: -.025em; }

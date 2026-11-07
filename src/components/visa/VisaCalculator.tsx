@@ -712,7 +712,7 @@ export default function VisaCalculator() {
             <div>
               <Label htmlFor="country">Select Country</Label>
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger>
+                <SelectTrigger id="country">
                   <SelectValue placeholder="Choose a country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -808,7 +808,7 @@ export default function VisaCalculator() {
               <div>
                 <Label htmlFor="nationality">Nationality</Label>
                 <Select value={studentProfile.nationality} onValueChange={(value) => setStudentProfile({ ...studentProfile, nationality: value })}>
-                  <SelectTrigger>
+                  <SelectTrigger id="education_level" aria-label="Education level">
                     <SelectValue placeholder="Select nationality" />
                   </SelectTrigger>
                   <SelectContent>
@@ -841,7 +841,7 @@ export default function VisaCalculator() {
                 )}
               </Button>
               <Button
-                variant="destructive"
+                variant="outline"
                 className="w-full"
                 onClick={handleClear}
               >

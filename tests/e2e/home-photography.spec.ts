@@ -15,6 +15,9 @@ test('education agent invitation reaches the existing agent registration journey
   await expect(page).toHaveURL(/\/agents\/onboarding\?next=/);
   await page.getByRole('link', { name: 'Continue', exact: true }).click();
   await expect(page).toHaveURL(/\/agents\/earnings/);
+  await expect(page.getByRole('heading', { name: 'Confirm your commission terms', exact: true })).toBeVisible();
+  await expect(page.locator('body')).not.toContainText('Get paid every Friday');
+  await expect(page.locator('body')).not.toContainText('18%');
   await page.getByRole('button', { name: 'Create Your Account', exact: true }).click();
   await expect(page).toHaveURL(/\/auth\/signup\?role=agent/);
   await page.getByRole('button', { name: 'Next', exact: true }).click();

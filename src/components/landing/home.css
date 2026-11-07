@@ -462,3 +462,11 @@ html:has(.udx-home) { scroll-padding-bottom: 80px; }
   .udx-training-main { flex-direction: row; }
 }
 @media (max-width: 639px) { .udx-training h2 { font-size: 1.125rem; } .udx-training-description { font-size: .875rem; line-height: 1.5; } }
+/* Keep the restored strip readable when the desktop columns are too narrow. */
+@media (min-width: 768px) and (max-width: 959px) {
+  .udx-training-inner { display: grid; grid-template-columns: 144px minmax(0, 1fr); gap: 12px 20px; }
+  .udx-training-main { display: contents; }
+  .udx-training-logo { grid-row: 1 / 3; align-self: center; }
+  .udx-training-main > div { grid-column: 2; }
+  .udx-training-link { grid-column: 2; justify-self: start; align-self: start; }
+}

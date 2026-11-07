@@ -253,8 +253,10 @@ export default function UserFeedback() {
                     type="button"
                     variant={feedback.rating >= rating ? "default" : "outline"}
                     size="sm"
+                    aria-label={`Rate ${rating} out of 5`}
+                    aria-pressed={feedback.rating === rating}
                     onClick={() => setFeedback(prev => ({ ...prev, rating }))}
-                    className="h-10 w-10 p-0 hover-scale"
+                    className="h-11 w-11 p-0"
                   >
                     <Star className={`h-4 w-4 ${feedback.rating >= rating ? 'fill-current' : ''}`} />
                   </Button>

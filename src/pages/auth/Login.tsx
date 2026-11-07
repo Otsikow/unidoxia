@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import unidoxiaLogo from '@/assets/unidoxia-logo.png';
@@ -186,7 +186,7 @@ const Login = () => {
             <div className="flex justify-center mb-4">
               <img src={unidoxiaLogo} alt="UniDoxia Logo" className="h-24 w-24 rounded-lg object-contain dark:box-content dark:bg-white dark:p-1 dark:shadow-sm" />
             </div>
-            <CardTitle className="text-2xl font-bold">Sign in to UniDoxia.com</CardTitle>
+            <h1 className="text-2xl font-bold">Sign in to UniDoxia.com</h1>
             <CardDescription>
               Access your UniDoxia account to manage applications, connect with agents, and track every step.
             </CardDescription>
@@ -214,6 +214,8 @@ const Login = () => {
               <div className="relative">
                 <Input
                   id="password"
+                  autoComplete="current-password"
+                  className="pr-12"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={password}
@@ -223,9 +225,11 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  className="absolute right-0 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" aria-hidden="true" /> : <Eye className="h-4 w-4" aria-hidden="true" />}
                 </button>
               </div>
             </div>

@@ -40,12 +40,12 @@ describe('student dashboard uploads', () => {
     const picker = await screen.findByLabelText('File') as HTMLInputElement;
     expect(screen.getByText('Your profile still needs some details')).toBeInTheDocument();
     await user.upload(picker, photo);
-    await user.click(screen.getByRole('button', { name: 'Upload', exact: true }));
+    await user.click(screen.getByRole('button', { name: 'Upload' }));
     await waitFor(() => expect(api.save).toHaveBeenCalledWith(expect.objectContaining({
       student_id: 'student-id', document_type: 'passport', file_name: 'passport.jpg',
     })));
     expect(picker.files).toHaveLength(0);
-    expect(screen.getByRole('button', { name: 'Upload', exact: true })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
   });
 
   it('resubmits the rejected record through replacement and never inserts a duplicate', async () => {
@@ -72,7 +72,7 @@ describe('student dashboard uploads', () => {
     render(<MemoryRouter initialEntries={['/student/documents?upload=english_proof']}><Documents /></MemoryRouter>);
     const picker = await screen.findByLabelText('File') as HTMLInputElement;
     await user.upload(picker, photo);
-    const button = screen.getByRole('button', { name: 'Upload', exact: true });
+    const button = screen.getByRole('button', { name: 'Upload' });
     await user.click(button);
     expect(api.save).not.toHaveBeenCalled();
     expect(picker.files).toHaveLength(1);

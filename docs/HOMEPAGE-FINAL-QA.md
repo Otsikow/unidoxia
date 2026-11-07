@@ -1,5 +1,7 @@
 # UniDoxia final homepage quality review
 
+**Latest comprehensive review:** [Homepage and linked public journeys](HOMEPAGE-OWNER-REVIEW.md), including current screenshots, fee corrections, authentic image replacements, accessibility fixes, type-check resolution and remaining release gates.
+
 **Latest supplied-reference refinement:** Restored the exact original logo, paragraph and single `/about` training-details action at Eric’s explicit request. See [training-strip follow-up](HOMEPAGE-TRAINING-STRIP.md).
 
 **Earlier refinement:** [Restored prominent British Council training strip](HOMEPAGE-TRAINING-STRIP.md), with the old heading and placement below course search. The personal badge and direct certificate access remain.

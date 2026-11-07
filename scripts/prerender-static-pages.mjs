@@ -1,6 +1,8 @@
+import { articleCover } from '../src/lib/homeBlog.ts';
 import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../src/lib/homepage.mjs';
 import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
 import { internationalDirectoryIntro, selectInternationalUniversityListings } from '../src/lib/homeInternationalUniversities.ts';
+import { PRICING_PLANS, SERVICE_FEE_SCOPE, formatPlanPrice } from '../src/types/billing.ts';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -103,6 +105,12 @@ const pages = [
     description:
       "UniDoxia helps international students around the world discover courses, prepare applications and understand next steps — guidance, not guarantees.",
     body: `<h1>About UniDoxia</h1><p>UniDoxia is a study-abroad support platform for international students worldwide. We help students research courses and universities, prepare applications, and understand common visa and scholarship requirements. We do not guarantee admission, scholarship, or visa outcomes.</p><h2>UK knowledge-trained leadership</h2><p>The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training (certificate code 114757).</p>`,
+  },
+  {
+    path: "/pricing",
+    title: "Student Application Plans and Service Fees | UniDoxia",
+    description: "Compare free access with UniDoxia’s optional USD 200 Agent-Supported plan. Your initial consultation is free; university and government charges are separate.",
+    body: `<h1>Choose Your Study Abroad Plan</h1><p>Your first consultation is free. Free Access includes one application. Optional paid guidance is separate.</p><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul><a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
   },
   {
     path: "/faq",
@@ -208,7 +216,7 @@ const pages = [
   ...posts.map((p) => ({
     path: `/blog/${encodeURIComponent(p.slug)}`,
     lastmod: p.updated_at || p.published_at,
-    jsonLd: editorialReview[p.slug] ? undefined : blogSchema(p),
+    jsonLd: editorialReview[p.slug] ? undefined : blogSchema({...p, cover_image_url: p.cover_image_url ? articleCover(p.cover_image_url) : null}),
     noindex: Boolean(editorialReview[p.slug]),
     title: editorialReview[p.slug] ? `${editorialReview[p.slug].title} | UniDoxia` : p.seo_title || `${p.title} | UniDoxia`,
     description: editorialReview[p.slug]?.message || p.seo_description || p.excerpt || p.title,
