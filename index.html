@@ -3,12 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Study Abroad from Africa: UK Universities &amp; Support | UniDoxia</title>
-    <meta name="description" content="Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.">
+    <title>Study Abroad from Africa | UniDoxia</title>
+    <meta name="description" content="Find university courses abroad and get help from UniDoxia with entry requirements, application documents and what to do after an offer.">
     <meta name="author" content="UniDoxia" />
     <link rel="canonical" href="https://unidoxia.com/" />
-    <meta name="theme-color" content="#092147" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#0e1a2b" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#fbf9f4">
+    <script>
+      try {
+        const preference = localStorage.getItem("theme") || "light";
+        const dark = preference === "dark" ||
+          (preference === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.classList.toggle("dark", dark);
+        document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", dark ? "#131f30" : "#fbf9f4");
+      } catch {
+        document.documentElement.style.colorScheme = "light";
+      }
+    </script>
 
     <!-- Performance: DNS Prefetch for external services -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
@@ -17,7 +28,6 @@
     <!-- Performance: Preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="image" href="/videos/hero-poster.webp" type="image/webp" fetchpriority="high">
 
     <link rel="icon" href="/favicon.ico?v=8" sizes="any">
     <link rel="icon" href="/favicon-16.png?v=8" type="image/png" sizes="16x16">
@@ -37,10 +47,10 @@
     <meta property="og:image" content="https://unidoxia.com/og-image.png?v=5">
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="https://unidoxia.com/og-image.png?v=5">
-    <meta property="og:title" content="Study Abroad from Africa: UK Universities &amp; Support | UniDoxia">
-    <meta name="twitter:title" content="Study Abroad from Africa: UK Universities &amp; Support | UniDoxia">
-    <meta property="og:description" content="Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.">
-    <meta name="twitter:description" content="Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.">
+    <meta property="og:title" content="Study Abroad from Africa | UniDoxia">
+    <meta name="twitter:title" content="Study Abroad from Africa | UniDoxia">
+    <meta property="og:description" content="Find university courses abroad and get help from UniDoxia with entry requirements, application documents and what to do after an offer.">
+    <meta name="twitter:description" content="Find university courses abroad and get help from UniDoxia with entry requirements, application documents and what to do after an offer.">
 
     
 

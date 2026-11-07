@@ -1,7 +1,6 @@
 /**
- * Countries UniDoxia currently supports as study destinations.
- * Used by course discovery filters and student study-preference selectors
- * so every surface stays in sync.
+ * Named course-discovery choices. A choice does not guarantee live listings;
+ * the catalogue validates current availability separately.
  */
 export const STUDY_DESTINATIONS = [
   'United Kingdom',
@@ -16,3 +15,7 @@ export const STUDY_DESTINATIONS = [
 ] as const;
 
 export type StudyDestination = (typeof STUDY_DESTINATIONS)[number];
+
+// Preserve the existing New Zealand enquiry choice without implying a live catalogue.
+export const STUDY_ENQUIRY_DESTINATIONS = [...STUDY_DESTINATIONS, 'New Zealand'] as const;
+export const STUDY_ENQUIRY_CHOICES = [...STUDY_ENQUIRY_DESTINATIONS, 'Other', 'Not sure yet'] as const;

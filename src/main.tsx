@@ -8,7 +8,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { MinimalLoader } from "@/components/MinimalLoader";
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
     <LanguageProvider>
       <Suspense fallback={<MinimalLoader message="Loading interface..." />}>
         <HelmetProvider>

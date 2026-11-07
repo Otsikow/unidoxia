@@ -134,7 +134,7 @@ export function StudyProgramSearch({ className }: StudyProgramSearchProps) {
                   transition={{ duration: 0.5, delay: 0.15 }}
                   className="text-muted-foreground max-w-3xl mx-auto"
                 >
-                  Explore curated universities, destinations, and study levels tailored to your ambitions—start by searching what inspires you.
+                  Search by course, university, destination or study level.
                 </motion.p>
               </div>
 

@@ -1,3 +1,6 @@
+import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../src/lib/homepage.mjs';
+import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
+import { internationalDirectoryIntro, selectInternationalUniversityListings } from '../src/lib/homeInternationalUniversities.ts';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -19,6 +22,7 @@ import { coursePage, universityPage, organisation, blogSchema, scholarshipPage, 
 const ORIGIN = "https://unidoxia.com";
 const DIST = path.resolve("dist");
 const template = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
+const homeStyles = fs.readFileSync("src/components/landing/home.css", "utf8");
 
 const esc = (s = "") =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -26,6 +30,7 @@ const esc = (s = "") =>
 const guides = publishedStudyGuides();
 const { universities, programmes } = await loadPublicCatalogue();
 const featured = universities.filter(u => u.featured).sort((a, b) => (a.featured_priority ?? Infinity) - (b.featured_priority ?? Infinity)).slice(0, 12);
+const international = selectInternationalUniversityListings(universities);
 const posts = await fetchPublicRows("blog_posts?select=id,slug,title,seo_title,seo_description,excerpt,content_html,content_md,tags,published_at,updated_at,cover_image_url&status=eq.published");
 const scholarships = await fetchPublicRows('scholarships?select=id,slug,title,name,summary,description,full_description,seo_title,seo_description,status,updated_at,published_at,institution_name,sponsor_name,country,study_level,academic_year,deadline,opening_date,scholarship_value,funding_type,number_of_awards,last_verified_at,eligible_nationalities,academic_requirements,english_requirements,work_experience_requirements,age_requirements,important_conditions,application_steps,official_source_url,official_application_url,featured_image,og_image,verification_status&slug=not.is.null&status=in.(Published,"Closing Soon",Upcoming,Closed,Archived)');
 // Same English questions and answers as the React FAQ; fail rather than silently
@@ -58,27 +63,34 @@ const faqJsonLd = faqSections.length
   : null;
 
 const featuredHtml = featured.length
-  ? `<section><h2>Featured universities</h2><ul>${featured
+  ? `<section class="udx-featured" aria-labelledby="featured-universities-title"><h2 id="featured-universities-title">Featured universities</h2><p class="udx-featured-intro">Read about each university, then check its courses and entry requirements.</p><ul>${featured
       .map(
         (u) =>
-          `<li><a href="/universities/${esc(u.slug)}">${esc(u.name)}</a>${
-            u.city || u.country ? ` — ${esc([u.city, u.country].filter(Boolean).join(", "))}` : ""
-          }${u.featured_summary ? `<p>${esc(u.featured_summary)}</p>` : ""}</li>`,
+          `<li><h3><a href="/universities/${esc(u.slug)}">${esc(u.name)} ↗</a></h3>${
+            u.city || u.country ? `<p class="udx-university-location">${esc([u.city, u.country].filter(Boolean).join(", "))}</p>` : ""
+          }${u.featured_summary ? `<p class="udx-university-summary">${esc(u.featured_summary)}</p>` : ""}${u.featured_highlight ? `<p class="udx-university-source">${esc(u.featured_highlight)}</p>` : ""}</li>`,
       )
-      .join("")}</ul></section>`
+      .join("")}</ul><p class="udx-featured-disclaimer">Featured listings do not imply a formal recruitment partnership. Confirm current details with the institution.</p></section>`
   : "";
 
 const nav = `<nav><a href="/">Home</a> · <a href="/courses">Courses</a> · <a href="/universities">Universities</a> · <a href="/destinations/united-kingdom">Study in the UK</a> · <a href="/scholarships">Scholarships</a> · <a href="/blog">Blog</a> · <a href="/faq">FAQ</a> · <a href="/about">About</a> · <a href="/contact">Contact</a></nav>`;
 const footer = `<footer><p>${esc(businessFooter)}</p></footer>`;
 
+const internationalHtml = international.length ? `<section class="udx-featured udx-international" aria-labelledby="international-universities-title"><h2 id="international-universities-title">Universities beyond the UK</h2><p>${esc(internationalDirectoryIntro)}</p><ul>${international.map(u => `<li><p class="udx-university-location">${esc([u.city, u.country].filter(Boolean).join(', '))}</p><h3><a href="/universities/${esc(u.slug)}">${esc(u.name)} ↗</a></h3></li>`).join('')}</ul></section>` : '';
+
 const pages = [
+  {
+    path: counsellorCredential.path,
+    title: counsellorCredential.title,
+    description: counsellorCredential.description,
+    body: `<h1>Eric Arthur</h1><p>UK knowledge-trained leadership at UniDoxia</p><h2>British Council UK knowledge training</h2><p>${esc(counsellorCredential.descriptor)}</p><img src="/credentials/eric-arthur-uk-knowledge-badge.jpg" width="240" height="240" alt="British Council and UK Agent Quality Framework: I am a UK knowledge trained counsellor"><p>Training certificate 114757 is valid until 16 July 2028. The individual digital badge was awarded 18 July 2026 and is valid until 17 July 2028.</p><p><a href="/credentials/eric-arthur-uk-knowledge-training-certificate.pdf">View Eric’s training certificate</a> · <a href="/credentials/eric-arthur-uk-knowledge-badge.pdf">View Eric’s badge award</a></p><p>This training and badge belong to Eric Arthur as an individual. They do not mean that the British Council endorses, accredits or validates UniDoxia or its services.</p>`,
+  },
   {
     path: "/",
     jsonLd: organisation,
-    title: "Study Abroad from Africa: UK Universities & Support | UniDoxia",
-    description:
-      "Explore UK universities and courses with UniDoxia. Study abroad guidance for students in Africa and other international applicants.",
-    body: homeFirstPaint(featuredHtml),
+    title: homeTitle,
+    description: homeDescription,
+    body: homeFirstPaint(featuredHtml + internationalHtml, posts),
   },
   {
     path: '/free-consultation', title: 'Free Study Abroad Consultation | UniDoxia',
@@ -221,7 +233,14 @@ const render = (page) => {
     .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${t}">`)
     .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${d}">`)
     .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${d}">`);
-  if (page.path !== "/") html = html.replace(/<link rel="preload" as="image" href="\/videos\/hero-poster.webp"[^>]*>/, "");
+  if (page.path === "/") {
+    const homePreloads = [
+      `<link rel="preload" as="image" type="image/avif" imagesrcset="${homePhotoAvifSrcSet}" imagesizes="${homePhoto.sizes}" fetchpriority="high">`,
+      '<link rel="preload" as="font" href="/home/fraunces.woff2" type="font/woff2" crossorigin>',
+      '<link rel="preload" as="font" href="/home/manrope.woff2" type="font/woff2" crossorigin>',
+    ];
+    html = html.replace('<title>', `${homePreloads.join('\n    ')}\n    <title>`);
+  }
   html = html.replace('</head>', `<meta name="prerender-path" content="${esc(page.path)}">\n</head>`);
   if (page.noindex) {
     html = html.replace('</head>', '<meta name="robots" content="noindex">\n</head>');
@@ -230,8 +249,8 @@ const render = (page) => {
     const json = JSON.stringify(page.jsonLd).replace(/</g, "\\u003c");
     html = html.replace("</head>", `<script type="application/ld+json" data-prerender-seo="1">${json}</script>\n</head>`);
   }
-  html = html.replace('</head>', `<style id="first-paint-styles">${firstPaintCss}</style>\n</head>`);
-  return html.replace('<div id="root"></div>', renderFirstPaint({path:page.path, body:purifier.sanitize(page.body), nav, footer}));
+  html = html.replace('</head>', `<style id="first-paint-styles">${firstPaintCss}${page.path === '/' ? homeStyles : ''}</style>\n</head>`);
+  return html.replace('<div id="root"></div>', renderFirstPaint({path:page.path, body:purifier.sanitize(page.body, { ADD_ATTR: ['fetchpriority'] }), nav, footer}));
 };
 
 fs.writeFileSync(path.join(DIST, 'seo-hosting.json'), JSON.stringify({

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { trackEnquiry } from '@/lib/enquiryAnalytics';
+import { STUDY_ENQUIRY_CHOICES } from '@/lib/studyDestinations';
 
 export default function FreeConsultation() {
   const [method, setMethod] = useState('email');
@@ -55,7 +56,7 @@ export default function FreeConsultation() {
           <div><label htmlFor="enquiry-name">Your name</label><Input id="enquiry-name" name="name" autoComplete="name" required maxLength={160} /></div>
           <div><label htmlFor="enquiry-method">How should we contact you?</label><select id="enquiry-method" value={method} onChange={e => setMethod(e.target.value)} className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="email">Email</option><option value="phone">Phone</option><option value="whatsapp">WhatsApp</option></select></div>
           <div><label htmlFor="enquiry-contact">{method === 'email' ? 'Email address' : 'Phone number (including country code)'}</label><Input key={method} id="enquiry-contact" name="contact" type={method === 'email' ? 'email' : 'tel'} autoComplete={method === 'email' ? 'email' : 'tel'} required minLength={method === 'email' ? undefined : 6} maxLength={method === 'email' ? 200 : 25} pattern={method === 'email' ? undefined : '[+0-9 ().\\-]{6,25}'} /></div>
-          <div><label htmlFor="enquiry-destination">Preferred destination</label><select id="enquiry-destination" name="destination" required defaultValue="" className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="" disabled>Select a destination</option>{['United Kingdom', 'Canada', 'United States', 'Australia', 'New Zealand', 'Ireland', 'Other', 'Not sure yet'].map(d => <option key={d}>{d}</option>)}</select></div>
+          <div><label htmlFor="enquiry-destination">Preferred destination</label><select id="enquiry-destination" name="destination" required defaultValue="" className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"><option value="" disabled>Select a destination</option>{STUDY_ENQUIRY_CHOICES.map(d => <option key={d}>{d}</option>)}</select><p className="mt-2 text-sm text-muted-foreground">You can ask about any of these destinations. Current course listings and application options vary.</p></div>
           <div><label htmlFor="enquiry-question">Your question (optional)</label><Textarea id="enquiry-question" name="question" maxLength={1000} rows={4} /></div>
           <div className="hidden" aria-hidden="true"><label>Website<Input name="website" tabIndex={-1} autoComplete="off" /></label></div>
           <label className="flex items-start gap-3 text-sm"><input type="checkbox" name="consent" required className="mt-1" /><span>I agree to UniDoxia using these details to respond to my enquiry. Read our <Link to="/legal/privacy" className="text-primary underline">Privacy Notice</Link>.</span></label>
