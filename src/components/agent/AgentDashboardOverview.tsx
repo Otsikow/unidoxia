@@ -393,11 +393,11 @@ export default function AgentDashboardOverview() {
   return (
     <div className="space-y-6">
       {/* Welcome */}
-      <section className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm">
+      <section className="dashboard-hero p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1.5">
             <h2 className="text-2xl font-semibold tracking-tight">Welcome back, {firstName}</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm hero-muted">
               Manage your students, applications and university partnerships from one place.
             </p>
           </div>
@@ -407,8 +407,8 @@ export default function AgentDashboardOverview() {
               className={cn(
                 "gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
                 verified
-                  ? "border-success/30 bg-success/10 text-success"
-                  : "border-warning/30 bg-warning/10 text-warning",
+                  ? "border-white/30 bg-success/80 text-white"
+                  : "border-white/30 bg-warning/80 text-white",
               )}
             >
               {verified ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Clock className="h-3.5 w-3.5" />}
@@ -417,7 +417,7 @@ export default function AgentDashboardOverview() {
             <Button
               variant="ghost"
               size="sm"
-              className="gap-2"
+              className="gap-2 hero-btn-glass"
               onClick={() => void refetch()}
               disabled={isFetching}
             >
@@ -431,9 +431,9 @@ export default function AgentDashboardOverview() {
           {quickActions.map(({ label, icon: Icon, to, primary }) => (
             <Button
               key={label}
-              variant={primary ? "default" : "outline"}
+              variant="ghost"
               size="sm"
-              className="gap-2 rounded-xl"
+              className={cn("gap-2 rounded-xl", primary ? "hero-btn-solid" : "hero-btn-glass")}
               onClick={() => navigate(to)}
             >
               <Icon className="h-4 w-4" />
