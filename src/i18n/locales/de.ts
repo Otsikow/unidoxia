@@ -634,7 +634,7 @@ const de = {
               {
                 question: "Kostet die Nutzung der Plattform etwas?",
                 answer:
-                  "Der Service von UniDoxia ist für Studierende kostenlos. Wir berechnen Studierenden niemals eine Gebühr für unsere Unterstützung. Wir erhalten möglicherweise eine Provision von Universitäten, wenn sich ein von uns betreuter Studierender einschreibt. Studiengebühren, Anzahlungen, von der Hochschule erhobene Bewerbungsgebühren und staatliche Visagebühren sind davon getrennt und werden an diese Organisationen gezahlt. Wir garantieren weder Zulassung noch Stipendien oder Visa.",
+                  "Der Service von UniDoxia ist für Studierende kostenlos. Wir berechnen Studierenden niemals eine Gebühr für unsere Unterstützung. Wir erhalten möglicherweise eine Provision von Universitäten, wenn sich ein von uns betreuter Studierender einschreibt. Studiengebühren, Anzahlungen, von der Hochschule erhobene Bewerbungsgebühren und staatliche Visagebühren sind davon getrennt und werden an diese Organisationen gezahlt. Wir garantieren weder eine Zulassung noch Stipendien noch Visa.",
               },
               {
                 question: "Welche Unterlagen brauche ich für die Bewerbung?",
@@ -809,7 +809,7 @@ const de = {
             {
               question: "Kostet die Nutzung der Plattform etwas?",
               answer:
-                "Der Service von UniDoxia ist für Studierende kostenlos. Wir berechnen Studierenden niemals eine Gebühr für unsere Unterstützung. Wir erhalten möglicherweise eine Provision von Universitäten, wenn sich ein von uns betreuter Studierender einschreibt. Studiengebühren, Anzahlungen, von der Hochschule erhobene Bewerbungsgebühren und staatliche Visagebühren sind davon getrennt und werden an diese Organisationen gezahlt. Wir garantieren weder Zulassung noch Stipendien oder Visa.",
+                "Der Service von UniDoxia ist für Studierende kostenlos. Wir berechnen Studierenden niemals eine Gebühr für unsere Unterstützung. Wir erhalten möglicherweise eine Provision von Universitäten, wenn sich ein von uns betreuter Studierender einschreibt. Studiengebühren, Anzahlungen, von der Hochschule erhobene Bewerbungsgebühren und staatliche Visagebühren sind davon getrennt und werden an diese Organisationen gezahlt. Wir garantieren weder eine Zulassung noch Stipendien noch Visa.",
             },
             {
               question: "Welche Unterlagen brauche ich für die Bewerbung?",

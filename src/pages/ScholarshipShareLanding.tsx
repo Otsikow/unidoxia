@@ -28,7 +28,7 @@ const formatCountdownLabel = (countdown: number) => {
 export default function ScholarshipShareLanding() {
   const [searchParams] = useSearchParams();
   const scholarshipTitle = searchParams.get("title") ?? "Scholarship opportunity";
-  const institution = searchParams.get("institution") ?? "UniDoxia partner";
+  const institution = searchParams.get("institution") ?? "";
   const country = searchParams.get("country") ?? undefined;
   const awardAmount = searchParams.get("award") ?? undefined;
   const safeRedirectUrl = useMemo(() => sanitizeRedirectUrl(searchParams.get("redirect")), [searchParams]);
@@ -69,7 +69,7 @@ export default function ScholarshipShareLanding() {
           <CardHeader>
             <CardTitle>{scholarshipTitle}</CardTitle>
             <CardDescription className="flex flex-wrap items-center gap-2">
-              <span>{institution}</span>
+              {institution && <span>{institution}</span>}
               {country ? (
                 <Badge variant="secondary" className="rounded-full text-xs">
                   {country}

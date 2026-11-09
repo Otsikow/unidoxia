@@ -109,7 +109,7 @@ export default function Pricing() {
             Choose Your Study Abroad Plan
           </h1>
           <p className="text-lg text-muted-foreground mb-6">
-            UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.
+            Free for students. UniDoxia never charges students a fee.
           </p>
           
           <p className="text-sm text-muted-foreground mb-6">{SERVICE_FEE_SCOPE}</p>

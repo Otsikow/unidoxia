@@ -408,7 +408,7 @@ const sw = {
             {
               question: "Je, kuna ada ya kutumia jukwaa?",
               answer:
-                "Huduma ya UniDoxia ni bure kwa wanafunzi. Hatuwatozi wanafunzi ada yoyote kwa msaada wetu. Tunaweza kupokea kamisheni kutoka kwa vyuo vikuu pale mwanafunzi tunayemsaidia anapojiunga. Ada za masomo za chuo kikuu, amana, ada za maombi zinazotozwa na taasisi na ada za viza za serikali ni tofauti na hulipwa moja kwa moja kwa taasisi hizo. Hatuhakikishi udahili, ufadhili wa masomo wala viza.",
+                "Huduma ya UniDoxia ni bure kwa wanafunzi. Kamwe hatuwatozi wanafunzi ada yoyote kwa msaada wetu. Tunaweza kupokea kamisheni kutoka kwa vyuo vikuu pale mwanafunzi tunayemsaidia anapojiunga. Ada za masomo za chuo kikuu, amana, ada za maombi zinazotozwa na taasisi na ada za viza za serikali ni tofauti na hulipwa kwa taasisi husika. Hatuhakikishi udahili, ufadhili wa masomo wala viza.",
             },
             {
               question: "Nahitaji nyaraka gani kuomba?",

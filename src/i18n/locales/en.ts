@@ -356,7 +356,7 @@ const en = {
             suffix: "",
           },
           description:
-            "We guide students step-by-step — from course selection to visa approval. No guesswork. No hidden fees.",
+            "We guide students step by step, from course selection to their visa application. No guesswork. Free for students.",
           ctas: {
             students: {
               badge: "Students",

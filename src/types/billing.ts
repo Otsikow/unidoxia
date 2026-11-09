@@ -94,7 +94,7 @@ export const PAYMENT_TERMS = {
 
 // FAQ for pricing
 export const PRICING_FAQ = [
-  { question: 'What is free?', answer: SERVICE_FEE_SCOPE },
+  { question: 'What is free?', answer: 'Free for students. UniDoxia never charges students a fee.' },
   { question: 'Are university and visa fees included?', answer: SERVICE_FEE_SCOPE },
   {
     question: 'Is this a subscription?',
