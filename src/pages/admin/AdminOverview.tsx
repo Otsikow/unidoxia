@@ -170,25 +170,25 @@ export default function AdminOverview() {
   ];
   return (
     <div className="space-y-5 pb-4 sm:space-y-6">
-      <section className="relative isolate overflow-hidden rounded-2xl border border-blue-900/20 bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 p-5 text-white shadow-sm sm:p-7">
+      <section className="dashboard-hero p-5 sm:p-7">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border-[36px] border-white/[0.04]"
         />
         <div className="relative flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
           <div className="max-w-xl">
-            <p className="mb-3 flex items-center gap-2 text-xs font-medium tracking-wide text-blue-100">
+            <p className="mb-3 flex items-center gap-2 text-xs font-medium tracking-wide hero-muted">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-300" />
               YOUR ADMISSIONS WORKSPACE
             </p>
             <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               Admissions overview
             </h1>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed text-blue-100/85">
+            <p className="mt-2 max-w-lg text-sm leading-relaxed hero-muted">
               A clear view of your students, applications and the work that
               needs attention.
             </p>
-            <p className="mt-4 text-xs text-blue-200/75">
+            <p className="mt-4 text-xs hero-muted">
               {new Intl.DateTimeFormat("en-GB", {
                 timeZone: "Europe/London",
                 weekday: "long",
@@ -200,7 +200,7 @@ export default function AdminOverview() {
           </div>
           <div className="flex flex-wrap gap-2 lg:shrink-0 lg:flex-col xl:flex-row">
             <Button
-              className="bg-white text-slate-950 shadow-sm hover:bg-blue-50"
+              className="hero-btn-solid shadow-sm"
               onClick={() => setChoosingStudent(true)}
             >
               <Plus className="mr-2 h-4 w-4" />
@@ -209,7 +209,7 @@ export default function AdminOverview() {
             <Button
               aria-label="Refresh overview"
               variant="ghost"
-              className="border border-white/20 text-white hover:bg-white/10 hover:text-white"
+              className="hero-btn-glass"
               disabled={refreshing}
               onClick={refresh}
             >

@@ -1166,3 +1166,42 @@ All colors MUST be HSL.
     transform: scaleY(0.8);
   }
 }
+
+/* Colourful dashboard header shared by student, agent and admin dashboards */
+@layer components {
+  .dashboard-hero {
+    --hero-fg: 0 0% 100%;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: 1.25rem;
+    color: hsl(var(--hero-fg));
+    background:
+      radial-gradient(circle at 12% 0%, hsl(190 95% 55% / 0.45), transparent 45%),
+      radial-gradient(circle at 88% 110%, hsl(330 90% 60% / 0.45), transparent 50%),
+      radial-gradient(circle at 70% 10%, hsl(42 100% 60% / 0.30), transparent 40%),
+      linear-gradient(120deg, hsl(222 80% 22%) 0%, hsl(245 70% 42%) 45%, hsl(280 65% 45%) 100%);
+    box-shadow: 0 20px 45px -20px hsl(250 80% 40% / 0.55);
+    border: 1px solid hsl(0 0% 100% / 0.12);
+  }
+  .dashboard-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(hsl(0 0% 100% / 0.10) 1px, transparent 1px);
+    background-size: 18px 18px;
+    mask-image: linear-gradient(90deg, transparent, black 60%);
+    pointer-events: none;
+  }
+  .dashboard-hero .hero-muted { color: hsl(var(--hero-fg) / 0.82); }
+  .dashboard-hero .hero-btn-solid {
+    background: hsl(var(--hero-fg)); color: hsl(245 70% 30%);
+  }
+  .dashboard-hero .hero-btn-solid:hover { background: hsl(var(--hero-fg) / 0.9); }
+  .dashboard-hero .hero-btn-glass {
+    background: hsl(0 0% 100% / 0.12); color: hsl(var(--hero-fg));
+    border: 1px solid hsl(0 0% 100% / 0.28); backdrop-filter: blur(6px);
+  }
+  .dashboard-hero .hero-btn-glass:hover { background: hsl(0 0% 100% / 0.22); color: hsl(var(--hero-fg)); }
+}
