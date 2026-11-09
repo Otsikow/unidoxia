@@ -31,7 +31,7 @@ export function coursePage(course, university) {
   const location = [...new Set([course.campus, university.city, university.country].filter(Boolean))].join(', ');
   const desc = description(`${course.course_code ? `Course ${course.course_code}: ` : ''}${course.name} at ${university.name}. ${[course.level, course.duration_months ? `${course.duration_months} months` : '', location].filter(Boolean).join(' · ')}. Explore course and entry details.`);
   const months = [...new Set([...(course.intake_months || []), ...(course.program_intakes || []).filter(i => ['available', 'recruitable', 'provisional'].includes(i.status)).map(i => i.intake_month)])].filter(m => Number.isInteger(m) && m >= 1 && m <= 12).sort((a, b) => a - b).map(m => new Intl.DateTimeFormat('en-GB', { month: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2000, m - 1, 1))));
-  const fees = (course.program_fees || []).filter(f => f.applicant_type === 'international' && f.resolution_status === 'verified' && f.amount != null && f.currency).map(f => `${f.currency} ${Number(f.amount).toLocaleString('en-GB')}${f.fee_basis ? ` (${f.fee_basis})` : ''}${f.fee_year ? ` — ${f.fee_year}` : ''}`).join('; ');
+  const fees = (course.program_fees || []).filter(f => f.applicant_type === 'international' && f.resolution_status === 'verified' && f.amount != null && f.currency).map(f => `${f.currency} ${Number(f.amount).toLocaleString('en-GB')}${f.fee_basis ? ` (${f.fee_basis})` : ''}${f.fee_year ? `, ${f.fee_year}` : ''}`).join('; ');
   return {
     variantLabels: [course.course_code, course.campus, course.study_mode, course.duration_months ? `${course.duration_months} months` : null, `Course reference ${course.id}`],
     path: `/courses/${course.id}`, lastmod: course.updated_at, kind: 'catalogue',

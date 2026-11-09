@@ -2,9 +2,18 @@ ALTER TABLE public.universities
   ADD COLUMN IF NOT EXISTS agreement_signed_at timestamptz NULL,
   ADD COLUMN IF NOT EXISTS public_partner_display boolean NOT NULL DEFAULT false;
 
-ALTER TABLE public.universities
-  ADD CONSTRAINT universities_public_partner_requires_agreement
-  CHECK (public_partner_display = false OR agreement_signed_at IS NOT NULL);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'universities_public_partner_requires_agreement'
+      AND conrelid = 'public.universities'::regclass
+  ) THEN
+    ALTER TABLE public.universities
+      ADD CONSTRAINT universities_public_partner_requires_agreement
+      CHECK (public_partner_display = false OR agreement_signed_at IS NOT NULL);
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION public.guard_public_partner_display()
 RETURNS trigger LANGUAGE plpgsql SET search_path = public AS $$
