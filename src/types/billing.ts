@@ -78,7 +78,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   },
 ];
 
-export const SERVICE_FEE_SCOPE = "UniDoxia service plans exclude university application fees, tuition, deposits, visa fees and other government or third-party charges. Check these costs with the relevant institution or authority before applying.";
+export const SERVICE_FEE_SCOPE = "UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.";
 
 // Payment Terms - Displayed across the platform
 export const PAYMENT_TERMS = {
@@ -94,7 +94,7 @@ export const PAYMENT_TERMS = {
 
 // FAQ for pricing
 export const PRICING_FAQ = [
-  { question: 'What is free?', answer: 'Your initial consultation is free. The Free Access plan includes course discovery, a profile and one application. Optional Agent-Supported guidance costs USD 200 as a one-time payment.' },
+  { question: 'What is free?', answer: SERVICE_FEE_SCOPE },
   { question: 'Are university and visa fees included?', answer: SERVICE_FEE_SCOPE },
   {
     question: 'Is this a subscription?',

@@ -99,17 +99,17 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
-      <SEO title="Student Application Plans and Service Fees | UniDoxia" description="Compare free access with UniDoxia’s optional USD 200 Agent-Supported plan. Your initial consultation is free; university and government charges are separate." canonicalPath="/pricing" />
+      <SEO title="Study Abroad Support | UniDoxia" description="UniDoxia's service is free for students. We never charge students a fee for our support." canonicalPath="/pricing" />
       
       <div className="container mx-auto px-4 pb-12">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <Badge variant="secondary" className="mb-4">Transparent Pricing</Badge>
+          <Badge variant="secondary" className="mb-4">Free student support</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Choose Your Study Abroad Plan
           </h1>
           <p className="text-lg text-muted-foreground mb-6">
-            Your first consultation is free. Free Access includes one application. Choose optional paid support if you need help preparing your applications.
+            UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.
           </p>
           
           <p className="text-sm text-muted-foreground mb-6">{SERVICE_FEE_SCOPE}</p>

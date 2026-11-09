@@ -25,7 +25,7 @@ const WHATSAPP_URL = "https://wa.me/447360961803";
 const questions = [
   { question: "Do I need to choose a university before registering?", answer: <>No. Register your interest and share your qualifications, preferred subjects, destinations and budget. Our advisers research suitable options for you to review.</> },
   { question: "Which documents should I upload?", answer: <>Start with your academic transcripts and certificates in your secure student account. Your adviser will explain any additional documents needed for your chosen options.</> },
-  { question: "What does it cost to get started?", answer: <>Registration and your initial <Link to="/free-consultation">consultation are free</Link>. Optional paid support is separate. Check <Link to="/pricing">service pricing</Link>, plan inclusions and university or government charges before paying.</> },
+  { question: "What does it cost to get started?", answer: <>UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.</> },
   { question: "Who chooses my courses and universities?", answer: <>You make the final choice. We explain our recommendations, costs and requirements. Admission and scholarship decisions remain with the university or awarding body; outcomes are not guaranteed.</> },
 ];
 
@@ -33,7 +33,7 @@ function HomeRegistration() {
   return <section className="udx-registration" aria-labelledby="registration-title">
     <div className="udx-wrap udx-registration-inner">
       <div><p className="udx-kicker">Personalised university matching</p><h2 id="registration-title">Tell us your study plans. We’ll help you find the right university.</h2><p>You do not need to research every university yourself. Share your background and priorities, and our advisers will help you compare suitable options.</p></div>
-      <div><ol className="udx-registration-steps">{homeRegistrationSteps.map((step, index) => <li key={step}><span aria-hidden="true">0{index + 1}</span>{step}</li>)}</ol><Link className="udx-button" to={studentSignup}>Register Your Interest <ArrowRight size={18} aria-hidden="true" /></Link><p className="udx-registration-fees">Registration and your initial consultation are free. <Link to="/pricing">Optional paid services and other fees</Link> are explained separately.</p></div>
+      <div><ol className="udx-registration-steps">{homeRegistrationSteps.map((step, index) => <li key={step}><span aria-hidden="true">0{index + 1}</span>{step}</li>)}</ol><Link className="udx-button" to={studentSignup}>Register Your Interest <ArrowRight size={18} aria-hidden="true" /></Link><p className="udx-registration-fees">Free for students. UniDoxia never charges students a fee.</p></div>
     </div>
   </section>;
 }

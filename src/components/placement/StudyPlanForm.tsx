@@ -271,8 +271,7 @@ export function StudyPlanForm({
         </p>
       )}
       <p className="text-sm text-muted-foreground">
-        Registration and the initial consultation are free. Optional paid
-        support and university or government charges are separate.
+        Free for students. UniDoxia never charges students a fee.
       </p>
       {error && (
         <p role="alert" className="text-destructive">

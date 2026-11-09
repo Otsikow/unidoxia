@@ -4394,6 +4394,7 @@ export type Database = {
       universities: {
         Row: {
           academic_year: string | null
+          agreement_signed_at: string | null
           active: boolean | null
           application_fee_amount: number | null
           application_fee_currency: string | null
@@ -4438,6 +4439,7 @@ export type Database = {
           partnership_tier: string
           profile_completeness_percent: number
           profile_readiness_status: string
+          public_partner_display: boolean
           ranking: Json | null
           slug: string
           source_type: string
@@ -4451,6 +4453,7 @@ export type Database = {
         }
         Insert: {
           academic_year?: string | null
+          agreement_signed_at?: string | null
           active?: boolean | null
           application_fee_amount?: number | null
           application_fee_currency?: string | null
@@ -4495,6 +4498,7 @@ export type Database = {
           partnership_tier?: string
           profile_completeness_percent?: number
           profile_readiness_status?: string
+          public_partner_display?: boolean
           ranking?: Json | null
           slug: string
           source_type?: string
@@ -4508,6 +4512,7 @@ export type Database = {
         }
         Update: {
           academic_year?: string | null
+          agreement_signed_at?: string | null
           active?: boolean | null
           application_fee_amount?: number | null
           application_fee_currency?: string | null
@@ -4552,6 +4557,7 @@ export type Database = {
           partnership_tier?: string
           profile_completeness_percent?: number
           profile_readiness_status?: string
+          public_partner_display?: boolean
           ranking?: Json | null
           slug?: string
           source_type?: string

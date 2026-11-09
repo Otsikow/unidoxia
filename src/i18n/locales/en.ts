@@ -806,7 +806,7 @@ const en = {
                 {
                   question: "Is there a fee to use the platform?",
                   answer:
-                    "Creating an account and exploring universities is free. Agents may charge consulting fees, clearly shown before commitment.",
+                    "UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.",
                 },
                 {
                   question: "What documents do I need to apply?",
@@ -967,7 +967,7 @@ const en = {
             {
               question: "Is there a fee to use the platform?",
               answer:
-                "Creating an account and exploring universities is free. Agents may charge consulting fees, clearly shown before commitment.",
+                "UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.",
             },
             {
               question: "What documents do I need to apply?",

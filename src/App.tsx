@@ -645,6 +645,12 @@ const App = () => {
                         <Route path="/help" element={<PublicLayout><HelpCenter /></PublicLayout>} />
                         <Route path="/legal/privacy" element={<PublicLayout><LegalPrivacy /></PublicLayout>} />
                         <Route path="/legal/terms" element={<PublicLayout><LegalTerms /></PublicLayout>} />
+                        <Route path="/privacy" element={<Navigate to="/legal/privacy" replace />} />
+                        <Route path="/terms" element={<Navigate to="/legal/terms" replace />} />
+                        <Route path="/fees" element={<PublicLayout><NotFound /></PublicLayout>} />
+                        <Route path="/partners" element={<PublicLayout><NotFound /></PublicLayout>} />
+                        <Route path="/partner" element={<PublicLayout><NotFound /></PublicLayout>} />
+                        <Route path="/our-partners" element={<PublicLayout><NotFound /></PublicLayout>} />
                         <Route path="/intake-form" element={<PublicLayout><IntakeForm /></PublicLayout>} />
                         <Route path="/study-guides/:slug" element={<PublicLayout><StudyGuide /></PublicLayout>} />
                         <Route path="/destinations/united-kingdom" element={<PublicLayout><StudyUK /></PublicLayout>} />
