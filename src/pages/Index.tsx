@@ -79,7 +79,7 @@ export default function Index() {
           <div className="udx-wrap udx-hero-grid">
             <div className="udx-hero-copy">
               <p className="udx-kicker">{homeEyebrow}</p>
-              <h1>{homeHeadline[0]} <span>{homeHeadline[1]}</span></h1>
+              <h1>{homeHeadline[0]} <Link to={studentSignup} className="hover:underline underline-offset-4"><span>{homeHeadline[1]}</span></Link></h1>
               <p className="udx-intro">{homeIntro}</p>
               <div className="udx-actions">
                 <Link className="udx-button" to={studentSignup}>Register Your Interest <ArrowRight size={18} aria-hidden="true" /></Link>
