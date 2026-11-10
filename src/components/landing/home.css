@@ -274,8 +274,9 @@
   .udx-destination p { display: none; }
 }
 
-/* The portrait keeps its campus context while the arched crop gives the hero a focal point. */
+/* Keep the supplied campus photograph natural, open and free of decorative overlays. */
 .udx-hero-portrait { margin: 0; }
+.udx-home .udx-hero-photo.udx-hero-campus { aspect-ratio: 1671 / 941; object-position: center; border-radius: 3px; }
 /* Fit the longer registration message and six-stage journey without crowding. */
 @media (min-width: 768px) {
   .udx-home .udx-hero h1 { font-size: clamp(2rem, 4.25vw, 3.875rem); }

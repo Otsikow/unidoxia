@@ -17,7 +17,8 @@ import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
 import { homeFooterGroups } from "@/lib/homeEditorial.mjs";
 import { homeFooterIcons } from "@/lib/homeFooterIcons";
-import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeRegistrationSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeSteps, homeRegistrationSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import campusHero from "@/assets/campus-hero.png.asset.json";
 import "@/components/landing/home.css";
 
 const WHATSAPP_URL = "https://wa.me/447360961803";
@@ -87,10 +88,14 @@ export default function Index() {
               </div>
             </div>
             <figure className="udx-hero-portrait">
-              <picture>
-                <source type="image/avif" srcSet={homePhotoAvifSrcSet} sizes={homePhoto.sizes} />
-                <img className="udx-hero-photo" {...homePhoto} fetchPriority="high" />
-              </picture>
+              <img
+                className="udx-hero-photo udx-hero-campus"
+                src={campusHero.url}
+                alt="Two students studying with a laptop and notebook beneath a tree on a university campus"
+                width={1671}
+                height={941}
+                fetchPriority="high"
+              />
             </figure>
           </div>
         </section>
