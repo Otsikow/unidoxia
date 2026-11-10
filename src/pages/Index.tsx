@@ -17,7 +17,7 @@ import { logFreeConsultationWhatsAppClick } from "@/lib/analytics";
 import { organisation } from "@/lib/publicSeo.mjs";
 import { homeFooterGroups } from "@/lib/homeEditorial.mjs";
 import { homeFooterIcons } from "@/lib/homeFooterIcons";
-import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homeSteps, homeRegistrationSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
+import { destinationHref, homeDescription, homeDestinations, homeEyebrow, homeHeadline, homeIntro, homePhoto, homePhotoAvifSrcSet, homeSteps, homeRegistrationSteps, homeAssurances, homeTraining, homeTitle, studentSignup } from "@/lib/homepage.mjs";
 import campusHero from "@/assets/campus-hero.png.asset.json";
 import "@/components/landing/home.css";
 
@@ -209,7 +209,10 @@ export default function Index() {
 
         <section className="udx-next" aria-labelledby="next-title">
           <div className="udx-wrap udx-next-inner">
-            <HomePhotography image="next-chapter" alt="Students talking outside a university building with books and backpacks" widths={[640, 1000]} ratio={1.3} />
+            <picture className="udx-editorial-photo">
+              <source type="image/avif" srcSet={homePhotoAvifSrcSet} sizes={homePhoto.sizes} />
+              <img {...homePhoto} alt="Students reviewing study notes together outside a university building" loading="lazy" decoding="async" />
+            </picture>
             <div className="udx-next-copy">
               <div>
                 <p className="udx-kicker">Your application</p>
