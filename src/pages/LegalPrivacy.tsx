@@ -1,3 +1,4 @@
+import { SectionNavigation } from '@/components/legal/SectionNavigation';
 import type { ReactNode } from 'react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { SEO } from "@/components/SEO";
@@ -230,24 +231,7 @@ const LegalPrivacy = () => {
       </header>
 
       <main className="container mx-auto grid max-w-6xl gap-10 px-4 py-10 lg:grid-cols-[260px_minmax(0,1fr)]">
-        <nav className="hidden lg:block">
-          <div className="sticky top-24 space-y-6">
-            <div>
-              <h2 className="text-sm font-semibold text-muted-foreground">On this page</h2>
-              <div className="mt-3 space-y-2 text-sm">
-                {sections.map((section) => (
-                  <a
-                    key={section.id}
-                    href={`#${section.id}`}
-                    className="block rounded-md px-3 py-2 transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    {section.title}
-                  </a>
-                ))}
-              </div>
-            </div>
-          </div>
-        </nav>
+        <SectionNavigation sections={sections} />
 
         <section className="space-y-12">
           <div className="prose dark:prose-invert max-w-none">
