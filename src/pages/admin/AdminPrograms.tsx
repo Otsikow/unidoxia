@@ -906,8 +906,8 @@ const AdminPrograms = () => {
                       <TableCell className="font-medium">{program.name}</TableCell>
                       <TableCell className="text-muted-foreground">{program.university}</TableCell>
                       <TableCell className="text-muted-foreground">{program.country}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{program.discipline}</Badge>
+                      <TableCell className="min-w-[12rem] max-w-[16rem] whitespace-normal break-words leading-relaxed">
+                        {program.discipline}
                       </TableCell>
                       <TableCell>{program.level}</TableCell>
                       <TableCell className="text-right">{program.seats}</TableCell>
