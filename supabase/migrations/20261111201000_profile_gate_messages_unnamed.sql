@@ -63,18 +63,12 @@ BEGIN
 
   missing := public.coursefinder_profile_missing(NEW.student_id);
   IF COALESCE(cardinality(missing), 0) > 0 THEN
-    RAISE EXCEPTION 'Profile not complete for application processing: % items missing. Please complete the student profile first.', cardinality(missing)
+    RAISE EXCEPTION 'Profile not complete for application processing: % item(s) missing. Please complete the student profile first.', cardinality(missing)
       USING ERRCODE = 'check_violation', DETAIL = array_to_string(missing, ', ');
   END IF;
 
   RETURN NEW;
 END;
 $$;
-
-DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
-CREATE TRIGGER enforce_application_profile_gate
-  BEFORE INSERT OR UPDATE ON public.applications
-  FOR EACH ROW
-  EXECUTE FUNCTION public.enforce_application_profile_gate();
 
 REVOKE EXECUTE ON FUNCTION public.enforce_application_profile_gate() FROM PUBLIC, anon, authenticated;
