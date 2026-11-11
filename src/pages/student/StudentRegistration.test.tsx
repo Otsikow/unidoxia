@@ -103,11 +103,13 @@ describe('student registration', () => {
     open();
     const next = await screen.findByRole('button', { name: 'Continue to education' });
     expect(next).toBeDisabled();
+    expect(screen.getByText('Step 1 of 3')).toBeVisible();
     fireEvent.change(screen.getByLabelText(/Date of birth/), { target: { value: '2000-01-01' } });
-    await click(screen.getByRole('button', { name: 'Save profile details' }));
-    await waitFor(() => expect(next).toBeEnabled());
+    await click(screen.getByRole('button', { name: 'Save and continue' }));
+    expect(screen.getByText('Step 2 of 3')).toBeVisible();
+    await click(screen.getByRole('button', { name: 'Save and continue' }));
+    expect(screen.getByText('Step 3 of 3')).toBeVisible();
     expect(state.student.date_of_birth).toBe('2000-01-01');
-    await click(next);
 
     const finish = screen.getByRole('button', { name: 'Finish registration' });
     expect(finish).toBeDisabled();

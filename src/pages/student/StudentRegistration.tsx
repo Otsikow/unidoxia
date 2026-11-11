@@ -104,7 +104,7 @@ export default function StudentRegistration() {
         <h1 className="text-3xl font-bold tracking-tight">Complete your student registration</h1>
         <p className="text-muted-foreground">
           Add the details UniDoxia needs to prepare your university applications with KC Overseas Education (CourseFinder).
-          Save each section as you go. You can upload supporting documents later.
+          Save each page as you go. You can upload supporting documents later.
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
           <Link className="text-primary underline" to={PRIVACY_NOTICE_PATH}>Privacy notice</Link>
@@ -125,12 +125,12 @@ export default function StudentRegistration() {
       ) : (
         <>
           <nav ref={stepsRef} tabIndex={-1} aria-label="Registration steps" className="flex flex-wrap gap-2">
-            <Button variant={step === 'personal' ? 'default' : 'outline'} aria-current={step === 'personal' ? 'step' : undefined} disabled={saving} onClick={() => setStep('personal')}>1. Personal details</Button>
-            <Button variant={step === 'education' ? 'default' : 'outline'} aria-current={step === 'education' ? 'step' : undefined} disabled={!personalComplete || saving} onClick={() => setStep('education')}>2. Education and history</Button>
+            <Button variant={step === 'personal' ? 'default' : 'outline'} aria-current={step === 'personal' ? 'step' : undefined} disabled={saving} onClick={() => setStep('personal')}>Personal details</Button>
+            <Button variant={step === 'education' ? 'default' : 'outline'} aria-current={step === 'education' ? 'step' : undefined} disabled={!personalComplete || saving} onClick={() => setStep('education')}>Education and history</Button>
           </nav>
           {step === 'personal' ? (
             <>
-              <PersonalInfoTab student={student.data} onUpdate={() => setSaveError('')} />
+              <PersonalInfoTab student={student.data} onUpdate={() => setSaveError('')} onComplete={() => setStep('education')} />
               <Button disabled={!personalComplete} onClick={() => {
                 setStep('education');
                 stepsRef.current?.focus();
@@ -138,6 +138,7 @@ export default function StudentRegistration() {
             </>
           ) : (
             <>
+              <div className="space-y-2"><div className="flex justify-between text-sm"><span>Education and history</span><span>Step 3 of 3</span></div><progress className="w-full accent-primary" value={3} max={3} aria-label="Registration progress" /></div>
               <EducationTab student={student.data} onUpdate={() => void degrees.refetch()} />
               {degrees.isError && <div role="alert" className="space-y-3">
                 <p>We couldn’t check your saved education records.</p>
