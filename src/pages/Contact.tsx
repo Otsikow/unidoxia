@@ -3,6 +3,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { HomePhotography } from "@/components/landing/HomePhotography";
 import { MessageCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 
 const Contact = () => {
@@ -46,6 +47,35 @@ const Contact = () => {
               <HomePhotography image="education-guidance" alt="A tutor and adult learners discussing their work in a university library" className="overflow-hidden" sizes="(max-width: 767px) 0px, 460px" />
             </div>
           </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Email the right team</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <p className="text-sm text-muted-foreground">Choose the address that best fits your question.</p>
+              <dl className="grid gap-5 sm:grid-cols-2">
+                {[
+                  ['General enquiries', 'info@unidoxia.com', 'Questions about UniDoxia and our services.'],
+                  ['Admissions', 'admissions@unidoxia.com', 'Questions about admissions and entry requirements.'],
+                  ['Application help', 'applications@unidoxia.com', 'Help with an existing or planned application.'],
+                  ['Recruitment agents', 'agents@unidoxia.com', 'Enquiries from education agents.'],
+                  ['University partnerships', 'partnerships@unidoxia.com', 'Enquiries from universities and institutions.'],
+                  ['General support', 'support@unidoxia.com', 'Help using UniDoxia and its services.'],
+                  ['Data protection', 'privacy@unidoxia.com', 'Privacy questions and data requests.'],
+                ].map(([label, email, description]) => (
+                  <div key={email} className="min-w-0 space-y-1">
+                    <dt className="font-semibold">{label}</dt>
+                    <dd><a className="break-all text-primary underline-offset-4 hover:underline" href={`mailto:${email}`}>{email}</a></dd>
+                    <dd className="text-sm text-muted-foreground">{description}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="text-sm text-muted-foreground">
+                Please upload application documents through your <Link className="text-primary underline underline-offset-4" to="/student/documents">student portal</Link>, rather than emailing them.
+              </p>
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader>

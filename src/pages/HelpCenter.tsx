@@ -396,8 +396,7 @@ const HelpCenter = () => {
                       <Mail className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold mb-1">Email Support</h4>
-                        <p className="text-sm text-muted-foreground">support@example.com</p>
-                        <p className="text-xs text-muted-foreground mt-1">Response within 24 hours</p>
+                        <a className="text-sm text-primary underline-offset-4 hover:underline" href="mailto:support@unidoxia.com">support@unidoxia.com</a>
                       </div>
                     </div>
                   </CardContent>
@@ -405,11 +404,10 @@ const HelpCenter = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-primary mt-0.5" />
+                      <MessageCircle className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h4 className="font-semibold mb-1">Phone Support</h4>
-                        <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
-                        <p className="text-xs text-muted-foreground mt-1">Mon-Fri, 9am-6pm EST</p>
+                        <h4 className="font-semibold mb-1">WhatsApp Support</h4>
+                        <a className="text-sm text-primary underline-offset-4 hover:underline" href="https://wa.me/447360961803" target="_blank" rel="noreferrer">+44 7360 961803</a>
                       </div>
                     </div>
                   </CardContent>
