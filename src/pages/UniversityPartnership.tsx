@@ -57,6 +57,7 @@ const UniversityPartnership = () => (
           <CardHeader><CardTitle className="flex items-center gap-2"><Handshake className="h-5 w-5 text-primary" /> A transparent first conversation</CardTitle></CardHeader>
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <p>We will ask about your institution, recruitment priorities, admissions criteria, markets and preferred operating model.</p>
+            <p>For institutional enquiries, email <a className="break-all text-primary underline underline-offset-4" href="mailto:partnerships@unidoxia.com">partnerships@unidoxia.com</a>.</p>
             <p>No listing, enquiry or introductory call creates a formal partnership. Commercial terms, responsibilities and approval processes must be agreed separately.</p>
           </CardContent>
         </Card>

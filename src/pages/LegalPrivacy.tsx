@@ -196,6 +196,10 @@ const sections: Section[] = [
       <div className="space-y-4">
         <p>
           For privacy questions or to submit a data request, email us at{' '}
+          <a className="text-primary" href="mailto:privacy@unidoxia.com">
+            privacy@unidoxia.com
+          </a>
+          {' '}or{' '}
           <a className="text-primary" href="mailto:info@unidoxia.com">
             info@unidoxia.com
           </a>

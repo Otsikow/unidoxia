@@ -171,6 +171,9 @@ const AgentOnboardingWelcome = () => {
               Manage authorised student recruitment activity, track applications and
               access commission information where it is supported and agreed.
             </p>
+            <p className="text-sm text-muted-foreground">
+              Questions about working with us? Email <a className="break-all text-primary underline underline-offset-4" href="mailto:agents@unidoxia.com">agents@unidoxia.com</a>.
+            </p>
           </div>
 
           {/* Benefits Grid */}
