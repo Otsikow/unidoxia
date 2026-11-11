@@ -15,7 +15,7 @@ const highlights = [
   {
     title: 'No Data Sales',
     description:
-      'We never sell your personal information. We share it only when needed to provide our services, for example with the universities you apply to and our application partner CourseFinder.'
+      'We never sell your personal information. We share it only when needed to provide our services, for example with the universities you apply to and our application processing partner.'
   },
   {
     title: 'Transparent Practices',
@@ -104,11 +104,12 @@ const sections: Section[] = [
             application.
           </li>
           <li>
-            Our application partner, based in Nagpur, India, which runs the
-            CourseFinder application portal. We share only the details needed for your application, such as your contact
-            details, education history, passport and citizenship details, marital status, number of dependants and any
-            previous visa refusals. The partner uses this information as a separate controller under its own privacy
-            notice.
+            Our university application processing partner, a company based in India, which runs the online application
+            portal we use to submit applications. We share only the details needed for your application, such as your
+            contact details, education history, passport and citizenship details, marital status, number of dependants
+            and any previous visa refusals. The partner uses this information as a separate controller under its own
+            privacy notice. If you ask us at info@unidoxia.com, we will tell you the partner's name and how to read its
+            privacy notice.
           </li>
           <li>Vetted technology vendors that provide infrastructure, analytics, and communications tools.</li>
           <li>Payment processors and financial institutions that manage tuition or service payments.</li>
@@ -125,7 +126,7 @@ const sections: Section[] = [
       <p>
         Some of the organisations we share your data with are outside the UK. When you apply to a university abroad, we
         send your application to that university because this is necessary to provide the service you have asked us for.
-        Our application partner is based in India, which the UK does not treat as having equivalent
+        Our application processing partner is based in India, which the UK does not treat as having equivalent
         data protection laws. We send your details to them only when this is needed to prepare and submit your
         applications, and only after you have given your authorisation in your UniDoxia account. You can ask us for more information by emailing{' '}
         <a className="text-primary" href="mailto:info@unidoxia.com">

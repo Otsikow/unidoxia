@@ -34,7 +34,7 @@ export function ProfileGateDialog({ open, onOpenChange, missingCount, sharingAut
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{missingCount > 0 ? 'Profile not complete for CourseFinder' : 'Sharing authorisation needed'}</DialogTitle>
+          <DialogTitle>{missingCount > 0 ? 'Profile not complete for application processing' : 'Sharing authorisation needed'}</DialogTitle>
           <DialogDescription asChild>
             <div className="space-y-2">
               {missingCount > 0 && (
