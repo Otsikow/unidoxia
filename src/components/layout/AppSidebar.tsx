@@ -61,7 +61,7 @@ const menuItems = {
     { title: "Payments", url: "/student/payments", icon: DollarSign },
     { title: "Notifications", url: "/student/notifications", icon: Bell },
     { title: "University directory (optional)", url: "/student/universities", icon: Building2 },
-    { title: "Course finder (optional)", url: "/courses", icon: Search },
+    { title: "Course search (optional)", url: "/courses", icon: Search },
   ],
   agent: [
     { title: "Dashboard", url: "/dashboard", icon: Home },

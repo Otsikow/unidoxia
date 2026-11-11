@@ -386,7 +386,7 @@ export default function PlacementDashboard() {
         <p>
           Optional resources:{" "}
           <Link className="underline" to="/courses">
-            course finder
+            course search
           </Link>
           ,{" "}
           <Link className="underline" to="/universities">
