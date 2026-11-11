@@ -56,6 +56,9 @@ import {
   AtSign,
   MapPin,
   ChevronsUpDown,
+  GraduationCap,
+  Briefcase,
+  Landmark,
 } from "lucide-react";
 import unidoxiaLogo from "@/assets/unidoxia-logo.png";
 import { cn } from "@/lib/utils";
@@ -676,8 +679,11 @@ const Signup = () => {
     }
   };
 
-  const getRoleIcon = (r: UserRole) =>
-    r === "student" ? "🎓" : r === "agent" ? "💼" : "🏛️";
+  const ROLE_ICONS: Record<UserRole, typeof GraduationCap> = {
+    student: GraduationCap,
+    agent: Briefcase,
+    partner: Landmark,
+  };
 
   const getRoleLabel = (r: UserRole) =>
     r === "student" ? "Student" : r === "agent" ? "Agent" : "University/Partner";
@@ -761,31 +767,57 @@ const Signup = () => {
                 </Label>
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {ROLE_OPTIONS.map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setRole(r)}
-                      className={cn(
-                        "w-full rounded-2xl border-2 px-5 py-4 sm:px-6 sm:py-6 text-left transition-all hover:shadow-lg focus-visible:ring-2",
-                        role === r
-                          ? "border-primary bg-primary/5 shadow-md ring-primary/20"
-                          : "border-border hover:border-primary/50",
-                      )}
-                    >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                        <span className="text-3xl sm:text-4xl">{getRoleIcon(r)}</span>
+                  {ROLE_OPTIONS.map((r) => {
+                    const RoleIcon = ROLE_ICONS[r];
+                    const selected = role === r;
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => setRole(r)}
+                        aria-pressed={selected}
+                        className={cn(
+                          "group relative w-full rounded-2xl border-2 p-5 sm:p-6 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
+                          selected
+                            ? "border-primary bg-primary/5 shadow-md"
+                            : "border-border bg-card hover:border-primary/50 hover:shadow-lg",
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors",
+                            selected
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-muted-foreground/30 text-transparent group-hover:border-primary/40",
+                          )}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </span>
 
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-start justify-between gap-3">
-                            <h3 className="font-semibold text-lg sm:text-xl">{getRoleLabel(r)}</h3>
-                            {role === r && <Check className="h-5 w-5 text-primary" />}
+                        <div className="flex items-start gap-4">
+                          <span
+                            className={cn(
+                              "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-colors",
+                              selected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-primary/10 text-primary group-hover:bg-primary/15",
+                            )}
+                          >
+                            <RoleIcon className="h-6 w-6" />
+                          </span>
+
+                          <div className="flex-1 space-y-1.5 pr-6">
+                            <h3 className="font-semibold text-lg leading-tight">
+                              {getRoleLabel(r)}
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {getRoleDescription(r)}
+                            </p>
                           </div>
-                          <p className="text-sm text-muted-foreground">{getRoleDescription(r)}</p>
                         </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
