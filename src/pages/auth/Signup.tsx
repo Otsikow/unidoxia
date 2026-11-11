@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { buildEmailRedirectUrl, getSiteUrl } from "@/lib/supabaseClientConfig";
-import { getSafeAuthRedirect } from "@/lib/authRedirect";
+import { buildStudentRegistrationPath, getSafeAuthRedirect } from "@/lib/authRedirect";
 import {
   hasSeenOnboarding,
   markOnboardingSeen,
@@ -157,6 +157,7 @@ const Signup = () => {
     () => getSafeAuthRedirect(new URLSearchParams(location.search).get("next")),
     [location.search],
   );
+  const signupDestination = role === "student" ? buildStudentRegistrationPath(nextTarget) : nextTarget;
 
   const countryOptions = useMemo(() => buildCountryOptions(), []);
 
@@ -197,9 +198,9 @@ const Signup = () => {
     if (!authLoading && user && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
       setRedirecting(true);
-      navigate(nextTarget, { replace: true });
+      navigate(signupDestination, { replace: true });
     }
-  }, [authLoading, user, navigate, nextTarget]);
+  }, [authLoading, user, navigate, signupDestination]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -375,7 +376,7 @@ const Signup = () => {
   }, [username, usernameCheckAvailable]);
 
   const handleGoogleSignUp = async () => {
-    const callbackPath = `/auth/callback?next=${encodeURIComponent(nextTarget)}`;
+    const callbackPath = `/auth/callback?next=${encodeURIComponent(signupDestination)}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -623,7 +624,7 @@ const Signup = () => {
         referrerId: referrerInfo?.id,
         referrerUsername: referrerInfo?.username,
         referralSource: role === 'student' ? undefined : referralSource.trim() || undefined,
-        redirectTo: nextTarget,
+        redirectTo: signupDestination,
         address: role === 'student' ? undefined : trimAddress({ ...address, country_of_residence: country }),
       });
 
@@ -662,7 +663,7 @@ const Signup = () => {
           description: "Check your email to verify your account before logging in.",
         });
 
-        navigate("/verify-email", { state: { email, from: nextTarget } });
+        navigate("/verify-email", { state: { email, from: signupDestination } });
       }
     } catch {
       toast({
@@ -745,6 +746,9 @@ const Signup = () => {
               ? "Personal Information"
               : "Account Credentials"}
           </CardDescription>
+          {role === "student" && <p className="text-sm text-muted-foreground">
+            After verifying your email, you’ll fill in the profile details needed for your university applications.
+          </p>}
         </CardHeader>
 
         <form onSubmit={handleSubmit}>

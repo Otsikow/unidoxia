@@ -5,7 +5,7 @@ import path from 'node:path';
 import postgres from 'postgres';
 import {assertAcceptanceTarget} from '../../docs/security/staging/acceptance-target.mjs';
 const suite=process.env.ACCEPTANCE_SUITE;
-if(!['application','receipts','placement','agents'].includes(suite)||process.env.CI!=='true')throw new Error('Explicit isolated CI suite required');
+if(!['application','receipts','placement','agents','coursefinder'].includes(suite)||process.env.CI!=='true')throw new Error('Explicit isolated CI suite required');
 const status=JSON.parse(await readFile(process.env.SUPABASE_STATUS_PATH,'utf8'));
 const url=status.API_URL,anon=status.ANON_KEY,service=status.SERVICE_ROLE_KEY,dbUrl=status.DB_URL;
 assertAcceptanceTarget(url,'local-ci-only','true');
@@ -17,9 +17,24 @@ const env={...process.env,UNIDOXIA_LOCAL_ACCEPTANCE:'true',EXPECTED_STAGING_PROJ
 const db=postgres(dbUrl,{max:1,ssl:false,onnotice:()=>{},connect_timeout:10});
 const sourceRoot=process.cwd();
 const hash=text=>createHash('sha256').update(text).digest('hex');
-async function apply(file){const text=await readFile(path.join(sourceRoot,file),'utf8');console.log(`Reviewed source ${file}: ${hash(text)}`);await db.unsafe(text);}
+async function apply(file, connection=db){const text=await readFile(path.join(sourceRoot,file),'utf8');console.log(`Reviewed source ${file}: ${hash(text)}`);await connection.unsafe(text);}
 let failure;
 try {
+ if(suite==='coursefinder'){
+  const rolledBack=new Error('Roll back the disposable CourseFinder fixture');
+  try {
+   await db.begin(async transaction=>{
+    await apply('supabase/tests/coursefinder-registration-fixture.sql',transaction);
+    await apply('supabase/migrations/20261111184900_coursefinder_waec_qualification.sql',transaction);
+    await apply('supabase/tests/coursefinder-registration.test.sql',transaction);
+    throw rolledBack;
+   });
+  } catch(error) { if(error!==rolledBack)throw error; }
+  const [remaining]=await db`select to_regclass('public.students') as students, to_regprocedure('public.coursefinder_profile_missing(uuid)') as profile_check`;
+  if(remaining.students!==null||remaining.profile_check!==null)throw new Error('CourseFinder fixture rollback failed');
+  console.log('PASS: nine qualification cases, saved WAEC credentials, restricted function access and fixture rollback.');
+  if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,`### CourseFinder SQL acceptance\n- Source commit: ${process.env.GITHUB_SHA}\n- Nine qualification cases, saved credentials, internal permissions and fixture rollback passed in disposable Postgres.\n`);
+ } else {
  await apply('docs/security/staging/acceptance-baseline.sql');
  await apply('supabase/migrations/20261108000000_secure_communication_identity.sql');
  await apply('scripts/ci/bootstrap-backend.sql');
@@ -69,4 +84,5 @@ try {
  console.log('PASS: independent SQL read-back: zero Auth accounts/fixture rows/Storage objects; original tenants unchanged.');
  if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,`### ${suite} isolated backend acceptance\n- Source commit: ${process.env.GITHUB_SHA}\n- Actual Auth/Data API${suite==='receipts'||suite==='placement'?' and private Storage':''}; synthetic accounts only.\n- Independent cleanup verified.\n- ${failure?'Acceptance failed; retain release hold.':'Acceptance passed.'}\n- Minimal representative schema, not a production clone; no hosted backend, Lovable builder, payment, email or deployment.\n`);
  if(failure)throw failure;
+ }
 }catch(error){console.error('Acceptance stopped:',error.code??error.name,error.message);process.exitCode=1;}finally{await db.end({timeout:5});}

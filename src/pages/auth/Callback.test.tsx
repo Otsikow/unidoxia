@@ -1,7 +1,8 @@
 import { StrictMode } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useSearchParams } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildStudentRegistrationPath } from "@/lib/authRedirect";
 import AuthCallback from "./Callback";
 
 const auth = vi.hoisted(() => ({
@@ -13,12 +14,17 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: { auth } }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: vi.fn() }) }));
 
 const session = { user: { id: "google-user" } };
+const RegistrationDestination = () => {
+  const [params] = useSearchParams();
+  return <p>Registration reached: {params.get("next")}</p>;
+};
 const renderCallback = (path: string) => {
   window.history.replaceState({}, "", path);
   return render(<StrictMode><MemoryRouter initialEntries={[path]}><Routes>
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/dashboard" element={<p>Dashboard reached</p>} />
     <Route path="/student/profile" element={<p>Profile reached</p>} />
+    <Route path="/student/onboarding" element={<RegistrationDestination />} />
     <Route path="/auth/reset-password" element={<p>Reset password reached</p>} />
   </Routes></MemoryRouter></StrictMode>);
 };
@@ -43,6 +49,13 @@ describe("AuthCallback", () => {
     renderCallback("/auth/callback?code=one-time-code");
     await screen.findByText("Dashboard reached");
     expect(auth.exchangeCodeForSession).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the student's original destination through email verification", async () => {
+    const destination = "/courses?country=Canada#results";
+    const next = encodeURIComponent(buildStudentRegistrationPath(destination));
+    renderCallback(`/auth/callback?next=${next}&code=one-time-code`);
+    await screen.findByText(`Registration reached: ${destination}`);
   });
 
   it("preserves password recovery routing", async () => {

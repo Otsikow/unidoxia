@@ -13,6 +13,8 @@ Run from a candidate branch that includes this workflow/framework and its review
     gh workflow run backend-acceptance.yml --ref codex/application-submission-guard -f suite=application
     gh workflow run backend-acceptance.yml --ref codex/document-request-submission -f suite=receipts
 
+The `coursefinder` suite runs the qualification migration in a transaction on the disposable PostgreSQL instance. It checks the actual submission function for WAEC and non-WAEC awards, verifies that anonymous and authenticated users cannot call it directly, then rolls back and checks that the fixture is gone. This suite does not exercise Auth or the registration UI.
+
 Check the actual run logs, commit/source hashes, semantic results and cleanup; never treat a dispatched or green compile-only run as passing backend acceptance. Retain prior failures and state which fixture/implementation changed. No live activation follows automatically from a passing test.
 
 Sources: https://docs.github.com/en/billing/concepts/product-billing/github-actions and https://supabase.com/docs/guides/local-development/cli/getting-started.
