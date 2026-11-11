@@ -23,3 +23,23 @@ describe('admin consolidation preserves route guards', () => {
   it('blocks a failed partner setup instead of opening the shared workspace', () => { state.isolationFailed=true; show(); expect(screen.getByText('Workspace setup needs attention')).toBeInTheDocument(); expect(screen.queryByText('Original workspace')).not.toBeInTheDocument(); });
 
 });
+
+
+describe('student journey routing', () => {
+  function showJourney(path: string) {
+    render(<MemoryRouter initialEntries={[path]}><Routes>
+      <Route path={path} element={<ProtectedRoute><p>Student journey</p></ProtectedRoute>} />
+      <Route path="*" element={<Destination />} />
+    </Routes></MemoryRouter>);
+  }
+  it.each(['/student', '/student/dashboard'])('returns admins from %s to their overview', (path) => {
+    showJourney(path);
+    expect(screen.getByText('/admin/overview')).toBeInTheDocument();
+    expect(screen.queryByText('Student journey')).not.toBeInTheDocument();
+  });
+  it('keeps the journey available to students', () => {
+    state.roles = ['student'];
+    showJourney('/student/dashboard');
+    expect(screen.getByText('Student journey')).toBeInTheDocument();
+  });
+});
