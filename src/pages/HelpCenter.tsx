@@ -14,6 +14,8 @@ import { LoadingState } from '@/components/LoadingState';
 import { MessageSquare, Phone, Mail, HelpCircle, Search, Send, CheckCircle, MessageCircle } from 'lucide-react';
 import { z } from 'zod';
 
+const whatsappSupportUrl = "https://wa.me/447360961803";
+
 const supportTicketSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
@@ -223,19 +225,21 @@ const HelpCenter = () => {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow">
+            <a href={whatsappSupportUrl} target="_blank" rel="noopener noreferrer" className="block rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+            <Card className="h-full hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                     <Phone className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Live Chat</h3>
-                    <p className="text-sm text-muted-foreground">Get instant support</p>
+                    <h3 className="font-semibold">Chat on WhatsApp</h3>
+                    <p className="text-sm text-muted-foreground">Message our support team (opens WhatsApp)</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
+            </a>
           </div>
 
           {/* Main Content */}
@@ -407,7 +411,7 @@ const HelpCenter = () => {
                       <MessageCircle className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <h4 className="font-semibold mb-1">WhatsApp Support</h4>
-                        <a className="text-sm text-primary underline-offset-4 hover:underline" href="https://wa.me/447360961803" target="_blank" rel="noreferrer">+44 7360 961803</a>
+                        <a className="text-sm text-primary underline-offset-4 hover:underline" href={whatsappSupportUrl} target="_blank" rel="noreferrer">+44 7360 961803</a>
                       </div>
                     </div>
                   </CardContent>

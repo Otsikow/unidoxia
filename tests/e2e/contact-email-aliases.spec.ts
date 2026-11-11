@@ -33,6 +33,10 @@ test('privacy, university and agent pages show their relevant addresses', async 
 test('help centre shows the correct support contacts', async ({ page }) => {
   await page.route('**/rest/v1/faqs**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
   await page.goto('/help');
+  const chat = page.getByRole('link', { name: /Chat on WhatsApp/ });
+  await expect(chat).toBeVisible();
+  await expect(chat).toHaveAttribute('href', 'https://wa.me/447360961803');
+  await expect(chat).toHaveAttribute('target', '_blank');
   await page.getByRole('tab', { name: 'Contact Support' }).click();
   await expect(page.getByRole('link', { name: 'support@unidoxia.com', exact: true })).toHaveAttribute('href', 'mailto:support@unidoxia.com');
   await expect(page.getByRole('link', { name: '+44 7360 961803', exact: true })).toHaveAttribute('href', 'https://wa.me/447360961803');
