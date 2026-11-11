@@ -292,16 +292,25 @@ describe('WAEC results card', () => {
     waec_scratch_card_pin: '', waec_scratch_card_serial: '',
   };
 
-  it('is only asked for a WAEC board or a West African country', () => {
+  it('is only asked for an explicitly identified WAEC qualification', () => {
     expect(isWaecApplicable(completeRegistration)).toBe(true);
     expect(isWaecApplicable(nonWaec)).toBe(false);
-    expect(isWaecApplicable({ ...nonWaec, secondary_school_country: 'Nigeria' })).toBe(true);
-    expect(isWaecApplicable({ ...nonWaec, secondary_school_country: 'The Gambia' })).toBe(true);
     expect(isWaecApplicable({ ...nonWaec, secondary_qualification: 'WASSCE' })).toBe(true);
   });
 
-  it('is not required for students outside West Africa', () => {
-    expect(validate(nonWaec).success).toBe(true);
+  it.each([
+    ['Ghana', 'Cambridge', 'GCE A Levels'],
+    ['Ghana', 'International Baccalaureate', 'IB Diploma'],
+    ['Nigeria', 'NECO', 'SSCE'],
+    ['Nigeria', 'NABTEB', 'National Business Certificate'],
+    ['The Gambia', 'Cambridge', 'IGCSE'],
+  ])('does not require WAEC credentials for %s / %s / %s', (country, secondary_board, secondary_qualification) => {
+    expect(validate({ ...nonWaec, country_of_education: country, secondary_school_country: country, secondary_board, secondary_qualification }).success).toBe(true);
+  });
+
+  it('requires both credentials for a WAEC qualification even outside West Africa', () => {
+    const student = { ...nonWaec, secondary_board: 'West African Examinations Council', secondary_qualification: 'GCE' };
+    expect(validate(student).issues).toEqual(expect.arrayContaining(['WAEC scratch-card PIN', 'WAEC scratch-card serial number']));
   });
 
   it('uses worldwide wording for the final grade helper', () => {

@@ -1,4 +1,16 @@
 export const DEFAULT_AUTH_REDIRECT = "/dashboard";
+export const STUDENT_REGISTRATION_PATH = "/student/onboarding";
+
+export const getStudentRegistrationDestination = (candidate: string | null | undefined, fallback = "/student/dashboard") => {
+  const destination = getSafeAuthRedirect(candidate, fallback);
+  const path = destination.split(/[?#]/, 1)[0].replace(/\/+$/, "").toLowerCase();
+  return path === STUDENT_REGISTRATION_PATH || path === "/verify-email" || path.startsWith("/auth/")
+    ? fallback
+    : destination;
+};
+
+export const buildStudentRegistrationPath = (destination: string) =>
+  `${STUDENT_REGISTRATION_PATH}?next=${encodeURIComponent(getStudentRegistrationDestination(destination))}`;
 
 export const getSafeAuthRedirect = (
   candidate: string | null | undefined,

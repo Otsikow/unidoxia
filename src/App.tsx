@@ -237,7 +237,7 @@ const PlacementDashboard = lazyWithErrorHandling(() => import("./pages/student/P
 const StudentProfile = lazyWithErrorHandling(() =>
   import("./pages/student/StudentProfile")
 );
-// Student onboarding page removed (legacy path now redirects to profile).
+const StudentRegistration = lazyWithErrorHandling(() => import("./pages/student/StudentRegistration"));
 const Documents = lazyWithErrorHandling(() => import("./pages/student/Documents"));
 const Applications = lazyWithErrorHandling(() =>
   import("./pages/student/Applications")
@@ -722,9 +722,9 @@ const App = () => {
                         <Route path="/dashboard/analytics" element={<ProtectedRoute allowedRoles={["admin"]}><Navigate to="/admin/analytics" replace /></ProtectedRoute>} />
 
                         {/* STUDENT ROUTES */}
+                        <Route path="/student/onboarding" element={<ProtectedRoute><StudentRegistration /></ProtectedRoute>} />
                         <Route path="/student" element={<ProtectedRoute><StudentLayout /></ProtectedRoute>}>
                           <Route index element={<Navigate to="/student/dashboard" replace />} />
-                          <Route path="onboarding" element={<Navigate to="/student/profile" replace />} />
                           <Route path="dashboard" element={<PlacementDashboard />} />
                           <Route path="profile" element={<StudentProfile />} />
                           <Route path="universities" element={<UniversityDirectory />} />
