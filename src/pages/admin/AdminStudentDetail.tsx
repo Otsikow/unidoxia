@@ -1,5 +1,6 @@
 "use client";
 
+import { StudentRegistrationDetails } from "@/components/admin/StudentRegistrationDetails";
 import { AdminPlacement } from "@/components/placement/AdminPlacement";
 import { StudentContactActions } from "@/components/communications/StudentContactActions";
 import { registeredWhatsApp } from "@/lib/studentCommunication";
@@ -841,10 +842,11 @@ const AdminStudentDetail = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:w-auto sm:grid-cols-5">
+        <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:w-auto sm:grid-cols-6">
           <TabsTrigger value="overview">
             <User className="h-4 w-4 mr-1" /> Overview
           </TabsTrigger>
+          <TabsTrigger value="registration">Registration details</TabsTrigger>
           <TabsTrigger value="documents" className="relative">
             <FileText className="h-4 w-4 mr-1" /> Documents
             {documentStats.pending > 0 && (
@@ -862,6 +864,7 @@ const AdminStudentDetail = () => {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="registration" className="mt-4"><StudentRegistrationDetails studentId={studentId!} /></TabsContent>
         <TabsContent value="placement" className="mt-4"><AdminPlacement key={studentId} studentId={studentId!} /></TabsContent>
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4 mt-4">

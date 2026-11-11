@@ -36,7 +36,7 @@ export function getStudentNextAction(student: StudentWorkspaceSummary): { label:
   if (!student.applications.length) return { label: 'Review study plans and university matching', tab: 'placement' };
   return { label: 'Review application progress', tab: 'applications' };
 }
-export const STUDENT_PROFILE_TABS = ['overview', 'documents', 'education', 'placement', 'applications'] as const;
+export const STUDENT_PROFILE_TABS = ['overview', 'registration', 'documents', 'education', 'placement', 'applications'] as const;
 export function studentProfileTab(value: string | null): typeof STUDENT_PROFILE_TABS[number] {
   return STUDENT_PROFILE_TABS.find(tab => tab === value) ?? 'overview';
 }
