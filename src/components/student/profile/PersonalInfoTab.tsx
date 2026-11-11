@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, TablesUpdate } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { studentRecordQueryKey } from '@/hooks/useStudentRecord';
@@ -91,6 +91,8 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const pages = ['Personal details', 'Passport', 'Addresses', 'Emergency contact', 'Background', 'Course preferences'];
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState(() => extractForm(student));
   const [whatsappSameAsMobile, setWhatsappSameAsMobile] = useState(
@@ -124,28 +126,39 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
     };
     // Existing students (flag false) are only held to the fields they had before October 2026.
     const strict = isStrictStudent(student);
-    const relevant = getCourseFinderProfileSections(payload, [], [], false, new Date(), gateOptions(student)).filter((section) => ['personal', 'passport', 'addresses', 'emergency', 'background'].includes(section.id));
+    const sectionIds = ['personal', 'passport', 'addresses', 'emergency', 'background', 'preferences'];
+    const relevant = getCourseFinderProfileSections(payload, [], [], false, new Date(), gateOptions(student)).filter((section) => section.id === sectionIds[page]);
     const missing = relevant.flatMap((section) => section.missing);
     const nextErrors = Object.values(PROFILE_FORM_SCHEMAS).reduce<Record<string, string>>(
       (all, schema) => ({ ...fieldErrors(schema.safeParse(payload), strict), ...all }),
       {},
     );
     setErrors(nextErrors);
-    if (missing.length || !/^\+[1-9]\d{7,14}$/.test(form.contact_phone.replace(/[\s()-]/g, ''))) {
+    if (missing.length || (page === 0 && !/^\+[1-9]\d{7,14}$/.test(form.contact_phone.replace(/[\s()-]/g, '')))) {
       toast({ title: 'Please complete the required fields', description: missing.length ? `Still needed: ${missing.join(', ')}.` : 'Enter a mobile number with country code, for example +447123456789.', variant: 'destructive' });
       return;
     }
-    if (!whatsappSameAsMobile && form.whatsapp_number.trim() && !/^\+[1-9]\d{7,14}$/.test(form.whatsapp_number.replace(/[\s()-]/g, ''))) {
+    if (page === 0 && !whatsappSameAsMobile && form.whatsapp_number.trim() && !/^\+[1-9]\d{7,14}$/.test(form.whatsapp_number.replace(/[\s()-]/g, ''))) {
       toast({ title: 'Check your WhatsApp number', description: 'Include the country code, for example +447123456789, or leave it blank.', variant: 'destructive' });
       return;
     }
     setLoading(true);
     try {
-      const { error } = await supabase.from('students').update(payload).eq('id', student.id);
+      const keys = [
+        ['first_name', 'middle_name', 'last_name', 'legal_name', 'contact_phone', 'whatsapp_number', 'contact_email', 'date_of_birth', 'gender', 'marital_status', 'dependants_travelling', 'nationality', 'citizenship', 'city_of_birth', 'country_of_birth'],
+        ['passport_number', 'passport_issue_date', 'passport_expiry', 'passport_issue_country'],
+        ['address_line_1', 'country_of_residence', 'state_region', 'city', 'postal_code', 'permanent_address_line_1', 'permanent_country', 'permanent_state_region', 'permanent_city', 'permanent_postal_code', 'permanent_same_as_mailing'],
+        ['emergency_contact_name', 'emergency_contact_relationship', 'emergency_contact_phone', 'emergency_contact_email'],
+        ['has_other_citizenship', 'other_citizenship', 'lived_or_studied_abroad', 'previous_immigration_applications', 'has_visa_refusals', 'visa_refusal_country', 'visa_refusal_year', 'visa_refusal_type', 'visa_refusal_reason'],
+        ['preferred_course', 'preferred_university', 'preferred_intake_month', 'preferred_intake_year'],
+      ][page];
+      const updates = Object.fromEntries(keys.map((key) => [key, payload[key as keyof typeof payload]])) as TablesUpdate<'students'>;
+      const { error } = await supabase.from('students').update(updates).eq('id', student.id);
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: studentRecordQueryKey(user?.id) });
-      toast({ title: 'Details saved', description: 'Your CourseFinder profile details are up to date.' });
+      toast({ title: 'Details saved', description: 'This section has been saved.' });
       onUpdate();
+      if (page < pages.length - 1) { setPage(page + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     } catch (error) {
       console.error(error);
       const message = error && typeof error === 'object' && 'message' in error ? String((error as { message: unknown }).message) : '';
@@ -155,7 +168,8 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
 
   const grid = 'grid grid-cols-1 gap-4 md:grid-cols-2';
   return <ErrorsContext.Provider value={errors}><form onSubmit={submit} className="space-y-6" noValidate>
-    <Card><CardHeader><CardTitle>Registration and personal details</CardTitle><CardDescription>Use your details exactly as they appear on official documents.</CardDescription></CardHeader><CardContent className="space-y-4">
+    <div className="space-y-2"><div className="flex justify-between text-sm"><span>{pages[page]}</span><span>Step {page + 1} of {pages.length}</span></div><progress className="w-full accent-primary" value={page + 1} max={pages.length} aria-label="Personal details progress" /></div>
+    <div hidden={page !== 0}><Card><CardHeader><CardTitle>Registration and personal details</CardTitle><CardDescription>Use your details exactly as they appear on official documents.</CardDescription></CardHeader><CardContent className="space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3"><Field form={form} setForm={setForm} name="first_name" label="First name" /><Field form={form} setForm={setForm} name="middle_name" label="Middle name" optional /><Field form={form} setForm={setForm} name="last_name" label="Last name" /></div>
       <div className={grid}>
         <Field form={form} setForm={setForm} name="contact_phone" label="Mobile number (with country code)" type="tel" helper="For example +447123456789." />
@@ -168,13 +182,13 @@ export function PersonalInfoTab({ student, onUpdate }: Props) {
         </div>
         <Field form={form} setForm={setForm} name="contact_email" label="Email" type="email" /><Field form={form} setForm={setForm} name="date_of_birth" label="Date of birth" type="date" helper={PASSPORT_NOTE} /><Choice form={form} setForm={setForm} name="gender" label="Gender" options={['Female', 'Male', 'Non-binary', 'Prefer not to say']} /><Choice form={form} setForm={setForm} name="marital_status" label="Marital status" options={['Single', 'Married', 'Divorced', 'Widowed', 'Separated']} /><Field form={form} setForm={setForm} name="dependants_travelling" label="Number of dependant children travelling with you" type="number" min={0} helper="Enter 0 if no children will travel with you." /><Field form={form} setForm={setForm} name="nationality" label="Nationality" helper={PASSPORT_NOTE} /><Field form={form} setForm={setForm} name="citizenship" label="Citizenship" /><Field form={form} setForm={setForm} name="city_of_birth" label="City of birth" /><Country form={form} setForm={setForm} name="country_of_birth" label="Country of birth" />
       </div>
-    </CardContent></Card>
-    <Card><CardHeader><CardTitle>Passport</CardTitle></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="passport_number" label="Passport number" /><Field form={form} setForm={setForm} name="passport_issue_date" label="Issue date" type="date" /><Field form={form} setForm={setForm} name="passport_expiry" label="Expiry date" type="date" /><Country form={form} setForm={setForm} name="passport_issue_country" label="Issue country" /></CardContent></Card>
-    <Card><CardHeader><CardTitle>Home address</CardTitle><CardDescription>Your full current home address, where we can send letters.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="address_line_1" label="House number and street" /><Country form={form} setForm={setForm} name="country_of_residence" label="Country" /><Field form={form} setForm={setForm} name="state_region" label="State or region" /><Field form={form} setForm={setForm} name="city" label="City or town" /><Field form={form} setForm={setForm} name="postal_code" label={getPostcodeLabel(form.country_of_residence)} helper={getPostcodeHelper(form.country_of_residence)} /></CardContent></Card>
+    </CardContent></Card></div>
+    <div hidden={page !== 1}><Card><CardHeader><CardTitle>Passport</CardTitle></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="passport_number" label="Passport number" /><Field form={form} setForm={setForm} name="passport_issue_date" label="Issue date" type="date" /><Field form={form} setForm={setForm} name="passport_expiry" label="Expiry date" type="date" /><Country form={form} setForm={setForm} name="passport_issue_country" label="Issue country" /></CardContent></Card></div>
+    <div hidden={page !== 2}><Card><CardHeader><CardTitle>Home address</CardTitle><CardDescription>Your full current home address, where we can send letters.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="address_line_1" label="House number and street" /><Country form={form} setForm={setForm} name="country_of_residence" label="Country" /><Field form={form} setForm={setForm} name="state_region" label="State or region" /><Field form={form} setForm={setForm} name="city" label="City or town" /><Field form={form} setForm={setForm} name="postal_code" label={getPostcodeLabel(form.country_of_residence)} helper={getPostcodeHelper(form.country_of_residence)} /></CardContent></Card>
     <Card><CardHeader><CardTitle>Permanent address</CardTitle><CardDescription>Only needed if your permanent address is different from your home address.</CardDescription></CardHeader><CardContent className="space-y-4"><div className="flex items-center gap-2"><Checkbox id="same" checked={form.permanent_same_as_mailing} onCheckedChange={(checked) => setForm((current) => ({ ...current, permanent_same_as_mailing: checked === true }))} /><Label htmlFor="same">My permanent address is the same as my home address</Label></div>{!form.permanent_same_as_mailing && <div className={grid}><Field form={form} setForm={setForm} name="permanent_address_line_1" label="House number and street" /><Country form={form} setForm={setForm} name="permanent_country" label="Country" /><Field form={form} setForm={setForm} name="permanent_state_region" label="State or region" /><Field form={form} setForm={setForm} name="permanent_city" label="City or town" /><Field form={form} setForm={setForm} name="permanent_postal_code" label={getPostcodeLabel(form.permanent_country)} helper={getPostcodeHelper(form.permanent_country)} /></div>}</CardContent></Card>
-    <Card><CardHeader><CardTitle>Emergency contact</CardTitle><CardDescription>Add one person we can contact in an emergency, usually a parent or guardian.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="emergency_contact_name" label="Full name" /><Field form={form} setForm={setForm} name="emergency_contact_relationship" label="Relationship" /><Field form={form} setForm={setForm} name="emergency_contact_phone" label="Phone (with country code)" type="tel" /><Field form={form} setForm={setForm} name="emergency_contact_email" label="Email" type="email" helper={EMERGENCY_EMAIL_HINT} /></CardContent></Card>
-    <Card><CardHeader><CardTitle>Background</CardTitle><CardDescription>Please answer every question. {BACKGROUND_PRIVACY_LINE} See our <Link to={PRIVACY_NOTICE_PATH} className="underline underline-offset-2">Privacy Notice</Link>.</CardDescription></CardHeader><CardContent className={grid}><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_other_citizenship" label="Do you have another citizenship?" options={['yes', 'no']} />{form.has_other_citizenship === 'yes' && <Field form={form} setForm={setForm} name="other_citizenship" label="Which other citizenship?" helper="For example British. List all if more than one." />}</div><Choice form={form} setForm={setForm} name="lived_or_studied_abroad" label="Have you lived or studied in another country?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="previous_immigration_applications" label="Have you made previous immigration applications?" options={['yes', 'no']} /><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_visa_refusals" label="Have you ever been refused a visa for any country?" options={['yes', 'no']} />{form.has_visa_refusals === 'yes' && <div className="space-y-4"><p className="text-xs text-muted-foreground">Tell us about your most recent refusal. Our team will ask for anything else they need.</p><Country form={form} setForm={setForm} name="visa_refusal_country" label="Country that refused the visa" /><Field form={form} setForm={setForm} name="visa_refusal_year" label="Year of refusal" type="number" min={1950} /><Choice form={form} setForm={setForm} name="visa_refusal_type" label="Type of visa" options={[...VISA_TYPES]} /><Choice form={form} setForm={setForm} name="visa_refusal_reason" label="Main reason given" options={[...VISA_REFUSAL_REASONS]} optional /></div>}</div></CardContent></Card>
-    <Card><CardHeader><CardTitle>Course preferences</CardTitle><CardDescription>Optional preferences only. UniDoxia staff will confirm your final course, university and intake.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="preferred_course" label="Preferred course" optional /><Field form={form} setForm={setForm} name="preferred_university" label="Preferred university" optional /><Field form={form} setForm={setForm} name="preferred_intake_month" label="Preferred intake month" type="number" optional /><Field form={form} setForm={setForm} name="preferred_intake_year" label="Preferred intake year" type="number" optional /></CardContent></Card>
-    <Button type="submit" disabled={loading} className="w-full">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save profile details</Button>
+    </div><div hidden={page !== 3}><Card><CardHeader><CardTitle>Emergency contact</CardTitle><CardDescription>Add one person we can contact in an emergency, usually a parent or guardian.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="emergency_contact_name" label="Full name" /><Field form={form} setForm={setForm} name="emergency_contact_relationship" label="Relationship" /><Field form={form} setForm={setForm} name="emergency_contact_phone" label="Phone (with country code)" type="tel" /><Field form={form} setForm={setForm} name="emergency_contact_email" label="Email" type="email" helper={EMERGENCY_EMAIL_HINT} /></CardContent></Card></div>
+    <div hidden={page !== 4}><Card><CardHeader><CardTitle>Background</CardTitle><CardDescription>Please answer every question. {BACKGROUND_PRIVACY_LINE} See our <Link to={PRIVACY_NOTICE_PATH} className="underline underline-offset-2">Privacy Notice</Link>.</CardDescription></CardHeader><CardContent className={grid}><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_other_citizenship" label="Do you have another citizenship?" options={['yes', 'no']} />{form.has_other_citizenship === 'yes' && <Field form={form} setForm={setForm} name="other_citizenship" label="Which other citizenship?" helper="For example British. List all if more than one." />}</div><Choice form={form} setForm={setForm} name="lived_or_studied_abroad" label="Have you lived or studied in another country?" options={['yes', 'no']} /><Choice form={form} setForm={setForm} name="previous_immigration_applications" label="Have you made previous immigration applications?" options={['yes', 'no']} /><div className="space-y-4"><Choice form={form} setForm={setForm} name="has_visa_refusals" label="Have you ever been refused a visa for any country?" options={['yes', 'no']} />{form.has_visa_refusals === 'yes' && <div className="space-y-4"><p className="text-xs text-muted-foreground">Tell us about your most recent refusal. Our team will ask for anything else they need.</p><Country form={form} setForm={setForm} name="visa_refusal_country" label="Country that refused the visa" /><Field form={form} setForm={setForm} name="visa_refusal_year" label="Year of refusal" type="number" min={1950} /><Choice form={form} setForm={setForm} name="visa_refusal_type" label="Type of visa" options={[...VISA_TYPES]} /><Choice form={form} setForm={setForm} name="visa_refusal_reason" label="Main reason given" options={[...VISA_REFUSAL_REASONS]} optional /></div>}</div></CardContent></Card></div>
+    <div hidden={page !== 5}><Card><CardHeader><CardTitle>Course preferences</CardTitle><CardDescription>Optional preferences only. UniDoxia staff will confirm your final course, university and intake.</CardDescription></CardHeader><CardContent className={grid}><Field form={form} setForm={setForm} name="preferred_course" label="Preferred course" optional /><Field form={form} setForm={setForm} name="preferred_university" label="Preferred university" optional /><Field form={form} setForm={setForm} name="preferred_intake_month" label="Preferred intake month" type="number" optional /><Field form={form} setForm={setForm} name="preferred_intake_year" label="Preferred intake year" type="number" optional /></CardContent></Card></div>
+    <div className="flex gap-3">{page > 0 && <Button type="button" variant="outline" onClick={() => setPage(page - 1)}>Back</Button>}<Button type="submit" disabled={loading} className="flex-1">{loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{page === pages.length - 1 ? "Save profile details" : "Save and continue"}</Button></div>
   </form></ErrorsContext.Provider>;
 }

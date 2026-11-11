@@ -104,7 +104,7 @@ export default function StudentRegistration() {
         <h1 className="text-3xl font-bold tracking-tight">Complete your student registration</h1>
         <p className="text-muted-foreground">
           Add the details UniDoxia needs to prepare your university applications with KC Overseas Education (CourseFinder).
-          Save each section as you go. You can upload supporting documents later.
+          Save each page as you go. You can upload supporting documents later.
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
           <Link className="text-primary underline" to={PRIVACY_NOTICE_PATH}>Privacy notice</Link>
@@ -138,7 +138,7 @@ export default function StudentRegistration() {
             </>
           ) : (
             <>
-              <EducationTab student={student.data} onUpdate={() => void degrees.refetch()} />
+              <EducationTab student={student.data} paginated onUpdate={() => void degrees.refetch()} />
               {degrees.isError && <div role="alert" className="space-y-3">
                 <p>We couldn’t check your saved education records.</p>
                 <Button variant="outline" onClick={() => void degrees.refetch()}>Check again</Button>

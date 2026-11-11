@@ -104,6 +104,8 @@ describe('student registration', () => {
     const next = await screen.findByRole('button', { name: 'Continue to education' });
     expect(next).toBeDisabled();
     fireEvent.change(screen.getByLabelText(/Date of birth/), { target: { value: '2000-01-01' } });
+    await click(screen.getByRole('button', { name: 'Save and continue' }));
+    for (let i = 0; i < 4; i++) await click(screen.getByRole('button', { name: 'Save and continue' }));
     await click(screen.getByRole('button', { name: 'Save profile details' }));
     await waitFor(() => expect(next).toBeEnabled());
     expect(state.student.date_of_birth).toBe('2000-01-01');
@@ -116,6 +118,8 @@ describe('student registration', () => {
     await waitFor(() => expect(state.student.waec_scratch_card_pin).toBe('TEST-PIN'));
     expect(finish).toBeDisabled();
 
+    await click(screen.getByRole('button', { name: 'Continue', exact: true }));
+    await click(screen.getByRole('button', { name: 'Continue', exact: true }));
     fireEvent.change(screen.getByLabelText(/Activity or employer/), { target: { value: 'National Service' } });
     fireEvent.change(screen.getByLabelText('From *'), { target: { value: '2019-08-01' } });
     await click(screen.getByRole('checkbox', { name: 'I am still doing this' }));
