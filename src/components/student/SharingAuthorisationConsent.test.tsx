@@ -22,7 +22,7 @@ describe('sharing authorisation wording', () => {
   it('uses the approved wording, word for word', () => {
     expect(SHARING_AUTHORISATION_HEADING).toBe('Sharing your application with our partner');
     expect(SHARING_AUTHORISATION_TEXT).toBe(
-      'To apply to universities for you, UniDoxia (Global Talent Gateway Ltd) shares your application details with the universities you choose and with our application partner KC Overseas Education Private Limited in India, which runs the CourseFinder portal. KC Overseas uses your details as a separate controller to process your applications. The UK does not treat India as having equivalent data protection laws, so your details may have less legal protection there.',
+      'To apply to universities for you, UniDoxia (Global Talent Gateway Ltd) shares your application details with the universities you choose and with our application partner in India, which runs the CourseFinder portal. The partner uses your details as a separate controller to process your applications. The UK does not treat India as having equivalent data protection laws, so your details may have less legal protection there.',
     );
     expect(SHARING_AUTHORISATION_SMALL_PRINT).toBe(
       'You can withdraw this at any time by emailing info@unidoxia.com. Applications already sent cannot be recalled, and we may not be able to continue them.',
@@ -38,7 +38,7 @@ describe('sharing authorisation wording', () => {
     const box = screen.getByRole('checkbox');
     expect(box).not.toBeChecked();
     expect(box).toHaveAttribute('id', 't');
-    expect(screen.getByText(/I authorise UniDoxia to share my application details with KC Overseas Education \(India\) and the universities I apply to, so they can process my applications\. I have read the/)).toBeInTheDocument();
+    expect(screen.getByText(/I authorise UniDoxia to share my application details with our application partner in India and the universities I apply to, so they can process my applications\. I have read the/)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Privacy Notice' })).toHaveAttribute('href', '/legal/privacy');
     expect(screen.getByRole('heading', { name: SHARING_AUTHORISATION_HEADING })).toBeInTheDocument();
   });
@@ -96,7 +96,9 @@ describe('server side', () => {
   const sql = readFileSync(MIGRATION, 'utf8');
 
   it('records the same wording version as the app', () => {
-    expect(sql).toContain(`current_version constant text := '${SHARING_AUTHORISATION_VERSION}';`);
+    const update = readFileSync('supabase/migrations/20261111193633_update_sharing_authorisation_wording.sql', 'utf8');
+    expect(update).toContain(SHARING_AUTHORISATION_VERSION);
+    expect(update).toContain('current_version text := p_wording_version');
   });
 
   it('takes no student ID, so it can only record the caller', () => {

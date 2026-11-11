@@ -104,10 +104,10 @@ const sections: Section[] = [
             application.
           </li>
           <li>
-            Our application partner KC Overseas Education Private Limited, based in Nagpur, India, which runs the
+            Our application partner, based in Nagpur, India, which runs the
             CourseFinder application portal. We share only the details needed for your application, such as your contact
             details, education history, passport and citizenship details, marital status, number of dependants and any
-            previous visa refusals. KC Overseas uses this information as a separate controller under its own privacy
+            previous visa refusals. The partner uses this information as a separate controller under its own privacy
             notice.
           </li>
           <li>Vetted technology vendors that provide infrastructure, analytics, and communications tools.</li>
@@ -125,7 +125,7 @@ const sections: Section[] = [
       <p>
         Some of the organisations we share your data with are outside the UK. When you apply to a university abroad, we
         send your application to that university because this is necessary to provide the service you have asked us for.
-        Our application partner KC Overseas Education is based in India, which the UK does not treat as having equivalent
+        Our application partner is based in India, which the UK does not treat as having equivalent
         data protection laws. We send your details to them only when this is needed to prepare and submit your
         applications, and only after you have given your authorisation in your UniDoxia account. You can ask us for more information by emailing{' '}
         <a className="text-primary" href="mailto:info@unidoxia.com">

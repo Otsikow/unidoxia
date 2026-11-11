@@ -6,16 +6,16 @@ import { supabase } from '@/integrations/supabase/client';
  * CourseFinder migration, so each saved authorisation points at the words the
  * student saw.
  */
-export const SHARING_AUTHORISATION_VERSION = 'kc-share-v1-2026-10-23';
+export const SHARING_AUTHORISATION_VERSION = 'partner-share-v2-2026-11-11';
 
 export const SHARING_AUTHORISATION_HEADING = 'Sharing your application with our partner';
 
 export const SHARING_AUTHORISATION_TEXT =
-  'To apply to universities for you, UniDoxia (Global Talent Gateway Ltd) shares your application details with the universities you choose and with our application partner KC Overseas Education Private Limited in India, which runs the CourseFinder portal. KC Overseas uses your details as a separate controller to process your applications. The UK does not treat India as having equivalent data protection laws, so your details may have less legal protection there.';
+  'To apply to universities for you, UniDoxia (Global Talent Gateway Ltd) shares your application details with the universities you choose and with our application partner in India, which runs the CourseFinder portal. The partner uses your details as a separate controller to process your applications. The UK does not treat India as having equivalent data protection laws, so your details may have less legal protection there.';
 
 /** The checkbox label, split so the words 'Privacy Notice' can be a link. */
 export const SHARING_AUTHORISATION_CHECKBOX_BEFORE_LINK =
-  'I authorise UniDoxia to share my application details with KC Overseas Education (India) and the universities I apply to, so they can process my applications. I have read the ';
+  'I authorise UniDoxia to share my application details with our application partner in India and the universities I apply to, so they can process my applications. I have read the ';
 export const SHARING_AUTHORISATION_CHECKBOX_LINK_TEXT = 'Privacy Notice';
 export const SHARING_AUTHORISATION_CHECKBOX_AFTER_LINK = '.';
 
