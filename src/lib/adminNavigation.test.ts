@@ -18,7 +18,7 @@ describe('canonical admin destinations', () => {
     expect(getAdminDestination('/dashboard/')).toBe('/admin/overview');
   });
   it('does not invent destinations for unknown or unrelated portal routes', () => {
-    for (const path of ['/student/dashboard', '/university/overview', '/dashboard/unknown', '/dashboard/applications/unknown', 'https://example.test/dashboard', '/agent/students/example/unknown']) expect(getAdminDestination(path)).toBeNull();
+    for (const path of ['/student/profile', '/student/documents', '/university/overview', '/dashboard/unknown', '/dashboard/applications/unknown', 'https://example.test/dashboard', '/agent/students/example/unknown']) expect(getAdminDestination(path)).toBeNull();
   });
   it('registers every alias and additional workspace in the real admin route tree', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/App.tsx'), 'utf8');

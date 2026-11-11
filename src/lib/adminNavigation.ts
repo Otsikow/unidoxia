@@ -1,6 +1,8 @@
 /** Admin aliases preserve existing shared tools without changing other roles. */
 export const ADMIN_DASHBOARD_ALIASES: Readonly<Record<string, string>> = {
   '/dashboard': '/admin/overview',
+  '/student': '/admin/overview',
+  '/student/dashboard': '/admin/overview',
   '/dashboard/applications': '/admin/applications',
   '/dashboard/students': '/admin/students',
   '/dashboard/agents': '/admin/agents',
