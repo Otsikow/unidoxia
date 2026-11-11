@@ -29,3 +29,14 @@ test('privacy, university and agent pages show their relevant addresses', async 
   await expect(page.getByRole('link', { name: 'agents@unidoxia.com', exact: true })).toHaveAttribute('href', 'mailto:agents@unidoxia.com');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+test('help centre shows the correct support contacts', async ({ page }) => {
+  await page.route('**/rest/v1/faqs**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  await page.goto('/help');
+  await page.getByRole('tab', { name: 'Contact Support' }).click();
+  await expect(page.getByRole('link', { name: 'support@unidoxia.com', exact: true })).toHaveAttribute('href', 'mailto:support@unidoxia.com');
+  await expect(page.getByRole('link', { name: '+44 7360 961803', exact: true })).toHaveAttribute('href', 'https://wa.me/447360961803');
+  await expect(page.getByText('support@example.com')).toHaveCount(0);
+  await expect(page.getByText('+1 (555) 123-4567')).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
