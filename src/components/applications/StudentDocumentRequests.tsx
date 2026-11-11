@@ -320,7 +320,7 @@ export function StudentDocumentRequests({
           {query.data.map((request) => (
             <li key={request.id} className="space-y-2 py-3">
               <div className="flex flex-wrap justify-between gap-2">
-                <p className="capitalize">{label(request.document_type)}</p>
+                <p className="first-letter:uppercase">{label(request.document_type)}</p>
                 <Badge variant="secondary">
                   {labels[request.status ?? "pending"] || request.status}
                 </Badge>
