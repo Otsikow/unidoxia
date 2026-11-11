@@ -97,7 +97,7 @@ describe('server side', () => {
   const sql = readFileSync(MIGRATION, 'utf8');
 
   it('records the same wording version as the app', () => {
-    const update = readFileSync('supabase/migrations/20261111193633_update_sharing_authorisation_wording.sql', 'utf8');
+    const update = readFileSync('supabase/migrations/20261111200000_sharing_authorisation_v3_allowlist.sql', 'utf8');
     expect(update).toContain(SHARING_AUTHORISATION_VERSION);
     expect(update).toContain('partner-share-v3-2026-11-11');
     expect(update).toContain('kc-share-v1-2026-10-23');

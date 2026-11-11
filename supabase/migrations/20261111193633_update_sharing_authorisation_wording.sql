@@ -18,7 +18,7 @@ BEGIN
   IF own_student IS NULL THEN
     RAISE EXCEPTION 'Only the student can give this authorisation, from their own account.' USING ERRCODE = '42501';
   END IF;
-  IF p_wording_version IS NULL OR p_wording_version NOT IN ('kc-share-v1-2026-10-23', 'partner-share-v3-2026-11-11') THEN
+  IF p_wording_version IS NULL OR p_wording_version NOT IN ('kc-share-v1-2026-10-23', 'partner-share-v2-2026-11-11') THEN
     RAISE EXCEPTION 'This authorisation wording is out of date. Please reload the page.' USING ERRCODE = 'check_violation';
   END IF;
   SELECT sa.id INTO row_id FROM public.application_sharing_authorisations sa
