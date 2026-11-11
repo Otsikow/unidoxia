@@ -166,6 +166,8 @@ const DOCUMENT_LABELS: Record<string, string> = {
   english_proficiency: "English Proficiency",
   financial_document: "Financial Document",
   ielts: "IELTS Certificate",
+  signed_declaration_form: "Signed declaration form",
+  other: "Other",
 };
 
 const getDocLabel = (t: string) =>

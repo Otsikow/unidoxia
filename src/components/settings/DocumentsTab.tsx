@@ -53,6 +53,8 @@ const DOCUMENT_TYPES = [
   { value: 'cv', label: 'CV' },
   { value: 'english_test_certificate', label: 'English test certificate' },
   { value: 'english_medium_letter', label: 'English-medium-of-instruction letter' },
+  { value: 'signed_declaration_form', label: 'Signed declaration form' },
+  { value: 'other', label: 'Other' },
 ];
 
 const DocumentsTab = ({ profile }: DocumentsTabProps) => {

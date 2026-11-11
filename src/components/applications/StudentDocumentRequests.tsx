@@ -39,9 +39,13 @@ const types = [
   "cv",
   "lor",
   "portfolio",
+  "signed_declaration_form",
   "other",
 ];
-const label = (value: string) => value.replace(/_/g, " ");
+const label = (value: string) => ({
+  signed_declaration_form: "Signed declaration form",
+  other: "Other",
+}[value] ?? value.replace(/_/g, " "));
 export function StudentDocumentRequests({
   studentId,
   tenantId,
