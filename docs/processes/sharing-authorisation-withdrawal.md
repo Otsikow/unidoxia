@@ -13,7 +13,7 @@ Students authorise UniDoxia to share their application details with KC Overseas 
    ```
 
    It returns the number of authorisations marked as withdrawn (normally 1). The rows are kept, with `withdrawn_at` and `withdrawn_by` set, as the record of consent and withdrawal. From then on the student cannot submit any of their non-grandfathered applications, and no such application can move into or between screening, offer, CAS or LOA, visa or enrolled until the student gives a new authorisation in their account.
-4. Reply to the student to confirm the withdrawal and the date it took effect. Tell them that applications already sent to KC Overseas or a university cannot be recalled, and that we may not be able to continue those applications.
+4. Reply to the student to confirm the withdrawal and the date it took effect. Tell them that applications already sent to our application processing partner or a university cannot be recalled, and that we may not be able to continue those applications.
 5. Tell the student's adviser or agent, so nobody tries to move their applications on.
 6. Keep the email with the student's record.
 

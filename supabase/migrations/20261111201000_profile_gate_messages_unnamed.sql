@@ -1,0 +1,80 @@
+-- Student-facing profile gate messages without the processing partner's name. Same function as 20261103000000 except the two messages.
+CREATE OR REPLACE FUNCTION public.enforce_application_profile_gate()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  old_status text := CASE WHEN TG_OP = 'UPDATE' THEN OLD.status::text END;
+  new_status text := NEW.status::text;
+  -- Must match COURSEFINDER_SUBMISSION_STATUSES in src/lib/coursefinderProfile.ts.
+  gated_statuses constant text[] := ARRAY['screening', 'conditional_offer', 'unconditional_offer', 'cas_loa', 'visa', 'enrolled'];
+  missing text[];
+  status_changed boolean := TG_OP = 'INSERT' OR old_status IS DISTINCT FROM NEW.status::text;
+  enters_gate boolean;
+  needs_authorisation boolean;
+BEGIN
+  -- The exempt flag is not the app's to set: new rows from signed-in users are
+  -- never exempt, and only the service role or a direct session can change it.
+  IF TG_OP = 'INSERT' THEN
+    IF COALESCE(auth.role(), '') <> 'service_role' THEN
+      NEW.coursefinder_gate_exempt := false;
+    END IF;
+  ELSIF NEW.coursefinder_gate_exempt IS DISTINCT FROM OLD.coursefinder_gate_exempt
+        AND NOT (COALESCE(auth.role(), '') = 'service_role' OR auth.uid() IS NULL) THEN
+    NEW.coursefinder_gate_exempt := OLD.coursefinder_gate_exempt;
+  END IF;
+
+  IF NEW.coursefinder_gate_exempt IS TRUE OR NOT status_changed OR new_status IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- The profile check applies only to moves INTO a gated status from outside it.
+  enters_gate := new_status = ANY (gated_statuses)
+    AND (old_status IS NULL OR NOT (old_status = ANY (gated_statuses)));
+
+  -- The sharing authorisation is needed for every move into or between gated
+  -- statuses (so a withdrawal stops further moves), and for submitting an
+  -- existing application (for example draft to submitted). A new application
+  -- created as submitted by staff or an agent for the student is allowed; the
+  -- student is then prompted, and it cannot reach screening without it.
+  needs_authorisation := new_status = ANY (gated_statuses)
+    OR (new_status = 'submitted' AND (
+      TG_OP = 'UPDATE'
+      OR EXISTS (SELECT 1 FROM public.students st WHERE st.id = NEW.student_id AND st.profile_id = auth.uid())
+    ));
+
+  -- Checked before the admin override, which must not bypass it.
+  IF needs_authorisation AND NOT public.has_sharing_authorisation(NEW.student_id) THEN
+    RAISE EXCEPTION 'Sharing authorisation not given. The student must give their sharing authorisation in their own UniDoxia account first.'
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  IF NOT enters_gate THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'UPDATE' AND EXISTS (
+    SELECT 1 FROM public.application_profile_gate_overrides o WHERE o.application_id = NEW.id
+  ) THEN
+    RETURN NEW;
+  END IF;
+
+  missing := public.coursefinder_profile_missing(NEW.student_id);
+  IF COALESCE(cardinality(missing), 0) > 0 THEN
+    RAISE EXCEPTION 'Profile not complete for application processing: % items missing. Please complete the student profile first.', cardinality(missing)
+      USING ERRCODE = 'check_violation', DETAIL = array_to_string(missing, ', ');
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS enforce_application_profile_gate ON public.applications;
+CREATE TRIGGER enforce_application_profile_gate
+  BEFORE INSERT OR UPDATE ON public.applications
+  FOR EACH ROW
+  EXECUTE FUNCTION public.enforce_application_profile_gate();
+
+REVOKE EXECUTE ON FUNCTION public.enforce_application_profile_gate() FROM PUBLIC, anon, authenticated;
