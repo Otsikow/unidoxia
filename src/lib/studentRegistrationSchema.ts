@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Client-side rules for the fields CourseFinder (KC Overseas) needs before a
+ * Client-side rules for the fields CourseFinder needs before a
  * student can be submitted. The same rules are enforced on the server by the
  * enforce_coursefinder_required_fields trigger for new student records.
  */
@@ -24,7 +24,7 @@ export const FINAL_GRADE_HELPER =
 
 /** Shown under Background. Wording confirmed by Kojo, 23 October 2026. */
 export const BACKGROUND_PRIVACY_LINE =
-  "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner KC Overseas Education (CourseFinder).";
+  "We need these details to prepare and submit your university applications, as part of the service you've asked us for. We share them only with the universities you apply to and our application partner through the CourseFinder portal.";
 export const PRIVACY_NOTICE_PATH = '/legal/privacy';
 
 /** A student's awarding body or qualification determines whether WAEC credentials apply. */

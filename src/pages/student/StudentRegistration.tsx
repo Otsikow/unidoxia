@@ -103,7 +103,7 @@ export default function StudentRegistration() {
       <header className="space-y-3">
         <h1 className="text-3xl font-bold tracking-tight">Complete your student registration</h1>
         <p className="text-muted-foreground">
-          Add the details UniDoxia needs to prepare your university applications with KC Overseas Education (CourseFinder).
+          Add the details UniDoxia needs to prepare your university applications.
           Save each page as you go. You can upload supporting documents later.
         </p>
         <div className="flex flex-wrap gap-4 text-sm">
