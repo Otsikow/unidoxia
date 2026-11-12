@@ -39,9 +39,13 @@ const types = [
   "cv",
   "lor",
   "portfolio",
+  "signed_declaration_form",
   "other",
 ];
-const label = (value: string) => value.replace(/_/g, " ");
+const label = (value: string) => ({
+  signed_declaration_form: "Signed declaration form",
+  other: "Other",
+}[value] ?? value.replace(/_/g, " "));
 export function StudentDocumentRequests({
   studentId,
   tenantId,
@@ -316,7 +320,7 @@ export function StudentDocumentRequests({
           {query.data.map((request) => (
             <li key={request.id} className="space-y-2 py-3">
               <div className="flex flex-wrap justify-between gap-2">
-                <p className="capitalize">{label(request.document_type)}</p>
+                <p className="first-letter:uppercase">{label(request.document_type)}</p>
                 <Badge variant="secondary">
                   {labels[request.status ?? "pending"] || request.status}
                 </Badge>

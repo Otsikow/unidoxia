@@ -22,4 +22,12 @@ describe('CourseFinder document checklist', () => {
       expect(getMissingRequiredStudentDocuments(docs)).toEqual([]);
     },
   );
+
+  it('never counts signed_declaration_form or other towards required documents', () => {
+    const extras = ['signed_declaration_form', 'other'].map((document_type) => ({ document_type }));
+    expect(getMissingRequiredStudentDocuments(extras)).toEqual(getMissingRequiredStudentDocuments([]));
+    const withoutCv = core.filter((doc) => doc.document_type !== 'cv');
+    expect(getMissingRequiredStudentDocuments([...withoutCv, ...extras]).map((doc) => doc.type)).toEqual(['cv']);
+    expect(getMissingRequiredStudentDocuments([...core, ...extras])).toEqual([]);
+  });
 });
