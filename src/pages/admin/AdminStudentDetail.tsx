@@ -724,9 +724,6 @@ const AdminStudentDetail = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate(profile?.role === "admin" ? "/admin/students" : "/dashboard/placement")}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back
-          </Button>
           <div>
             <h1 className="text-2xl font-semibold">{studentName}</h1>
             {student?.reference_code && (
