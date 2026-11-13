@@ -89,7 +89,7 @@ describe('social signature and immutable archived payloads',()=>{
   const {STUDENT_EMAIL_SOCIAL_LINKS}=await import('./studentEmailSignature');
   const {readFile}=await import('node:fs/promises');
   const footer=await readFile('src/components/layout/AppFooter.tsx','utf8');
-  const urls=[...footer.matchAll(/href="(https:\/\/[^\"]+)"/g)].map(match=>match[1]);
+  const urls=[...footer.matchAll(/href="(https:\/\/[^"]+)"/g)].map(match=>match[1]);
   expect(new Set(STUDENT_EMAIL_SOCIAL_LINKS.map(link=>link.url))).toEqual(new Set(urls));
  });
 });

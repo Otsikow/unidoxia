@@ -105,6 +105,7 @@ test('fee explanation distinguishes the free consultation and optional paid supp
 });
 
 test('a selected course survives the anonymous application and registration handoff', async ({ page }) => {
+  test.skip(!process.env.SEO_PREVIEW, 'Requires the built public route manifest');
   const routes = JSON.parse(fs.readFileSync('dist/seo-routes.json', 'utf8'));
   const course = routes.find((route: {path: string; noindex?: boolean}) => route.path.startsWith('/courses/') && !route.noindex);
   expect(course).toBeTruthy();

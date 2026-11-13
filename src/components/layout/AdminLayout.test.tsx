@@ -20,7 +20,7 @@ describe('admin applications navigation', () => {
     const link = screen.getByRole('link', { name: 'Applications' });
     expect(link).toHaveAttribute('href', '/admin/applications');
     await userEvent.click(link);
-    expect(screen.getByRole('heading', { name: 'Application queue' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Application queue' })).toBeInTheDocument();
   });
   it('includes applications in the mobile navigation menu', async () => {
     state.mobile = true;
@@ -28,7 +28,7 @@ describe('admin applications navigation', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Open navigation' }));
     expect(screen.getByRole('dialog').querySelector('a[href="/admin/applications"]')).toHaveTextContent('Applications');
     await userEvent.click(screen.getByRole('dialog').querySelector('a[href="/admin/applications"]')!);
-    expect(screen.getByRole('heading', { name: 'Application queue' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Application queue' })).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 });

@@ -225,7 +225,7 @@ export const backgroundSchema = withChecks(
     previous_immigration_applications: requiredYesNo('previous immigration applications'),
     has_visa_refusals: requiredYesNo('visa refusals'),
     visa_refusal_country: optionalText,
-    visa_refusal_year: z.any(),
+    visa_refusal_year: z.unknown().optional(),
     visa_refusal_type: optionalText,
     visa_refusal_reason: optionalText,
   }),
