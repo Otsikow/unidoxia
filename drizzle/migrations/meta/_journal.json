@@ -43,6 +43,13 @@
       "when": 1792941914020,
       "tag": "0005_tighten_coursefinder_function_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794610074380,
+      "tag": "0006_restrict_intakes_select",
+      "breakpoints": true
     }
   ]
 }
