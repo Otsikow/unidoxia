@@ -163,7 +163,7 @@ export function StudentPayments() {
   const getPurposeLabel = (purpose: string) => {
     const labels: Record<string, string> = {
       application_fee: "Application Fee",
-      service_fee: "Service Fee",
+      service_fee: "Payment",
       deposit: "Deposit",
       tuition: "Tuition",
       plan_upgrade: "Plan Upgrade",

@@ -377,11 +377,7 @@ export default function PlacementDashboard() {
       )}
       <footer className="text-sm text-muted-foreground space-y-2">
         <p>
-          Registration and your initial consultation are free.{" "}
-          <Link className="underline" to="/pricing">
-            Review optional paid services and other fees
-          </Link>
-          .
+          Free for students. UniDoxia never charges students a fee.
         </p>
         <p>
           Optional resources:{" "}

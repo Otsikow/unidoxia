@@ -17,7 +17,6 @@ export const SAMPLE_PROGRAMS: Course[] = [
     next_intake_year: 2025,
     university_logo_url: undefined,
     instant_submission: true,
-    is_unidoxia_partner: true,
   },
   {
     id: "mit-cs-bs",
@@ -35,7 +34,6 @@ export const SAMPLE_PROGRAMS: Course[] = [
     next_intake_year: 2025,
     university_logo_url: undefined,
     instant_submission: true,
-    is_unidoxia_partner: true,
   },
   {
     id: "harvard-mba",

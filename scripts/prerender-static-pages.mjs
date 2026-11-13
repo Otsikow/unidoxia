@@ -97,7 +97,7 @@ const pages = [
   {
     path: '/free-consultation', title: 'Free Study Abroad Consultation | UniDoxia',
     description: 'Ask UniDoxia about your study-abroad plans. Send a short enquiry with one contact method, your preferred destination and an optional question.',
-    body: '<h1>Free study abroad consultation</h1><p>Tell us where you would like to study and how to contact you. You can share academic and application details later. This consultation is free; other services and university or government fees may apply. See our <a href="/pricing">service pricing</a>. We cannot guarantee admission, funding or a visa.</p><p>The short enquiry requests your name, one contact method, preferred destination and an optional question. Enable JavaScript to send the form, or email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a>.</p><h2>What happens next?</h2><p>Your enquiry is saved for the admissions team to follow up using your chosen contact method. We can then discuss your study plans and any further information needed. Submitting an enquiry does not submit a university application.</p><p><a href="/intake-form">Use the full student intake form</a> if you are ready to share your academic background.</p>',
+    body: '<h1>Free study abroad consultation</h1><p>UniDoxia\'s service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.</p><p>The short enquiry requests your name, one contact method, preferred destination and an optional question. Enable JavaScript to send the form, or email <a href="mailto:info@unidoxia.com">info@unidoxia.com</a>.</p><h2>What happens next?</h2><p>Your enquiry is saved for the admissions team to follow up using your chosen contact method. We can then discuss your study plans and any further information needed. Submitting an enquiry does not submit a university application.</p><p><a href="/intake-form">Use the full student intake form</a> if you are ready to share your academic background.</p>',
   },
   {
     path: "/about",
@@ -108,9 +108,9 @@ const pages = [
   },
   {
     path: "/pricing",
-    title: "Student Application Plans and Service Fees | UniDoxia",
-    description: "Compare free access with UniDoxia’s optional USD 200 Agent-Supported plan. Your initial consultation is free; university and government charges are separate.",
-    body: `<h1>Choose Your Study Abroad Plan</h1><p>Your first consultation is free. Free Access includes one application. Optional paid guidance is separate.</p><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul><a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
+    title: "Study Abroad Support | UniDoxia",
+    description: "UniDoxia's service is free for students. We never charge students a fee for our support.",
+    body: `<h1>Choose Your Study Abroad Plan</h1><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul><a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
   },
   {
     path: "/faq",

@@ -753,7 +753,7 @@ const pt = {
                 {
                   question: "Usar a plataforma tem custo?",
                   answer:
-                    "Criar uma conta e explorar universidades é gratuito. Agentes podem cobrar taxas de consultoria, exibidas claramente antes de qualquer compromisso.",
+                    "O serviço da UniDoxia é gratuito para estudantes. Nunca cobramos qualquer taxa dos estudantes pelo nosso apoio. Podemos receber uma comissão das universidades quando um estudante que apoiamos se matricula. As mensalidades universitárias, os depósitos, as taxas de candidatura cobradas pela instituição e as taxas governamentais de visto são separados e pagos a essas organizações. Não garantimos admissão, bolsas de estudo ou vistos.",
                 },
                 {
                   question: "Quais documentos preciso para me candidatar?",
@@ -925,7 +925,7 @@ const pt = {
             {
               question: "Usar a plataforma tem custo?",
               answer:
-                "Criar uma conta e explorar universidades é gratuito. Agentes podem cobrar taxas de consultoria, exibidas claramente antes de qualquer compromisso.",
+                "O serviço da UniDoxia é gratuito para estudantes. Nunca cobramos qualquer taxa dos estudantes pelo nosso apoio. Podemos receber uma comissão das universidades quando um estudante que apoiamos se matricula. As mensalidades universitárias, os depósitos, as taxas de candidatura cobradas pela instituição e as taxas governamentais de visto são separados e pagos a essas organizações. Não garantimos admissão, bolsas de estudo ou vistos.",
             },
             {
               question: "Quais documentos preciso para me candidatar?",

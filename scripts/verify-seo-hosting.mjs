@@ -21,7 +21,7 @@ for (const prefix of ['/courses/', '/universities/', '/blog/']) {
   assert.equal(response.status, 200);
   assert((await response.text()).includes(`href="https://unidoxia.com${route.path}"`));
 }
-for (const route of ['/this-page-does-not-exist', '/courses/00000000-0000-0000-0000-000000000000', '/universities/deleted-university', '/blog/deleted-post', '/study-guides/unreviewed-guide', '/dashboard/does-not-exist']) {
+for (const route of ['/this-page-does-not-exist', '/courses/00000000-0000-0000-0000-000000000000', '/universities/deleted-university', '/blog/deleted-post', '/study-guides/unreviewed-guide', '/dashboard/does-not-exist', '/fees', '/partners', '/partner', '/our-partners']) {
   const response = await request(route);
   assert.equal(response.status, 404, route);
   assert.equal(response.headers.get('X-Robots-Tag'), 'noindex');
@@ -35,4 +35,9 @@ for (const route of ['/auth/login', '/auth/callback?code=test', '/student/applic
 const redirect = await worker.fetch(new Request('https://www.unidoxia.com/courses?seo-check=1'), env);
 assert.equal(redirect.status, 301);
 assert.equal(redirect.headers.get('Location'), 'https://unidoxia.com/courses?seo-check=1');
+for (const [from, to] of [['/privacy', '/legal/privacy'], ['/terms', '/legal/terms']]) {
+  const legal = await request(from);
+  assert.equal(legal.status, 301, from);
+  assert.equal(legal.headers.get('Location'), `https://unidoxia.com${to}`);
+}
 console.log('Optional host adapter verified locally: public HTML, unknown/deleted-route 404 + noindex, auth/dashboard SPA entries, www 301 preserving path/query. Not deployed.');
