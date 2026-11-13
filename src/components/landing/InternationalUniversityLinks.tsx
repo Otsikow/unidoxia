@@ -15,6 +15,7 @@ export function InternationalUniversityLinks() {
         .eq('active', true).neq('listing_status', 'archived')
         .in('verification_status', ['admin_verified', 'verified'])
         .in('slug', internationalUniversityCandidates.map(item => item.slug))
+        .retry(false)
         .abortSignal(AbortSignal.timeout(10000));
       if (error) throw error;
       return selectInternationalUniversityListings(data ?? []);
