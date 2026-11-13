@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import fs from "node:fs";
-const routes = JSON.parse(fs.readFileSync("dist/seo-routes.json", "utf8")) as {
+test.skip(!process.env.SEO_PREVIEW, "Requires the built public route manifest");
+const routes = (process.env.SEO_PREVIEW
+  ? JSON.parse(fs.readFileSync("dist/seo-routes.json", "utf8"))
+  : []) as {
   path: string;
   noindex?: boolean;
 }[];

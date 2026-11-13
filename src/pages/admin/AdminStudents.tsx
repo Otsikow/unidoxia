@@ -1,6 +1,4 @@
 import { AdminPlacementQueue } from "@/components/placement/AdminPlacementQueue";
-"use client";
-
 import { registeredWhatsApp, whatsAppLink, communicationTemplate } from "@/lib/studentCommunication";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";

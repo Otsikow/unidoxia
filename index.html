@@ -21,6 +21,32 @@
       }
     </script>
 
+    <script>
+      // Recover when a previously published HTML page references retired assets.
+      window.addEventListener("error", (event) => {
+        const target = event.target;
+        const asset = target instanceof HTMLScriptElement
+          ? target.src
+          : target instanceof HTMLLinkElement && ["stylesheet", "modulepreload"].includes(target.rel)
+            ? target.href
+            : "";
+        if (!asset) return;
+
+        const url = new URL(asset);
+        if (url.origin !== location.origin || !url.pathname.startsWith("/assets/")) return;
+
+        try {
+          const key = "__app_chunk_reload_ts";
+          const now = Date.now();
+          if (now - Number(sessionStorage.getItem(key) || "0") < 30_000) return;
+          sessionStorage.setItem(key, String(now));
+          location.reload();
+        } catch {
+          // Without session storage there is no safe way to prevent a reload loop.
+        }
+      }, true);
+    </script>
+
     <!-- Performance: DNS Prefetch for external services -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
