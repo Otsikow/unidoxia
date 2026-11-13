@@ -13,8 +13,8 @@ for (const resourceType of ['script', 'stylesheet']) {
       }
       return route.continue();
     });
-    page.on('framenavigated', frame => {
-      if (frame === page.mainFrame()) navigations += 1;
+    page.on('request', request => {
+      if (request.isNavigationRequest() && request.frame() === page.mainFrame()) navigations += 1;
     });
 
     await page.goto('/?source=verification#top', { waitUntil: 'commit' });
@@ -28,8 +28,8 @@ for (const resourceType of ['script', 'stylesheet']) {
 test('persistent startup asset failures reload at most once', async ({ page }) => {
   let navigations = 0;
   await page.route('**/assets/*.js', route => route.fulfill({ status: 404 }));
-  page.on('framenavigated', frame => {
-    if (frame === page.mainFrame()) navigations += 1;
+  page.on('request', request => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) navigations += 1;
   });
 
   await page.goto('/', { waitUntil: 'commit' });

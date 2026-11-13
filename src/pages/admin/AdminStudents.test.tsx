@@ -22,7 +22,7 @@ describe('simple student workspace',()=>{
   show();await screen.findAllByText('Ama Example');expect(screen.queryByText('Archived Example')).not.toBeInTheDocument();
   expect(screen.getAllByText('Review uploaded documents')).toHaveLength(2);
   await userEvent.click(screen.getAllByRole('button',{name:'Open student Ama Example'})[0]);
-  expect(screen.getByLabelText('Current location')).toHaveTextContent('/admin/students/one?tab=documents');
+  await waitFor(() => expect(screen.getByLabelText('Current location')).toHaveTextContent('/admin/students/one?tab=documents'));
  });
  it('opens the dashboard document-review deep link with the matching queue selected',async()=>{
   api.read.mockResolvedValue({data:[student('one','Review Example',{documents:[{id:'doc',document_type:'passport',admin_review_status:'awaiting_admin_review'}]}),student('two','Other Example')],error:null});

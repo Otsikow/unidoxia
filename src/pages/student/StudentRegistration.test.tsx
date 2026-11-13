@@ -68,7 +68,7 @@ function DocumentsDestination() {
 
 function open(path = '/student/documents?from=signup#uploads') {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[path]}>
     <Routes>
       <Route path="/verify-email" element={<h1>Verify your email</h1>} />
       <Route path="/student/onboarding" element={<ProtectedRoute><StudentRegistration /></ProtectedRoute>} />
