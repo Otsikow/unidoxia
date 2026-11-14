@@ -15,7 +15,7 @@ const highlights = [
   {
     title: 'No Data Sales',
     description:
-      'We never sell your personal information. We share it only when needed to provide our services, for example with the universities you apply to and our application partner CourseFinder.'
+      'We never sell your personal information. We share it only when needed to provide our services, for example with the universities you apply to and our application processing partner in India.'
   },
   {
     title: 'Transparent Practices',
@@ -104,8 +104,7 @@ const sections: Section[] = [
             application.
           </li>
           <li>
-            Our application partner, based in Nagpur, India, which runs the
-            CourseFinder application portal. We share only the details needed for your application, such as your contact
+            Our application processing partner, based in Nagpur, India. We share only the details needed for your application, such as your contact
             details, education history, passport and citizenship details, marital status, number of dependants and any
             previous visa refusals. The partner uses this information as a separate controller under its own privacy
             notice.

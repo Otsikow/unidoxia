@@ -1,17 +1,16 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Wording approved by Kojo on 23 October 2026. If any of this text changes,
- * bump the version here and in record_sharing_authorisation() in the
- * CourseFinder migration, so each saved authorisation points at the words the
+ * If any of this text changes,
+ * bump the version here and in the database function that records it, so each saved authorisation points at the words the
  * student saw.
  */
-export const SHARING_AUTHORISATION_VERSION = 'partner-share-v2-2026-11-11';
+export const SHARING_AUTHORISATION_VERSION = 'partner-share-v3-2026-11-14';
 
 export const SHARING_AUTHORISATION_HEADING = 'Sharing your application with our partner';
 
 export const SHARING_AUTHORISATION_TEXT =
-  'To apply to universities for you, UniDoxia (Global Talent Gateway Ltd) shares your application details with the universities you choose and with our application partner in India, which runs the CourseFinder portal. The partner uses your details as a separate controller to process your applications. The UK does not treat India as having equivalent data protection laws, so your details may have less legal protection there.';
+  'To apply to universities for you, UniDoxia (Global Talent Gateway Ltd) shares your application details with the universities you choose and with our application partner in India. The partner uses your details as a separate controller to process your applications. The UK does not treat India as having equivalent data protection laws, so your details may have less legal protection there.';
 
 /** The checkbox label, split so the words 'Privacy Notice' can be a link. */
 export const SHARING_AUTHORISATION_CHECKBOX_BEFORE_LINK =
