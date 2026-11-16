@@ -29,25 +29,6 @@ function OfficialLinks({ links }: { links: OfficialVisaLink[] }) {
   );
 }
 
-function OfficialLinks({ links }: { links: OfficialVisaLink[] }) {
-  return (
-    <ul className="list-disc space-y-2 pl-5">
-      {links.map((link) => (
-        <li key={link.href}>
-          <a
-            href={link.href}
-            className="text-primary underline underline-offset-2"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            {link.label}
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 export default function VisaCalculatorPage() {
   return (
     <div className="min-h-screen bg-gradient-subtle">
