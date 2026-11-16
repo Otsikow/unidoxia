@@ -44,7 +44,7 @@ const ar = {
       helpCenter: "مركز المساعدة",
       faq: "الأسئلة الشائعة",
       feedback: "ملاحظات",
-      visaCalculator: "حاسبة التأشيرة",
+      visaCalculator: "معلومات التأشيرة",
       privacy: "سياسة الخصوصية",
       terms: "شروط الخدمة",
     },
@@ -98,7 +98,7 @@ const ar = {
       platformLinks: {
         search: "ابحث عن الجامعات",
         blog: "المدونة",
-        visaCalculator: "حاسبة التأشيرة",
+        visaCalculator: "معلومات التأشيرة",
         feedback: "ملاحظات",
       },
       supportLinks: {

@@ -671,7 +671,7 @@ const App = () => {
                         <Route path="/pricing" element={<PublicLayout><Pricing /></PublicLayout>} />
 
 
-                        {/* Visa Calculator */}
+                        {/* Visa information */}
                         <Route path="/visa-calculator" element={<PublicLayout><VisaCalculator /></PublicLayout>} />
 
                         <Route path="/partnership" element={<PublicLayout><UniversityPartnership /></PublicLayout>} />

@@ -44,7 +44,7 @@ const hi = {
       helpCenter: "सहायता केंद्र",
       faq: "प्रश्नोत्तर",
       feedback: "प्रतिक्रिया",
-      visaCalculator: "वीज़ा कैलकुलेटर",
+      visaCalculator: "वीज़ा जानकारी",
       privacy: "गोपनीयता नीति",
       terms: "सेवा की शर्तें",
     },
@@ -98,7 +98,7 @@ const hi = {
       platformLinks: {
         search: "विश्वविद्यालय खोजें",
         blog: "ब्लॉग",
-        visaCalculator: "वीज़ा कैलकुलेटर",
+        visaCalculator: "वीज़ा जानकारी",
         feedback: "प्रतिक्रिया",
       },
       supportLinks: {

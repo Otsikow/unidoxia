@@ -44,7 +44,7 @@ const zh = {
       helpCenter: "帮助中心",
       faq: "常见问题",
       feedback: "反馈",
-      visaCalculator: "签证计算器",
+      visaCalculator: "签证信息",
       privacy: "隐私政策",
       terms: "服务条款",
     },
@@ -98,7 +98,7 @@ const zh = {
       platformLinks: {
         search: "搜索大学",
         blog: "博客",
-        visaCalculator: "签证计算器",
+        visaCalculator: "签证信息",
         feedback: "反馈",
       },
       supportLinks: {

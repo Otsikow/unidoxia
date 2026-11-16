@@ -44,7 +44,7 @@ const sw = {
       helpCenter: "Kituo cha msaada",
       faq: "Maswali",
       feedback: "Maoni",
-      visaCalculator: "Kikokotoo cha viza",
+      visaCalculator: "Taarifa za viza",
       privacy: "Sera ya faragha",
       terms: "Sheria na masharti",
     },
@@ -98,7 +98,7 @@ const sw = {
       platformLinks: {
         search: "Tafuta vyuo",
         blog: "Blogu",
-        visaCalculator: "Kikokotoo cha viza",
+        visaCalculator: "Taarifa za viza",
         feedback: "Maoni",
       },
       supportLinks: {

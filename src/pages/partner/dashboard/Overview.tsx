@@ -780,7 +780,7 @@ const PartnerOverviewPage = () => {
               Blog
             </Link>
             <Link to="/visa-calculator" className="hover:text-blue-700 hover:underline dark:hover:text-blue-100">
-              Visa Calculator
+              Visa information
             </Link>
           </div>
         </div>

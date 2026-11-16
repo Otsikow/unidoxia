@@ -166,7 +166,7 @@ export default function Blog() {
       links: [
         { label: "Search Universities", href: "/courses?view=programs", external: false },
         { label: "Help Centre", href: "/help", external: false },
-        { label: "Visa Calculator", href: "/visa-calculator", external: false },
+        { label: "Visa information", href: "/visa-calculator", external: false },
       ],
     },
   ] as const;

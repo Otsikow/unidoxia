@@ -47,7 +47,7 @@ const fr = {
       helpCenter: "Centre d'aide",
       faq: "FAQ",
       feedback: "Retour",
-      visaCalculator: "Calculateur de visa",
+      visaCalculator: "Informations sur les visas",
       privacy: "Politique de confidentialité",
       terms: "Conditions d'utilisation",
     },
@@ -117,7 +117,7 @@ const fr = {
       platformLinks: {
         search: "Rechercher des universités",
         blog: "Blog",
-        visaCalculator: "Calculateur de visa",
+        visaCalculator: "Informations sur les visas",
         feedback: "Retour",
       },
       supportLinks: {

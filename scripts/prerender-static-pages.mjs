@@ -3,6 +3,7 @@ import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../s
 import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
 import { internationalDirectoryIntro, selectInternationalUniversityListings } from '../src/lib/homeInternationalUniversities.ts';
 import { PRICING_PLANS, SERVICE_FEE_SCOPE, formatPlanPrice } from '../src/types/billing.ts';
+import { UK_VISA_INFORMATION_LINKS, OTHER_COUNTRY_VISA_INFORMATION_LINKS, VISA_INFORMATION_SHORT_DISCLAIMER, VISA_INFORMATION_LONG_DISCLAIMER, VISA_INFORMATION_CTA, VISA_INFORMATION_META_DESCRIPTION } from '../src/lib/visaInformationLinks.ts';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -159,10 +160,9 @@ const pages = [
   },
   {
     path: "/visa-calculator",
-    title: "Student Visa Eligibility Calculator | UniDoxia",
-    description:
-      "Estimate your student visa readiness and see which documents and funds you may need before applying.",
-    body: `<h1>Student visa calculator</h1>`,
+    title: "Visa information | UniDoxia",
+    description: VISA_INFORMATION_META_DESCRIPTION,
+    body: `<h1>Visa information</h1><p>${esc(VISA_INFORMATION_SHORT_DISCLAIMER)}</p><p>${esc(VISA_INFORMATION_LONG_DISCLAIMER)}</p><h2>United Kingdom</h2><ul>${UK_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}">${esc(link.label)}</a></li>`).join('')}</ul><h2>Other countries</h2><ul>${OTHER_COUNTRY_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}">${esc(link.label)}</a></li>`).join('')}</ul><p><a href="/free-consultation">${esc(VISA_INFORMATION_CTA)}</a></p>`,
   },
   {
     path: "/contact",
@@ -221,7 +221,7 @@ const pages = [
     title: editorialReview[p.slug] ? `${editorialReview[p.slug].title} | UniDoxia` : p.seo_title || `${p.title} | UniDoxia`,
     description: editorialReview[p.slug]?.message || p.seo_description || p.excerpt || p.title,
     ogType: "article",
-    body: `<article>${editorialReview[p.slug] ? `<aside aria-label="Editorial review notice"><p>${esc(editorialReview[p.slug].message)}</p><a href="${esc(editorialReview[p.slug].source)}">${esc(editorialReview[p.slug].label)}</a></aside>` : ""}<h1>${esc(editorialReview[p.slug]?.title || p.title)}</h1>${editorialReview[p.slug] ? "<p>The full article is temporarily unavailable while it is reviewed.</p>" : `${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}`}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Explore student visa readiness</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
+    body: `<article>${editorialReview[p.slug] ? `<aside aria-label="Editorial review notice"><p>${esc(editorialReview[p.slug].message)}</p><a href="${esc(editorialReview[p.slug].source)}">${esc(editorialReview[p.slug].label)}</a></aside>` : ""}<h1>${esc(editorialReview[p.slug]?.title || p.title)}</h1>${editorialReview[p.slug] ? "<p>The full article is temporarily unavailable while it is reviewed.</p>" : `${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}`}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Visa information</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
   })),
 ];
 

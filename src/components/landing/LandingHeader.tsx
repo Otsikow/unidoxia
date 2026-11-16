@@ -9,7 +9,7 @@ import unidoxiaLogo from "@/assets/unidoxia-logo.webp";
 const PUBLIC_NAV = [
   { to: "/courses", label: "Courses" },
   { to: "/scholarships", label: "Scholarships" },
-  { to: "/visa-calculator", label: "Visa Guidance" },
+  { to: "/visa-calculator", label: "Visa information" },
   { to: "/blog", label: "Blog" },
   { to: "/partnership", label: "Partners" },
 ];

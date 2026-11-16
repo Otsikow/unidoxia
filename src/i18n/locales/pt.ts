@@ -45,7 +45,7 @@ const pt = {
       helpCenter: "Central de ajuda",
       faq: "FAQ",
       feedback: "Feedback",
-      visaCalculator: "Calculadora de visto",
+      visaCalculator: "Informação sobre vistos",
       privacy: "Política de privacidade",
       terms: "Termos de uso",
     },
@@ -115,7 +115,7 @@ const pt = {
       platformLinks: {
         search: "Buscar universidades",
         blog: "Blog",
-        visaCalculator: "Calculadora de visto",
+        visaCalculator: "Informação sobre vistos",
         feedback: "Feedback",
       },
       supportLinks: {

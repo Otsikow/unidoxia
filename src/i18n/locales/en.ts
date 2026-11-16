@@ -45,7 +45,7 @@ const en = {
       helpCenter: "Help Centre",
       faq: "FAQ",
       feedback: "Feedback",
-      visaCalculator: "Visa Calculator",
+      visaCalculator: "Visa information",
       privacy: "Privacy Notice",
       terms: "Terms of Service",
     },
@@ -115,7 +115,7 @@ const en = {
       platformLinks: {
         search: "Search Universities",
         blog: "Blog",
-        visaCalculator: "Visa Calculator",
+        visaCalculator: "Visa information",
         feedback: "Feedback",
       },
       supportLinks: {
@@ -690,7 +690,7 @@ const en = {
           title: "Understand your visa eligibility before you apply",
           description:
             "Our Visa Eligibility Calculator analyses your profile instantly so you can focus on the countries and courses that welcome you the most.",
-          cta: "Explore the Visa Calculator",
+          cta: "Visa information",
         },
         feeCalculator: {
           badge: "AI Fee Calculator",
