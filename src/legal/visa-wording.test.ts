@@ -70,6 +70,10 @@ const BANNED = [
   "Prior visa refusal—requires strong SOP and evidence",
   "Meets minimum program and visa checks",
   "previous_visa_refusals",
+  "From choosing the right university to submitting your application, securing your offer, and preparing for your student visa, UniDoxia supports you every step of the way until you are ready to travel.",
+  "Receive personalized guidance every step of the way.",
+  "We respond within 24 hours.",
+  "Priority response times (24-48 hours)",
 ];
 
 const SOURCE_ROOTS = [
