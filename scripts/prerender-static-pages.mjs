@@ -111,7 +111,7 @@ const pages = [
     path: "/pricing",
     title: "Student Application Plans and Service Fees | UniDoxia",
     description: "Compare free access with UniDoxia’s optional USD 200 Agent-Supported plan. Your initial consultation is free; university and government charges are separate.",
-    body: `<h1>Choose Your Study Abroad Plan</h1><p>Your first consultation is free. Free Access includes one application. Optional paid guidance is separate.</p><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul><a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
+    body: `<h1>Choose Your Study Abroad Plan</h1><p>Your first consultation is free. Free Access includes one application. Optional paid guidance is separate.</p><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul>${plan.featureNote ? `<p>${esc(plan.featureNote)}</p>` : ''}<a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
   },
   {
     path: "/faq",
@@ -162,7 +162,7 @@ const pages = [
     path: "/visa-calculator",
     title: "Visa information | UniDoxia",
     description: VISA_INFORMATION_META_DESCRIPTION,
-    body: `<h1>Visa information</h1><p>${esc(VISA_INFORMATION_SHORT_DISCLAIMER)}</p><p>${esc(VISA_INFORMATION_LONG_DISCLAIMER)}</p><h2>United Kingdom</h2><ul>${UK_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}">${esc(link.label)}</a></li>`).join('')}</ul><h2>Other countries</h2><ul>${OTHER_COUNTRY_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}">${esc(link.label)}</a></li>`).join('')}</ul><p><a href="/free-consultation">${esc(VISA_INFORMATION_CTA)}</a></p>`,
+    body: `<h1>Visa information</h1><p>${esc(VISA_INFORMATION_SHORT_DISCLAIMER)}</p><p>${esc(VISA_INFORMATION_LONG_DISCLAIMER)}</p><h2>United Kingdom</h2><ul>${UK_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><h2>Other countries</h2><ul>${OTHER_COUNTRY_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><p><a href="/free-consultation">${esc(VISA_INFORMATION_CTA)}</a></p>`,
   },
   {
     path: "/contact",

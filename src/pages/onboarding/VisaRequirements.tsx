@@ -71,7 +71,7 @@ export default function OnboardingVisaRequirements() {
             <div className="rounded-3xl border border-border/60 bg-card/70 shadow-2xl backdrop-blur-md px-6 py-8 sm:px-10 sm:py-12">
               <div className="flex flex-col items-center text-center gap-4">
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Visa guidance, simplified</p>
+                  <p className="text-sm text-muted-foreground">Official visa information</p>
                   <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
                     Navigate Visa Requirements <span className="text-primary">Easily</span>
                   </h1>

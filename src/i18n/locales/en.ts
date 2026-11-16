@@ -362,7 +362,7 @@ const en = {
               badge: "Students",
               title: "We help you apply to universities abroad with ease",
               description:
-                "From choosing the right university to submitting your application, securing your offer, and preparing for your student visa, UniDoxia supports you every step of the way until you are ready to travel.",
+                "From choosing a course to accepting your offer, UniDoxia supports your university application every step of the way.",
               action: "Register to Start",
             },
             agents: {
@@ -608,7 +608,7 @@ const en = {
             metricValue: "",
             metricLabel: "",
             description:
-              "Get matched with verified advisors and universities that fit your goals. Receive personalized guidance every step of the way.",
+              "Get matched with verified advisors and universities that fit your goals. Receive personalised guidance at every step of your university application.",
             ctaLabel: "Get matched",
           },
           offers: {

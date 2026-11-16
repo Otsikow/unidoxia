@@ -52,7 +52,7 @@ export const OTHER_COUNTRY_VISA_INFORMATION_LINKS: OfficialVisaLink[] = [
   },
   {
     label: "Germany student visa or permit (Make it in Germany)",
-    href: "https://www.make-it-in-germany.com/en/visa-residence/types/studying-visa",
+    href: "https://www.make-it-in-germany.com/en/visa-recognition/visa-types/studying",
     checked: "2026-11-16",
   },
   {

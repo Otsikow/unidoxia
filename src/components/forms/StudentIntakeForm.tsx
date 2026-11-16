@@ -1208,7 +1208,7 @@ export default function StudentIntakeForm() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted-foreground">
-                  We respond within 24 hours. Submitting this form won’t create any obligation and you can update details
+                  We aim to respond within 24 hours (working days). Submitting this form won’t create any obligation and you can update details
                   later.
                 </p>
                 <Button type="submit" size="lg" className="min-w-[180px]" disabled={isSubmitting}>

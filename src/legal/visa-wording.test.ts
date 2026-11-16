@@ -26,6 +26,16 @@ const BANNED = [
   "durchschnittliche Matching-Zeit",
   "délai moyen de matching",
   "tempo médio de matching",
+  "From choosing the right university to submitting your application, securing your offer, and preparing for your student visa, UniDoxia supports you every step of the way until you are ready to travel.",
+  "Receive personalized guidance every step of the way.",
+];
+
+const BANNED_IN_SRC = [
+  "Full guidance from application to visa",
+  "Visa preparation assistance",
+  "Visa guidance, simplified",
+  "We respond within 24 hours.",
+  "Priority response times (24-48 hours)",
 ];
 
 const SOURCE_ROOTS = [
@@ -53,6 +63,20 @@ describe("Kojo re-check 2 visa wording", () => {
     for (const file of files) {
       const text = readFileSync(file, "utf8");
       for (const phrase of BANNED) {
+        if (text.includes(phrase)) {
+          hits.push(`${relative(process.cwd(), file)}: ${phrase}`);
+        }
+      }
+    }
+    expect(hits).toEqual([]);
+  });
+
+  it("keeps removed pricing, intake and onboarding claims out of src", () => {
+    const files = collectFiles(join(process.cwd(), "src"));
+    const hits: string[] = [];
+    for (const file of files) {
+      const text = readFileSync(file, "utf8");
+      for (const phrase of BANNED_IN_SRC) {
         if (text.includes(phrase)) {
           hits.push(`${relative(process.cwd(), file)}: ${phrase}`);
         }
