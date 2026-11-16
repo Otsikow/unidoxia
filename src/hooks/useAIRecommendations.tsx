@@ -46,7 +46,6 @@ export interface StudentProfile {
   };
   subjects?: string[];
   study_gap_years?: number;
-  previous_visa_refusals?: number;
   academic_progression?: 'strong' | 'steady' | 'weak';
   preferences: {
     countries: string[];
@@ -152,14 +151,6 @@ const evaluateProgramEligibility = (
     }
   }
 
-  if (typeof profile.previous_visa_refusals === 'number') {
-    if (profile.previous_visa_refusals >= 3) {
-      ineligible.push('Multiple previous visa refusals');
-    } else if (profile.previous_visa_refusals >= 1) {
-      borderline.push('Prior visa refusal—requires strong SOP and evidence');
-    }
-  }
-
   if (profile.academic_progression === 'weak') {
     borderline.push('Academic progression flagged as weak');
   }
@@ -180,7 +171,7 @@ const evaluateProgramEligibility = (
 
   return {
     status: 'Eligible – Auto Proceed',
-    reasons: ['Meets minimum program and visa checks']
+    reasons: ['Meets the programme\'s published entry requirements']
   };
 };
 

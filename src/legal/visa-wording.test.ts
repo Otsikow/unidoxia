@@ -66,6 +66,10 @@ const BANNED = [
   "Age close to upper limit—visa risk",
   "Schedule visa counseling session",
   "Visa counselling backlog cleared — response times dropped from 3 days to under 12 hours.",
+  "Multiple previous visa refusals",
+  "Prior visa refusal—requires strong SOP and evidence",
+  "Meets minimum program and visa checks",
+  "previous_visa_refusals",
 ];
 
 const SOURCE_ROOTS = [

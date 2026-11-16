@@ -25,8 +25,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   User,
-  BookOpen,
-  Ban
+  BookOpen
 } from 'lucide-react';
 import { useAIRecommendations, StudentProfile, ProgramEligibilityStatus } from '@/hooks/useAIRecommendations';
 import { Link } from 'react-router-dom';
@@ -73,7 +72,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     age: 22,
     subjects: ['Computer Science', 'Mathematics'],
     study_gap_years: 1,
-    previous_visa_refusals: 0,
     academic_progression: 'steady',
     preferences: {
       countries: ['Canada', 'United Kingdom', 'Australia'],
@@ -150,14 +148,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     handleProfileUpdate(prev => ({
       ...prev,
       study_gap_years: value[0]
-    }));
-  };
-
-  const handleVisaRefusalChange = (value: string) => {
-    const numeric = parseInt(value, 10);
-    handleProfileUpdate(prev => ({
-      ...prev,
-      previous_visa_refusals: value === '' || Number.isNaN(numeric) ? undefined : numeric
     }));
   };
 
@@ -502,18 +492,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
                     max={10}
                     min={0}
                     step={0.5}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Ban className="h-4 w-4 text-primary" /> Visa refusals
-                  </Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={profile.previous_visa_refusals ?? ''}
-                    onChange={(e) => handleVisaRefusalChange(e.target.value)}
-                    placeholder="0"
                   />
                 </div>
                 <div className="space-y-2">
