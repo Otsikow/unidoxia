@@ -30,7 +30,7 @@ describe("visa information page", () => {
     expect(notice).toHaveTextContent(VISA_INFORMATION_LONG_DISCLAIMER);
 
     for (const link of [...UK_VISA_INFORMATION_LINKS, ...OTHER_COUNTRY_VISA_INFORMATION_LINKS]) {
-      expect(screen.getByRole("link", { name: link.label })).toHaveAttribute("href", link.href);
+      expect(screen.getByRole("link", { name: link.label, exact: true })).toHaveAttribute("href", link.href);
     }
 
     expect(screen.getByRole("link", { name: VISA_INFORMATION_CTA })).toHaveAttribute(

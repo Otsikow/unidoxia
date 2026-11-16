@@ -30,7 +30,7 @@ test('visa controls are labelled and onboarding progress has a name',async({page
  await expect(page.getByRole('heading',{level:1,name:'Visa information'})).toBeVisible();
  await expect(page.getByText('General information only, not immigration advice. Each link goes to an official government website. Rules can change, so check the official page before you apply.')).toBeVisible();
  await expect(page.locator('body')).not.toContainText(/\bELIGIBLE\b|\beligible\b|\bprobability\b|success rate|\bAI\b|\bpredictor\b|probability band|guiding you end to end/i);
- await expect(page.getByRole('link',{name:'Student visa (GOV.UK)'})).toBeVisible();
+ await expect(page.getByRole('link',{name:'Student visa (GOV.UK)',exact:true})).toBeVisible();
  await page.goto('/agents/onboarding');
  await expect(page.getByRole('progressbar',{name:'Onboarding progress'})).toHaveAttribute('aria-valuetext','Step 1 of 2');
 });
