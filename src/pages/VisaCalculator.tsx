@@ -29,11 +29,24 @@ function OfficialLinks({ links }: { links: OfficialVisaLink[] }) {
   );
 }
 
-const SHORT_DISCLAIMER =
-  "General information only, not immigration advice. Source: GOV.UK. Rules can change, so check GOV.UK before you apply.";
-
-const LONG_DISCLAIMER =
-  "UniDoxia helps students choose and apply to universities. We do not give immigration advice. This page is general information from GOV.UK and may change. For advice about your own visa application, use GOV.UK (gov.uk/student-visa), your university's international student team, or a regulated immigration adviser (gov.uk/find-an-immigration-adviser).";
+function OfficialLinks({ links }: { links: OfficialVisaLink[] }) {
+  return (
+    <ul className="list-disc space-y-2 pl-5">
+      {links.map((link) => (
+        <li key={link.href}>
+          <a
+            href={link.href}
+            className="text-primary underline underline-offset-2"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {link.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function VisaCalculatorPage() {
   return (
