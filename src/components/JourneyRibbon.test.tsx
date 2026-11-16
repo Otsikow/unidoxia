@@ -39,8 +39,8 @@ describe("JourneyRibbon step metrics", () => {
     for (const [name, locale] of Object.entries(LOCALES)) {
       const matched = journeyItems(locale)?.matched;
       if (matched) {
-        expect(matched.metricValue, `${name} metricValue`).toBeUndefined();
-        expect(matched.metricLabel, `${name} metricLabel`).toBeUndefined();
+        expect(matched.metricValue ?? "", `${name} metricValue`).toBe("");
+        expect(matched.metricLabel ?? "", `${name} metricLabel`).toBe("");
       }
       const blob = JSON.stringify(locale);
       for (const phrase of BANNED_STEP_2_METRIC) {

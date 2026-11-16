@@ -560,6 +560,8 @@ const fr = {
             },
             matched: {
               stage: "Étape 2",
+              metricValue: "",
+              metricLabel: "",
               description:
                 "Soyez mis en relation avec des conseillers vérifiés et des universités qui correspondent à vos objectifs. Recevez un accompagnement personnalisé à chaque étape.",
               ctaLabel: "Être accompagné",
@@ -597,12 +599,12 @@ const fr = {
               imageAlt: "Étudiant recevant des conseils personnalisés d'un conseiller en éducation",
             },
             offers: {
-              title: "Recevez des offres et un accompagnement visa",
+              title: "Recevez des offres et des informations de départ",
               description:
-                "Recevez des offres d'universités et un accompagnement visa complet. Nous vous guidons à chaque étape, de l'acceptation jusqu'à votre arrivée dans l'université de vos rêves.",
+                "Recevez des offres d'universités et des informations de départ provenant de sources gouvernementales officielles. Nous accompagnons votre candidature universitaire de la première demande jusqu'à l'inscription.",
               support:
-                "Check-lists visa, préparation aux entretiens et ressources de pré-départ pour que vous soyez prêt à commencer ce nouveau chapitre.",
-              imageAlt: "Étudiant célébrant son acceptation avec ses documents de visa",
+                "Liens vers les informations officielles sur les visas (GOV.UK et d'autres sites officiels) et informations générales de départ. Ceci n'est pas un conseil en immigration.",
+              imageAlt: "Étudiant célébrant une offre universitaire",
             },
           },
         },

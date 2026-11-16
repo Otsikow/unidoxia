@@ -486,6 +486,8 @@ const de = {
           },
           matched: {
             stage: "Schritt 2",
+            metricValue: "",
+            metricLabel: "",
             description:
               "Werden Sie mit verifizierten Beratern und Universitäten gematcht, die zu Ihren Zielen passen. Erhalten Sie persönliche Begleitung bei jedem Schritt.",
             ctaLabel: "Gematcht werden",
@@ -523,12 +525,12 @@ const de = {
             imageAlt: "Studierende erhält persönliche Beratung von einem Bildungsberater",
           },
           offers: {
-            title: "Angebote und Visa-Beratung erhalten",
+            title: "Angebote und Informationen zur Abreise erhalten",
             description:
-              "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie bei jedem Schritt von der Zusage bis zur Ankunft an Ihrer Traumuniversität.",
+              "Erhalten Sie Universitätsangebote und Informationen zur Abreise aus offiziellen staatlichen Quellen. Wir unterstützen Ihre Universitätsbewerbung von der ersten Anfrage bis zur Einschreibung.",
             support:
-              "Visa-Checklisten, Interviewvorbereitung und Abreiseressourcen stellen sicher, dass Sie bereit für Ihr neues Kapitel sind.",
-            imageAlt: "Studierende feiert die Zusage mit Visa-Dokumenten",
+              "Links zu offiziellen Visuminformationen (GOV.UK und andere offizielle Seiten) und allgemeinen Informationen zur Abreise. Dies ist keine einwanderungsrechtliche Beratung.",
+            imageAlt: "Studierende feiert eine Universitätszusage",
           },
         },
       },

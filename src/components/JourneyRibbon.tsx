@@ -16,8 +16,15 @@ const SEGMENT_CONFIG: JourneySegmentConfig[] = [
   { key: "offers", icon: Award, gradient: "from-emerald-500 via-teal-500 to-primary" },
 ];
 
+
+const optionalMetric = (t: (key: string, options?: { defaultValue?: string }) => string, key: string): string => {
+  const value = t(key, { defaultValue: "" });
+  if (!value || value === key) return "";
+  return value;
+};
+
 export const JourneyRibbon = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const segments = useMemo(
     () =>
@@ -28,13 +35,13 @@ export const JourneyRibbon = () => {
         return {
           ...segment,
           stage: t(`${baseKey}.stage`),
-          metricValue: i18n.exists(`${baseKey}.metricValue`) ? t(`${baseKey}.metricValue`) : "",
-          metricLabel: i18n.exists(`${baseKey}.metricLabel`) ? t(`${baseKey}.metricLabel`) : "",
+          metricValue: optionalMetric(t, `${baseKey}.metricValue`),
+          metricLabel: optionalMetric(t, `${baseKey}.metricLabel`),
           description: t(`${baseKey}.description`),
           ctaLabel: ctaLabel.trim() ? ctaLabel : null,
         };
       }),
-    [t, i18n],
+    [t],
   );
 
   const marqueeSegments = useMemo(() => {

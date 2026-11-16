@@ -610,6 +610,8 @@ const pt = {
             },
             matched: {
               stage: "Etapa 2",
+              metricValue: "",
+              metricLabel: "",
               description:
                 "Seja conectado a consultores verificados e universidades que combinam com seus objetivos. Receba orientação personalizada em cada etapa.",
               ctaLabel: "Ser conectado",
@@ -647,12 +649,12 @@ const pt = {
               imageAlt: "Estudante recebendo orientação personalizada de consultor educacional",
             },
             offers: {
-              title: "Receba ofertas e orientação de visto",
+              title: "Receba ofertas e informações pré-embarque",
               description:
-                "Receba ofertas de universidades e suporte completo de visto. Orientamos você em cada etapa, da aceitação até a chegada na universidade dos seus sonhos.",
+                "Receba ofertas de universidades e informações pré-embarque de fontes governamentais oficiais. Apoiamos a sua candidatura universitária desde o primeiro contato até a matrícula.",
               support:
-                "Checklists de visto, preparação para entrevistas e recursos pré-embarque garantem que você esteja pronto para esse novo capítulo.",
-              imageAlt: "Estudante comemorando aceitação com documentos de visto",
+                "Links para informação oficial sobre vistos (GOV.UK e outros sites oficiais) e informação geral pré-embarque. Isto não constitui aconselhamento de imigração.",
+              imageAlt: "Estudante comemorando uma oferta universitária",
             },
           },
         },

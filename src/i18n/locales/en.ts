@@ -605,6 +605,8 @@ const en = {
           },
           matched: {
             stage: "Step 2",
+            metricValue: "",
+            metricLabel: "",
             description:
               "Get matched with verified advisors and universities that fit your goals. Receive personalized guidance every step of the way.",
             ctaLabel: "Get matched",
@@ -642,12 +644,12 @@ const en = {
             imageAlt: "Student receiving personalized guidance from an education advisor",
           },
           offers: {
-            title: "Receive offers and visa guidance",
+            title: "Receive offers and pre-departure information",
             description:
-              "Receive university offers and comprehensive visa support. We guide you through every step from acceptance to arrival at your dream university.",
+              "Receive university offers and pre-departure information from official government sources. We support your university application from first enquiry to enrolment.",
             support:
-              "Visa checklists, interview prep, and pre-departure resources ensure you're ready to start your new chapter.",
-            imageAlt: "Student celebrating acceptance with visa documents",
+              "Links to official visa information (GOV.UK and other official sites) and general pre-departure information. This is not immigration advice.",
+            imageAlt: "Student celebrating a university offer",
           },
         },
       },
