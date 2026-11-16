@@ -36,6 +36,7 @@ const BANNED_IN_SRC = [
   "Visa guidance, simplified",
   "We respond within 24 hours.",
   "Priority response times (24-48 hours)",
+  "Full guidance from choosing a course to accepting your offer - One-time payment",
 ];
 
 const SOURCE_ROOTS = [
@@ -72,7 +73,10 @@ describe("Kojo re-check 2 visa wording", () => {
   });
 
   it("keeps removed pricing, intake and onboarding claims out of src", () => {
-    const files = collectFiles(join(process.cwd(), "src"));
+    const files = [
+      ...collectFiles(join(process.cwd(), "src")),
+      ...collectFiles(join(process.cwd(), "supabase/functions")),
+    ];
     const hits: string[] = [];
     for (const file of files) {
       const text = readFileSync(file, "utf8");
