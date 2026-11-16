@@ -202,7 +202,6 @@ const contactMethods = [
 ];
 
 const supportOptions = [
-  { label: 'Visa Application Guidance', value: 'visa' },
   { label: 'Scholarship & Funding Advice', value: 'scholarship' },
   { label: 'Accommodation Support', value: 'accommodation' },
   { label: 'Application Review', value: 'application' },

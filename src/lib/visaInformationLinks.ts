@@ -41,7 +41,7 @@ export const OTHER_COUNTRY_VISA_INFORMATION_LINKS: OfficialVisaLink[] = [
       "Kojo recorded HTTP 200 on 16 Nov 2026. A later check from this box timed out or failed with an HTTP/2 error, so the same official IRCC URL is kept with that cited check.",
   },
   {
-    label: "United States student visa or permit (USCIS)",
+    label: "United States: students and exchange visitors (USCIS)",
     href: "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors",
     checked: "2026-11-16",
   },
@@ -56,7 +56,7 @@ export const OTHER_COUNTRY_VISA_INFORMATION_LINKS: OfficialVisaLink[] = [
     checked: "2026-11-16",
   },
   {
-    label: "Ireland student visa or permit (Irish Immigration Service)",
+    label: "Ireland study visa or permission (Immigration Service Delivery, ISD)",
     href: "https://www.irishimmigration.ie/coming-to-study-in-ireland/",
     checked: "2026-11-16",
   },

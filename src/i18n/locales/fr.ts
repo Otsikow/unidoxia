@@ -568,8 +568,8 @@ const fr = {
             },
             offers: {
               stage: "Étape 3",
-              metricValue: "95%",
-              metricLabel: "taux de réussite visa",
+              metricValue: "Offre",
+              metricLabel: "jusqu'à l'inscription",
               description:
                 "Recevez des offres d'universités et un accompagnement visa complet. Nous vous accompagnons de l'acceptation à l'arrivée.",
               ctaLabel: "",

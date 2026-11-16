@@ -494,8 +494,8 @@ const de = {
           },
           offers: {
             stage: "Schritt 3",
-            metricValue: "95%",
-            metricLabel: "Visa-Erfolgsquote",
+            metricValue: "Zusage",
+            metricLabel: "bis zur Einschreibung",
             description:
               "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie von der Zusage bis zur Ankunft.",
             ctaLabel: "",
@@ -572,10 +572,10 @@ const de = {
       },
       visa: {
         badge: "Feature-Highlight",
-        title: "Verstehen Sie Ihre Visa-Chancen, bevor Sie sich bewerben",
+        title: "Visuminformationen vor der Bewerbung",
         description:
-          "Unser Visa-Eignungsrechner analysiert Ihr Profil sofort, damit Sie sich auf die Länder und Kurse konzentrieren können, die Sie am meisten willkommen heißen.",
-        cta: "Visa-Rechner entdecken",
+          "Lesen Sie allgemeine Informationen zu Studentenvisa auf offiziellen Regierungswebsites. Dies ist keine einwanderungsrechtliche Beratung und keine Entscheidung über Ihre eigene Bewerbung.",
+        cta: "Visuminformationen",
       },
       feeCalculator: {
         badge: "KI-Kostenrechner",

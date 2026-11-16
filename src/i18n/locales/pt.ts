@@ -618,8 +618,8 @@ const pt = {
             },
             offers: {
               stage: "Etapa 3",
-              metricValue: "95%",
-              metricLabel: "taxa de sucesso de visto",
+              metricValue: "Oferta",
+              metricLabel: "até a matrícula",
               description:
                 "Receba ofertas de universidades e orientação completa de visto. Acompanhamos você da aceitação até a chegada.",
               ctaLabel: "",
@@ -692,10 +692,10 @@ const pt = {
         },
         visa: {
           badge: "Destaque",
-          title: "Entenda sua elegibilidade de visto antes de se candidatar",
+          title: "Informação sobre vistos antes de se candidatar",
           description:
-            "Nossa Calculadora de Elegibilidade de Visto analisa seu perfil em instantes para que você foque nos países e cursos com maior afinidade.",
-          cta: "Explorar a calculadora de visto",
+            "Leia informações gerais sobre vistos de estudante em sites oficiais do governo. Isso não é assessoria de imigração nem uma decisão sobre a sua candidatura.",
+          cta: "Informação sobre vistos",
         },
         feeCalculator: {
           badge: "Calculadora de custos com IA",

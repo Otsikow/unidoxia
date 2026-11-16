@@ -49,4 +49,12 @@ describe("visa information page", () => {
     ].join("\n");
     expect(source).not.toMatch(BANNED_ON_PAGE);
   });
+
+  it("does not keep the student visa-eligibility estimator", () => {
+    const estimator = join(process.cwd(), "src/pages/student/VisaEligibility.tsx");
+    expect(() => readFileSync(estimator, "utf8")).toThrow();
+    const app = readFileSync(join(process.cwd(), "src/App.tsx"), "utf8");
+    expect(app).not.toMatch(/VisaEligibility/);
+    expect(app).toMatch(/path="visa"[\s\S]*Navigate to="\/visa-calculator"/);
+  });
 });

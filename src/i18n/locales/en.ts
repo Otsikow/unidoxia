@@ -613,8 +613,8 @@ const en = {
           },
           offers: {
             stage: "Step 3",
-            metricValue: "95%",
-            metricLabel: "visa success rate",
+            metricValue: "Offer",
+            metricLabel: "to enrolment",
             description:
               "Receive university offers and comprehensive visa guidance. We support you from acceptance to arrival.",
             ctaLabel: "",
@@ -687,9 +687,9 @@ const en = {
       },
         visa: {
           badge: "Feature Spotlight",
-          title: "Understand your visa eligibility before you apply",
+          title: "Visa information before you apply",
           description:
-            "Our Visa Eligibility Calculator analyses your profile instantly so you can focus on the countries and courses that welcome you the most.",
+            "Read general student visa information from official government websites. This is not immigration advice, and it is not a decision about your own application.",
           cta: "Visa information",
         },
         feeCalculator: {
