@@ -37,6 +37,7 @@ const BANNED_IN_SRC = [
   "We respond within 24 hours.",
   "Priority response times (24-48 hours)",
   "Full guidance from choosing a course to accepting your offer - One-time payment",
+  "next steps towards visas and enrolment",
 ];
 
 const SOURCE_ROOTS = [

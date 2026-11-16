@@ -64,7 +64,7 @@ export const homeSteps = [
   },
   {
     "title": "We guide your applications",
-    "text": "We assist with admissions, offers, documentation and your next steps towards visas and enrolment.",
+    "text": "We help you choose and apply to universities, from admissions and offers to your application documents and enrolment.",
     "href": "/free-consultation",
     "label": "Speak to an Adviser"
   }
