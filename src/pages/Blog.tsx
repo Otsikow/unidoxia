@@ -90,7 +90,7 @@ export default function Blog() {
           icon: BookOpenCheck,
         },
         {
-          title: "Visa preparation timeline",
+          title: "Visa timeline: official sources",
           description: "Track every requirement from document collection to interview day.",
           type: "Insight",
           href: "/courses?view=programs",
