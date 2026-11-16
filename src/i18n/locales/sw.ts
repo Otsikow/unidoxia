@@ -333,17 +333,6 @@ const sw = {
             ],
           },
           {
-            key: "visa",
-            label: "Rafiki kwa viza",
-            headline: "Njia za kusoma zenye mchakato rahisi wa uhamiaji",
-            description: "Linganisha nchi na taasisi zenye sera rafiki za viza.",
-            highlights: [
-              "Muhtasari wa fursa za kazi baada ya masomo na muda wa ukaaji",
-              "Orodha za ukaguzi wa stakabadhi kulingana na uraia wako",
-              "Mwongozo wa uthibitisho wa kifedha, bima na maandalizi ya usaili",
-            ],
-          },
-          {
             key: "undergraduate",
             label: "Shahada ya kwanza",
             headline: "Safari ya shahada ya kwanza kwa waombaji wa mara ya kwanza",

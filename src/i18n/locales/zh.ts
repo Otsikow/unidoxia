@@ -364,17 +364,6 @@ const zh = {
               ],
             },
             {
-              key: "visa",
-              label: "签证友好",
-              headline: "签证流程顺畅的留学路线",
-              description: "比较签证政策友好的国家与院校。",
-              highlights: [
-                "概览毕业后工作机会与停留时长",
-                "根据国籍定制的材料清单",
-                "财力证明、保险与面试准备要点",
-              ],
-            },
-            {
               key: "undergraduate",
               label: "本科",
               headline: "为首次申请者打造的本科旅程",

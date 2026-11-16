@@ -501,17 +501,6 @@ const fr = {
               ],
             },
             {
-              key: "visa",
-              label: "Visa facilité",
-              headline: "Parcours d'études avec démarches migratoires fluides",
-              description: "Comparez les pays et institutions offrant des parcours de visa favorables.",
-              highlights: [
-                "Options de travail post-études et durées de séjour résumées",
-                "Listes de contrôle des documents adaptées à votre nationalité",
-                "Recommandations sur justificatifs financiers, assurances et préparation aux entretiens",
-              ],
-            },
-            {
               key: "undergraduate",
               label: "Premier cycle",
               headline: "Parcours licence pour premières candidatures",

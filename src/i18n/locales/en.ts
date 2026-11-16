@@ -496,9 +496,9 @@ const en = {
             },
             {
               key: "visa",
-              label: "Visa friendly",
-              headline: "Study routes with smooth immigration journeys",
-              description: "Compare countries and institutions with favourable visa pathways.",
+              label: "Post-study work",
+              headline: "Compare post-study work rules",
+              description: "Compare countries' official post-study work rules, with links to each government's website.",
               highlights: [
                 "Post-study work options and stay-back durations summarised",
                 "Documentation checklists tailored to your nationality",

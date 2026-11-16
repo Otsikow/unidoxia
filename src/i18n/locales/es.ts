@@ -365,17 +365,6 @@ const es = {
             ],
           },
           {
-            key: "visa",
-            label: "Facilidad de visado",
-            headline: "Rutas de estudio con procesos migratorios ágiles",
-            description: "Compara países e instituciones con vías de visado favorables.",
-            highlights: [
-              "Opciones de trabajo posterior y periodos de permanencia resumidos",
-              "Listas de verificación de documentos según tu nacionalidad",
-              "Indicaciones sobre pruebas financieras, seguros y preparación para entrevistas",
-            ],
-          },
-          {
             key: "undergraduate",
             label: "Pregrado",
             headline: "Trayectorias de pregrado para quienes postulan por primera vez",

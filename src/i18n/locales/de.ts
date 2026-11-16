@@ -427,17 +427,6 @@ const de = {
             ],
           },
           {
-            key: "visa",
-            label: "Visafreundlich",
-            headline: "Studienwege mit reibungslosem Visaprozess",
-            description: "Vergleichen Sie Länder und Institutionen mit günstigen Visabestimmungen.",
-            highlights: [
-              "Zusammengefasste Optionen für Aufenthalts- und Arbeitsvisa nach dem Studium",
-              "Dokumenten-Checklisten zugeschnitten auf Ihre Staatsangehörigkeit",
-              "Hinweise zu Finanzierungsnachweisen, Versicherung und Interviewvorbereitung",
-            ],
-          },
-          {
             key: "undergraduate",
             label: "Bachelor",
             headline: "Bachelorwege für Erstbewerber:innen",

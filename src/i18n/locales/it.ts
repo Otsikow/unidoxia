@@ -166,17 +166,6 @@ const it = {
             ],
           },
           {
-            key: "visa",
-            label: "Visti favorevoli",
-            headline: "Percorsi di studio con iter migratori scorrevoli",
-            description: "Confronta paesi e istituzioni con percorsi di visto vantaggiosi.",
-            highlights: [
-              "Opzioni di lavoro post-laurea e durata della permanenza riassunte",
-              "Checklist documentali adattate alla tua nazionalità",
-              "Indicazioni su prove finanziarie, assicurazioni e preparazione ai colloqui",
-            ],
-          },
-          {
             key: "undergraduate",
             label: "Laurea triennale",
             headline: "Percorsi undergraduate per chi si candida per la prima volta",

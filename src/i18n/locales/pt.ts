@@ -551,17 +551,6 @@ const pt = {
               ],
             },
             {
-              key: "visa",
-              label: "Facilidade de visto",
-              headline: "Rotas de estudo com processos migratórios tranquilos",
-              description: "Compare países e instituições com caminhos de visto favoráveis.",
-              highlights: [
-                "Opções de trabalho pós-estudo e tempos de permanência resumidos",
-                "Checklists de documentos adaptadas à sua nacionalidade",
-                "Orientações sobre comprovação financeira, seguros e preparação para entrevistas",
-              ],
-            },
-            {
               key: "undergraduate",
               label: "Graduação",
               headline: "Jornadas de graduação para primeiras candidaturas",
