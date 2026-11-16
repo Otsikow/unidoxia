@@ -508,9 +508,9 @@ const pt = {
           badge: "Busca de universidades e bolsas com IA",
           heading: "Encontre o curso ideal com inteligência em tempo real",
           description:
-            "Pergunte tudo sobre universidades, cursos ou financiamento no mundo inteiro. Nossa IA analisa dados de admissão, bolsas e rotas de visto alinhadas aos seus objetivos.",
+            "Pergunte tudo sobre universidades, cursos ou financiamento no mundo inteiro. A Zoe responde com base em informações publicadas sobre admissão e bolsas.",
           subheading:
-            "Crie uma conta para liberar recomendações personalizadas de admissão, bolsas e vistos alimentadas por IA.",
+            "Crie uma conta para liberar recomendações personalizadas sobre universidades, cursos e bolsas.",
           ctaLabel: "Começar",
           stats: [
             { value: "Buscar", label: "Explore cursos e universidades internacionais" },
@@ -761,7 +761,7 @@ const pt = {
           note: "Zoe é multifuncional. Poucos concorrentes oferecem isso.",
           highlightsHeading: "O que a Zoe faz por você",
           highlights: [
-            "Responde a todas as perguntas sobre estudar no exterior com contexto regional de vistos e políticas.",
+            "Responde a perguntas sobre estudar no exterior e indica informação oficial sobre vistos.",
             "Guia você por todo o app UniDoxia para que cronogramas, painéis e automações sigam no caminho certo.",
             "Lê documentos enviados para recomendar escolas, bolsas e próximos passos instantaneamente.",
           ],

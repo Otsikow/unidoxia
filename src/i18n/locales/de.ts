@@ -384,9 +384,9 @@ const de = {
         badge: "KI-gestützte Universitäts- & Stipendiensuche",
         heading: "Finden Sie den passenden Kurs mit Echtzeit-Intelligenz",
         description:
-          "Stellen Sie Fragen zu Universitäten, Studiengängen oder Finanzierungen weltweit. Unsere KI analysiert Zulassungsinformationen, Stipendien und Visawege, die auf Ihre Ziele zugeschnitten sind.",
+          "Stellen Sie Fragen zu Universitäten, Studiengängen oder Finanzierungen weltweit. Zoe antwortet auf der Grundlage veröffentlichter Zulassungs- und Stipendieninformationen.",
         subheading:
-          "Registrieren Sie sich, um maßgeschneiderte KI-Empfehlungen zu Zulassungen, Stipendien und Visa zu erhalten.",
+          "Registrieren Sie sich, um maßgeschneiderte Empfehlungen zu Universitäten, Studiengängen und Stipendien freizuschalten.",
         ctaLabel: "Jetzt starten",
         stats: [
           { value: "Suchen", label: "Internationale Kurse und Universitäten entdecken" },
@@ -642,7 +642,7 @@ const de = {
         note: "Zoe ist multifunktional. Das bieten nur wenige Wettbewerber.",
         highlightsHeading: "Was Zoe für Sie übernimmt",
         highlights: [
-          "Beantwortet jede Frage zum Auslandsstudium mit regionalem Visa- und Richtlinienkontext.",
+          "Beantwortet Fragen zum Auslandsstudium und verlinkt auf offizielle Visuminformationen.",
           "Führt Sie durch die gesamte UniDoxia-App, damit Zeitpläne, Dashboards und Automatisierungen auf Kurs bleiben.",
           "Liest hochgeladene Dokumente, um sofort Schulen, Stipendien und nächste Schritte zu empfehlen.",
         ],

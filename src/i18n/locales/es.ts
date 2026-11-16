@@ -324,9 +324,9 @@ const es = {
         badge: "Búsqueda de universidades y becas con IA",
         heading: "Encuentra el curso adecuado con inteligencia en tiempo real",
         description:
-          "Pregunta lo que necesites sobre universidades, cursos o financiación en cualquier parte del mundo. Nuestra IA analiza información de admisiones, becas y vías de visado adaptadas a tus objetivos.",
+          "Pregunta lo que necesites sobre universidades, cursos o financiación en cualquier parte del mundo. Zoe responde a partir de información publicada sobre admisiones y becas.",
         subheading:
-          "Regístrate para desbloquear recomendaciones personalizadas con IA sobre admisiones, becas y visados.",
+          "Regístrate para desbloquear recomendaciones personalizadas sobre universidades, cursos y becas.",
         ctaLabel: "Comenzar",
         stats: [
           { value: "Buscar", label: "Explora cursos y universidades internacionales" },

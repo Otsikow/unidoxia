@@ -452,9 +452,9 @@ const en = {
           badge: "AI-Powered University & Scholarship Search",
           heading: "Find the right course with real-time intelligence",
           description:
-            "Ask anything about universities, courses, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
+            "Ask anything about universities, courses or funding worldwide. Zoe answers from published admissions and scholarship information.",
           subheading:
-            "Sign up to unlock tailored AI recommendations across admissions, scholarships, and visas.",
+            "Sign up to unlock tailored recommendations on universities, courses and scholarships.",
           ctaLabel: "Get Started",
           stats: [
             { value: "Search", label: "Explore international courses and universities" },
@@ -550,7 +550,7 @@ const en = {
           note: "Zoe is multi-role. Very few competitors do this.",
           highlightsHeading: "What Zoe handles for you",
           highlights: [
-            "Answers every study-abroad question with region-aware visa and policy context.",
+            "Answers study-abroad questions and links to official visa information.",
             "Guides you through the entire UniDoxia app so timelines, dashboards, and automations stay on track.",
             "Reads uploaded documents to recommend schools, scholarships, and next steps instantly.",
           ],

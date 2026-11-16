@@ -458,9 +458,9 @@ const fr = {
           badge: "Recherche universitaire et bourses propulsée par l'IA",
           heading: "Trouvez le bon cours avec une intelligence en temps réel",
           description:
-            "Posez toutes vos questions sur les universités, les formations ou les financements dans le monde entier. Notre IA analyse les informations d'admission, les bourses et les parcours de visa adaptés à vos objectifs.",
+            "Posez toutes vos questions sur les universités, les formations ou les financements dans le monde entier. Zoe répond à partir d'informations d'admission et de bourses déjà publiées.",
           subheading:
-            "Inscrivez-vous pour débloquer des recommandations personnalisées alimentées par l'IA sur les admissions, les bourses et les visas.",
+            "Inscrivez-vous pour débloquer des recommandations personnalisées sur les universités, les formations et les bourses.",
           ctaLabel: "Commencer",
           stats: [
             { value: "Rechercher", label: "Explorer les formations et universités internationales" },
@@ -637,7 +637,7 @@ const fr = {
         note: "Zoe est multi-rôle. Très peu de concurrents offrent cela.",
         highlightsHeading: "Ce que Zoe gère pour vous",
         highlights: [
-          "Répond à toutes les questions sur les études à l'étranger avec le contexte régional des visas et des politiques.",
+          "Répond aux questions sur les études à l'étranger et renvoie vers les informations officielles sur les visas.",
           "Vous guide à travers l'application UniDoxia pour que les délais, tableaux de bord et automatisations restent sur la bonne voie.",
           "Lit les documents téléchargés pour recommander instantanément des écoles, des bourses et les prochaines étapes.",
         ],

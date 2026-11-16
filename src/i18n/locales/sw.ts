@@ -293,9 +293,9 @@ const sw = {
         badge: "Utafutaji wa vyuo na ufadhili unaoendeshwa na AI",
         heading: "Pata kozi sahihi kwa akili ya papo hapo",
         description:
-          "Uliza chochote kuhusu vyuo, kozi au ufadhili popote ulimwenguni. AI yetu huchambua taarifa za udahili, ufadhili na njia za viza zinazolingana na malengo yako.",
+          "Uliza chochote kuhusu vyuo, kozi au ufadhili popote ulimwenguni. Zoe hujibu kutoka taarifa zilizochapishwa za udahili na ufadhili.",
         subheading:
-          "Jisajili ili kufungua mapendekezo ya kibinafsi kuhusu udahili, ufadhili na viza yanayotolewa na AI.",
+          "Jisajili ili kufungua mapendekezo ya kibinafsi kuhusu vyuo, kozi na ufadhili.",
         ctaLabel: "Anza",
         stats: [
           { value: "Tafuta", label: "Chunguza kozi na vyuo vikuu vya kimataifa" },
