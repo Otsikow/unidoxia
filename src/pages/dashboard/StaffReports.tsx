@@ -74,6 +74,16 @@ interface NationalityData {
   percentage: number;
 }
 
+interface VisaOutcomeCount {
+  status: string;
+  count: number;
+}
+
+interface VisaOutcomeByNationality {
+  nationality: string;
+  count: number;
+}
+
 interface MonthlyTrend {
   month: string;
   applications: number;
@@ -90,6 +100,8 @@ export default function StaffReports() {
   const [topPrograms, setTopPrograms] = useState<TopProgram[]>([]);
   const [topUniversities, setTopUniversities] = useState<TopUniversity[]>([]);
   const [studentsByNationality, setStudentsByNationality] = useState<NationalityData[]>([]);
+  const [visaOutcomes, setVisaOutcomes] = useState<VisaOutcomeCount[]>([]);
+  const [visaOutcomesByNationality, setVisaOutcomesByNationality] = useState<VisaOutcomeByNationality[]>([]);
   const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
   
   const { profile } = useAuth();
@@ -267,6 +279,52 @@ export default function StaffReports() {
             percentage: totalStatusCount > 0 ? Math.round((count / totalStatusCount) * 100) : 0,
           }))
       );
+
+      // Staff-only aggregated visa outcomes as reported on application records.
+      const reportedVisaStatuses = ['visa', 'visa_applied', 'visa_granted', 'cas_loa', 'enrolled'];
+      const visaStatusLabels: Record<string, string> = {
+        visa: 'Visa stage (as reported)',
+        visa_applied: 'Visa applied (as reported)',
+        visa_granted: 'Visa granted (as reported)',
+        cas_loa: 'CAS/LOA issued',
+        enrolled: 'Enrolled',
+      };
+      const { data: visaOutcomeData, error: visaOutcomeError } = await supabase
+        .from('applications')
+        .select('status, student:students(nationality)')
+        .eq('tenant_id', tenantId)
+        .gte('created_at', formatISO(startDate))
+        .in('status', reportedVisaStatuses);
+
+      if (visaOutcomeError) {
+        console.error('Failed to load reported visa outcomes', visaOutcomeError);
+        setVisaOutcomes([]);
+        setVisaOutcomesByNationality([]);
+      } else {
+        const outcomeCounts = new Map<string, number>();
+        const nationalityCounts = new Map<string, number>();
+        (visaOutcomeData ?? []).forEach((row) => {
+          const status = (row.status as string | null) ?? 'unknown';
+          outcomeCounts.set(status, (outcomeCounts.get(status) ?? 0) + 1);
+          const student = row.student as { nationality?: string | null } | { nationality?: string | null }[] | null;
+          const record = Array.isArray(student) ? student[0] : student;
+          const nationality = record?.nationality ?? 'Unknown';
+          nationalityCounts.set(nationality, (nationalityCounts.get(nationality) ?? 0) + 1);
+        });
+        setVisaOutcomes(
+          Array.from(outcomeCounts.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([status, count]) => ({
+              status: visaStatusLabels[status] ?? status,
+              count,
+            })),
+        );
+        setVisaOutcomesByNationality(
+          Array.from(nationalityCounts.entries())
+            .sort((a, b) => b[1] - a[1])
+            .map(([nationality, count]) => ({ nationality, count })),
+        );
+      }
 
       // Fetch top programs
       const { data: programsData } = await supabase
@@ -591,6 +649,49 @@ export default function StaffReports() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Visa outcome (as reported)</CardTitle>
+              <CardDescription>Aggregated application statuses only. Internal staff report, not a performance target.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {visaOutcomes.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No reported visa outcomes in this period.</p>
+                ) : (
+                  visaOutcomes.map((item) => (
+                    <div key={item.status} className="flex items-center justify-between text-sm">
+                      <span className="font-medium">{item.status}</span>
+                      <span className="text-muted-foreground">{item.count}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Reported visa outcomes by nationality (internal)</CardTitle>
+              <CardDescription>Aggregate counts only. Not shown to agents and not used in marketing.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {visaOutcomesByNationality.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No reported visa outcomes by nationality in this period.</p>
+                ) : (
+                  visaOutcomesByNationality.map((item) => (
+                    <div key={item.nationality} className="flex items-center justify-between text-sm">
+                      <span className="font-medium">{item.nationality}</span>
+                      <span className="text-muted-foreground">{item.count}</span>
+                    </div>
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

@@ -27,7 +27,7 @@ export default function StudentDetailsPage() {
     const tips: string[] = [];
 
     if (!student.country) {
-      tips.push("Add the student's current country to tailor university and visa guidance.");
+      tips.push("Add the student's current country so we can suggest suitable universities and show the right official visa links.");
     }
 
     if (student.status === "documents_pending") {

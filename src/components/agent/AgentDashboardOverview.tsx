@@ -334,7 +334,7 @@ export default function AgentDashboardOverview() {
       onClick: () => navigate("/dashboard/applications"),
     },
     {
-      title: "Visa and CAS stage",
+      title: "CAS issued / visa outcome reported",
       value: metrics.visa,
       hint: "Students preparing to travel",
       icon: ShieldCheck,
