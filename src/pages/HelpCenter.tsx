@@ -103,7 +103,7 @@ const HelpCenter = () => {
     {
       id: 'billing-6',
       question: 'What do I get with the Agent-Supported plan?',
-      answer: 'With the Agent-Supported plan ($200), you get a dedicated UniDoxia Agent who will guide you through document review, applications, offer letters, and visa preparation.',
+      answer: 'With the Agent-Supported plan ($200), you get a dedicated UniDoxia Agent who helps with your university application documents, applications and offer letters. Visa and immigration advice is not included. We link to official visa information, which is free for everyone.',
       category: 'Billing & Payments',
     },
   ];
