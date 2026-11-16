@@ -610,8 +610,6 @@ const pt = {
             },
             matched: {
               stage: "Etapa 2",
-              metricValue: "24h",
-              metricLabel: "tempo médio de matching",
               description:
                 "Seja conectado a consultores verificados e universidades que combinam com seus objetivos. Receba orientação personalizada em cada etapa.",
               ctaLabel: "Ser conectado",
@@ -621,7 +619,7 @@ const pt = {
               metricValue: "Oferta",
               metricLabel: "até a matrícula",
               description:
-                "Receba ofertas de universidades e orientação completa de visto. Acompanhamos você da aceitação até a chegada.",
+                "Receba ofertas de universidades e informações pré-embarque de fontes governamentais oficiais. Apoiamos a sua candidatura universitária desde o primeiro contato até a matrícula.",
               ctaLabel: "",
             },
           },

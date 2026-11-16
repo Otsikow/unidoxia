@@ -486,8 +486,6 @@ const de = {
           },
           matched: {
             stage: "Schritt 2",
-            metricValue: "24h",
-            metricLabel: "durchschnittliche Matching-Zeit",
             description:
               "Werden Sie mit verifizierten Beratern und Universitäten gematcht, die zu Ihren Zielen passen. Erhalten Sie persönliche Begleitung bei jedem Schritt.",
             ctaLabel: "Gematcht werden",
@@ -497,7 +495,7 @@ const de = {
             metricValue: "Zusage",
             metricLabel: "bis zur Einschreibung",
             description:
-              "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie von der Zusage bis zur Ankunft.",
+              "Erhalten Sie Universitätsangebote und Informationen zur Abreise aus offiziellen staatlichen Quellen. Wir unterstützen Ihre Universitätsbewerbung von der ersten Anfrage bis zur Einschreibung.",
             ctaLabel: "",
           },
         },

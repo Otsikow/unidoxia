@@ -560,8 +560,6 @@ const fr = {
             },
             matched: {
               stage: "Étape 2",
-              metricValue: "24h",
-              metricLabel: "délai moyen de matching",
               description:
                 "Soyez mis en relation avec des conseillers vérifiés et des universités qui correspondent à vos objectifs. Recevez un accompagnement personnalisé à chaque étape.",
               ctaLabel: "Être accompagné",
@@ -571,7 +569,7 @@ const fr = {
               metricValue: "Offre",
               metricLabel: "jusqu'à l'inscription",
               description:
-                "Recevez des offres d'universités et un accompagnement visa complet. Nous vous accompagnons de l'acceptation à l'arrivée.",
+                "Recevez des offres d'universités et des informations de départ provenant de sources gouvernementales officielles. Nous accompagnons votre candidature universitaire de la première demande jusqu'à l'inscription.",
               ctaLabel: "",
             },
           },

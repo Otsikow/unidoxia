@@ -605,8 +605,6 @@ const en = {
           },
           matched: {
             stage: "Step 2",
-            metricValue: "24h",
-            metricLabel: "average match time",
             description:
               "Get matched with verified advisors and universities that fit your goals. Receive personalized guidance every step of the way.",
             ctaLabel: "Get matched",
@@ -616,7 +614,7 @@ const en = {
             metricValue: "Offer",
             metricLabel: "to enrolment",
             description:
-              "Receive university offers and comprehensive visa guidance. We support you from acceptance to arrival.",
+              "Receive university offers and pre-departure information from official government sources. We support your university application from first enquiry to enrolment.",
             ctaLabel: "",
           },
         },
