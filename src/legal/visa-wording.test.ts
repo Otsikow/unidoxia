@@ -74,6 +74,7 @@ const BANNED = [
   "Receive personalized guidance every step of the way.",
   "We respond within 24 hours.",
   "Priority response times (24-48 hours)",
+  "Full guidance from choosing a course to accepting your offer - One-time payment",
 ];
 
 const SOURCE_ROOTS = [
