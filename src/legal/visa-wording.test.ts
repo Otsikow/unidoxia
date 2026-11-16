@@ -5,6 +5,14 @@ import en from "@/i18n/locales/en";
 import de from "@/i18n/locales/de";
 import fr from "@/i18n/locales/fr";
 import pt from "@/i18n/locales/pt";
+import es from "@/i18n/locales/es";
+import it from "@/i18n/locales/it";
+import ar from "@/i18n/locales/ar";
+import hi from "@/i18n/locales/hi";
+import sw from "@/i18n/locales/sw";
+import zh from "@/i18n/locales/zh";
+
+const LOCALES = { en, de, fr, pt, es, it, ar, hi, sw, zh };
 
 const BANNED = [
   "Full guidance from application to visa",
@@ -13,6 +21,26 @@ const BANNED = [
   "comprehensive visa support",
   "comprehensive visa guidance",
   "Visa Guidance",
+  "Visa friendly",
+  "Stay on track with visa support",
+  "Get personalized checklists and step-by-step visa guidance.",
+  "Visa guidance, simplified",
+  "Navigate Visa Requirements Easily",
+  "Visa-ready support for UK, USA, Canada, Germany, Ireland, and Australia",
+  "Organized visa documentation in one place",
+  "Add the student's current country to tailor university and visa guidance.",
+  "Visa success by nationality",
+  "Visa preparation timeline",
+  "Provide ONLY basic, publicly available visa information",
+  "Links to official visa information for high-demand technology and engineering roles",
+  "Visa-Leitfäden für gefragte Technik- und Ingenieurberufe",
+  "Conseils visa pour les métiers technologiques et d'ingénierie les plus demandés",
+  "Orientación de visado para profesiones tecnológicas e ingenieriles en alta demanda",
+  "针对热门科技与工程岗位的签证指导",
+  "Our AI engine analyses admissions insights, scholarships, and visa pathways",
+  "tailored AI recommendations across admissions, scholarships, and visas",
+  "在申请前先评估您的签证通过率",
+  "AI Visa Success Predictor",
 ];
 
 const SOURCE_ROOTS = [
@@ -52,11 +80,22 @@ describe("Kojo 16 Nov visa wording", () => {
     expect(hits).toEqual([]);
   });
 
-  it("does not keep the 95% visa-success metric in translated journey copy", () => {
-    const blobs = [en, de, fr, pt].map((locale) => JSON.stringify(locale));
-    for (const blob of blobs) {
-      expect(blob).not.toMatch(/Visa-Erfolgsquote|taux de réussite visa|taxa de sucesso de visto|visa success rate/);
-      expect(blob).not.toMatch(/"95%"/);
+  it("does not keep the 95% visa-success metric in any locale", () => {
+    for (const [name, locale] of Object.entries(LOCALES)) {
+      const blob = JSON.stringify(locale);
+      expect(blob, name).not.toMatch(
+        /Visa-Erfolgsquote|taux de réussite visa|taxa de sucesso de visto|visa success rate/,
+      );
+      expect(blob, name).not.toMatch(/"95%"/);
+    }
+  });
+
+  it("covers every shipped locale file", () => {
+    const localeDir = join(process.cwd(), "src/i18n/locales");
+    const files = readdirSync(localeDir).filter((name) => name.endsWith(".ts") && !name.includes(".test."));
+    for (const file of files) {
+      const key = file.replace(/\.ts$/, "");
+      expect(LOCALES, `missing import for ${file}`).toHaveProperty(key);
     }
   });
 });
