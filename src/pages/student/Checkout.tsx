@@ -123,6 +123,9 @@ export default function Checkout() {
                     <span>{feature}</span>
                   </div>
                 ))}
+                {plan.featureNote ? (
+                  <p className="text-sm text-muted-foreground pt-1">{plan.featureNote}</p>
+                ) : null}
               </div>
 
               <Separator />
