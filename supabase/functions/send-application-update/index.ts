@@ -82,19 +82,19 @@ function getStatusMessage(status: string, programName: string, universityName: s
     },
     offer_accepted: {
         subject: `Offer Accepted: ${programName}`,
-        body: `<p>You have successfully accepted the offer for <strong>${programName}</strong> at <strong>${universityName}</strong>. The next step is visa processing.</p>`
+        body: `<p>You have successfully accepted the offer for <strong>${programName}</strong> at <strong>${universityName}</strong>. Check official visa information for your destination when you are ready to apply yourself.</p>`
     },
     cas_issued: {
         subject: `CAS Issued: ${programName}`,
-        body: `<p>Your Confirmation of Acceptance for Studies (CAS) for <strong>${programName}</strong> has been issued. You can now proceed with your visa application.</p>`
+        body: `<p>Your Confirmation of Acceptance for Studies (CAS) for <strong>${programName}</strong> has been issued. Your university has issued your CAS. Check the official Student visa guidance on GOV.UK before you apply: https://www.gov.uk/student-visa</p>`
     },
     visa_applied: {
-        subject: `Visa Application Submitted: ${programName}`,
-        body: `<p>We have recorded your visa application submission for <strong>${programName}</strong>. Good luck!</p>`
+        subject: `You told us you've applied for your visa: ${programName}`,
+        body: `<p>Thanks for letting us know you've applied for your visa for <strong>${programName}</strong>. We've updated your application record. UniDoxia doesn't give immigration advice: for questions about your visa, use the official government website, your university's international team or a regulated adviser.</p>`
     },
     visa_granted: {
-        subject: `🎉 Visa Granted!`,
-        body: `<p>Great news! Your visa for <strong>${programName}</strong> at <strong>${universityName}</strong> has been granted. Get ready for your journey!</p>`
+        subject: `Your visa outcome: ${programName}`,
+        body: `<p>Thanks for telling us your visa for <strong>${programName}</strong> at <strong>${universityName}</strong> has been granted. We've updated your record. Next, check your university's arrival and enrolment information.</p>`
     },
     rejected: {
         subject: `Update on your application to ${programName}`,
