@@ -45,7 +45,7 @@ const fallbackInsights: OfferInsight[] = [
     deposit: "$3,500 commitment fee due on acceptance",
     nextSteps: [
       "Upload bank statement to portal",
-      "Schedule visa counseling session",
+      "Check official visa information for the destination",
     ],
     statusLabel: "On track",
   },

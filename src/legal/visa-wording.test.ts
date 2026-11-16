@@ -55,6 +55,17 @@ const BANNED = [
   "completa de visto",
   "completo de visto",
   "Visa checklists",
+  "who will guide you through document review, applications, offer letters, and visa preparation",
+  "from course selection to visa approval",
+  "visa preparation resources",
+  "Visa interview reminder",
+  "Visa interview prep checklist",
+  "Delivers embassy checklist guidance",
+  "Study gap too long for visa approval",
+  "Long study gap—justify with work or certifications",
+  "Age close to upper limit—visa risk",
+  "Schedule visa counseling session",
+  "Visa counselling backlog cleared — response times dropped from 3 days to under 12 hours.",
 ];
 
 const SOURCE_ROOTS = [

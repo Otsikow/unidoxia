@@ -148,16 +148,7 @@ const evaluateProgramEligibility = (
     if (profile.age > maxAge) {
       ineligible.push(`Age exceeds maximum of ${maxAge}`);
     } else if (profile.age >= maxAge - 2) {
-      borderline.push('Age close to upper limit—visa risk');
-    }
-  }
-
-  // Visa-risk flags
-  if (typeof profile.study_gap_years === 'number') {
-    if (profile.study_gap_years >= 5) {
-      ineligible.push('Study gap too long for visa approval');
-    } else if (profile.study_gap_years >= 3) {
-      borderline.push('Long study gap—justify with work or certifications');
+      borderline.push('Age close to the programme\'s upper age limit');
     }
   }
 

@@ -55,7 +55,6 @@ const ZOE_TEMPLATES: Record<string, ZoeTemplate> = {
     highlights: [
       "Four students are documents-complete and only waiting on tuition deposit confirmation (including Zoe Chen).",
       "Interview readiness increased week-over-week after agents adopted the new prep checklist.",
-      "Visa counselling backlog cleared — response times dropped from 3 days to under 12 hours.",
     ],
     blockers: [
       "Deposit confirmations and financial guarantees remain the #1 blocker for offer issuance.",
