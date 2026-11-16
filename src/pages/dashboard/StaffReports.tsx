@@ -281,7 +281,7 @@ export default function StaffReports() {
       );
 
       // Staff-only aggregated visa outcomes as reported on application records.
-      const reportedVisaStatuses = ['visa', 'visa_applied', 'visa_granted', 'cas_loa', 'enrolled'];
+      const reportedVisaStatuses = ['visa', 'cas_loa', 'enrolled'] as const;
       const visaStatusLabels: Record<string, string> = {
         visa: 'Visa stage (as reported)',
         visa_applied: 'Visa applied (as reported)',

@@ -6,13 +6,13 @@ import de from "@/i18n/locales/de";
 import fr from "@/i18n/locales/fr";
 import pt from "@/i18n/locales/pt";
 import es from "@/i18n/locales/es";
-import it from "@/i18n/locales/it";
+import itLocale from "@/i18n/locales/it";
 import ar from "@/i18n/locales/ar";
 import hi from "@/i18n/locales/hi";
 import sw from "@/i18n/locales/sw";
 import zh from "@/i18n/locales/zh";
 
-const LOCALES = { en, de, fr, pt, es, it, ar, hi, sw, zh };
+const LOCALES = { en, de, fr, pt, es, it: itLocale, ar, hi, sw, zh };
 
 const BANNED = [
   "Full guidance from application to visa",
