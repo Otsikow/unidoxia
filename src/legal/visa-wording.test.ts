@@ -49,6 +49,12 @@ const BANNED = [
   "delay a student's visa or offer",
   "Visa considerations for paid placements and work terms",
   "getVisaEligibility",
+  "comprehensive visa",
+  "umfassende Visa",
+  "accompagnement visa",
+  "completa de visto",
+  "completo de visto",
+  "Visa checklists",
 ];
 
 const SOURCE_ROOTS = [
@@ -112,5 +118,21 @@ describe("Kojo 16 Nov visa wording", () => {
     const hook = readFileSync(join(process.cwd(), "src/hooks/useAIRecommendations.tsx"), "utf8");
     expect(rec).not.toMatch(/Visa Eligibility|getVisaEligibility|estimated visa eligibility/);
     expect(hook).not.toMatch(/getVisaEligibility/);
+  });
+
+  it("does not keep a 24h average-match-time metric in any locale", () => {
+    const phrases = [
+      "24h",
+      "average match time",
+      "durchschnittliche Matching-Zeit",
+      "délai moyen de matching",
+      "tempo médio de matching",
+    ];
+    for (const [name, locale] of Object.entries(LOCALES)) {
+      const blob = JSON.stringify(locale);
+      for (const phrase of phrases) {
+        expect(blob, `${name}: ${phrase}`).not.toContain(phrase);
+      }
+    }
   });
 });
