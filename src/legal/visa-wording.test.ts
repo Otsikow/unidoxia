@@ -41,6 +41,14 @@ const BANNED = [
   "tailored AI recommendations across admissions, scholarships, and visas",
   "在申请前先评估您的签证通过率",
   "AI Visa Success Predictor",
+  "Visa Application Guidance",
+  "Confirm your visa-readiness steps",
+  "Complete Visa Application Guide for Canada",
+  "Visa Eligibility Assessment",
+  "Visa Eligibility",
+  "delay a student's visa or offer",
+  "Visa considerations for paid placements and work terms",
+  "getVisaEligibility",
 ];
 
 const SOURCE_ROOTS = [
@@ -97,5 +105,12 @@ describe("Kojo 16 Nov visa wording", () => {
       const key = file.replace(/\.ts$/, "");
       expect(LOCALES, `missing import for ${file}`).toHaveProperty(key);
     }
+  });
+
+  it("keeps the unused recommendations visa tab and eligibility helper out of the tree", () => {
+    const rec = readFileSync(join(process.cwd(), "src/components/ai/ProgramRecommendations.tsx"), "utf8");
+    const hook = readFileSync(join(process.cwd(), "src/hooks/useAIRecommendations.tsx"), "utf8");
+    expect(rec).not.toMatch(/Visa Eligibility|getVisaEligibility|estimated visa eligibility/);
+    expect(hook).not.toMatch(/getVisaEligibility/);
   });
 });

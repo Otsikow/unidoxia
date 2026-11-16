@@ -19,8 +19,7 @@ const visaCountries = [
 ];
 
 const featureChips = [
-  "Step-by-step guidance",
-  "Document tracking",
+  "Official links only",
 ];
 
 export default function OnboardingVisaRequirements() {
@@ -58,7 +57,7 @@ export default function OnboardingVisaRequirements() {
           currentStep={2}
           totalSteps={totalSteps}
           stepCompletion={stepCompletion}
-          label="Confirm your visa-readiness steps"
+          label="Find official visa information"
         />
 
         <div className="flex-1 flex flex-col items-center justify-center">
@@ -132,7 +131,7 @@ export default function OnboardingVisaRequirements() {
             </div>
             <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-muted/50 border border-border/60">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>General guidance — official visa authorities make final decisions</span>
+              <span>General information only, not immigration advice. Official visa authorities make all decisions.</span>
             </div>
           </div>
 

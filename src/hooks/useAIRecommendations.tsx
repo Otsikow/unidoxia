@@ -384,68 +384,10 @@ export const useAIRecommendations = () => {
     }
   };
 
-  const getVisaEligibility = async (country: string, profile: StudentProfile) => {
-    // Simple visa eligibility estimation based on common factors
-    let eligibility: 'High' | 'Medium' | 'Low' = 'Medium';
-    const factors: string[] = [];
-
-    // Academic performance
-    if (profile.academic_scores.gpa && profile.academic_scores.gpa >= 3.5) {
-      factors.push('Strong academic record');
-    }
-
-    // Language proficiency
-    if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 7.0) {
-      factors.push('Excellent English proficiency');
-    }
-
-    // Financial capacity
-    const [minBudget, maxBudget] = profile.preferences.budget_range;
-    if (maxBudget >= 50000) {
-      factors.push('Strong financial capacity');
-    }
-
-    // Country-specific factors
-    switch (country.toLowerCase()) {
-      case 'canada':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.5) {
-          eligibility = 'High';
-          factors.push('Meets Canadian language requirements');
-        }
-        break;
-      case 'united kingdom':
-      case 'uk':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.0) {
-          eligibility = 'High';
-          factors.push('Meets UK language requirements');
-        }
-        break;
-      case 'australia':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.0) {
-          eligibility = 'High';
-          factors.push('Meets Australian language requirements');
-        }
-        break;
-      case 'ireland':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.5) {
-          eligibility = 'High';
-          factors.push('Meets Irish language requirements');
-        }
-        break;
-    }
-
-    return {
-      eligibility,
-      factors,
-      percentage: eligibility === 'High' ? 85 : eligibility === 'Medium' ? 65 : 45
-    };
-  };
-
   return {
     recommendations,
     loading,
     error,
-    generateRecommendations,
-    getVisaEligibility
+    generateRecommendations
   };
 };

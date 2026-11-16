@@ -206,7 +206,7 @@ const hi = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -363,7 +363,6 @@ const hi = {
               "ऐसे कार्यक्रम खोजें जो अध्ययन को वास्तविक पेशेवर अनुभव के साथ जोड़ते हों।",
             highlights: [
               "विभिन्न क्षेत्रों में प्लेसमेंट दरें और नियोक्ता साझेदारियाँ",
-              "भुगतान वाली इंटर्नशिप और कार्य अवधियों के लिए वीज़ा विचार",
               "रिज़्यूमे, साक्षात्कार और नेटवर्किंग के लिए करियर सेवाओं का समर्थन",
             ],
           },

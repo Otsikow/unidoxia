@@ -423,7 +423,7 @@ const en = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -536,7 +536,7 @@ const en = {
                 "Surface courses that blend study with hands-on professional experience.",
               highlights: [
                 "Placement rates and employer partnerships across regions",
-                "Visa considerations for paid placements and work terms",
+                "Links to official work-rights information for paid placements",
                 "Career services support for resumes, interviews, and networking",
               ],
             },

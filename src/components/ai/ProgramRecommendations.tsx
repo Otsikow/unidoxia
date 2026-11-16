@@ -18,7 +18,6 @@ import {
   Star,
   Filter,
   Brain,
-  Shield,
   Target,
   Sparkles,
   Briefcase,
@@ -31,12 +30,6 @@ import {
 } from 'lucide-react';
 import { useAIRecommendations, StudentProfile, ProgramEligibilityStatus } from '@/hooks/useAIRecommendations';
 import { Link } from 'react-router-dom';
-
-type VisaEligibilityResult = {
-  eligibility: 'High' | 'Medium' | 'Low';
-  factors: string[];
-  percentage: number;
-};
 
 type Filters = {
   countries: string[];
@@ -51,9 +44,8 @@ interface ProgramRecommendationsProps {
 }
 
 export default function ProgramRecommendations({ onProgramSelect }: ProgramRecommendationsProps) {
-  const { recommendations, loading, error, generateRecommendations, getVisaEligibility } = useAIRecommendations();
+  const { recommendations, loading, error, generateRecommendations } = useAIRecommendations();
   const [showFilters, setShowFilters] = useState(false);
-  const [visaResults, setVisaResults] = useState<Record<string, VisaEligibilityResult>>({});
   const [selectedTab, setSelectedTab] = useState('recommendations');
 
   // Filter states
@@ -343,13 +335,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
     return true;
   });
 
-  const checkVisaEligibility = async (country: string) => {
-    if (visaResults[country]) return;
-    
-    const result = await getVisaEligibility(country, profile);
-    setVisaResults(prev => ({ ...prev, [country]: result }));
-  };
-
   const getMatchColor = (score: number) => {
     if (score >= 80) return 'text-success bg-success-light dark:bg-success/20';
     if (score >= 60) return 'text-warning bg-warning-light dark:bg-warning/20';
@@ -365,15 +350,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
       case 'Ineligible – Block & Explain':
       default:
         return 'bg-destructive/10 text-destructive';
-    }
-  };
-
-  const getVisaColor = (eligibility: string) => {
-    switch (eligibility) {
-      case 'High': return 'text-success bg-success-light dark:bg-success/20';
-      case 'Medium': return 'text-warning bg-warning-light dark:bg-warning/20';
-      case 'Low': return 'text-destructive bg-destructive/10';
-      default: return 'text-muted-foreground bg-muted';
     }
   };
 
@@ -753,9 +729,8 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
 
       {/* Results */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-2 gap-2">
+        <TabsList className="grid w-full grid-cols-1 gap-2">
           <TabsTrigger value="recommendations">Recommendations ({filteredRecommendations.length})</TabsTrigger>
-          <TabsTrigger value="visa">Visa Eligibility</TabsTrigger>
         </TabsList>
 
         <TabsContent value="recommendations" className="space-y-4">
@@ -860,15 +835,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
                         >
                           Apply Now
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => checkVisaEligibility(program.university.country)}
-                          className="flex-1 lg:w-full"
-                          size="sm"
-                        >
-                          <Shield className="h-3.5 w-3.5 sm:mr-2" />
-                          <span className="hidden sm:inline">Check Visa</span>
-                        </Button>
                         <Button variant="ghost" size="sm" asChild className="flex-1 lg:w-full">
                           <Link to={`/courses?view=programs&program=${program.id}`}>
                             View Details
@@ -883,72 +849,6 @@ export default function ProgramRecommendations({ onProgramSelect }: ProgramRecom
           )}
         </TabsContent>
 
-        <TabsContent value="visa" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Visa Eligibility Assessment</CardTitle>
-              <CardDescription>
-                Based on your profile, here's your estimated visa eligibility for different countries
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
-                {countries.map(country => {
-                  const result = visaResults[country];
-                  return (
-                    <Card key={country} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="space-y-3 sm:space-y-4">
-                          <div className="flex items-center justify-between gap-2">
-                            <h3 className="font-semibold text-sm sm:text-base truncate">{country}</h3>
-                            {result ? (
-                              <Badge className={`${getVisaColor(result.eligibility)} text-xs`}>
-                                {result.eligibility}
-                              </Badge>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => checkVisaEligibility(country)}
-                                className="text-xs"
-                              >
-                                Check
-                              </Button>
-                            )}
-                          </div>
-                          
-                          {result && (
-                            <>
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between text-xs sm:text-sm">
-                                  <span>Eligibility</span>
-                                  <span className="font-semibold">{result.percentage}%</span>
-                                </div>
-                                <Progress value={result.percentage} className="h-2" />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <h4 className="text-xs sm:text-sm font-medium">Key Factors:</h4>
-                                <div className="space-y-1">
-                                  {result.factors.map((factor: string, index: number) => (
-                                    <div key={index} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                                      <div className="w-1 h-1 rounded-full bg-success flex-shrink-0 mt-1.5" />
-                                      <span className="break-words">{factor}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );

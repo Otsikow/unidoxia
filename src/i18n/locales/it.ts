@@ -36,7 +36,7 @@ const it = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -196,7 +196,7 @@ const it = {
               "Trova corsi che combinano studio ed esperienza professionale concreta.",
             highlights: [
               "Tassi di inserimento e partnership con aziende nelle varie regioni",
-              "Considerazioni sul visto per tirocini retribuiti e periodi lavorativi",
+              "Collegamenti alle informazioni ufficiali sui diritti di lavoro per tirocini retribuiti",
               "Supporto career service per CV, colloqui e networking",
             ],
           },

@@ -206,7 +206,7 @@ const ar = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -363,7 +363,6 @@ const ar = {
               "استكشف برامج تجمع بين الدراسة والتجربة المهنية الواقعية.",
             highlights: [
               "نسب التوظيف والشراكات مع الشركات في مختلف المناطق",
-              "اعتبارات التأشيرة للتدريب المدفوع وفترات العمل",
               "دعم خدمات التوظيف لإعداد السيرة الذاتية والمقابلات وبناء العلاقات",
             ],
           },

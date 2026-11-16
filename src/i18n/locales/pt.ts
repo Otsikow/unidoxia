@@ -421,7 +421,7 @@ const pt = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -581,7 +581,7 @@ const pt = {
                 "Encontre cursos que combinam estudo com experiência profissional prática.",
               highlights: [
                 "Taxas de colocação e parcerias com empresas em diversas regiões",
-                "Considerações de visto para estágios remunerados e períodos de trabalho",
+                "Links para informação oficial sobre direitos de trabalho em estágios remunerados",
                 "Suporte de carreiras para currículo, entrevistas e networking",
               ],
             },

@@ -237,7 +237,7 @@ const zh = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -394,7 +394,6 @@ const zh = {
                 "找到融合课程学习与真实工作体验的项目。",
               highlights: [
                 "各地区的就业率与企业合作数据",
-                "带薪实习及工作期的签证注意事项",
                 "职业发展中心提供的简历、面试与人脉支持",
               ],
             },

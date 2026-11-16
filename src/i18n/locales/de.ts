@@ -297,7 +297,7 @@ const de = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -457,7 +457,7 @@ const de = {
               "Finden Sie Kurse, die Studium mit praktischer Berufserfahrung verbinden.",
             highlights: [
               "Vermittlungsquoten und Unternehmenspartner nach Regionen",
-              "Visa-Aspekte für vergütete Praxisphasen",
+              "Links zu offiziellen Informationen über Arbeitsrechte bei vergüteten Praxisphasen",
               "Karriereservices für Lebenslauf, Interviews und Networking",
             ],
           },

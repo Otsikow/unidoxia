@@ -371,7 +371,7 @@ const fr = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -531,7 +531,7 @@ const fr = {
                 "Repérez des cours qui associent études et expérience professionnelle concrète.",
               highlights: [
                 "Taux de placement et partenariats entreprises par région",
-                "Points de vigilance visa pour stages rémunérés et périodes en entreprise",
+                "Liens vers les informations officielles sur les droits de travail pour les stages rémunérés",
                 "Accompagnement carrière pour CV, entretiens et réseau",
               ],
             },

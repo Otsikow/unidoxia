@@ -13,6 +13,11 @@ const VISA_PROMPTS = [
   "What are my chances of getting a Canada study permit with IELTS 6.0?",
   "Should I appeal my US F-1 refusal?",
   "Do I have enough money in my bank account for a student visa?",
+  "Suis-je admissible au permis d'études avec 10 000 € ?",
+  "Meu visto foi recusado, o que eu devo fazer?",
+  "¿Soy elegible para un visado de estudiante?",
+  "我的签证被拒了，我该怎么办？",
+  "هل أنا مؤهل للحصول على تأشيرة الطالب؟",
 ];
 
 const NOT_VISA_PROMPTS = [

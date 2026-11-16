@@ -86,7 +86,7 @@ function getStatusMessage(status: string, programName: string, universityName: s
     },
     cas_issued: {
         subject: `CAS Issued: ${programName}`,
-        body: `<p>Your Confirmation of Acceptance for Studies (CAS) for <strong>${programName}</strong> has been issued. Your university has issued your CAS. Check the official Student visa guidance on GOV.UK before you apply: https://www.gov.uk/student-visa</p>`
+        body: `<p>Your university has issued your Confirmation of Acceptance for Studies (CAS) for <strong>${programName}</strong>. Check the official Student visa guidance on GOV.UK before you apply: https://www.gov.uk/student-visa</p>`
     },
     visa_applied: {
         subject: `You told us you've applied for your visa: ${programName}`,

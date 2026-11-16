@@ -206,7 +206,7 @@ const sw = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -363,7 +363,6 @@ const sw = {
               "Gundua kozi zinazochanganya masomo na uzoefu halisi wa kazi.",
             highlights: [
               "Viwango vya ajira na ushirikiano na makampuni katika maeneo mbalimbali",
-              "Mambo ya kuzingatia kuhusu viza kwa mafunzo yanayolipwa na vipindi vya kazi",
               "Msaada wa huduma za taaluma kwa CV, usaili na ujenzi wa mtandao",
             ],
           },
