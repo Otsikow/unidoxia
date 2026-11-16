@@ -318,7 +318,6 @@ const sw = {
             highlights: [
               "Ufadhili unaopea kipaumbele masomo ya STEM na matokeo ya utafiti",
               "Mitaala inayolingana na soko yenye mafunzo ya viwandani na kozi za co-op",
-              "Mwongozo wa viza kwa kazi za teknolojia na uhandisi zenye uhitaji mkubwa",
             ],
           },
           {

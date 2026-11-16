@@ -349,7 +349,7 @@ const es = {
             highlights: [
               "Becas que priorizan carreras STEM y proyectos de investigación",
               "Planes de estudio alineados con la industria y periodos de prácticas o co-op",
-              "Orientación de visado para profesiones tecnológicas e ingenieriles en alta demanda",
+              "Enlaces a información oficial sobre el trabajo tras los estudios",
             ],
           },
           {

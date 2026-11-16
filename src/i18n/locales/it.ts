@@ -150,7 +150,7 @@ const it = {
             highlights: [
               "Borse che privilegiano corsi STEM e risultati di ricerca",
               "Curricula allineati al mercato con stage e corsi co-op",
-              "Collegamenti alle informazioni ufficiali sui visti per ruoli tecnologici e ingegneristici molto richiesti",
+              "Collegamenti alle informazioni ufficiali sul lavoro dopo gli studi",
             ],
           },
           {

@@ -479,7 +479,7 @@ const en = {
               highlights: [
                 "Scholarships that prioritise STEM majors and research output",
                 "Industry-aligned curricula with internships and co-op rotations",
-                "Visa guidance for high-demand technology and engineering roles",
+                "Links to official post-study work information from government websites",
               ],
             },
             {

@@ -485,7 +485,7 @@ const fr = {
               highlights: [
                 "Bourses privilégiant les filières STEM et la production de recherche",
                 "Cours alignés sur l'industrie avec stages et alternances",
-                "Conseils visa pour les métiers technologiques et d'ingénierie les plus demandés",
+                "Liens vers les informations officielles sur le travail après les études",
               ],
             },
             {

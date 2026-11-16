@@ -411,7 +411,7 @@ const de = {
             highlights: [
               "Stipendien mit Fokus auf MINT-Fächer und Forschung",
               "Branchengerechte Curricula mit Praktika und Co-op-Phasen",
-              "Visa-Leitfäden für gefragte Technik- und Ingenieurberufe",
+              "Links zu offiziellen Informationen über Arbeit nach dem Studium",
             ],
           },
           {

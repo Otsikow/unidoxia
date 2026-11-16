@@ -535,7 +535,7 @@ const pt = {
               highlights: [
                 "Bolsas que priorizam cursos STEM e produção científica",
                 "Currículos alinhados ao mercado com estágios e cursos co-op",
-                "Orientação de visto para carreiras tecnológicas e de engenharia em alta demanda",
+                "Links para informação oficial sobre trabalho após os estudos em sites governamentais",
               ],
             },
             {
