@@ -176,7 +176,7 @@ export default function Blog() {
       <SEO
         title="Study Abroad & Student Visa Blog | UniDoxia"
         description="Student visa updates, scholarship guides and practical study-abroad advice for international students from the UniDoxia Editorial Team."
-        keywords="study abroad blog, international student advice, university application tips, scholarships, student visa guidance"
+        keywords="study abroad blog, international student advice, university application tips, scholarships, student visa information"
         canonicalPath="/blog"
         jsonLd={{
           "@context": "https://schema.org",
