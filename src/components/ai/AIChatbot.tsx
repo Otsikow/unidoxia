@@ -39,6 +39,7 @@ import zoeAvatar from "@/assets/zoe-portrait.png";
 import { cn } from "@/lib/utils";
 import ZoeTypingIndicator from "@/components/ai/ZoeTypingIndicator";
 import { generateZoeMockResponse } from "@/lib/zoe/mockResponse";
+import { visaScopeReply } from "@/lib/zoeVisaScope";
 import { v4 as uuidv4 } from "uuid";
 import { logWhatsAppLauncherClick } from "@/lib/analytics";
 
@@ -627,6 +628,13 @@ export default function ZoeChatbot({ hideLauncher = false, homeRequests = 0 }: {
     setIsLoading(true);
     notificationPlayedRef.current = false;
     setErrorState(null);
+
+    const visaReply = visaScopeReply(userContent);
+    if (visaReply) {
+      setMessages([...updatedHistory, { role: "assistant", content: visaReply }]);
+      setIsLoading(false);
+      return;
+    }
 
     const respondWithMock = (notice: string) => {
       const fallback = generateZoeMockResponse({

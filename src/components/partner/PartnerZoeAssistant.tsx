@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getSupabaseBrowserConfig } from "@/lib/supabaseClientConfig";
 import { isSupabaseConfigured } from "@/integrations/supabase/client";
 import { generateZoeMockChunks } from "@/lib/zoe/mockResponse";
+import { visaScopeReply } from "@/lib/zoeVisaScope";
 import ZoeTypingIndicator from "@/components/ai/ZoeTypingIndicator";
 
 type AssistantRole = "user" | "assistant";
@@ -138,6 +139,13 @@ export function PartnerZoeAssistant() {
     setInputValue("");
     setActiveSuggestion(null);
     setIsLoading(true);
+
+      const visaReply = visaScopeReply(trimmed);
+    if (visaReply) {
+      updateAssistantMessage(assistantMessageId, visaReply);
+      setIsLoading(false);
+      return;
+    }
 
       const respondWithMock = (notice: string) => {
         const fallback = generateZoeMockChunks({
