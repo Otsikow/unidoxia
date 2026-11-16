@@ -163,7 +163,6 @@ const PassportBackground = () => (
 
 // Feature highlights
 const features = [
-  "Personalized checklists",
   "Step-by-step guidance",
   "Document tracking",
 ];
@@ -217,7 +216,7 @@ export default function OnboardingVisaSupport() {
           currentStep={4}
           totalSteps={totalSteps}
           stepCompletion={stepCompletion}
-          label="Stay on track with visa support"
+          label="Find official visa information"
         />
 
         {/* Content */}
@@ -234,13 +233,12 @@ export default function OnboardingVisaSupport() {
 
           {/* Title */}
           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-3 animate-fade-in-up">
-            Navigate Visa Requirements{" "}
-            <span className="text-primary">Easily</span>
+            Where to find official visa information
           </h1>
 
           {/* Subtitle */}
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground text-center mb-6 sm:mb-8 animate-fade-in-up max-w-xl" style={{ animationDelay: "0.1s" }}>
-            Get personalized checklists and step-by-step visa guidance.
+            Links to each country's official visa pages. General information only, not immigration advice.
           </p>
 
           {/* Passport stamps grid */}
