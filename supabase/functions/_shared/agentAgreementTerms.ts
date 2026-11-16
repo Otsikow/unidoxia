@@ -4,6 +4,21 @@
 
 export const AGENT_AGREEMENT_VERSION = "v1.0-2026";
 
+/**
+ * Draft terms version for the 16 Nov 2026 visa-wording ruling (T1).
+ * Not active. The agreement gate still uses AGENT_AGREEMENT_VERSION.
+ * Do not switch this on until Eric approves the new wording and agents re-accept.
+ */
+export const PENDING_AGENT_AGREEMENT_VERSION = "v1.1-2026-11";
+export const PENDING_AGENT_AGREEMENT_NEEDS_ERIC_APPROVAL = true;
+
+export const PENDING_AGENT_AGREEMENT_BULLETS = {
+  shareInformation:
+    "Share information with universities, colleges, education partners and, if the student asks, a regulated immigration adviser the student chooses.",
+  contactStudent:
+    "Contact the student regarding applications, admissions, scholarships and related services, including reminders to check official visa information.",
+} as const;
+
 export const AGENT_AGREEMENT_TITLE =
   "UniDoxia Recruitment Agent and Education Counsellor Essential Terms";
 
