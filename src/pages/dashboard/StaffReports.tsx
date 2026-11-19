@@ -683,7 +683,7 @@ export default function StaffReports() {
             <CardContent>
               <div className="space-y-3">
                 {visaOutcomesByNationality.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No reported visa outcomes by nationality in this period.</p>
+                  <p className="text-sm text-muted-foreground">No applications at CAS, visa or enrolment stage reported in this period.</p>
                 ) : (
                   visaOutcomesByNationality.map((item) => (
                     <div key={item.nationality} className="flex items-center justify-between text-sm">

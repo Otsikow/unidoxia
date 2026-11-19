@@ -635,7 +635,7 @@ const pt = {
               description:
                 "Nossa IA conecta você às universidades certas e consultores verificados que entendem seus objetivos. Receba orientação personalizada durante toda a candidatura.",
               support:
-                "Apoio dedicado de consultores especialistas que ajudam com documentos, entrevistas e prazos.",
+                "Apoio dedicado de consultores especialistas que ajudam com documentos, entrevistas universitárias e prazos.",
               imageAlt: "Estudante recebendo orientação personalizada de consultor educacional",
             },
             offers: {

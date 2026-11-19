@@ -641,8 +641,8 @@ const en = {
             description:
               "Our AI matches you with the right universities and verified advisers who understand your goals. Get personalised guidance throughout your application journey.",
             support:
-              "Dedicated support from expert advisers who help you polish documents, prepare for interviews, and meet every deadline.",
-            imageAlt: "Student receiving personalised guidance from an education advisor",
+              "Dedicated support from expert advisers who help you polish documents, prepare for university interviews, and meet every deadline.",
+            imageAlt: "Student receiving personalised guidance from an education adviser",
           },
           offers: {
             title: "Receive offers and pre-departure information",
@@ -983,7 +983,7 @@ const en = {
             {
               question: "How do I stay informed about my application status?",
               answer:
-                "Your personalized dashboard shows real-time updates, deadlines, and next steps so you always know what to do next.",
+                "Your personalised dashboard shows real-time updates, deadlines, and next steps so you always know what to do next.",
             },
           ],
         },

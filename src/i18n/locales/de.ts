@@ -511,7 +511,7 @@ const de = {
             description:
               "Unsere KI verbindet Sie mit den passenden Universitäten und verifizierten Beratern, die Ihre Ziele verstehen. Erhalten Sie persönliche Begleitung während Ihrer gesamten Bewerbung.",
             support:
-              "Engagierte Unterstützung von erfahrenen Beratern, die Ihnen bei Dokumenten, Interviews und Fristen helfen.",
+              "Engagierte Unterstützung von erfahrenen Beratern, die Ihnen bei Dokumenten, universitären Auswahlgesprächen und Fristen helfen.",
             imageAlt: "Studierende erhält persönliche Beratung von einem Bildungsberater",
           },
           offers: {

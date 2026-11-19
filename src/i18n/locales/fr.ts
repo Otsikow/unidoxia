@@ -585,7 +585,7 @@ const fr = {
               description:
                 "Notre IA vous met en relation avec les bonnes universités et des conseillers vérifiés qui comprennent vos objectifs. Bénéficiez d'un accompagnement personnalisé tout au long de votre candidature.",
               support:
-                "Un soutien dédié de conseillers experts qui vous aident à perfectionner vos documents, préparer les entretiens et respecter chaque échéance.",
+                "Un soutien dédié de conseillers experts qui vous aident à perfectionner vos documents, préparer les entretiens universitaires et respecter chaque échéance.",
               imageAlt: "Étudiant recevant des conseils personnalisés d'un conseiller en éducation",
             },
             offers: {
