@@ -1315,7 +1315,7 @@ export default function StudentIntakeForm() {
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">2</span>
                 <div>
                   <p className="font-medium">Expert consultation</p>
-                  <p className="text-muted-foreground">Discuss application timelines, visa steps, and required documents.</p>
+                  <p className="text-muted-foreground">Discuss application timelines and required documents.</p>
                 </div>
               </li>
               <li className="flex gap-3">
