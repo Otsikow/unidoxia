@@ -657,7 +657,7 @@ export default function StaffReports() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Visa outcome (as reported)</CardTitle>
+              <CardTitle>Applications at CAS, visa or enrolment stage (as reported)</CardTitle>
               <CardDescription>Aggregated application statuses only. Internal staff report, not a performance target.</CardDescription>
             </CardHeader>
             <CardContent>
@@ -677,7 +677,7 @@ export default function StaffReports() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Reported visa outcomes by nationality (internal)</CardTitle>
+              <CardTitle>Applications at CAS, visa or enrolment stage by nationality (internal)</CardTitle>
               <CardDescription>Aggregate counts only. Not shown to agents and not used in marketing.</CardDescription>
             </CardHeader>
             <CardContent>

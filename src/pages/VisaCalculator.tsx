@@ -2,7 +2,11 @@ import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import {
   GOVUK_CHECKLIST_INTRO,
+  GOVUK_DOCUMENTS_ADDITIONAL_NOTE,
+  GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING,
+  GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING,
   GOVUK_DOCUMENTS_PAGE,
+  GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED,
   GOVUK_DOCUMENTS_YOU_MUST_PROVIDE,
   GOVUK_FIGURES_SOURCE_NOTE,
   GOVUK_MONEY_PAGE,
@@ -82,7 +86,7 @@ export default function VisaCalculatorPage() {
             Documents you will need to apply
           </h2>
           <p className="mb-3 text-sm text-muted-foreground">
-            {GOVUK_CHECKLIST_INTRO}{" "}
+            {GOVUK_CHECKLIST_INTRO}:{" "}
             <a
               href={GOVUK_DOCUMENTS_PAGE}
               className="text-primary underline underline-offset-2"
@@ -93,11 +97,19 @@ export default function VisaCalculatorPage() {
             </a>
             .
           </p>
-          <ul className="list-disc space-y-2 pl-5">
+          <p className="mb-3">{GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING}</p>
+          <ul className="mb-3 list-disc space-y-2 pl-5">
             {GOVUK_DOCUMENTS_YOU_MUST_PROVIDE.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
+          <p className="mb-3">{GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING}</p>
+          <ul className="mb-3 list-disc space-y-2 pl-5">
+            {GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <p>{GOVUK_DOCUMENTS_ADDITIONAL_NOTE}</p>
         </section>
 
         <section aria-labelledby="uk-visa-information">

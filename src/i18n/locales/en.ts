@@ -502,8 +502,8 @@ const en = {
               description: "Compare countries' official post-study work rules, with links to each government's website.",
               highlights: [
                 "Post-study work options and stay-back durations summarised",
-                "Documentation checklists tailored to your nationality",
-                "Advisories on financial proof, health cover, and interview prep",
+                "Links to each government's official post-study work pages",
+                "General information only, not immigration advice",
               ],
             },
             {
@@ -574,7 +574,7 @@ const en = {
               description:
                 "Training, coaching, and on-demand answers are built into the same workspace that powers your agency.",
               capabilities: [
-                "Delivers bite-sized training refreshers for new advisors and support staff.",
+                "Delivers bite-sized training refreshers for new advisers and support staff.",
                 "Turns shared student documents into quick school shortlists you can review with clients.",
                 "Drafts outreach scripts, follow-up plans, and counselling recommendations automatically.",
                 "Flags opportunities to improve conversion using agent analytics pulled from Zoe Intelligence.",
@@ -601,7 +601,7 @@ const en = {
             metricValue: "5 min",
             metricLabel: "to get started",
             description:
-              "Create your profile with academic background, documents, and study preferences — everything in one place.",
+              "Create your profile with your academic background, documents and study preferences, all in one place.",
             ctaLabel: "Start your profile",
           },
           matched: {
@@ -609,7 +609,7 @@ const en = {
             metricValue: "",
             metricLabel: "",
             description:
-              "Get matched with verified advisors and universities that fit your goals. Receive personalised guidance at every step of your university application.",
+              "Get matched with verified advisers and universities that fit your goals. Receive personalised guidance at every step of your university application.",
             ctaLabel: "Get matched",
           },
           offers: {
@@ -639,10 +639,10 @@ const en = {
           matched: {
             title: "Get matched and supported",
             description:
-              "Our AI matches you with the right universities and verified advisors who understand your goals. Get personalized guidance throughout your application journey.",
+              "Our AI matches you with the right universities and verified advisers who understand your goals. Get personalised guidance throughout your application journey.",
             support:
-              "Dedicated support from expert advisors who help you polish documents, prepare for interviews, and meet every deadline.",
-            imageAlt: "Student receiving personalized guidance from an education advisor",
+              "Dedicated support from expert advisers who help you polish documents, prepare for interviews, and meet every deadline.",
+            imageAlt: "Student receiving personalised guidance from an education advisor",
           },
           offers: {
             title: "Receive offers and pre-departure information",

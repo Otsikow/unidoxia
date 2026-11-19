@@ -91,7 +91,7 @@ export default function Blog() {
         },
         {
           title: "University application timeline",
-          description: "Track every requirement from document collection to interview day.",
+          description: "Track each step of your university application, from choosing a course to accepting your offer.",
           type: "Insight",
           href: "/courses?view=programs",
           icon: MapPinned,
@@ -184,7 +184,7 @@ export default function Blog() {
           name: "UniDoxia Blog",
           url: "https://unidoxia.com/blog",
           description:
-            "Study-abroad guidance on visa rule changes, scholarships, admissions, and common application mistakes.",
+            "Study-abroad updates on scholarships, admissions and common application mistakes, plus visa news from official sources.",
           publisher: {
             "@type": "Organization",
             name: "UniDoxia",
@@ -203,7 +203,7 @@ export default function Blog() {
             <div className="space-y-3">
               <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">Insights & Guides</h1>
               <p className="text-base sm:text-lg text-muted-foreground">
-                Explore our published guidance on visa rule changes, scholarships, admissions, and the most common application mistakes so you can plan with clarity. We share guidance, not guarantees of visa or scholarship outcomes.
+                Read our published updates on scholarships, admissions and common application mistakes, plus visa news sourced from official government websites. General information only, not immigration advice. We do not guarantee admission, scholarship or visa outcomes.
               </p>
             </div>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-center">

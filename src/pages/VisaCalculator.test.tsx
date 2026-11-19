@@ -7,6 +7,10 @@ import { describe, expect, it } from "vitest";
 import VisaCalculatorPage from "./VisaCalculator";
 import {
   GOVUK_CHECKLIST_INTRO,
+  GOVUK_DOCUMENTS_ADDITIONAL_NOTE,
+  GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING,
+  GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING,
+  GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED,
   GOVUK_DOCUMENTS_YOU_MUST_PROVIDE,
   OTHER_COUNTRY_VISA_INFORMATION_LINKS,
   UK_VISA_INFORMATION_LINKS,
@@ -34,9 +38,16 @@ describe("visa information page", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Official GOV.UK figures" })).toBeTruthy();
     expect(container.textContent).toContain("£1,529 per month (for up to 9 months) for courses in London");
     expect(container.textContent).toContain(GOVUK_CHECKLIST_INTRO);
+    expect(container.textContent).toContain(`${GOVUK_CHECKLIST_INTRO}:`);
+    expect(container.textContent).toContain(GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING);
     for (const item of GOVUK_DOCUMENTS_YOU_MUST_PROVIDE) {
       expect(container.textContent).toContain(item);
     }
+    expect(container.textContent).toContain(GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING);
+    for (const item of GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED) {
+      expect(container.textContent).toContain(item);
+    }
+    expect(container.textContent).toContain(GOVUK_DOCUMENTS_ADDITIONAL_NOTE);
 
     for (const link of [...UK_VISA_INFORMATION_LINKS, ...OTHER_COUNTRY_VISA_INFORMATION_LINKS]) {
       expect(screen.getByRole("link", { name: (accessibleName) => accessibleName === link.label })).toHaveAttribute(

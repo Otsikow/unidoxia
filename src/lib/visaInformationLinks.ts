@@ -87,9 +87,18 @@ export const GOVUK_DOCUMENTS_PAGE =
 export const GOVUK_CHECKLIST_INTRO =
   "This is GOV.UK's general list; check which apply to you on GOV.UK";
 
+export const GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING =
+  "When you apply for your Student visa you must provide:";
+
 export const GOVUK_DOCUMENTS_YOU_MUST_PROVIDE = [
   "a current passport or other valid travel documentation",
-  "a Confirmation of Acceptance for Studies ( CAS ) from your course provider",
+  "a Confirmation of Acceptance for Studies (CAS) from your course provider",
+] as const;
+
+export const GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING =
+  "You may also need to provide:";
+
+export const GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED = [
   "proof you have enough money to support yourself and pay for your course - this will vary depending on your circumstances",
   "a valid ATAS certificate if your course and nationality require it",
   "proof of parental or other legal guardian consent if you’re under 18",
@@ -97,6 +106,9 @@ export const GOVUK_DOCUMENTS_YOU_MUST_PROVIDE = [
   "your tuberculosis test results",
   "written consent for your application from your financial sponsor if you’ve received sponsorship for your course fees and living costs in the last 12 months",
 ] as const;
+
+export const GOVUK_DOCUMENTS_ADDITIONAL_NOTE =
+  "You may need to provide additional documents depending on your circumstances.";
 
 export const GOVUK_MONEY_PAGE = "https://www.gov.uk/student-visa/money";
 

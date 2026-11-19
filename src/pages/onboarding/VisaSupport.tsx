@@ -163,8 +163,8 @@ const PassportBackground = () => (
 
 // Feature highlights
 const features = [
-  "Step-by-step guidance",
-  "Document tracking",
+  "Links to official government websites",
+  "General information only, not immigration advice",
 ];
 
 export default function OnboardingVisaSupport() {
