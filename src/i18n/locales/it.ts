@@ -151,6 +151,7 @@ const it = {
               "Borse che privilegiano corsi STEM e risultati di ricerca",
               "Curricula allineati al mercato con stage e corsi co-op",
               "Collegamenti alle informazioni ufficiali sul lavoro dopo gli studi",
+              "Supporto per la candidatura universitaria",
             ],
           },
           {

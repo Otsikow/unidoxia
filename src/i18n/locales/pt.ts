@@ -536,6 +536,7 @@ const pt = {
                 "Bolsas que priorizam cursos STEM e produção científica",
                 "Currículos alinhados ao mercado com estágios e cursos co-op",
                 "Links para informação oficial sobre trabalho após os estudos em sites governamentais",
+                "Apoio à candidatura universitária",
               ],
             },
             {
@@ -607,8 +608,8 @@ const pt = {
             },
             offers: {
               stage: "Etapa 3",
-              metricValue: "Oferta",
-              metricLabel: "até a matrícula",
+              metricValue: "",
+              metricLabel: "",
               description:
                 "Receba ofertas de universidades e informações pré-embarque de fontes governamentais oficiais. Apoiamos a sua candidatura universitária desde o primeiro contato até a matrícula.",
               ctaLabel: "",

@@ -350,6 +350,7 @@ const es = {
               "Becas que priorizan carreras STEM y proyectos de investigación",
               "Planes de estudio alineados con la industria y periodos de prácticas o co-op",
               "Enlaces a información oficial sobre el trabajo tras los estudios",
+              "Apoyo para la solicitud universitaria",
             ],
           },
           {

@@ -486,6 +486,7 @@ const fr = {
                 "Bourses privilégiant les filières STEM et la production de recherche",
                 "Cours alignés sur l'industrie avec stages et alternances",
                 "Liens vers les informations officielles sur le travail après les études",
+                "Accompagnement pour les candidatures universitaires",
               ],
             },
             {
@@ -557,8 +558,8 @@ const fr = {
             },
             offers: {
               stage: "Étape 3",
-              metricValue: "Offre",
-              metricLabel: "jusqu'à l'inscription",
+              metricValue: "",
+              metricLabel: "",
               description:
                 "Recevez des offres d'universités et des informations de départ provenant de sources gouvernementales officielles. Nous accompagnons votre candidature universitaire de la première demande jusqu'à l'inscription.",
               ctaLabel: "",

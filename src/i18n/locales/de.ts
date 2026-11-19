@@ -412,6 +412,7 @@ const de = {
               "Stipendien mit Fokus auf MINT-Fächer und Forschung",
               "Branchengerechte Curricula mit Praktika und Co-op-Phasen",
               "Links zu offiziellen Informationen über Arbeit nach dem Studium",
+              "Unterstützung bei der Universitätsbewerbung",
             ],
           },
           {
@@ -483,8 +484,8 @@ const de = {
           },
           offers: {
             stage: "Schritt 3",
-            metricValue: "Zusage",
-            metricLabel: "bis zur Einschreibung",
+            metricValue: "",
+            metricLabel: "",
             description:
               "Erhalten Sie Universitätsangebote und Informationen zur Abreise aus offiziellen staatlichen Quellen. Wir unterstützen Ihre Universitätsbewerbung von der ersten Anfrage bis zur Einschreibung.",
             ctaLabel: "",

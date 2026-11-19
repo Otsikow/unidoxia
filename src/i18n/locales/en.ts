@@ -480,6 +480,7 @@ const en = {
                 "Scholarships that prioritise STEM majors and research output",
                 "Industry-aligned curricula with internships and co-op rotations",
                 "Links to official post-study work information from government websites",
+                "University application support",
               ],
             },
             {
@@ -613,8 +614,8 @@ const en = {
           },
           offers: {
             stage: "Step 3",
-            metricValue: "Offer",
-            metricLabel: "to enrolment",
+            metricValue: "",
+            metricLabel: "",
             description:
               "Receive university offers and pre-departure information from official government sources. We support your university application from first enquiry to enrolment.",
             ctaLabel: "",
