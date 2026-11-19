@@ -3,7 +3,7 @@ import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../s
 import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
 import { internationalDirectoryIntro, selectInternationalUniversityListings } from '../src/lib/homeInternationalUniversities.ts';
 import { PRICING_PLANS, SERVICE_FEE_SCOPE, formatPlanPrice } from '../src/types/billing.ts';
-import { UK_VISA_INFORMATION_LINKS, OTHER_COUNTRY_VISA_INFORMATION_LINKS, VISA_INFORMATION_SHORT_DISCLAIMER, VISA_INFORMATION_LONG_DISCLAIMER, VISA_INFORMATION_CTA, VISA_INFORMATION_META_DESCRIPTION } from '../src/lib/visaInformationLinks.ts';
+import { UK_VISA_INFORMATION_LINKS, OTHER_COUNTRY_VISA_INFORMATION_LINKS, VISA_INFORMATION_SHORT_DISCLAIMER, VISA_INFORMATION_LONG_DISCLAIMER, VISA_INFORMATION_CTA, VISA_INFORMATION_META_DESCRIPTION, GOVUK_OFFICIAL_FIGURES, GOVUK_FIGURES_SOURCE_NOTE, GOVUK_MONEY_PAGE, GOVUK_DOCUMENTS_YOU_MUST_PROVIDE, GOVUK_CHECKLIST_INTRO, GOVUK_DOCUMENTS_PAGE } from '../src/lib/visaInformationLinks.ts';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -162,7 +162,7 @@ const pages = [
     path: "/visa-calculator",
     title: "Visa information | UniDoxia",
     description: VISA_INFORMATION_META_DESCRIPTION,
-    body: `<h1>Visa information</h1><p>${esc(VISA_INFORMATION_SHORT_DISCLAIMER)}</p><p>${esc(VISA_INFORMATION_LONG_DISCLAIMER)}</p><h2>United Kingdom</h2><ul>${UK_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><h2>Other countries</h2><ul>${OTHER_COUNTRY_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><p><a href="/free-consultation">${esc(VISA_INFORMATION_CTA)}</a></p>`,
+    body: `<h1>Visa information</h1><p>${esc(VISA_INFORMATION_SHORT_DISCLAIMER)}</p><p>${esc(VISA_INFORMATION_LONG_DISCLAIMER)}</p><h2>Official GOV.UK figures</h2><p>These figures are copied from the official <a href="${esc(GOVUK_MONEY_PAGE)}" target="_blank" rel="noopener noreferrer">Money you need for a Student visa (GOV.UK)</a> page. ${esc(GOVUK_FIGURES_SOURCE_NOTE)}</p><ul>${GOVUK_OFFICIAL_FIGURES.map(item => `<li>${esc(item)}</li>`).join('')}</ul><h2>Documents you will need to apply</h2><p>${esc(GOVUK_CHECKLIST_INTRO)} <a href="${esc(GOVUK_DOCUMENTS_PAGE)}" target="_blank" rel="noopener noreferrer">Documents you will need to apply (GOV.UK)</a>.</p><ul>${GOVUK_DOCUMENTS_YOU_MUST_PROVIDE.map(item => `<li>${esc(item)}</li>`).join('')}</ul><h2>United Kingdom</h2><ul>${UK_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><h2>Other countries</h2><ul>${OTHER_COUNTRY_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><p><a href="/free-consultation">${esc(VISA_INFORMATION_CTA)}</a></p>`,
   },
   {
     path: "/contact",

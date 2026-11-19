@@ -6,6 +6,8 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 import VisaCalculatorPage from "./VisaCalculator";
 import {
+  GOVUK_CHECKLIST_INTRO,
+  GOVUK_DOCUMENTS_YOU_MUST_PROVIDE,
   OTHER_COUNTRY_VISA_INFORMATION_LINKS,
   UK_VISA_INFORMATION_LINKS,
   VISA_INFORMATION_CTA,
@@ -28,6 +30,13 @@ describe("visa information page", () => {
     const notice = screen.getByRole("note", { name: "Immigration advice disclaimer" });
     expect(notice).toHaveTextContent(VISA_INFORMATION_SHORT_DISCLAIMER);
     expect(notice).toHaveTextContent(VISA_INFORMATION_LONG_DISCLAIMER);
+
+    expect(screen.getByRole("heading", { level: 2, name: "Official GOV.UK figures" })).toBeTruthy();
+    expect(container.textContent).toContain("£1,529 per month (for up to 9 months) for courses in London");
+    expect(container.textContent).toContain(GOVUK_CHECKLIST_INTRO);
+    for (const item of GOVUK_DOCUMENTS_YOU_MUST_PROVIDE) {
+      expect(container.textContent).toContain(item);
+    }
 
     for (const link of [...UK_VISA_INFORMATION_LINKS, ...OTHER_COUNTRY_VISA_INFORMATION_LINKS]) {
       expect(screen.getByRole("link", { name: (accessibleName) => accessibleName === link.label })).toHaveAttribute(

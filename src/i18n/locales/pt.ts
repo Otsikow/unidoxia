@@ -682,7 +682,7 @@ const pt = {
         },
         visa: {
           badge: "Destaque",
-          title: "Informação sobre vistos antes de se candidatar",
+          title: "Consulte os requisitos oficiais do Student visa no GOV.UK",
           description:
             "Leia informações gerais sobre vistos de estudante em sites oficiais do governo. Isso não é assessoria de imigração nem uma decisão sobre a sua candidatura.",
           cta: "Informação sobre vistos",

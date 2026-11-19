@@ -562,7 +562,7 @@ const de = {
       },
       visa: {
         badge: "Feature-Highlight",
-        title: "Visuminformationen vor der Bewerbung",
+        title: "Lesen Sie die offiziellen Anforderungen für das Student visa auf GOV.UK",
         description:
           "Lesen Sie allgemeine Informationen zu Studentenvisa auf offiziellen Regierungswebsites. Dies ist keine einwanderungsrechtliche Beratung und keine Entscheidung über Ihre eigene Bewerbung.",
         cta: "Visuminformationen",

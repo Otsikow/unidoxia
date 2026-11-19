@@ -497,8 +497,8 @@ const en = {
             },
             {
               key: "visa",
-              label: "Post-study work",
-              headline: "Compare post-study work rules",
+              label: "Post-study work options (check official government guidance)",
+              headline: "Post-study work options (check official government guidance)",
               description: "Compare countries' official post-study work rules, with links to each government's website.",
               highlights: [
                 "Post-study work options and stay-back durations summarised",
@@ -688,7 +688,7 @@ const en = {
       },
         visa: {
           badge: "Feature Spotlight",
-          title: "Visa information before you apply",
+          title: "See the official Student visa requirements from GOV.UK",
           description:
             "Read general student visa information from official government websites. This is not immigration advice, and it is not a decision about your own application.",
           cta: "Visa information",
