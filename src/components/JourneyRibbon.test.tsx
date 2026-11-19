@@ -27,6 +27,7 @@ const BANNED_STEP_2_METRIC = [
 
 type JourneyItems = {
   matched?: { metricValue?: string; metricLabel?: string };
+  offers?: { metricValue?: string; metricLabel?: string };
 };
 
 function journeyItems(locale: unknown): JourneyItems | undefined {
@@ -37,10 +38,13 @@ function journeyItems(locale: unknown): JourneyItems | undefined {
 describe("JourneyRibbon step metrics", () => {
   it("does not keep a 24h average-match-time metric in any locale", () => {
     for (const [name, locale] of Object.entries(LOCALES)) {
-      const matched = journeyItems(locale)?.matched;
-      if (matched) {
-        expect(matched.metricValue ?? "", `${name} metricValue`).toBe("");
-        expect(matched.metricLabel ?? "", `${name} metricLabel`).toBe("");
+      const items = journeyItems(locale);
+      for (const step of ["matched", "offers"] as const) {
+        const metric = items?.[step];
+        if (metric) {
+          expect(metric.metricValue ?? "", `${name} ${step} metricValue`).toBe("");
+          expect(metric.metricLabel ?? "", `${name} ${step} metricLabel`).toBe("");
+        }
       }
       const blob = JSON.stringify(locale);
       for (const phrase of BANNED_STEP_2_METRIC) {
@@ -49,7 +53,7 @@ describe("JourneyRibbon step metrics", () => {
     }
   });
 
-  it("renders step 2 without a match-time metric and keeps the step 3 offer metric", async () => {
+  it("renders step 2 and step 3 without a metric", async () => {
     const i18n = createInstance();
     await i18n.use(initReactI18next).init({
       lng: "en",
@@ -69,7 +73,8 @@ describe("JourneyRibbon step metrics", () => {
 
     expect(screen.queryByText("24h")).toBeNull();
     expect(screen.queryByText(/average match time/i)).toBeNull();
-    expect(screen.getAllByText("Offer").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("to enrolment").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Offer")).toBeNull();
+    expect(screen.queryByText("to enrolment")).toBeNull();
+    expect(screen.queryByText("University application support")).toBeNull();
   });
 });

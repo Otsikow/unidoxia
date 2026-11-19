@@ -59,16 +59,16 @@ export default function VisaCalculatorPage() {
             Official GOV.UK figures
           </h2>
           <p className="mb-3 text-sm text-muted-foreground">
-            These figures are copied from the official{" "}
+            These figures are copied from the{" "}
             <a
               href={GOVUK_MONEY_PAGE}
               className="text-primary underline underline-offset-2"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Money you need for a Student visa (GOV.UK)
-            </a>{" "}
-            page. {GOVUK_FIGURES_SOURCE_NOTE}
+              official GOV.UK Student visa funds page
+            </a>
+            . {GOVUK_FIGURES_SOURCE_NOTE}
           </p>
           <ul className="list-disc space-y-2 pl-5">
             {GOVUK_OFFICIAL_FIGURES.map((item) => (
