@@ -5790,6 +5790,7 @@ export type Database = {
         | "cv"
         | "lor"
         | "portfolio"
+        | "signed_declaration_form"
         | "other"
       featured_listing_status: "active" | "pending" | "expired" | "cancelled"
       message_type: "text" | "system" | "document"
@@ -5971,6 +5972,7 @@ export const Constants = {
         "cv",
         "lor",
         "portfolio",
+        "signed_declaration_form",
         "other",
       ],
       featured_listing_status: ["active", "pending", "expired", "cancelled"],

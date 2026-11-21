@@ -60,6 +60,7 @@ const DOCUMENT_TYPES = [
   { value: 'cv', label: 'CV/Resume' },
   { value: 'lor', label: 'Letter of Recommendation' },
   { value: 'portfolio', label: 'Portfolio' },
+  { value: 'signed_declaration_form', label: 'Signed declaration form' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -91,6 +92,8 @@ function mapRequestTypeToDocumentType(requestType: string): DocumentType {
     'letterofrecommendation': 'lor',
     'recommendation': 'lor',
     'portfolio': 'portfolio',
+    'signeddeclarationform': 'signed_declaration_form',
+    'declarationform': 'signed_declaration_form',
   };
   
   return mappings[normalized] ?? 'other';

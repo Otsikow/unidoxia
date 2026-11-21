@@ -95,6 +95,7 @@ describe('application document types and records', () => {
     expect(applicationDocumentType('passport_photo')).toBe('other');
     expect(applicationDocumentType('passport_photo_page')).toBe('passport');
     expect(applicationDocumentType('transcript')).toBe('transcript');
+    expect(applicationDocumentType('signed_declaration_form')).toBe('signed_declaration_form');
   });
   it('never marks a newly uploaded application file verified', async () => {
     await saveApplicationDocument({ application_id: 'app', document_type: 'other', storage_path: 'app/passport_photo_file', mime_type: 'image/jpeg', file_size: 4 });

@@ -514,7 +514,11 @@ const Applications = () => {
           <div key={document.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border p-3">
             <div className="space-y-1">
               <p className="font-medium text-sm">
-                {document.document_type ? document.document_type.replace(/_/g, ' ') : 'Document'}
+                {document.document_type === 'signed_declaration_form'
+                  ? 'Signed declaration form'
+                  : document.document_type === 'other'
+                    ? 'Other'
+                    : document.document_type?.replace(/_/g, ' ') || 'Document'}
               </p>
               <p className="text-xs text-muted-foreground">
                 Uploaded {formatDate(document.uploaded_at, { dateStyle: 'medium', timeStyle: 'short' })}

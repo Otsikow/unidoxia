@@ -88,6 +88,8 @@ const DOCUMENT_TYPES = [
   { value: "english_proof", label: "English proof", required: false },
   { value: "english_test_certificate", label: "English test certificate", required: false },
   { value: "english_medium_letter", label: "English-medium-of-instruction letter", required: false },
+  { value: "signed_declaration_form", label: "Signed declaration form", required: false },
+  { value: "other", label: "Other", required: false },
 ] as const;
 
 // Helper to get document type label from value

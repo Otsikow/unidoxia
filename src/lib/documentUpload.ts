@@ -13,7 +13,9 @@ export function applicationDocumentType(type: string): ApplicationDocumentType {
     ielts: 'ielts', ieltsscore: 'ielts', toefl: 'toefl', toeflscore: 'toefl',
     sop: 'sop', personalstatement: 'sop', statementofpurpose: 'sop',
     cv: 'cv', resume: 'cv', cvresume: 'cv', lor: 'lor', referenceletter: 'lor',
-    recommendation: 'lor', letterofrecommendation: 'lor', portfolio: 'portfolio', other: 'other',
+    recommendation: 'lor', letterofrecommendation: 'lor', portfolio: 'portfolio',
+    signeddeclarationform: 'signed_declaration_form', declarationform: 'signed_declaration_form',
+    other: 'other',
   };
   return aliases[key] ?? 'other';
 }

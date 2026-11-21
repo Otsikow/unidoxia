@@ -180,6 +180,7 @@ export const documentUploadSchema = z.object({
     'personal_statement',
     'cv_resume',
     'financial_document',
+    'signed_declaration_form',
     'other',
   ]),
   file: z
