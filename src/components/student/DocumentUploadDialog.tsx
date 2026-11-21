@@ -1,6 +1,6 @@
+import { submitDocumentRequest, DocumentRequestSubmissionError } from "@/lib/documentRequestSubmission";
 import { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { logError, formatErrorForToast } from '@/lib/errorUtils';
 import { validateFileUpload } from '@/lib/fileUpload';
 import {
@@ -37,6 +37,7 @@ export interface DocumentRequestInfo {
   notes?: string | null;
   description?: string | null;
   due_date?: string | null;
+  updated_at?: string | null;
 }
 
 interface DocumentUploadDialogProps {
@@ -75,7 +76,12 @@ function mapRequestTypeToDocumentType(requestType: string): DocumentType {
   const mappings: Record<string, DocumentType> = {
     'passport': 'passport',
     'passportphoto': 'passport_photo',
+    'passportstylephoto': 'passport_photo',
+    'photo': 'passport_photo',
+    'photograph': 'passport_photo',
     'passportphotopage': 'passport',
+    'passportbiopage': 'passport',
+    'passportbiodatapage': 'passport',
     'transcript': 'transcript',
     'academictranscript': 'transcript',
     'ielts': 'ielts',
@@ -84,10 +90,14 @@ function mapRequestTypeToDocumentType(requestType: string): DocumentType {
     'toeflscore': 'toefl',
     'sop': 'sop',
     'statementofpurpose': 'sop',
+    'personalstatement': 'sop',
     'cv': 'cv',
     'resume': 'cv',
     'cvresume': 'cv',
     'lor': 'lor',
+    'referenceletter': 'lor',
+    'referenceletter1': 'lor',
+    'referenceletter2': 'lor',
     'letterofrecommendation': 'lor',
     'recommendation': 'lor',
     'portfolio': 'portfolio',
@@ -122,6 +132,9 @@ export function DocumentUploadDialog({
   const [documentType, setDocumentType] = useState<DocumentType | ''>('');
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [savedRequest, setSavedRequest] = useState<Parameters<typeof submitDocumentRequest>[0] | null>(null);
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [requestRefreshRequired, setRequestRefreshRequired] = useState(false);
   const uploadInFlight = useRef(false);
   const { toast } = useToast();
 
@@ -149,7 +162,11 @@ export function DocumentUploadDialog({
 
   const handleUpload = async () => {
     if (uploadInFlight.current) return;
-    if (!file || !documentType) {
+    if (savedRequest && (savedRequest.applicationId !== applicationId || savedRequest.requestId !== documentRequest?.id)) {
+      setRequestError("The application context changed. Reopen the original request to confirm its saved file.");
+      return;
+    }
+    if (!savedRequest && (!file || !documentType)) {
       toast({
         title: 'Missing information',
         description: 'Please select a document type and file',
@@ -158,10 +175,19 @@ export function DocumentUploadDialog({
       return;
     }
 
+    let fileSaved = !!savedRequest;
     try {
       uploadInFlight.current = true;
       setUploading(true);
-
+      setRequestError(null);
+      setRequestRefreshRequired(false);
+      if (savedRequest) {
+        await submitDocumentRequest(savedRequest);
+        setSavedRequest(null);
+        toast({title:'Document submitted',description:'Your file is received and awaiting review.'});
+        setOpen(false);setFile(null);onUploadComplete?.();return;
+      }
+      if (!file || !documentType) return;
       const { preparedFile, sanitizedFileName, detectedMimeType } = await validateFileUpload(file, {
         allowedMimeTypes: [
           'application/pdf',
@@ -187,22 +213,13 @@ export function DocumentUploadDialog({
         storage_path: filePath, mime_type: detectedMimeType, file_size: preparedFile.size,
       });
 
-      // If this is a response to a document request, update the request status
+      fileSaved = true;
       if (documentRequest?.id) {
-        const { data: updatedRequest, error: requestUpdateError } = await supabase
-          .from('document_requests').update({
-            status: 'received', storage_path: filePath, document_url: null,
-            file_url: null, uploaded_file_url: null, submitted_at: new Date().toISOString(),
-          }).eq('id', documentRequest.id).select('id').maybeSingle();
-        if (requestUpdateError || !updatedRequest) {
-          logError(requestUpdateError || new Error('Document request could not be updated'), 'DocumentUploadDialog.updateDocumentRequest');
-          toast({ title: 'File saved; request needs attention', description: 'Your file is saved in the application, but the request could not be marked received. Please contact UniDoxia with your application reference.', variant: 'destructive' });
-        } else {
-        toast({
-          title: 'Document submitted',
-          description: `Your ${lockedDocumentLabel} is saved and the document request is marked received.`,
-        });
-        }
+        const receipt={requestId:documentRequest.id,applicationId,storagePath:filePath,expectedUpdatedAt:documentRequest.updated_at??null};
+        setSavedRequest(receipt);
+        await submitDocumentRequest(receipt);
+        setSavedRequest(null);
+        toast({title:'Document submitted',description:'Your file is received and awaiting review.'});
       } else {
         toast({
           title: 'Success',
@@ -218,7 +235,10 @@ export function DocumentUploadDialog({
       onUploadComplete?.();
     } catch (error) {
       logError(error, 'DocumentUploadDialog.handleUpload');
-      toast(formatErrorForToast(error, 'Failed to upload document'));
+      const message=error instanceof Error ? error.message : 'The upload could not be completed.';
+      setRequestError(fileSaved && !message.startsWith('Your file') ? `Your file is saved. ${message}` : message);
+      setRequestRefreshRequired(error instanceof DocumentRequestSubmissionError && error.refreshRequired);
+      toast(fileSaved ? {title:'File saved; request needs attention',description:error instanceof Error ? error.message : 'Retry the request update without uploading again.',variant:'destructive'} : formatErrorForToast(error, 'Failed to upload document'));
     } finally {
       uploadInFlight.current = false;
       setUploading(false);
@@ -235,7 +255,7 @@ export function DocumentUploadDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isLockedMode ? (
@@ -251,7 +271,7 @@ export function DocumentUploadDialog({
             {isLockedMode ? (
               <>
                 The university has requested a specific document from you.
-                Upload your <strong>{lockedDocumentLabel}</strong> to complete this request.
+                Upload your <strong>{lockedDocumentLabel}</strong> to respond to this request.
               </>
             ) : (
               'Upload a document for this application. Make sure the file is clear and readable.'
@@ -323,12 +343,13 @@ export function DocumentUploadDialog({
             </div>
           )}
 
+          {(requestError || savedRequest) && <Alert variant={requestError ? 'destructive' : 'default'}><AlertDescription>{requestError || 'Your file is saved. Confirming the request receipt...'}</AlertDescription></Alert>}
           {/* File Input */}
           <div className="space-y-2">
             <Label htmlFor="file">Select File</Label>
             <Input
               id="file"
-              disabled={uploading}
+              disabled={uploading || !!savedRequest}
               type="file"
               onChange={handleFileChange}
               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
@@ -346,13 +367,14 @@ export function DocumentUploadDialog({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3">
+        <div className="flex flex-wrap justify-end gap-3">
+          {savedRequest && onUploadComplete && <Button variant="outline" disabled={uploading} onClick={() => { setOpen(false); onUploadComplete(); }}>Refresh application</Button>}
           <Button variant="outline" onClick={() => setOpen(false)} disabled={uploading}>
             Cancel
           </Button>
-          <Button onClick={handleUpload} disabled={uploading || !file || !documentType}>
+          <Button onClick={handleUpload} disabled={uploading || requestRefreshRequired || (!savedRequest && (!file || !documentType))}>
             {uploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {uploading ? 'Uploading...' : isLockedMode ? 'Submit Document' : 'Upload'}
+            {uploading ? (savedRequest ? 'Confirming receipt...' : 'Uploading...') : requestRefreshRequired ? 'Refresh needed' : savedRequest ? 'Retry request update' : isLockedMode ? 'Submit Document' : 'Upload'}
           </Button>
         </div>
       </DialogContent>

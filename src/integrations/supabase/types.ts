@@ -5331,6 +5331,11 @@ export type Database = {
       }
     }
     Functions: {
+
+      submit_student_document_request: {
+        Args: { p_request_id: string; p_document_id: string; p_expected_updated_at: string | null }
+        Returns: Json
+      }
       actor_is_active_admin_or_staff: {
         Args: { p_user_id: string }
         Returns: boolean
