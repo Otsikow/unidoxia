@@ -93,12 +93,12 @@ test('the first-screen consultation and restored scholarship navigation reach wo
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Scholarships');
 });
 
-test('fee explanation distinguishes the free consultation and optional paid support', async ({ page }) => {
+test('fee explanation confirms that student support is free', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#site-first-paint')).toHaveCount(0);
-  await expect(page.getByText(/Your first consultation is free\. Optional paid services/)).toBeVisible();
-  await expect(page.getByText(/University fees, tuition, deposits and government charges are separate/)).toBeVisible();
-  await page.getByRole('link', { name: 'Review service pricing', exact: true }).click();
+  await expect(page.getByText(/UniDoxia's service is free for students\. We never charge students a fee/)).toBeVisible();
+  await expect(page.getByText(/University tuition, deposits, application fees charged by the institution/)).toBeVisible();
+  await page.getByRole('link', { name: 'Understand student support', exact: true }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Choose Your Study Abroad Plan' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Free Access', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Agent-Supported', exact: true })).toBeVisible();

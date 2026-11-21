@@ -439,7 +439,7 @@ const es = {
             {
               question: "¿Tiene costo usar la plataforma?",
               answer:
-                "Crear una cuenta y explorar universidades es gratuito. Los agentes pueden cobrar honorarios de consultoría, claramente indicados antes de comprometerte.",
+                "El servicio de UniDoxia es gratuito para los estudiantes. Nunca cobramos a los estudiantes una tarifa por nuestro apoyo. Podemos recibir una comisión de las universidades cuando se matricula un estudiante al que apoyamos. La matrícula universitaria, los depósitos, las tasas de solicitud cobradas por la institución y los cargos gubernamentales de visado son independientes y se pagan a esas organizaciones. No garantizamos la admisión, las becas ni los visados.",
             },
             {
               question: "¿Qué documentos necesito para postularme?",

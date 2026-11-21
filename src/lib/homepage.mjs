@@ -84,10 +84,10 @@ export const homeTraining = {
 
 export const homeAssurances = [
   {
-    title: "Consultation and service fees",
-    text: "Your first consultation is free. Optional paid services include agent-supported application guidance. Check the plan and what it includes before paying. University fees, tuition, deposits and government charges are separate from UniDoxia’s fees.",
+    title: "Free student support",
+    text: "UniDoxia's service is free for students. We never charge students a fee for our support. We may receive a commission from universities when a student we support enrols. University tuition, deposits, application fees charged by the institution and government visa charges are separate and paid to those organisations. We do not guarantee admission, scholarships or visas.",
     href: "/pricing",
-    label: "Review service pricing",
+    label: "Understand student support",
   },
 ];
 

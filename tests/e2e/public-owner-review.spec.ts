@@ -4,9 +4,9 @@ test.beforeEach(async({page})=>{
 });
 test('pricing states currency, third-party exclusions and preserves plan registration',async({page})=>{
  await page.goto('/pricing');
- await expect(page).toHaveTitle('Student Application Plans and Service Fees | UniDoxia');
- await expect(page.getByText(/Your first consultation is free/).first()).toBeVisible();
- await expect(page.getByText(/UniDoxia service plans exclude university application fees/).first()).toBeVisible();
+ await expect(page).toHaveTitle('Study Abroad Support | UniDoxia');
+ await expect(page.getByText(/UniDoxia's service is free for students/).first()).toBeVisible();
+ await expect(page.getByText(/University tuition, deposits, application fees charged by the institution/).first()).toBeVisible();
  await expect(page.locator('body')).not.toContainText('500+ universities');
  await expect(page.getByText('USD',{exact:true})).toHaveCount(2);
  await page.getByRole('button',{name:'Select Plan',exact:true}).click();

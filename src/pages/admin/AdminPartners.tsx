@@ -47,6 +47,8 @@ type UniversityRow = {
   name: string;
   country: string;
   partnership_status: string | null;
+  agreement_signed_at?: string | null;
+  public_partner_display?: boolean | null;
   active: boolean | null;
   city?: string | null;
   catalogue_status?: string | null;
@@ -103,6 +105,8 @@ type UniversityCard = {
   submittedApplications: number;
   conversionRate: number;
   partnershipStatus: string;
+  agreementSignedAt: string | null;
+  publicPartnerDisplay: boolean;
   isActive: boolean;
   catalogueStatus: string;
   discovered: number;
@@ -176,10 +180,10 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
         const universityQuery = isAdminOrStaff
           ? supabase
               .from("universities")
-              .select("id, name, country, city, partnership_status, active, tenant_id, catalogue_status, catalogue_discovered_count, catalogue_processed_count, catalogue_unresolved_count, catalogue_fee_verified_count, catalogue_intake_verified_count, catalogue_requirements_verified_count, profile_completeness_percent, last_catalogue_checked_at, outreach_status, verification_status")
+              .select("id, name, country, city, partnership_status, agreement_signed_at, public_partner_display, active, tenant_id, catalogue_status, catalogue_discovered_count, catalogue_processed_count, catalogue_unresolved_count, catalogue_fee_verified_count, catalogue_intake_verified_count, catalogue_requirements_verified_count, profile_completeness_percent, last_catalogue_checked_at, outreach_status, verification_status")
           : supabase
               .from("universities")
-              .select("id, name, country, city, partnership_status, active, tenant_id, catalogue_status, catalogue_discovered_count, catalogue_processed_count, catalogue_unresolved_count, catalogue_fee_verified_count, catalogue_intake_verified_count, catalogue_requirements_verified_count, profile_completeness_percent, last_catalogue_checked_at, outreach_status, verification_status")
+              .select("id, name, country, city, partnership_status, agreement_signed_at, public_partner_display, active, tenant_id, catalogue_status, catalogue_discovered_count, catalogue_processed_count, catalogue_unresolved_count, catalogue_fee_verified_count, catalogue_intake_verified_count, catalogue_requirements_verified_count, profile_completeness_percent, last_catalogue_checked_at, outreach_status, verification_status")
               .eq("tenant_id", tenantId);
 
         // Applications and programs: admins/staff see all to calculate stats correctly
@@ -312,6 +316,8 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
         submittedApplications: submittedApplications.length,
         conversionRate: Number.isFinite(conversion) ? conversion : 0,
         partnershipStatus: (university.partnership_status ?? "pending").replace(/_/g, " "),
+        agreementSignedAt: university.agreement_signed_at ?? null,
+        publicPartnerDisplay: university.public_partner_display === true,
         isActive: university.active ?? false,
         catalogueStatus: (university.catalogue_status ?? "not_started").replace(/_/g, " "),
         discovered: university.catalogue_discovered_count ?? 0,
@@ -651,6 +657,10 @@ const AdminPartners = ({ defaultTab = "agents" }: AdminPartnersProps) => {
                             >
                               {shouldSuspend ? "Suspend" : "Approve"}
                             </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-1 text-xs text-muted-foreground">
+                            <span>Signed agreement: {university.agreementSignedAt ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(new Date(university.agreementSignedAt)) : "Not recorded"}</span>
+                            <span>Public display: {university.publicPartnerDisplay ? "Enabled" : "Disabled"}</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Button

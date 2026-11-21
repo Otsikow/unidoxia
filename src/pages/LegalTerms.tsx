@@ -17,8 +17,8 @@ const highlights = [
     description: 'Understand the expectations for maintaining your account and complying with platform policies.'
   },
   {
-    title: 'Transparent Fees',
-    description: 'We clearly communicate any paid services and provide notice before we make pricing changes.'
+    title: 'Free Student Support',
+    description: 'Free for students. UniDoxia never charges students a fee.'
   },
   {
     title: 'Robust Safeguards',

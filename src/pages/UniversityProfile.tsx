@@ -43,6 +43,7 @@ import {
   type UniversityProfileDetails,
 } from "@/lib/universityProfile";
 import { formatCourseDuration, formatCourseFee } from "@/lib/marketplacePresentation";
+import { isPublicPartner } from "@/lib/partnerDisplay";
 import NotFound from "./NotFound";
 import { SEO } from "@/components/SEO";
 import { logAnalyticsEvent } from "@/lib/analytics";
@@ -78,6 +79,8 @@ interface University {
   listing_status?: string;
   verification_status?: string;
   partnership_tier?: string;
+  agreement_signed_at?: string | null;
+  public_partner_display?: boolean | null;
   last_source_checked_at?: string | null;
 }
 
@@ -405,7 +408,7 @@ export default function UniversityProfile() {
                   <Badge className="bg-black/60 text-white border-white/40 backdrop-blur-sm">
                     {university.verification_status === "admin_verified" ? "Verified profile" : "Listed by UniDoxia"}
                   </Badge>
-                  {university.partnership_tier === "partner" && <Badge className="bg-emerald-600 text-white">UniDoxia Partner</Badge>}
+                  {isPublicPartner(university) && <Badge className="bg-emerald-600 text-white">UniDoxia Partner</Badge>}
                   {university.website && (
                     <Button
                       variant="outline"

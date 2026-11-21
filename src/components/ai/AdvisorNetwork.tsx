@@ -364,7 +364,7 @@ export default function AdvisorNetwork() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Consultation Fee</span>
+                  <span className="text-muted-foreground">Consultation details</span>
                   <span className="font-medium">
                     ${advisor.pricing.consultation_fee} {advisor.pricing.currency}
                   </span>

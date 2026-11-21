@@ -36,8 +36,6 @@ export interface Course {
   detailsUrl?: string;
   /** Indicates if the program is fully onboarded in UniDoxia for instant submission */
   instant_submission?: boolean;
-  /** Indicates if the university is an official UniDoxia partner */
-  is_unidoxia_partner?: boolean;
 }
 
 interface CourseCardProps {
@@ -62,10 +60,9 @@ export function CourseCard({ course, comparisonSelected, comparisonDisabled, onC
   // Check if user is an agent/staff/admin to determine the correct apply URL
   const isAgentOrStaff = profile?.role === 'agent' || profile?.role === 'staff' || profile?.role === 'admin';
 
-  // Determine if the Instant Submission badge should be shown
-  const showInstantSubmission =
-    course.instant_submission === true ||
-    course.is_unidoxia_partner === true;
+  // Instant submission is an operational programme setting, not a public
+  // partnership claim.
+  const showInstantSubmission = course.instant_submission === true;
 
   const handleCardNavigation = () => {
     logCourseDiscoveryEvent('university_viewed', { university_id: course.university_id, source: 'course_card' });

@@ -19,6 +19,8 @@ export default {
       url.pathname = alias;
       return Response.redirect(url.href, 301);
     }
+    const redirects = { '/privacy': '/legal/privacy', '/terms': '/legal/terms' };
+    if (redirects[pathname]) { url.pathname = redirects[pathname]; return Response.redirect(url.href, 301); }
     if (pages.has(pathname)) {
       url.pathname = pathname === '/' ? '/index.html' : `${pathname}/index.html`;
       return env.ASSETS.fetch(new Request(url, request));

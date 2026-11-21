@@ -179,7 +179,6 @@ const transformToCourseCardFormat = (
       applyUrl?: string;
       detailsUrl?: string;
       instant_submission?: boolean;
-      is_unidoxia_partner?: boolean;
     },
 ): Course => {
   return {
@@ -203,7 +202,6 @@ const transformToCourseCardFormat = (
     applyUrl: course.applyUrl,
     detailsUrl: course.detailsUrl || `/courses/${course.id}`,
     instant_submission: course.instant_submission,
-    is_unidoxia_partner: course.is_unidoxia_partner,
   };
 };
 
