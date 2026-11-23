@@ -164,6 +164,21 @@ describe("Kojo 16 Nov visa wording", () => {
     );
   });
 
+  it("renders the plan disclaimer from the locale with no English defaultValue (Kojo 23 Nov re-clear)", () => {
+    for (const file of ["src/pages/Pricing.tsx", "src/pages/student/Checkout.tsx"]) {
+      const text = readFileSync(join(process.cwd(), file), "utf8");
+      expect(text, file).toContain("t('pricing.agentSupportedDisclaimer')");
+      expect(text, file).not.toMatch(/agentSupportedDisclaimer['"]\s*,/);
+      expect(text, file).not.toMatch(/\{plan\.planDisclaimer\}/);
+    }
+  });
+
+  it("has its own footer label and disclaimer in it.ts (no fallback through ...en)", () => {
+    const src = readFileSync(join(process.cwd(), "src/i18n/locales/it.ts"), "utf8");
+    expect(src).toMatch(/visaCalculator:\s*"Informazioni sui visti/);
+    expect(src).toMatch(/agentSupportedDisclaimer:\s*\n?\s*"UniDoxia non fornisce/);
+  });
+
   it("translates the footer label and the plan disclaimer in every locale (Kojo 23 Nov amendment)", () => {
     const enLabel = en.layout.footer.platformLinks.visaCalculator;
     const enDisclaimer = en.pricing.agentSupportedDisclaimer;

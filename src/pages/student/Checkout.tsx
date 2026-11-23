@@ -129,7 +129,7 @@ export default function Checkout() {
                   <p className="text-sm text-muted-foreground pt-1">{plan.featureNote}</p>
                 ) : null}
                 {plan.planDisclaimer ? (
-                  <p className="text-sm text-muted-foreground pt-1">{t('pricing.agentSupportedDisclaimer', { defaultValue: plan.planDisclaimer })}</p>
+                  <p className="text-sm text-muted-foreground pt-1">{t('pricing.agentSupportedDisclaimer')}</p>
                 ) : null}
               </div>
 

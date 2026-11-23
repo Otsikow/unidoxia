@@ -199,7 +199,7 @@ export default function Pricing() {
 
                 {plan.planDisclaimer ? (
                   <p className="text-sm text-muted-foreground" data-testid={`plan-disclaimer-${plan.id}`}>
-                    {t('pricing.agentSupportedDisclaimer', { defaultValue: plan.planDisclaimer })}
+                    {t('pricing.agentSupportedDisclaimer')}
                   </p>
                 ) : null}
 
