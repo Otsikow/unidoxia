@@ -126,6 +126,9 @@ export default function Checkout() {
                 {plan.featureNote ? (
                   <p className="text-sm text-muted-foreground pt-1">{plan.featureNote}</p>
                 ) : null}
+                {plan.planDisclaimer ? (
+                  <p className="text-sm text-muted-foreground pt-1">{plan.planDisclaimer}</p>
+                ) : null}
               </div>
 
               <Separator />

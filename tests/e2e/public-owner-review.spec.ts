@@ -7,7 +7,10 @@ test('pricing states currency, third-party exclusions and preserves plan registr
  await expect(page).toHaveTitle('Student Application Plans and Service Fees | UniDoxia');
  await expect(page.getByText(/Your first consultation is free/).first()).toBeVisible();
  await expect(page.getByText(/UniDoxia service plans exclude university application fees/).first()).toBeVisible();
- await expect(page.getByText('Full guidance from choosing a course to accepting your offer')).toBeVisible();
+ await expect(page.getByText('Full support with your university applications')).toBeVisible();
+ await expect(page.getByText('Pre-departure information with links to GOV.UK')).toBeVisible();
+ await expect(page.getByText('UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.')).toBeVisible();
+ await expect(page.locator('body')).not.toContainText('Full guidance from choosing a course to accepting your offer');
  await expect(page.getByText('Visa and immigration advice is not included. We link to official visa information, which is free for everyone.')).toBeVisible();
  await expect(page.locator('body')).not.toContainText('Visa preparation assistance');
  await expect(page.locator('body')).not.toContainText('Links to official visa information (GOV.UK and university pages)');

@@ -195,6 +195,12 @@ export default function Pricing() {
                   ))}
                 </ul>
 
+                {plan.planDisclaimer ? (
+                  <p className="text-sm text-muted-foreground" data-testid={`plan-disclaimer-${plan.id}`}>
+                    {plan.planDisclaimer}
+                  </p>
+                ) : null}
+
                 {/* Non-refundable notice for paid plans */}
                 {plan.price > 0 && (
                   <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">

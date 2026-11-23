@@ -24,6 +24,8 @@ export interface PricingPlan {
   features: string[];
   /** Shown under the feature list, not as a ticked feature. */
   featureNote?: string;
+  /** Plan-level disclaimer shown under the plan card (Kojo 23 Nov /pricing ruling). */
+  planDisclaimer?: string;
   limitations?: string[];
   isPopular?: boolean;
   paymentLabel: string;
@@ -64,17 +66,19 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: 'Agent-Supported',
     price: 20000, // $200.00 USD
     currency: 'USD',
-    description: 'Full guidance from choosing a course to accepting your offer',
+    description: 'Full support with your university applications',
     features: [
       'Apply to unlimited universities',
       'Dedicated UniDoxia Agent support',
       'Review of your university application documents',
       'Personalised university application guidance',
       'Offer letter negotiation support',
+      'Pre-departure information with links to GOV.UK',
       'Priority response times (we aim to respond within 24 to 48 hours on working days)',
       'Direct messaging with your agent',
     ],
     featureNote: 'Visa and immigration advice is not included. We link to official visa information, which is free for everyone.',
+    planDisclaimer: 'UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.',
     paymentLabel: 'One-Time Payment',
     stripePriceId: 'price_agent_supported',
   },

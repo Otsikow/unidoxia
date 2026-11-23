@@ -76,6 +76,9 @@ const BANNED = [
   "Priority response times (24-48 hours)",
   "Full guidance from choosing a course to accepting your offer - One-time payment",
   "next steps towards visas and enrolment",
+  // Kojo 23 Nov /pricing ruling (cc56db8c)
+  "Visa Calculator",
+  "Full guidance from choosing a course to accepting your offer",
 ];
 
 const SOURCE_ROOTS = [
@@ -123,6 +126,10 @@ describe("Kojo 16 Nov visa wording", () => {
       );
       expect(blob, name).not.toMatch(/"95%"/);
     }
+  });
+
+  it("labels the footer visa link as GOV.UK links (Kojo 23 Nov)", () => {
+    expect(en.layout.footer.platformLinks.visaCalculator).toBe("Visa information (GOV.UK links)");
   });
 
   it("covers every shipped locale file", () => {

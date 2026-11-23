@@ -26,7 +26,7 @@ const PLAN_CONFIGS: Record<PlanCode, PlanConfig> = {
     name: "Agent-Supported Plan",
     priceInCents: 20000,
     currency: "usd",
-    description: "Full guidance from choosing a course to accepting your offer. One-time payment.",
+    description: "Full support with your university applications. One-time payment.",
     stripePriceId: STRIPE_AGENT_SUPPORTED_PRICE_ID,
   },
 };

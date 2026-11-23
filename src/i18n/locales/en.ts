@@ -115,7 +115,7 @@ const en = {
       platformLinks: {
         search: "Search Universities",
         blog: "Blog",
-        visaCalculator: "Visa information",
+        visaCalculator: "Visa information (GOV.UK links)",
         feedback: "Feedback",
       },
       supportLinks: {
