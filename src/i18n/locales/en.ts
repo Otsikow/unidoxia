@@ -1032,7 +1032,7 @@ const en = {
   },
   pricing: {
     agentSupportedDisclaimer:
-      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.",
+      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an adviser regulated by the Immigration Advice Authority (IAA, formerly OISC).",
   },
 };
 

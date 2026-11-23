@@ -348,7 +348,7 @@ const it = {
   pricing: {
     ...en.pricing,
     agentSupportedDisclaimer:
-      "UniDoxia non fornisce consulenza in materia di immigrazione né assistenza per le domande di visto. Per domande sui visti, consulta GOV.UK o rivolgiti a un consulente regolamentato dall'OISC.",
+      "UniDoxia non fornisce consulenza in materia di immigrazione né assistenza per le domande di visto. Per domande sui visti, consulta GOV.UK o rivolgiti a un consulente regolamentato dall'Immigration Advice Authority (IAA, ex OISC).",
   },
 };
 

@@ -160,7 +160,7 @@ describe("Kojo 16 Nov visa wording", () => {
     const plan = PRICING_PLANS.find((p) => p.id === "agent_supported");
     expect(en.pricing.agentSupportedDisclaimer).toBe(plan?.planDisclaimer);
     expect(en.pricing.agentSupportedDisclaimer).toBe(
-      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.",
+      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an adviser regulated by the Immigration Advice Authority (IAA, formerly OISC).",
     );
   });
 
@@ -193,11 +193,14 @@ describe("Kojo 16 Nov visa wording", () => {
       expect(label, `${name} footer label`).toContain("GOV.UK");
       expect(disclaimer, `${name} disclaimer`).toContain("GOV.UK");
       expect(disclaimer, `${name} disclaimer`).toContain("OISC");
+      expect(disclaimer, `${name} disclaimer`).toContain("IAA");
+      // Kojo 23 Nov IAA ruling: "regulated by", never "supervised by" / "approved by".
+      expect(disclaimer, `${name} disclaimer`).not.toMatch(/OISC-regul|agréé|anayesimamiwa|Beratungsstelle|supervised|approved/);
       expect(disclaimer, `${name} disclaimer`).toContain("UniDoxia");
       if (name === "en") continue;
       expect(label, `${name} footer label must not be English`).not.toBe(enLabel);
       expect(disclaimer, `${name} disclaimer must not be English`).not.toBe(enDisclaimer);
-      const strip = (s: string) => s.replace(/UniDoxia|GOV\.UK|OISC/g, "");
+      const strip = (s: string) => s.replace(/UniDoxia|GOV\.UK|OISC|IAA|Immigration Advice Authority/g, "");
       expect(strip(disclaimer), `${name} disclaimer must not reuse English text`).not.toContain("immigration advice");
       expect(strip(label), `${name} footer label must not reuse English text`).not.toMatch(/Visa information|links\)/);
     }

@@ -979,7 +979,7 @@ const pt = {
   },
   pricing: {
     agentSupportedDisclaimer:
-      "A UniDoxia não oferece assessoria de imigração nem ajuda com solicitações de visto. Para dúvidas sobre vistos, consulte o GOV.UK ou um consultor regulamentado pelo OISC.",
+      "A UniDoxia não oferece assessoria de imigração nem ajuda com solicitações de visto. Para dúvidas sobre vistos, consulte o GOV.UK ou um consultor regulamentado pela Immigration Advice Authority (IAA, antiga OISC).",
   },
 };
 

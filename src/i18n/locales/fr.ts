@@ -851,7 +851,7 @@ const fr = {
   },
   pricing: {
     agentSupportedDisclaimer:
-      "UniDoxia ne fournit pas de conseils en immigration et n'aide pas aux demandes de visa. Pour toute question sur les visas, consultez GOV.UK ou un conseiller agréé par l'OISC.",
+      "UniDoxia ne fournit pas de conseils en immigration et n'aide pas aux demandes de visa. Pour toute question sur les visas, consultez GOV.UK ou un conseiller réglementé par l'Immigration Advice Authority (IAA, anciennement OISC).",
   },
 };
 

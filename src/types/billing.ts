@@ -77,7 +77,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Direct messaging with your agent',
     ],
     featureNote: 'Visa and immigration advice is not included. We link to official visa information, which is free for everyone.',
-    planDisclaimer: 'UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.',
+    planDisclaimer: 'UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an adviser regulated by the Immigration Advice Authority (IAA, formerly OISC).',
     paymentLabel: 'One-Time Payment',
     stripePriceId: 'price_agent_supported',
   },

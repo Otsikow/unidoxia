@@ -13,7 +13,7 @@ describe('retired self-service offer',()=>{
     expect(plan?.features).not.toContain('Pre-departure information with links to GOV.UK');
     for (const p of PRICING_PLANS) expect(p.features.join(' ')).not.toMatch(/pre-departure|GOV\.UK/i);
     expect(plan?.featureNote).toBeTruthy();
-    expect(plan?.planDisclaimer).toBe('UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.');
+    expect(plan?.planDisclaimer).toBe('UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an adviser regulated by the Immigration Advice Authority (IAA, formerly OISC).');
     expect(plan?.features).toContain('Review of your university application documents');
     expect(plan?.features).toContain('Personalised university application guidance');
     expect(plan?.features).not.toContain('Links to official visa information (GOV.UK and university pages)');

@@ -2,6 +2,10 @@
 // Other locales are loaded dynamically on demand
 import en from "./locales/en";
 
+// Languages offered in the site's language switcher.
+// Do NOT add "sw", "hi", "zh" or "ar" yet: Kojo (23 Nov 2026) requires a recorded
+// native-speaker check of their legal and visa wording first. Record the check in
+// NATIVE_SPEAKER_CHECKS in src/i18n/language-switcher.test.ts before enabling one.
 export const languageList = ["en", "fr", "de", "pt", "it"] as const;
 
 export type SupportedLanguage = (typeof languageList)[number];

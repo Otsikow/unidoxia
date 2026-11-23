@@ -1003,7 +1003,7 @@ const de = {
   },
   pricing: {
     agentSupportedDisclaimer:
-      "UniDoxia bietet keine Einwanderungsberatung und hilft nicht bei Visumanträgen. Bei Fragen zum Visum nutzen Sie GOV.UK oder wenden Sie sich an eine OISC-regulierte Beratungsstelle.",
+      "UniDoxia bietet keine Einwanderungsberatung und hilft nicht bei Visumanträgen. Bei Fragen zum Visum nutzen Sie GOV.UK oder wenden Sie sich an einen Berater, der von der Immigration Advice Authority (IAA, früher OISC) reguliert wird.",
   },
 };
 

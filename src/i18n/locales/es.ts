@@ -493,7 +493,7 @@ const es = {
   },
   pricing: {
     agentSupportedDisclaimer:
-      "UniDoxia no ofrece asesoramiento en materia de inmigración ni ayuda con solicitudes de visado. Para preguntas sobre visados, consulta GOV.UK o acude a un asesor regulado por la OISC.",
+      "UniDoxia no ofrece asesoramiento en materia de inmigración ni ayuda con solicitudes de visado. Para preguntas sobre visados, consulta GOV.UK o acude a un asesor regulado por la Immigration Advice Authority (IAA, antes OISC).",
   },
 };
 

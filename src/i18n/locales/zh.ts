@@ -640,7 +640,7 @@ const zh = {
   },
   pricing: {
     agentSupportedDisclaimer:
-      "UniDoxia 不提供移民咨询，也不协助办理签证申请。如有签证问题，请查阅 GOV.UK 或咨询受 OISC 监管的顾问。",
+      "UniDoxia 不提供移民咨询，也不协助办理签证申请。如有签证问题，请查阅 GOV.UK 或咨询受英国移民咨询管理局（Immigration Advice Authority，IAA，前身为 OISC）监管的顾问。",
   },
 };
 
