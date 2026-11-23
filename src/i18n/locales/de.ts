@@ -115,7 +115,7 @@ const de = {
       platformLinks: {
         search: "Universitäten suchen",
         blog: "Blog",
-        visaCalculator: "Visuminformationen",
+        visaCalculator: "Visuminformationen (Links zu GOV.UK)",
         feedback: "Feedback",
       },
       supportLinks: {
@@ -1000,6 +1000,10 @@ const de = {
         cta: "Mit Zoe triagieren",
       },
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia bietet keine Einwanderungsberatung und hilft nicht bei Visumanträgen. Bei Fragen zum Visum nutzen Sie GOV.UK oder wenden Sie sich an eine OISC-regulierte Beratungsstelle.",
   },
 };
 

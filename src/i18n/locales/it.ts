@@ -335,6 +335,21 @@ const it = {
       },
     },
   },
+  layout: {
+    ...en.layout,
+    footer: {
+      ...en.layout.footer,
+      platformLinks: {
+        ...en.layout.footer.platformLinks,
+        visaCalculator: "Informazioni sui visti (link a GOV.UK)",
+      },
+    },
+  },
+  pricing: {
+    ...en.pricing,
+    agentSupportedDisclaimer:
+      "UniDoxia non fornisce consulenza in materia di immigrazione né assistenza per le domande di visto. Per domande sui visti, consulta GOV.UK o rivolgiti a un consulente regolamentato dall'OISC.",
+  },
 };
 
 export default it;

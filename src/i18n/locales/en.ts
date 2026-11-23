@@ -1030,6 +1030,10 @@ const en = {
       ],
     },
   },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.",
+  },
 };
 
 export default en;

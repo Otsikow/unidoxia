@@ -98,7 +98,7 @@ const hi = {
       platformLinks: {
         search: "विश्वविद्यालय खोजें",
         blog: "ब्लॉग",
-        visaCalculator: "वीज़ा जानकारी",
+        visaCalculator: "वीज़ा जानकारी (GOV.UK लिंक)",
         feedback: "प्रतिक्रिया",
       },
       supportLinks: {
@@ -456,6 +456,10 @@ const hi = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia इमिग्रेशन सलाह नहीं देता और वीज़ा आवेदनों में मदद नहीं करता। वीज़ा से जुड़े सवालों के लिए GOV.UK देखें या किसी OISC-विनियमित सलाहकार से संपर्क करें।",
   },
 };
 

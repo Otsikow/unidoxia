@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const planId = searchParams.get('plan') as StudentPlanType | null;
   const plan = planId ? getPlanById(planId) : null;
@@ -127,7 +129,7 @@ export default function Checkout() {
                   <p className="text-sm text-muted-foreground pt-1">{plan.featureNote}</p>
                 ) : null}
                 {plan.planDisclaimer ? (
-                  <p className="text-sm text-muted-foreground pt-1">{plan.planDisclaimer}</p>
+                  <p className="text-sm text-muted-foreground pt-1">{t('pricing.agentSupportedDisclaimer', { defaultValue: plan.planDisclaimer })}</p>
                 ) : null}
               </div>
 

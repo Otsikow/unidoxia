@@ -10,7 +10,9 @@ describe('retired self-service offer',()=>{
   it('does not advertise visa help on the Agent-Supported plan',()=>{
     const plan=getPlanById('agent_supported');
     expect(plan?.description).toBe('Full support with your university applications');
-    expect(plan?.features).toContain('Pre-departure information with links to GOV.UK');
+    expect(plan?.features).not.toContain('Pre-departure information with links to GOV.UK');
+    for (const p of PRICING_PLANS) expect(p.features.join(' ')).not.toMatch(/pre-departure|GOV\.UK/i);
+    expect(plan?.featureNote).toBeTruthy();
     expect(plan?.planDisclaimer).toBe('UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.');
     expect(plan?.features).toContain('Review of your university application documents');
     expect(plan?.features).toContain('Personalised university application guidance');

@@ -11,6 +11,7 @@ import ar from "@/i18n/locales/ar";
 import hi from "@/i18n/locales/hi";
 import sw from "@/i18n/locales/sw";
 import zh from "@/i18n/locales/zh";
+import { PRICING_PLANS } from "@/types/billing";
 
 const LOCALES = { en, de, fr, pt, es, it: itLocale, ar, hi, sw, zh };
 
@@ -81,6 +82,16 @@ const BANNED = [
   "Full guidance from choosing a course to accepting your offer",
 ];
 
+// Kojo 23 Nov amendment: GOV.UK links are free for everyone, so they must not be sold as a paid-plan feature.
+const PAID_PLAN_BANNED = ["Pre-departure information with links to GOV.UK"];
+const PAID_PLAN_FILES = [
+  "src/types/billing.ts",
+  "src/pages/Pricing.tsx",
+  "src/pages/student/Checkout.tsx",
+  "scripts/prerender-static-pages.mjs",
+  "supabase/functions/create-checkout-session/index.ts",
+];
+
 const SOURCE_ROOTS = [
   join(process.cwd(), "src"),
   join(process.cwd(), "scripts"),
@@ -130,6 +141,51 @@ describe("Kojo 16 Nov visa wording", () => {
 
   it("labels the footer visa link as GOV.UK links (Kojo 23 Nov)", () => {
     expect(en.layout.footer.platformLinks.visaCalculator).toBe("Visa information (GOV.UK links)");
+  });
+
+  it("does not sell GOV.UK pre-departure links as a paid-plan feature (Kojo 23 Nov amendment)", () => {
+    for (const plan of PRICING_PLANS) {
+      for (const feature of plan.features) {
+        for (const phrase of PAID_PLAN_BANNED) expect(feature, plan.id).not.toContain(phrase);
+        expect(feature, plan.id).not.toMatch(/pre-departure|GOV\.UK/i);
+      }
+    }
+    for (const file of PAID_PLAN_FILES) {
+      const text = readFileSync(join(process.cwd(), file), "utf8");
+      for (const phrase of PAID_PLAN_BANNED) expect(text, file).not.toContain(phrase);
+    }
+  });
+
+  it("shows the Agent-Supported disclaimer from the locale, matching the plan copy", () => {
+    const plan = PRICING_PLANS.find((p) => p.id === "agent_supported");
+    expect(en.pricing.agentSupportedDisclaimer).toBe(plan?.planDisclaimer);
+    expect(en.pricing.agentSupportedDisclaimer).toBe(
+      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an OISC-regulated adviser.",
+    );
+  });
+
+  it("translates the footer label and the plan disclaimer in every locale (Kojo 23 Nov amendment)", () => {
+    const enLabel = en.layout.footer.platformLinks.visaCalculator;
+    const enDisclaimer = en.pricing.agentSupportedDisclaimer;
+    for (const [name, locale] of Object.entries(LOCALES)) {
+      const label = (locale as typeof en).layout?.footer?.platformLinks?.visaCalculator;
+      const disclaimer = (locale as typeof en).pricing?.agentSupportedDisclaimer;
+      expect(typeof label, `${name} footer label`).toBe("string");
+      expect(typeof disclaimer, `${name} disclaimer`).toBe("string");
+      expect(label.trim().length, `${name} footer label`).toBeGreaterThan(0);
+      expect(disclaimer.trim().length, `${name} disclaimer`).toBeGreaterThan(0);
+      // Proper nouns stay in English in every locale.
+      expect(label, `${name} footer label`).toContain("GOV.UK");
+      expect(disclaimer, `${name} disclaimer`).toContain("GOV.UK");
+      expect(disclaimer, `${name} disclaimer`).toContain("OISC");
+      expect(disclaimer, `${name} disclaimer`).toContain("UniDoxia");
+      if (name === "en") continue;
+      expect(label, `${name} footer label must not be English`).not.toBe(enLabel);
+      expect(disclaimer, `${name} disclaimer must not be English`).not.toBe(enDisclaimer);
+      const strip = (s: string) => s.replace(/UniDoxia|GOV\.UK|OISC/g, "");
+      expect(strip(disclaimer), `${name} disclaimer must not reuse English text`).not.toContain("immigration advice");
+      expect(strip(label), `${name} footer label must not reuse English text`).not.toMatch(/Visa information|links\)/);
+    }
   });
 
   it("covers every shipped locale file", () => {

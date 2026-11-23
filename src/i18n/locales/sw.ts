@@ -98,7 +98,7 @@ const sw = {
       platformLinks: {
         search: "Tafuta vyuo",
         blog: "Blogu",
-        visaCalculator: "Taarifa za viza",
+        visaCalculator: "Taarifa za viza (viungo vya GOV.UK)",
         feedback: "Maoni",
       },
       supportLinks: {
@@ -456,6 +456,10 @@ const sw = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia haitoi ushauri wa uhamiaji wala haisaidii katika maombi ya viza. Kwa maswali kuhusu viza, tumia GOV.UK au wasiliana na mshauri anayesimamiwa na OISC.",
   },
 };
 

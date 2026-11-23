@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ export default function Pricing() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [loadingPlan, setLoadingPlan] = useState<StudentPlanType | null>(null);
 
@@ -197,7 +199,7 @@ export default function Pricing() {
 
                 {plan.planDisclaimer ? (
                   <p className="text-sm text-muted-foreground" data-testid={`plan-disclaimer-${plan.id}`}>
-                    {plan.planDisclaimer}
+                    {t('pricing.agentSupportedDisclaimer', { defaultValue: plan.planDisclaimer })}
                   </p>
                 ) : null}
 

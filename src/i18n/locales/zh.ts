@@ -98,7 +98,7 @@ const zh = {
       platformLinks: {
         search: "搜索大学",
         blog: "博客",
-        visaCalculator: "签证信息",
+        visaCalculator: "签证信息（GOV.UK 链接）",
         feedback: "反馈",
       },
       supportLinks: {
@@ -637,6 +637,10 @@ const zh = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia 不提供移民咨询，也不协助办理签证申请。如有签证问题，请查阅 GOV.UK 或咨询受 OISC 监管的顾问。",
   },
 };
 

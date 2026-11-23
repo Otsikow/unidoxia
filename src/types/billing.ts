@@ -73,7 +73,6 @@ export const PRICING_PLANS: PricingPlan[] = [
       'Review of your university application documents',
       'Personalised university application guidance',
       'Offer letter negotiation support',
-      'Pre-departure information with links to GOV.UK',
       'Priority response times (we aim to respond within 24 to 48 hours on working days)',
       'Direct messaging with your agent',
     ],

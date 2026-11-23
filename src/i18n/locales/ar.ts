@@ -98,7 +98,7 @@ const ar = {
       platformLinks: {
         search: "ابحث عن الجامعات",
         blog: "المدونة",
-        visaCalculator: "معلومات التأشيرة",
+        visaCalculator: "معلومات التأشيرة (روابط GOV.UK)",
         feedback: "ملاحظات",
       },
       supportLinks: {
@@ -456,6 +456,10 @@ const ar = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "لا تقدّم UniDoxia استشارات في مجال الهجرة ولا تساعد في طلبات التأشيرة. للاستفسار عن التأشيرات، يُرجى الرجوع إلى GOV.UK أو إلى مستشار خاضع لتنظيم OISC.",
   },
 };
 

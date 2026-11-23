@@ -115,7 +115,7 @@ const pt = {
       platformLinks: {
         search: "Buscar universidades",
         blog: "Blog",
-        visaCalculator: "Informação sobre vistos",
+        visaCalculator: "Informação sobre vistos (links para o GOV.UK)",
         feedback: "Feedback",
       },
       supportLinks: {
@@ -976,6 +976,10 @@ const pt = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "A UniDoxia não oferece assessoria de imigração nem ajuda com solicitações de visto. Para dúvidas sobre vistos, consulte o GOV.UK ou um consultor regulamentado pelo OISC.",
   },
 };
 
