@@ -21,7 +21,7 @@ export function getNextApplicationAction(status: string): string {
     screening: 'Check university submission and follow up',
     conditional_offer: 'Check offer conditions with the student',
     unconditional_offer: 'Confirm acceptance and institution next steps',
-    cas_loa: 'Check CAS / LOA details and visa readiness',
+    cas_loa: 'Check CAS / LOA details are correct',
     visa: 'Follow up on the visa outcome',
     enrolled: 'Confirm enrolment record is complete',
     deferred: 'Confirm the revised intake with the institution',

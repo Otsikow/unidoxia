@@ -44,7 +44,7 @@ const sw = {
       helpCenter: "Kituo cha msaada",
       faq: "Maswali",
       feedback: "Maoni",
-      visaCalculator: "Kikokotoo cha viza",
+      visaCalculator: "Taarifa za viza",
       privacy: "Sera ya faragha",
       terms: "Sheria na masharti",
     },
@@ -98,7 +98,7 @@ const sw = {
       platformLinks: {
         search: "Tafuta vyuo",
         blog: "Blogu",
-        visaCalculator: "Kikokotoo cha viza",
+        visaCalculator: "Taarifa za viza (viungo vya GOV.UK)",
         feedback: "Maoni",
       },
       supportLinks: {
@@ -206,7 +206,7 @@ const sw = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -293,9 +293,9 @@ const sw = {
         badge: "Utafutaji wa vyuo na ufadhili unaoendeshwa na AI",
         heading: "Pata kozi sahihi kwa akili ya papo hapo",
         description:
-          "Uliza chochote kuhusu vyuo, kozi au ufadhili popote ulimwenguni. AI yetu huchambua taarifa za udahili, ufadhili na njia za viza zinazolingana na malengo yako.",
+          "Uliza chochote kuhusu vyuo, kozi au ufadhili popote ulimwenguni. Zoe hujibu kutoka taarifa zilizochapishwa za udahili na ufadhili.",
         subheading:
-          "Jisajili ili kufungua mapendekezo ya kibinafsi kuhusu udahili, ufadhili na viza yanayotolewa na AI.",
+          "Jisajili ili kufungua mapendekezo ya kibinafsi kuhusu vyuo, kozi na ufadhili.",
         ctaLabel: "Anza",
         stats: [
           { value: "Tafuta", label: "Chunguza kozi na vyuo vikuu vya kimataifa" },
@@ -318,7 +318,6 @@ const sw = {
             highlights: [
               "Ufadhili unaopea kipaumbele masomo ya STEM na matokeo ya utafiti",
               "Mitaala inayolingana na soko yenye mafunzo ya viwandani na kozi za co-op",
-              "Mwongozo wa viza kwa kazi za teknolojia na uhandisi zenye uhitaji mkubwa",
             ],
           },
           {
@@ -331,17 +330,6 @@ const sw = {
               "Orodha teule ya ufadhili wa umahiri na mahitaji yenye tarehe za mwisho",
               "Maelezo ya kustahiki yanayolingana na historia yako ya masomo",
               "Vidokezo vya kuimarisha barua za motisha na za marejeo",
-            ],
-          },
-          {
-            key: "visa",
-            label: "Rafiki kwa viza",
-            headline: "Njia za kusoma zenye mchakato rahisi wa uhamiaji",
-            description: "Linganisha nchi na taasisi zenye sera rafiki za viza.",
-            highlights: [
-              "Muhtasari wa fursa za kazi baada ya masomo na muda wa ukaaji",
-              "Orodha za ukaguzi wa stakabadhi kulingana na uraia wako",
-              "Mwongozo wa uthibitisho wa kifedha, bima na maandalizi ya usaili",
             ],
           },
           {
@@ -375,7 +363,6 @@ const sw = {
               "Gundua kozi zinazochanganya masomo na uzoefu halisi wa kazi.",
             highlights: [
               "Viwango vya ajira na ushirikiano na makampuni katika maeneo mbalimbali",
-              "Mambo ya kuzingatia kuhusu viza kwa mafunzo yanayolipwa na vipindi vya kazi",
               "Msaada wa huduma za taaluma kwa CV, usaili na ujenzi wa mtandao",
             ],
           },
@@ -469,6 +456,10 @@ const sw = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia haitoi ushauri wa uhamiaji wala haisaidii katika maombi ya viza. Kwa maswali kuhusu viza, tumia GOV.UK au wasiliana na mshauri anayedhibitiwa na Immigration Advice Authority (IAA, zamani ikiitwa OISC).",
   },
 };
 

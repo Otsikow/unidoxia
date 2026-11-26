@@ -47,7 +47,7 @@ const fr = {
       helpCenter: "Centre d'aide",
       faq: "FAQ",
       feedback: "Retour",
-      visaCalculator: "Calculateur de visa",
+      visaCalculator: "Informations sur les visas",
       privacy: "Politique de confidentialité",
       terms: "Conditions d'utilisation",
     },
@@ -117,7 +117,7 @@ const fr = {
       platformLinks: {
         search: "Rechercher des universités",
         blog: "Blog",
-        visaCalculator: "Calculateur de visa",
+        visaCalculator: "Informations sur les visas (liens GOV.UK)",
         feedback: "Retour",
       },
       supportLinks: {
@@ -371,7 +371,7 @@ const fr = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -458,9 +458,9 @@ const fr = {
           badge: "Recherche universitaire et bourses propulsée par l'IA",
           heading: "Trouvez le bon cours avec une intelligence en temps réel",
           description:
-            "Posez toutes vos questions sur les universités, les formations ou les financements dans le monde entier. Notre IA analyse les informations d'admission, les bourses et les parcours de visa adaptés à vos objectifs.",
+            "Posez toutes vos questions sur les universités, les formations ou les financements dans le monde entier. Zoe répond à partir d'informations d'admission et de bourses déjà publiées.",
           subheading:
-            "Inscrivez-vous pour débloquer des recommandations personnalisées alimentées par l'IA sur les admissions, les bourses et les visas.",
+            "Inscrivez-vous pour débloquer des recommandations personnalisées sur les universités, les formations et les bourses.",
           ctaLabel: "Commencer",
           stats: [
             { value: "Rechercher", label: "Explorer les formations et universités internationales" },
@@ -485,7 +485,8 @@ const fr = {
               highlights: [
                 "Bourses privilégiant les filières STEM et la production de recherche",
                 "Cours alignés sur l'industrie avec stages et alternances",
-                "Conseils visa pour les métiers technologiques et d'ingénierie les plus demandés",
+                "Liens vers les informations officielles sur le travail après les études",
+                "Accompagnement pour les candidatures universitaires",
               ],
             },
             {
@@ -498,17 +499,6 @@ const fr = {
                 "Liste sélectionnée de bourses au mérite et sur critères sociaux avec échéances",
                 "Critères d'éligibilité associés à votre parcours académique",
                 "Conseils pour renforcer lettres de motivation et recommandations",
-              ],
-            },
-            {
-              key: "visa",
-              label: "Visa facilité",
-              headline: "Parcours d'études avec démarches migratoires fluides",
-              description: "Comparez les pays et institutions offrant des parcours de visa favorables.",
-              highlights: [
-                "Options de travail post-études et durées de séjour résumées",
-                "Listes de contrôle des documents adaptées à votre nationalité",
-                "Recommandations sur justificatifs financiers, assurances et préparation aux entretiens",
               ],
             },
             {
@@ -542,7 +532,7 @@ const fr = {
                 "Repérez des cours qui associent études et expérience professionnelle concrète.",
               highlights: [
                 "Taux de placement et partenariats entreprises par région",
-                "Points de vigilance visa pour stages rémunérés et périodes en entreprise",
+                "Liens vers les informations officielles sur les droits de travail pour les stages rémunérés",
                 "Accompagnement carrière pour CV, entretiens et réseau",
               ],
             },
@@ -560,18 +550,18 @@ const fr = {
             },
             matched: {
               stage: "Étape 2",
-              metricValue: "24h",
-              metricLabel: "délai moyen de matching",
+              metricValue: "",
+              metricLabel: "",
               description:
                 "Soyez mis en relation avec des conseillers vérifiés et des universités qui correspondent à vos objectifs. Recevez un accompagnement personnalisé à chaque étape.",
               ctaLabel: "Être accompagné",
             },
             offers: {
               stage: "Étape 3",
-              metricValue: "95%",
-              metricLabel: "taux de réussite visa",
+              metricValue: "",
+              metricLabel: "",
               description:
-                "Recevez des offres d'universités et un accompagnement visa complet. Nous vous accompagnons de l'acceptation à l'arrivée.",
+                "Recevez des offres d'universités et des informations de départ provenant de sources gouvernementales officielles. Nous accompagnons votre candidature universitaire de la première demande jusqu'à l'inscription.",
               ctaLabel: "",
             },
           },
@@ -595,16 +585,16 @@ const fr = {
               description:
                 "Notre IA vous met en relation avec les bonnes universités et des conseillers vérifiés qui comprennent vos objectifs. Bénéficiez d'un accompagnement personnalisé tout au long de votre candidature.",
               support:
-                "Un soutien dédié de conseillers experts qui vous aident à perfectionner vos documents, préparer les entretiens et respecter chaque échéance.",
+                "Un soutien dédié de conseillers experts qui vous aident à perfectionner vos documents, préparer les entretiens universitaires et respecter chaque échéance.",
               imageAlt: "Étudiant recevant des conseils personnalisés d'un conseiller en éducation",
             },
             offers: {
-              title: "Recevez des offres et un accompagnement visa",
+              title: "Recevez des offres et des informations de départ",
               description:
-                "Recevez des offres d'universités et un accompagnement visa complet. Nous vous guidons à chaque étape, de l'acceptation jusqu'à votre arrivée dans l'université de vos rêves.",
+                "Recevez des offres d'universités et des informations de départ provenant de sources gouvernementales officielles. Nous accompagnons votre candidature universitaire de la première demande jusqu'à l'inscription.",
               support:
-                "Check-lists visa, préparation aux entretiens et ressources de pré-départ pour que vous soyez prêt à commencer ce nouveau chapitre.",
-              imageAlt: "Étudiant célébrant son acceptation avec ses documents de visa",
+                "Liens vers les informations officielles sur les visas (GOV.UK et d'autres sites officiels) et informations générales de départ. Ceci n'est pas un conseil en immigration.",
+              imageAlt: "Étudiant célébrant une offre universitaire",
             },
           },
         },
@@ -648,7 +638,7 @@ const fr = {
         note: "Zoe est multi-rôle. Très peu de concurrents offrent cela.",
         highlightsHeading: "Ce que Zoe gère pour vous",
         highlights: [
-          "Répond à toutes les questions sur les études à l'étranger avec le contexte régional des visas et des politiques.",
+          "Répond aux questions sur les études à l'étranger et renvoie vers les informations officielles sur les visas.",
           "Vous guide à travers l'application UniDoxia pour que les délais, tableaux de bord et automatisations restent sur la bonne voie.",
           "Lit les documents téléchargés pour recommander instantanément des écoles, des bourses et les prochaines étapes.",
         ],
@@ -858,6 +848,10 @@ const fr = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia ne fournit pas de conseils en immigration et n'aide pas aux demandes de visa. Pour toute question sur les visas, consultez GOV.UK ou un conseiller réglementé par l'Immigration Advice Authority (IAA, anciennement OISC).",
   },
 };
 

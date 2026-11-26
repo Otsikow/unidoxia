@@ -681,7 +681,7 @@ const UniversityOverviewPage = () => {
               Blog
             </Link>
             <Link to="/visa-calculator" className="hover:text-primary-foreground hover:underline">
-              Visa Calculator
+              Visa information
             </Link>
           </div>
         </div>

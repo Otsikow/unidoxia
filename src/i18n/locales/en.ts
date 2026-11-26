@@ -45,7 +45,7 @@ const en = {
       helpCenter: "Help Centre",
       faq: "FAQ",
       feedback: "Feedback",
-      visaCalculator: "Visa Calculator",
+      visaCalculator: "Visa information",
       privacy: "Privacy Notice",
       terms: "Terms of Service",
     },
@@ -115,7 +115,7 @@ const en = {
       platformLinks: {
         search: "Search Universities",
         blog: "Blog",
-        visaCalculator: "Visa Calculator",
+        visaCalculator: "Visa information (GOV.UK links)",
         feedback: "Feedback",
       },
       supportLinks: {
@@ -356,13 +356,13 @@ const en = {
             suffix: "",
           },
           description:
-            "We guide students step-by-step — from course selection to visa approval. No guesswork. No hidden fees.",
+            "We help students choose courses and apply to universities, step by step. No guesswork. No hidden fees.",
           ctas: {
             students: {
               badge: "Students",
               title: "We help you apply to universities abroad with ease",
               description:
-                "From choosing the right university to submitting your application, securing your offer, and preparing for your student visa, UniDoxia supports you every step of the way until you are ready to travel.",
+                "From choosing a course to accepting your offer, UniDoxia supports your university application every step of the way.",
               action: "Register to Start",
             },
             agents: {
@@ -423,7 +423,7 @@ const en = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -452,9 +452,9 @@ const en = {
           badge: "AI-Powered University & Scholarship Search",
           heading: "Find the right course with real-time intelligence",
           description:
-            "Ask anything about universities, courses, or funding worldwide. Our AI engine analyses admissions insights, scholarships, and visa pathways tailored to your goals.",
+            "Ask anything about universities, courses or funding worldwide. Zoe answers from published admissions and scholarship information.",
           subheading:
-            "Sign up to unlock tailored AI recommendations across admissions, scholarships, and visas.",
+            "Sign up to unlock tailored recommendations on universities, courses and scholarships.",
           ctaLabel: "Get Started",
           stats: [
             { value: "Search", label: "Explore international courses and universities" },
@@ -479,7 +479,8 @@ const en = {
               highlights: [
                 "Scholarships that prioritise STEM majors and research output",
                 "Industry-aligned curricula with internships and co-op rotations",
-                "Visa guidance for high-demand technology and engineering roles",
+                "Links to official post-study work information from government websites",
+                "University application support",
               ],
             },
             {
@@ -496,13 +497,13 @@ const en = {
             },
             {
               key: "visa",
-              label: "Visa friendly",
-              headline: "Study routes with smooth immigration journeys",
-              description: "Compare countries and institutions with favourable visa pathways.",
+              label: "Post-study work options (check official government guidance)",
+              headline: "Post-study work options (check official government guidance)",
+              description: "Compare countries' official post-study work rules, with links to each government's website.",
               highlights: [
                 "Post-study work options and stay-back durations summarised",
-                "Documentation checklists tailored to your nationality",
-                "Advisories on financial proof, health cover, and interview prep",
+                "Links to each government's official post-study work pages",
+                "General information only, not immigration advice",
               ],
             },
             {
@@ -536,7 +537,7 @@ const en = {
                 "Surface courses that blend study with hands-on professional experience.",
               highlights: [
                 "Placement rates and employer partnerships across regions",
-                "Visa considerations for paid placements and work terms",
+                "Links to official work-rights information for paid placements",
                 "Career services support for resumes, interviews, and networking",
               ],
             },
@@ -550,7 +551,7 @@ const en = {
           note: "Zoe is multi-role. Very few competitors do this.",
           highlightsHeading: "What Zoe handles for you",
           highlights: [
-            "Answers every study-abroad question with region-aware visa and policy context.",
+            "Answers study-abroad questions and links to official visa information.",
             "Guides you through the entire UniDoxia app so timelines, dashboards, and automations stay on track.",
             "Reads uploaded documents to recommend schools, scholarships, and next steps instantly.",
           ],
@@ -573,7 +574,7 @@ const en = {
               description:
                 "Training, coaching, and on-demand answers are built into the same workspace that powers your agency.",
               capabilities: [
-                "Delivers bite-sized training refreshers for new advisors and support staff.",
+                "Delivers bite-sized training refreshers for new advisers and support staff.",
                 "Turns shared student documents into quick school shortlists you can review with clients.",
                 "Drafts outreach scripts, follow-up plans, and counselling recommendations automatically.",
                 "Flags opportunities to improve conversion using agent analytics pulled from Zoe Intelligence.",
@@ -600,23 +601,23 @@ const en = {
             metricValue: "5 min",
             metricLabel: "to get started",
             description:
-              "Create your profile with academic background, documents, and study preferences — everything in one place.",
+              "Create your profile with your academic background, documents and study preferences, all in one place.",
             ctaLabel: "Start your profile",
           },
           matched: {
             stage: "Step 2",
-            metricValue: "24h",
-            metricLabel: "average match time",
+            metricValue: "",
+            metricLabel: "",
             description:
-              "Get matched with verified advisors and universities that fit your goals. Receive personalized guidance every step of the way.",
+              "Get matched with verified advisers and universities that fit your goals. Receive personalised guidance at every step of your university application.",
             ctaLabel: "Get matched",
           },
           offers: {
             stage: "Step 3",
-            metricValue: "95%",
-            metricLabel: "visa success rate",
+            metricValue: "",
+            metricLabel: "",
             description:
-              "Receive university offers and comprehensive visa guidance. We support you from acceptance to arrival.",
+              "Receive university offers and pre-departure information from official government sources. We support your university application from first enquiry to enrolment.",
             ctaLabel: "",
           },
         },
@@ -638,18 +639,18 @@ const en = {
           matched: {
             title: "Get matched and supported",
             description:
-              "Our AI matches you with the right universities and verified advisors who understand your goals. Get personalized guidance throughout your application journey.",
+              "Our AI matches you with the right universities and verified advisers who understand your goals. Get personalised guidance throughout your application journey.",
             support:
-              "Dedicated support from expert advisors who help you polish documents, prepare for interviews, and meet every deadline.",
-            imageAlt: "Student receiving personalized guidance from an education advisor",
+              "Dedicated support from expert advisers who help you polish documents, prepare for university interviews, and meet every deadline.",
+            imageAlt: "Student receiving personalised guidance from an education adviser",
           },
           offers: {
-            title: "Receive offers and visa guidance",
+            title: "Receive offers and pre-departure information",
             description:
-              "Receive university offers and comprehensive visa support. We guide you through every step from acceptance to arrival at your dream university.",
+              "Receive university offers and pre-departure information from official government sources. We support your university application from first enquiry to enrolment.",
             support:
-              "Visa checklists, interview prep, and pre-departure resources ensure you're ready to start your new chapter.",
-            imageAlt: "Student celebrating acceptance with visa documents",
+              "Links to official visa information (GOV.UK and other official sites) and general pre-departure information. This is not immigration advice.",
+            imageAlt: "Student celebrating a university offer",
           },
         },
       },
@@ -687,10 +688,10 @@ const en = {
       },
         visa: {
           badge: "Feature Spotlight",
-          title: "Understand your visa eligibility before you apply",
+          title: "See the official Student visa requirements from GOV.UK",
           description:
-            "Our Visa Eligibility Calculator analyses your profile instantly so you can focus on the countries and courses that welcome you the most.",
-          cta: "Explore the Visa Calculator",
+            "Read general student visa information from official government websites. This is not immigration advice, and it is not a decision about your own application.",
+          cta: "Visa information",
         },
         feeCalculator: {
           badge: "AI Fee Calculator",
@@ -982,7 +983,7 @@ const en = {
             {
               question: "How do I stay informed about my application status?",
               answer:
-                "Your personalized dashboard shows real-time updates, deadlines, and next steps so you always know what to do next.",
+                "Your personalised dashboard shows real-time updates, deadlines, and next steps so you always know what to do next.",
             },
           ],
         },
@@ -1028,6 +1029,10 @@ const en = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an adviser regulated by the Immigration Advice Authority (IAA, formerly OISC).",
   },
 };
 

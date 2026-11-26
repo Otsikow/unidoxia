@@ -45,7 +45,7 @@ const pt = {
       helpCenter: "Central de ajuda",
       faq: "FAQ",
       feedback: "Feedback",
-      visaCalculator: "Calculadora de visto",
+      visaCalculator: "Informação sobre vistos",
       privacy: "Política de privacidade",
       terms: "Termos de uso",
     },
@@ -115,7 +115,7 @@ const pt = {
       platformLinks: {
         search: "Buscar universidades",
         blog: "Blog",
-        visaCalculator: "Calculadora de visto",
+        visaCalculator: "Informação sobre vistos (links para o GOV.UK)",
         feedback: "Feedback",
       },
       supportLinks: {
@@ -421,7 +421,7 @@ const pt = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -508,9 +508,9 @@ const pt = {
           badge: "Busca de universidades e bolsas com IA",
           heading: "Encontre o curso ideal com inteligência em tempo real",
           description:
-            "Pergunte tudo sobre universidades, cursos ou financiamento no mundo inteiro. Nossa IA analisa dados de admissão, bolsas e rotas de visto alinhadas aos seus objetivos.",
+            "Pergunte tudo sobre universidades, cursos ou financiamento no mundo inteiro. A Zoe responde com base em informações publicadas sobre admissão e bolsas.",
           subheading:
-            "Crie uma conta para liberar recomendações personalizadas de admissão, bolsas e vistos alimentadas por IA.",
+            "Crie uma conta para liberar recomendações personalizadas sobre universidades, cursos e bolsas.",
           ctaLabel: "Começar",
           stats: [
             { value: "Buscar", label: "Explore cursos e universidades internacionais" },
@@ -535,7 +535,8 @@ const pt = {
               highlights: [
                 "Bolsas que priorizam cursos STEM e produção científica",
                 "Currículos alinhados ao mercado com estágios e cursos co-op",
-                "Orientação de visto para carreiras tecnológicas e de engenharia em alta demanda",
+                "Links para informação oficial sobre trabalho após os estudos em sites governamentais",
+                "Apoio à candidatura universitária",
               ],
             },
             {
@@ -548,17 +549,6 @@ const pt = {
                 "Lista curada de bolsas por mérito e necessidade com prazos",
                 "Critérios de elegibilidade conectados ao seu histórico acadêmico",
                 "Dicas para fortalecer cartas de motivação e recomendações",
-              ],
-            },
-            {
-              key: "visa",
-              label: "Facilidade de visto",
-              headline: "Rotas de estudo com processos migratórios tranquilos",
-              description: "Compare países e instituições com caminhos de visto favoráveis.",
-              highlights: [
-                "Opções de trabalho pós-estudo e tempos de permanência resumidos",
-                "Checklists de documentos adaptadas à sua nacionalidade",
-                "Orientações sobre comprovação financeira, seguros e preparação para entrevistas",
               ],
             },
             {
@@ -592,7 +582,7 @@ const pt = {
                 "Encontre cursos que combinam estudo com experiência profissional prática.",
               highlights: [
                 "Taxas de colocação e parcerias com empresas em diversas regiões",
-                "Considerações de visto para estágios remunerados e períodos de trabalho",
+                "Links para informação oficial sobre direitos de trabalho em estágios remunerados",
                 "Suporte de carreiras para currículo, entrevistas e networking",
               ],
             },
@@ -610,18 +600,18 @@ const pt = {
             },
             matched: {
               stage: "Etapa 2",
-              metricValue: "24h",
-              metricLabel: "tempo médio de matching",
+              metricValue: "",
+              metricLabel: "",
               description:
                 "Seja conectado a consultores verificados e universidades que combinam com seus objetivos. Receba orientação personalizada em cada etapa.",
               ctaLabel: "Ser conectado",
             },
             offers: {
               stage: "Etapa 3",
-              metricValue: "95%",
-              metricLabel: "taxa de sucesso de visto",
+              metricValue: "",
+              metricLabel: "",
               description:
-                "Receba ofertas de universidades e orientação completa de visto. Acompanhamos você da aceitação até a chegada.",
+                "Receba ofertas de universidades e informações pré-embarque de fontes governamentais oficiais. Apoiamos a sua candidatura universitária desde o primeiro contato até a matrícula.",
               ctaLabel: "",
             },
           },
@@ -645,16 +635,16 @@ const pt = {
               description:
                 "Nossa IA conecta você às universidades certas e consultores verificados que entendem seus objetivos. Receba orientação personalizada durante toda a candidatura.",
               support:
-                "Apoio dedicado de consultores especialistas que ajudam com documentos, entrevistas e prazos.",
+                "Apoio dedicado de consultores especialistas que ajudam com documentos, entrevistas universitárias e prazos.",
               imageAlt: "Estudante recebendo orientação personalizada de consultor educacional",
             },
             offers: {
-              title: "Receba ofertas e orientação de visto",
+              title: "Receba ofertas e informações pré-embarque",
               description:
-                "Receba ofertas de universidades e suporte completo de visto. Orientamos você em cada etapa, da aceitação até a chegada na universidade dos seus sonhos.",
+                "Receba ofertas de universidades e informações pré-embarque de fontes governamentais oficiais. Apoiamos a sua candidatura universitária desde o primeiro contato até a matrícula.",
               support:
-                "Checklists de visto, preparação para entrevistas e recursos pré-embarque garantem que você esteja pronto para esse novo capítulo.",
-              imageAlt: "Estudante comemorando aceitação com documentos de visto",
+                "Links para informação oficial sobre vistos (GOV.UK e outros sites oficiais) e informação geral pré-embarque. Isto não constitui aconselhamento de imigração.",
+              imageAlt: "Estudante comemorando uma oferta universitária",
             },
           },
         },
@@ -692,10 +682,10 @@ const pt = {
         },
         visa: {
           badge: "Destaque",
-          title: "Entenda sua elegibilidade de visto antes de se candidatar",
+          title: "Consulte os requisitos oficiais do Student visa no GOV.UK",
           description:
-            "Nossa Calculadora de Elegibilidade de Visto analisa seu perfil em instantes para que você foque nos países e cursos com maior afinidade.",
-          cta: "Explorar a calculadora de visto",
+            "Leia informações gerais sobre vistos de estudante em sites oficiais do governo. Isso não é assessoria de imigração nem uma decisão sobre a sua candidatura.",
+          cta: "Informação sobre vistos",
         },
         feeCalculator: {
           badge: "Calculadora de custos com IA",
@@ -772,7 +762,7 @@ const pt = {
           note: "Zoe é multifuncional. Poucos concorrentes oferecem isso.",
           highlightsHeading: "O que a Zoe faz por você",
           highlights: [
-            "Responde a todas as perguntas sobre estudar no exterior com contexto regional de vistos e políticas.",
+            "Responde a perguntas sobre estudar no exterior e indica informação oficial sobre vistos.",
             "Guia você por todo o app UniDoxia para que cronogramas, painéis e automações sigam no caminho certo.",
             "Lê documentos enviados para recomendar escolas, bolsas e próximos passos instantaneamente.",
           ],
@@ -986,6 +976,10 @@ const pt = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "A UniDoxia não oferece assessoria de imigração nem ajuda com solicitações de visto. Para dúvidas sobre vistos, consulte o GOV.UK ou um consultor regulamentado pela Immigration Advice Authority (IAA, antiga OISC).",
   },
 };
 

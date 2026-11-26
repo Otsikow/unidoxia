@@ -34,9 +34,9 @@ const About = () => {
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">About UniDoxia</h1>
           <p className="text-lg leading-relaxed text-muted-foreground">
             UniDoxia is a study-abroad support platform built around the needs of international
-            students worldwide. We help
-            students research courses and universities, prepare applications, and understand
-            common visa and scholarship requirements.
+            students worldwide. We help students research courses and universities, prepare
+            university applications and find scholarships. For visa rules, we link to official
+            government websites.
           </p>
         </div>
         <figure className="overflow-hidden rounded-2xl border bg-muted shadow-lg">
@@ -64,16 +64,16 @@ const About = () => {
       <h2 className="text-2xl font-semibold mt-8 mb-3">What we do</h2>
       <p className="text-muted-foreground mb-4">
         We combine a course and university search experience with step-by-step
-        application guidance and educational content on visas, scholarships, and
-        admissions. Students can also connect with our team for help at any stage
-        of the journey.
+        university application guidance and educational content on scholarships and
+        admissions, with links to official visa information. Students can also connect
+        with our team for help at any stage of the journey.
       </p>
 
       <h2 className="text-2xl font-semibold mt-8 mb-3">What we don't do</h2>
       <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
         <li>We do not guarantee admission, scholarship, or visa outcomes.</li>
         <li>We do not provide legal or immigration advice.</li>
-        <li>We do not replace official government or university guidance — always
+        <li>We do not replace official government or university guidance. Always
           confirm current requirements on the official source before applying.</li>
       </ul>
 

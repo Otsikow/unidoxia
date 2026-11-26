@@ -2,7 +2,7 @@
 
 > UniDoxia supports international students with study-abroad discovery
 > and application guidance, including course search, university
-> shortlisting, scholarship discovery, and visa preparation resources.
+> shortlisting, scholarship discovery, and links to official visa information.
 > We provide educational guidance, not legal advice, and we do not
 > guarantee admission, scholarship, or visa outcomes.
 
@@ -13,7 +13,7 @@ Website: https://unidoxia.com
 - Study Abroad Courses: https://unidoxia.com/courses
 - Universities: https://unidoxia.com/universities
 - Scholarships: https://unidoxia.com/scholarships
-- Visa Calculator: https://unidoxia.com/visa-calculator
+- Visa information: https://unidoxia.com/visa-calculator
 - Blog: https://unidoxia.com/blog
 - FAQ: https://unidoxia.com/faq
 - Contact: https://unidoxia.com/contact

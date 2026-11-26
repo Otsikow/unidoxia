@@ -264,7 +264,7 @@ export default function BlogPost() {
       <section className="mt-10 rounded-xl border bg-muted/40 p-6 space-y-3 [&_a]:!text-blue-800 dark:[&_a]:!text-blue-300">
         <h2 className="text-xl font-semibold">Plan your next step</h2>
         {/\b(UK|United Kingdom|British)\b/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/destinations/united-kingdom">Plan your UK university shortlist</Link>.</p>}
-        {/visa/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/visa-calculator">Explore student visa readiness</Link> and <Link className="text-primary underline" to="/faq">read common application questions</Link>.</p>}
+        {/visa/i.test([data.title, ...(data.tags || [])].join(' ')) && <p><Link className="text-primary underline" to="/visa-calculator">Read official visa information</Link> and <Link className="text-primary underline" to="/faq">read common application questions</Link>.</p>}
         <p>Compare <Link className="text-primary underline" to="/courses">courses and entry requirements</Link>, explore <Link className="text-primary underline" to="/universities">universities by destination</Link> or check <Link className="text-primary underline" to="/scholarships">scholarship eligibility and deadlines</Link>.</p>
         <p><Link className="text-primary underline" to="/free-consultation">Ask about your study plans in a free consultation</Link>.</p>
       </section>

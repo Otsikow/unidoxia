@@ -36,7 +36,7 @@ const it = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -123,9 +123,9 @@ const it = {
         badge: "Ricerca università e borse di studio con IA",
         heading: "Trova il corso giusto con un'intelligenza in tempo reale",
         description:
-          "Fai domande su università, corsi o finanziamenti in qualsiasi parte del mondo. La nostra IA analizza dati di ammissione, borse di studio e percorsi di visto in linea con i tuoi obiettivi.",
+          "Fai domande su università, corsi o finanziamenti in qualsiasi parte del mondo. Zoe risponde sulla base di informazioni pubblicate su ammissioni e borse di studio.",
         subheading:
-          "Iscriviti per sbloccare consigli personalizzati basati sull'IA su ammissioni, borse di studio e visti.",
+          "Iscriviti per sbloccare consigli personalizzati su università, corsi e borse di studio.",
         ctaLabel: "Inizia ora",
         stats: [
           { value: "Cerca", label: "Esplora corsi e università internazionali" },
@@ -150,7 +150,8 @@ const it = {
             highlights: [
               "Borse che privilegiano corsi STEM e risultati di ricerca",
               "Curricula allineati al mercato con stage e corsi co-op",
-              "Indicazioni sul visto per ruoli tecnologici e ingegneristici molto richiesti",
+              "Collegamenti alle informazioni ufficiali sul lavoro dopo gli studi",
+              "Supporto per la candidatura universitaria",
             ],
           },
           {
@@ -163,17 +164,6 @@ const it = {
               "Elenco selezionato di borse al merito e per necessità con scadenze",
               "Requisiti di idoneità collegati al tuo percorso accademico",
               "Suggerimenti per rafforzare lettere motivazionali e referenze",
-            ],
-          },
-          {
-            key: "visa",
-            label: "Visti favorevoli",
-            headline: "Percorsi di studio con iter migratori scorrevoli",
-            description: "Confronta paesi e istituzioni con percorsi di visto vantaggiosi.",
-            highlights: [
-              "Opzioni di lavoro post-laurea e durata della permanenza riassunte",
-              "Checklist documentali adattate alla tua nazionalità",
-              "Indicazioni su prove finanziarie, assicurazioni e preparazione ai colloqui",
             ],
           },
           {
@@ -207,7 +197,7 @@ const it = {
               "Trova corsi che combinano studio ed esperienza professionale concreta.",
             highlights: [
               "Tassi di inserimento e partnership con aziende nelle varie regioni",
-              "Considerazioni sul visto per tirocini retribuiti e periodi lavorativi",
+              "Collegamenti alle informazioni ufficiali sui diritti di lavoro per tirocini retribuiti",
               "Supporto career service per CV, colloqui e networking",
             ],
           },
@@ -221,7 +211,7 @@ const it = {
         note: "Zoe è multi-ruolo. Pochissimi competitor lo offrono.",
         highlightsHeading: "Cosa gestisce Zoe per te",
         highlights: [
-          "Risponde a ogni domanda sugli studi all'estero con contesto regionale su visti e normative.",
+          "Risponde alle domande sugli studi all'estero e rinvia alle informazioni ufficiali sui visti.",
           "Ti guida attraverso l'intera app UniDoxia affinché scadenze, dashboard e automazioni restino in carreggiata.",
           "Legge i documenti caricati per consigliare istantaneamente scuole, borse di studio e prossimi passi.",
         ],
@@ -344,6 +334,21 @@ const it = {
         duration: "{{months}} mesi",
       },
     },
+  },
+  layout: {
+    ...en.layout,
+    footer: {
+      ...en.layout.footer,
+      platformLinks: {
+        ...en.layout.footer.platformLinks,
+        visaCalculator: "Informazioni sui visti (link a GOV.UK)",
+      },
+    },
+  },
+  pricing: {
+    ...en.pricing,
+    agentSupportedDisclaimer:
+      "UniDoxia non fornisce consulenza in materia di immigrazione né assistenza per le domande di visto. Per domande sui visti, consulta GOV.UK o rivolgiti a un consulente regolamentato dall'Immigration Advice Authority (IAA, ex OISC).",
   },
 };
 

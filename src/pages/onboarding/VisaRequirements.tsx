@@ -19,9 +19,7 @@ const visaCountries = [
 ];
 
 const featureChips = [
-  "Personalized checklists",
-  "Step-by-step guidance",
-  "Document tracking",
+  "Official links only",
 ];
 
 export default function OnboardingVisaRequirements() {
@@ -59,7 +57,7 @@ export default function OnboardingVisaRequirements() {
           currentStep={2}
           totalSteps={totalSteps}
           stepCompletion={stepCompletion}
-          label="Confirm your visa-readiness steps"
+          label="Find official visa information"
         />
 
         <div className="flex-1 flex flex-col items-center justify-center">
@@ -71,12 +69,12 @@ export default function OnboardingVisaRequirements() {
             <div className="rounded-3xl border border-border/60 bg-card/70 shadow-2xl backdrop-blur-md px-6 py-8 sm:px-10 sm:py-12">
               <div className="flex flex-col items-center text-center gap-4">
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Visa guidance, simplified</p>
+                  <p className="text-sm text-muted-foreground">Official visa information</p>
                   <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
-                    Navigate Visa Requirements <span className="text-primary">Easily</span>
+                    Where to find official visa information
                   </h1>
                   <p className="text-muted-foreground max-w-2xl mx-auto">
-                    Get personalized checklists and step-by-step guidance tailored to your destination. Stay on track with documents, appointments, and approvals.
+                    Links to the official visa pages for your destination. We don't give immigration advice. For advice about your own application, use the official website, your university's international team or a regulated adviser.
                   </p>
                 </div>
 
@@ -123,17 +121,17 @@ export default function OnboardingVisaRequirements() {
 
           <div className="flex items-center gap-2 mt-6 text-sm text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-primary" />
-            <span>Visa-ready support for UK, USA, Canada, Germany, Ireland, and Australia</span>
+            <span>Official visa links for the UK, USA, Canada, Germany, Ireland and Australia</span>
           </div>
 
           <div className="mt-6 flex items-center gap-3 text-sm text-muted-foreground">
             <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-muted/50 border border-border/60">
               <FileCheck className="h-4 w-4 text-primary" />
-              <span>Organized visa documentation in one place</span>
+              <span>Keep your university application documents in one place</span>
             </div>
             <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-muted/50 border border-border/60">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <span>General guidance — official visa authorities make final decisions</span>
+              <span>General information only, not immigration advice. Official visa authorities make all decisions.</span>
             </div>
           </div>
 

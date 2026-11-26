@@ -202,7 +202,6 @@ const contactMethods = [
 ];
 
 const supportOptions = [
-  { label: 'Visa Application Guidance', value: 'visa' },
   { label: 'Scholarship & Funding Advice', value: 'scholarship' },
   { label: 'Accommodation Support', value: 'accommodation' },
   { label: 'Application Review', value: 'application' },
@@ -1209,7 +1208,7 @@ export default function StudentIntakeForm() {
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-sm text-muted-foreground">
-                  We respond within 24 hours. Submitting this form won’t create any obligation and you can update details
+                  We aim to respond within 24 hours (working days). Submitting this form won’t create any obligation and you can update details
                   later.
                 </p>
                 <Button type="submit" size="lg" className="min-w-[180px]" disabled={isSubmitting}>
@@ -1316,7 +1315,7 @@ export default function StudentIntakeForm() {
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">2</span>
                 <div>
                   <p className="font-medium">Expert consultation</p>
-                  <p className="text-muted-foreground">Discuss application timelines, visa steps, and required documents.</p>
+                  <p className="text-muted-foreground">Discuss application timelines and required documents.</p>
                 </div>
               </li>
               <li className="flex gap-3">

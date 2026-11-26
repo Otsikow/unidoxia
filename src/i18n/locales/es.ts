@@ -44,7 +44,7 @@ const es = {
       helpCenter: "Centro de ayuda",
       faq: "FAQ",
       feedback: "Comentarios",
-      visaCalculator: "Calculadora de visa",
+      visaCalculator: "Información sobre visados",
       privacy: "Política de privacidad",
       terms: "Términos de servicio",
     },
@@ -98,7 +98,7 @@ const es = {
       platformLinks: {
         search: "Buscar universidades",
         blog: "Blog",
-        visaCalculator: "Calculadora de visa",
+        visaCalculator: "Información sobre visados (enlaces a GOV.UK)",
         feedback: "Comentarios",
       },
       supportLinks: {
@@ -237,7 +237,7 @@ const es = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -324,9 +324,9 @@ const es = {
         badge: "Búsqueda de universidades y becas con IA",
         heading: "Encuentra el curso adecuado con inteligencia en tiempo real",
         description:
-          "Pregunta lo que necesites sobre universidades, cursos o financiación en cualquier parte del mundo. Nuestra IA analiza información de admisiones, becas y vías de visado adaptadas a tus objetivos.",
+          "Pregunta lo que necesites sobre universidades, cursos o financiación en cualquier parte del mundo. Zoe responde a partir de información publicada sobre admisiones y becas.",
         subheading:
-          "Regístrate para desbloquear recomendaciones personalizadas con IA sobre admisiones, becas y visados.",
+          "Regístrate para desbloquear recomendaciones personalizadas sobre universidades, cursos y becas.",
         ctaLabel: "Comenzar",
         stats: [
           { value: "Buscar", label: "Explora cursos y universidades internacionales" },
@@ -349,7 +349,8 @@ const es = {
             highlights: [
               "Becas que priorizan carreras STEM y proyectos de investigación",
               "Planes de estudio alineados con la industria y periodos de prácticas o co-op",
-              "Orientación de visado para profesiones tecnológicas e ingenieriles en alta demanda",
+              "Enlaces a información oficial sobre el trabajo tras los estudios",
+              "Apoyo para la solicitud universitaria",
             ],
           },
           {
@@ -362,17 +363,6 @@ const es = {
               "Listado curado de becas por mérito y necesidad con fechas límite",
               "Requisitos de elegibilidad vinculados con tu trayectoria académica",
               "Consejos para fortalecer cartas de motivación y recomendaciones",
-            ],
-          },
-          {
-            key: "visa",
-            label: "Facilidad de visado",
-            headline: "Rutas de estudio con procesos migratorios ágiles",
-            description: "Compara países e instituciones con vías de visado favorables.",
-            highlights: [
-              "Opciones de trabajo posterior y periodos de permanencia resumidos",
-              "Listas de verificación de documentos según tu nacionalidad",
-              "Indicaciones sobre pruebas financieras, seguros y preparación para entrevistas",
             ],
           },
           {
@@ -406,7 +396,7 @@ const es = {
               "Descubre cursos que combinan estudios con experiencia profesional práctica.",
             highlights: [
               "Tasas de colocación y alianzas empresariales en diferentes regiones",
-              "Consideraciones de visado para prácticas remuneradas y periodos laborales",
+              "Enlaces a información oficial sobre derechos laborales en prácticas remuneradas",
               "Apoyo de servicios de carrera para CV, entrevistas y networking",
             ],
           },
@@ -500,6 +490,10 @@ const es = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia no ofrece asesoramiento en materia de inmigración ni ayuda con solicitudes de visado. Para preguntas sobre visados, consulta GOV.UK o acude a un asesor regulado por la Immigration Advice Authority (IAA, antes OISC).",
   },
 };
 

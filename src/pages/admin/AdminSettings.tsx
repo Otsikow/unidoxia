@@ -219,16 +219,6 @@ const emailAutomationTriggers: EmailAutomationTrigger[] = [
     sampleSubject: "Reminder: secure your seat before the deadline",
     defaultEnabled: true,
   },
-  {
-    id: "visa-interview",
-    title: "Visa interview reminder",
-    audience: "students",
-    description:
-      "Delivers embassy checklist guidance and nudges partner universities when students confirm interview slots.",
-    cadence: "Weekly until interview date",
-    sampleSubject: "Visa interview prep checklist",
-    defaultEnabled: true,
-  },
 ];
 
 const integrationSeed: Integration[] = [

@@ -2,6 +2,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import OpenAI from "https://esm.sh/openai@4";
+import { isVisaKnowledgeItem, visaScopeReply } from "../_shared/zoeVisaScope.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -179,6 +181,7 @@ function buildKnowledgeContext(matches: Array<Record<string, unknown>>): {
 
   const trimmedMatches = matches
     .filter((match) => typeof match?.content === "string")
+    .filter((match) => !isVisaKnowledgeItem(match))
     .slice(0, 6);
 
   const contextSections = trimmedMatches
@@ -394,6 +397,82 @@ serve(async (req) => {
     const preferredLocale = normalizeLocale(body.locale ?? profile?.locale ?? navigatorLocale(req.headers));
     const shortLocale = preferredLocale?.split("-")?.[0] ?? null;
 
+    const visaReply = visaScopeReply(lastUserMessage.content);
+    if (visaReply) {
+      let conversationId: string | null = null;
+      try {
+        const { data: conversation, error: upsertError } = await supabase
+          .from("zoe_chat_conversations")
+          .upsert(
+            {
+              external_session_id: sessionId,
+              user_id: context.userId,
+              tenant_id: profile?.tenant_id ?? null,
+              locale: preferredLocale,
+              audience: audienceFilter?.join(", ") ?? null,
+              last_user_message_at: new Date().toISOString(),
+            },
+            { onConflict: "external_session_id" },
+          )
+          .select("id")
+          .maybeSingle();
+        if (upsertError) {
+          console.error("Failed to upsert Zoe conversation", upsertError);
+        }
+        if (conversation?.id) {
+          conversationId = conversation.id as string;
+          await supabase.from("zoe_chat_messages").insert({
+            conversation_id: conversationId,
+            role: "user",
+            content: lastUserMessage.content,
+            metadata: {
+              audience: audienceFilter,
+              locale: preferredLocale,
+              visa_scope: "refused",
+            },
+          });
+          await supabase.from("zoe_chat_messages").insert({
+            conversation_id: conversationId,
+            role: "assistant",
+            content: visaReply,
+            metadata: {
+              audience: audienceFilter,
+              locale: preferredLocale,
+              visa_scope: "fixed-refusal",
+            },
+          });
+          await supabase
+            .from("zoe_chat_conversations")
+            .update({ last_assistant_message_at: new Date().toISOString() })
+            .eq("id", conversationId);
+        }
+      } catch (error) {
+        console.error("Failed to log Zoe visa-scope refusal", error);
+      }
+
+      const stream = new ReadableStream({
+        start(controller) {
+          const encoder = new TextEncoder();
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ choices: [{ delta: { content: visaReply } }] })}\n\n`,
+            ),
+          );
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
+
     // Retrieve embeddings for the latest user message
     let embedding: number[] | null = null;
     try {
@@ -485,9 +564,8 @@ Your mission:
 - Default to English unless the user explicitly requests another language.
 
 **CONTROLLED SCOPE RULES:**
-1. **Visa Advice:** Provide ONLY basic, publicly available visa information (documents required, general process steps). DO NOT provide legal advice or predict outcomes.
-2. **Escalation Trigger:** If the user asks about "Visa Refusals", "Eligibility Disputes", or complex legal matters, you MUST escalate.
-   - Response format for escalation: "This requires personalized attention from our support team. Please contact us at info@unidoxia.com or reach out to your assigned counselor directly."
+1. **No visa or immigration advice.** UniDoxia is not authorised to give immigration advice. Never tell a user whether they are, or are likely to be, eligible for a visa; never assess their documents, money, refusal history, dependants or chances; never suggest what they should do about a refusal, appeal or reapplication; never predict outcomes or give success rates. Do not apply visa rules to the user's own situation, even if they give you their details.
+2. **What you may do on visas.** You may say, in general terms, where official information is published, and give links. Reply to any visa or immigration question with: "I can't give advice about your own visa. Please check the official government website (for the UK: https://www.gov.uk/student-visa), your university's international student team, or a regulated immigration adviser (in the UK: https://www.gov.uk/find-an-immigration-adviser). I'm happy to help with choosing and applying to universities." Do not pass visa or immigration questions to UniDoxia staff or counsellors.
 3. **Improv:** Do not improvise or guess on university specific requirements if not provided in the context.
 4. **FAQ Role:** You are an FAQ bot. Prioritize answering: "What documents are required?", "How long does this stage take?", "What does conditional offer mean?".
 `;

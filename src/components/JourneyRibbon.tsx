@@ -16,6 +16,13 @@ const SEGMENT_CONFIG: JourneySegmentConfig[] = [
   { key: "offers", icon: Award, gradient: "from-emerald-500 via-teal-500 to-primary" },
 ];
 
+
+const optionalMetric = (t: (key: string, options?: { defaultValue?: string }) => string, key: string): string => {
+  const value = t(key, { defaultValue: "" });
+  if (!value || value === key) return "";
+  return value;
+};
+
 export const JourneyRibbon = () => {
   const { t } = useTranslation();
 
@@ -28,8 +35,8 @@ export const JourneyRibbon = () => {
         return {
           ...segment,
           stage: t(`${baseKey}.stage`),
-          metricValue: t(`${baseKey}.metricValue`),
-          metricLabel: t(`${baseKey}.metricLabel`),
+          metricValue: optionalMetric(t, `${baseKey}.metricValue`),
+          metricLabel: optionalMetric(t, `${baseKey}.metricLabel`),
           description: t(`${baseKey}.description`),
           ctaLabel: ctaLabel.trim() ? ctaLabel : null,
         };
@@ -85,12 +92,18 @@ export const JourneyRibbon = () => {
                       <span className="inline-flex items-center rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/90 shadow-sm sm:text-xs">
                         {segment.stage}
                       </span>
-                      <div className="flex flex-wrap items-baseline gap-2">
-                        <span className="text-3xl font-bold leading-none drop-shadow-sm sm:text-4xl">{segment.metricValue}</span>
-                        <span className="max-w-[140px] break-words text-[11px] font-semibold uppercase text-white/80 sm:text-xs">
-                          {segment.metricLabel}
-                        </span>
-                      </div>
+                      {(segment.metricValue || segment.metricLabel) && (
+                        <div className="flex flex-wrap items-baseline gap-2">
+                          {segment.metricValue ? (
+                            <span className="text-3xl font-bold leading-none drop-shadow-sm sm:text-4xl">{segment.metricValue}</span>
+                          ) : null}
+                          {segment.metricLabel ? (
+                            <span className="max-w-[140px] break-words text-[11px] font-semibold uppercase text-white/80 sm:text-xs">
+                              {segment.metricLabel}
+                            </span>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   </div>
 

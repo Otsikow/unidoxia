@@ -46,7 +46,6 @@ export interface StudentProfile {
   };
   subjects?: string[];
   study_gap_years?: number;
-  previous_visa_refusals?: number;
   academic_progression?: 'strong' | 'steady' | 'weak';
   preferences: {
     countries: string[];
@@ -148,24 +147,7 @@ const evaluateProgramEligibility = (
     if (profile.age > maxAge) {
       ineligible.push(`Age exceeds maximum of ${maxAge}`);
     } else if (profile.age >= maxAge - 2) {
-      borderline.push('Age close to upper limit—visa risk');
-    }
-  }
-
-  // Visa-risk flags
-  if (typeof profile.study_gap_years === 'number') {
-    if (profile.study_gap_years >= 5) {
-      ineligible.push('Study gap too long for visa approval');
-    } else if (profile.study_gap_years >= 3) {
-      borderline.push('Long study gap—justify with work or certifications');
-    }
-  }
-
-  if (typeof profile.previous_visa_refusals === 'number') {
-    if (profile.previous_visa_refusals >= 3) {
-      ineligible.push('Multiple previous visa refusals');
-    } else if (profile.previous_visa_refusals >= 1) {
-      borderline.push('Prior visa refusal—requires strong SOP and evidence');
+      borderline.push('Age close to the programme\'s upper age limit');
     }
   }
 
@@ -189,7 +171,7 @@ const evaluateProgramEligibility = (
 
   return {
     status: 'Eligible – Auto Proceed',
-    reasons: ['Meets minimum program and visa checks']
+    reasons: ['Meets the programme\'s published entry requirements']
   };
 };
 
@@ -384,68 +366,10 @@ export const useAIRecommendations = () => {
     }
   };
 
-  const getVisaEligibility = async (country: string, profile: StudentProfile) => {
-    // Simple visa eligibility estimation based on common factors
-    let eligibility: 'High' | 'Medium' | 'Low' = 'Medium';
-    const factors: string[] = [];
-
-    // Academic performance
-    if (profile.academic_scores.gpa && profile.academic_scores.gpa >= 3.5) {
-      factors.push('Strong academic record');
-    }
-
-    // Language proficiency
-    if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 7.0) {
-      factors.push('Excellent English proficiency');
-    }
-
-    // Financial capacity
-    const [minBudget, maxBudget] = profile.preferences.budget_range;
-    if (maxBudget >= 50000) {
-      factors.push('Strong financial capacity');
-    }
-
-    // Country-specific factors
-    switch (country.toLowerCase()) {
-      case 'canada':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.5) {
-          eligibility = 'High';
-          factors.push('Meets Canadian language requirements');
-        }
-        break;
-      case 'united kingdom':
-      case 'uk':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.0) {
-          eligibility = 'High';
-          factors.push('Meets UK language requirements');
-        }
-        break;
-      case 'australia':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.0) {
-          eligibility = 'High';
-          factors.push('Meets Australian language requirements');
-        }
-        break;
-      case 'ireland':
-        if (profile.academic_scores.ielts && profile.academic_scores.ielts >= 6.5) {
-          eligibility = 'High';
-          factors.push('Meets Irish language requirements');
-        }
-        break;
-    }
-
-    return {
-      eligibility,
-      factors,
-      percentage: eligibility === 'High' ? 85 : eligibility === 'Medium' ? 65 : 45
-    };
-  };
-
   return {
     recommendations,
     loading,
     error,
-    generateRecommendations,
-    getVisaEligibility
+    generateRecommendations
   };
 };

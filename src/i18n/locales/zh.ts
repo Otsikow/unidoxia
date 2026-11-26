@@ -44,7 +44,7 @@ const zh = {
       helpCenter: "帮助中心",
       faq: "常见问题",
       feedback: "反馈",
-      visaCalculator: "签证计算器",
+      visaCalculator: "签证信息",
       privacy: "隐私政策",
       terms: "服务条款",
     },
@@ -98,7 +98,7 @@ const zh = {
       platformLinks: {
         search: "搜索大学",
         blog: "博客",
-        visaCalculator: "签证计算器",
+        visaCalculator: "签证信息（GOV.UK 链接）",
         feedback: "反馈",
       },
       supportLinks: {
@@ -172,7 +172,7 @@ const zh = {
             suffix: "的门户",
           },
           description:
-            "连接世界顶尖大学，实时跟踪申请进度，并获得认证顾问的专业指导。",
+            "连接世界顶尖大学，实时跟踪申请进度，并获得经过审核的顾问的专业指导。",
           ctas: {
             students: {
               badge: "学生",
@@ -237,7 +237,7 @@ const zh = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -324,9 +324,9 @@ const zh = {
           badge: "AI 驱动的大学与奖学金搜索",
           heading: "利用实时智能找到最合适的项目",
           description:
-            "针对全球高校、课程或资助提出任何问题。我们的 AI 会分析招生信息、奖学金和签证路径，并结合您的目标给出建议。",
+            "针对全球高校、课程或资助提出任何问题。Zoe 根据已公布的招生与奖学金信息作答。",
           subheading:
-            "注册账户，即可解锁基于 AI 的个性化招生、奖学金和签证推荐。",
+            "注册账户，即可解锁关于高校、课程和奖学金的个性化推荐。",
           ctaLabel: "立即开始",
           stats: [
             { value: "搜索", label: "探索国际课程和大学" },
@@ -349,7 +349,8 @@ const zh = {
               highlights: [
                 "优先支持 STEM 专业与科研成果的奖学金",
                 "紧贴行业需求的课程设计与 Co-op 实习安排",
-                "针对热门科技与工程岗位的签证指导",
+                "各国政府官网的毕业后工作官方信息链接",
+                "大学申请支持",
               ],
             },
             {
@@ -362,17 +363,6 @@ const zh = {
                 "精心整理的择优与助学奖学金清单及截止日期",
                 "与您学术背景相匹配的资格说明",
                 "强化申请文书与推荐信的实用建议",
-              ],
-            },
-            {
-              key: "visa",
-              label: "签证友好",
-              headline: "签证流程顺畅的留学路线",
-              description: "比较签证政策友好的国家与院校。",
-              highlights: [
-                "概览毕业后工作机会与停留时长",
-                "根据国籍定制的材料清单",
-                "财力证明、保险与面试准备要点",
               ],
             },
             {
@@ -406,7 +396,6 @@ const zh = {
                 "找到融合课程学习与真实工作体验的项目。",
               highlights: [
                 "各地区的就业率与企业合作数据",
-                "带薪实习及工作期的签证注意事项",
                 "职业发展中心提供的简历、面试与人脉支持",
               ],
             },
@@ -414,10 +403,10 @@ const zh = {
         },
         visa: {
           badge: "特色亮点",
-          title: "在申请前先评估您的签证通过率",
+          title: "查看英国政府官网（GOV.UK）上的学生签证官方要求",
           description:
-            "签证资格评估工具即时分析您的个人情况，帮您聚焦最适合的国家与项目。",
-          cta: "了解签证计算器",
+            "阅读来自各国政府官方网站的一般学生签证信息。这不是移民建议，也不是对您个人申请的决定。",
+          cta: "签证信息",
         },
         feeCalculator: {
           badge: "AI 费用计算器",
@@ -648,6 +637,10 @@ const zh = {
         },
       ],
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia 不提供移民咨询，也不协助办理签证申请。如有签证问题，请查阅 GOV.UK 或咨询受英国移民咨询管理局（Immigration Advice Authority，IAA，前身为 OISC）监管的顾问。",
   },
 };
 

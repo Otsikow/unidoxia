@@ -3,6 +3,7 @@ import { homeTitle, homeDescription, homePhoto, homePhotoAvifSrcSet } from '../s
 import { counsellorCredential } from '../src/lib/homeEditorial.mjs';
 import { internationalDirectoryIntro, selectInternationalUniversityListings } from '../src/lib/homeInternationalUniversities.ts';
 import { PRICING_PLANS, SERVICE_FEE_SCOPE, formatPlanPrice } from '../src/types/billing.ts';
+import { UK_VISA_INFORMATION_LINKS, OTHER_COUNTRY_VISA_INFORMATION_LINKS, VISA_INFORMATION_SHORT_DISCLAIMER, VISA_INFORMATION_LONG_DISCLAIMER, VISA_INFORMATION_CTA, VISA_INFORMATION_META_DESCRIPTION, GOVUK_OFFICIAL_FIGURES, GOVUK_FIGURES_SOURCE_NOTE, GOVUK_MONEY_PAGE, GOVUK_DOCUMENTS_YOU_MUST_PROVIDE, GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED, GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING, GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING, GOVUK_DOCUMENTS_ADDITIONAL_NOTE, GOVUK_CHECKLIST_INTRO, GOVUK_DOCUMENTS_PAGE } from '../src/lib/visaInformationLinks.ts';
 import { firstPaintCss, renderFirstPaint, homeFirstPaint } from './first-paint.mjs';
 import { publishedStudyGuides, studyGuideBreadcrumb } from '../src/lib/studyGuides.mjs';
 import { editorialReview } from '../src/lib/editorialReview.mjs';
@@ -104,13 +105,13 @@ const pages = [
     title: "About UniDoxia | Study Abroad Support for International Students",
     description:
       "UniDoxia helps international students around the world discover courses, prepare applications and understand next steps — guidance, not guarantees.",
-    body: `<h1>About UniDoxia</h1><p>UniDoxia is a study-abroad support platform for international students worldwide. We help students research courses and universities, prepare applications, and understand common visa and scholarship requirements. We do not guarantee admission, scholarship, or visa outcomes.</p><h2>UK knowledge-trained leadership</h2><p>The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training (certificate code 114757).</p>`,
+    body: `<h1>About UniDoxia</h1><p>UniDoxia is a study-abroad support platform for international students worldwide. We help students research courses and universities, prepare university applications and find scholarships. For visa rules, we link to official government websites. We do not guarantee admission, scholarship, or visa outcomes.</p><h2>UK knowledge-trained leadership</h2><p>The leadership of UniDoxia has completed the British Council UK knowledge agent and counsellor training (certificate code 114757).</p>`,
   },
   {
     path: "/pricing",
     title: "Student Application Plans and Service Fees | UniDoxia",
     description: "Compare free access with UniDoxia’s optional USD 200 Agent-Supported plan. Your initial consultation is free; university and government charges are separate.",
-    body: `<h1>Choose Your Study Abroad Plan</h1><p>Your first consultation is free. Free Access includes one application. Optional paid guidance is separate.</p><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul><a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
+    body: `<h1>Choose Your Study Abroad Plan</h1><p>Your first consultation is free. Free Access includes one application. Optional paid guidance is separate.</p><p>${esc(SERVICE_FEE_SCOPE)}</p>${PRICING_PLANS.map(plan => `<section><h2>${esc(plan.name)}</h2><p>${esc(formatPlanPrice(plan))} ${esc(plan.currency)}. ${esc(plan.paymentLabel)}.</p><p>${esc(plan.description)}</p><ul>${plan.features.map(feature => `<li>${esc(feature)}</li>`).join('')}</ul>${plan.featureNote ? `<p>${esc(plan.featureNote)}</p>` : ''}${plan.planDisclaimer ? `<p>${esc(plan.planDisclaimer)}</p>` : ''}<a href="/auth/signup?plan=${esc(plan.id)}">Choose ${esc(plan.name)}</a></section>`).join('')}<p><a href="/free-consultation">Request a free consultation</a> or review the <a href="/legal/terms">terms of service</a> before selecting a plan.</p>`,
   },
   {
     path: "/faq",
@@ -125,7 +126,7 @@ const pages = [
     title: "Study Abroad & Student Visa Blog | UniDoxia",
     description:
       "Student visa updates, scholarship guides and practical study-abroad advice for international students from the UniDoxia Editorial Team.",
-    body: `<h1>UniDoxia Blog</h1><p>Explore study-abroad guidance on admissions, visas and scholarships. Confirm current requirements with the linked official sources.</p><ul>${posts
+    body: `<h1>UniDoxia Blog</h1><p>Explore study-abroad updates on admissions and scholarships, plus visa news from official sources. Confirm current requirements with the linked official sources.</p><ul>${posts
 
       .filter(p => !editorialReview[p.slug]).map((p) => `<li><a href="/blog/${esc(p.slug)}">${esc(p.title)}</a></li>`)
       .join("")}</ul>`,
@@ -159,10 +160,9 @@ const pages = [
   },
   {
     path: "/visa-calculator",
-    title: "Student Visa Eligibility Calculator | UniDoxia",
-    description:
-      "Estimate your student visa readiness and see which documents and funds you may need before applying.",
-    body: `<h1>Student visa calculator</h1>`,
+    title: "Visa information | UniDoxia",
+    description: VISA_INFORMATION_META_DESCRIPTION,
+    body: `<h1>Visa information</h1><p>${esc(VISA_INFORMATION_SHORT_DISCLAIMER)}</p><p>${esc(VISA_INFORMATION_LONG_DISCLAIMER)}</p><h2>Official GOV.UK figures</h2><p>These figures are copied from the <a href="${esc(GOVUK_MONEY_PAGE)}" target="_blank" rel="noopener noreferrer">official GOV.UK Student visa funds page</a>. ${esc(GOVUK_FIGURES_SOURCE_NOTE)}</p><ul>${GOVUK_OFFICIAL_FIGURES.map(item => `<li>${esc(item)}</li>`).join('')}</ul><h2>Documents you will need to apply</h2><p>${esc(GOVUK_CHECKLIST_INTRO)}: <a href="${esc(GOVUK_DOCUMENTS_PAGE)}" target="_blank" rel="noopener noreferrer">Documents you will need to apply (GOV.UK)</a>.</p><p>${esc(GOVUK_DOCUMENTS_MUST_PROVIDE_HEADING)}</p><ul>${GOVUK_DOCUMENTS_YOU_MUST_PROVIDE.map(item => `<li>${esc(item)}</li>`).join('')}</ul><p>${esc(GOVUK_DOCUMENTS_MAY_ALSO_NEED_HEADING)}</p><ul>${GOVUK_DOCUMENTS_YOU_MAY_ALSO_NEED.map(item => `<li>${esc(item)}</li>`).join('')}</ul><p>${esc(GOVUK_DOCUMENTS_ADDITIONAL_NOTE)}</p><h2>United Kingdom</h2><ul>${UK_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><h2>Other countries</h2><ul>${OTHER_COUNTRY_VISA_INFORMATION_LINKS.map(link => `<li><a href="${esc(link.href)}" target="_blank" rel="noopener noreferrer">${esc(link.label)}</a></li>`).join('')}</ul><p><a href="/free-consultation">${esc(VISA_INFORMATION_CTA)}</a></p>`,
   },
   {
     path: "/contact",
@@ -221,7 +221,7 @@ const pages = [
     title: editorialReview[p.slug] ? `${editorialReview[p.slug].title} | UniDoxia` : p.seo_title || `${p.title} | UniDoxia`,
     description: editorialReview[p.slug]?.message || p.seo_description || p.excerpt || p.title,
     ogType: "article",
-    body: `<article>${editorialReview[p.slug] ? `<aside aria-label="Editorial review notice"><p>${esc(editorialReview[p.slug].message)}</p><a href="${esc(editorialReview[p.slug].source)}">${esc(editorialReview[p.slug].label)}</a></aside>` : ""}<h1>${esc(editorialReview[p.slug]?.title || p.title)}</h1>${editorialReview[p.slug] ? "<p>The full article is temporarily unavailable while it is reviewed.</p>" : `${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}`}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Explore student visa readiness</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
+    body: `<article>${editorialReview[p.slug] ? `<aside aria-label="Editorial review notice"><p>${esc(editorialReview[p.slug].message)}</p><a href="${esc(editorialReview[p.slug].source)}">${esc(editorialReview[p.slug].label)}</a></aside>` : ""}<h1>${esc(editorialReview[p.slug]?.title || p.title)}</h1>${editorialReview[p.slug] ? "<p>The full article is temporarily unavailable while it is reviewed.</p>" : `${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ""}${purifier.sanitize(articleContent(p))}`}<section><h2>Plan your next step</h2>${/\b(UK|United Kingdom|British)\b/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/destinations/united-kingdom">Plan your UK university shortlist</a>.</p>' : ''}${/visa/i.test([p.title, ...(p.tags || [])].join(' ')) ? '<p><a href="/visa-calculator">Read official visa information</a> and <a href="/faq">read common application questions</a>.</p>' : ''}<p>Compare <a href="/courses">courses and entry requirements</a>, explore <a href="/universities">universities by destination</a> or check <a href="/scholarships">scholarship eligibility and deadlines</a>.</p><p><a href="/free-consultation">Ask about your study plans in a free consultation</a>.</p></section></article>`,
   })),
 ];
 

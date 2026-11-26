@@ -7,6 +7,14 @@ test('pricing states currency, third-party exclusions and preserves plan registr
  await expect(page).toHaveTitle('Student Application Plans and Service Fees | UniDoxia');
  await expect(page.getByText(/Your first consultation is free/).first()).toBeVisible();
  await expect(page.getByText(/UniDoxia service plans exclude university application fees/).first()).toBeVisible();
+ await expect(page.getByText('Full support with your university applications')).toBeVisible();
+ await expect(page.locator('body')).not.toContainText('Pre-departure information with links to GOV.UK');
+ await expect(page.getByText('UniDoxia does not give immigration advice or help with visa applications. For visa questions, use GOV.UK or an adviser regulated by the Immigration Advice Authority (IAA, formerly OISC).')).toBeVisible();
+ await expect(page.locator('body')).not.toContainText('Full guidance from choosing a course to accepting your offer');
+ await expect(page.getByText('Visa and immigration advice is not included. We link to official visa information, which is free for everyone.')).toBeVisible();
+ await expect(page.locator('body')).not.toContainText('Visa preparation assistance');
+ await expect(page.locator('body')).not.toContainText('Links to official visa information (GOV.UK and university pages)');
+ await expect(page.locator('body')).not.toContainText('Full guidance from application to visa');
  await expect(page.locator('body')).not.toContainText('500+ universities');
  await expect(page.getByText('USD',{exact:true})).toHaveCount(2);
  await page.getByRole('button',{name:'Select Plan',exact:true}).click();
@@ -27,8 +35,10 @@ test('password visibility and feedback ratings have usable names and state',asyn
 });
 test('visa controls are labelled and onboarding progress has a name',async({page})=>{
  await page.goto('/visa-calculator');
- await expect(page.getByRole('combobox',{name:'Select Country',exact:true})).toBeVisible();
- await expect(page.getByRole('combobox',{name:'Education level',exact:true})).toBeVisible();
+ await expect(page.getByRole('heading',{level:1,name:'Visa information'})).toBeVisible();
+ await expect(page.getByText('General information only, not immigration advice. Each link goes to an official government website. Rules can change, so check the official page before you apply.')).toBeVisible();
+ await expect(page.locator('body')).not.toContainText(/\bELIGIBLE\b|\beligible\b|\bprobability\b|success rate|\bAI\b|\bpredictor\b|probability band|guiding you end to end/i);
+ await expect(page.getByRole('link',{name:'Student visa (GOV.UK)',exact:true})).toBeVisible();
  await page.goto('/agents/onboarding');
  await expect(page.getByRole('progressbar',{name:'Onboarding progress'})).toHaveAttribute('aria-valuetext','Step 1 of 2');
 });

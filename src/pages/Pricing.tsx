@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,7 @@ export default function Pricing() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [loadingPlan, setLoadingPlan] = useState<StudentPlanType | null>(null);
 
@@ -182,6 +184,11 @@ export default function Pricing() {
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
+                  {plan.featureNote ? (
+                    <li className="flex items-start gap-3 pt-1">
+                      <span className="text-sm text-muted-foreground">{plan.featureNote}</span>
+                    </li>
+                  ) : null}
                   {plan.limitations?.map((limitation, idx) => (
                     <li key={`limit-${idx}`} className="flex items-start gap-3 text-muted-foreground">
                       <X className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-0.5" />
@@ -189,6 +196,12 @@ export default function Pricing() {
                     </li>
                   ))}
                 </ul>
+
+                {plan.planDisclaimer ? (
+                  <p className="text-sm text-muted-foreground" data-testid={`plan-disclaimer-${plan.id}`}>
+                    {t('pricing.agentSupportedDisclaimer')}
+                  </p>
+                ) : null}
 
                 {/* Non-refundable notice for paid plans */}
                 {plan.price > 0 && (

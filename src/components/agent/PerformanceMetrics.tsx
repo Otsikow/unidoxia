@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, TrendingUp, Clock, CheckCircle, FileText, Globe } from "lucide-react";
+import { Loader2, Clock, CheckCircle, FileText } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface PerformanceMetricsData {
@@ -105,16 +105,6 @@ export default function PerformanceMetrics() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visa Success</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data.overall.visa_success_rate}%</div>
-            <p className="text-xs text-muted-foreground">From CAS/LOA stage</p>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -178,35 +168,6 @@ export default function PerformanceMetrics() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-1 lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Student Success</CardTitle>
-            <CardDescription>Visa success by nationality</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-              {(data.student_profiles || []).length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No data available</div>
-              ) : (
-                data.student_profiles.map((profile, i) => (
-                  <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <Globe className="h-3 w-3 text-muted-foreground" />
-                        <p className="font-medium leading-none text-sm">{profile.student_nationality}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">{profile.application_count} apps</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-sm text-green-600">{profile.visa_success_rate}%</p>
-                      <p className="text-xs text-muted-foreground">Success Rate</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

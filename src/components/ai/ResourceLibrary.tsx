@@ -82,17 +82,17 @@ export default function ResourceLibrary() {
     const mockResources: Resource[] = [
       {
         id: '1',
-        title: 'Complete Visa Application Guide for Canada',
-        description: 'Step-by-step guide to applying for a Canadian student visa, including required documents and common pitfalls to avoid.',
+        title: 'Canada study permit (IRCC, official site)',
+        description: 'Official Immigration, Refugees and Citizenship Canada page for the study permit. General information only, not immigration advice.',
         type: 'guide',
         category: 'visa',
-        tags: ['canada', 'visa', 'student', 'immigration'],
-        author: 'UniDoxia Team',
-        created_at: '2024-01-15',
-        read_time: 15,
-        views: 1250,
-        likes: 89,
-        url: '#'
+        tags: ['canada', 'study permit', 'IRCC'],
+        author: 'IRCC',
+        created_at: '2026-11-16',
+        read_time: 0,
+        views: 0,
+        likes: 0,
+        url: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html'
       },
       {
         id: '2',
@@ -340,10 +340,12 @@ export default function ResourceLibrary() {
                           {resource.type}
                         </Badge>
                       </div>
+                      {resource.likes > 0 && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Heart className="h-4 w-4" />
                         {resource.likes}
                       </div>
+                      )}
                     </div>
                     <CardTitle className="text-lg">{resource.title}</CardTitle>
                     <CardDescription className="line-clamp-2">
@@ -375,7 +377,7 @@ export default function ResourceLibrary() {
                           {new Date(resource.created_at).toLocaleDateString()}
                         </span>
                       </div>
-                      <span>{resource.views} views</span>
+                      {resource.views > 0 && <span>{resource.views} views</span>}
                     </div>
 
                     <div className="flex items-center gap-2">

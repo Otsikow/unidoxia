@@ -88,7 +88,7 @@ export function StaffZoeInsightsTab() {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Flame className="h-5 w-5 text-orange-500" /> Students at Risk
             </CardTitle>
-            <CardDescription>Flagged by Zoe across live document and visa readiness checks.</CardDescription>
+            <CardDescription>Flagged by Zoe across live document and application checks.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {data.riskStudents.length === 0 && (

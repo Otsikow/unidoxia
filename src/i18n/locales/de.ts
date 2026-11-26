@@ -45,7 +45,7 @@ const de = {
       helpCenter: "Hilfezentrum",
       faq: "FAQ",
       feedback: "Feedback",
-      visaCalculator: "Visa-Rechner",
+      visaCalculator: "Visuminformationen",
       privacy: "Datenschutz",
       terms: "Nutzungsbedingungen",
     },
@@ -115,7 +115,7 @@ const de = {
       platformLinks: {
         search: "Universitäten suchen",
         blog: "Blog",
-        visaCalculator: "Visa-Rechner",
+        visaCalculator: "Visuminformationen (Links zu GOV.UK)",
         feedback: "Feedback",
       },
       supportLinks: {
@@ -297,7 +297,7 @@ const de = {
           },
           detections: {
             heading: "AI instantly flags",
-            description: "The checker stops risky submissions before they delay a student's visa or offer.",
+            description: "The checker stops risky submissions before they delay a student's application or offer.",
             items: [
               "Missing pages",
               "Unclear images",
@@ -384,9 +384,9 @@ const de = {
         badge: "KI-gestützte Universitäts- & Stipendiensuche",
         heading: "Finden Sie den passenden Kurs mit Echtzeit-Intelligenz",
         description:
-          "Stellen Sie Fragen zu Universitäten, Studiengängen oder Finanzierungen weltweit. Unsere KI analysiert Zulassungsinformationen, Stipendien und Visawege, die auf Ihre Ziele zugeschnitten sind.",
+          "Stellen Sie Fragen zu Universitäten, Studiengängen oder Finanzierungen weltweit. Zoe antwortet auf der Grundlage veröffentlichter Zulassungs- und Stipendieninformationen.",
         subheading:
-          "Registrieren Sie sich, um maßgeschneiderte KI-Empfehlungen zu Zulassungen, Stipendien und Visa zu erhalten.",
+          "Registrieren Sie sich, um maßgeschneiderte Empfehlungen zu Universitäten, Studiengängen und Stipendien freizuschalten.",
         ctaLabel: "Jetzt starten",
         stats: [
           { value: "Suchen", label: "Internationale Kurse und Universitäten entdecken" },
@@ -411,7 +411,8 @@ const de = {
             highlights: [
               "Stipendien mit Fokus auf MINT-Fächer und Forschung",
               "Branchengerechte Curricula mit Praktika und Co-op-Phasen",
-              "Visa-Leitfäden für gefragte Technik- und Ingenieurberufe",
+              "Links zu offiziellen Informationen über Arbeit nach dem Studium",
+              "Unterstützung bei der Universitätsbewerbung",
             ],
           },
           {
@@ -424,17 +425,6 @@ const de = {
               "Kuratiertes Verzeichnis von Leistungs- und Bedürftigkeitsstipendien",
               "Eignungsempfehlungen abgestimmt auf Ihren akademischen Hintergrund",
               "Tipps für überzeugende Motivationsschreiben und Referenzen",
-            ],
-          },
-          {
-            key: "visa",
-            label: "Visafreundlich",
-            headline: "Studienwege mit reibungslosem Visaprozess",
-            description: "Vergleichen Sie Länder und Institutionen mit günstigen Visabestimmungen.",
-            highlights: [
-              "Zusammengefasste Optionen für Aufenthalts- und Arbeitsvisa nach dem Studium",
-              "Dokumenten-Checklisten zugeschnitten auf Ihre Staatsangehörigkeit",
-              "Hinweise zu Finanzierungsnachweisen, Versicherung und Interviewvorbereitung",
             ],
           },
           {
@@ -468,7 +458,7 @@ const de = {
               "Finden Sie Kurse, die Studium mit praktischer Berufserfahrung verbinden.",
             highlights: [
               "Vermittlungsquoten und Unternehmenspartner nach Regionen",
-              "Visa-Aspekte für vergütete Praxisphasen",
+              "Links zu offiziellen Informationen über Arbeitsrechte bei vergüteten Praxisphasen",
               "Karriereservices für Lebenslauf, Interviews und Networking",
             ],
           },
@@ -486,18 +476,18 @@ const de = {
           },
           matched: {
             stage: "Schritt 2",
-            metricValue: "24h",
-            metricLabel: "durchschnittliche Matching-Zeit",
+            metricValue: "",
+            metricLabel: "",
             description:
               "Werden Sie mit verifizierten Beratern und Universitäten gematcht, die zu Ihren Zielen passen. Erhalten Sie persönliche Begleitung bei jedem Schritt.",
             ctaLabel: "Gematcht werden",
           },
           offers: {
             stage: "Schritt 3",
-            metricValue: "95%",
-            metricLabel: "Visa-Erfolgsquote",
+            metricValue: "",
+            metricLabel: "",
             description:
-              "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie von der Zusage bis zur Ankunft.",
+              "Erhalten Sie Universitätsangebote und Informationen zur Abreise aus offiziellen staatlichen Quellen. Wir unterstützen Ihre Universitätsbewerbung von der ersten Anfrage bis zur Einschreibung.",
             ctaLabel: "",
           },
         },
@@ -521,16 +511,16 @@ const de = {
             description:
               "Unsere KI verbindet Sie mit den passenden Universitäten und verifizierten Beratern, die Ihre Ziele verstehen. Erhalten Sie persönliche Begleitung während Ihrer gesamten Bewerbung.",
             support:
-              "Engagierte Unterstützung von erfahrenen Beratern, die Ihnen bei Dokumenten, Interviews und Fristen helfen.",
+              "Engagierte Unterstützung von erfahrenen Beratern, die Ihnen bei Dokumenten, universitären Auswahlgesprächen und Fristen helfen.",
             imageAlt: "Studierende erhält persönliche Beratung von einem Bildungsberater",
           },
           offers: {
-            title: "Angebote und Visa-Beratung erhalten",
+            title: "Angebote und Informationen zur Abreise erhalten",
             description:
-              "Erhalten Sie Universitätsangebote und umfassende Visa-Unterstützung. Wir begleiten Sie bei jedem Schritt von der Zusage bis zur Ankunft an Ihrer Traumuniversität.",
+              "Erhalten Sie Universitätsangebote und Informationen zur Abreise aus offiziellen staatlichen Quellen. Wir unterstützen Ihre Universitätsbewerbung von der ersten Anfrage bis zur Einschreibung.",
             support:
-              "Visa-Checklisten, Interviewvorbereitung und Abreiseressourcen stellen sicher, dass Sie bereit für Ihr neues Kapitel sind.",
-            imageAlt: "Studierende feiert die Zusage mit Visa-Dokumenten",
+              "Links zu offiziellen Visuminformationen (GOV.UK und andere offizielle Seiten) und allgemeinen Informationen zur Abreise. Dies ist keine einwanderungsrechtliche Beratung.",
+            imageAlt: "Studierende feiert eine Universitätszusage",
           },
         },
       },
@@ -572,10 +562,10 @@ const de = {
       },
       visa: {
         badge: "Feature-Highlight",
-        title: "Verstehen Sie Ihre Visa-Chancen, bevor Sie sich bewerben",
+        title: "Lesen Sie die offiziellen Anforderungen für das Student visa auf GOV.UK",
         description:
-          "Unser Visa-Eignungsrechner analysiert Ihr Profil sofort, damit Sie sich auf die Länder und Kurse konzentrieren können, die Sie am meisten willkommen heißen.",
-        cta: "Visa-Rechner entdecken",
+          "Lesen Sie allgemeine Informationen zu Studentenvisa auf offiziellen Regierungswebsites. Dies ist keine einwanderungsrechtliche Beratung und keine Entscheidung über Ihre eigene Bewerbung.",
+        cta: "Visuminformationen",
       },
       feeCalculator: {
         badge: "KI-Kostenrechner",
@@ -653,7 +643,7 @@ const de = {
         note: "Zoe ist multifunktional. Das bieten nur wenige Wettbewerber.",
         highlightsHeading: "Was Zoe für Sie übernimmt",
         highlights: [
-          "Beantwortet jede Frage zum Auslandsstudium mit regionalem Visa- und Richtlinienkontext.",
+          "Beantwortet Fragen zum Auslandsstudium und verlinkt auf offizielle Visuminformationen.",
           "Führt Sie durch die gesamte UniDoxia-App, damit Zeitpläne, Dashboards und Automatisierungen auf Kurs bleiben.",
           "Liest hochgeladene Dokumente, um sofort Schulen, Stipendien und nächste Schritte zu empfehlen.",
         ],
@@ -1010,6 +1000,10 @@ const de = {
         cta: "Mit Zoe triagieren",
       },
     },
+  },
+  pricing: {
+    agentSupportedDisclaimer:
+      "UniDoxia bietet keine Einwanderungsberatung und hilft nicht bei Visumanträgen. Bei Fragen zum Visum nutzen Sie GOV.UK oder wenden Sie sich an einen Berater, der von der Immigration Advice Authority (IAA, früher OISC) reguliert wird.",
   },
 };
 

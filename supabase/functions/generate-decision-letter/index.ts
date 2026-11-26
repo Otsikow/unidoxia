@@ -181,7 +181,7 @@ serve(async (req) => {
         `1. Accept this offer in your student dashboard.`,
         `2. Pay any required deposit fees.`,
         `3. Upload required documents for CAS/I-20 issuance.`,
-        `4. Apply for your visa.`
+        `4. Check official visa information for your destination and apply yourself (UK: gov.uk/student-visa).`
     ]
 
     for (const step of nextSteps) {

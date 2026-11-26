@@ -33,7 +33,7 @@ export const homeFooterGroups = [
     { label: "Contact us", href: "/contact", icon: "mail" },
     { label: "Free consultation", href: "/free-consultation", icon: "calendar" },
     { label: "Help centre", href: "/help", icon: "help" },
-    { label: "Visa calculator", href: "/visa-calculator", icon: "checklist" },
+    { label: "Visa information", href: "/visa-calculator", icon: "checklist" },
     { label: "Give feedback", href: "/feedback", icon: "message" },
   ] },
   { title: "UniDoxia", links: [
